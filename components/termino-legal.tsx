@@ -10,8 +10,18 @@ export function TerminoLegal({ clave }: { clave: ClaveTermino }) {
   const boton = useRef<HTMLButtonElement>(null);
   const contenedor = useRef<HTMLSpanElement>(null);
 
+  // Abrir un ⚖ cierra cualquier otro que estuviera abierto.
+  useEffect(() => {
+    function alAbrirOtro(e: Event) {
+      if ((e as CustomEvent<string>).detail !== id) setAbierto(false);
+    }
+    document.addEventListener("termino-legal:abrir", alAbrirOtro);
+    return () => document.removeEventListener("termino-legal:abrir", alAbrirOtro);
+  }, [id]);
+
   useEffect(() => {
     if (!abierto) return;
+    document.dispatchEvent(new CustomEvent("termino-legal:abrir", { detail: id }));
     function alTeclear(e: KeyboardEvent) {
       if (e.key !== "Escape") return;
       setAbierto(false);
@@ -26,7 +36,7 @@ export function TerminoLegal({ clave }: { clave: ClaveTermino }) {
       document.removeEventListener("keydown", alTeclear);
       document.removeEventListener("mousedown", alHacerClic);
     };
-  }, [abierto]);
+  }, [abierto, id]);
 
   return (
     <span ref={contenedor} className="relative inline-block align-baseline">

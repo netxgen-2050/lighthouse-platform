@@ -59,19 +59,34 @@ test("el ⚖ se opera con teclado", async ({ page }) => {
   await expect(boton).toBeFocused();
 });
 
-test("el ⚖ cierra con Escape desde dentro del panel", async ({ page }) => {
+// Comportamiento actual (la decisión de si debe ser así queda para Gus):
+// con el panel abierto, Tab a otro control y Escape cierra el panel y el foco vuelve al ⚖.
+test("el ⚖ abierto: Tab a otro control y Escape lo cierra y devuelve el foco al ⚖", async ({ page }) => {
   await page.goto("/tribus/valle");
   const boton = page.getByRole("button", { name: "Qué significa legalmente: Ritual de entrada" });
   await boton.click();
-  const panel = page.getByRole("dialog", { name: "Ritual de entrada" });
-  await expect(panel).toBeVisible();
-  await panel.evaluate((el) => {
-    el.setAttribute("tabindex", "-1");
-    (el as HTMLElement).focus();
-  });
+  await expect(page.getByRole("dialog", { name: "Ritual de entrada" })).toBeVisible();
+  await page.keyboard.press("Tab");
+  await expect(boton).not.toBeFocused();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(boton).toBeFocused();
+});
+
+test("abrir un ⚖ cierra el anterior y Escape devuelve el foco al ⚖ en uso", async ({ page }) => {
+  await page.goto("/tribus/valle");
+  const ritual = page.getByRole("button", { name: "Qué significa legalmente: Ritual de entrada" });
+  const personeria = page.getByRole("button", { name: "Qué significa legalmente: Comunidad con personería" });
+  await ritual.click();
+  await expect(page.getByRole("dialog", { name: "Ritual de entrada" })).toBeVisible();
+  await page.keyboard.press("Tab");
+  await expect(personeria).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("dialog")).toHaveCount(1);
+  await expect(page.getByRole("dialog", { name: "Comunidad con personería" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(personeria).toBeFocused();
 });
 
 test("el ⚖ cierra con un clic afuera", async ({ page }) => {
