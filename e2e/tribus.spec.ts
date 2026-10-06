@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { listarTribus } from "@/lib/tribus/datos";
 
 test("listado: 12 tarjetas en orden con estado escrito", async ({ page }) => {
   await page.goto("/tribus");
@@ -58,11 +59,53 @@ test("el ⚖ se opera con teclado", async ({ page }) => {
   await expect(boton).toBeFocused();
 });
 
-test("sin plata ni avales en pantalla", async ({ page }) => {
-  for (const ruta of ["/tribus", "/tribus/valle", "/tribus/avelan", "/tribus/grano"]) {
+test("el ⚖ cierra con Escape desde dentro del panel", async ({ page }) => {
+  await page.goto("/tribus/valle");
+  const boton = page.getByRole("button", { name: "Qué significa legalmente: Ritual de entrada" });
+  await boton.click();
+  const panel = page.getByRole("dialog", { name: "Ritual de entrada" });
+  await expect(panel).toBeVisible();
+  await panel.evaluate((el) => {
+    el.setAttribute("tabindex", "-1");
+    (el as HTMLElement).focus();
+  });
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(boton).toBeFocused();
+});
+
+test("el ⚖ cierra con un clic afuera", async ({ page }) => {
+  await page.goto("/tribus/valle");
+  await page.getByRole("button", { name: "Qué significa legalmente: Ritual de entrada" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.getByRole("heading", { name: "Valle Solar" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+});
+
+test("el ⚖ se alcanza con Tab y abre con Enter y con Space", async ({ page }) => {
+  await page.goto("/tribus/valle");
+  const boton = page.getByRole("button", { name: "Qué significa legalmente: Ritual de entrada" });
+  let llego = false;
+  for (let i = 0; i < 60 && !llego; i++) {
+    await page.keyboard.press("Tab");
+    llego = await boton.evaluate((el) => el === document.activeElement);
+  }
+  expect(llego).toBe(true);
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("dialog", { name: "Ritual de entrada" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.keyboard.press("Space");
+  await expect(page.getByRole("dialog", { name: "Ritual de entrada" })).toBeVisible();
+});
+
+test("sin plata ni avales en pantalla (listado y las 12 tribus)", async ({ page }) => {
+  const rutas = ["/tribus", ...listarTribus().map((t) => `/tribus/${t.id}`)];
+  expect(rutas).toHaveLength(13);
+  for (const ruta of rutas) {
     await page.goto(ruta);
     const texto = await page.locator("body").innerText();
-    expect(texto).not.toMatch(/USD/);
-    expect(texto.toLowerCase()).not.toContain("avales");
+    expect(texto, ruta).not.toMatch(/USD/);
+    expect(texto.toLowerCase(), ruta).not.toContain("avales");
   }
 });
