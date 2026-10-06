@@ -21,7 +21,10 @@ export function Entrevista() {
   const [textoEdicion, setTextoEdicion] = useState("");
   const [errorEdicion, setErrorEdicion] = useState(false);
   const campoRef = useRef<HTMLTextAreaElement>(null);
-  const moverFoco = useRef(false);
+  const enlaceRef = useRef<HTMLAnchorElement>(null);
+  const corregirRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  // Adónde mandar el foco después del próximo render (el elemento activado puede desaparecer).
+  const foco = useRef<{ en: "campo" } | { en: "cierre" } | { en: "corregir"; indice: number } | null>(null);
 
   const n = estado.items.length;
   const completa = estaCompleta(estado);
@@ -49,9 +52,13 @@ export function Entrevista() {
   }, [estado, listo]);
 
   useEffect(() => {
-    if (moverFoco.current) campoRef.current?.focus();
-    moverFoco.current = false;
-  }, [n]);
+    const destino = foco.current;
+    if (!destino) return;
+    foco.current = null;
+    if (destino.en === "campo") campoRef.current?.focus();
+    else if (destino.en === "cierre") enlaceRef.current?.focus();
+    else corregirRefs.current[destino.indice]?.focus();
+  });
 
   function responder(e: React.FormEvent) {
     e.preventDefault();
@@ -60,7 +67,7 @@ export function Entrevista() {
       return;
     }
     setError(false);
-    moverFoco.current = true;
+    foco.current = n + 1 >= CHATS.length ? { en: "cierre" } : { en: "campo" };
     despachar({ tipo: "responder", texto });
     setTexto("");
   }
@@ -77,6 +84,7 @@ export function Entrevista() {
       setErrorEdicion(true);
       return;
     }
+    foco.current = { en: "corregir", indice: i };
     despachar({ tipo: "corregir", indice: i, texto: textoEdicion });
     setEditando(null);
   }
@@ -86,7 +94,12 @@ export function Entrevista() {
     setTexto("");
     setError(false);
     setEditando(null);
-    moverFoco.current = true;
+    foco.current = { en: "campo" };
+  }
+
+  function cancelarCorreccion(i: number) {
+    foco.current = { en: "corregir", indice: i };
+    setEditando(null);
   }
 
   if (!listo) return <p className="text-stone-700">Cargando…</p>;
@@ -111,7 +124,7 @@ export function Entrevista() {
           {completa ? (
             <p className="rounded-lg bg-stone-100 px-3 py-2">
               <span className="block text-xs font-medium text-stone-700">Agente NetX</span>
-              ¡Gracias! Terminamos la entrevista. Podés revisar tu perfil a la derecha.
+              ¡Gracias! Terminamos la entrevista. Podés revisar y confirmar los datos de tu perfil.
             </p>
           ) : (
             <p className="rounded-lg bg-stone-100 px-3 py-2">
@@ -123,7 +136,7 @@ export function Entrevista() {
           )}
         </div>
         {completa ? (
-          <Link className={`${BOTON_PRINCIPAL} w-fit`} href="/tribus">Ver las tribus</Link>
+          <Link ref={enlaceRef} className={`${BOTON_PRINCIPAL} w-fit`} href="/tribus">Ver las tribus</Link>
         ) : (
           <form onSubmit={responder} noValidate className="grid gap-2">
             <label htmlFor="respuesta" className="text-sm text-stone-700">Tu respuesta</label>
@@ -189,7 +202,7 @@ export function Entrevista() {
                   )}
                   <div className="flex gap-2">
                     <button type="submit" className={BOTON_PRINCIPAL}>Confirmar corrección</button>
-                    <button type="button" className={BOTON} onClick={() => setEditando(null)}>Cancelar</button>
+                    <button type="button" className={BOTON} onClick={() => cancelarCorreccion(i)}>Cancelar</button>
                   </div>
                 </form>
               ) : (
@@ -206,13 +219,19 @@ export function Entrevista() {
                         type="button"
                         className={BOTON}
                         aria-label={`Confirmar: ${CHATS[i].etiqueta}`}
-                        onClick={() => despachar({ tipo: "confirmar", indice: i })}
+                        onClick={() => {
+                          foco.current = { en: "corregir", indice: i };
+                          despachar({ tipo: "confirmar", indice: i });
+                        }}
                       >
                         Confirmar
                       </button>
                     )}
                     <button
                       type="button"
+                      ref={(el) => {
+                        corregirRefs.current[i] = el;
+                      }}
                       className={BOTON}
                       aria-label={`Corregir: ${CHATS[i].etiqueta}`}
                       onClick={() => empezarCorreccion(i)}

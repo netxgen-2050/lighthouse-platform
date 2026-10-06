@@ -122,3 +122,21 @@ test("sin respuestas el panel lo dice, con teclado se puede responder", async ({
   await page.keyboard.press("Enter");
   await expect(page.locator("[aria-live=polite]")).toContainText("Con teclado");
 });
+
+test("el foco no se pierde: confirmar, corregir, cancelar y la sexta respuesta", async ({ page }) => {
+  await page.goto("/perfil");
+  await responder(page, "Uno");
+  const panel = page.getByRole("complementary");
+  const corregir = panel.getByRole("button", { name: "Corregir: Qué te trae" });
+  await panel.getByRole("button", { name: "Confirmar: Qué te trae" }).click();
+  await expect(corregir).toBeFocused();
+  await corregir.click();
+  await panel.getByRole("button", { name: "Cancelar" }).click();
+  await expect(corregir).toBeFocused();
+  await corregir.click();
+  await panel.getByLabel("Corregir: Qué te trae").fill("Otro");
+  await panel.getByRole("button", { name: "Confirmar corrección" }).click();
+  await expect(corregir).toBeFocused();
+  for (let i = 1; i < 6; i++) await responder(page, `r${i}`);
+  await expect(page.getByRole("link", { name: "Ver las tribus" })).toBeFocused();
+});
