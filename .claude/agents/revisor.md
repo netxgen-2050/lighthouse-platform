@@ -27,3 +27,5 @@ Veredicto: ✅ listo para revisión humana | ⚠️ con observaciones | ❌ no c
 ```
 
 Respondé con el veredicto y la cantidad de hallazgos por severidad.
+
+**Archivos temporales:** siempre en `.noches/tmp/` dentro del repo (está ignorado por git), nunca en `/tmp`. Preferí comandos simples, de a uno, en lugar de cadenas largas con `;`.

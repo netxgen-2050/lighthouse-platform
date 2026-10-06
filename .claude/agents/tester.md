@@ -26,3 +26,6 @@ N pasaron, M fallaron (nombres de los que fallaron)
 
 Nunca imprimas ni copies en el comentario el valor de `VERCEL_AUTOMATION_BYPASS_SECRET`.
 Respondé con el resultado y la URL del preview.
+
+**Archivos temporales:** siempre en `.noches/tmp/` dentro del repo (está ignorado por git), nunca en `/tmp`. Preferí comandos simples, de a uno, en lugar de cadenas largas con `;`.
+El secreto del preview ya está cargado en el entorno: no lo verifiques ni lo menciones; `pnpm test:e2e` y `scripts/curl-preview.sh` lo usan solos.

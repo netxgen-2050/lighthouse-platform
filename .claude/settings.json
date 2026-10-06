@@ -31,7 +31,21 @@
       "Bash(mkdir *)",
       "Bash(grep *)",
       "Bash(wc *)",
-      "Bash(date*)"
+      "Bash(date*)",
+      "Bash(BASE_URL=* pnpm test:e2e*)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(sed *)",
+      "Bash(find *)",
+      "Bash(sort *)",
+      "Bash(jq *)",
+      "Bash(xargs cat*)",
+      "Bash(pkill -f next*)",
+      "Bash(mv *)",
+      "Bash(cp *)",
+      "Bash(test *)",
+      "Bash(echo *)"
     ],
     "deny": [
       "Bash(gh pr merge*)",

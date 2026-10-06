@@ -26,3 +26,5 @@ Sos el Documentador de lighthouse-platform. Recibís el número del PR, la rama 
 4. Commiteá el archivo en la misma rama del PR y pusheá (`git push`). Nunca a `main`.
 
 Respondé con la ruta del reporte.
+
+**Archivos temporales:** siempre en `.noches/tmp/` dentro del repo (está ignorado por git), nunca en `/tmp`. Preferí comandos simples, de a uno, en lugar de cadenas largas con `;`.
