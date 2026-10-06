@@ -16,7 +16,10 @@ test("sin montos ni USD", async ({ page }) => {
   await page.goto("/congreso");
   const texto = await page.locator("main").innerText();
   expect(texto).not.toMatch(/USD/i);
-  expect(texto).not.toMatch(/[$€]/);
+  expect(texto).not.toMatch(/[$€£]/);
+  expect(texto).not.toMatch(/\b(usd|eur|ars|dólares?|dolares?|euros?|pesos)\b/i);
+  expect(texto).not.toMatch(/\b(precio|costo|cuota|tarifa)\b/i);
+  expect(texto).not.toMatch(/\d[\d.,]*\s?(mil|k)?\s?(usd|eur|ars|dólares?|euros?|pesos)\b/i);
 });
 
 test("código válido se registra y sobrevive a la recarga; se puede quitar", async ({ page }) => {
@@ -24,12 +27,18 @@ test("código válido se registra y sobrevive a la recarga; se puede quitar", as
   await expect(page.getByText("Modo demostración: el registro queda solo en este navegador.")).toBeVisible();
   await page.getByLabel(/Código de tu ticket/).fill("lh27-8f3k-2q");
   await page.getByRole("button", { name: "Registrar" }).click();
-  await expect(page.getByText("Ticket LH27-8F3K-2Q registrado")).toBeVisible();
+  await expect(page.locator("p:focus")).toContainText("Ticket LH27-8F3K-2Q registrado");
   await expect(page.getByText("Genesis pendiente")).toBeVisible();
   await page.reload();
   await expect(page.getByText("Ticket LH27-8F3K-2Q registrado")).toBeVisible();
   await page.getByRole("button", { name: "Quitar ticket" }).click();
-  await expect(page.getByLabel(/Código de tu ticket/)).toHaveValue("");
+  const campo = page.getByLabel(/Código de tu ticket/);
+  await expect(campo).toHaveValue("");
+  await expect(campo).toBeFocused();
+  await page.reload();
+  await expect(campo).toBeVisible();
+  await expect(page.getByText("Ticket LH27-8F3K-2Q registrado")).toHaveCount(0);
+  expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
 });
 
 test("código inválido muestra error asociado al campo y no guarda", async ({ page }) => {

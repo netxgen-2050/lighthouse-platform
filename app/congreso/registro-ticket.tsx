@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { esCodigoValido, normalizarCodigo } from "@/lib/congreso/ticket";
 
 const CLAVE = "lh-congreso-ticket";
@@ -10,13 +10,27 @@ export function RegistroTicket() {
   const [ticket, setTicket] = useState<string | null>(null);
   const [texto, setTexto] = useState("");
   const [error, setError] = useState(false);
+  const [falloAlmacen, setFalloAlmacen] = useState(false);
+  const mensajeRef = useRef<HTMLParagraphElement>(null);
+  const campoRef = useRef<HTMLInputElement>(null);
+  const moverFoco = useRef<"mensaje" | "campo" | null>(null);
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
-    const guardado = window.localStorage.getItem(CLAVE);
-    if (guardado && esCodigoValido(guardado)) setTicket(normalizarCodigo(guardado));
+    try {
+      const guardado = window.localStorage.getItem(CLAVE);
+      if (guardado && esCodigoValido(guardado)) setTicket(normalizarCodigo(guardado));
+    } catch {
+      setFalloAlmacen(true);
+    }
     setListo(true);
   }, []);
+
+  useEffect(() => {
+    if (moverFoco.current === "mensaje") mensajeRef.current?.focus();
+    if (moverFoco.current === "campo") campoRef.current?.focus();
+    moverFoco.current = null;
+  }, [ticket]);
 
   function registrar(e: React.FormEvent) {
     e.preventDefault();
@@ -25,14 +39,27 @@ export function RegistroTicket() {
       return;
     }
     const codigo = normalizarCodigo(texto);
-    window.localStorage.setItem(CLAVE, codigo);
+    try {
+      window.localStorage.setItem(CLAVE, codigo);
+    } catch {
+      setFalloAlmacen(true);
+      return;
+    }
+    setFalloAlmacen(false);
+    moverFoco.current = "mensaje";
     setTicket(codigo);
     setError(false);
     setTexto("");
   }
 
   function quitar() {
-    window.localStorage.removeItem(CLAVE);
+    try {
+      window.localStorage.removeItem(CLAVE);
+    } catch {
+      setFalloAlmacen(true);
+      return;
+    }
+    moverFoco.current = "campo";
     setTicket(null);
   }
 
@@ -42,9 +69,14 @@ export function RegistroTicket() {
       <p className="rounded-lg border border-dashed border-stone-500 bg-amber-50 px-3 py-2 text-sm text-stone-800">
         Modo demostración: el registro queda solo en este navegador.
       </p>
+      {falloAlmacen && (
+        <p role="alert" className="text-sm font-medium text-red-800">
+          Error: tu navegador no permite guardar datos en este sitio, así que el ticket no se puede registrar ni quitar acá. Revisá la configuración de privacidad o probá en otro navegador.
+        </p>
+      )}
       {!listo ? null : ticket ? (
         <div className="grid gap-3" role="status">
-          <p>
+          <p ref={mensajeRef} tabIndex={-1} className="outline-none">
             <span aria-hidden="true">✓ </span>
             <b>Ticket {ticket} registrado</b>
           </p>
@@ -67,6 +99,7 @@ export function RegistroTicket() {
           <div className="flex gap-2">
             <input
               id="codigo-ticket"
+              ref={campoRef}
               value={texto}
               onChange={(e) => setTexto(e.target.value)}
               placeholder="Ej.: LH27-8F3K-2Q"
