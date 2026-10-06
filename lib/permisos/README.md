@@ -12,6 +12,8 @@ puede(persona, "sala-tribu", "valle"); // { abierta: true, grado: "completa", mo
 calcularPermisos(persona);              // todas las puertas
 ```
 
+Ojo: `calcularPermisos(persona)` no recibe tribu, así que usa el criterio conservador y muestra **cerradas** la `sala-tribu` y la `voz-tribu` de una persona aceptada que no tiene plan ni pase que las abra por sí solos. Para esas puertas hay que usar `puede(persona, puerta, tribuId)`. `tribusPropias` solo se completa cuando la puerta se abre por la celda "su tribu".
+
 ## Tabla
 
 | Puerta | Explorador | Miembro | Pase Fundador | Tribu (aceptado) | Presencia Genesis | Residente |

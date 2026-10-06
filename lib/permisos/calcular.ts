@@ -54,8 +54,10 @@ function calcularPuerta(p: Persona, puerta: Puerta, tribuId?: string): Resultado
     .reduce((a, b) => (RANGO.indexOf(b) > RANGO.indexOf(a) ? b : a));
 
   const resultado: Resultado = { abierta: true, grado, motivos };
-  if (abren.some((a) => a.col === "tribu")) {
-    resultado.tribusPropias = tribuId !== undefined ? [tribuId] : [...p.tribus];
+  // Solo si la celda que abre la puerta está acotada a su tribu (y ya se
+  // verificó arriba que la persona fue aceptada en `tribuId`).
+  if (tribuId !== undefined && abren.some((a) => a.col === "tribu" && a.celda.soloSuTribu)) {
+    resultado.tribusPropias = [tribuId];
   }
   if (refuerzo) resultado.refuerzoPresencia = "a decidir";
   return resultado;

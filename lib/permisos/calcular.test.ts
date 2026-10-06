@@ -101,6 +101,15 @@ describe("servicio de permisos", () => {
     expect(puede(con({ pase: "semilla" }), "voz-fondo-comun").refuerzoPresencia).toBeUndefined();
   });
 
+  it("tribusPropias: solo la tribu donde fue aceptada y solo en puertas acotadas a su tribu", () => {
+    const p = con({ plan: "miembro", tribus: ["valle"] });
+    expect(puede(p, "foros-red", "rio").tribusPropias).toBeUndefined();
+    expect(puede(p, "foros-red", "valle").tribusPropias).toBeUndefined();
+    expect(puede(p, "mapa-tribus-eventos").tribusPropias).toBeUndefined();
+    expect(puede(p, "sala-tribu", "rio").tribusPropias).toBeUndefined();
+    expect(puede(p, "sala-tribu", "valle").tribusPropias).toEqual(["valle"]);
+  });
+
   it("es pura: no muta la persona", () => {
     const p = con({ tribus: ["valle"] });
     const copia = structuredClone(p);
