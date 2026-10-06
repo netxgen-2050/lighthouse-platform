@@ -52,6 +52,11 @@ for (const ruta of ["/", "/tribus", "/tribus/grano"]) {
   });
 }
 
+test("el HTML del servidor ya trae un año en el pie (sin JS)", async ({ request }) => {
+  const html = await (await request.get("/")).text();
+  expect(html).toMatch(/©(?:<!-- -->)? ?(?:<!-- -->)?\d{4}/);
+});
+
 test("portada con titular y botón a /tribus", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Encontrá tu tribu\.\s*Construí en común\./);

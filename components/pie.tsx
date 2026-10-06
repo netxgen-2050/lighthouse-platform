@@ -4,17 +4,15 @@ import { useSyncExternalStore } from "react";
 
 const sinSuscripcion = () => () => {};
 
-// El año se resuelve en el navegador: el HTML estático no queda con el año del build.
-function useAnio() {
-  return useSyncExternalStore(
+// El HTML estático trae el año del servidor (anioRespaldo, se ve sin JS); en el navegador
+// se actualiza al año en curso. useSyncExternalStore hidrata con el valor del servidor y
+// luego re-renderiza con el del cliente, sin error de hidratación.
+export function Pie({ anioRespaldo }: { anioRespaldo: number }) {
+  const anio = useSyncExternalStore(
     sinSuscripcion,
-    () => String(new Date().getFullYear()),
-    () => "",
+    () => new Date().getFullYear(),
+    () => anioRespaldo,
   );
-}
-
-export function Pie() {
-  const anio = useAnio();
   return (
     <footer className="border-t border-line bg-surface-2 text-sm text-muted">
       <div className="mx-auto flex max-w-5xl flex-wrap justify-between gap-2 px-6 py-4 sm:px-10">

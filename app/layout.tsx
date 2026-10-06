@@ -33,7 +33,7 @@ export default function RootLayout({
         <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
           {children}
         </main>
-        <Pie />
+        <Pie anioRespaldo={new Date().getFullYear()} />
       </body>
     </html>
   );
