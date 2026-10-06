@@ -95,12 +95,16 @@ test("aviso de datos locales; recargar conserva y borrar reinicia", async ({ pag
 test("entrevista completa: cierre con enlace a tribus y sin pedidos al servidor", async ({ page }) => {
   await page.goto("/perfil");
   await expect(page.getByText("Tus respuestas quedan solo en este navegador.")).toBeVisible();
+  const origen = new URL(page.url()).origin;
   const pedidos: string[] = [];
   page.on("request", (r) => {
     const m = r.method();
     const u = r.url();
-    // Ningún pedido que no sea GET, ni que lleve las respuestas en la URL o en el cuerpo.
-    if (m !== "GET" || u.includes("secreto-") || (r.postData() ?? "").includes("secreto-")) pedidos.push(`${m} ${u}`);
+    // Al origen de la app: ningún pedido que no sea GET. A cualquier origen (la barra de
+    // los previews de Vercel hace sus propios POST): ninguno que lleve las respuestas.
+    const propio = u.startsWith(origen + "/");
+    const llevaRespuestas = u.includes("secreto-") || (r.postData() ?? "").includes("secreto-");
+    if ((propio && m !== "GET") || llevaRespuestas) pedidos.push(`${m} ${u}`);
   });
   for (let i = 0; i < 6; i++) {
     await expect(page.locator("[aria-live=polite]")).toContainText(PREGUNTAS[i]);
