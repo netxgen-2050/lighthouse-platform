@@ -20,8 +20,9 @@ function columnasActivas(p: Persona): Columna[] {
 }
 
 /**
- * Si se pasa `tribuId`, la celda "su tribu" solo cuenta cuando la persona
- * fue aceptada en esa tribu.
+ * La celda "su tribu" solo cuenta cuando se pasa `tribuId` y la persona fue
+ * aceptada en esa tribu. Sin `tribuId` no se concede más de lo que vale para
+ * cualquier tribu (criterio conservador).
  */
 function calcularPuerta(p: Persona, puerta: Puerta, tribuId?: string): Resultado {
   const fila = TABLA[puerta];
@@ -31,7 +32,7 @@ function calcularPuerta(p: Persona, puerta: Puerta, tribuId?: string): Resultado
   for (const col of columnasActivas(p)) {
     const celda = fila[col];
     if (!celda) continue;
-    if (col === "tribu" && celda.soloSuTribu && tribuId !== undefined && !p.tribus.includes(tribuId)) {
+    if (col === "tribu" && celda.soloSuTribu && (tribuId === undefined || !p.tribus.includes(tribuId))) {
       continue;
     }
     if (celda.soloRefuerzo) {

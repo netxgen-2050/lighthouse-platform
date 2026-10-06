@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { calcularPermisos } from "./calcular";
-import { COLUMNAS, PUERTAS } from "./tabla";
+import { calcularPermisos, puede } from "./calcular";
+import { COLUMNAS, MOTIVO_DE_COLUMNA, PUERTAS, TABLA } from "./tabla";
 import type { Columna, Pase, Persona, Puerta } from "./tipos";
 
 const base: Persona = {
@@ -52,16 +52,39 @@ describe("tabla de la nota 18 §3", () => {
 
   for (const puerta of PUERTAS) {
     COLUMNAS.forEach((col, i) => {
+      it(`celda cruda ${puerta} x ${col}`, () => {
+        const celda = TABLA[puerta][col];
+        if (puerta === "voz-fondo-comun" && col === "presencia") {
+          expect(celda).toEqual({ grado: "abierta", soloRefuerzo: true });
+        } else {
+          expect(celda?.grado ?? null).toBe(ESPERADO[puerta][i]);
+        }
+      });
       // Todos parten del plan Explorador (mínimo): su celda también cuenta.
       const propia = ESPERADO[puerta][i];
       const esperado = propia ?? ESPERADO[puerta][0];
       it(`${puerta} x ${col}`, () => {
-        const r = calcularPermisos(solo(col))[puerta];
+        // La celda "su tribu" necesita la tribu consultada (la persona está en "valle").
+        const r = puede(solo(col), puerta, "valle");
         expect(r.grado).toBe(esperado);
+        // Columnas activas: el plan (Explorador salvo que la columna sea Miembro) y la propia.
+        const activas: number[] = col === "miembro" ? [1] : [0, i];
+        const motivosEsperados = new Set(
+          activas.filter((j) => ESPERADO[puerta][j] !== null).map((j) => MOTIVO_DE_COLUMNA[COLUMNAS[j]]),
+        );
+        expect(new Set(r.motivos)).toEqual(motivosEsperados);
         expect(r.abierta).toBe(esperado !== null);
       });
     });
   }
+
+  it("voz-fondo-comun x presencia solo refuerza: no abre y marca refuerzo a decidir", () => {
+    const r = calcularPermisos(solo("presencia"))["voz-fondo-comun"];
+    expect(r.abierta).toBe(false);
+    const conPase = calcularPermisos({ ...base, pase: "semilla", presenciaGenesis: true })["voz-fondo-comun"];
+    expect(conPase.grado).toBe("1 voz");
+    expect(conPase.refuerzoPresencia).toBe("a decidir");
+  });
 
   for (const pase of ["semilla", "brote", "raiz"] as const) {
     it(`el pase ${pase} abre lo mismo que la columna de pase`, () => {

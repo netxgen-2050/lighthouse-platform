@@ -38,6 +38,17 @@ describe("servicio de permisos", () => {
     expect(puede(p, "sala-tribu", "rio").abierta).toBe(false);
   });
 
+  it("sin tribuId no se concede más de lo que vale para cualquier tribu", () => {
+    const p = con({ plan: "miembro", tribus: ["valle"] });
+    expect(puede(p, "sala-tribu").grado).toBe("visita");
+    expect(calcularPermisos(p)["sala-tribu"].grado).toBe("visita");
+    expect(puede(p, "voz-tribu").abierta).toBe(false);
+    expect(calcularPermisos(p)["voz-tribu"].abierta).toBe(false);
+    const sinPlan = con({ tribus: ["valle"] });
+    expect(puede(sinPlan, "sala-tribu").abierta).toBe(false);
+    expect(puede(sinPlan, "voz-tribu", "valle").grado).toBe("segun estatuto");
+  });
+
   it("canal de fundadores: solo con pase", () => {
     expect(puede(con({ pase: "semilla" }), "canal-fundadores")).toMatchObject({
       abierta: true,

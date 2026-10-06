@@ -5,7 +5,7 @@
 ## 2. Cálculo
 
 - [x] 2.1 Crear `lib/permisos/calcular.ts` con `calcularPermisos(persona)` y `puede(persona, puerta, tribuId?)`, sin efectos secundarios. Verificar con `lib/permisos/calcular.test.ts`: un test por cada escenario de la spec.
-- [x] 2.2 Agregar `lib/permisos/tabla.test.ts` que recorra **todas las celdas** de la tabla (7 columnas × 9 puertas) con una persona que tiene solo esa fuente, y compare con lo esperado escrito a mano en el test. Verificar con `pnpm test`.
+- [x] 2.2 Agregar `lib/permisos/tabla.test.ts` que recorra **todas las celdas** de la tabla (6 columnas de la nota 18 × 9 puertas, más los 3 pases por separado) con una persona que tiene solo esa fuente, y compare con lo esperado escrito a mano en el test. Verificar con `pnpm test`.
 
 ## 3. Documentación
 
