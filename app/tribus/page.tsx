@@ -22,7 +22,7 @@ export default function TribusPage() {
           <li key={t.id}>
             <Link
               href={`/tribus/${t.id}`}
-              className="flex h-full gap-3 rounded-xl border border-line-strong bg-surface p-4 hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+              className="flex h-full gap-3 rounded-xl border border-faint bg-surface p-4 hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
             >
               <SelloTribu iniciales={t.iniciales} estado={t.estado} />
               <span className="grid gap-1">

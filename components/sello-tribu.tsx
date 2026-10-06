@@ -3,7 +3,7 @@ import type { EstadoTribu } from "@/lib/tribus/tipos";
 const COLOR: Record<EstadoTribu, string> = {
   activa: "bg-deep text-on-deep border-deep",
   formacion: "bg-gold-soft text-gold-ink border-gold-ink",
-  vacante: "bg-surface text-muted border-line-strong border-dashed",
+  vacante: "bg-surface text-muted border-faint border-dashed",
 };
 
 export function SelloTribu({

@@ -21,14 +21,24 @@ test("encabezado con la marca", async ({ page }) => {
   await expect(page.getByRole("banner")).toContainText("Tribus · Territorios regenerativos");
 });
 
-test("saltar al contenido es el primer foco y mueve el foco al main", async ({ page }) => {
+for (const ruta of ["/", "/tribus", "/tribus/valle"]) {
+  test(`saltar al contenido es el primer foco y mueve el foco al main en ${ruta}`, async ({ page }) => {
+    await page.goto(ruta);
+    await page.keyboard.press("Tab");
+    const salto = page.getByRole("link", { name: "Saltar al contenido" });
+    await expect(salto).toBeFocused();
+    await expect(salto).toBeVisible();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("main")).toBeFocused();
+  });
+}
+
+test("las fuentes del mock-up se aplican (texto y títulos)", async ({ page }) => {
   await page.goto("/tribus");
-  await page.keyboard.press("Tab");
-  const salto = page.getByRole("link", { name: "Saltar al contenido" });
-  await expect(salto).toBeFocused();
-  await expect(salto).toBeVisible();
-  await page.keyboard.press("Enter");
-  await expect(page.getByRole("main")).toBeFocused();
+  const familia = (selector: string) =>
+    page.locator(selector).first().evaluate((el) => getComputedStyle(el).fontFamily);
+  expect(await familia("body")).toContain("Figtree");
+  expect(await familia("h1")).toContain("Anek Latin");
 });
 
 for (const ruta of ["/", "/tribus", "/tribus/grano"]) {
@@ -36,7 +46,9 @@ for (const ruta of ["/", "/tribus", "/tribus/grano"]) {
     await page.goto(ruta);
     const pie = page.getByRole("contentinfo");
     await expect(pie).toContainText("Prototipo en desarrollo. Datos de ejemplo.");
-    await expect(pie).toContainText(String(new Date().getFullYear()));
+    // El año lo resuelve el navegador; se compara en el navegador para no depender del reloj del runner.
+    const anio = await page.evaluate(() => String(new Date().getFullYear()));
+    await expect(pie).toContainText(anio);
   });
 }
 

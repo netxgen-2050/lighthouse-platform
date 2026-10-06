@@ -24,13 +24,13 @@ function Etiquetas({ items }: { items: string[] }) {
   return (
     <ul className="flex flex-wrap gap-2">
       {items.map((i) => (
-        <li key={i} className="rounded-full border border-line-strong px-3 py-1 text-sm">{i}</li>
+        <li key={i} className="rounded-full border border-faint px-3 py-1 text-sm">{i}</li>
       ))}
     </ul>
   );
 }
 
-const tarjeta = "grid content-start gap-3 rounded-xl border border-line-strong bg-surface p-4";
+const tarjeta = "grid content-start gap-3 rounded-xl border border-faint bg-surface p-4";
 
 export default async function TribuPage({ params }: Props) {
   const t = buscarTribu((await params).id);
@@ -89,7 +89,7 @@ export default async function TribuPage({ params }: Props) {
                   return (
                     <li
                       key={a}
-                      className={`rounded-full border px-3 py-1 text-sm ${abierta ? "border-gold-ink bg-gold-soft font-semibold" : "border-line-strong"}`}
+                      className={`rounded-full border px-3 py-1 text-sm ${abierta ? "border-gold-ink bg-gold-soft font-semibold" : "border-faint"}`}
                     >
                       {a}
                       {abierta && " (abierta)"}
