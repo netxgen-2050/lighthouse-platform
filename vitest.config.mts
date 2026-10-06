@@ -3,5 +3,5 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   resolve: { alias: { "@": path.resolve(__dirname) } },
-  test: { include: ["**/*.test.ts", "**/*.test.tsx"], exclude: ["node_modules", "e2e", ".next"] },
+  test: { include: ["**/*.test.ts", "**/*.test.tsx"], exclude: ["node_modules", "e2e", ".next", ".carriles"] },
 });

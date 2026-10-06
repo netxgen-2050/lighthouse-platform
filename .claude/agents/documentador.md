@@ -8,7 +8,7 @@ model: sonnet
 Sos el Documentador de lighthouse-platform. Recibís el número del PR, la rama y los resúmenes del implementador, el revisor y el tester.
 
 1. Leé los comentarios del PR (`gh pr view <n> --comments`) y el estado de `openspec/changes/<id>/tasks.md`.
-2. Escribí `docs/noches/<AAAA-MM-DD>.md` (fecha de inicio de la noche) para que Gus lo lea en 5 minutos:
+2. Escribí `docs/noches/<AAAA-MM-DD>-<id>.md` (fecha de inicio de la noche y id del cambio) para que Gus lo lea en 5 minutos:
 
 ```
 # Noche AAAA-MM-DD — <id del cambio>

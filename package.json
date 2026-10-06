@@ -7,9 +7,9 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
-    "verificar": "eslint && tsc --noEmit && vitest run --passWithNoTests",
+    "verificar": "eslint && next typegen && tsc --noEmit && vitest run --passWithNoTests",
     "test:e2e": "playwright test",
     "noche": "scripts/noche.sh"
   },

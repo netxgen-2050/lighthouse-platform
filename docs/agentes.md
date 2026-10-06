@@ -18,9 +18,10 @@ Modelos pensados para Max 5x: Opus solo donde se piensa (spec y revisión). Con 
 
 ```
  día     Gus + especificador: cambio OpenSpec → Gus lo lee, ajusta y lo commitea en main (= aprobado)
- 21:00   pnpm noche <id-del-cambio>
- noche   implementador → PR · revisor comenta · tester prueba el preview · documentador reporta
- 08:30   Gus lee docs/noches/<fecha>.md y el PR → merge o pide cambios
+ 21:00   pnpm noche a,b,c d,e        (cada argumento es un carril; corren en paralelo)
+ noche   por cada cambio: implementador → PR · revisor (hasta 2 vueltas de corrección) · tester · documentador
+ cierre  integración de todas las ramas · el especificador propone 3 cambios · resumen
+ 08:30   Gus lee docs/noches/<fecha>-resumen.md (rama agente/propuestas-<fecha>) → merge en orden, aprueba propuestas
 ```
 
 ## Salvaguardas
@@ -40,3 +41,8 @@ Modelos pensados para Max 5x: Opus solo donde se piensa (spec y revisión). Con 
 ## Más adelante
 - Correr la noche en la nube (Claude Code en la web, con `/schedule`) para no depender de la Mac.
 - Varios implementadores en paralelo con worktrees cuando haya cola de specs.
+
+## Carriles
+- Cada carril es una copia del repo en `.carriles/N` (worktree de git, ignorado) con su propio puerto local (`3000 + N`).
+- Dentro de un carril los cambios se **apilan**: el segundo parte de la rama del primero y su PR apunta a esa rama. Se mergean en orden; al mergear el primero, GitHub reapunta el siguiente a `main`.
+- Si se toca el límite de uso del plan, el script espera 30 minutos y retoma (hasta ~6 h).

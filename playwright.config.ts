@@ -1,7 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 // BASE_URL apunta al preview de Vercel; sin BASE_URL se prueba contra un build local.
-const baseURL = process.env.BASE_URL ?? "http://localhost:3000";
+const puerto = process.env.PORT ?? "3000";
+const baseURL = process.env.BASE_URL ?? `http://localhost:${puerto}`;
 const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 
 export default defineConfig({
@@ -18,5 +19,5 @@ export default defineConfig({
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: process.env.BASE_URL
     ? undefined
-    : { command: "pnpm build && pnpm start", url: baseURL, reuseExistingServer: true, timeout: 180_000 },
+    : { command: `pnpm build && pnpm start -p ${puerto}`, url: baseURL, reuseExistingServer: true, timeout: 180_000 },
 });

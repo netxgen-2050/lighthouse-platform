@@ -41,11 +41,14 @@
       "Bash(sort *)",
       "Bash(jq *)",
       "Bash(xargs cat*)",
-      "Bash(pkill -f next*)",
       "Bash(mv *)",
       "Bash(cp *)",
       "Bash(test *)",
-      "Bash(echo *)"
+      "Bash(echo *)",
+      "Bash(git merge *)",
+      "Bash(git worktree list*)",
+      "Bash(PORT=* pnpm *)",
+      "Bash(BASE_URL=* PORT=* pnpm test:e2e*)"
     ],
     "deny": [
       "Bash(gh pr merge*)",
