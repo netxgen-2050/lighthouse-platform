@@ -15,6 +15,13 @@ if [[ -n "$(git status --porcelain)" ]]; then
   exit 1
 fi
 
+# Sin confianza en la carpeta, Claude Code ignora permisos y hooks del repo y la noche no avanza.
+CONFIA="$(jq -r --arg p "$PWD" '.projects[$p].hasTrustDialogAccepted // false' ~/.claude.json 2>/dev/null || echo false)"
+if [[ "$CONFIA" != "true" ]]; then
+  echo "Claude Code todavía no confía en esta carpeta. Corré 'claude' acá una vez, aceptá el aviso y salí con /exit." >&2
+  exit 1
+fi
+
 git switch -q main
 git pull -q --ff-only
 
