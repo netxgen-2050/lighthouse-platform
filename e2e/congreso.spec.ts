@@ -38,7 +38,7 @@ test("código válido se registra y sobrevive a la recarga; se puede quitar", as
   await page.reload();
   await expect(campo).toBeVisible();
   await expect(page.getByText("Ticket LH27-8F3K-2Q registrado")).toHaveCount(0);
-  expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
+  expect(await page.evaluate(() => window.localStorage.getItem("lh-congreso-ticket"))).toBeNull();
 });
 
 test("código inválido muestra error asociado al campo y no guarda", async ({ page }) => {
@@ -49,5 +49,18 @@ test("código inválido muestra error asociado al campo y no guarda", async ({ p
   const id = await campo.getAttribute("aria-describedby");
   expect(id).toBeTruthy();
   await expect(page.locator(`#${id}`)).toContainText("formato");
-  expect(await page.evaluate(() => window.localStorage.length)).toBe(0);
+  expect(await page.evaluate(() => window.localStorage.getItem("lh-congreso-ticket"))).toBeNull();
+});
+
+test("almacenamiento bloqueado: avisa que no se puede registrar", async ({ page }) => {
+  await page.addInitScript(() => {
+    Storage.prototype.setItem = () => {
+      throw new DOMException("bloqueado", "SecurityError");
+    };
+  });
+  await page.goto("/congreso");
+  await page.getByLabel(/Código de tu ticket/).fill("LH27-8F3K-2Q");
+  await page.getByRole("button", { name: "Registrar" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "no permite guardar datos" })).toBeVisible();
+  await expect(page.getByText("Ticket LH27-8F3K-2Q registrado")).toHaveCount(0);
 });
