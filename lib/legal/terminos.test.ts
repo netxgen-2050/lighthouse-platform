@@ -9,8 +9,8 @@ const mock = readFileSync(
 );
 
 describe("catálogo legal", () => {
-  it("solo ritual y personeria", () => {
-    expect(Object.keys(TERMINOS).sort()).toEqual(["personeria", "ritual"]);
+  it("las cinco claves", () => {
+    expect(Object.keys(TERMINOS).sort()).toEqual(["obra", "personeria", "presencia", "ritual", "ticket"]);
   });
   for (const [clave, t] of Object.entries(TERMINOS)) {
     it(`${clave} coincide con el mock-up`, () => {
