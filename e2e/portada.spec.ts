@@ -31,18 +31,35 @@ for (const camino of CAMINOS) {
     if (camino.href === "/territorios/lighthouse") return;
     await enlace.click();
     await expect(page).toHaveURL(new RegExp(`${camino.href}$`));
+    // La navegación del cliente no expone el estado: se pide la ruta aparte y se mira que no sea la not-found.
+    const respuesta = await page.request.get(camino.href);
+    expect(respuesta.status()).toBe(200);
   });
 }
 
 test("se recorre con Tab y Enter lleva a /perfil", async ({ page }) => {
   await page.goto("/");
-  const enlace = page.getByRole("link", { name: /Encontrar mi tribu/ });
-  for (let i = 0; i < 30; i++) {
+  const seccion = page.getByRole("region", { name: "Por dónde empezar" });
+  const enlaces = seccion.getByRole("link");
+  await expect(enlaces).toHaveCount(CAMINOS.length);
+  // Se avanza con Tab hasta el primer camino; después, uno por Tab, en orden.
+  const primero = enlaces.nth(0);
+  for (let i = 0; i < 40; i++) {
     await page.keyboard.press("Tab");
-    if (await enlace.evaluate((el) => el === document.activeElement)) break;
+    if (await primero.evaluate((el) => el === document.activeElement)) break;
   }
-  await expect(enlace).toBeFocused();
-  await expect(enlace).toHaveCSS("outline-style", "solid");
+  for (let i = 0; i < CAMINOS.length; i++) {
+    const enlace = enlaces.nth(i);
+    await expect(enlace).toBeFocused();
+    await expect(enlace).toHaveCSS("outline-style", "solid");
+    await expect(enlace).toHaveCSS("outline-width", "2px");
+    if (i < CAMINOS.length - 1) await page.keyboard.press("Tab");
+  }
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Shift+Tab");
+  await expect(enlaces.nth(0)).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(enlaces.nth(1)).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/perfil$/);
 });

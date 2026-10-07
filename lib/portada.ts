@@ -9,6 +9,7 @@ export type Camino = {
 
 /** Descripción del camino "Explorar": la cantidad de barrios sale de los datos; sin datos, sin número (nunca 0). */
 export function descripcionBarrios(cantidad: number): string {
+  if (cantidad === 1) return "1 barrio y las tribus que lo están formando.";
   if (cantidad > 0) return `${cantidad} barrios y las tribus que los están formando.`;
   return "Los barrios y las tribus que los están formando.";
 }

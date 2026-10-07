@@ -16,6 +16,10 @@ describe("portada", () => {
     expect(caminosDePortada()[0].descripcion).toContain(`${n} barrios`);
   });
 
+  it("con un solo barrio usa el singular", () => {
+    expect(descripcionBarrios(1)).toBe("1 barrio y las tribus que lo están formando.");
+  });
+
   it("sin datos no muestra número ni 0", () => {
     const texto = descripcionBarrios(0);
     expect(texto).not.toMatch(/\d/);
