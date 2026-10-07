@@ -80,7 +80,8 @@ export function leerBandeja(texto: string | null): Pedido[] {
   }
 }
 
-/** El pedido más nuevo queda primero. */
+/** El pedido más nuevo queda primero. Un id que ya está en la bandeja no se vuelve a agregar (reintentos). */
 export function agregar(bandeja: Pedido[], pedido: Pedido): Pedido[] {
+  if (bandeja.some((p) => p.id === pedido.id)) return bandeja;
   return [pedido, ...bandeja];
 }

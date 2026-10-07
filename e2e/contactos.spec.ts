@@ -4,7 +4,9 @@ test.beforeEach(async ({ page }) => {
   await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
 });
 
-const ficha = (page: Page) => page.getByRole("complementary", { name: "Ficha del territorio" });
+// Next agrega un role="alert" vacío (anunciador de rutas): solo cuentan los que tienen texto.
+const alertas = (page: Page) => page.getByRole("alert").filter({ hasText: /\S/ });
+const ficha =(page: Page) => page.getByRole("complementary", { name: "Ficha del territorio" });
 
 async function abrirFinca502(page: Page) {
   await page.goto("/territorios/lighthouse?sel=finca-502");
@@ -162,6 +164,46 @@ test("solo teclado: abrir, elegir canal y enviar", async ({ page }) => {
   const guardado = await page.evaluate(() => JSON.parse(window.localStorage.getItem("lh-contactos") ?? "[]"));
   expect(guardado).toHaveLength(1);
   expect(guardado[0]).toMatchObject({ motivo: "charla-netx", canal: "email", destino: "Equipo NetX" });
+});
+
+test("no se puede guardar el pedido: avisa solo el formulario y no marca la invitación", async ({ page }) => {
+  await page.addInitScript(() => {
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (clave: string, valor: string) {
+      if (clave === "lh-contactos") throw new DOMException("bloqueado", "SecurityError");
+      return original.call(this, clave, valor);
+    };
+  });
+  await page.goto("/sumarte");
+  await page.getByRole("button", { name: "Pedir invitación" }).click();
+  await page.getByRole("radio", { name: "Email" }).check();
+  await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
+  await expect(alertas(page)).toHaveCount(1);
+  await expect(alertas(page)).toContainText("el pedido no se pudo guardar");
+  await expect(page.getByText("Invitación pedida (simulado)")).toHaveCount(0);
+  await expect(page.getByText("22 de 35")).toBeVisible();
+});
+
+test("falla guardar la página después del pedido: una sola alerta y reintentar no duplica", async ({ page }) => {
+  await page.addInitScript(() => {
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (clave: string, valor: string) {
+      if (clave === "lh-sumarte") throw new DOMException("bloqueado", "SecurityError");
+      return original.call(this, clave, valor);
+    };
+  });
+  await page.goto("/sumarte");
+  await page.getByRole("button", { name: "Pedir invitación" }).click();
+  await page.getByRole("radio", { name: "Email" }).check();
+  const enviar = page.getByRole("button", { name: "Enviar pedido (simulado)" });
+  await enviar.click();
+  await expect(alertas(page)).toHaveCount(1);
+  await expect(alertas(page)).toContainText("no permite guardar datos");
+  await expect(page.getByText("Invitación pedida (simulado)")).toHaveCount(0);
+  await enviar.click();
+  await expect(alertas(page)).toHaveCount(1);
+  const guardado = await page.evaluate(() => JSON.parse(window.localStorage.getItem("lh-contactos") ?? "[]"));
+  expect(guardado).toHaveLength(1);
 });
 
 test("un mensaje o estado de tipo raro en lh-contactos no rompe /netx", async ({ page }) => {

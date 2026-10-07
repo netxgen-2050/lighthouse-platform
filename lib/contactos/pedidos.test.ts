@@ -85,6 +85,10 @@ describe("agregar", () => {
     const b: Pedido = crearPedido(base, new Date(), "b");
     expect(agregar([a], b).map((p) => p.id)).toEqual(["b", "a"]);
   });
+  it("no duplica un pedido con el mismo id (reintento)", () => {
+    const a: Pedido = crearPedido(base, new Date(), "a");
+    expect(agregar([a], a)).toEqual([a]);
+  });
 });
 
 describe("borrarDemo", () => {

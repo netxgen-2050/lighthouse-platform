@@ -35,6 +35,8 @@ export function PedidoContacto({ motivo, referencia, estadoMostrado, aviso, idBo
   const [errores, setErrores] = useState<Errores>({});
   const [falloGuardar, setFalloGuardar] = useState(false);
   const [recibido, setRecibido] = useState<string | null>(null);
+  // Mismo id en cada reintento de este formulario: la bandeja no suma un duplicado.
+  const idPedido = useRef(`${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`);
   const titulo = useRef<HTMLParagraphElement>(null);
   const primerCanal = useRef<HTMLInputElement>(null);
   const campoMensaje = useRef<HTMLTextAreaElement>(null);
@@ -65,7 +67,7 @@ export function PedidoContacto({ motivo, referencia, estadoMostrado, aviso, idBo
     const pedido = crearPedido(
       { motivo, referencia, canal, momento, mensaje, estadoMostrado },
       new Date(),
-      `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+      idPedido.current,
     );
     const resultado = alEnviar(pedido);
     if (resultado !== true) {
