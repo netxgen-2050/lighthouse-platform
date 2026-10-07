@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { TerminoLegal } from "@/components/termino-legal";
+import { CLAVES } from "@/lib/demo/claves";
 import {
   COHORT,
   EMISION,
@@ -15,7 +17,7 @@ import {
 import { INICIAL, leer, reducir, type Accion, type EstadoSumarte } from "@/lib/sumarte/estado";
 
 // Todo queda solo en este navegador: no hay pedidos de red ni cobros.
-const CLAVE = "lh-sumarte";
+const CLAVE = CLAVES.sumarte;
 
 const BOTON =
   "w-fit rounded-lg px-4 py-1.5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
@@ -290,6 +292,9 @@ export function SumarteCliente() {
             </tbody>
           </table>
         </div>
+        <p className="mt-3 text-sm">
+          <Link className="underline" href="/canales">Ver qué te abre cada plan</Link>
+        </p>
       </section>
 
       <section aria-labelledby="inversores" className="grid gap-3">
