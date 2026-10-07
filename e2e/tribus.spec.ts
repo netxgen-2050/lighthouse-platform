@@ -47,71 +47,108 @@ test("id desconocido: 404 con vuelta al listado", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Volver a las tribus" })).toHaveAttribute("href", "/tribus");
 });
 
-test("el ⚖ se opera con teclado", async ({ page }) => {
-  await page.goto("/tribus/valle");
-  const boton = page.getByRole("button", { name: "Qué significa legalmente: Ritual de entrada" });
-  await boton.focus();
-  await page.keyboard.press("Enter");
-  await expect(page.getByRole("dialog", { name: "Ritual de entrada" })).toBeVisible();
-  await expect(page.getByText("Ley 23.592")).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog")).toHaveCount(0);
-  await expect(boton).toBeFocused();
+const RITUAL = "Qué significa legalmente: Ritual de entrada";
+const PERSONERIA = "Qué significa legalmente: Comunidad con personería";
+
+test.describe("⚖ como tooltip, con mouse", () => {
+  test("pasar y sacar el mouse", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    const boton = page.getByRole("button", { name: RITUAL });
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
+    await boton.hover();
+    const tooltip = page.getByRole("tooltip");
+    await expect(tooltip).toBeVisible();
+    await expect(tooltip).toContainText("Ritual de entrada");
+    await expect(tooltip).toContainText("Ley 23.592");
+    await expect(boton).toHaveAttribute("aria-describedby", /.+/);
+    await page.mouse.move(0, 0);
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
+    await expect(boton).not.toHaveAttribute("aria-describedby", /.+/);
+  });
+
+  test("pasar del ⚖ al tooltip lo mantiene visible", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    await page.getByRole("button", { name: RITUAL }).hover();
+    const tooltip = page.getByRole("tooltip");
+    await expect(tooltip).toBeVisible();
+    await tooltip.hover();
+    await expect(tooltip).toBeVisible();
+    await page.mouse.move(0, 0);
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
+  });
+
+  test("dos ⚖ cercanos: no se desplaza el contenido y el segundo sigue accesible", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    const ritual = page.getByRole("button", { name: RITUAL });
+    const personeria = page.getByRole("button", { name: PERSONERIA });
+    const antes = await personeria.boundingBox();
+    await ritual.hover();
+    await expect(page.getByRole("tooltip")).toBeVisible();
+    const despues = await personeria.boundingBox();
+    expect(despues).toEqual(antes);
+    // El tooltip no tapa al segundo ⚖: el punto de su centro cae sobre el botón, no sobre el tooltip.
+    const tapado = await personeria.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const arriba = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      return !el.contains(arriba);
+    });
+    expect(tapado).toBe(false);
+    await personeria.hover();
+    await expect(page.getByRole("tooltip")).toHaveCount(1);
+    await expect(page.getByRole("tooltip")).toContainText("Comunidad con personería");
+  });
 });
 
-// Comportamiento actual (la decisión de si debe ser así queda para Gus):
-// con el panel abierto, Tab a otro control y Escape cierra el panel y el foco vuelve al ⚖.
-test("el ⚖ abierto: Tab a otro control y Escape lo cierra y devuelve el foco al ⚖", async ({ page }) => {
-  await page.goto("/tribus/valle");
-  const boton = page.getByRole("button", { name: "Qué significa legalmente: Ritual de entrada" });
-  await boton.click();
-  await expect(page.getByRole("dialog", { name: "Ritual de entrada" })).toBeVisible();
-  await page.keyboard.press("Tab");
-  await expect(boton).not.toBeFocused();
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog")).toHaveCount(0);
-  await expect(boton).toBeFocused();
-});
-
-test("abrir un ⚖ cierra el anterior y Escape devuelve el foco al ⚖ en uso", async ({ page }) => {
-  await page.goto("/tribus/valle");
-  const ritual = page.getByRole("button", { name: "Qué significa legalmente: Ritual de entrada" });
-  const personeria = page.getByRole("button", { name: "Qué significa legalmente: Comunidad con personería" });
-  await ritual.click();
-  await expect(page.getByRole("dialog", { name: "Ritual de entrada" })).toBeVisible();
-  await page.keyboard.press("Tab");
-  await expect(personeria).toBeFocused();
-  await page.keyboard.press("Enter");
-  await expect(page.getByRole("dialog")).toHaveCount(1);
-  await expect(page.getByRole("dialog", { name: "Comunidad con personería" })).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog")).toHaveCount(0);
-  await expect(personeria).toBeFocused();
-});
-
-test("el ⚖ cierra con un clic afuera", async ({ page }) => {
-  await page.goto("/tribus/valle");
-  await page.getByRole("button", { name: "Qué significa legalmente: Ritual de entrada" }).click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await page.getByRole("heading", { name: "Valle Solar" }).click();
-  await expect(page.getByRole("dialog")).toHaveCount(0);
-});
-
-test("el ⚖ se alcanza con Tab y abre con Enter y con Space", async ({ page }) => {
-  await page.goto("/tribus/valle");
-  const boton = page.getByRole("button", { name: "Qué significa legalmente: Ritual de entrada" });
-  let llego = false;
-  for (let i = 0; i < 60 && !llego; i++) {
+test.describe("⚖ como tooltip, con teclado", () => {
+  test("Tab muestra, Escape esconde sin mover el foco, Tab no la vuelve a mostrar", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    const boton = page.getByRole("button", { name: RITUAL });
+    let llego = false;
+    for (let i = 0; i < 60 && !llego; i++) {
+      await page.keyboard.press("Tab");
+      llego = await boton.evaluate((el) => el === document.activeElement);
+    }
+    expect(llego).toBe(true);
+    await expect(page.getByRole("tooltip")).toContainText("Ley 23.592");
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
+    await expect(boton).toBeFocused();
     await page.keyboard.press("Tab");
-    llego = await boton.evaluate((el) => el === document.activeElement);
-  }
-  expect(llego).toBe(true);
-  await page.keyboard.press("Enter");
-  await expect(page.getByRole("dialog", { name: "Ritual de entrada" })).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog")).toHaveCount(0);
-  await page.keyboard.press("Space");
-  await expect(page.getByRole("dialog", { name: "Ritual de entrada" })).toBeVisible();
+    await expect(boton).not.toBeFocused();
+    await expect(page.getByRole("tooltip")).toHaveCount(1);
+    await expect(page.getByRole("tooltip")).not.toContainText("Ley 23.592");
+  });
+
+  test("al perder el foco el tooltip desaparece y el siguiente ⚖ muestra el suyo", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    const ritual = page.getByRole("button", { name: RITUAL });
+    const personeria = page.getByRole("button", { name: PERSONERIA });
+    await page.keyboard.press("Tab");
+    await ritual.focus();
+    await expect(ritual).toBeFocused();
+    await expect(page.getByRole("tooltip")).toBeVisible();
+    await page.keyboard.press("Tab");
+    await expect(personeria).toBeFocused();
+    await expect(page.getByRole("tooltip")).toHaveCount(1);
+    await expect(page.getByRole("tooltip")).toContainText("Comunidad con personería");
+  });
+});
+
+test.describe("⚖ como tooltip, en celular", () => {
+  test.use({ hasTouch: true, isMobile: true });
+
+  test("un toque muestra, otro toque o un toque afuera esconde", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    const boton = page.getByRole("button", { name: RITUAL });
+    await boton.tap();
+    await expect(page.getByRole("tooltip")).toContainText("Ley 23.592");
+    await boton.tap();
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
+    await boton.tap();
+    await expect(page.getByRole("tooltip")).toBeVisible();
+    await page.getByRole("heading", { name: "Valle Solar" }).tap();
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
+  });
 });
 
 test("sin plata ni avales en pantalla (listado y las 12 tribus)", async ({ page }) => {
