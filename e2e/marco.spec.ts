@@ -15,10 +15,45 @@ test("en una tribu, Tribus sigue marcado", async ({ page }) => {
   await expect(nav.getByRole("link", { name: "Tribus" })).toHaveAttribute("aria-current", "page");
 });
 
-test("encabezado con la marca", async ({ page }) => {
+test("el rail trae la marca y los destinos existentes en orden", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("banner")).toContainText("NetX");
-  await expect(page.getByRole("banner")).toContainText("Tribus · Territorios regenerativos");
+  const nav = page.getByRole("navigation", { name: "Principal" });
+  await expect(nav).toBeVisible();
+  await expect(nav.locator("xpath=..").getByText("NetX", { exact: true })).toBeVisible();
+  const textos = (await nav.getByRole("link").allInnerTexts()).map((t) => t.trim());
+  const orden = ["Inicio", "Territorio", "Tribus", "Perfil", "Compromisos", "Congreso", "Sumarte", "Mi recorrido"];
+  expect(textos).toEqual(orden.filter((o) => textos.includes(o)));
+  expect(textos).toEqual(expect.arrayContaining(["Inicio", "Tribus", "Perfil", "Congreso"]));
+});
+
+test("el rail está a la izquierda en computadora", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/");
+  const caja = await page.getByRole("navigation", { name: "Principal" }).boundingBox();
+  expect(caja!.x).toBe(0);
+  expect(caja!.width).toBeLessThanOrEqual(80);
+});
+
+test("celular 390 x 844: rail a la izquierda, 72 px o menos, sin scroll horizontal", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const ruta of ["/", "/tribus", "/tribus/valle", "/perfil", "/congreso"]) {
+    await page.goto(ruta);
+    const nav = page.getByRole("navigation", { name: "Principal" });
+    const caja = await nav.boundingBox();
+    expect(caja!.x).toBe(0);
+    expect(caja!.width).toBeLessThanOrEqual(72);
+    await expect(nav.getByRole("link", { name: "Inicio" })).toBeVisible();
+    const desborde = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+    expect(desborde, `scroll horizontal en ${ruta}`).toBe(false);
+  }
+});
+
+test("Tab: primero Saltar al contenido y después Inicio en el rail", async ({ page }) => {
+  await page.goto("/");
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: "Saltar al contenido" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Inicio" })).toBeFocused();
 });
 
 for (const ruta of ["/", "/tribus", "/tribus/valle"]) {
