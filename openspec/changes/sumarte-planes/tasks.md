@@ -1,6 +1,6 @@
 ## 1. Datos y catálogo
 
-- [ ] 1.1 Crear `lib/sumarte/datos.ts` con `PASSES`, `COHORT`, `EMISION` y las filas de la tabla, copiados del mock-up v6, y `lib/sumarte/estado.ts` (reducer puro: plan, facturación, nivel del pase, pase activo, invitación). Copiar al catálogo `lib/legal/terminos.ts` las claves ⚖ que use la página, textuales del objeto `LEGAL` del mock-up, y actualizar su test. Verificar con tests de Vitest.
+- [x] 1.1 Crear `lib/sumarte/datos.ts` con `PASSES`, `COHORT`, `EMISION` y las filas de la tabla, copiados del mock-up v6, y `lib/sumarte/estado.ts` (reducer puro: plan, facturación, nivel del pase, pase activo, invitación). Copiar al catálogo `lib/legal/terminos.ts` las claves ⚖ que use la página, textuales del objeto `LEGAL` del mock-up, y actualizar su test. Verificar con tests de Vitest.
 
 ## 2. Página
 
