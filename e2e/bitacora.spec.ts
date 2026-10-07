@@ -29,9 +29,23 @@ test("ver el territorio anota el estado del loteo", async ({ page }) => {
   expect(completa).toHaveLength(1);
   expect(String(completa[0].mostrado)).toContain("Loteo en trámite");
   expect(String(completa[0].mostrado)).toContain("Titular:");
-  for (const e of entradas.filter((x) => !completa.includes(x))) {
+});
+
+test("elegir la finca 502 anota la vista compacta, sin expediente ni titular", async ({ page }) => {
+  await page.goto("/territorios/lighthouse");
+  await page.getByText(/Fincas disponibles de Soluna/).click();
+  await page.getByRole("button", { name: "Finca 502", exact: true }).click();
+  await expect(page.getByRole("note", { name: "Estado administrativo" })).toBeVisible();
+  const compactas = async () =>
+    (await leerBitacora(page)).filter(
+      (e) => e.tipo === "estado-loteo" && !String(e.mostrado).includes("Chacras de Soluna"),
+    );
+  // Falla si no aparece ninguna entrada compacta: no puede pasar en vacío.
+  await expect.poll(async () => (await compactas()).length).toBeGreaterThan(0);
+  for (const e of await compactas()) {
     expect(String(e.mostrado)).toContain("Loteo en trámite");
     expect(String(e.mostrado)).not.toContain("Expediente");
+    expect(String(e.mostrado)).not.toContain("Titular");
   }
 });
 
