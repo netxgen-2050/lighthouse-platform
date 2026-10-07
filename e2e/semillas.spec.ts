@@ -96,7 +96,8 @@ test("las notas se pueden poner con teclado", async ({ page }) => {
 test("no manda datos a un servidor", async ({ page }) => {
   const pedidos: string[] = [];
   page.on("request", (r) => {
-    if (r.method() !== "GET") pedidos.push(r.url());
+    // vercel.live es la barra de comentarios que Vercel inyecta en los previews, no la app.
+    if (r.method() !== "GET" && new URL(r.url()).hostname !== "vercel.live") pedidos.push(r.url());
   });
   await conPacto(page, 20);
   for (const grupo of ["Cumplió su rol, Martina", "Aporte al grupo, Martina", "Cumplió su rol, Joaquín", "Aporte al grupo, Joaquín"]) {
