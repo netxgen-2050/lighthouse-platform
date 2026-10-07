@@ -5,14 +5,16 @@ import { listarTribus } from "@/lib/tribus/datos";
 const rutas = [
   "/",
   "/tribus",
+  "/compromisos",
+  "/panel",
   ...listarTribus().map((t) => `/tribus/${t.id}`),
   "/territorios/lighthouse",
   "/territorios/no-existe",
   "/ruta-que-no-existe",
 ];
 
-test("hay 17 rutas auditadas", () => {
-  expect(rutas).toHaveLength(17);
+test("hay 19 rutas auditadas", () => {
+  expect(rutas).toHaveLength(19);
 });
 
 for (const ruta of rutas) {

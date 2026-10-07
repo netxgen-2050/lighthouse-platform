@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
-### Requirement: Registrar un compromiso de tiempo o bienes
-The system SHALL offer at `/compromisos` a form with: type ("Ofrezco" / "Necesito"), class ("Tiempo" / "Bienes"), description (required, 1 to 140 characters after trimming), an indicative quantity and a recipient ("El Lighthouse en general" or one of the example tribes). For "Tiempo" the quantity MUST be an integer number of hours per month between 1 and 160, or empty. For "Bienes" it MUST be optional free text up to 60 characters. There MUST NOT be any money class, amount, currency or contribution range.
+### Requirement: Registrar un compromiso de tiempo, bienes o plata
+The system SHALL offer at `/compromisos` a form with: type ("Ofrezco" / "Necesito"), class ("Tiempo" / "Bienes" / "Plata"), description (required, 1 to 140 characters after trimming), an indicative quantity and a recipient ("El Lighthouse en general" or one of the example tribes). For "Tiempo" the quantity MUST be an integer number of hours per month between 1 and 160, or empty. For "Bienes" it MUST be optional free text up to 60 characters. For "Plata" it MUST be an optional indicative amount in USD, an integer between 1 and 1000000, shown as "USD <monto>" or "sin dato" when empty. The "Plata" field SHALL state that nothing is charged or paid (prototype phase, simulated payments).
 
 #### Scenario: Registrar una oferta de tiempo
 - **WHEN** una persona elige "Ofrezco", "Tiempo", escribe "Taller de compost", pone 8 horas por mes, elige "Semilla Viva" y aprieta "Registrar"
@@ -19,9 +19,21 @@ The system SHALL offer at `/compromisos` a form with: type ("Ofrezco" / "Necesit
 - **WHEN** elige "Tiempo" y escribe 0, 161 o 2,5 horas
 - **THEN** ve un mensaje de error asociado al campo y no se agrega nada
 
-#### Scenario: Sin opciones de plata
-- **WHEN** se inspeccionan las opciones de "Clase" y el texto de la página
-- **THEN** solo existen "Tiempo" y "Bienes", y no aparecen "USD", "$", "plata", "monto" ni "aporte"
+#### Scenario: Registrar plata con monto
+- **WHEN** elige "Necesito", "Plata", escribe "Fondo para semillas", pone 500 en el monto y aprieta "Registrar"
+- **THEN** aparece "Necesito · Plata · Fondo para semillas · USD 500 · Para: El Lighthouse en general"
+
+#### Scenario: Plata sin monto
+- **WHEN** elige "Plata", escribe una descripción, deja el monto vacío y registra
+- **THEN** el compromiso aparece con "sin dato"
+
+#### Scenario: Monto fuera de rango
+- **WHEN** elige "Plata" y escribe 0, 1000001 o 2,5
+- **THEN** ve un mensaje de error asociado al campo y no se agrega nada
+
+#### Scenario: Clases disponibles
+- **WHEN** se inspeccionan las opciones de "Clase"
+- **THEN** existen exactamente "Tiempo", "Bienes" y "Plata"
 
 ### Requirement: Ver y quitar compromisos
 The system SHALL list registered commitments in "Tus compromisos", most recent first, each with a "Quitar" button whose accessible name includes the description. It SHALL offer "Borrar todo". When the list is empty it SHALL show "Todavía no registraste compromisos."

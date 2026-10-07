@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { esCodigoValido, normalizarCodigo } from "@/lib/congreso/ticket";
 
-const CLAVE = "lh-congreso-ticket";
+import { CLAVES } from "@/lib/demo/claves";
 
 export function RegistroTicket() {
   const [listo, setListo] = useState(false);
@@ -18,7 +18,7 @@ export function RegistroTicket() {
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
     try {
-      const guardado = window.localStorage.getItem(CLAVE);
+      const guardado = window.localStorage.getItem(CLAVES.congreso);
       if (guardado && esCodigoValido(guardado)) setTicket(normalizarCodigo(guardado));
     } catch {
       setFalloAlmacen(true);
@@ -40,7 +40,7 @@ export function RegistroTicket() {
     }
     const codigo = normalizarCodigo(texto);
     try {
-      window.localStorage.setItem(CLAVE, codigo);
+      window.localStorage.setItem(CLAVES.congreso, codigo);
     } catch {
       setFalloAlmacen(true);
       return;
@@ -54,7 +54,7 @@ export function RegistroTicket() {
 
   function quitar() {
     try {
-      window.localStorage.removeItem(CLAVE);
+      window.localStorage.removeItem(CLAVES.congreso);
     } catch {
       setFalloAlmacen(true);
       return;
