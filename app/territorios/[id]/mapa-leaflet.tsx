@@ -15,6 +15,7 @@ import {
   type Anillo,
   type EstadoFinca,
 } from "@/lib/territorios/biopueblo";
+import { nombreDeLugar } from "@/lib/territorios/textos";
 import { TEXTO_ESTADO, type EstadoTribu } from "@/lib/tribus/tipos";
 
 type Props = {
@@ -41,7 +42,7 @@ function estiloFinca(estado: EstadoFinca | undefined): PathOptions {
   if (estado === "disponible") return { color: token("deep"), weight: 1, fillColor: token("green"), fillOpacity: 0.55 };
   if (estado === "reservada")
     return { color: token("gold-ink"), weight: 1.5, dashArray: "3 3", fillColor: token("gold"), fillOpacity: 0.6 };
-  return { color: token("muted"), weight: 1, fillColor: token("gray"), fillOpacity: 0.6 };
+  return { color: token("muted"), weight: 1.5, dashArray: "1 4", lineCap: "round", fillColor: token("gray"), fillOpacity: 0.6 };
 }
 
 export default function MapaLeaflet({ seleccion, alElegir }: Props) {
@@ -66,7 +67,10 @@ export default function MapaLeaflet({ seleccion, alElegir }: Props) {
       nueva.capa.setStyle({ color: token("ink"), weight: 4, dashArray: undefined, fillOpacity: Math.min(0.85, (nueva.base.fillOpacity ?? 0.4) + 0.3) });
       nueva.capa.bringToFront();
       const m = mapaRef.current;
-      if (m && id?.startsWith("finca-")) m.fitBounds(nueva.limites(), { padding: [40, 40], maxZoom: 17 });
+      if (m) {
+        const esFinca = id?.startsWith("finca-");
+        m.fitBounds(nueva.limites(), { padding: [40, 40], maxZoom: esFinca ? 17 : 15 });
+      }
     }
   }
 
@@ -184,7 +188,7 @@ export default function MapaLeaflet({ seleccion, alElegir }: Props) {
         40,
       );
       for (const l of listarLugares()) {
-        marcar(l.id, [l.punto[1], l.punto[0]], "•", `Lugar de interés · ${l.nombre}`, "mapa-sello-lugar", 24);
+        marcar(l.id, [l.punto[1], l.punto[0]], "•", `Lugar de interés · ${nombreDeLugar(l.id, l.nombre)}`, "mapa-sello-lugar", 24);
       }
 
       resaltar(seleccionActual.current);

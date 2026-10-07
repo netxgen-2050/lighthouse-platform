@@ -196,6 +196,7 @@ h3 {
 .mapa-leyenda-finca-cantera {
   background: var(--color-gray);
   border-color: var(--color-muted);
+  border-style: dotted;
 }
 
 .mapa-leyenda-soluna {

@@ -107,7 +107,7 @@ export function VitrinaTerritorio() {
               {disponibles.map((f) => (
                 <li key={f.id}>
                   <button type="button" className={botonLista} aria-pressed={seleccion === f.id} onClick={() => setSeleccion(f.id)}>
-                    Finca {f.numero}
+                    Finca {f.numero ?? "sin número"}
                   </button>
                 </li>
               ))}

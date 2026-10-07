@@ -10,7 +10,7 @@ import {
   textoSuperficieM2,
   tribuDeBarrio,
 } from "@/lib/territorios/biopueblo";
-import { TEXTO_COMUN, descripcionDeLugar } from "@/lib/territorios/textos";
+import { TEXTO_COMUN, descripcionDeLugar, nombreDeLugar } from "@/lib/territorios/textos";
 import { TEXTO_ESTADO } from "@/lib/tribus/tipos";
 
 type Props = {
@@ -84,7 +84,7 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
     return (
       <div className="grid gap-3">
         <p className="text-sm text-muted">Chacras de Soluna</p>
-        <h2 className="text-xl font-semibold">Finca {el.numero}</h2>
+        <h2 className="text-xl font-semibold">Finca {el.numero ?? "sin número"}</h2>
         <p className="text-sm">
           <strong>Superficie:</strong> {textoSuperficieM2(el.superficieM2)}
         </p>
@@ -114,7 +114,7 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
     return (
       <div className="grid gap-3">
         <p className="text-sm text-muted">Lugar de interés</p>
-        <h2 className="text-xl font-semibold">{el.nombre}</h2>
+        <h2 className="text-xl font-semibold">{nombreDeLugar(el.id, el.nombre)}</h2>
         <p className="text-sm">{descripcionDeLugar(el.id)}</p>
       </div>
     );

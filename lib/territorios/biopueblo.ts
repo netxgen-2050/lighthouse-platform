@@ -18,7 +18,7 @@ export type Zona = Base & { tipo: "macrolote" | "comun" | "soluna" | "contexto";
 export type Barrio = Base & { tipo: "barrio"; barrio: number; tribuId: string; areaHa?: number; anillo: Anillo };
 export type Finca = Base & {
   tipo: "finca";
-  numero: number;
+  numero?: number;
   superficieM2?: number;
   estado?: EstadoFinca;
   anillo: Anillo;
@@ -33,7 +33,7 @@ type Propiedades = {
   tribuId?: string;
   numero?: number;
   area_ha?: number;
-  superficie_m2?: number;
+  superficie_m2?: number | null;
   estado?: EstadoFinca;
 };
 type Rasgo =
@@ -88,12 +88,12 @@ export function listarFincas(): Finca[] {
       tipo: "finca" as const,
       id: p.id,
       nombre: p.nombre,
-      numero: p.numero ?? 0,
-      superficieM2: p.superficie_m2,
+      numero: p.numero ?? undefined,
+      superficieM2: p.superficie_m2 ?? undefined,
       estado: p.estado,
       anillo,
     }))
-    .sort((a, b) => a.numero - b.numero);
+    .sort((a, b) => (a.numero ?? Infinity) - (b.numero ?? Infinity));
 }
 
 export function listarLugares(): Lugar[] {
@@ -141,9 +141,9 @@ export const TEXTO_ESTADO_FINCA: Record<EstadoFinca, string> = {
 };
 
 /** Superficie en m² con separador de miles; sin dato nunca es 0. */
-export function textoSuperficieM2(m2?: number): string {
+export function textoSuperficieM2(m2?: number | null): string {
   // A mano: Intl no agrupa los miles de 4 cifras en español.
-  return m2 === undefined ? "sin dato" : `${String(Math.round(m2)).replace(/\B(?=(\d{3})+(?!\d))/g, ".")} m²`;
+  return m2 == null ? "sin dato" : `${String(Math.round(m2)).replace(/\B(?=(\d{3})+(?!\d))/g, ".")} m²`;
 }
 
 export function textoHectareas(ha?: number): string {

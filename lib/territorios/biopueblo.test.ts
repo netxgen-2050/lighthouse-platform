@@ -38,6 +38,15 @@ describe("biopueblo", () => {
     expect(contarTribusPorEstado()).toEqual({ activa: 5, formacion: 5, vacante: 2, total: 12 });
   });
 
+  it("una finca sin superficie o sin número queda sin dato, no en 0", () => {
+    for (const f of listarFincas()) {
+      expect(f.superficieM2).not.toBeNull();
+      expect(f.superficieM2).not.toBe(0);
+      expect(f.numero).not.toBe(0);
+    }
+    expect(listarFincas().some((f) => f.superficieM2 === undefined)).toBe(true);
+  });
+
   it("buscar por id", () => {
     expect(buscarElemento("barrio-6")?.tipo).toBe("barrio");
     expect(buscarElemento("comun")?.tipo).toBe("comun");
@@ -50,6 +59,7 @@ describe("biopueblo", () => {
     expect(textoSuperficieM2(9130)).toBe("9.130 m²");
     expect(textoSuperficieM2(1450)).toBe("1.450 m²");
     expect(textoSuperficieM2(undefined)).toBe("sin dato");
+    expect(textoSuperficieM2(null)).toBe("sin dato");
     expect(textoHectareas(118.8)).toBe("118,8 ha");
     expect(textoHectareas(undefined)).toBe("sin dato");
   });

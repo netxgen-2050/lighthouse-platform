@@ -13,6 +13,17 @@ const LUGARES: Record<string, string> = {
   "lugar-nave-tierra-piramidal": "Construcción singular de tierra con forma piramidal (ejemplo).",
 };
 
+// Nombres legibles (el JSON fuente los trae sin mayúsculas ni tildes).
+const NOMBRES: Record<string, string> = {
+  "lugar-temazcal": "Temazcal",
+  "lugar-restaurant-coliving-cowork-sala-de-practicas-banos": "Restaurante, coliving, cowork, sala de prácticas y baños",
+};
+
+/** Nombre para mostrar; si no hay mapeo, el del dato. */
+export function nombreDeLugar(id: string, nombre: string): string {
+  return Object.hasOwn(NOMBRES, id) ? NOMBRES[id] : nombre;
+}
+
 /** Una línea de descripción; si falta, "sin dato". */
 export function descripcionDeLugar(id: string): string {
   return Object.hasOwn(LUGARES, id) ? LUGARES[id] : "sin dato";
