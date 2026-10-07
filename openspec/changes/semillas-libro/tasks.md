@@ -4,9 +4,9 @@
 
 ## 2. Pantalla
 
-- [ ] 2.1 Crear `app/semillas/page.tsx` según la spec, con estado simulado en `localStorage`, solo tokens del tema, sin `<main>` propio. Agregar "Semillas" a `lib/navegacion.ts`. Verificar en `pnpm dev`.
-- [ ] 2.2 Escribir `e2e/semillas.spec.ts` con todos los escenarios de la spec y sumar `/semillas` a la auditoría de `e2e/accesibilidad.spec.ts`. Verificar con `pnpm test:e2e`.
+- [x] 2.1 Crear `app/semillas/page.tsx` según la spec, con estado simulado en `localStorage`, solo tokens del tema, sin `<main>` propio. Agregar "Semillas" a `lib/navegacion.ts`. Verificar en `pnpm dev`.
+- [x] 2.2 Escribir `e2e/semillas.spec.ts` con todos los escenarios de la spec y sumar `/semillas` a la auditoría de `e2e/accesibilidad.spec.ts`. Verificar con `pnpm test:e2e`.
 
 ## 3. Integración
 
-- [ ] 3.1 `pnpm verificar` y `pnpm build` en verde; PR con guion de prueba.
+- [x] 3.1 `pnpm verificar` y `pnpm build` en verde; PR con guion de prueba.
