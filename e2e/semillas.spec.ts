@@ -20,7 +20,7 @@ test("muestra título, aviso de prototipo y un único main", async ({ page }) =>
 
 test("sin pacto: Tiempo invita a proponerlo y no muestra número", async ({ page }) => {
   await page.goto("/semillas");
-  await expect(page.getByText("Todavía no tenés un pacto aceptado")).toBeVisible();
+  await expect(page.getByText("Todavía no tenés un pacto de tiempo aceptado")).toBeVisible();
   await expect(page.getByRole("link", { name: "Proponé un pacto de tiempo" })).toHaveAttribute("href", "/pactos");
   await expect(page.getByTestId("semillas-tiempo")).toHaveCount(0);
   await expect(page.getByTestId("medidor")).toContainText("sin dato");

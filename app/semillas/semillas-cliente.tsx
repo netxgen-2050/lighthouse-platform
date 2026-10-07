@@ -99,7 +99,7 @@ export function SemillasCliente() {
             <>
               <p className={GRANDE}>sin dato</p>
               <p className="text-sm text-muted">
-                Todavía no tenés un pacto aceptado.{" "}
+                Todavía no tenés un pacto de tiempo aceptado.{" "}
                 <Link className="underline" href="/pactos">Proponé un pacto de tiempo</Link>.
               </p>
             </>
