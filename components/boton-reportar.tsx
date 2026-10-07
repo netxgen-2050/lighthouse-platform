@@ -39,7 +39,7 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
   const [errores, setErrores] = useState<Partial<Record<CampoReporte, string>>>({});
   const [estado, setEstado] = useState<Estado>({ fase: "editando" });
   const [contexto, setContexto] = useState<Contexto>(CONTEXTO_VACIO);
-  const [copiado, setCopiado] = useState(false);
+  const [copiado, setCopiado] = useState<"si" | "no" | null>(null);
 
   function leerContexto(): Contexto {
     return armarContexto({
@@ -54,8 +54,13 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
   }
 
   function abrir() {
+    // Mientras se envía no se toca nada: reabrir no habilita un segundo envío.
+    if (estado.fase === "enviando") {
+      dialogo.current?.showModal();
+      return;
+    }
     setContexto(leerContexto());
-    setCopiado(false);
+    setCopiado(null);
     // Si el reporte anterior ya se registró, se arranca de cero; si no, se conserva lo escrito.
     if (estado.fase === "listo") {
       setQuePaso("");
@@ -107,14 +112,15 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
     if (!r.ok) return;
     try {
       await navigator.clipboard.writeText(textoParaCopiar(r.reporte));
-      setCopiado(true);
+      setCopiado("si");
     } catch {
-      setCopiado(false);
+      setCopiado("no");
     }
   }
 
   const describe = (k: CampoReporte) => (errores[k] ? `err-rep-${k}` : undefined);
   const filas: [string, string][] = [
+    ["URL", contexto.url],
     ["Ruta", contexto.ruta],
     ["Página", contexto.titulo],
     ["Pantalla", contexto.pantalla],
@@ -300,7 +306,11 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
               </div>
             )}
             <p role="status" className="text-sm font-medium">
-              {copiado ? "Reporte copiado." : ""}
+              {copiado === "si"
+                ? "Reporte copiado."
+                : copiado === "no"
+                  ? "No se pudo copiar. Seleccioná lo que escribiste y copialo a mano."
+                  : ""}
             </p>
 
             <div className="flex flex-wrap gap-3">

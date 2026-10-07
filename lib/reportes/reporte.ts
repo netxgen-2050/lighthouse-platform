@@ -146,35 +146,44 @@ export function esBot(entrada: unknown): boolean {
   return texto(o.sitioWeb).length > 0;
 }
 
+/**
+ * El texto libre entra al Markdown del issue: "@usuario" avisaría a esa persona y "#12"
+ * enlazaría otro issue o PR. Se intercala un espacio de ancho cero para que queden como texto.
+ */
+export function neutralizar(t: string): string {
+  return t.replace(/(?<![\w.])@(?=\w)/g, "@​").replace(/#(?=\d)/g, "#​");
+}
+
 export function armarTitulo(r: Pick<Reporte, "tipo" | "quePaso">): string {
   const plano = r.quePaso.replace(/\s+/g, " ").trim();
   const palabras = plano.split(" ").slice(0, 10).join(" ");
   const corto = palabras.length > 80 ? `${palabras.slice(0, 79)}…` : palabras;
-  return `[${r.tipo}] ${corto}`;
+  return `[${r.tipo}] ${neutralizar(corto)}`;
 }
 
 export function armarCuerpo(r: Reporte): string {
   const c = r.contexto;
+  const n = neutralizar;
   return [
     `**Tipo:** ${TEXTO_TIPO[r.tipo]}`,
     "",
     "**¿Qué pasó?**",
-    r.quePaso,
+    n(r.quePaso),
     "",
     "**¿Qué esperabas que pasara?**",
-    r.esperabas || "sin dato",
+    n(r.esperabas || "sin dato"),
     "",
-    `**Contacto:** ${r.contacto || "sin dato"}`,
+    `**Contacto:** ${n(r.contacto || "sin dato")}`,
     "",
     "**Contexto**",
-    `- URL: ${c.url}`,
-    `- Ruta: ${c.ruta}`,
-    `- Título de la página: ${c.titulo}`,
-    `- Pantalla: ${c.pantalla}`,
-    `- Navegador: ${c.navegador}`,
-    `- Versión: ${c.version}`,
-    `- Entorno: ${c.entorno}`,
-    `- Fecha: ${c.fecha}`,
+    `- URL: ${n(c.url)}`,
+    `- Ruta: ${n(c.ruta)}`,
+    `- Título de la página: ${n(c.titulo)}`,
+    `- Pantalla: ${n(c.pantalla)}`,
+    `- Navegador: ${n(c.navegador)}`,
+    `- Versión: ${n(c.version)}`,
+    `- Entorno: ${n(c.entorno)}`,
+    `- Fecha: ${n(c.fecha)}`,
   ].join("\n");
 }
 

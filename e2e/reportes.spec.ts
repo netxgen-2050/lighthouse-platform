@@ -57,6 +57,8 @@ test("teclado: Enter abre, Escape cierra y el foco vuelve al botón", async ({ p
   const dialogo = page.getByRole("dialog");
   await expect(dialogo).toBeVisible();
   await expect(dialogo.getByRole("radio").first()).toBeVisible();
+  const foco = await page.evaluate(() => document.activeElement?.closest("dialog") !== null);
+  expect(foco).toBe(true);
   await page.keyboard.press("Escape");
   await expect(dialogo).toBeHidden();
   await expect(boton).toBeFocused();
@@ -105,4 +107,64 @@ test("axe: el diálogo abierto no tiene violaciones serias o críticas", async (
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+});
+
+test("el diálogo muestra la URL completa que se adjunta", async ({ page }) => {
+  await page.goto("/tribus/valle");
+  const dialogo = await abrir(page);
+  await expect(dialogo).toContainText(new URL(page.url()).href);
+});
+
+test("cerrar y reabrir mientras se envía no habilita un segundo envío", async ({ page }) => {
+  let pedidos = 0;
+  await page.route("**/api/reportes", async (ruta) => {
+    pedidos += 1;
+    await new Promise((r) => setTimeout(r, 1200));
+    await ruta.fulfill({ status: 200, json: { ok: true, numero: 7 } });
+  });
+  await page.goto("/");
+  const dialogo = await abrir(page);
+  await dialogo.getByLabel(/¿Qué pasó\?/).fill("Algo");
+  await dialogo.getByRole("button", { name: "Enviar reporte" }).click();
+  await expect(dialogo.getByRole("button", { name: "Enviando…" })).toBeDisabled();
+  await page.keyboard.press("Escape");
+  await expect(dialogo).toBeHidden();
+  await abrir(page);
+  await expect(dialogo.getByRole("button", { name: "Enviando…" })).toBeDisabled();
+  await expect(dialogo.getByText("¡Gracias! Quedó registrado (#7)")).toBeVisible();
+  expect(pedidos).toBe(1);
+});
+
+test("si falla copiar al portapapeles, lo avisa", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: () => Promise.reject(new Error("denegado")) },
+      configurable: true,
+    });
+  });
+  await page.route("**/api/reportes", (ruta) =>
+    ruta.fulfill({ status: 503, json: { ok: false, configurado: false } }),
+  );
+  await page.goto("/");
+  const dialogo = await abrir(page);
+  await dialogo.getByLabel(/¿Qué pasó\?/).fill("Algo");
+  await dialogo.getByRole("button", { name: "Enviar reporte" }).click();
+  await dialogo.getByRole("button", { name: "Copiar el reporte" }).click();
+  await expect(dialogo.getByText("No se pudo copiar")).toBeVisible();
+});
+
+test("el token no aparece en el HTML ni en el código que recibe el navegador", async ({ page }) => {
+  const textos: string[] = [];
+  page.on("response", async (res) => {
+    const tipo = res.headers()["content-type"] ?? "";
+    if (/html|javascript|json/.test(tipo)) textos.push(await res.text().catch(() => ""));
+  });
+  await page.goto("/");
+  await abrir(page);
+  await page.waitForLoadState("networkidle");
+  expect(textos.length).toBeGreaterThan(0);
+  for (const t of textos) {
+    expect(t).not.toContain("REPORTES_GITHUB_TOKEN");
+    expect(t).not.toMatch(/ghp_|github_pat_/);
+  }
 });

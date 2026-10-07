@@ -82,6 +82,20 @@ describe("issue", () => {
     expect(cuerpo).toContain("- Ruta:");
     expect(armarEtiquetas("idea")).toEqual(["reporte", "idea"]);
   });
+  it("neutraliza menciones y referencias en título y cuerpo", () => {
+    const r = validarReporte({
+      ...valido,
+      quePaso: "Avisen a @gus por el #12",
+      esperabas: "ver @otra y #7",
+      contacto: "@yo",
+    });
+    if (!r.ok) throw new Error("debía ser válido");
+    const todo = `${armarTitulo(r.reporte)}\n${armarCuerpo(r.reporte)}`;
+    expect(todo).not.toMatch(/@\w/);
+    expect(todo).not.toMatch(/#\d/);
+    expect(todo).toContain("gus");
+    expect(todo).toContain("12");
+  });
   it("acorta títulos largos", () => {
     const t = armarTitulo({ tipo: "idea", quePaso: "palabra ".repeat(50) });
     expect(t.length).toBeLessThanOrEqual(90);
