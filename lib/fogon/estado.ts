@@ -1,12 +1,20 @@
 import { DECISIONES, PERSONAS, type Ambito, type Decision, type Opcion, type PersonaId } from "./datos";
 
+export type VotosPersona = Partial<Record<string, Opcion>>;
+
 export type EstadoFogon = {
   persona: PersonaId;
-  /** Voto propio por decisión (simulado). */
-  votos: Partial<Record<string, Opcion>>;
+  /** Voto propio por persona y por decisión (simulado). */
+  votos: Record<PersonaId, VotosPersona>;
 };
 
-export const INICIAL: EstadoFogon = { persona: "lucia", votos: {} };
+export const INICIAL: EstadoFogon = { persona: "lucia", votos: { lucia: {}, lucas: {} } };
+
+/** Voto de la persona activa en una decisión; nada si esa persona no puede votar ahí. */
+export function votoPropio(e: EstadoFogon, d: Decision): Opcion | undefined {
+  if (motivoSinVoto(d, e.persona)) return undefined;
+  return e.votos[e.persona][d.id];
+}
 
 const OPCIONES: readonly string[] = ["favor", "contra", "abstencion"];
 
@@ -32,7 +40,7 @@ export function contar(d: Decision, propio: Opcion | undefined): Record<Opcion, 
 export function votar(e: EstadoFogon, id: string, opcion: Opcion): EstadoFogon {
   const d = DECISIONES.find((x) => x.id === id);
   if (!d || motivoSinVoto(d, e.persona)) return e;
-  return { ...e, votos: { ...e.votos, [id]: opcion } };
+  return { ...e, votos: { ...e.votos, [e.persona]: { ...e.votos[e.persona], [id]: opcion } } };
 }
 
 export function cambiarPersona(e: EstadoFogon, persona: PersonaId): EstadoFogon {
@@ -45,11 +53,19 @@ export function leer(crudo: string | null): EstadoFogon {
   try {
     const o = JSON.parse(crudo) as Record<string, unknown>;
     const persona: PersonaId = o.persona === "lucas" ? "lucas" : "lucia";
-    const votos: Record<string, Opcion> = {};
-    if (o.votos && typeof o.votos === "object") {
+    const votos: Record<PersonaId, Record<string, Opcion>> = { lucia: {}, lucas: {} };
+    const crudos = o.votos && typeof o.votos === "object" ? (o.votos as Record<string, unknown>) : {};
+    // Formato viejo: votos planos por decisión, de la persona que estaba activa.
+    const porPersona = (id: PersonaId): Record<string, unknown> => {
+      const v = crudos[id];
+      if (v && typeof v === "object") return v as Record<string, unknown>;
+      return id === persona && !("lucia" in crudos) && !("lucas" in crudos) ? crudos : {};
+    };
+    for (const id of ["lucia", "lucas"] as const) {
+      const mios = porPersona(id);
       for (const d of DECISIONES) {
-        const v = (o.votos as Record<string, unknown>)[d.id];
-        if (typeof v === "string" && OPCIONES.includes(v)) votos[d.id] = v as Opcion;
+        const v = mios[d.id];
+        if (typeof v === "string" && OPCIONES.includes(v)) votos[id][d.id] = v as Opcion;
       }
     }
     return { persona, votos };

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
-import { AMBITOS, OPCIONES, PERSONAS, type Ambito, type Opcion, type PersonaId } from "@/lib/fogon/datos";
-import { cambiarPersona, contar, filtrar, INICIAL, leer, motivoSinVoto, votar, type EstadoFogon } from "@/lib/fogon/estado";
+import { AMBITOS, DECISIONES, OPCIONES, PERSONAS, type Ambito, type Opcion, type PersonaId } from "@/lib/fogon/datos";
+import { cambiarPersona, contar, filtrar, INICIAL, leer, motivoSinVoto, votar, votoPropio, type EstadoFogon } from "@/lib/fogon/estado";
 
 // Todo queda solo en este navegador: no hay pedidos de red.
 const CLAVE = "lh-fogon";
@@ -20,6 +20,7 @@ export function FogonCliente() {
   const [abierta, setAbierta] = useState<string | null>(null);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [listo, setListo] = useState(false);
+  const [anuncio, setAnuncio] = useState("");
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
@@ -44,7 +45,14 @@ export function FogonCliente() {
   }
 
   function elegir(id: string, opcion: Opcion) {
-    if (guardar(votar(estado, id, opcion))) setAbierta(null);
+    const d = DECISIONES.find((x) => x.id === id);
+    if (!d || !guardar(votar(estado, id, opcion))) return;
+    setAbierta(null);
+    setAnuncio(
+      `Tu voto quedó registrado: ${OPCIONES.find((o) => o.id === opcion)!.etiqueta} en «${d.titulo}» (simulado).`,
+    );
+    // El grupo de opciones se cierra: el foco vuelve al botón que lo abrió, en la misma decisión.
+    document.getElementById(`abrir-${id}`)?.focus();
   }
 
   const persona = PERSONAS[estado.persona];
@@ -83,6 +91,7 @@ export function FogonCliente() {
             value={estado.persona}
             onChange={(e) => {
               setAbierta(null);
+              setAnuncio("");
               guardar(cambiarPersona(estado, e.target.value as PersonaId));
             }}
             className="rounded-lg border border-muted bg-surface px-2 py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
@@ -99,7 +108,7 @@ export function FogonCliente() {
       <ul className="grid gap-3">
         {lista.map((d) => {
           const motivo = motivoSinVoto(d, estado.persona);
-          const propio = estado.votos[d.id];
+          const propio = votoPropio(estado, d);
           const c = contar(d, propio);
           const idTitulo = `dec-${d.id}`;
           return (
@@ -122,6 +131,7 @@ export function FogonCliente() {
                   ) : (
                     <button
                       type="button"
+                      id={`abrir-${d.id}`}
                       aria-expanded={abierta === d.id}
                       aria-controls={`votar-${d.id}`}
                       onClick={() => setAbierta(abierta === d.id ? null : d.id)}
@@ -147,7 +157,7 @@ export function FogonCliente() {
                 Votos de ejemplo: A favor {c.favor} · En contra {c.contra} · Abstención {c.abstencion}
               </p>
               {listo && propio && (
-                <p role="status" className="rounded-lg border border-deep bg-green-soft px-3 py-2 text-sm text-deep">
+                <p className="rounded-lg border border-deep bg-green-soft px-3 py-2 text-sm text-deep">
                   <span aria-hidden="true">✓ </span>
                   Tu voto: {OPCIONES.find((o) => o.id === propio)!.etiqueta} (simulado)
                   <span className="block">
@@ -160,6 +170,10 @@ export function FogonCliente() {
           );
         })}
       </ul>
+
+      <p role="status" className="sr-only">
+        {anuncio}
+      </p>
 
       {listo && (
         <p className="text-sm text-muted">

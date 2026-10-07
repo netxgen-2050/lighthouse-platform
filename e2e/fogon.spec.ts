@@ -62,6 +62,40 @@ test("como Lucas se puede votar en la asamblea y en el fideicomiso", async ({ pa
   await expect(bomba).toContainText("Abstención 3");
 });
 
+test("cambiar de persona con un voto guardado no filtra el voto a quien no puede votar", async ({ page }) => {
+  await page.goto("/fogon");
+  const bomba = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: /bomba solar/ }) });
+  const huerta = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Plan de huerta comunitaria 2027" }) });
+  await huerta.getByRole("button", { name: "Votar" }).click();
+  await huerta.getByRole("button", { name: "A favor" }).click();
+  await page.getByLabel("Persona de ejemplo").selectOption("lucas");
+  await expect(huerta.getByText("Tu voto:")).toHaveCount(0);
+  await expect(huerta).toContainText("A favor 14");
+  await bomba.getByRole("button", { name: "Votar" }).click();
+  await bomba.getByRole("button", { name: "A favor" }).click();
+  await expect(bomba).toContainText("Tu voto: A favor (simulado)");
+  await page.getByLabel("Persona de ejemplo").selectOption("lucia");
+  await expect(bomba).toContainText("Solo residentes");
+  await expect(bomba.getByText("Tu voto:")).toHaveCount(0);
+  await expect(bomba.getByText(/votó a favor/)).toHaveCount(0);
+  await expect(huerta).toContainText("Tu voto: A favor (simulado)");
+});
+
+test("al votar el foco queda en el botón de la decisión y se anuncia en una región persistente", async ({ page }) => {
+  await page.goto("/fogon");
+  const region = page.getByRole("status");
+  await expect(region).toHaveCount(1);
+  await expect(region).toHaveText("");
+  const huerta = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Plan de huerta comunitaria 2027" }) });
+  await huerta.getByRole("button", { name: "Votar" }).click();
+  await huerta.getByRole("button", { name: "A favor" }).click();
+  await expect(huerta.getByRole("button", { name: "Cambiar voto" })).toBeFocused();
+  await expect(region).toContainText("Tu voto quedó registrado: A favor");
+  await page.reload();
+  await expect(page.getByRole("status")).toHaveCount(1);
+  await expect(page.getByRole("status")).toHaveText("");
+});
+
 test("teclado: se vota solo con teclado", async ({ page }) => {
   await page.goto("/fogon");
   const boton = page.getByRole("button", { name: "Votar" }).first();
