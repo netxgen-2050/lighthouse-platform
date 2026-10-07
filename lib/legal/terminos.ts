@@ -132,6 +132,21 @@ export const TERMINOS = {
     texto:
       "La tribu se organiza como asociación civil: elige autoridades y decide ingresos según su estatuto. Solo puede excluir con causa y con derecho de defensa (art. 180 CCyCN).",
   },
+  pasaporte: {
+    titulo: "Pasaporte",
+    texto:
+      "Identificación (KYC) que el fiduciario está obligado a pedir (UIF, Ley 25.246): identidad, residencia fiscal, nacionalidad y origen de fondos. Se conserva 10 años. La plataforma la recolecta por delegación.",
+  },
+  chacra: {
+    titulo: "Tu chacra",
+    texto:
+      "Con aprobación municipal, cada unidad se vende por boleto con un corredor matriculado. Hoy, en la realidad, la Ordenanza 173 prohíbe ofrecerla, publicitarla o reservarla.",
+  },
+  calificado: {
+    titulo: "Inversor no calificado",
+    texto:
+      "Quien no cumple los requisitos de inversor calificado de la CNV. En oferta privada puede haber como máximo 15 por emisión.",
+  },
 } as const;
 
 export type ClaveTermino = keyof typeof TERMINOS;

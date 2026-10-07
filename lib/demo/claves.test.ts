@@ -9,5 +9,6 @@ describe("CLAVES", () => {
     expect(CLAVES.pactos).toBe("lh-pactos");
     expect(CLAVES.semillasRonda).toBe("lh-semillas-ronda");
     expect(CLAVES.sumarte).toBe("lh-sumarte");
+    expect(CLAVES.pasaporte).toBe("lh-pasaporte");
   });
 });
