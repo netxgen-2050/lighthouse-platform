@@ -5,11 +5,15 @@ import { ESTADOS_ADMINISTRATIVOS, textoExpediente, type IdProyecto } from "@/lib
 // Aviso obligatorio en toda vista con lotes (regla C1). Texto + ícono: nunca solo color.
 export function EstadoAdministrativo({ proyecto, compacto = false }: { proyecto: IdProyecto; compacto?: boolean }) {
   const e = ESTADOS_ADMINISTRATIVOS[proyecto];
-  const anotar = (
+  const aprobacion = e.aprobacionMunicipal ? "aprobada" : "pendiente";
+  // Se anota exactamente lo que cada vista muestra en pantalla.
+  const anotar = compacto ? (
+    <AnotarExposicion proyectoId={proyecto} titulo={`${e.estado}`} texto={e.normaCorta} />
+  ) : (
     <AnotarExposicion
       proyectoId={proyecto}
-      titulo={`${e.proyecto} · ${e.estado}`}
-      texto={`${e.norma} · Expediente: ${textoExpediente(e)} · Aprobación municipal: ${e.aprobacionMunicipal ? "aprobada" : "pendiente"}`}
+      titulo={`${e.proyecto} · ${e.estado} · ${e.norma}`}
+      texto={`Titular: ${e.titular} · Expediente: ${textoExpediente(e)} · Aprobación municipal: ${aprobacion}`}
     />
   );
 
@@ -40,7 +44,7 @@ export function EstadoAdministrativo({ proyecto, compacto = false }: { proyecto:
       </p>
       <p>
         Titular: {e.titular} · Expediente: {textoExpediente(e)} · Aprobación municipal:{" "}
-        {e.aprobacionMunicipal ? "aprobada" : "pendiente"}
+        {aprobacion}
       </p>
       {anotar}
     </section>

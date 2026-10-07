@@ -18,12 +18,21 @@ async function abrirPaseConTeclado(page: Page) {
 
 test("ver el territorio anota el estado del loteo", async ({ page }) => {
   await page.goto("/territorios/lighthouse");
-  await expect.poll(async () => (await leerBitacora(page)).filter((e) => e.tipo === "estado-loteo").length).toBe(1);
-  const [e] = (await leerBitacora(page)).filter((x) => x.tipo === "estado-loteo");
-  expect(e.ruta).toBe("/territorios/lighthouse");
-  expect(String(e.mostrado)).toContain("Chacras de Soluna");
-  expect(String(e.mostrado)).toContain("Loteo en trámite");
-  expect(e.huella).toMatch(/^[0-9a-f]{8}$/);
+  await expect.poll(async () => (await leerBitacora(page)).filter((e) => e.tipo === "estado-loteo").length).toBeGreaterThan(0);
+  const entradas = (await leerBitacora(page)).filter((x) => x.tipo === "estado-loteo");
+  for (const e of entradas) {
+    expect(e.ruta).toBe("/territorios/lighthouse");
+    expect(e.huella).toMatch(/^[0-9a-f]{8}$/);
+  }
+  // La vista completa anota el titular que muestra; la compacta, solo estado y norma corta.
+  const completa = entradas.filter((e) => String(e.mostrado).includes("Chacras de Soluna"));
+  expect(completa).toHaveLength(1);
+  expect(String(completa[0].mostrado)).toContain("Loteo en trámite");
+  expect(String(completa[0].mostrado)).toContain("Titular:");
+  for (const e of entradas.filter((x) => !completa.includes(x))) {
+    expect(String(e.mostrado)).toContain("Loteo en trámite");
+    expect(String(e.mostrado)).not.toContain("Expediente");
+  }
 });
 
 test("abrir el ⚖ Pase Fundador con teclado anota el término", async ({ page }) => {
@@ -46,6 +55,23 @@ test("abrir el mismo ⚖ varias veces no repite la entrada", async ({ page }) =>
     await expect(page.getByRole("tooltip")).toHaveCount(0);
   }
   expect((await leerBitacora(page)).filter((e) => e.clave === "pasefundador")).toHaveLength(1);
+});
+
+test.describe("con pantalla táctil", () => {
+  test.use({ hasTouch: true });
+  test("tocar el ⚖ Pase Fundador anota el término", async ({ page }) => {
+    await page.goto("/sumarte");
+    await page.getByRole("button", { name: "Qué significa legalmente: Pase Fundador" }).first().tap();
+    await expect(page.getByRole("tooltip").filter({ hasText: "Pase Fundador" })).toBeVisible();
+    await expect.poll(async () => (await leerBitacora(page)).filter((e) => e.clave === "pasefundador").length).toBe(1);
+  });
+});
+
+test("una bitácora inválida no rompe /panel/bitacora", async ({ page }) => {
+  await page.addInitScript(() => window.localStorage.setItem("lh-bitacora", "esto no es json {"));
+  await page.goto("/panel/bitacora");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByText("Todavía no hay nada anotado en este navegador.")).toBeVisible();
 });
 
 test("la página muestra la fila del estado del loteo y descarga el JSON", async ({ page }) => {

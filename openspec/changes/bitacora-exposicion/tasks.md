@@ -23,4 +23,4 @@
 
 ## 5. Integración
 
-- [x] 5.1 `pnpm verificar` y `pnpm build` en verde; PR desde `agente/bitacora-exposicion` con guion de prueba (abrir el territorio → abrir dos ⚖ en `/sumarte` → `/panel/bitacora` → descargar → borrar todo) y captura de la tabla.
+- [ ] 5.1 `pnpm verificar` y `pnpm build` en verde; PR desde `agente/bitacora-exposicion` con guion de prueba (abrir el territorio → abrir dos ⚖ en `/sumarte` → `/panel/bitacora` → descargar → borrar todo) y captura de la tabla.
