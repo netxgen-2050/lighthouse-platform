@@ -3,7 +3,8 @@ import type { Tribu } from "./tipos";
 // Datos de ejemplo copiados de TRIBES en docs/referencia/netx-tribus-mockup-v6.html.
 const TRIBUS: Tribu[] = [
   {
-    id: "semilla", territorioId: "lighthouse",nombre: "Semilla Viva", iniciales: "SV", barrio: 1, foco: "Suelo y semillas", estado: "activa",
+    id: "semilla", territorioId: "lighthouse", plata: { comprometida: 140000, meta: 220000 }, roles: { cubiertos: 8, necesarios: 10 }, avales: 4,
+nombre: "Semilla Viva", iniciales: "SV", barrio: 1, foco: "Suelo y semillas", estado: "activa",
     hogares: "6 hogares · 14 personas", subtitulo: "Banco de semillas y huerta intensiva",
     declaracion: "Cuidamos el suelo y las semillas criollas para que todo el Lighthouse coma bien.",
     tiene: ["Huerta", "Compost", "Banco de semillas"], busca: ["Riego"],
@@ -11,7 +12,8 @@ const TRIBUS: Tribu[] = [
     pozo: ["200 kg de verdura por mes", "3.000 plantines por temporada"],
   },
   {
-    id: "barda", territorioId: "lighthouse",nombre: "Barda Productiva", iniciales: "BP", barrio: 2, foco: "Huerto y fermentación", estado: "activa",
+    id: "barda", territorioId: "lighthouse", plata: { comprometida: 520000, meta: 600000 }, roles: { cubiertos: 6, necesarios: 8 }, avales: 1,
+nombre: "Barda Productiva", iniciales: "BP", barrio: 2, foco: "Huerto y fermentación", estado: "activa",
     hogares: "4 hogares", subtitulo: "Olivos y vid · proyectos individuales",
     declaracion: "Producimos aceite y vino con manejo regenerativo, y abrimos la bodega a los vecinos.",
     tiene: ["Agronomía", "Enología", "Comercialización"], busca: ["Riego"],
@@ -19,13 +21,15 @@ const TRIBUS: Tribu[] = [
     pozo: ["120 litros de aceite por año", "Visitas guiadas a la bodega"],
   },
   {
-    id: "grano", territorioId: "lighthouse",nombre: "Barrio 3", iniciales: "+", barrio: 3, foco: "Granos y proteína", estado: "vacante",
+    id: "grano", territorioId: "lighthouse", plata: { comprometida: 0, meta: 260000 }, roles: { cubiertos: 0, necesarios: 10 }, avales: 0,
+nombre: "Barrio 3", iniciales: "+", barrio: 3, foco: "Granos y proteína", estado: "vacante",
     hogares: "lugar para 6–8 hogares",
     tiene: [], busca: ["Agricultura extensiva", "Animales", "Molienda"],
     ritual: "Convocatoria abierta: la tribu que llegue define su ritual.", formaJuridica: "A definir",
   },
   {
-    id: "monte", territorioId: "lighthouse",nombre: "Monte Nuevo", iniciales: "MN", barrio: 4, foco: "Bosque y materiales", estado: "formacion",
+    id: "monte", territorioId: "lighthouse", plata: { comprometida: 60000, meta: 300000 }, roles: { cubiertos: 4, necesarios: 9 }, avales: 2,
+nombre: "Monte Nuevo", iniciales: "MN", barrio: 4, foco: "Bosque y materiales", estado: "formacion",
     hogares: "3 hogares", subtitulo: "Forestación, madera y bioconstrucción",
     declaracion: "Plantamos el bosque que va a dar la madera y la paja de las casas del Lighthouse.",
     tiene: ["Forestación", "Carpintería"], busca: ["Bioconstrucción", "Maquinaria"],
@@ -33,7 +37,8 @@ const TRIBUS: Tribu[] = [
     pozo: ["Madera para 2 domos por año", "Talleres de bioconstrucción"],
   },
   {
-    id: "agua", territorioId: "lighthouse",nombre: "Agua Clara", iniciales: "AC", barrio: 5, foco: "Agua", estado: "formacion",
+    id: "agua", territorioId: "lighthouse", plata: { comprometida: 40000, meta: 180000 }, roles: { cubiertos: 3, necesarios: 7 }, avales: 3,
+nombre: "Agua Clara", iniciales: "AC", barrio: 5, foco: "Agua", estado: "formacion",
     hogares: "2 hogares + equipo técnico", subtitulo: "El servicio de agua de todo el Lighthouse",
     declaracion: "Diseñamos y cuidamos el agua común: toma, cisterna, riego y tratamiento.",
     tiene: ["Hidráulica"], busca: ["Plomería", "Tratamiento de aguas"],
@@ -41,7 +46,8 @@ const TRIBUS: Tribu[] = [
     pozo: ["Servicio de agua a los 12 barrios"],
   },
   {
-    id: "valle", territorioId: "lighthouse",nombre: "Valle Solar", iniciales: "VS", barrio: 6, foco: "Energía y circularidad", estado: "activa",
+    id: "valle", territorioId: "lighthouse", plata: { comprometida: 310000, meta: 480000 }, roles: { cubiertos: 9, necesarios: 14 }, avales: 5,
+nombre: "Valle Solar", iniciales: "VS", barrio: 6, foco: "Energía y circularidad", estado: "activa",
     hogares: "7 hogares · 18 personas", subtitulo: "Familias · solarpunk · consentimiento",
     declaracion: "Familias que quieren criar en comunidad, con energía y agua propias.",
     tiene: ["Huerta", "Carpintería", "Crianza compartida"], busca: ["Energía solar", "Bioconstrucción", "Eventos y comunidad"],
@@ -49,7 +55,8 @@ const TRIBUS: Tribu[] = [
     pozo: ["Energía solar para el núcleo común", "30 noches de hospedaje por año"],
   },
   {
-    id: "taller", territorioId: "lighthouse",nombre: "Taller Común", iniciales: "TC", barrio: 7, foco: "Oficios y reparación", estado: "activa",
+    id: "taller", territorioId: "lighthouse", plata: { comprometida: 90000, meta: 150000 }, roles: { cubiertos: 7, necesarios: 9 }, avales: 3,
+nombre: "Taller Común", iniciales: "TC", barrio: 7, foco: "Oficios y reparación", estado: "activa",
     hogares: "5 hogares", subtitulo: "Herrería, carpintería y reparación",
     declaracion: "Arreglamos, fabricamos y enseñamos. Nada se tira si se puede reparar.",
     tiene: ["Herrería", "Carpintería", "Electrónica"], busca: ["Textil"],
@@ -57,13 +64,15 @@ const TRIBUS: Tribu[] = [
     pozo: ["40 horas de taller por mes"],
   },
   {
-    id: "cuidado", territorioId: "lighthouse",nombre: "Barrio 8", iniciales: "+", barrio: 8, foco: "Cuidado", estado: "vacante",
+    id: "cuidado", territorioId: "lighthouse", plata: { comprometida: 0, meta: 200000 }, roles: { cubiertos: 0, necesarios: 9 }, avales: 0,
+nombre: "Barrio 8", iniciales: "+", barrio: 8, foco: "Cuidado", estado: "vacante",
     hogares: "lugar para 6 hogares",
     tiene: [], busca: ["Salud", "Crianza", "Acompañamiento de mayores"],
     ritual: "Convocatoria abierta: la tribu que llegue define su ritual.", formaJuridica: "A definir",
   },
   {
-    id: "escuela", territorioId: "lighthouse",nombre: "Escuela de la Tierra", iniciales: "ET", barrio: 9, foco: "Aprendizaje", estado: "formacion",
+    id: "escuela", territorioId: "lighthouse", plata: { comprometida: 70000, meta: 240000 }, roles: { cubiertos: 4, necesarios: 10 }, avales: 2,
+nombre: "Escuela de la Tierra", iniciales: "ET", barrio: 9, foco: "Aprendizaje", estado: "formacion",
     hogares: "3 hogares", subtitulo: "Escuela al aire libre y cursos",
     declaracion: "Una escuela para los chicos del Lighthouse y de los barrios vecinos.",
     tiene: ["Docencia", "Permacultura"], busca: ["Pedagogía Waldorf", "Administración"],
@@ -71,7 +80,8 @@ const TRIBUS: Tribu[] = [
     pozo: ["Cursos para vecinos", "Estadías de aprendizaje"],
   },
   {
-    id: "avelan", territorioId: "lighthouse",nombre: "Fundación Avelan Kerum", iniciales: "AK", barrio: 10, foco: "Cultura y vida interior", estado: "formacion",
+    id: "avelan", territorioId: "lighthouse", plata: { comprometida: 140000, meta: 650000 }, roles: { cubiertos: 5, necesarios: 12 }, avales: 2,
+nombre: "Fundación Avelan Kerum", iniciales: "AK", barrio: 10, foco: "Cultura y vida interior", estado: "formacion",
     hogares: "Núcleo en formación", subtitulo: "Ciudad consciente · comunidad online de más de 200 personas",
     declaracion: "Una comunidad que se organiza en áreas con representantes elegidos entre pares.",
     areas: ["Nutrición", "Educación", "Sanación", "Energía", "Intercambio", "Acuerdos", "Cuidado", "Comunicación", "Tecnología", "Encuentros"],
@@ -81,7 +91,8 @@ const TRIBUS: Tribu[] = [
     pozo: ["Retiros y encuentros abiertos"],
   },
   {
-    id: "puerto", territorioId: "lighthouse",nombre: "Puerto Trueque", iniciales: "PT", barrio: 11, foco: "Intercambio y hospitalidad", estado: "activa",
+    id: "puerto", territorioId: "lighthouse", plata: { comprometida: 260000, meta: 400000 }, roles: { cubiertos: 7, necesarios: 11 }, avales: 4,
+nombre: "Puerto Trueque", iniciales: "PT", barrio: 11, foco: "Intercambio y hospitalidad", estado: "activa",
     hogares: "5 hogares", subtitulo: "Hospedaje, mercado y eventos",
     declaracion: "La puerta de entrada del Lighthouse: hospedaje, mercado de los barrios y eventos.",
     tiene: ["Hospitalidad", "Cocina", "Eventos"], busca: ["Marketing"],
@@ -89,7 +100,8 @@ const TRIBUS: Tribu[] = [
     pozo: ["Noches para el Pase de estadías", "Mercado mensual"],
   },
   {
-    id: "guardia", territorioId: "lighthouse",nombre: "Guardianes del Monte", iniciales: "GM", barrio: 12, foco: "Ecología y biorregión", estado: "formacion",
+    id: "guardia", territorioId: "lighthouse", plata: { comprometida: 30000, meta: 120000 }, roles: { cubiertos: 3, necesarios: 6 }, avales: 3,
+nombre: "Guardianes del Monte", iniciales: "GM", barrio: 12, foco: "Ecología y biorregión", estado: "formacion",
     hogares: "2 hogares", subtitulo: "Monitoreo del bosque ribereño y del santuario",
     declaracion: "Cuidamos el bosque ribereño y medimos cómo mejora la tierra año a año.",
     tiene: ["Biología", "Monitoreo"], busca: ["Datos", "Guardaparques"],

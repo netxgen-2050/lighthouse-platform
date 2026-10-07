@@ -19,6 +19,12 @@ export type Tribu = {
   ritual: string;
   formaJuridica: string;
   pozo?: string[];
+  /** Plata en USD: comprometida y meta (dato de ejemplo; en los vacantes 0 es el ejemplo real). */
+  plata: { comprometida: number; meta: number };
+  /** Roles cubiertos y necesarios. */
+  roles: { cubiertos: number; necesarios: number };
+  /** Cantidad de avales de la red (ejemplo). */
+  avales: number;
 };
 
 export const TEXTO_ESTADO: Record<EstadoTribu, string> = {
