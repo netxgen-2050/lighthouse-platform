@@ -22,6 +22,7 @@ const base: Borrador = {
   descripcion: "Taller de compost",
   horas: "8",
   bienes: "",
+  monto: "",
   para: "semilla",
 };
 
@@ -72,6 +73,40 @@ describe("validar", () => {
     const r = validarCompromiso({ ...b, bienes: "  " }, "x");
     expect(r.ok && r.compromiso.cantidadBienes).toBeUndefined();
     expect(r.ok && r.compromiso.horasPorMes).toBeUndefined();
+  });
+});
+
+describe("plata", () => {
+  const p: Borrador = { ...base, clase: "plata", horas: "999", bienes: "x", monto: "500" };
+  test("monto válido guarda montoUsd y descarta lo de otras clases", () => {
+    const r = validarCompromiso(p, "x");
+    expect(r.ok && r.compromiso.montoUsd).toBe(500);
+    expect(r.ok && r.compromiso.horasPorMes).toBeUndefined();
+    expect(r.ok && r.compromiso.cantidadBienes).toBeUndefined();
+  });
+  test("monto 0, 1000001, 2,5 y texto no valen; 1 y 1000000 sí", () => {
+    for (const m of ["0", "1000001", "2,5", "-3", "abc"]) {
+      expect(errores({ ...p, monto: m })?.monto, m).toBeTruthy();
+    }
+    expect(errores({ ...p, monto: "1" })).toBeNull();
+    expect(errores({ ...p, monto: "1000000" })).toBeNull();
+  });
+  test("monto vacío no guarda monto y se describe como sin dato", () => {
+    const r = validarCompromiso({ ...p, monto: "" }, "x");
+    expect(r.ok && r.compromiso.montoUsd).toBeUndefined();
+    expect(r.ok && describirCompromiso(r.compromiso, [{ id: "semilla", nombre: "Semilla Viva" }])).toBe(
+      "Ofrezco · Plata · Taller de compost · sin dato · Para: Semilla Viva",
+    );
+  });
+  test("monto se describe en USD", () => {
+    const r = validarCompromiso(p, "x");
+    expect(r.ok && describirCompromiso(r.compromiso, [{ id: "semilla", nombre: "Semilla Viva" }])).toContain("USD 500");
+  });
+  test("cargar acepta la clase plata", () => {
+    const e: Compromiso[] = [
+      { id: "a", tipo: "ofrezco", clase: "plata", descripcion: "a", montoUsd: 5, para: "lighthouse", creado: "2026-10-07T10:00:00Z" },
+    ];
+    expect(cargar(JSON.stringify(e))).toEqual(e);
   });
 });
 

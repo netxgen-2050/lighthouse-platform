@@ -6,6 +6,8 @@ import { describirCompromiso, TEXTO_CLASE, TEXTO_LIGHTHOUSE, TEXTO_TIPO } from "
 import {
   MAX_BIENES,
   MAX_DESCRIPCION,
+  MAX_MONTO,
+  MIN_MONTO,
   PARA_LIGHTHOUSE,
   type Borrador,
   type ClaseCompromiso,
@@ -21,6 +23,7 @@ const VACIO: Borrador = {
   descripcion: "",
   horas: "",
   bienes: "",
+  monto: "",
   para: PARA_LIGHTHOUSE,
 };
 
@@ -79,8 +82,8 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
 
   function cambiarClase(clase: ClaseCompromiso) {
     // Al cambiar de clase se limpia la cantidad anterior para no mezclar unidades.
-    setB((x) => ({ ...x, clase, horas: "", bienes: "" }));
-    setErrores((e) => ({ ...e, horas: undefined, bienes: undefined }));
+    setB((x) => ({ ...x, clase, horas: "", bienes: "", monto: "" }));
+    setErrores((e) => ({ ...e, horas: undefined, bienes: undefined, monto: undefined }));
   }
 
   function enviar(ev: React.FormEvent) {
@@ -89,7 +92,7 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
     if (!r.ok) {
       setErrores(r.errores);
       anunciar("");
-      const primero = (["descripcion", "horas", "bienes"] as CampoError[]).find((k) => r.errores[k]);
+      const primero = (["descripcion", "horas", "bienes", "monto"] as CampoError[]).find((k) => r.errores[k]);
       if (primero) refs.current[primero]?.focus();
       return;
     }
@@ -176,6 +179,33 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
                 Error: {errores.horas}
               </p>
             )}
+          </div>
+        ) : b.clase === "plata" ? (
+          <div>
+            <label htmlFor="monto" className="font-medium">
+              Monto orientativo en USD <span className="font-normal text-muted">(opcional, de {MIN_MONTO} a {MAX_MONTO})</span>
+            </label>
+            <input
+              id="monto"
+              ref={(el) => {
+                refs.current.monto = el;
+              }}
+              type="text"
+              inputMode="numeric"
+              value={b.monto}
+              onChange={(e) => cambiar("monto", e.target.value)}
+              aria-invalid={errores.monto ? true : undefined}
+              aria-describedby={describe("monto")}
+              className={campo}
+            />
+            {errores.monto && (
+              <p id="err-monto" className="mt-1 text-sm font-medium text-warn-ink">
+                Error: {errores.monto}
+              </p>
+            )}
+            <p className="mt-1 text-sm text-muted">
+              Es solo una referencia: en el prototipo no se cobra ni se paga nada.
+            </p>
           </div>
         ) : (
           <div>

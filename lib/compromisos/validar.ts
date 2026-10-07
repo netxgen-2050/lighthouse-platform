@@ -2,12 +2,14 @@ import {
   MAX_BIENES,
   MAX_DESCRIPCION,
   MAX_HORAS,
+  MAX_MONTO,
   MIN_HORAS,
+  MIN_MONTO,
   type Borrador,
   type Compromiso,
 } from "./tipos";
 
-export type CampoError = "descripcion" | "horas" | "bienes";
+export type CampoError = "descripcion" | "horas" | "bienes" | "monto";
 
 export type ResultadoValidar =
   | { ok: true; compromiso: Compromiso }
@@ -36,6 +38,7 @@ export function validarCompromiso(
 
   let horasPorMes: number | undefined;
   let cantidadBienes: string | undefined;
+  let montoUsd: number | undefined;
 
   if (b.clase === "tiempo") {
     const t = b.horas.trim();
@@ -45,6 +48,16 @@ export function validarCompromiso(
         errores.horas = `Las horas por mes son un número entero entre ${MIN_HORAS} y ${MAX_HORAS}, o dejalo vacío.`;
       } else {
         horasPorMes = n;
+      }
+    }
+  } else if (b.clase === "plata") {
+    const t = b.monto.trim();
+    if (t !== "") {
+      const n = /^\d+$/.test(t) ? Number(t) : NaN;
+      if (!Number.isInteger(n) || n < MIN_MONTO || n > MAX_MONTO) {
+        errores.monto = `El monto es un número entero de USD entre ${MIN_MONTO} y ${MAX_MONTO}, o dejalo vacío.`;
+      } else {
+        montoUsd = n;
       }
     }
   } else {
@@ -68,5 +81,6 @@ export function validarCompromiso(
   };
   if (horasPorMes !== undefined) compromiso.horasPorMes = horasPorMes;
   if (cantidadBienes !== undefined) compromiso.cantidadBienes = cantidadBienes;
+  if (montoUsd !== undefined) compromiso.montoUsd = montoUsd;
   return { ok: true, compromiso };
 }

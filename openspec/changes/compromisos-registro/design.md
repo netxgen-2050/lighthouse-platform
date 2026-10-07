@@ -17,7 +17,7 @@ No hay cuentas ni base todavía. `perfil-entrevista` y `congreso-registro` ya es
 ## Decisions
 
 - **Archivos:**
-  - `lib/compromisos/tipos.ts`: `Compromiso = { id, tipo: "ofrezco" | "necesito", clase: "tiempo" | "bienes", descripcion, horasPorMes?: number, cantidadBienes?: string, para: "lighthouse" | idTribu, creado: string }`. El tipo `clase` es una unión cerrada **sin** `"plata"`, para que agregarla obligue a cambiar la spec.
+  - `lib/compromisos/tipos.ts`: `Compromiso = { id, tipo: "ofrezco" | "necesito", clase: "tiempo" | "bienes" | "plata", descripcion, horasPorMes?: number, cantidadBienes?: string, montoUsd?: number, para: "lighthouse" | idTribu, creado: string }`. La clase `"plata"` se agregó en la vuelta de corrección del 7-oct (fase de prototipo): monto orientativo en USD, entero de 1 a 1000000, opcional; nunca se cobra.
   - `lib/compromisos/validar.ts`: `validarCompromiso(borrador)` → `{ ok: true, compromiso } | { ok: false, errores: Record<campo, mensaje> }`.
   - `lib/compromisos/estado.ts`: reducer puro (`registrar`, `quitar`, `borrarTodo`, `cargar`).
   - `lib/compromisos/formato.ts`: `describirCompromiso(c, tribus)` → la línea que muestra la lista ("Ofrezco · Tiempo · … · 8 h/mes · Para: Semilla Viva"), con "sin dato" cuando falta la cantidad.

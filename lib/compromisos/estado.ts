@@ -33,12 +33,13 @@ function esCompromiso(x: unknown): x is Compromiso {
   return (
     typeof c.id === "string" &&
     (c.tipo === "ofrezco" || c.tipo === "necesito") &&
-    (c.clase === "tiempo" || c.clase === "bienes") &&
+    (c.clase === "tiempo" || c.clase === "bienes" || c.clase === "plata") &&
     typeof c.descripcion === "string" &&
     typeof c.para === "string" &&
     typeof c.creado === "string" &&
     (c.horasPorMes === undefined || typeof c.horasPorMes === "number") &&
-    (c.cantidadBienes === undefined || typeof c.cantidadBienes === "string")
+    (c.cantidadBienes === undefined || typeof c.cantidadBienes === "string") &&
+    (c.montoUsd === undefined || typeof c.montoUsd === "number")
   );
 }
 

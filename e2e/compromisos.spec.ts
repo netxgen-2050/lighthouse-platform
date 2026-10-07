@@ -49,16 +49,40 @@ for (const h of ["0", "161", "2,5"]) {
   });
 }
 
-test("sin opciones de plata", async ({ page }) => {
-  const clases = page.getByRole("group", { name: "Clase" }).getByRole("radio");
-  await expect(clases).toHaveCount(2);
-  await expect(page.getByRole("group", { name: "Clase" })).toContainText("Tiempo");
-  await expect(page.getByRole("group", { name: "Clase" })).toContainText("Bienes");
-  const texto = await page.locator("body").innerText();
-  for (const palabra of ["USD", "$", "plata", "monto", "aporte"]) {
-    expect(texto.toLowerCase()).not.toContain(palabra.toLowerCase());
-  }
+test("la clase Plata existe junto a Tiempo y Bienes", async ({ page }) => {
+  const grupo = page.getByRole("group", { name: "Clase" });
+  await expect(grupo.getByRole("radio")).toHaveCount(3);
+  await expect(grupo).toContainText("Tiempo");
+  await expect(grupo).toContainText("Bienes");
+  await expect(grupo).toContainText("Plata");
 });
+
+test("registrar plata con monto en USD", async ({ page }) => {
+  await page.getByRole("radio", { name: "Necesito" }).check();
+  await page.getByRole("radio", { name: "Plata" }).check();
+  await page.getByLabel("Descripción").fill("Fondo para semillas");
+  await page.getByLabel("Monto orientativo en USD").fill("500");
+  await page.getByRole("button", { name: "Registrar" }).click();
+  await expect(page.getByText("Necesito · Plata · Fondo para semillas · USD 500 · Para: El Lighthouse en general")).toBeVisible();
+});
+
+test("plata sin monto muestra sin dato", async ({ page }) => {
+  await registrar(page, { clase: "Plata", descripcion: "Aporte abierto" });
+  await expect(page.getByText(/Aporte abierto · sin dato/)).toBeVisible();
+});
+
+for (const m of ["0", "1000001", "2,5"]) {
+  test(`monto fuera de rango (${m}): error y nada agregado`, async ({ page }) => {
+    await page.getByRole("radio", { name: "Plata" }).check();
+    await page.getByLabel("Descripción").fill("Algo");
+    await page.getByLabel("Monto orientativo en USD").fill(m);
+    await page.getByRole("button", { name: "Registrar" }).click();
+    const campo = page.getByLabel("Monto orientativo en USD");
+    await expect(campo).toHaveAttribute("aria-describedby", "err-monto");
+    await expect(campo).toBeFocused();
+    await expect(page.getByText("Todavía no registraste compromisos.")).toBeVisible();
+  });
+}
 
 test("quitar uno y borrar todo", async ({ page }) => {
   await registrar(page, { descripcion: "Primero", horas: "2" });

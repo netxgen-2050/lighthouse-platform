@@ -15,7 +15,7 @@ export default function CompromisosPage() {
       </p>
       <h1 className="text-3xl font-semibold">Compromisos</h1>
       <p className="mt-2 mb-4 text-muted">
-        Registrá qué ofrecés y qué necesitás, en tiempo o en bienes.
+        Registrá qué ofrecés y qué necesitás, en tiempo, bienes o plata (montos orientativos; ningún pago es real).
       </p>
       <div className="grid gap-2">
         <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
