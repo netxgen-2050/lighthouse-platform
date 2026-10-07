@@ -45,3 +45,7 @@ export function resumenDeTerritorio(id: string): ResumenTerritorio | undefined {
     total: tribus.length,
   };
 }
+
+export function textoSuperficie(t: { superficie?: string }): string {
+  return t.superficie ? t.superficie : "sin dato";
+}
