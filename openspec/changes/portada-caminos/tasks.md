@@ -18,4 +18,4 @@
 
 ## 4. Integración
 
-- [ ] 4.1 `pnpm verificar` y `pnpm build` en verde; PR desde `agente/portada-caminos` con guion de prueba (portada → cada camino → volver) y captura de la portada en escritorio y en móvil. Probar sobre el preview con `BASE_URL=<url de scripts/preview-url.sh agente/portada-caminos> pnpm test:e2e e2e/portada.spec.ts`. (Pendiente: capturas y prueba sobre preview.)
+- [x] 4.1 `pnpm verificar` y `pnpm build` en verde; PR desde `agente/portada-caminos` con guion de prueba (portada → cada camino → volver) y captura de la portada en escritorio y en móvil. Probar sobre el preview con `BASE_URL=<url de scripts/preview-url.sh agente/portada-caminos> pnpm test:e2e e2e/portada.spec.ts`. (Hecho: e2e sobre el preview 8/8; capturas de escritorio y móvil en `.noches/tmp/portada-escritorio.png` y `portada-movil.png`, ignoradas por git.)
