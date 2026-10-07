@@ -44,7 +44,9 @@ export const TABLA: Record<Puerta, Record<Columna, Celda | null>> = {
     pase: { grado: "visita" },
     tribu: { grado: "completa", soloSuTribu: true },
     presencia: null,
-    residente: { grado: "completa" },
+    // Decisión de Gus (7-oct-2026): ser residente no abre salas de tribu. Un residente
+    // entra a la sala de su tribu (o de sus tribus) por la columna "tribu".
+    residente: null,
   },
   "canal-fundadores": {
     explorador: null, miembro: null, pase: A, tribu: null, presencia: null, residente: null,
@@ -55,7 +57,8 @@ export const TABLA: Record<Puerta, Record<Columna, Celda | null>> = {
     pase: null,
     tribu: { grado: "segun estatuto", soloSuTribu: true },
     presencia: null,
-    residente: A,
+    // Decisión de Gus (7-oct-2026): la voz en una tribu sale solo de ser miembro de esa tribu.
+    residente: null,
   },
   "voz-fondo-comun": {
     explorador: null,

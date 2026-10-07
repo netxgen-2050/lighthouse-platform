@@ -30,15 +30,16 @@ function solo(col: Columna, pase: Pase = "semilla"): Persona {
 }
 
 const N = null;
-// Escrito a mano desde la nota 18 §3. Orden de columnas:
+// Escrito a mano desde la nota 18 §3, con la decisión de Gus del 7-oct-2026 sobre residentes.
+// Orden de columnas:
 // explorador, miembro, pase, tribu, presencia, residente.
 const ESPERADO: Record<Puerta, Array<string | null>> = {
   "mapa-tribus-eventos": ["abierta", "abierta", "abierta", "abierta", "abierta", "abierta"],
   "registrar-ticket": ["abierta", "abierta", "abierta", "abierta", N, "abierta"],
   "foros-red": [N, "abierta", "abierta", "abierta", "abierta", "abierta"],
-  "sala-tribu": [N, "visita", "visita", "completa", N, "completa"],
+  "sala-tribu": [N, "visita", "visita", "completa", N, N],
   "canal-fundadores": [N, N, "abierta", N, N, N],
-  "voz-tribu": [N, N, N, "segun estatuto", N, "abierta"],
+  "voz-tribu": [N, N, N, "segun estatuto", N, N],
   "voz-fondo-comun": [N, N, "1 voz", N, N, N],
   "voto-asamblea-residentes": [N, N, N, N, N, "1 persona = 1 voto"],
   creditos: [N, N, "abierta", N, N, N],

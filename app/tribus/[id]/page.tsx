@@ -24,13 +24,13 @@ function Etiquetas({ items }: { items: string[] }) {
   return (
     <ul className="flex flex-wrap gap-2">
       {items.map((i) => (
-        <li key={i} className="rounded-full border border-stone-400 px-3 py-1 text-sm">{i}</li>
+        <li key={i} className="rounded-full border border-faint px-3 py-1 text-sm">{i}</li>
       ))}
     </ul>
   );
 }
 
-const tarjeta = "grid content-start gap-3 rounded-xl border border-stone-400 p-4";
+const tarjeta = "grid content-start gap-3 rounded-xl border border-faint bg-surface p-4";
 
 export default async function TribuPage({ params }: Props) {
   const t = buscarTribu((await params).id);
@@ -44,10 +44,10 @@ export default async function TribuPage({ params }: Props) {
 
   if (t.estado === "vacante") {
     return (
-      <main className="mx-auto max-w-4xl p-6 sm:p-10">
+      <div className="mx-auto max-w-4xl p-6 sm:p-10">
         {volver}
         <h1 className="text-3xl font-semibold">Barrio {t.barrio} busca tribu</h1>
-        <p className="mt-2 mb-4 text-stone-700">
+        <p className="mt-2 mb-4 text-muted">
           Un barrio del Lighthouse para una tribu de {t.foco}, con {t.hogares}.
         </p>
         <AvisoEjemplo />
@@ -55,26 +55,26 @@ export default async function TribuPage({ params }: Props) {
           <h2 className="text-lg font-semibold">Lo que el Lighthouse necesita de este barrio</h2>
           <Etiquetas items={t.busca} />
         </section>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="mx-auto max-w-5xl p-6 sm:p-10">
+    <div className="mx-auto max-w-5xl p-6 sm:p-10">
       {volver}
-      <p className="text-sm text-stone-700">Barrio {t.barrio} · {t.foco}</p>
+      <p className="text-sm text-muted">Barrio {t.barrio} · {t.foco}</p>
       <div className="mt-2 mb-4 flex items-center gap-4">
         <SelloTribu iniciales={t.iniciales} estado={t.estado} grande />
         <div>
           <h1 className="text-3xl font-semibold">{t.nombre}</h1>
-          {t.declaracion && <p className="mt-1 text-stone-700">{t.declaracion}</p>}
+          {t.declaracion && <p className="mt-1 text-muted">{t.declaracion}</p>}
         </div>
       </div>
       <AvisoEjemplo />
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         <section className={tarjeta}>
           <h2 className="text-lg font-semibold">Lo que tiene</h2>
-          <p className="text-sm text-stone-600">{t.hogares}</p>
+          <p className="text-sm text-muted">{t.hogares}</p>
           <Etiquetas items={t.tiene} />
         </section>
         <section className={tarjeta}>
@@ -89,7 +89,7 @@ export default async function TribuPage({ params }: Props) {
                   return (
                     <li
                       key={a}
-                      className={`rounded-full border px-3 py-1 text-sm ${abierta ? "border-amber-800 bg-amber-100 font-semibold" : "border-stone-400"}`}
+                      className={`rounded-full border px-3 py-1 text-sm ${abierta ? "border-gold-ink bg-gold-soft font-semibold" : "border-faint"}`}
                     >
                       {a}
                       {abierta && " (abierta)"}
@@ -125,6 +125,6 @@ export default async function TribuPage({ params }: Props) {
           <TerminoLegal clave="personeria" />
         </p>
       </section>
-    </main>
+    </div>
   );
 }
