@@ -33,7 +33,6 @@ export function EstadoAdministrativo({ proyecto, compacto = false }: { proyecto:
         Titular: {e.titular} · Expediente: {textoExpediente(e)} · Aprobación municipal:{" "}
         {e.aprobacionMunicipal ? "aprobada" : "pendiente"}
       </p>
-      <p>Mientras no haya aprobación municipal, los lotes no se pueden reservar, señar ni comprar.</p>
     </section>
   );
 }
