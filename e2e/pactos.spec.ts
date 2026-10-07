@@ -49,7 +49,8 @@ test("enviar, aceptar y seguir aceptado al recargar", async ({ page }) => {
 test("no manda datos a un servidor", async ({ page }) => {
   const pedidos: string[] = [];
   page.on("request", (r) => {
-    if (r.method() !== "GET") pedidos.push(r.url());
+    // La barra de comentarios de Vercel (vercel.live) solo existe en los previews: no es la app.
+    if (r.method() !== "GET" && !new URL(r.url()).hostname.endsWith("vercel.live")) pedidos.push(r.url());
   });
   await page.goto("/pactos");
   await page.getByRole("button", { name: "Enviar a la tribu" }).click();
