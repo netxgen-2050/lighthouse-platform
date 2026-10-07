@@ -114,6 +114,19 @@ test("borrar todo: confirma, vacía el panel y las tres pantallas", async ({ pag
   await expect(page.getByLabel(/Código de tu ticket/)).toBeVisible();
 });
 
+test("borrar dos veces seguidas vuelve a montar el mensaje de la región de estado", async ({ page }) => {
+  await page.goto("/panel");
+  page.on("dialog", (d) => void d.accept());
+  const boton = page.getByRole("button", { name: "Borrar todo lo de este navegador" });
+  const mensaje = page.getByRole("status").locator("[data-borrado]");
+  await boton.click();
+  await expect(mensaje).toHaveAttribute("data-borrado", "1");
+  await expect(mensaje).toContainText("se borró todo");
+  await boton.click();
+  await expect(mensaje).toHaveAttribute("data-borrado", "2");
+  await expect(mensaje).toContainText("se borró todo");
+});
+
 test("cancelar el borrado no borra nada", async ({ page }) => {
   await perfil(page, 3, 2);
   await page.goto("/panel");

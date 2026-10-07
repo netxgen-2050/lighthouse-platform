@@ -24,7 +24,7 @@ export function Resumen() {
   const [listo, setListo] = useState(false);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [resumen, setResumen] = useState<ResumenDemo | null>(null);
-  const [mensaje, setMensaje] = useState("");
+  const [mensaje, setMensaje] = useState({ n: 0, texto: "" });
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
@@ -45,11 +45,14 @@ export function Resumen() {
       setFalloAlmacen(true);
       return;
     }
-    setMensaje(
-      fallidas.length > 0
-        ? "Error: no se pudo borrar todo. Algunos datos siguen guardados en este navegador."
-        : "Listo: se borró todo lo guardado en este navegador.",
-    );
+    // El número cambia en cada borrado: el texto se vuelve a montar y la región de estado lo anuncia otra vez.
+    setMensaje((previo) => ({
+      n: previo.n + 1,
+      texto:
+        fallidas.length > 0
+          ? "Error: no se pudo borrar todo. Algunos datos siguen guardados en este navegador."
+          : "Listo: se borró todo lo guardado en este navegador.",
+    }));
   }
 
   const aviso = (
@@ -134,7 +137,9 @@ export function Resumen() {
         >
           Borrar todo lo de este navegador
         </button>
-        <p role="status" className="text-sm font-medium">{mensaje}</p>
+        <p role="status" className="text-sm font-medium">
+          <span key={mensaje.n} data-borrado={mensaje.n}>{mensaje.texto}</span>
+        </p>
       </div>
     </div>
   );
