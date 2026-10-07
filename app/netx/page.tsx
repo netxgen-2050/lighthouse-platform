@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { TerminoLegal } from "@/components/termino-legal";
-import { anchoBarra, conversiones, formatear, porcentaje } from "@/lib/vista-netx/calculos";
+import { anchoBarra, anchoMedidor, conversiones, formatear, porcentaje } from "@/lib/vista-netx/calculos";
 import { ALERTAS, EMBUDO, EMISION, INDICADORES, TRIBUS_POR_PROYECTO } from "@/lib/vista-netx/datos";
 
 export const metadata: Metadata = { title: "Vista NetX" };
@@ -19,7 +19,7 @@ function Medidor({ etiqueta, actual, maximo, dorado }: { etiqueta: string; actua
         </span>
       </p>
       <div aria-hidden="true" className="mt-1 h-2 rounded-full bg-surface-2">
-        <div className={`h-2 rounded-full ${dorado ? "bg-gold" : "bg-green"}`} style={{ width: `${pct ?? 0}%` }} />
+        <div className={`h-2 rounded-full ${dorado ? "bg-gold" : "bg-green"}`} style={{ width: `${anchoMedidor(pct)}%` }} />
       </div>
     </div>
   );
@@ -63,7 +63,12 @@ export default function NetxPage() {
                   <span>{e.etiqueta}</span>
                   <span>
                     <strong>{formatear(e.valor)}</strong>
-                    {conv[i] !== null && <span className="text-muted"> · {conv[i]}% de la etapa anterior</span>}
+                    {i > 0 && (
+                      <span className="text-muted">
+                        {" · "}
+                        {conv[i] === null ? "sin dato de la etapa anterior" : `${conv[i]}% de la etapa anterior`}
+                      </span>
+                    )}
                   </span>
                 </p>
                 <div aria-hidden="true" className="mt-1 h-3 rounded-full bg-surface-2">

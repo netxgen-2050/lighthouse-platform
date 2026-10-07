@@ -15,6 +15,11 @@ export function anchoBarra(valor: number, maximo: number): number {
   return Math.max(1.5, Math.min(100, p));
 }
 
+/** Ancho del relleno de un medidor: sin dato queda vacío y nunca pasa del 100 %. */
+export function anchoMedidor(pct: number | null): number {
+  return Math.min(100, Math.max(0, pct ?? 0));
+}
+
 export function formatear(n: number | null | undefined): string {
   return n == null || Number.isNaN(n) ? "sin dato" : n.toLocaleString("es-AR");
 }

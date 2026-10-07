@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { TERMINOS } from "@/lib/legal/terminos";
-import { anchoBarra, conversiones, formatear, porcentaje } from "./calculos";
+import { anchoBarra, anchoMedidor, conversiones, formatear, porcentaje } from "./calculos";
 import { ALERTAS, EMBUDO, TRIBUS_POR_PROYECTO } from "./datos";
 
 const mock = readFileSync(path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"), "utf8");
@@ -24,6 +24,11 @@ describe("barras y formato", () => {
   it("la barra mayor ocupa todo y ninguna desaparece", () => {
     expect(anchoBarra(3240, 3240)).toBe(100);
     expect(anchoBarra(0, 3240)).toBe(1.5);
+  });
+  it("el medidor nunca pasa del 100 % ni baja de 0", () => {
+    expect(anchoMedidor(porcentaje(37, 35))).toBe(100);
+    expect(anchoMedidor(63)).toBe(63);
+    expect(anchoMedidor(null)).toBe(0);
   });
   it("el dato que falta dice sin dato", () => {
     expect(formatear(null)).toBe("sin dato");
