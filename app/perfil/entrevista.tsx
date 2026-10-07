@@ -7,9 +7,9 @@ import { CHATS } from "@/lib/perfil/preguntas";
 
 const CLAVE = "lh-perfil-entrevista";
 const BOTON =
-  "rounded-lg border border-stone-600 px-3 py-1.5 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-800";
+  "rounded-lg border border-muted px-3 py-1.5 hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 const BOTON_PRINCIPAL =
-  "rounded-lg bg-emerald-800 px-4 py-1.5 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-800";
+  "rounded-lg bg-deep px-4 py-1.5 text-on-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
 export function Entrevista() {
   const [estado, despachar] = useReducer(reducir, ESTADO_INICIAL);
@@ -102,33 +102,33 @@ export function Entrevista() {
     setEditando(null);
   }
 
-  if (!listo) return <p className="text-stone-700">Cargando…</p>;
+  if (!listo) return <p className="text-muted">Cargando…</p>;
 
   return (
     <div className="grid gap-6 md:grid-cols-[1fr_20rem]">
-      <section aria-labelledby="conversacion" className="grid content-start gap-3 rounded-xl border border-stone-400 p-4">
+      <section aria-labelledby="conversacion" className="grid content-start gap-3 rounded-xl border border-faint bg-surface p-4">
         <h2 id="conversacion" className="text-xl font-semibold">Conversación</h2>
         <div aria-live="polite" className="grid gap-3">
           {estado.items.map((item, i) => (
             <div key={i} className="grid gap-2">
-              <p className="rounded-lg bg-stone-100 px-3 py-2">
-                <span className="block text-xs font-medium text-stone-700">Agente NetX</span>
+              <p className="rounded-lg bg-surface-2 px-3 py-2">
+                <span className="block text-xs font-medium text-muted">Agente NetX</span>
                 {CHATS[i].texto}
               </p>
-              <p className="justify-self-end rounded-lg border border-emerald-800 px-3 py-2">
-                <span className="block text-xs font-medium text-stone-700">Vos</span>
+              <p className="justify-self-end rounded-lg border border-deep px-3 py-2">
+                <span className="block text-xs font-medium text-muted">Vos</span>
                 {item.respuesta}
               </p>
             </div>
           ))}
           {completa ? (
-            <p className="rounded-lg bg-stone-100 px-3 py-2">
-              <span className="block text-xs font-medium text-stone-700">Agente NetX</span>
+            <p className="rounded-lg bg-surface-2 px-3 py-2">
+              <span className="block text-xs font-medium text-muted">Agente NetX</span>
               ¡Gracias! Terminamos la entrevista. Podés revisar y confirmar los datos de tu perfil.
             </p>
           ) : (
-            <p className="rounded-lg bg-stone-100 px-3 py-2">
-              <span className="block text-xs font-medium text-stone-700">
+            <p className="rounded-lg bg-surface-2 px-3 py-2">
+              <span className="block text-xs font-medium text-muted">
                 Agente NetX · pregunta {n + 1} de {CHATS.length}
               </span>
               {CHATS[n].texto}
@@ -139,7 +139,7 @@ export function Entrevista() {
           <Link ref={enlaceRef} className={`${BOTON_PRINCIPAL} w-fit`} href="/tribus">Ver las tribus</Link>
         ) : (
           <form onSubmit={responder} noValidate className="grid gap-2">
-            <label htmlFor="respuesta" className="text-sm text-stone-700">Tu respuesta</label>
+            <label htmlFor="respuesta" className="text-sm text-muted">Tu respuesta</label>
             <textarea
               id="respuesta"
               ref={campoRef}
@@ -148,10 +148,10 @@ export function Entrevista() {
               onChange={(e) => setTexto(e.target.value)}
               aria-invalid={error}
               aria-describedby={error ? "error-respuesta" : undefined}
-              className="rounded-lg border border-stone-600 px-3 py-1.5"
+              className="rounded-lg border border-muted bg-surface px-3 py-1.5"
             />
             {error && (
-              <p id="error-respuesta" role="alert" className="text-sm font-medium text-red-800">
+              <p id="error-respuesta" role="alert" className="text-sm font-medium text-danger">
                 Error: escribí una respuesta para seguir.
               </p>
             )}
@@ -160,27 +160,27 @@ export function Entrevista() {
         )}
       </section>
 
-      <aside aria-labelledby="tu-perfil" className="grid content-start gap-3 rounded-xl border border-stone-400 p-4">
+      <aside aria-labelledby="tu-perfil" className="grid content-start gap-3 rounded-xl border border-faint bg-surface p-4">
         <div className="flex items-baseline justify-between">
           <h2 id="tu-perfil" className="text-xl font-semibold">Tu perfil</h2>
-          <span className="text-sm text-stone-700" data-testid="avance">
+          <span className="text-sm text-muted" data-testid="avance">
             {confirmados}/{CHATS.length} confirmados
           </span>
         </div>
         <progress className="w-full" max={CHATS.length} value={confirmados} aria-label="Datos confirmados" />
-        <p className="rounded-lg border border-dashed border-stone-500 bg-amber-50 px-3 py-2 text-sm text-stone-800">
+        <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
           Tus respuestas quedan solo en este navegador.
         </p>
         {falloAlmacen && (
-          <p role="alert" className="text-sm font-medium text-red-800">
+          <p role="alert" className="text-sm font-medium text-danger">
             Error: tu navegador no permite guardar datos en este sitio, así que tus respuestas se pierden al recargar.
           </p>
         )}
-        {n === 0 && <p className="text-sm text-stone-700">Los datos aparecen acá a medida que conversan.</p>}
+        {n === 0 && <p className="text-sm text-muted">Los datos aparecen acá a medida que conversan.</p>}
         <ul className="grid gap-3">
           {estado.items.map((item, i) => (
-            <li key={i} className="grid gap-1 rounded-lg border border-stone-400 p-3">
-              <span className="text-sm font-medium text-stone-700">{CHATS[i].etiqueta}</span>
+            <li key={i} className="grid gap-1 rounded-lg border border-faint p-3">
+              <span className="text-sm font-medium text-muted">{CHATS[i].etiqueta}</span>
               {editando === i ? (
                 <form onSubmit={(e) => confirmarCorreccion(e, i)} noValidate className="grid gap-2">
                   <label htmlFor={`corregir-${i}`} className="text-sm">
@@ -193,10 +193,10 @@ export function Entrevista() {
                     aria-invalid={errorEdicion}
                     aria-describedby={errorEdicion ? `error-corregir-${i}` : undefined}
                     autoFocus
-                    className="rounded-lg border border-stone-600 px-3 py-1.5"
+                    className="rounded-lg border border-muted bg-surface px-3 py-1.5"
                   />
                   {errorEdicion && (
-                    <p id={`error-corregir-${i}`} role="alert" className="text-sm font-medium text-red-800">
+                    <p id={`error-corregir-${i}`} role="alert" className="text-sm font-medium text-danger">
                       Error: el dato no puede quedar vacío.
                     </p>
                   )}
@@ -211,7 +211,7 @@ export function Entrevista() {
                   {item.confirmado !== null ? (
                     <span className="text-sm font-medium"><span aria-hidden="true">✓ </span>Confirmado</span>
                   ) : (
-                    <span className="text-sm text-stone-700">Propuesto: falta que lo confirmes</span>
+                    <span className="text-sm text-muted">Propuesto: falta que lo confirmes</span>
                   )}
                   <div className="flex gap-2">
                     {item.confirmado === null && (
