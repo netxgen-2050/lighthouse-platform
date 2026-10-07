@@ -2,7 +2,7 @@
 
 ## Context
 
-No hay cuentas ni base todavía. `perfil-entrevista` y `congreso-registro` ya establecieron el patrón "modo demostración en `localStorage` con aviso visible y botón de borrar". Este cambio lo reutiliza para compromisos de tiempo y bienes.
+No hay cuentas ni base todavía. `perfil-entrevista` y `congreso-registro` ya establecieron el patrón "modo demostración en `localStorage` con aviso visible y botón de borrar". Este cambio lo reutiliza para compromisos de tiempo, bienes y plata orientativa.
 
 ## Goals / Non-Goals
 
@@ -11,7 +11,7 @@ No hay cuentas ni base todavía. `perfil-entrevista` y `congreso-registro` ya es
 - Separar lógica pura (testeable con Vitest) de la página.
 
 **Non-Goals:**
-- Plata, persistencia en servidor, compromisos de tribus, pozo común, emparejamiento.
+- Cobros reales, persistencia en servidor, compromisos de tribus, pozo común, emparejamiento.
 - Leyendas legales ("no vinculante" u otras): las decide Gabriel.
 
 ## Decisions
@@ -29,6 +29,6 @@ No hay cuentas ni base todavía. `perfil-entrevista` y `congreso-registro` ya es
 
 ## Risks / Trade-offs
 
-- [Alguien escribe un monto en la descripción] → no se valida el texto libre (sería frágil); la UI nunca sugiere plata y la spec lo deja fuera. Si Gus quiere un filtro, va en otro cambio.
+- [Alguien escribe un monto en la descripción] → no se valida el texto libre (sería frágil); el monto tiene su propio campo en la clase Plata y la nota de que no se cobra nada. Si Gus quiere un filtro, va en otro cambio.
 - [Sin leyenda legal, alguien puede leer "compromiso" como obligación] → el aviso deja claro que es una demostración local; la leyenda definitiva queda como pregunta para Gabriel antes de guardar datos reales.
 - [Conflicto con otras ramas que tocan el encabezado] → el cambio en el encabezado es un ítem más del arreglo de enlaces.

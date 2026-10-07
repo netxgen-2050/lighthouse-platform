@@ -4,7 +4,7 @@
 
 ## 1. Lógica
 
-- [x] 1.1 Crear `lib/compromisos/tipos.ts`, `validar.ts`, `estado.ts` y `formato.ts` según el design (unión `clase` sin plata). Verificar con `pnpm exec tsc --noEmit`.
+- [x] 1.1 Crear `lib/compromisos/tipos.ts`, `validar.ts`, `estado.ts` y `formato.ts` según el design (unión `clase`: tiempo, bienes y, desde 6.2, plata). Verificar con `pnpm exec tsc --noEmit`.
 - [x] 1.2 Tests de Vitest en `lib/compromisos/*.test.ts`: descripción vacía y de 141 caracteres; horas 0, 161, 2,5 y vacías; bienes de 61 caracteres; registrar/quitar/borrar todo; orden más reciente primero; `describirCompromiso` con y sin cantidad ("sin dato") y con destino Lighthouse o tribu; `cargar` con JSON inválido devuelve lista vacía. Verificar con `pnpm test`.
 
 ## 2. Página
@@ -15,7 +15,7 @@
 
 ## 3. E2E
 
-- [x] 3.1 Escribir `e2e/compromisos.spec.ts` con todos los escenarios de la spec, incluidos "sin opciones de plata" (opciones de Clase y ausencia de `USD`, `$`, "plata", "monto", "aporte" en el texto), "sin pedidos al servidor" (escuchar `page.on("request")` y verificar que ninguna URL ni cuerpo contiene las descripciones), recarga, solo teclado y exactamente un `main`. Verificar con `pnpm test:e2e e2e/compromisos.spec.ts`.
+- [x] 3.1 Escribir `e2e/compromisos.spec.ts` con todos los escenarios de la spec, incluidos "clases disponibles" (Tiempo, Bienes y Plata; ver 6.2), la nota "no se cobra ni se paga nada", los avisos de demostración y de ejemplo, "sin pedidos al servidor" (escuchar `page.on("request")` y verificar que ninguna URL ni cuerpo contiene las descripciones), recarga, solo teclado y exactamente un `main`. Verificar con `pnpm test:e2e e2e/compromisos.spec.ts`.
 
 ## 4. Integración
 

@@ -61,6 +61,7 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
     }
   }, [lista, cargado]);
 
+  const tituloLista = useRef<HTMLHeadingElement | null>(null);
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
@@ -258,13 +259,19 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
 
       <section aria-labelledby="titulo-lista" className="-mt-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 id="titulo-lista" className="text-xl font-semibold">Tus compromisos</h2>
+          <h2
+            id="titulo-lista"
+            ref={tituloLista}
+            tabIndex={-1}
+            className="text-xl font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+          >Tus compromisos</h2>
           {lista.length > 0 && (
             <button
               type="button"
               onClick={() => {
                 despachar({ tipo: "borrarTodo" });
-                anunciar("");
+                tituloLista.current?.focus();
+                anunciar("Se borraron todos los compromisos.");
               }}
               className={`${boton} border border-faint bg-surface hover:bg-surface-2`}
             >
@@ -287,7 +294,8 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
                   aria-label={`Quitar ${c.descripcion}`}
                   onClick={() => {
                     despachar({ tipo: "quitar", id: c.id });
-                    anunciar("");
+                    tituloLista.current?.focus();
+                    anunciar("Compromiso quitado.");
                   }}
                   className={`${boton} border border-faint bg-surface hover:bg-surface-2`}
                 >

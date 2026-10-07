@@ -92,8 +92,22 @@ test("quitar uno y borrar todo", async ({ page }) => {
   await page.getByRole("button", { name: "Quitar Segundo" }).click();
   await expect(page.getByText("Segundo")).toHaveCount(0);
   await expect(page.getByText(/Primero/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Tus compromisos" })).toBeFocused();
+  await expect(page.getByRole("status")).toHaveText("Compromiso quitado.");
   await page.getByRole("button", { name: "Borrar todo" }).click();
   await expect(page.getByText("Todavía no registraste compromisos.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Tus compromisos" })).toBeFocused();
+  await expect(page.getByRole("status")).toHaveText("Se borraron todos los compromisos.");
+});
+
+test("avisos de la página y nota de plata", async ({ page }) => {
+  await expect(
+    page.getByText("Modo demostración: lo que registres queda solo en este navegador."),
+  ).toBeVisible();
+  await expect(page.getByText("Tribus, personas y cifras de ejemplo.")).toBeVisible();
+  await expect(page.getByText("no se cobra ni se paga nada")).toHaveCount(0);
+  await page.getByRole("radio", { name: "Plata" }).check();
+  await expect(page.getByText(/no se cobra ni se paga nada/)).toBeVisible();
 });
 
 test("recargar conserva los compromisos", async ({ page }) => {

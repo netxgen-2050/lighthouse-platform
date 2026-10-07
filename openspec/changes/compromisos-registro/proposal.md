@@ -2,7 +2,7 @@
 
 ## Why
 
-La actualización del roadmap del 6-oct suma a la It.1 un **registro de compromisos básico** (nota 18, §1 punto 6 y §6 punto 6): de octubre a enero, personas y tribus registran **necesidades** y **ofertas** sin mover plata, como primera pieza del MVP de febrero. Es lo que después alimenta el pozo común de cada tribu y la Ronda 0. Queremos validar la experiencia de registrar "qué ofrezco / qué necesito" en el preview, en **modo demostración** y **solo con tiempo y bienes**, antes de tener cuentas y base de datos.
+La actualización del roadmap del 6-oct suma a la It.1 un **registro de compromisos básico** (nota 18, §1 punto 6 y §6 punto 6): de octubre a enero, personas y tribus registran **necesidades** y **ofertas** sin cobrar nada de verdad, como primera pieza del MVP de febrero. Es lo que después alimenta el pozo común de cada tribu y la Ronda 0. Queremos validar la experiencia de registrar "qué ofrezco / qué necesito" en el preview, en **modo demostración** y **con tiempo, bienes o plata (monto orientativo, pagos simulados)**, antes de tener cuentas y base de datos.
 
 ## What Changes
 
@@ -28,7 +28,7 @@ La actualización del roadmap del 6-oct suma a la It.1 un **registro de compromi
 ## Capabilities
 
 ### New Capabilities
-- `compromisos-registro`: registrar, ver y quitar ofertas y necesidades de tiempo y bienes (modo demostración).
+- `compromisos-registro`: registrar, ver y quitar ofertas y necesidades de tiempo, bienes y plata orientativa (modo demostración).
 
 ### Modified Capabilities
 
