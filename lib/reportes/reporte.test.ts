@@ -96,6 +96,24 @@ describe("issue", () => {
     expect(todo).toContain("gus");
     expect(todo).toContain("12");
   });
+  it("URL y ruta quedan exactas, entre comillas invertidas", () => {
+    const url = "http://x.test/tribus/@algo?q=1#2";
+    const contexto = armarContexto({
+      url,
+      titulo: "T",
+      ancho: 1,
+      alto: 1,
+      navegador: "UA",
+      version: "v",
+      entorno: "local",
+    });
+    const r = validarReporte({ ...valido, contexto });
+    if (!r.ok) throw new Error("debía ser válido");
+    const cuerpo = armarCuerpo(r.reporte);
+    expect(cuerpo).toContain(`- URL: \`${url}\``);
+    expect(cuerpo).toContain("- Ruta: `/tribus/@algo?q=1`");
+    expect(cuerpo).not.toContain("​");
+  });
   it("acorta títulos largos", () => {
     const t = armarTitulo({ tipo: "idea", quePaso: "palabra ".repeat(50) });
     expect(t.length).toBeLessThanOrEqual(90);

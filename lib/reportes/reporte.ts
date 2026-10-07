@@ -154,6 +154,11 @@ export function neutralizar(t: string): string {
   return t.replace(/(?<![\w.])@(?=\w)/g, "@​").replace(/#(?=\d)/g, "#​");
 }
 
+/** URL y ruta van entre comillas invertidas: no se interpretan menciones y el texto queda exacto. */
+function enCodigo(t: string): string {
+  return `\`${t.replace(/`/g, "%60")}\``;
+}
+
 export function armarTitulo(r: Pick<Reporte, "tipo" | "quePaso">): string {
   const plano = r.quePaso.replace(/\s+/g, " ").trim();
   const palabras = plano.split(" ").slice(0, 10).join(" ");
@@ -176,8 +181,8 @@ export function armarCuerpo(r: Reporte): string {
     `**Contacto:** ${n(r.contacto || "sin dato")}`,
     "",
     "**Contexto**",
-    `- URL: ${n(c.url)}`,
-    `- Ruta: ${n(c.ruta)}`,
+    `- URL: ${enCodigo(c.url)}`,
+    `- Ruta: ${enCodigo(c.ruta)}`,
     `- Título de la página: ${n(c.titulo)}`,
     `- Pantalla: ${n(c.pantalla)}`,
     `- Navegador: ${n(c.navegador)}`,

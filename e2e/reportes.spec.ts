@@ -154,14 +154,19 @@ test("si falla copiar al portapapeles, lo avisa", async ({ page }) => {
 });
 
 test("el token no aparece en el HTML ni en el código que recibe el navegador", async ({ page }) => {
-  const textos: string[] = [];
-  page.on("response", async (res) => {
+  // Limitación: contra un preview con token real solo se comprueba que el valor no está en lo
+  // que recibe el navegador por los patrones de token conocidos (ghp_, github_pat_); el valor
+  // exacto del token no se puede conocer desde acá.
+  const pendientes: Promise<string>[] = [];
+  page.on("response", (res) => {
     const tipo = res.headers()["content-type"] ?? "";
-    if (/html|javascript|json/.test(tipo)) textos.push(await res.text().catch(() => ""));
+    if (/html|javascript|json/.test(tipo)) pendientes.push(res.text().catch(() => ""));
   });
   await page.goto("/");
   await abrir(page);
   await page.waitForLoadState("networkidle");
+  // Se esperan todos los cuerpos antes de afirmar.
+  const textos = await Promise.all(pendientes);
   expect(textos.length).toBeGreaterThan(0);
   for (const t of textos) {
     expect(t).not.toContain("REPORTES_GITHUB_TOKEN");
