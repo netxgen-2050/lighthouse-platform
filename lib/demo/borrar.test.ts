@@ -5,7 +5,19 @@ import { CLAVES } from "./claves";
 describe("borrarDemo", () => {
   it("quita una vez cada clave", () => {
     const quitadas: string[] = [];
-    borrarDemo((c) => quitadas.push(c));
+    const fallidas = borrarDemo((c) => quitadas.push(c));
     expect(quitadas.sort()).toEqual(Object.values(CLAVES).sort());
+    expect(fallidas).toEqual([]);
+  });
+
+  it("sigue con las demás claves si una falla y devuelve la fallida", () => {
+    const todas = Object.values(CLAVES);
+    const quitadas: string[] = [];
+    const fallidas = borrarDemo((c) => {
+      if (c === todas[0]) throw new Error("no se puede");
+      quitadas.push(c);
+    });
+    expect(fallidas).toEqual([todas[0]]);
+    expect(quitadas.sort()).toEqual(todas.slice(1).sort());
   });
 });

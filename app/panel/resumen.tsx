@@ -24,6 +24,7 @@ export function Resumen() {
   const [listo, setListo] = useState(false);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [resumen, setResumen] = useState<ResumenDemo | null>(null);
+  const [mensaje, setMensaje] = useState("");
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
@@ -37,13 +38,18 @@ export function Resumen() {
 
   function borrar() {
     if (!window.confirm("¿Borrar todo lo que guardaste en este navegador?")) return;
+    const fallidas = borrarDemo((c) => window.localStorage.removeItem(c));
     try {
-      borrarDemo((c) => window.localStorage.removeItem(c));
       setResumen(resumirDemo((c) => window.localStorage.getItem(c)));
-      setFalloAlmacen(false);
     } catch {
       setFalloAlmacen(true);
+      return;
     }
+    setMensaje(
+      fallidas.length > 0
+        ? "Error: no se pudo borrar todo. Algunos datos siguen guardados en este navegador."
+        : "Listo: se borró todo lo guardado en este navegador.",
+    );
   }
 
   const aviso = (
@@ -128,6 +134,7 @@ export function Resumen() {
         >
           Borrar todo lo de este navegador
         </button>
+        <p role="status" className="text-sm font-medium">{mensaje}</p>
       </div>
     </div>
   );

@@ -104,6 +104,7 @@ test("borrar todo: confirma, vacía el panel y las tres pantallas", async ({ pag
   await expect(tarjeta(page, "Perfil")).toContainText("Todavía no empezaste la entrevista");
   await expect(tarjeta(page, "Compromisos")).toContainText("Todavía no registraste compromisos");
   await expect(tarjeta(page, "Congreso")).toContainText("Sin ticket registrado");
+  await expect(page.getByRole("status").filter({ hasText: "se borró todo" })).toBeVisible();
 
   await page.goto("/perfil");
   await expect(page.getByRole("complementary").locator("li")).toHaveCount(0);
