@@ -25,7 +25,7 @@ export function TerminoLegal({ clave }: { clave: ClaveTermino }) {
         aria-controls={abierto ? id : undefined}
         aria-label={`Qué significa legalmente: ${termino.titulo}`}
         onClick={() => setAbierto((v) => !v)}
-        className="ml-1 rounded px-1 text-amber-700 hover:bg-amber-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700"
+        className="ml-1 rounded px-1 text-gold-ink hover:bg-gold-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-ink"
       >
         <span aria-hidden="true">⚖</span>
       </button>
@@ -34,7 +34,7 @@ export function TerminoLegal({ clave }: { clave: ClaveTermino }) {
           id={id}
           role="dialog"
           aria-label={termino.titulo}
-          className="absolute left-0 top-full z-10 mt-1 block w-72 rounded-lg border border-amber-700 bg-white p-3 text-sm font-normal text-stone-900 shadow-lg"
+          className="absolute left-0 top-full z-10 mt-1 block w-72 rounded-lg border border-gold-ink bg-surface p-3 text-sm font-normal text-ink shadow-lg"
         >
           <strong className="block">{termino.titulo}</strong>
           {termino.texto}
