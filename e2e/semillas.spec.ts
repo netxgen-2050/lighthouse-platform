@@ -67,6 +67,17 @@ test("un ticket inválido no cuenta y el Pase se nombra como en /sumarte", async
   await page.reload();
   await expect(page.getByText("Ticket registrado")).toHaveCount(0);
   await expect(page.getByText("Pase Fundador Raíz activo")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Qué significa legalmente: Pase Fundador" })).toBeVisible();
+});
+
+test("un pacto de convivencia aceptado no suma semillas de tiempo", async ({ page }) => {
+  await page.goto("/semillas");
+  await page.evaluate(() =>
+    window.localStorage.setItem("lh-pactos", JSON.stringify({ pestana: "convivencia", horas: 20, parteSemilla: 50, paso: 2 })),
+  );
+  await page.reload();
+  await expect(page.getByRole("link", { name: "Proponé un pacto de tiempo" })).toBeVisible();
+  await expect(page.getByTestId("semillas-tiempo")).toHaveCount(0);
 });
 
 test("ronda de reconocimiento: hay que puntuar las cuatro notas y se ve el factor", async ({ page }) => {
@@ -79,8 +90,8 @@ test("ronda de reconocimiento: hay que puntuar las cuatro notas y se ve el facto
   await expect(page.getByText("Puntaje: 5 de 5")).toHaveCount(4);
   await enviar.click();
   await expect(page.getByText("Ronda enviada (simulado)")).toBeVisible();
-  await expect(page.getByTestId("factor")).toHaveText("1,67");
-  await expect(page.getByTestId("semillas-tiempo")).toHaveText("252 semillas");
+  await expect(page.getByTestId("factor")).toHaveText("1,0");
+  await expect(page.getByTestId("semillas-tiempo")).toHaveText("150 semillas");
   await page.reload();
   await expect(page.getByText("Ronda enviada (simulado)")).toBeVisible();
 });

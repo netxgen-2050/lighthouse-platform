@@ -64,6 +64,13 @@ test("teclado: Enter abre, Escape cierra y el foco vuelve al botón", async ({ p
   await expect(boton).toBeFocused();
 });
 
+test("el diálogo avisa quién ve el reporte y el contacto", async ({ page }) => {
+  await page.goto("/");
+  const dialogo = await abrir(page);
+  await expect(dialogo.getByText("Tu reporte, y tu contacto si lo dejás, lo ve el equipo de NetX.")).toBeVisible();
+  await expect(dialogo.getByLabel(/Tu nombre o email/)).toHaveAccessibleDescription(/lo ve el equipo de NetX/);
+});
+
 test("el diálogo muestra el contexto: ruta, pantalla y versión", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto("/tribus/valle");

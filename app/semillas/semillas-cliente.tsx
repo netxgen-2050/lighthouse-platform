@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
 import { esCodigoValido } from "@/lib/congreso/ticket";
 import { CLAVES } from "@/lib/demo/claves";
-import { clave, estadoMedidor, factorEvaluacion, rondaCompleta, semillasTiempo } from "@/lib/semillas/calculo";
+import { clave, estadoMedidor, FACTOR_EVALUACION, rondaCompleta, semillasTiempo } from "@/lib/semillas/calculo";
 import { COMPANEROS, DIMENSIONES, META_SEMBRADOR, PERSONA } from "@/lib/semillas/datos";
 import {
   CLAVE_RONDA,
@@ -73,8 +73,7 @@ export function SemillasCliente() {
 
   if (!listo) return <p className="text-muted">Cargando tus datos…</p>;
 
-  const factor = ronda.enviada ? factorEvaluacion(ronda.notas, COMPANEROS.length) : null;
-  const tiempo = datos.pacto ? semillasTiempo(datos.pacto.horas, datos.pacto.parteSemilla, factor ?? 1) : null;
+  const tiempo = datos.pacto ? semillasTiempo(datos.pacto.horas, datos.pacto.parteSemilla, FACTOR_EVALUACION) : null;
   const completa = rondaCompleta(ronda.notas, COMPANEROS.length);
   const puedeEnviar = completa && !ronda.enviada;
 
@@ -121,7 +120,9 @@ export function SemillasCliente() {
             </>
           )}
           {datos.pase && (
-            <p className="text-sm text-muted">Pase Fundador {PASSES.find((p) => p.id === datos.pase)?.nombre ?? datos.pase} activo (simulado), un servicio que no suma semillas.</p>
+            <p className="text-sm text-muted">Pase Fundador {PASSES.find((p) => p.id === datos.pase)?.nombre ?? datos.pase} activo (simulado), un servicio que no suma semillas
+              <TerminoLegal clave="pasefundador" />.
+            </p>
           )}
         </div>
 
@@ -240,7 +241,7 @@ export function SemillasCliente() {
           {ronda.enviada ? (
             <p role="status">
               <span className="font-medium">Ronda enviada (simulado)</span> · Factor de evaluación:{" "}
-              <strong data-testid="factor">{factor === null ? "sin dato" : factor.toLocaleString("es-AR", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}</strong>
+              <strong data-testid="factor">{FACTOR_EVALUACION.toLocaleString("es-AR", { minimumFractionDigits: 1 })}</strong>
             </p>
           ) : (
             <>
@@ -249,14 +250,14 @@ export function SemillasCliente() {
               </button>
               <p className="text-sm text-muted">
                 {completa ? "Lista para enviar." : "Puntuá a los dos compañeros en rol y aporte (4 notas) para enviarla."}
-                {" "}Factor de evaluación hoy: 1,0 (sin ronda).
+                {" "}Factor de evaluación: 1,0.
               </p>
             </>
           )}
         </div>
         <p className="text-sm text-muted">
-          El factor es el promedio de las notas dividido 3 (3 de 5 es neutro, 1,0). Fórmula de ejemplo del prototipo:
-          multiplica tus semillas de tiempo.
+          El factor de evaluación entre pares es 1,0 fijo, como en el mock-up: la ronda se envía de forma simulada y no
+          cambia tus semillas.
         </p>
       </section>
     </div>

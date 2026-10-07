@@ -143,7 +143,26 @@ export function CanalesCliente() {
             {prueba ? "Estás viendo una situación de prueba (no se guarda)." : "Estás viendo tu situación."}
           </p>
           {/* Sin contenedor con scroll: recortaría la explicación del ⚖. La tabla se ajusta al ancho. */}
-          <div>
+          {/* Por debajo de 640 px: tarjetas apiladas en lugar de la tabla. */}
+          <ul className="grid grid-cols-1 gap-3 sm:hidden" data-testid="puertas-tarjetas">
+            {filas.map((f) => (
+              <li key={f.clave} className="grid gap-1 rounded-lg border border-line bg-surface-2 p-3 text-sm">
+                <p className="font-semibold break-words">
+                  {f.nombre}
+                  {f.termino && <TerminoLegal clave={f.termino} />}
+                </p>
+                <p className="font-medium">
+                  <span aria-hidden="true">{f.abierta ? "✓ " : "✕ "}</span>
+                  {f.estado}
+                </p>
+                <p className="break-words">
+                  {f.abierta ? f.motivos.join(" y ") : `Se abre con: ${f.abreCon}`}
+                  {f.refuerzo && <span className="block text-muted">{f.refuerzo}</span>}
+                </p>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden sm:block">
             <table className="w-full table-fixed border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-line">
