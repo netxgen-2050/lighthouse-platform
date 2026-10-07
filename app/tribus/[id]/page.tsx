@@ -4,7 +4,10 @@ import { notFound } from "next/navigation";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
 import { SelloTribu } from "@/components/sello-tribu";
 import { TerminoLegal } from "@/components/termino-legal";
+import { Medidor } from "@/components/medidor";
+import { destinosDisponibles } from "@/lib/navegacion";
 import { buscarTribu, listarTribus } from "@/lib/tribus/datos";
+import { Acciones, ProponerTribu } from "./acciones";
 
 export const dynamicParams = false;
 
@@ -30,7 +33,15 @@ function Etiquetas({ items }: { items: string[] }) {
   );
 }
 
-const tarjeta = "grid content-start gap-3 rounded-xl border border-faint bg-surface p-4";
+function Prototipo() {
+  return (
+    <p className="mt-2 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+      Prototipo interno · datos de ejemplo
+    </p>
+  );
+}
+
+const tarjeta ="grid content-start gap-3 rounded-xl border border-faint bg-surface p-4";
 
 export default async function TribuPage({ params }: Props) {
   const t = buscarTribu((await params).id);
@@ -48,13 +59,30 @@ export default async function TribuPage({ params }: Props) {
         {volver}
         <h1 className="text-3xl font-semibold">Barrio {t.barrio} busca tribu</h1>
         <p className="mt-2 mb-4 text-muted">
-          Un barrio del Lighthouse para una tribu de {t.foco}, con {t.hogares}.
+          Un barrio del Lighthouse para una tribu de <strong>{t.foco}</strong>, con {t.hogares}. La tribu recibe una
+          licencia de uso
+          <TerminoLegal clave="licencia" /> y adhiere al proyecto
+          <TerminoLegal clave="adherente" />.
         </p>
         <AvisoEjemplo />
-        <section className={`${tarjeta} mt-6`}>
-          <h2 className="text-lg font-semibold">Lo que el Lighthouse necesita de este barrio</h2>
-          <Etiquetas items={t.busca} />
-        </section>
+        <Prototipo />
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <section className={tarjeta}>
+            <h2 className="text-lg font-semibold">Lo que el Lighthouse necesita de este barrio</h2>
+            <Etiquetas items={t.busca} />
+            <Medidor titulo="Plata para arrancar" actual={0} tope={t.plata.meta} unidad="USD " />
+            <Medidor titulo="Roles" actual={0} tope={t.roles.necesarios} dorado />
+          </section>
+          <section className={tarjeta}>
+            <h2 className="text-lg font-semibold">¿Tenés una tribu?</h2>
+            <p className="text-sm">
+              Proponela: contá quiénes son, qué van a producir y qué van a aportar al pozo común. La tribu define su
+              propio ritual de entrada
+              <TerminoLegal clave="ritual" />.
+            </p>
+            <ProponerTribu />
+          </section>
+        </div>
       </div>
     );
   }
@@ -71,11 +99,14 @@ export default async function TribuPage({ params }: Props) {
         </div>
       </div>
       <AvisoEjemplo />
+      <Prototipo />
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         <section className={tarjeta}>
           <h2 className="text-lg font-semibold">Lo que tiene</h2>
           <p className="text-sm text-muted">{t.hogares}</p>
           <Etiquetas items={t.tiene} />
+          <Medidor titulo="Plata comprometida" actual={t.plata.comprometida} tope={t.plata.meta} unidad="USD " />
+          <Medidor titulo="Roles cubiertos" actual={t.roles.cubiertos} tope={t.roles.necesarios} dorado />
         </section>
         <section className={tarjeta}>
           <h2 className="text-lg font-semibold">Lo que busca</h2>
@@ -122,9 +153,35 @@ export default async function TribuPage({ params }: Props) {
         </p>
         <p>
           <strong>Forma jurídica:</strong> {t.formaJuridica}
-          <TerminoLegal clave="personeria" />
+          <TerminoLegal clave="personeria" /> · adherente al proyecto del Lote 7
+          <TerminoLegal clave="adherente" />
+        </p>
+        <p>
+          <strong>Su barrio:</strong> licencia de uso del Barrio {t.barrio}
+          <TerminoLegal clave="licencia" />
         </p>
       </section>
+      <section className={`${tarjeta} mt-4`}>
+        <h2 className="text-lg font-semibold">Red de confianza</h2>
+        <p>
+          {t.avales} {t.avales === 1 ? "persona de la red avala" : "personas de la red avalan"} a esta tribu{" "}
+          <span className="rounded-full border border-faint px-2 py-0.5 text-xs">(ejemplo)</span>
+        </p>
+        <div aria-hidden="true" className="flex gap-1">
+          {Array.from({ length: t.avales }, (_, i) => (
+            <span
+              key={i}
+              className="grid size-8 place-items-center rounded-full bg-green-soft text-sm font-medium text-deep"
+            >
+              {"MJSAR"[i % 5]}
+            </span>
+          ))}
+        </div>
+        <p className="text-sm text-muted">&ldquo;Si confiás en quien confía en ellos, empezás con confianza.&rdquo;</p>
+      </section>
+      <div className="mt-4">
+        <Acciones pactos={destinosDisponibles().some((d) => d.href === "/pactos")} />
+      </div>
     </div>
   );
 }
