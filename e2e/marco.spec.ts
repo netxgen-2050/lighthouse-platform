@@ -19,7 +19,7 @@ test("el rail trae la marca y los destinos existentes en orden", async ({ page }
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Principal" });
   await expect(nav).toBeVisible();
-  await expect(page.getByText("NetX", { exact: true }).first()).toBeVisible();
+  await expect(nav.locator("xpath=..").getByText("NetX", { exact: true })).toBeVisible();
   const textos = (await nav.getByRole("link").allInnerTexts()).map((t) => t.trim());
   const orden = ["Inicio", "Territorio", "Tribus", "Perfil", "Compromisos", "Congreso", "Sumarte", "Mi recorrido"];
   expect(textos).toEqual(orden.filter((o) => textos.includes(o)));
@@ -36,7 +36,7 @@ test("el rail está a la izquierda en computadora", async ({ page }) => {
 
 test("celular 390 x 844: rail a la izquierda, 72 px o menos, sin scroll horizontal", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const ruta of ["/", "/tribus", "/perfil", "/congreso"]) {
+  for (const ruta of ["/", "/tribus", "/tribus/valle", "/perfil", "/congreso"]) {
     await page.goto(ruta);
     const nav = page.getByRole("navigation", { name: "Principal" });
     const caja = await nav.boundingBox();
