@@ -21,3 +21,7 @@
 ## 4. Integración
 
 - [ ] 4.1 `pnpm verificar` y `pnpm build` en verde; PR desde `agente/territorio-mapa` con guion de prueba (rail → Territorio → mapa → Tab hasta el barrio 6 → Enter) y una captura del mapa. Probar sobre el preview con `BASE_URL=<url de scripts/preview-url.sh agente/territorio-mapa> pnpm test:e2e e2e/territorio-mapa.spec.ts`.
+
+## Actualización (7-oct, Gus: fase de prototipo)
+
+- [ ] A.1 Usar la geometría **real** de `docs/referencia/soluna.geojson` (convertida del KMZ de BioPueblo con `NS_platform/Documentation/datos/kmz_to_geojson.py`) en lugar de la geometría ilustrativa. En fase de prototipo los lotes y Chacras de Soluna **sí** se pueden mostrar (ver `CLAUDE.md`), con su estado si el GeoJSON lo trae. Mantener la geometría como datos en `lib/territorios/` para poder reemplazarla. Verificar con `pnpm test:e2e e2e/territorio-mapa.spec.ts`.

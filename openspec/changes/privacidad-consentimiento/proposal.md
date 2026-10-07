@@ -29,3 +29,5 @@ La It.1 "Explorar" incluye la regla de cumplimiento **C16** (datos personales, L
 ## Impact
 
 Código nuevo en `app/privacidad/`, `lib/demo/consentimiento.ts` y un componente de aviso en `components/`; cambio chico en `app/perfil/entrevista.tsx`, `app/compromisos/formulario.tsx`, `app/congreso/registro-ticket.tsx` y `app/sumarte/sumarte-cliente.tsx` (guardar solo con OK); `lib/demo/claves.ts` (clave del consentimiento y de Sumarte), `lib/legal/terminos.ts` y su test, `components/termino-legal.tsx`, `components/pie.tsx`; `e2e/privacidad.spec.ts` y ajustes en los e2e que guardan datos (tienen que dar el OK primero). **Depende de** `perfil-entrevista`, `compromisos-registro`, `congreso-registro`, `sumarte-planes` y `panel-recorrido` en `main`. Sin dependencias npm nuevas.
+
+> **En espera (7-oct, Gus):** aprobada, pero se implementa después de decidir el login (Privy o alternativa), para atar el consentimiento a una cuenta. No va en la cola hasta entonces.
