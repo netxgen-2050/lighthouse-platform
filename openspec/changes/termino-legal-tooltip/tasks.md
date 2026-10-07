@@ -1,6 +1,6 @@
 ## 1. Componente
 
-- [ ] 1.1 (pendiente de Gus: falta la verificación manual en `pnpm dev` en `/tribus/valle`; el componente está hecho y cubierto por e2e) Rehacer `components/termino-legal.tsx` como tooltip flotante (posición absoluta respecto del ⚖, por encima del contenido, sin librerías nuevas), con mouse (entrar/salir, incluido pasar al tooltip), foco/blur, Escape y toque en dispositivos sin hover (`matchMedia("(hover: none)")`). Usar solo tokens del tema. Verificar en `pnpm dev` en `/tribus/valle`.
+- [ ] 1.1 (pendiente de Gus: falta la verificación manual en `pnpm dev` en `/tribus/valle`; el componente está hecho y cubierto por e2e) Rehacer `components/termino-legal.tsx` como tooltip flotante (posición absoluta respecto del ⚖, por encima del contenido, sin librerías nuevas), con mouse (entrar/salir, incluido pasar al tooltip), foco/blur, Escape y toque (decidido por el `pointerType` del evento, no por el tipo de dispositivo). Usar solo tokens del tema. Verificar en `pnpm dev` en `/tribus/valle`.
 
 ## 2. Tests
 

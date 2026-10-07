@@ -125,6 +125,26 @@ test.describe("⚖ como tooltip, posición y accesibilidad", () => {
     expect(caja!.y).toBeGreaterThanOrEqual(cajaBoton!.y + cajaBoton!.height - 1);
   });
 
+  // LIMITACIÓN CONOCIDA (decisión de Gus): al abrir hacia abajo, por falta de lugar arriba,
+  // el tooltip de "Ritual de entrada" TAPA el ⚖ siguiente ("Forma jurídica"). Este test documenta
+  // lo que pasa hoy; si se decide otra prioridad, se invierte la aserción.
+  test("cerca del borde superior, abierto hacia abajo, tapa el ⚖ siguiente (limitación documentada)", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    const boton = page.getByRole("button", { name: RITUAL });
+    await page.evaluate(() => {
+      document.body.style.paddingBottom = "2000px";
+    });
+    await boton.evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - 2));
+    await boton.hover();
+    await expect(page.getByRole("tooltip")).toBeVisible();
+    const tapado = await page.getByRole("button", { name: PERSONERIA }).evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const arriba = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      return !el.contains(arriba);
+    });
+    expect(tapado).toBe(true);
+  });
+
   test("axe sin violaciones serias o críticas con el tooltip abierto", async ({ page }) => {
     await page.goto("/tribus/valle");
     await page.getByRole("button", { name: RITUAL }).hover();
@@ -138,14 +158,23 @@ test.describe("⚖ como tooltip, posición y accesibilidad", () => {
 });
 
 test.describe("⚖ como tooltip, híbrido (toque en pantalla que también tiene hover)", () => {
-  test.use({ hasTouch: true });
-
+  // Chromium con hasTouch reporta (hover: none) y CDP no permite forzar hover. Por eso el contexto
+  // es de escritorio (reporta hover: hover) y los toques se inyectan por CDP (Input.dispatchTouchEvent).
   test("un toque muestra aunque el dispositivo tenga hover", async ({ page }) => {
     await page.goto("/tribus/valle");
+    expect(await page.evaluate(() => window.matchMedia("(hover: hover)").matches)).toBe(true);
     const boton = page.getByRole("button", { name: RITUAL });
-    await boton.tap();
+    const caja = (await boton.boundingBox())!;
+    const x = caja.x + caja.width / 2;
+    const y = caja.y + caja.height / 2;
+    const cdp = await page.context().newCDPSession(page);
+    async function tocar() {
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    }
+    await tocar();
     await expect(page.getByRole("tooltip")).toContainText("Ley 23.592");
-    await boton.tap();
+    await tocar();
     await expect(page.getByRole("tooltip")).toHaveCount(0);
   });
 });
