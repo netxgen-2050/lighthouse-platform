@@ -19,4 +19,4 @@
 
 ## 4. Integración
 
-- [ ] 4.1 `pnpm verificar` y `pnpm build` en verde; PR desde `agente/compromisos-registro` con guion de prueba (registrar una oferta de tiempo, una necesidad de bienes, recargar, quitar, borrar todo). Probar sobre el preview con `BASE_URL=$(scripts/preview-url.sh agente/compromisos-registro) pnpm test:e2e e2e/compromisos.spec.ts`.
+- [x] 4.1 `pnpm verificar` y `pnpm build` en verde; PR desde `agente/compromisos-registro` con guion de prueba (registrar una oferta de tiempo, una necesidad de bienes, recargar, quitar, borrar todo). Probar sobre el preview con `BASE_URL=$(scripts/preview-url.sh agente/compromisos-registro) pnpm test:e2e e2e/compromisos.spec.ts`.
