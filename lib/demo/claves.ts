@@ -6,4 +6,5 @@ export const CLAVES = {
   pactos: "lh-pactos",
   semillasRonda: "lh-semillas-ronda",
   sumarte: "lh-sumarte",
+  pasaporte: "lh-pasaporte",
 } as const;

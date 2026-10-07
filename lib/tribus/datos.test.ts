@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { buscarTribu, listarTribus } from "./datos";
 
@@ -13,6 +15,32 @@ describe("datos de tribus", () => {
     for (const v of vacantes) {
       expect(v.declaracion).toBeUndefined();
       expect(v.pozo).toBeUndefined();
+    }
+  });
+  it("plata, roles y avales coinciden con el mock-up v6 (las 12)", () => {
+    const mock = readFileSync(
+      path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"),
+      "utf8",
+    );
+    for (const t of tribus) {
+      const m = mock.match(
+        new RegExp(`id:"${t.id}",[\\s\\S]*?cap:\\[(\\d+),(\\d+)\\], hum:\\[(\\d+),(\\d+)\\][\\s\\S]*?avales:(\\d+)`),
+      );
+      expect(m, t.id).not.toBeNull();
+      expect(t.plata, t.id).toEqual({ comprometida: Number(m![1]), meta: Number(m![2]) });
+      expect(t.roles, t.id).toEqual({ cubiertos: Number(m![3]), necesarios: Number(m![4]) });
+      expect(t.avales, t.id).toBe(Number(m![5]));
+    }
+  });
+  it("valle, avelan y grano con los valores esperados", () => {
+    expect(buscarTribu("valle")).toMatchObject({ plata: { comprometida: 310000, meta: 480000 }, roles: { cubiertos: 9, necesarios: 14 }, avales: 5 });
+    expect(buscarTribu("avelan")?.plata).toEqual({ comprometida: 140000, meta: 650000 });
+    expect(buscarTribu("grano")).toMatchObject({ plata: { comprometida: 0, meta: 260000 }, avales: 0 });
+  });
+  it("comprometida <= meta y cubiertos <= necesarios", () => {
+    for (const t of tribus) {
+      expect(t.plata.comprometida, t.id).toBeLessThanOrEqual(t.plata.meta);
+      expect(t.roles.cubiertos, t.id).toBeLessThanOrEqual(t.roles.necesarios);
     }
   });
   it("buscarTribu", () => {

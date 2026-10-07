@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Anek_Latin, Figtree, JetBrains_Mono } from "next/font/google";
 import { Rail } from "@/components/rail";
 import { Pie } from "@/components/pie";
+import { BotonReportar } from "@/components/boton-reportar";
+import { versionDesplegada } from "@/lib/reportes/reporte";
 import "./globals.css";
 
 const anek = Anek_Latin({ variable: "--font-anek", subsets: ["latin"] });
@@ -18,6 +20,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const despliegue = versionDesplegada({
+    VERCEL_GIT_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA,
+    VERCEL_ENV: process.env.VERCEL_ENV,
+  });
   return (
     <html lang="es">
       <body
@@ -35,7 +41,10 @@ export default function RootLayout({
             {children}
           </main>
           <Pie anioRespaldo={new Date().getFullYear()} />
+          {/* Espacio para que el botón fijo de reportar no tape el final de la página. */}
+          <div aria-hidden="true" className="h-16 shrink-0" />
         </div>
+        <BotonReportar version={despliegue.version} entorno={despliegue.entorno} />
       </body>
     </html>
   );
