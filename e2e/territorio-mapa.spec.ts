@@ -88,6 +88,8 @@ test("finca disponible: datos, consulta simulada y aclaración de agencia", asyn
   await expect(ficha(page).getByText(/NetX actúa como agencia/)).toBeVisible();
   await expect(ficha(page).getByRole("button", { name: /Qué significa legalmente: NetX como agencia/ })).toBeVisible();
   await ficha(page).getByRole("button", { name: "Consultar por este lote" }).click();
+  await ficha(page).getByRole("radio", { name: "Email" }).check();
+  await ficha(page).getByRole("button", { name: "Enviar pedido (simulado)" }).click();
   await expect(ficha(page).getByText("Consulta enviada (simulado)")).toBeVisible();
   await page.reload();
   await page.getByText(/Fincas disponibles de Soluna/).click();

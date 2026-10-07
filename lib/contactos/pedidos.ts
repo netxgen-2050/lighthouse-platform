@@ -59,9 +59,12 @@ function esPedido(x: unknown): x is Pedido {
     typeof p.referencia === "string" &&
     typeof p.destino === "string" &&
     typeof p.motivo === "string" &&
-    p.motivo in MOTIVOS &&
+    Object.hasOwn(MOTIVOS, p.motivo) &&
     typeof p.canal === "string" &&
-    p.canal in CANALES
+    Object.hasOwn(CANALES, p.canal) &&
+    (p.momento === undefined || (typeof p.momento === "string" && Object.hasOwn(MOMENTOS, p.momento))) &&
+    (p.mensaje === undefined || typeof p.mensaje === "string") &&
+    (p.estadoMostrado === undefined || typeof p.estadoMostrado === "string")
   );
 }
 

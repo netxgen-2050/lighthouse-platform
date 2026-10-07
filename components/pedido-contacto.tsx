@@ -14,8 +14,11 @@ type Props = {
   aviso?: ReactNode;
   /** id del botón que abrió el formulario: el foco vuelve ahí al cancelar. */
   idBoton: string;
-  /** Guarda el pedido. Devuelve false si no se pudo guardar. */
-  alEnviar: (pedido: Pedido) => boolean;
+  /**
+   * Guarda el pedido. true: listo. false: no se pudo guardar y el formulario avisa.
+   * "avisado": no se completó, pero ya hay un aviso en la pantalla (no se repite).
+   */
+  alEnviar: (pedido: Pedido) => boolean | "avisado";
   alCancelar: () => void;
 };
 
@@ -64,8 +67,9 @@ export function PedidoContacto({ motivo, referencia, estadoMostrado, aviso, idBo
       new Date(),
       `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
     );
-    if (!alEnviar(pedido)) {
-      setFalloGuardar(true);
+    const resultado = alEnviar(pedido);
+    if (resultado !== true) {
+      setFalloGuardar(resultado === false);
       return;
     }
     setFalloGuardar(false);

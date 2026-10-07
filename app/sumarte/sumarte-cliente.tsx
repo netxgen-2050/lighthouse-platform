@@ -57,27 +57,26 @@ export function SumarteCliente() {
     foco.current = null;
   }, [estado]);
 
-  function dispatch(accion: Accion, enfocar?: string) {
+  function dispatch(accion: Accion, enfocar?: string): boolean {
     const siguiente = reducir(estado, accion);
     try {
       window.localStorage.setItem(CLAVE, JSON.stringify(siguiente));
       setFalloAlmacen(false);
     } catch {
       setFalloAlmacen(true);
-      return;
+      return false;
     }
     foco.current = enfocar ?? null;
     setEstado(siguiente);
+    return true;
   }
 
   // El pedido se guarda primero; recién ahí se hace lo que el botón hacía antes.
-  function enviarPedido(pedido: Pedido, accion: Accion): boolean {
-    if (!guardarPedido(pedido)) {
-      setFalloAlmacen(true);
-      return false;
-    }
-    dispatch(accion);
-    return true;
+  // Si falla guardar el pedido, avisa el formulario (false); si falla el estado de la página,
+  // avisa la página y el formulario no repite el aviso ("avisado").
+  function enviarPedido(pedido: Pedido, accion: Accion): boolean | "avisado" {
+    if (!guardarPedido(pedido)) return false;
+    return dispatch(accion) ? true : "avisado";
   }
 
   const paseActivo = estado.pase ? PASSES.find((p) => p.id === estado.pase)! : null;

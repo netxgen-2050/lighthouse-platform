@@ -156,5 +156,24 @@ test("solo teclado: abrir, elegir canal y enviar", async ({ page }) => {
   await expect(email).toBeChecked();
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByText("Pedido recibido (simulado). Lo vería: Equipo NetX.")).toBeVisible();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Pedido recibido (simulado). Lo vería: Equipo NetX." }),
+  ).toBeVisible();
+  const guardado = await page.evaluate(() => JSON.parse(window.localStorage.getItem("lh-contactos") ?? "[]"));
+  expect(guardado).toHaveLength(1);
+  expect(guardado[0]).toMatchObject({ motivo: "charla-netx", canal: "email", destino: "Equipo NetX" });
+});
+
+test("un mensaje o estado de tipo raro en lh-contactos no rompe /netx", async ({ page }) => {
+  await page.goto("/netx");
+  await page.evaluate(() =>
+    window.localStorage.setItem(
+      "lh-contactos",
+      JSON.stringify([
+        { id: "x", fecha: "2026-10-07T12:00:00Z", motivo: "charla-netx", referencia: "R", canal: "email", destino: "Equipo NetX", mensaje: {} },
+      ]),
+    ),
+  );
+  await page.reload();
+  await expect(page.getByText("Todavía no hay pedidos en este navegador.")).toBeVisible();
 });

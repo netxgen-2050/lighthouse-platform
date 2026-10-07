@@ -60,6 +60,23 @@ describe("leerBandeja", () => {
     const ok = crearPedido(base, new Date(), "a");
     expect(leerBandeja(JSON.stringify([ok, { id: 1 }, null]))).toEqual([ok]);
   });
+  it("descarta pedidos con mensaje, estado o momento de tipo raro", () => {
+    const ok = crearPedido(base, new Date(), "a");
+    const raros = [
+      { ...ok, id: "b", mensaje: {} },
+      { ...ok, id: "c", estadoMostrado: 5 },
+      { ...ok, id: "d", momento: "madrugada" },
+    ];
+    expect(leerBandeja(JSON.stringify([ok, ...raros]))).toEqual([ok]);
+  });
+  it("no acepta claves heredadas como motivo o canal", () => {
+    const ok = crearPedido(base, new Date(), "a");
+    const raros = [
+      { ...ok, id: "b", motivo: "toString" },
+      { ...ok, id: "c", canal: "constructor" },
+    ];
+    expect(leerBandeja(JSON.stringify(raros))).toEqual([]);
+  });
 });
 
 describe("agregar", () => {

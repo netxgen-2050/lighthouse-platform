@@ -57,7 +57,7 @@ export function BandejaPedidos() {
                     {p.estadoMostrado && <span className="block text-muted">{p.estadoMostrado}</span>}
                   </td>
                   <td className="py-1.5 pr-3">{CANALES[p.canal]}</td>
-                  <td className="py-1.5 pr-3">{p.momento && p.momento in MOMENTOS ? MOMENTOS[p.momento] : "sin dato"}</td>
+                  <td className="py-1.5 pr-3">{p.momento ?MOMENTOS[p.momento] : "sin dato"}</td>
                   <td className="py-1.5 pr-3">{p.mensaje ?? "sin dato"}</td>
                   <td className="py-1.5 pr-3">{p.destino}</td>
                   <td className="py-1.5">Recibido (simulado)</td>
