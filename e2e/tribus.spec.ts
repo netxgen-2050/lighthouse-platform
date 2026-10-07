@@ -257,8 +257,12 @@ test.describe("ficha completa", () => {
   test("⚖ de licencia con teclado", async ({ page }) => {
     await page.goto("/tribus/valle");
     const boton = page.getByRole("button", { name: "Qué significa legalmente: Licencia de uso" }).first();
-    await page.keyboard.press("Tab");
-    await boton.focus();
+    let llego = false;
+    for (let i = 0; i < 80 && !llego; i++) {
+      await page.keyboard.press("Tab");
+      llego = await boton.evaluate((el) => el === document.activeElement);
+    }
+    expect(llego).toBe(true);
     await expect(boton).toBeFocused();
     const tooltip = page.getByRole("tooltip");
     await expect(tooltip).toContainText("Licencia de uso");
