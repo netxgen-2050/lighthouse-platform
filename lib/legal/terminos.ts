@@ -157,6 +157,18 @@ export const TERMINOS = {
     texto:
       "Una tribu con personería (asociación civil o SAS) podría adherir al proyecto del Lote 7 y recibir la licencia de su barrio. A confirmar con el equipo legal: si adhiere al fideicomiso y con qué rol.",
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  agencia: {
+    titulo: "NetX como agencia",
+    texto:
+      "En las Chacras de Soluna, NetX actúa como agencia: muestra los lotes y pone en contacto a las partes. La compra es privada entre quien vende y quien compra; NetX no vende ni cobra el lote por la plataforma.",
+    borrador: true,
+  },
 } as const;
+
+/** Claves de los textos que son borrador (no vienen del mock-up). */
+export function esBorrador(clave: ClaveTermino): boolean {
+  return "borrador" in TERMINOS[clave];
+}
 
 export type ClaveTermino = keyof typeof TERMINOS;

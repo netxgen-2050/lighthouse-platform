@@ -7,4 +7,5 @@ export const CLAVES = {
   semillasRonda: "lh-semillas-ronda",
   sumarte: "lh-sumarte",
   pasaporte: "lh-pasaporte",
+  consultasLotes: "lh-consultas-lotes",
 } as const;

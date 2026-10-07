@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { TERMINOS } from "./terminos";
+import { TERMINOS, esBorrador, type ClaveTermino } from "./terminos";
 
 const mock = readFileSync(
   path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"),
@@ -13,6 +13,7 @@ describe("catálogo legal", () => {
     expect(Object.keys(TERMINOS).sort()).toEqual(
       [
         "adherente",
+        "agencia",
         "art32",
         "art35",
         "art44",
@@ -47,7 +48,13 @@ describe("catálogo legal", () => {
       ].sort(),
     );
   });
+  it("agencia es borrador", () => {
+    expect(esBorrador("agencia")).toBe(true);
+    expect(esBorrador("ritual")).toBe(false);
+  });
   for (const [clave, t] of Object.entries(TERMINOS)) {
+    // Los borradores son textos nuevos que no vienen del mock-up.
+    if (esBorrador(clave as ClaveTermino)) continue;
     it(`${clave} coincide con el mock-up`, () => {
       const m = mock.match(new RegExp(`^\\s*${clave}:\\["([^"]+)","([^"]+)"\\]`, "m"));
       expect(m).not.toBeNull();

@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
-import { SelloTribu } from "@/components/sello-tribu";
-import { buscarTerritorio, listarTerritorios, resumenDeTerritorio, textoSuperficie, tribusDeTerritorio } from "@/lib/territorios/datos";
-import { TEXTO_ESTADO } from "@/lib/tribus/tipos";
-import { MapaTerritorio } from "./mapa-territorio";
+import { buscarTerritorio, listarTerritorios, textoSuperficie } from "@/lib/territorios/datos";
+import { VitrinaTerritorio } from "./vitrina-territorio";
 
 export const dynamicParams = false;
 
@@ -26,18 +24,10 @@ const tarjeta = "grid content-start gap-3 rounded-xl border border-faint bg-surf
 export default async function TerritorioPage({ params }: Props) {
   const { id } = await params;
   const territorio = buscarTerritorio(id);
-  const resumen = resumenDeTerritorio(id);
-  if (!territorio || !resumen) notFound();
-
-  const tribus = tribusDeTerritorio(id);
-  const cifras = [
-    { etiqueta: "Activas", valor: resumen.activa },
-    { etiqueta: "En formación", valor: resumen.formacion },
-    { etiqueta: "Vacantes", valor: resumen.vacante },
-  ];
+  if (!territorio) notFound();
 
   return (
-    <div className="mx-auto max-w-5xl p-6 sm:p-10">
+    <div className="mx-auto max-w-6xl p-6 sm:p-10">
       <p className="mb-2 text-sm">
         <Link className="underline" href="/">← Inicio</Link>
       </p>
@@ -49,37 +39,7 @@ export default async function TerritorioPage({ params }: Props) {
       </p>
       <AvisoEjemplo />
 
-      <MapaTerritorio territorioId={territorio.id} nombre={territorio.nombre} tribus={tribus} />
-
-      <section className="mt-6 grid gap-4">
-        <h2 className="text-xl font-semibold">Tribus del territorio</h2>
-        <dl className="grid grid-cols-3 gap-3">
-          {cifras.map((c) => (
-            <div key={c.etiqueta} className={tarjeta}>
-              <dt className="text-sm text-muted">{c.etiqueta}</dt>
-              <dd className="text-2xl font-semibold">{c.valor}</dd>
-            </div>
-          ))}
-        </dl>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {tribus.map((t) => (
-            <li key={t.id}>
-              <Link
-                href={`/tribus/${t.id}`}
-                className="flex h-full gap-3 rounded-xl border border-faint bg-surface p-4 hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
-              >
-                <SelloTribu iniciales={t.iniciales} estado={t.estado} />
-                <span className="grid gap-1">
-                  <span className="text-sm text-muted">Barrio {t.barrio}</span>
-                  <span className="font-semibold">{t.estado === "vacante" ? "Busca tribu" : t.nombre}</span>
-                  <span className="text-sm text-muted">{t.foco}</span>
-                  <span className="text-sm font-medium">Estado: {TEXTO_ESTADO[t.estado]}</span>
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <VitrinaTerritorio />
 
       <section className={`${tarjeta} mt-6`}>
         <h2 className="text-xl font-semibold">Bienes comunes</h2>

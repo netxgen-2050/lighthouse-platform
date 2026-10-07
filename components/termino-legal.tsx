@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
-import { TERMINOS, type ClaveTermino } from "@/lib/legal/terminos";
+import { TERMINOS, esBorrador, type ClaveTermino } from "@/lib/legal/terminos";
 
 const EVENTO_ABRIR = "termino-legal:abrir";
 
@@ -116,6 +116,7 @@ export function TerminoLegal({ clave }: { clave: ClaveTermino }) {
           <span className="block rounded-lg border border-gold-ink bg-surface p-3 shadow-lg">
             <strong className="block">{termino.titulo}</strong>
             {termino.texto}
+            {esBorrador(clave) && <em className="mt-1 block text-muted">Texto borrador, a revisar.</em>}
           </span>
         </span>
       )}

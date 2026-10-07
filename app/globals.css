@@ -167,3 +167,44 @@ h3 {
   background: var(--color-gold-soft);
   border-color: var(--color-gold-ink);
 }
+
+.mapa-sello-comun {
+  background: var(--color-gold-soft);
+  color: var(--color-gold-ink);
+  border-color: var(--color-gold-ink);
+}
+
+.mapa-sello-lugar {
+  width: 24px;
+  height: 24px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-color: var(--color-ink);
+}
+
+.mapa-leyenda-finca-disponible {
+  background: var(--color-green);
+  border-color: var(--color-deep);
+}
+
+.mapa-leyenda-finca-reservada {
+  background: var(--color-gold);
+  border-color: var(--color-gold-ink);
+  border-style: dashed;
+}
+
+.mapa-leyenda-finca-cantera {
+  background: var(--color-gray);
+  border-color: var(--color-muted);
+}
+
+.mapa-leyenda-soluna {
+  background: transparent;
+  border-color: var(--color-blue);
+}
+
+.mapa-leyenda-lugar {
+  background: var(--color-surface);
+  border-color: var(--color-ink);
+  border-radius: 9999px;
+}
