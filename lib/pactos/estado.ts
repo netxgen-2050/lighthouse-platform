@@ -1,3 +1,4 @@
+import { CLAVES } from "@/lib/demo/claves";
 import { HORAS, MONTO_USD, PARTE_SEMILLA } from "./datos";
 
 /**
@@ -5,7 +6,7 @@ import { HORAS, MONTO_USD, PARTE_SEMILLA } from "./datos";
  * `semillas-libro` la lee: el JSON es un EstadoPactos y el pacto está aceptado si `paso === 2`.
  * No cambiar el valor: borraría lo ya guardado.
  */
-export const CLAVE_PACTOS = "lh-pactos";
+export const CLAVE_PACTOS = CLAVES.pactos;
 
 export type Pestana = "tiempo" | "plata" | "convivencia";
 /** 0 = Borrador, 1 = En revisión, 2 = Aceptado. */

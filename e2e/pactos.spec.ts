@@ -56,3 +56,35 @@ test("no manda datos a un servidor", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Simular: la tribu acepta" })).toBeVisible();
   expect(pedidos).toEqual([]);
 });
+
+test("pestañas con teclado: flechas, Inicio y Fin", async ({ page }) => {
+  await page.goto("/pactos");
+  const tiempo = page.getByRole("tab", { name: "Pacto de tiempo" });
+  const plata = page.getByRole("tab", { name: "Sumarte con plata" });
+  const convivencia = page.getByRole("tab", { name: "Pacto de convivencia" });
+  await tiempo.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(plata).toHaveAttribute("aria-selected", "true");
+  await expect(plata).toBeFocused();
+  await page.keyboard.press("ArrowLeft");
+  await expect(tiempo).toHaveAttribute("aria-selected", "true");
+  await page.keyboard.press("End");
+  await expect(convivencia).toHaveAttribute("aria-selected", "true");
+  await page.keyboard.press("ArrowRight");
+  await expect(tiempo).toHaveAttribute("aria-selected", "true");
+  await page.keyboard.press("End");
+  await page.keyboard.press("Home");
+  await expect(tiempo).toBeFocused();
+});
+
+test("si el navegador no guarda, la pantalla responde y avisa", async ({ page }) => {
+  await page.addInitScript(() => {
+    Storage.prototype.setItem = () => {
+      throw new Error("sin almacenamiento");
+    };
+  });
+  await page.goto("/pactos");
+  await page.getByRole("tab", { name: "Pacto de convivencia" }).click();
+  await expect(page.getByRole("tab", { name: "Pacto de convivencia" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("alert").filter({ hasText: "no permite guardar" })).toBeVisible();
+});

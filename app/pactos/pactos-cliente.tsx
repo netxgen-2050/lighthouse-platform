@@ -58,8 +58,8 @@ export function PactosCliente() {
       window.localStorage.setItem(CLAVE_PACTOS, JSON.stringify(siguiente));
       setFalloAlmacen(false);
     } catch {
+      // No se pudo guardar: la pantalla sigue respondiendo en memoria y se avisa.
       setFalloAlmacen(true);
-      return;
     }
     if (accion.tipo === "avanzar") foco.current = true;
     setEstado(siguiente);
