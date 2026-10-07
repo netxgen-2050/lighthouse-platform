@@ -50,7 +50,7 @@ test("residente en el exterior y remoto, y ⚖ de tierra ribereña con teclado",
   await expect(camino(page, "chacra")).toContainText("Con condiciones");
   await expect(camino(page, "aporte")).toContainText("Aporte remoto");
   // Se llega con Tab desde el ⚖ anterior (el foco por código no cuenta como teclado).
-  await camino(page, "sumarte").getByRole("button").focus();
+  await camino(page, "chacra").getByRole("button").first().focus();
   await page.keyboard.press("Tab");
   await expect(camino(page, "chacra").getByRole("button", { name: /Tierra ribereña/ })).toBeFocused();
   await expect(page.getByRole("tooltip")).toContainText("Tierra ribereña");
@@ -67,6 +67,33 @@ test("cambio en vivo y datos que sobreviven a recargar", async ({ page }) => {
   await expect(page.getByLabel("País de nacionalidad")).toHaveValue("Noruega");
   await expect(camino(page, "sumarte")).toContainText("Abierto");
   await expect(camino(page, "aporte")).toContainText("Aporte remoto");
+});
+
+test("horas fuera de rango: mensaje, aria-invalid y se repite al recargar", async ({ page }) => {
+  await page.goto("/pasaporte");
+  await page.getByLabel("Obra presencial").check();
+  const horas = page.getByLabel("Horas por mes");
+  await horas.fill("800");
+  await expect(page.getByText(/Ingresá un número de horas entre 0 y/)).toBeVisible();
+  await expect(horas).toHaveAttribute("aria-invalid", "true");
+  await page.reload();
+  await expect(page.getByLabel("Horas por mes")).toHaveValue("800");
+  await expect(page.getByText(/Ingresá un número de horas entre 0 y/)).toBeVisible();
+  await page.getByLabel("Horas por mes").fill("60");
+  await expect(page.getByText(/Ingresá un número de horas entre 0 y/)).toHaveCount(0);
+  await expect(page.getByLabel("Horas por mes")).toHaveAttribute("aria-invalid", "false");
+});
+
+test("al volver a Argentina se borra el país escrito", async ({ page }) => {
+  await page.goto("/pasaporte");
+  await cargarNoruega(page);
+  await page.getByRole("group", { name: "Nacionalidad" }).getByLabel("Argentina").check();
+  await page.getByRole("group", { name: /Residencia fiscal/ }).getByLabel("Argentina").check();
+  await page.reload();
+  await page.getByRole("group", { name: "Nacionalidad" }).getByLabel("Otra").check();
+  await expect(page.getByLabel("País de nacionalidad")).toHaveValue("");
+  await page.getByRole("group", { name: /Residencia fiscal/ }).getByLabel("Exterior").check();
+  await expect(page.getByLabel("País de residencia fiscal")).toHaveValue("");
 });
 
 test("desde el rail se llega a /pasaporte", async ({ page }) => {

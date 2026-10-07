@@ -9,6 +9,7 @@ import { EMISION } from "@/lib/sumarte/datos";
 
 // Todo queda solo en este navegador: no hay pedidos de red ni KYC real.
 const CLAVE = CLAVES.pasaporte;
+const CLAVE_HORAS_TEXTO = `${CLAVES.pasaporte}:horas-texto`;
 
 const CAMPO =
   "mt-1 block w-full rounded-lg border border-faint bg-surface px-3 py-2 text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
@@ -53,7 +54,11 @@ export function PasaporteCliente() {
     try {
       const guardados = leerDatos(window.localStorage.getItem(CLAVE));
       setDatos(guardados);
-      setHorasTexto(guardados.horas === undefined ? "" : String(guardados.horas));
+      // Si lo escrito estaba fuera de rango, se restaura el texto para repetir el mensaje.
+      const textoCrudo = window.localStorage.getItem(CLAVE_HORAS_TEXTO);
+      setHorasTexto(
+        guardados.horas !== undefined ? String(guardados.horas) : (textoCrudo ?? ""),
+      );
     } catch {
       setFalloAlmacen(true);
     }
@@ -168,10 +173,16 @@ export function PasaporteCliente() {
               step="any"
               className={CAMPO}
               value={horasTexto}
+              aria-invalid={horasInvalidas}
               aria-describedby={horasInvalidas ? "horas-error" : undefined}
               onChange={(e) => {
                 const t = e.target.value;
                 setHorasTexto(t);
+                try {
+                  window.localStorage.setItem(CLAVE_HORAS_TEXTO, t);
+                } catch {
+                  // el aviso de almacenamiento lo da cambiar()
+                }
                 const n = t === "" ? undefined : Number(t);
                 cambiar({ horas: n !== undefined && Number.isFinite(n) && n >= 0 && n <= MAX_HORAS ? n : undefined });
               }}
