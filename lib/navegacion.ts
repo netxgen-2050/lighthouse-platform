@@ -28,7 +28,7 @@ export const DESTINOS: readonly Destino[] = [
   { href: "/perfil", etiqueta: "Perfil", icono: UserRound, existe: true },
   { href: "/compromisos", etiqueta: "Compromisos", icono: Handshake, existe: false },
   { href: "/congreso", etiqueta: "Congreso", icono: CalendarDays, existe: true },
-  { href: "/sumarte", etiqueta: "Sumarte", icono: Sprout, existe: false },
+  { href: "/sumarte", etiqueta: "Sumarte", icono: Sprout, existe: true },
   { href: "/panel", etiqueta: "Mi recorrido", icono: Compass, existe: false },
 ];
 

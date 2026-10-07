@@ -4,9 +4,9 @@
 
 ## 2. Página
 
-- [ ] 2.1 Crear `app/sumarte/page.tsx` según la spec, con estado en `localStorage`, solo tokens del tema y sin `<main>` propio. Agregar el enlace a `/sumarte` en la navegación. Verificar en `pnpm dev`.
-- [ ] 2.2 Escribir `e2e/sumarte.spec.ts` con todos los escenarios, incluido "sin pedidos de red" al activar el pase. Correr también la auditoría de accesibilidad. Verificar con `pnpm test:e2e`.
+- [x] 2.1 Crear `app/sumarte/page.tsx` según la spec, con estado en `localStorage`, solo tokens del tema y sin `<main>` propio. Agregar el enlace a `/sumarte` en la navegación. Verificar en `pnpm dev`.
+- [x] 2.2 Escribir `e2e/sumarte.spec.ts` con todos los escenarios, incluido "sin pedidos de red" al activar el pase. Correr también la auditoría de accesibilidad. Verificar con `pnpm test:e2e`.
 
 ## 3. Integración
 
-- [ ] 3.1 `pnpm verificar` y `pnpm build` en verde; PR con guion de prueba.
+- [x] 3.1 `pnpm verificar` y `pnpm build` en verde; PR con guion de prueba.
