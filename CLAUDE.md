@@ -13,6 +13,14 @@ Plataforma de NetX para el Lighthouse (Soluna, BioPueblo): descubrir el territor
 - Antes de abrir un PR: `pnpm verificar` (lint + tipos + tests unitarios) y `pnpm build` en verde.
 - Commits en español, en imperativo, explicando el porqué.
 
+## Cómo usar las herramientas (corridas sin humano)
+Cada comando que no está en `.claude/settings.json` se rechaza solo. Para no trabarte:
+- **Archivos:** crear y editar siempre con las herramientas Write y Edit, nunca con `sed -i`, `python3`, `cat > archivo` ni `echo >`. Borrar un archivo versionado: `git rm <ruta>`.
+- **Un comando por llamada.** Sin `cd`, sin `git -C`, sin variables antes del comando (`U=… curl`), sin `;` ni `for` largos. La única excepción permitida es `BASE_URL=<url> pnpm test:e2e` (y con `PORT=`).
+- **Textos largos para GitHub** (PR, comentarios): escribilos con Write en `.noches/tmp/<nombre>.md` y usá `--body-file`.
+- **Procesos:** no uses `kill` ni `pkill`; puede haber otro carril en paralelo. Playwright levanta y baja su propio servidor.
+- **Carpetas:** trabajá solo dentro del repo en el que arrancaste (en la noche es `.carriles/N`).
+
 ## Reglas de producto que no se negocian
 - **Lenguaje legal:** todo término con peso legal lleva el ⚖ (`components/termino-legal.tsx`) con su explicación en palabras simples. Los textos salen **solo** de `lib/legal/terminos.ts`; los textos nuevos los escribe o aprueba Gabriel (abogado). Un agente **nunca** redacta un texto legal.
 - **Ordenanza 173:** no ofrecer ni reservar lotes 7A antes de la aprobación preliminar; toda pantalla que muestre lotes lleva el banner de estado administrativo.
