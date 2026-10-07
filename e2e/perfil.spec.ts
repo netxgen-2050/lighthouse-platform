@@ -129,6 +129,22 @@ test("sin respuestas el panel lo dice, con teclado se puede responder", async ({
   await expect(page.locator("[aria-live=polite]")).toContainText("Con teclado");
 });
 
+test("corrección vacía: el foco vuelve al campo en cada intento", async ({ page }) => {
+  await page.goto("/perfil");
+  await responder(page, "Uno");
+  const panel = page.getByRole("complementary");
+  await panel.getByRole("button", { name: "Corregir: Qué te trae" }).click();
+  const campo = panel.getByLabel("Corregir: Qué te trae");
+  await campo.fill("");
+  const confirmar = panel.getByRole("button", { name: "Confirmar corrección" });
+  await confirmar.click();
+  await expect(panel.getByRole("alert")).toContainText("no puede quedar vacío");
+  await expect(campo).toBeFocused();
+  await confirmar.focus();
+  await confirmar.click();
+  await expect(campo).toBeFocused();
+});
+
 test("el foco no se pierde: confirmar, corregir, cancelar y la sexta respuesta", async ({ page }) => {
   await page.goto("/perfil");
   await responder(page, "Uno");

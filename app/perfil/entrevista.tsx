@@ -21,7 +21,8 @@ export function Entrevista() {
   const [textoEdicion, setTextoEdicion] = useState("");
   const [errorEdicion, setErrorEdicion] = useState(false);
   const campoRef = useRef<HTMLTextAreaElement>(null);
-  const enlaceRef = useRef<HTMLAnchorElement>(null);
+  const edicionRef = useRef<HTMLInputElement>(null);
+  const enlaceRef =useRef<HTMLAnchorElement>(null);
   const corregirRefs = useRef<(HTMLButtonElement | null)[]>([]);
   // Adónde mandar el foco después del próximo render (el elemento activado puede desaparecer).
   const foco = useRef<{ en: "campo" } | { en: "cierre" } | { en: "corregir"; indice: number } | null>(null);
@@ -84,6 +85,8 @@ export function Entrevista() {
     e.preventDefault();
     if (textoEdicion.trim() === "") {
       setErrorEdicion(true);
+      // El foco al campo (descrito por el error) hace que el lector lo anuncie también al repetir.
+      edicionRef.current?.focus();
       return;
     }
     foco.current = { en: "corregir", indice: i };
@@ -194,6 +197,7 @@ export function Entrevista() {
                     onChange={(e) => setTextoEdicion(e.target.value)}
                     aria-invalid={errorEdicion}
                     aria-describedby={errorEdicion ? `error-corregir-${i}` : undefined}
+                    ref={edicionRef}
                     autoFocus
                     className="rounded-lg border border-muted bg-surface px-3 py-1.5"
                   />
