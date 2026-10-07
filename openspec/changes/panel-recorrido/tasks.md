@@ -12,7 +12,7 @@
 ## 2. Página
 
 - [ ] 2.1 Crear `app/panel/page.tsx` y `app/panel/resumen.tsx` con el próximo paso, las tres tarjetas, el aviso, el botón de borrado con `window.confirm` y el error de almacenamiento. Verificar en `pnpm dev`: completar parte del perfil, un compromiso y un ticket, abrir `/panel` y recorrerlo solo con teclado.
-- [ ] 2.2 Agregar "Mi recorrido" → `/panel` al final de `enlaces` en `components/encabezado.tsx`. Verificar en `pnpm dev` con 375 px de ancho que los enlaces no se superponen.
+- [ ] 2.2 Agregar "Mi recorrido" → `/panel` a la lista única de navegación (`lib/navegacion.ts`, del rail) si existe en la base; si no, al final de `enlaces` en `components/encabezado.tsx`. Verificar en `pnpm dev`.
 - [ ] 2.3 Verificar que no hay colores sueltos ni `<main>` nuevo: `grep -rnE "stone-|emerald-|amber-|#[0-9a-fA-F]{3,6}" app/panel` y `grep -rn "<main" app/panel` no devuelven nada.
 
 ## 3. Tests

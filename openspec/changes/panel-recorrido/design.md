@@ -24,7 +24,7 @@ Los tres lectores ya descartan datos inválidos. Falta un lugar común para las 
 
 ## Decisions
 
-- **`lib/demo/claves.ts`:** `CLAVES = { perfil: "lh-perfil-entrevista", compromisos: "lighthouse.compromisos.v1", congreso: "lh-congreso-ticket" } as const` (los valores actuales, tal cual) y, si `personas-ejemplo` ya está en `main`, también `persona`. Los tres componentes reemplazan su `const CLAVE = …` por `CLAVES.<x>`. Un test fija los valores para que nadie los cambie sin querer.
+- **`lib/demo/claves.ts`:** `CLAVES = { perfil: "lh-perfil-entrevista", compromisos: "lighthouse.compromisos.v1", congreso: "lh-congreso-ticket" } as const` (los valores actuales, tal cual). Los tres componentes reemplazan su `const CLAVE = …` por `CLAVES.<x>`. Un test fija los valores para que nadie los cambie sin querer.
 - **`lib/demo/resumen.ts`:** `resumirDemo(leer: (clave: string) => string | null): ResumenDemo`, pura, que recibe la función de lectura (en el navegador, `localStorage.getItem`; en los tests, un objeto). Devuelve `{ perfil: { confirmados, total } | null, compromisos: { ofrezco, necesito } | null, ticket: string | null, proximo: "perfil" | "compromisos" | "congreso" | null }`. `null` = no hay dato (el estado vacío), nunca 0 inventado. Reusa `leerGuardado`, `cantidadConfirmados`, `cargar` y `esCodigoValido`.
 - **Regla del próximo paso** en la misma función: perfil si `confirmados < 6` o no hay perfil; si no, compromisos si no hay ninguno; si no, congreso si no hay ticket; si no, `null`.
 - **`lib/demo/borrar.ts`:** `borrarDemo(quitar: (clave: string) => void)` recorre `Object.values(CLAVES)`.

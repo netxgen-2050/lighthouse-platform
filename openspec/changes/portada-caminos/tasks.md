@@ -1,6 +1,6 @@
 ## 0. Prerrequisitos
 
-- [ ] 0.1 Confirmar que están en `main` las rutas `/territorios/lighthouse`, `/perfil` y `/congreso`, y el módulo `lib/territorios/` con `tribusDeTerritorio`. Si falta alguna, frenar y reportar. Verificar con `git log origin/main --oneline` y `ls app/territorios app/perfil app/congreso lib/territorios`.
+- [ ] 0.1 Confirmar que están en `main` las rutas `/territorios/lighthouse`, `/perfil` y `/congreso`, y el módulo `lib/territorios/` con `tribusDeTerritorio`. Si falta alguna en la base, usá el enlace igual (la integración la trae) y anotalo en el PR. Verificar con `git log origin/main --oneline` y `ls app/territorios app/perfil app/congreso lib/territorios`.
 
 ## 1. Portada
 
@@ -8,14 +8,13 @@
 - [ ] 1.2 Calcular la cantidad de barrios con `tribusDeTerritorio("lighthouse")`; si no hay datos, usar la descripción sin número. Verificar con un test unitario de la función que arma las descripciones (o, si queda en la página, con el e2e de la tarea 3.1).
 - [ ] 1.3 Verificar que no hay colores sueltos ni `<main>` nuevo: `grep -nE "stone-|emerald-|amber-|#[0-9a-fA-F]{3,6}" app/page.tsx` y `grep -n "<main" app/page.tsx` no devuelven nada.
 
-## 2. Encabezado
+## 2. Héroe
 
-- [ ] 2.1 Agregar "Perfil" → `/perfil` y "Congreso" → `/congreso` al final del arreglo `enlaces` de `components/encabezado.tsx`. Verificar en `pnpm dev` con un ancho de 375 px que los enlaces no se superponen y que `aria-current="page"` aparece solo en el de la ruta actual.
+- [ ] 2.1 Copiar el texto del héroe de `V.inicio` del mock-up v6 (con la mención a la inversión), sumar el enlace "Elegí cómo sumarte" → `/sumarte` si la ruta existe y el aviso "Prototipo interno · datos de ejemplo". Sin otros nodos del corredor. Verificar en `pnpm dev`.
 
 ## 3. Tests
 
-- [ ] 3.1 Ampliar `e2e/portada.spec.ts` con todos los escenarios de la spec: los tres caminos en orden, cada uno navega a su ruta con respuesta 200, recorrido con Tab + Enter hasta `/perfil`, titular y botón "Ver las tribus" presentes, cantidad de barrios igual a la de los datos, ausencia de "USD", "$", `/\bha\b/`, "invertir", "capital", "lote" y "reservar". Verificar con `pnpm test:e2e e2e/portada.spec.ts`.
-- [ ] 3.2 Agregar a `e2e/marco.spec.ts` (o donde se prueba el encabezado) el escenario de `aria-current` en `/congreso` y en `/perfil`. Verificar con `pnpm test:e2e e2e/marco.spec.ts`.
+- [ ] 3.1 Ampliar `e2e/portada.spec.ts` con todos los escenarios de la spec: los tres caminos en orden y navegando a su ruta, recorrido con Tab + Enter hasta `/perfil`, cantidad de barrios igual a la de los datos, héroe del mock-up, aviso de prototipo, y que no aparezcan San Martín de los Andes ni Atlántico Sur. Verificar con `pnpm test:e2e e2e/portada.spec.ts`.
 
 ## 4. Integración
 

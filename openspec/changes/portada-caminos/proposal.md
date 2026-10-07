@@ -11,7 +11,7 @@ La demo de la It.1 "Explorar" (roadmap técnico, nota Desarrollo/06) es el recor
   - "Encontrarse" · **Encontrar mi tribu** → `/perfil`.
   - "Encontrarse en persona" · **Congreso · Feb 2027** → `/congreso`.
 - Las descripciones salen del mock-up **sin cifras sueltas**: la cantidad de barrios se calcula de los datos de `lib/territorios/` en vez de escribirse a mano, y no se muestra la superficie ("~1.000 ha").
-- Dos enlaces nuevos en el encabezado global: "Perfil" → `/perfil` y "Congreso" → `/congreso`, con `aria-current="page"` en su ruta.
+- **Actualización 7-oct (Gus):** el héroe usa el texto del mock-up con la inversión (prototipo interno), suma "Elegí cómo sumarte" → `/sumarte`, aviso de prototipo, sin otros nodos. La navegación va en el rail (`navegacion-rail`), no en el encabezado.
 - Un test e2e de la portada que recorre los tres caminos con teclado.
 
 **Fuera de alcance:**

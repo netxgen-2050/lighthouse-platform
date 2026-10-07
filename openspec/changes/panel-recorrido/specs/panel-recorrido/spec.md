@@ -73,10 +73,10 @@ The system SHALL, when the browser does not allow reading local storage, show an
 - **WHEN** el acceso a `localStorage` lanza un error
 - **THEN** `/panel` muestra un mensaje de error en texto y no dice "Todavía no empezaste la entrevista"
 
-### Requirement: Enlace en el encabezado y accesibilidad
+### Requirement: Enlace en la navegación y accesibilidad
 The global header SHALL include "Mi recorrido" linking to `/panel`, with `aria-current="page"` on that route. Card states MUST be conveyed in text, not only with color or icons, and every link and button on `/panel` MUST be operable with the keyboard.
 
 #### Scenario: Recorrer con teclado
 - **WHEN** una persona abre `/panel` y navega solo con Tab
 - **THEN** llega al enlace del próximo paso, a los enlaces de las tarjetas Perfil, Compromisos y Congreso y al botón de borrado, en ese orden
-- **AND** el enlace "Mi recorrido" del encabezado tiene `aria-current="page"`
+- **AND** el enlace "Mi recorrido" de la navegación tiene `aria-current="page"`

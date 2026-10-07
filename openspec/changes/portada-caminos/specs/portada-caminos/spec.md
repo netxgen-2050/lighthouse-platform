@@ -26,20 +26,32 @@ Each path SHALL be a single focusable link whose accessible name includes its ti
 - **THEN** cada camino recibe el foco en orden y muestra un indicador de foco visible
 - **AND** al apretar Enter sobre "Encontrar mi tribu" llega a `/perfil`
 
-### Requirement: Sin cifras inventadas ni plata
-The description of "Explorar el Lighthouse" SHALL derive the number of neighborhoods from the territory data, not from a hard-coded number. The portada MUST NOT show amounts, the text "USD", the surface "~1.000 ha", nor the words "invertir", "capital", "lote" or "reservar".
+### Requirement: Cantidad de barrios desde los datos
+The description of "Explorar el Lighthouse" SHALL derive the number of neighborhoods from the territory data, not from a hard-coded number.
 
 #### Scenario: Cantidad de barrios desde los datos
 - **WHEN** el territorio Lighthouse tiene 12 tribus en sus datos
 - **THEN** la descripción de "Explorar el Lighthouse" dice "doce barrios" o "12 barrios"
 
-#### Scenario: Portada sin plata ni lotes
-- **WHEN** una persona recorre `/`
-- **THEN** no aparece ningún monto, "USD", la unidad "ha" como palabra suelta, "invertir", "capital", "lote" ni "reservar"
+### Requirement: Héroe del mock-up con la propuesta para inversores
+The system SHALL use the hero text of `V.inicio` in mock-up v6, including its investment wording, so that the home page makes clear the platform is meant to raise money from investors and users (decision of Gus, 7-oct-2026, internal prototype). When the route `/sumarte` exists, the hero MUST include a secondary link "Elegí cómo sumarte" to it. Other nodes of the corridor (San Martín de los Andes, Atlántico Sur) MUST NOT appear.
 
-### Requirement: Perfil y Congreso en el encabezado
-The global header SHALL include the links "Perfil" to `/perfil` and "Congreso" to `/congreso`, after the existing links, and MUST mark the link of the current route with `aria-current="page"`.
+#### Scenario: Propuesta visible
+- **WHEN** una persona abre `/`
+- **THEN** lee el texto del héroe del mock-up, con su mención a la inversión
+- **AND** si existe `/sumarte`, ve el enlace "Elegí cómo sumarte"
+- **AND** no aparecen San Martín de los Andes ni Atlántico Sur
 
-#### Scenario: Enlace activo
-- **WHEN** una persona está en `/congreso`
-- **THEN** el enlace "Congreso" del encabezado tiene `aria-current="page"` y ningún otro enlace lo tiene
+### Requirement: Aviso de prototipo en la portada
+The home page SHALL show the notice "Prototipo interno · datos de ejemplo".
+
+#### Scenario: Aviso
+- **WHEN** una persona abre `/`
+- **THEN** ve el aviso de prototipo
+
+### Requirement: Navegación
+The home page change SHALL NOT add links to the header: navigation destinations live in the navigation rail (`navegacion-rail`, `lib/navegacion.ts`). If the rail is in the base branch, new routes are added to its single list.
+
+#### Scenario: Sin enlaces nuevos en el encabezado
+- **WHEN** se revisa el diff
+- **THEN** `components/encabezado.tsx` no suma enlaces
