@@ -79,6 +79,9 @@ h3 {
 
 .mapa-barrio-formacion {
   stroke: var(--color-gold-ink);
+  stroke-width: 2;
+  stroke-dasharray: 1 4;
+  stroke-linecap: round;
   fill: var(--color-gold-soft);
 }
 
@@ -121,6 +124,8 @@ h3 {
   background: var(--color-gold-soft);
   color: var(--color-gold-ink);
   border-color: var(--color-gold-ink);
+  border-style: dotted;
+  border-width: 3px;
 }
 
 .mapa-sello-vacante {
@@ -146,6 +151,8 @@ h3 {
 .mapa-leyenda-formacion {
   background: var(--color-gold-soft);
   border-color: var(--color-gold-ink);
+  border-style: dotted;
+  border-width: 3px;
   border-radius: 9999px;
 }
 

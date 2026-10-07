@@ -67,11 +67,15 @@ export default function MapaLeaflet({ contorno, nucleo, sellos }: Props) {
         }).addTo(mapa);
       }
       for (const s of sellos) {
+        // El sello se arma con textContent: las iniciales nunca se interpretan como HTML.
+        const sello = document.createElement("span");
+        sello.className = `mapa-sello mapa-sello-${s.estado}`;
+        sello.textContent = s.estado === "vacante" ? "+" : s.iniciales;
         const marcador = L.marker(centro(s.poligono), {
           keyboard: true,
           icon: L.divIcon({
             className: "mapa-sello-wrap",
-            html: `<span class="mapa-sello mapa-sello-${s.estado}">${s.estado === "vacante" ? "+" : s.iniciales}</span>`,
+            html: sello,
             iconSize: [40, 40],
             iconAnchor: [20, 20],
           }),

@@ -61,6 +61,20 @@ test("sin mapa base los sellos siguen funcionando", async ({ page }) => {
   await expect(page).toHaveURL(/\/tribus\/valle$/);
 });
 
+test("sin mapa base los sellos siguen enfocables con Tab y Enter", async ({ page }) => {
+  await page.route("**://tile.openstreetmap.org/**", (r) => r.abort());
+  await page.goto("/territorios/lighthouse");
+  await expect(sellos(page)).toHaveCount(12);
+  const barrio6 = page.locator('[aria-label^="Barrio 6 "]');
+  for (let i = 0; i < 40; i++) {
+    await page.keyboard.press("Tab");
+    if (await barrio6.evaluate((el) => el === document.activeElement)) break;
+  }
+  await expect(barrio6).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/tribus\/valle$/);
+});
+
 test("un solo main", async ({ page }) => {
   await page.goto("/territorios/lighthouse");
   await expect(page.locator("main")).toHaveCount(1);
