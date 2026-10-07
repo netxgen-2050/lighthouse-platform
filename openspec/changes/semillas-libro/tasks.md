@@ -1,6 +1,6 @@
 ## 1. Datos y lógica
 
-- [ ] 1.1 Crear `lib/semillas/` con los datos de ejemplo copiados de `V.semillas` del mock-up v6 y la lógica pura (cálculos y estado), con tests de Vitest. Copiar los ⚖ que use la pantalla al catálogo (los nuevos con `borrador: true`) y actualizar su test. Verificar con `pnpm test`.
+- [x] 1.1 Crear `lib/semillas/` con los datos de ejemplo copiados de `V.semillas` del mock-up v6 y la lógica pura (cálculos y estado), con tests de Vitest. Copiar los ⚖ que use la pantalla al catálogo (los nuevos con `borrador: true`) y actualizar su test. Verificar con `pnpm test`.
 
 ## 2. Pantalla
 

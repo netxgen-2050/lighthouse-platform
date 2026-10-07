@@ -46,6 +46,11 @@ export const TERMINOS = {
     texto:
       "La plataforma muestra un registro espejo de quién aportó qué, conciliado con el del fiduciario. Si hay diferencia, manda el registro del fiduciario.",
   },
+  art32: {
+    titulo: "Reglamento de Soluna, art. 32",
+    texto:
+      "Consenso para el funcionamiento habitual, consentimiento para lo operativo y 2/3 para modificar el reglamento. El voto vale porque lo dice el reglamento, no porque lo diga la plataforma.",
+  },
   semillas: {
     titulo: "Semillas",
     texto:
