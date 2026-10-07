@@ -29,6 +29,7 @@ describe("catálogo legal", () => {
         "personeria",
         "plantribu",
         "presencia",
+        "ribera",
         "ritual",
         "ronda0",
         "safe",
