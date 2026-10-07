@@ -5,10 +5,6 @@ import { TERMINOS, type ClaveTermino } from "@/lib/legal/terminos";
 
 const EVENTO_ABRIR = "termino-legal:abrir";
 
-function sinHover() {
-  return typeof window !== "undefined" && window.matchMedia("(hover: none)").matches;
-}
-
 // La explicación de un término legal se muestra como tooltip flotante:
 // mouse (entrar/salir), teclado (foco/blur, Escape) y toque (dispositivos sin hover).
 export function TerminoLegal({ clave }: { clave: ClaveTermino }) {
@@ -17,8 +13,11 @@ export function TerminoLegal({ clave }: { clave: ClaveTermino }) {
   const [conFoco, setConFoco] = useState(false);
   const [conToque, setConToque] = useState(false);
   const [desplazamiento, setDesplazamiento] = useState(0);
+  const [abajo, setAbajo] = useState(false);
   const visible = conMouse || conFoco || conToque;
   const id = useId();
+  // Tipo del último puntero que apretó el ⚖: se decide por el evento, no por el dispositivo (híbridos).
+  const ultimoPuntero = useRef("");
   const contenedor = useRef<HTMLSpanElement>(null);
   const tooltip = useRef<HTMLSpanElement>(null);
 
@@ -58,14 +57,16 @@ export function TerminoLegal({ clave }: { clave: ClaveTermino }) {
     };
   }, [visible]);
 
-  // Mantiene el tooltip dentro de la pantalla sin moverlo del ⚖.
+  // Mantiene el tooltip dentro de la pantalla: abre hacia arriba y, si no hay lugar, hacia abajo.
   useLayoutEffect(() => {
     if (!visible || !tooltip.current) {
       setDesplazamiento(0);
+      setAbajo(false);
       return;
     }
     const caja = tooltip.current.getBoundingClientRect();
     const margen = 8;
+    if (!abajo && caja.top < margen) setAbajo(true);
     const sobra = caja.right + desplazamiento - (window.innerWidth - margen);
     const falta = margen - (caja.left - desplazamiento);
     setDesplazamiento(sobra > 0 ? -sobra : falta > 0 ? falta : 0);
@@ -92,8 +93,13 @@ export function TerminoLegal({ clave }: { clave: ClaveTermino }) {
           if (e.currentTarget.matches(":focus-visible")) setConFoco(true);
         }}
         onBlur={() => setConFoco(false)}
+        onPointerDown={(e) => {
+          ultimoPuntero.current = e.pointerType;
+        }}
         onClick={() => {
-          if (sinHover()) setConToque((v) => !v);
+          // Con mouse el tooltip sigue al puntero y con teclado al foco: el clic solo alterna si fue un toque.
+          if (ultimoPuntero.current === "touch") setConToque((v) => !v);
+          ultimoPuntero.current = "";
         }}
         className="ml-1 rounded px-1 text-gold-ink hover:bg-gold-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-ink"
       >
@@ -105,7 +111,7 @@ export function TerminoLegal({ clave }: { clave: ClaveTermino }) {
           id={id}
           role="tooltip"
           style={{ transform: `translateX(${desplazamiento}px)` }}
-          className="absolute bottom-full left-0 z-10 block w-72 max-w-[calc(100vw-1rem)] pb-1 text-sm font-normal text-ink"
+          className={`absolute left-0 z-10 block w-72 max-w-[calc(100vw-1rem)] text-sm font-normal text-ink ${abajo ? "top-full pt-1" : "bottom-full pb-1"}`}
         >
           <span className="block rounded-lg border border-gold-ink bg-surface p-3 shadow-lg">
             <strong className="block">{termino.titulo}</strong>

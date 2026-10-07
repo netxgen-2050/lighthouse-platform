@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { listarTribus } from "@/lib/tribus/datos";
 
@@ -93,9 +94,59 @@ test.describe("⚖ como tooltip, con mouse", () => {
       return !el.contains(arriba);
     });
     expect(tapado).toBe(false);
+    // Tampoco tapa el ⚖ propio.
+    const propioTapado = await ritual.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const arriba = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      return !el.contains(arriba);
+    });
+    expect(propioTapado).toBe(false);
     await personeria.hover();
     await expect(page.getByRole("tooltip")).toHaveCount(1);
     await expect(page.getByRole("tooltip")).toContainText("Comunidad con personería");
+  });
+});
+
+test.describe("⚖ como tooltip, posición y accesibilidad", () => {
+  test("cerca del borde superior abre hacia abajo y queda dentro de la pantalla", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    const boton = page.getByRole("button", { name: RITUAL });
+    // La página es corta: se agrega alto para poder dejar el ⚖ pegado al borde superior.
+    await page.evaluate(() => {
+      document.body.style.paddingBottom = "2000px";
+    });
+    await boton.evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - 2));
+    await boton.hover();
+    const tooltip = page.getByRole("tooltip");
+    await expect(tooltip).toBeVisible();
+    const caja = await tooltip.boundingBox();
+    const cajaBoton = await boton.boundingBox();
+    expect(caja!.y).toBeGreaterThanOrEqual(0);
+    expect(caja!.y).toBeGreaterThanOrEqual(cajaBoton!.y + cajaBoton!.height - 1);
+  });
+
+  test("axe sin violaciones serias o críticas con el tooltip abierto", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    await page.getByRole("button", { name: RITUAL }).hover();
+    await expect(page.getByRole("tooltip")).toBeVisible();
+    const r = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .analyze();
+    const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+  });
+});
+
+test.describe("⚖ como tooltip, híbrido (toque en pantalla que también tiene hover)", () => {
+  test.use({ hasTouch: true });
+
+  test("un toque muestra aunque el dispositivo tenga hover", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    const boton = page.getByRole("button", { name: RITUAL });
+    await boton.tap();
+    await expect(page.getByRole("tooltip")).toContainText("Ley 23.592");
+    await boton.tap();
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
   });
 });
 
