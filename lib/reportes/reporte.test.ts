@@ -114,6 +114,16 @@ describe("issue", () => {
     expect(cuerpo).toContain("- Ruta: `/tribus/@algo?q=1`");
     expect(cuerpo).not.toContain("​");
   });
+  it("saltos de línea en URL y ruta no cortan el bloque de código", () => {
+    const r = validarReporte({
+      ...valido,
+      contexto: { url: "http://x.test/a\n\n@alguien", ruta: "/a\r\n\r\n@alguien" },
+    });
+    if (!r.ok) throw new Error("debía ser válido");
+    const cuerpo = armarCuerpo(r.reporte);
+    expect(cuerpo).toContain("- URL: `http://x.test/a @alguien`");
+    expect(cuerpo).toContain("- Ruta: `/a @alguien`");
+  });
   it("acorta títulos largos", () => {
     const t = armarTitulo({ tipo: "idea", quePaso: "palabra ".repeat(50) });
     expect(t.length).toBeLessThanOrEqual(90);

@@ -156,7 +156,7 @@ export function neutralizar(t: string): string {
 
 /** URL y ruta van entre comillas invertidas: no se interpretan menciones y el texto queda exacto. */
 function enCodigo(t: string): string {
-  return `\`${t.replace(/`/g, "%60")}\``;
+  return `\`${t.replace(/\s+/g, " ").replace(/`/g, "%60")}\``;
 }
 
 export function armarTitulo(r: Pick<Reporte, "tipo" | "quePaso">): string {

@@ -36,7 +36,15 @@ export async function POST(req: Request) {
         labels: armarEtiquetas(r.reporte.tipo),
       }),
     });
-    if (!res.ok) return NextResponse.json({ ok: false, configurado: true }, { status: 502 });
+    if (!res.ok) {
+      // Solo el status y el message de GitHub: nunca el token, los headers ni el reporte.
+      const motivo = await res
+        .json()
+        .then((d: { message?: unknown }) => (typeof d?.message === "string" ? d.message : "sin message"))
+        .catch(() => "sin message");
+      console.error(`[reportes] GitHub rechazó la creación del issue: ${res.status} ${motivo}`);
+      return NextResponse.json({ ok: false, configurado: true }, { status: 502 });
+    }
     const datos = (await res.json()) as { number?: unknown };
     if (typeof datos.number !== "number") {
       return NextResponse.json({ ok: false, configurado: true }, { status: 502 });

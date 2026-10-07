@@ -57,6 +57,21 @@ describe("POST /api/reportes", () => {
     expect(fetchSimulado).not.toHaveBeenCalled();
   });
 
+  it("registra solo el status y el message de GitHub, sin el token ni el reporte", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    fetchSimulado.mockResolvedValue(
+      new Response(JSON.stringify({ message: "Bad credentials" }), { status: 401 }),
+    );
+    const res = await POST(pedido(cuerpo));
+    expect(await res.json()).toEqual({ ok: false, configurado: true });
+    const registrado = JSON.stringify(log.mock.calls);
+    expect(registrado).toContain("401");
+    expect(registrado).toContain("Bad credentials");
+    expect(registrado).not.toContain(TOKEN);
+    expect(registrado).not.toContain("Se rompe");
+    log.mockRestore();
+  });
+
   it("si GitHub falla responde 502 sin el token", async () => {
     fetchSimulado.mockResolvedValue(new Response("{}", { status: 401 }));
     const res = await POST(pedido(cuerpo));
