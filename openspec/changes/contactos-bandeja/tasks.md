@@ -9,15 +9,15 @@
 
 ## 2. Formulario y pantallas
 
-- [ ] 2.1 Crear `components/pedido-contacto.tsx` según el design (en línea, radios de canal, momento, mensaje con contador, aviso de "no te pedimos email ni teléfono", ⚖ `contacto`, errores accesibles, anuncio en región en vivo, foco al abrir y al cancelar; solo tokens). Verificar en `pnpm dev` solo con teclado.
-- [ ] 2.2 Usar el formulario en la ficha de finca de `app/territorios/[id]/` (con el aviso compacto de `EstadoAdministrativo` y `estadoMostrado`), reemplazando la marca propia de la consulta. Verificar en `pnpm dev` con la finca 502: enviar, recargar y ver "Consulta enviada (simulado)".
-- [ ] 2.3 En `app/sumarte/sumarte-cliente.tsx`, hacer que "Pedir invitación" y "Pedir una charla" abran el formulario y hagan el `dispatch` actual solo al enviar. Verificar en `pnpm dev`: enviar suma uno al medidor; cancelar no cambia nada.
-- [ ] 2.4 Crear `app/netx/bandeja-pedidos.tsx` y sumarlo a `app/netx/page.tsx` (tabla, nota del CRM, vacío, "sin dato" en opcionales). Verificar en `pnpm dev` con y sin pedidos.
+- [x] 2.1 Crear `components/pedido-contacto.tsx` según el design (en línea, radios de canal, momento, mensaje con contador, aviso de "no te pedimos email ni teléfono", ⚖ `contacto`, errores accesibles, anuncio en región en vivo, foco al abrir y al cancelar; solo tokens). Verificar en `pnpm dev` solo con teclado.
+- [x] 2.2 Usar el formulario en la ficha de finca de `app/territorios/[id]/` (con el aviso compacto de `EstadoAdministrativo` y `estadoMostrado`), reemplazando la marca propia de la consulta. Verificar en `pnpm dev` con la finca 502: enviar, recargar y ver "Consulta enviada (simulado)".
+- [x] 2.3 En `app/sumarte/sumarte-cliente.tsx`, hacer que "Pedir invitación" y "Pedir una charla" abran el formulario y hagan el `dispatch` actual solo al enviar. Verificar en `pnpm dev`: enviar suma uno al medidor; cancelar no cambia nada.
+- [x] 2.4 Crear `app/netx/bandeja-pedidos.tsx` y sumarlo a `app/netx/page.tsx` (tabla, nota del CRM, vacío, "sin dato" en opcionales). Verificar en `pnpm dev` con y sin pedidos.
 
 ## 3. Tests
 
-- [ ] 3.1 Escribir `e2e/contactos.spec.ts` con los escenarios de la spec (finca 502, canal obligatorio, mensaje largo, cancelar, invitación al círculo, cancelar la charla, bandeja en `/netx`, vacío, borrar todo desde `/panel`, ⚖ borrador, solo teclado) y ajustar `e2e/sumarte.spec.ts` y el e2e del territorio al nuevo paso del formulario. Verificar con `pnpm test:e2e`.
-- [ ] 3.2 Sumar a `e2e/accesibilidad.spec.ts` `/sumarte` con el formulario abierto y `/netx` con un pedido. Verificar sin violaciones `serious` ni `critical`.
+- [x] 3.1 Escribir `e2e/contactos.spec.ts` con los escenarios de la spec (finca 502, canal obligatorio, mensaje largo, cancelar, invitación al círculo, cancelar la charla, bandeja en `/netx`, vacío, borrar todo desde `/panel`, ⚖ borrador, solo teclado) y ajustar `e2e/sumarte.spec.ts` y el e2e del territorio al nuevo paso del formulario. Verificar con `pnpm test:e2e`.
+- [x] 3.2 Sumar a `e2e/accesibilidad.spec.ts` `/sumarte` con el formulario abierto y `/netx` con un pedido. Verificar sin violaciones `serious` ni `critical`.
 
 ## 4. Integración
 

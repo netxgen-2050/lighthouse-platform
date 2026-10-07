@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Medidor } from "@/components/medidor";
+import { PedidoContacto } from "@/components/pedido-contacto";
 import { TerminoLegal } from "@/components/termino-legal";
+import { guardarPedido } from "@/lib/contactos/almacen";
+import type { Pedido } from "@/lib/contactos/tipos";
 import { CLAVES } from "@/lib/demo/claves";
 import {
   COHORT,
@@ -34,6 +37,7 @@ export function SumarteCliente() {
   const [estado, setEstado] = useState<EstadoSumarte>(INICIAL);
   const [listo, setListo] = useState(false);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
+  const [formulario, setFormulario] = useState<"invitacion" | "charla" | null>(null);
   const foco = useRef<string | null>(null);
 
   useEffect(() => {
@@ -64,6 +68,16 @@ export function SumarteCliente() {
     }
     foco.current = enfocar ?? null;
     setEstado(siguiente);
+  }
+
+  // El pedido se guarda primero; recién ahí se hace lo que el botón hacía antes.
+  function enviarPedido(pedido: Pedido, accion: Accion): boolean {
+    if (!guardarPedido(pedido)) {
+      setFalloAlmacen(true);
+      return false;
+    }
+    dispatch(accion);
+    return true;
   }
 
   const paseActivo = estado.pase ? PASSES.find((p) => p.id === estado.pase)! : null;
@@ -301,9 +315,24 @@ export function SumarteCliente() {
             {estado.invitacion ? (
               <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="invitacion">Invitación pedida (simulado)</p>
             ) : (
-              <button type="button" className={BOTON_PRIMARIO} onClick={() => dispatch({ tipo: "invitacion" }, "invitacion")}>
+              <button
+                id="boton-invitacion"
+                type="button"
+                aria-expanded={formulario === "invitacion"}
+                className={BOTON_PRIMARIO}
+                onClick={() => setFormulario("invitacion")}
+              >
                 Pedir invitación
               </button>
+            )}
+            {formulario === "invitacion" && (
+              <PedidoContacto
+                motivo="invitacion-circulo"
+                referencia="Lote 7"
+                idBoton="boton-invitacion"
+                alEnviar={(pedido) => enviarPedido(pedido, { tipo: "invitacion" })}
+                alCancelar={() => setFormulario(null)}
+              />
             )}
             <p className="text-sm text-muted">
               Elegibilidad de ejemplo: disponible. Con residencia fiscal en el exterior todavía no se puede entrar
@@ -322,9 +351,24 @@ export function SumarteCliente() {
             {estado.charla ? (
               <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="charla">Charla pedida (simulado)</p>
             ) : (
-              <button type="button" className={BOTON_SUAVE} onClick={() => dispatch({ tipo: "charla" }, "charla")}>
+              <button
+                id="boton-charla"
+                type="button"
+                aria-expanded={formulario === "charla"}
+                className={BOTON_SUAVE}
+                onClick={() => setFormulario("charla")}
+              >
                 Pedir una charla
               </button>
+            )}
+            {formulario === "charla" && (
+              <PedidoContacto
+                motivo="charla-netx"
+                referencia="Invertir en NetX"
+                idBoton="boton-charla"
+                alEnviar={(pedido) => enviarPedido(pedido, { tipo: "charla" })}
+                alCancelar={() => setFormulario(null)}
+              />
             )}
           </article>
         </div>

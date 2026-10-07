@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { TerminoLegal } from "@/components/termino-legal";
 import { anchoBarra, anchoMedidor, conversiones, formatear, porcentaje } from "@/lib/vista-netx/calculos";
+import { BandejaPedidos } from "./bandeja-pedidos";
 import { ALERTAS, EMBUDO, EMISION, INDICADORES, TRIBUS_POR_PROYECTO } from "@/lib/vista-netx/datos";
 
 export const metadata: Metadata = { title: "Vista NetX" };
@@ -146,6 +147,8 @@ export default function NetxPage() {
           </table>
         </div>
       </section>
+
+      <BandejaPedidos />
     </div>
   );
 }

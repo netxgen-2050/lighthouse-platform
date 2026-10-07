@@ -68,10 +68,14 @@ test("pedir invitación suma un lugar y pedir una charla queda simulado", async 
   await page.goto("/sumarte");
   await expect(page.getByText("22 de 35")).toBeVisible();
   await page.getByRole("button", { name: "Pedir invitación" }).click();
+  await page.getByRole("radio", { name: "Email" }).check();
+  await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
   await expect(page.getByText("Invitación pedida (simulado)")).toBeVisible();
   await expect(page.getByText("23 de 35")).toBeVisible();
   await expect(page.getByText("12 de 15")).toBeVisible();
   await page.getByRole("button", { name: "Pedir una charla" }).click();
+  await page.getByRole("radio", { name: "Telegram" }).check();
+  await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
   await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
 });
 

@@ -34,6 +34,31 @@ test("axe sin violaciones serias o críticas: /pasaporte con datos cargados", as
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
+test("axe sin violaciones serias o críticas: /sumarte con el formulario de contacto abierto", async ({ page }) => {
+  await page.goto("/sumarte");
+  await page.getByRole("button", { name: "Pedir invitación" }).click();
+  await expect(page.getByRole("button", { name: "Enviar pedido (simulado)" })).toBeVisible();
+  // También con el error de canal a la vista.
+  await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
+  await expect(page.getByText("Elegí cómo preferís que te contactemos").last()).toBeVisible();
+  const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /netx con un pedido en la bandeja", async ({ page }) => {
+  await page.goto("/sumarte");
+  await page.getByRole("button", { name: "Pedir una charla" }).click();
+  await page.getByRole("radio", { name: "Email" }).check();
+  await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
+  await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
+  await page.goto("/netx");
+  await expect(page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" })).toBeVisible();
+  const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+});
+
 for (const ruta of rutas) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);

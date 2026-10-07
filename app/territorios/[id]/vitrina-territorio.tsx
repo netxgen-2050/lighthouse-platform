@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CLAVES } from "@/lib/demo/claves";
+import { guardarPedido, leerBandejaDelNavegador } from "@/lib/contactos/almacen";
+import type { Pedido } from "@/lib/contactos/tipos";
 import { buscarElemento, listarBarrios,listarFincas, terrenoComun, tribuDeBarrio } from "@/lib/territorios/biopueblo";
 import { FichaLateral } from "./ficha-lateral";
 import MapaCliente from "./mapa-cliente";
@@ -32,23 +33,18 @@ export function VitrinaTerritorio() {
   }, []);
 
   useEffect(() => {
-    // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
-    try {
-      const guardado = JSON.parse(window.localStorage.getItem(CLAVES.consultasLotes) ?? "[]");
-      if (Array.isArray(guardado)) setConsultas(guardado.filter((x): x is string => typeof x === "string"));
-    } catch {
-      // Sin almacenamiento o contenido dañado: se empieza sin consultas.
-    }
+    // Lectura de la bandeja del navegador tras hidratar (no existe en el servidor).
+    setConsultas(
+      leerBandejaDelNavegador()
+        .filter((p) => p.motivo === "consulta-lote")
+        .map((p) => p.referencia),
+    );
   }, []);
 
-  function consultar(id: string) {
-    const nuevas = consultas.includes(id) ? consultas : [...consultas, id];
-    setConsultas(nuevas);
-    try {
-      window.localStorage.setItem(CLAVES.consultasLotes, JSON.stringify(nuevas));
-    } catch {
-      // Sin almacenamiento: la consulta simulada vale solo mientras la página siga abierta.
-    }
+  function consultar(pedido: Pedido): boolean {
+    if (!guardarPedido(pedido)) return false;
+    setConsultas((previas) => [...previas, pedido.referencia]);
+    return true;
   }
 
   const barrios = listarBarrios();

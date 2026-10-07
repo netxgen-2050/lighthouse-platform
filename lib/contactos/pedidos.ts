@@ -21,6 +21,11 @@ export const MOMENTOS: Record<Momento, string> = {
   noche: "Noche",
 };
 
+/** Referencia de una finca: su número o, si no tiene, su id para no confundirla con otra. */
+export function referenciaDeFinca(numero: number | undefined, id: string): string {
+  return numero === undefined ? `Finca sin número (${id})` : `Finca ${numero}`;
+}
+
 export function validar(b: Pick<Borrador, "canal" | "mensaje">): Errores {
   const errores: Errores = {};
   if (!b.canal) errores.canal = "Elegí cómo preferís que te contactemos";

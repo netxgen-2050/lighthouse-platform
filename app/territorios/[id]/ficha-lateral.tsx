@@ -1,7 +1,13 @@
+"use client";
+
+import { useId, useState } from "react";
 import Link from "next/link";
 import { EstadoAdministrativo } from "@/components/estado-administrativo";
+import { PedidoContacto } from "@/components/pedido-contacto";
 import { SelloTribu } from "@/components/sello-tribu";
-import { accionesDeLote } from "@/lib/legal/estado-administrativo";
+import { referenciaDeFinca } from "@/lib/contactos/pedidos";
+import type { Pedido } from "@/lib/contactos/tipos";
+import { ESTADOS_ADMINISTRATIVOS, accionesDeLote } from "@/lib/legal/estado-administrativo";
 import { TerminoLegal } from "@/components/termino-legal";
 import {
   TEXTO_ESTADO_FINCA,
@@ -17,12 +23,53 @@ import { TEXTO_ESTADO } from "@/lib/tribus/tipos";
 
 type Props = {
   seleccion: string | null;
+  /** Referencias de las fincas por las que ya hay un pedido en la bandeja. */
   consultas: string[];
-  alConsultar: (id: string) => void;
+  /** Guarda el pedido de contacto. Devuelve false si no se pudo guardar. */
+  alConsultar: (pedido: Pedido) => boolean;
 };
 
 const boton =
   "w-fit rounded-lg bg-deep px-4 py-1.5 text-on-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
+
+// Botón de consulta y formulario en línea. Se vuelve a crear al cambiar de finca (key).
+function ConsultaFinca({
+  referencia,
+  enviada,
+  alConsultar,
+}: {
+  referencia: string;
+  enviada: boolean;
+  alConsultar: (pedido: Pedido) => boolean;
+}) {
+  const [abierto, setAbierto] = useState(false);
+  const idBoton = `consultar-${useId()}`;
+  const estado = ESTADOS_ADMINISTRATIVOS.soluna;
+  return (
+    <div className="grid gap-3">
+      {enviada ? (
+        <p role="status" className="font-medium">
+          Consulta enviada (simulado)
+        </p>
+      ) : (
+        <button id={idBoton} type="button" aria-expanded={abierto} onClick={() => setAbierto(true)} className={boton}>
+          Consultar por este lote
+        </button>
+      )}
+      {abierto && (
+        <PedidoContacto
+          motivo="consulta-lote"
+          referencia={referencia}
+          estadoMostrado={`${estado.estado} · ${estado.normaCorta}`}
+          aviso={<EstadoAdministrativo proyecto="soluna" compacto />}
+          idBoton={idBoton}
+          alEnviar={alConsultar}
+          alCancelar={() => setAbierto(false)}
+        />
+      )}
+    </div>
+  );
+}
 
 export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
   const el = seleccion ? buscarElemento(seleccion) : undefined;
@@ -82,7 +129,7 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
 
   if (el?.tipo === "finca") {
     const disponible = el.estado === "disponible";
-    const enviada = consultas.includes(el.id);
+    const referencia = referenciaDeFinca(el.numero, el.id);
     const acciones = accionesDeLote("soluna");
     return (
       <div className="grid gap-3">
@@ -95,16 +142,14 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
         <EstadoAdministrativo proyecto="soluna" compacto />
         {disponible && (
           <>
-            {acciones.includes("consultar") &&
-              (enviada ? (
-                <p role="status" className="font-medium">
-                  Consulta enviada (simulado)
-                </p>
-              ) : (
-                <button type="button" onClick={() => alConsultar(el.id)} className={boton}>
-                  Consultar por este lote
-                </button>
-              ))}
+            {acciones.includes("consultar") && (
+              <ConsultaFinca
+                key={el.id}
+                referencia={referencia}
+                enviada={consultas.includes(referencia)}
+                alConsultar={alConsultar}
+              />
+            )}
             <p className="text-sm text-muted">
               NetX actúa como agencia: la compra es privada entre las partes.
               <TerminoLegal clave="agencia" />
