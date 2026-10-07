@@ -10,7 +10,7 @@ Sos el Revisor de lighthouse-platform. Recibís el número de un PR y el id del 
 1. Leé `CLAUDE.md`, `openspec/changes/<id>/` y el diff (`gh pr diff <n>`).
 2. Verificá, en este orden:
    - **Spec:** cada requirement y scenario está cubierto por código y, si se puede, por un test. Listá los que no.
-   - **Reglas no negociables** de `CLAUDE.md`: textos legales solo del catálogo, nada de plata o lotes fuera de alcance, "el dato que falta no es cero", datos de ejemplo declarados, accesibilidad (teclado y no solo color).
+   - **Reglas** de `CLAUDE.md` (fase de prototipo): textos legales solo del catálogo y marcados como borrador si son nuevos, ningún cobro real, aviso de prototipo, "el dato que falta no es cero", accesibilidad (teclado y no solo color), solo tokens del tema y un único `<main>`.
    - **Correctitud:** bugs concretos, con el escenario que los dispara.
    - **Seguridad:** secretos, entradas sin validar, cosas que expongan datos.
    - **Alcance:** código que la spec no pidió.
