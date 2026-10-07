@@ -1,6 +1,6 @@
 ## 0. Prerrequisitos
 
-- [ ] 0.1 Confirmar que `navegacion-base` (tokens en `app/globals.css`, `components/encabezado.tsx`, `<main id="contenido">` en el layout) y `territorios-modelo` (`lib/territorios/`) están en `main`. Si falta alguno, frenar y reportar. Verificar con `git log origin/main --oneline` y `ls lib/territorios app/globals.css`.
+- [x] 0.1 Confirmar que `navegacion-base` (tokens en `app/globals.css`, `components/encabezado.tsx`, `<main id="contenido">` en el layout) y `territorios-modelo` (`lib/territorios/`) están en `main`. Si falta alguno, frenar y reportar. Verificar con `git log origin/main --oneline` y `ls lib/territorios app/globals.css`.
 
 ## 1. Página
 
@@ -22,5 +22,5 @@
 
 ## 5. Vuelta de corrección (7-oct)
 
-- [ ] 5.1 Traer `main` a la rama: `git fetch origin` y `git merge --no-edit origin/main` (trae el modelo de territorios ya mergeado, accesibilidad y el tooltip), conservando lo de `main` en los conflictos. Verificar con `pnpm verificar` y `pnpm test:e2e`.
+- [x] 5.1 Traer `main` a la rama: `git fetch origin` y `git merge --no-edit origin/main` (trae el modelo de territorios ya mergeado, accesibilidad y el tooltip), conservando lo de `main` en los conflictos. Verificar con `pnpm verificar` y `pnpm test:e2e`.
 - [ ] 5.2 Terminar las tareas 0.1 y 4.1 que quedaron sin marcar. El PR #12 ya existe: actualizar su descripción, no abrir otro.
