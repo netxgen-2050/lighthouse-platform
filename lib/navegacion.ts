@@ -32,10 +32,6 @@ export const DESTINOS: readonly Destino[] = [
   { href: "/panel", etiqueta: "Mi recorrido", icono: Compass, existe: false },
 ];
 
-export function filtrarDestinos(existe: (href: string) => boolean, destinos: readonly Destino[] = DESTINOS) {
-  return destinos.filter((d) => existe(d.href));
-}
-
 export function destinosDisponibles() {
   return DESTINOS.filter((d) => d.existe);
 }

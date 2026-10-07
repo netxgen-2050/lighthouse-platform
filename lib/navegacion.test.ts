@@ -1,7 +1,7 @@
 import { readdirSync } from "node:fs";
 import path from "node:path";
 import { expect, test } from "vitest";
-import { DESTINOS, destinosDisponibles, filtrarDestinos } from "./navegacion";
+import { DESTINOS, destinosDisponibles } from "./navegacion";
 import { esActivo } from "./ruta-activa";
 
 const APP = path.resolve(__dirname, "..", "app");
@@ -41,15 +41,12 @@ test("`existe` de cada destino coincide con las páginas reales de app/", () => 
   }
 });
 
-test("sin la ruta /panel no se muestra Mi recorrido", () => {
-  const etiquetas = filtrarDestinos((h) => h !== "/panel").map((d) => d.etiqueta);
-  expect(etiquetas).not.toContain("Mi recorrido");
+test("solo destinos que existen: sin la ruta /panel no se muestra Mi recorrido", () => {
+  const etiquetas = destinosDisponibles().map((d) => d.etiqueta);
+  // Mientras app/ no tenga /panel; el día que exista, el test de coincidencia obliga a poner existe: true.
+  expect(rutasDeApp().includes("/panel")).toBe(etiquetas.includes("Mi recorrido"));
   expect(etiquetas).toContain("Tribus");
-});
-
-test("destinosDisponibles trae solo los que existen", () => {
   expect(destinosDisponibles().every((d) => d.existe)).toBe(true);
-  expect(destinosDisponibles().map((d) => d.href)).toContain("/tribus");
 });
 
 test("las subrutas marcan su sección y Inicio solo la raíz", () => {

@@ -1,6 +1,6 @@
 ## 1. Rail
 
-- [x] 1.1 Agregar `lucide-react`, crear `lib/navegacion.ts` (lista única de destinos con ruta, etiqueta e ícono; filtra los que no existen comprobando las rutas de `app/`) y `components/rail.tsx`. Integrarlo en `app/layout.tsx` con el contenido a la derecha; simplificar `components/encabezado.tsx` (la marca pasa al rail). Solo tokens del tema. Verificar en `pnpm dev` a 1280 px y a 390 px.
+- [x] 1.1 Agregar `lucide-react`, crear `lib/navegacion.ts` (lista única de destinos con ruta, etiqueta e ícono; cada destino lleva una bandera `existe` mantenida a mano, y un test unitario la compara con las páginas reales de `app/`; el rail muestra solo los que existen, sin leer el disco al renderizar) y `components/rail.tsx`. Integrarlo en `app/layout.tsx` con el contenido a la derecha; simplificar `components/encabezado.tsx` (la marca pasa al rail). Solo tokens del tema. Verificar en `pnpm dev` a 1280 px y a 390 px.
 
 ## 2. Tests
 
