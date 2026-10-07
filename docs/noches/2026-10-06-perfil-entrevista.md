@@ -17,7 +17,7 @@ La página `/perfil` hace seis preguntas de a una, propone un dato de perfil con
 - [x] 4.1 Traer la base corregida (merge de `agente/congreso-registro`).
 - [x] 4.2 Colores sueltos de `app/perfil/**` reemplazados por tokens del tema y sin `<main>` propio.
 
-Estado actual (commit b7275d9 más la vuelta de corrección): `pnpm verificar` con 155 tests y build en verde; `e2e/perfil.spec.ts` local, 9 de 9. Los números "22 de 22" (local y preview) son del commit c8937ff y **no se volvieron a medir** sobre el commit actual; falta repetir el preview y la corrida completa del tester.
+Estado actual (commit b7275d9 más la vuelta de corrección): `pnpm verificar` con 155 tests y build en verde; `e2e/perfil.spec.ts` local, 10 de 10 (al commit 2455b9e; ver el reporte del 7-oct). Los números "22 de 22" (local y preview) son del commit c8937ff y **no se volvieron a medir** sobre el commit actual; falta repetir el preview y la corrida completa del tester.
 
 ## Qué decidir a la mañana
 **Decisiones que dejó el revisor (baja gravedad, no las corrigió el agente):**
