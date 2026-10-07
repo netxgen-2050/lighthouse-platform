@@ -6,6 +6,7 @@ import {
   buscarTerritorio,
   listarTerritorios,
   resumenDeTerritorio,
+  textoSuperficie,
   tribusDeTerritorio,
 } from "./datos";
 import type { Territorio } from "./tipos";
@@ -58,6 +59,13 @@ describe("territorios", () => {
 
   it("el resumen de un territorio inexistente es undefined", () => {
     expect(resumenDeTerritorio("no-existe")).toBeUndefined();
+  });
+
+  it("lo que se muestra sin superficie es 'sin dato', nunca 0 ni vacío", () => {
+    expect(textoSuperficie({})).toBe("sin dato");
+    expect(textoSuperficie({ superficie: "" })).toBe("sin dato");
+    expect(textoSuperficie({ superficie: "~1.000 ha" })).toBe("~1.000 ha");
+    expect(textoSuperficie(buscarTerritorio("lighthouse")!)).not.toBe("sin dato");
   });
 
   it("la superficie ausente es undefined, no 0", () => {

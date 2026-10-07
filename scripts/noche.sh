@@ -50,6 +50,10 @@ if [[ -f .env.local ]]; then
 fi
 
 FECHA="$(date +%F)"
+# Segunda corrida del mismo día: sumar la hora para no chocar con las ramas y reportes de la primera.
+if git ls-remote --exit-code --heads origin "agente/integracion-$FECHA" > /dev/null 2>&1; then
+  FECHA="$(date +%F-%H%M)"
+fi
 mkdir -p .noches .carriles
 
 # En macOS, caffeinate evita que la máquina se duerma por inactividad (no si se cierra la tapa).
