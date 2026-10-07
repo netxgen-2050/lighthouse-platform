@@ -2,10 +2,17 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { listarTribus } from "@/lib/tribus/datos";
 
-const rutas = ["/", "/tribus", ...listarTribus().map((t) => `/tribus/${t.id}`), "/ruta-que-no-existe"];
+const rutas = [
+  "/",
+  "/tribus",
+  ...listarTribus().map((t) => `/tribus/${t.id}`),
+  "/territorios/lighthouse",
+  "/territorios/no-existe",
+  "/ruta-que-no-existe",
+];
 
-test("hay 15 rutas auditadas", () => {
-  expect(rutas).toHaveLength(15);
+test("hay 17 rutas auditadas", () => {
+  expect(rutas).toHaveLength(17);
 });
 
 for (const ruta of rutas) {
