@@ -32,3 +32,6 @@ El Pasaporte es la única pantalla del mock-up v6 (`V.pasaporte`) que todavía n
 ## Impact
 
 `app/pasaporte/`, `lib/pasaporte/` (armado de los caminos, puro y con tests), `lib/navegacion.ts`, `lib/legal/terminos.ts` (y sus tests), `e2e/pasaporte.spec.ts`, `e2e/accesibilidad.spec.ts`. Lee `lib/personas/` y `EMISION` de `lib/sumarte/datos.ts`. **Depende de** `personas-demo` (frenar si no está en `main`). Sin dependencias npm nuevas.
+
+
+> **Actualización 7-oct (Gus):** sin `personas-demo`. La persona carga sus propios datos en un formulario simulado ("Tus datos") y los caminos se calculan a partir de ellos. Así la pantalla queda lista para usuarios reales cuando llegue el login con Privy. Donde este documento mencione `lib/personas/` o el selector global, vale el formulario.

@@ -2,7 +2,6 @@
 
 ## Context
 
-`V.pasaporte` del mock-up arma el texto de cada camino con condicionales sobre `P()` (la persona) y `eligibleFid()`. Con `personas-demo` ya existen `PERSONAS`, `elegibleFideicomiso` y `usePersona()`.
 
 ## Decisiones
 
