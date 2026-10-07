@@ -137,6 +137,7 @@ export function Resumen() {
         >
           Borrar todo lo de este navegador
         </button>
+        <Link href="/panel/bitacora" className={ENLACE}>Ver lo que te mostramos</Link>
         <p role="status" className="text-sm font-medium">
           <span key={mensaje.n} data-borrado={mensaje.n}>{mensaje.texto}</span>
         </p>

@@ -178,6 +178,13 @@ export const TERMINOS = {
       "Pedir contacto no es una reserva, una oferta ni una inversión: no te compromete a nada, no se paga nada y no asegura un lote ni un lugar en el círculo. Una persona del equipo te escribe. Si es por un lote de Chacras de Soluna, la compra es privada entre vos y BioPueblo; NetX actúa como agencia.",
     borrador: true,
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  bitacora: {
+    titulo: "Bitácora de lo que te mostramos",
+    texto:
+      "Anotamos qué estado del loteo y qué explicaciones legales te mostramos, y cuándo, para poder probar con qué información contabas al decidir (Ley 24.240 de Defensa del Consumidor). En el prototipo queda solo en este navegador, no tiene datos personales y se borra con 'Borrar todo'.",
+    borrador: true,
+  },
 } as const;
 
 /** Claves de los textos que son borrador (no vienen del mock-up). */

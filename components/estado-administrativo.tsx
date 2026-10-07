@@ -1,9 +1,17 @@
+import { AnotarExposicion } from "@/components/anotar-exposicion";
 import { TerminoLegal } from "@/components/termino-legal";
 import { ESTADOS_ADMINISTRATIVOS, textoExpediente, type IdProyecto } from "@/lib/legal/estado-administrativo";
 
 // Aviso obligatorio en toda vista con lotes (regla C1). Texto + ícono: nunca solo color.
 export function EstadoAdministrativo({ proyecto, compacto = false }: { proyecto: IdProyecto; compacto?: boolean }) {
   const e = ESTADOS_ADMINISTRATIVOS[proyecto];
+  const anotar = (
+    <AnotarExposicion
+      proyectoId={proyecto}
+      titulo={`${e.proyecto} · ${e.estado}`}
+      texto={`${e.norma} · Expediente: ${textoExpediente(e)} · Aprobación municipal: ${e.aprobacionMunicipal ? "aprobada" : "pendiente"}`}
+    />
+  );
 
   if (compacto) {
     return (
@@ -15,6 +23,7 @@ export function EstadoAdministrativo({ proyecto, compacto = false }: { proyecto:
         <span aria-hidden="true">▲ </span>
         {e.estado} · {e.normaCorta}
         <TerminoLegal clave="loteo" />
+        {anotar}
       </p>
     );
   }
@@ -33,6 +42,7 @@ export function EstadoAdministrativo({ proyecto, compacto = false }: { proyecto:
         Titular: {e.titular} · Expediente: {textoExpediente(e)} · Aprobación municipal:{" "}
         {e.aprobacionMunicipal ? "aprobada" : "pendiente"}
       </p>
+      {anotar}
     </section>
   );
 }

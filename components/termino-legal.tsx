@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { huella } from "@/lib/demo/bitacora";
+import { anotarEnBitacora } from "@/lib/demo/anotar-en-bitacora";
 import { TERMINOS, esBorrador, type ClaveTermino } from "@/lib/legal/terminos";
 
 const EVENTO_ABRIR = "termino-legal:abrir";
@@ -39,7 +41,14 @@ export function TerminoLegal({ clave }: { clave: ClaveTermino }) {
   useEffect(() => {
     if (!visible) return;
     document.dispatchEvent(new CustomEvent(EVENTO_ABRIR, { detail: id }));
-  }, [visible, id]);
+    anotarEnBitacora({
+      tipo: "termino-legal",
+      clave,
+      mostrado: termino.titulo,
+      huella: huella(termino.titulo, termino.texto),
+      borrador: esBorrador(clave),
+    });
+  }, [visible, id, clave, termino]);
 
   useEffect(() => {
     if (!visible) return;

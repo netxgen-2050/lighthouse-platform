@@ -9,4 +9,5 @@ export const CLAVES = {
   pasaporte: "lh-pasaporte",
   consultasLotes: "lh-consultas-lotes",
   contactos: "lh-contactos",
+  bitacora: "lh-bitacora",
 } as const;
