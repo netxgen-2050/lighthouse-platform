@@ -1,13 +1,13 @@
 ## 0. Prerrequisitos
 
-- [ ] 0.1 Confirmar que `perfil-entrevista`, `compromisos-registro` y `congreso-registro` están en `main` y que sus claves de `localStorage` son las de la tabla del design. Si falta alguno o una clave es distinta, frenar y reportar. Verificar con `git log origin/main --oneline` y `grep -rn "CLAVE =" app`.
+- [x] 0.1 Confirmar que `perfil-entrevista`, `compromisos-registro` y `congreso-registro` están en `main` y que sus claves de `localStorage` son las de la tabla del design. Si falta alguno o una clave es distinta, frenar y reportar. Verificar con `git log origin/main --oneline` y `grep -rn "CLAVE =" app`.
 
 ## 1. Lógica
 
-- [ ] 1.1 Crear `lib/demo/claves.ts` con `CLAVES` (valores actuales, sin cambiarlos) y su test que fija cada valor. Verificar con `pnpm verificar`.
-- [ ] 1.2 Reemplazar `const CLAVE = …` por `CLAVES.<x>` en `app/perfil/entrevista.tsx`, `app/compromisos/formulario.tsx` y `app/congreso/registro-ticket.tsx`. Verificar con `grep -rn "const CLAVE =" app` (no devuelve nada) y con la tarea 3.2.
-- [ ] 1.3 Crear `lib/demo/resumen.ts` (`resumirDemo`) y su test con un lector falso: todo vacío → tres `null` y próximo `"perfil"`; perfil 2/6 → próximo `"perfil"`; perfil 6/6 sin compromisos → `"compromisos"`; perfil 6/6 + 1 compromiso sin ticket → `"congreso"`; todo completo → `null`; JSON roto en cada clave → `null` en ese campo; ticket `"1234"` → `null`. Verificar con `pnpm verificar`.
-- [ ] 1.4 Crear `lib/demo/borrar.ts` (`borrarDemo`) y su test: llama a `quitar` una vez por clave. Verificar con `pnpm verificar`.
+- [x] 1.1 Crear `lib/demo/claves.ts` con `CLAVES` (valores actuales, sin cambiarlos) y su test que fija cada valor. Verificar con `pnpm verificar`.
+- [x] 1.2 Reemplazar `const CLAVE = …` por `CLAVES.<x>` en `app/perfil/entrevista.tsx`, `app/compromisos/formulario.tsx` y `app/congreso/registro-ticket.tsx`. Verificar con `grep -rn "const CLAVE =" app` (no devuelve nada) y con la tarea 3.2.
+- [x] 1.3 Crear `lib/demo/resumen.ts` (`resumirDemo`) y su test con un lector falso: todo vacío → tres `null` y próximo `"perfil"`; perfil 2/6 → próximo `"perfil"`; perfil 6/6 sin compromisos → `"compromisos"`; perfil 6/6 + 1 compromiso sin ticket → `"congreso"`; todo completo → `null`; JSON roto en cada clave → `null` en ese campo; ticket `"1234"` → `null`. Verificar con `pnpm verificar`.
+- [x] 1.4 Crear `lib/demo/borrar.ts` (`borrarDemo`) y su test: llama a `quitar` una vez por clave. Verificar con `pnpm verificar`.
 
 ## 2. Página
 

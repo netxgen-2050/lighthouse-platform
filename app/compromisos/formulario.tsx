@@ -14,8 +14,7 @@ import {
   type TipoCompromiso,
 } from "@/lib/compromisos/tipos";
 import { validarCompromiso, type CampoError } from "@/lib/compromisos/validar";
-
-const CLAVE = "lighthouse.compromisos.v1";
+import { CLAVES } from "@/lib/demo/claves";
 
 const VACIO: Borrador = {
   tipo: "ofrezco",
@@ -43,7 +42,7 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
   useEffect(() => {
     let guardado: string | null = null;
     try {
-      guardado = window.localStorage.getItem(CLAVE);
+      guardado = window.localStorage.getItem(CLAVES.compromisos);
     } catch {
       guardado = null;
     }
@@ -55,7 +54,7 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
   useEffect(() => {
     if (!cargado) return;
     try {
-      window.localStorage.setItem(CLAVE, JSON.stringify(lista));
+      window.localStorage.setItem(CLAVES.compromisos, JSON.stringify(lista));
     } catch {
       // Sin almacenamiento: la lista vive solo mientras la página esté abierta.
     }
