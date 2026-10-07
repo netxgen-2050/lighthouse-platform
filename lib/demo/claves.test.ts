@@ -10,5 +10,6 @@ describe("CLAVES", () => {
     expect(CLAVES.semillasRonda).toBe("lh-semillas-ronda");
     expect(CLAVES.sumarte).toBe("lh-sumarte");
     expect(CLAVES.pasaporte).toBe("lh-pasaporte");
+    expect(CLAVES.contactos).toBe("lh-contactos");
   });
 });

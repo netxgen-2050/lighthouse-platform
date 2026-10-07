@@ -171,6 +171,13 @@ export const TERMINOS = {
       "Los lotes de Chacras de Soluna son de BioPueblo. Su loteo está en trámite según la Ordenanza 173/2026 de Mainqué: hasta que el municipio lo apruebe no se pueden reservar, señar ni comprar. Lo que ves acá es informativo. NetX actúa como agencia y publica el número de expediente cuando exista.",
     borrador: true,
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  contacto: {
+    titulo: "Pedir contacto",
+    texto:
+      "Pedir contacto no es una reserva, una oferta ni una inversión: no te compromete a nada, no se paga nada y no asegura un lote ni un lugar en el círculo. Una persona del equipo te escribe. Si es por un lote de Chacras de Soluna, la compra es privada entre vos y BioPueblo; NetX actúa como agencia.",
+    borrador: true,
+  },
 } as const;
 
 /** Claves de los textos que son borrador (no vienen del mock-up). */

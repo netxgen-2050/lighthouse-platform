@@ -21,6 +21,7 @@ describe("catálogo legal", () => {
         "calificado",
         "chacra",
         "circulo",
+        "contacto",
         "creditos",
         "espejo",
         "estatuto",
@@ -56,6 +57,10 @@ describe("catálogo legal", () => {
   it("loteo es borrador", () => {
     expect(esBorrador("loteo")).toBe(true);
     expect(TERMINOS.loteo.titulo).toBe("Estado del loteo");
+  });
+  it("contacto es borrador", () => {
+    expect(esBorrador("contacto")).toBe(true);
+    expect(TERMINOS.contacto.titulo).toBe("Pedir contacto");
   });
   for (const [clave, t] of Object.entries(TERMINOS)) {
     // Los borradores son textos nuevos que no vienen del mock-up.

@@ -1,11 +1,11 @@
 ## 0. Prerrequisitos
 
-- [ ] 0.1 Confirmar que `territorio-macrolote`, `sumarte-planes` y `estado-administrativo` están en `main` (ficha de finca con "Consultar por este lote", `app/sumarte/sumarte-cliente.tsx`, `components/estado-administrativo.tsx` y `borrador` en `lib/legal/terminos.ts`). Si falta alguno, frenar y reportar. Verificar con `git log origin/main --oneline` y `ls components lib/legal`.
+- [x] 0.1 Confirmar que `territorio-macrolote`, `sumarte-planes` y `estado-administrativo` están en `main` (ficha de finca con "Consultar por este lote", `app/sumarte/sumarte-cliente.tsx`, `components/estado-administrativo.tsx` y `borrador` en `lib/legal/terminos.ts`). Si falta alguno, frenar y reportar. Verificar con `git log origin/main --oneline` y `ls components lib/legal`.
 
 ## 1. Modelo
 
-- [ ] 1.1 Crear `lib/contactos/tipos.ts` y `lib/contactos/pedidos.ts` (tabla de etiquetas y destinos por motivo, `validar`, `crearPedido`, `leerBandeja`, `agregar`) y sumar `contactos: "lh-contactos"` a `lib/demo/claves.ts`. Verificar con tests de Vitest: canal obligatorio; mensaje de 501 caracteres rechazado; destino por motivo; JSON inválido → `[]`; el más nuevo primero; `borrarDemo` quita `lh-contactos`. Correr `pnpm test`.
-- [ ] 1.2 Agregar el término `contacto` a `lib/legal/terminos.ts` con el texto del design y `borrador: true`. Verificar con `pnpm test` (test del catálogo).
+- [x] 1.1 Crear `lib/contactos/tipos.ts` y `lib/contactos/pedidos.ts` (tabla de etiquetas y destinos por motivo, `validar`, `crearPedido`, `leerBandeja`, `agregar`) y sumar `contactos: "lh-contactos"` a `lib/demo/claves.ts`. Verificar con tests de Vitest: canal obligatorio; mensaje de 501 caracteres rechazado; destino por motivo; JSON inválido → `[]`; el más nuevo primero; `borrarDemo` quita `lh-contactos`. Correr `pnpm test`.
+- [x] 1.2 Agregar el término `contacto` a `lib/legal/terminos.ts` con el texto del design y `borrador: true`. Verificar con `pnpm test` (test del catálogo).
 
 ## 2. Formulario y pantallas
 
