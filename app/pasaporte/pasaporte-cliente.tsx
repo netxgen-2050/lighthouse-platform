@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
 import { caminos, TEXTO_ESTADO, type EstadoCamino } from "@/lib/pasaporte/caminos";
-import { DATOS_VACIOS, leerDatos, type DatosPersona } from "@/lib/pasaporte/datos";
+import { DATOS_VACIOS, leerDatos, MAX_HORAS, type DatosPersona } from "@/lib/pasaporte/datos";
 import { CLAVES } from "@/lib/demo/claves";
 import { EMISION } from "@/lib/sumarte/datos";
 
@@ -45,12 +45,15 @@ function Opcion<T extends string>({
 
 export function PasaporteCliente() {
   const [datos, setDatos] = useState<DatosPersona>(DATOS_VACIOS);
+  const [horasTexto, setHorasTexto] = useState("");
   const [falloAlmacen, setFalloAlmacen] = useState(false);
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
     try {
-      setDatos(leerDatos(window.localStorage.getItem(CLAVE)));
+      const guardados = leerDatos(window.localStorage.getItem(CLAVE));
+      setDatos(guardados);
+      setHorasTexto(guardados.horas === undefined ? "" : String(guardados.horas));
     } catch {
       setFalloAlmacen(true);
     }
@@ -67,6 +70,7 @@ export function PasaporteCliente() {
     setDatos(siguiente);
   }
 
+  const horasInvalidas = horasTexto !== "" && datos.horas === undefined;
   const lista = useMemo(() => caminos(datos, EMISION), [datos]);
 
   return (
@@ -82,7 +86,7 @@ export function PasaporteCliente() {
         <fieldset className="grid gap-2">
           <legend className="font-medium">Nacionalidad</legend>
           <div className="flex flex-wrap gap-4">
-            <Opcion nombre="nacionalidad" valor="argentina" actual={datos.nacionalidad} etiqueta="Argentina" alElegir={(v) => cambiar({ nacionalidad: v })} />
+            <Opcion nombre="nacionalidad" valor="argentina" actual={datos.nacionalidad} etiqueta="Argentina" alElegir={(v) => cambiar({ nacionalidad: v, paisNacionalidad: undefined })} />
             <Opcion nombre="nacionalidad" valor="otra" actual={datos.nacionalidad} etiqueta="Otra" alElegir={(v) => cambiar({ nacionalidad: v })} />
           </div>
           {datos.nacionalidad === "otra" && (
@@ -105,7 +109,7 @@ export function PasaporteCliente() {
             Residencia fiscal<TerminoLegal clave="hacienda" />
           </legend>
           <div className="flex flex-wrap gap-4">
-            <Opcion nombre="residencia" valor="argentina" actual={datos.residencia} etiqueta="Argentina" alElegir={(v) => cambiar({ residencia: v })} />
+            <Opcion nombre="residencia" valor="argentina" actual={datos.residencia} etiqueta="Argentina" alElegir={(v) => cambiar({ residencia: v, paisResidencia: undefined })} />
             <Opcion nombre="residencia" valor="exterior" actual={datos.residencia} etiqueta="Exterior" alElegir={(v) => cambiar({ residencia: v })} />
           </div>
           {datos.residencia === "exterior" && (
@@ -160,14 +164,23 @@ export function PasaporteCliente() {
               id="horas"
               type="number"
               min={0}
-              max={744}
+              max={MAX_HORAS}
+              step="any"
               className={CAMPO}
-              value={datos.horas ?? ""}
+              value={horasTexto}
+              aria-describedby={horasInvalidas ? "horas-error" : undefined}
               onChange={(e) => {
-                const n = e.target.value === "" ? undefined : Number(e.target.value);
-                cambiar({ horas: n !== undefined && Number.isFinite(n) && n >= 0 && n <= 744 ? Math.round(n) : undefined });
+                const t = e.target.value;
+                setHorasTexto(t);
+                const n = t === "" ? undefined : Number(t);
+                cambiar({ horas: n !== undefined && Number.isFinite(n) && n >= 0 && n <= MAX_HORAS ? n : undefined });
               }}
             />
+            {horasInvalidas && (
+              <p id="horas-error" className="mt-1 text-sm font-medium text-warn-ink">
+                Ingresá un número de horas entre 0 y {MAX_HORAS}.
+              </p>
+            )}
           </div>
         )}
 

@@ -22,7 +22,7 @@ export type DatosPersona = {
 export const DATOS_VACIOS: DatosPersona = {};
 
 const MAX_TEXTO = 120;
-const MAX_HORAS = 744;
+export const MAX_HORAS = 744;
 
 function texto(v: unknown): string | undefined {
   if (typeof v !== "string") return undefined;
@@ -36,7 +36,7 @@ export function leerDatos(crudo: string | null): DatosPersona {
   try {
     const o = JSON.parse(crudo) as Record<string, unknown>;
     if (typeof o !== "object" || o === null) return DATOS_VACIOS;
-    const horas = typeof o.horas === "number" && Number.isFinite(o.horas) && o.horas >= 0 && o.horas <= MAX_HORAS ? Math.round(o.horas) : undefined;
+    const horas = typeof o.horas === "number" && Number.isFinite(o.horas) && o.horas >= 0 && o.horas <= MAX_HORAS ? o.horas : undefined;
     return {
       nacionalidad: o.nacionalidad === "argentina" || o.nacionalidad === "otra" ? o.nacionalidad : undefined,
       paisNacionalidad: texto(o.paisNacionalidad),
@@ -50,8 +50,4 @@ export function leerDatos(crudo: string | null): DatosPersona {
   } catch {
     return DATOS_VACIOS;
   }
-}
-
-export function hayDatos(d: DatosPersona): boolean {
-  return Object.values(d).some((v) => v !== undefined);
 }

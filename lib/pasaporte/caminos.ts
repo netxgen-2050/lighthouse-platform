@@ -32,19 +32,22 @@ export function caminos(d: DatosPersona, emision: Emision): Camino[] {
       ? {
           id: "sumarte",
           titulo: "Sumarte al proyecto",
-          estado: "abierto",
+          estado: d.inversor === undefined ? "completar" : "abierto",
           legalTitulo: ["sumarte"],
           legalTexto: ["circulo"],
           texto:
-            d.inversor === "no-calificado"
-              ? `Abierto, por invitación. Ocupás uno de los ${emision.cupoNoCalificados} lugares para inversores no calificados (quedan ${quedan}).`
-              : "Abierto, por invitación.",
+            d.inversor === undefined
+              ? "Completá tu tipo de inversor para ver si este camino está abierto y cuántos lugares quedan."
+              : d.inversor === "no-calificado"
+                ? `Abierto, por invitación. Ocupás uno de los ${emision.cupoNoCalificados} lugares para inversores no calificados (quedan ${quedan}).`
+                : "Abierto, por invitación.",
         }
       : d.residencia === "exterior"
         ? {
             id: "sumarte",
             titulo: "Sumarte al proyecto",
             estado: "no",
+            legalTitulo: ["sumarte"],
             legalTexto: ["hacienda"],
             texto:
               "Por ahora, no. Tu residencia fiscal es del exterior: si entrás al fideicomiso, todo el fideicomiso pasa a pagar Ganancias como sujeto. El equipo está estudiando una vía separada para aportantes del exterior.",
@@ -71,6 +74,7 @@ export function caminos(d: DatosPersona, emision: Emision): Camino[] {
             id: "chacra",
             titulo: "Tu chacra a futuro",
             estado: "condiciones",
+            legalTitulo: ["chacra"],
             legalTexto: ["ribera"],
             texto:
               "Siendo extranjera, no podrías quedarte con el dominio de tierra rural ribereña. Depende de si el predio queda dentro del ejido urbano.",

@@ -61,6 +61,20 @@ describe("caminos", () => {
     expect(c.tribus.estado).toBe("abierto");
   });
 
+  it("residencia argentina sin tipo de inversor pide completarlo", () => {
+    const c = por({ ...argentino, inversor: undefined });
+    expect(c.sumarte.estado).toBe("completar");
+    expect(c.sumarte.texto).toContain("tipo de inversor");
+    expect(c.sumarte.texto).not.toContain("Abierto");
+    expect(por({ ...argentino, inversor: "calificado" }).sumarte.estado).toBe("abierto");
+  });
+
+  it("lleva el ⚖ de Sumarte con residencia en el exterior y el de chacra con nacionalidad extranjera", () => {
+    const c = por(noruega);
+    expect(c.sumarte.legalTitulo).toEqual(["sumarte"]);
+    expect(c.chacra.legalTitulo).toEqual(["chacra"]);
+  });
+
   it("obra sin horas pide completar, no inventa un cero", () => {
     const c = por({ ...argentino, horas: undefined });
     expect(c.aporte.estado).toBe("completar");
