@@ -117,3 +117,24 @@ describe("servicio de permisos", () => {
     expect(p).toEqual(copia);
   });
 });
+
+describe("residentes y tribus (decisión del 7-oct-2026)", () => {
+  it("ser residente no abre la sala ni la voz de una tribu ajena", () => {
+    const residente = con({ residente: true });
+    expect(puede(residente, "sala-tribu", "valle").abierta).toBe(false);
+    expect(puede(residente, "voz-tribu", "valle").abierta).toBe(false);
+  });
+
+  it("un residente miembro de dos tribus entra a esas dos y a ninguna otra", () => {
+    const residente = con({ residente: true, tribus: ["valle", "taller"] });
+    expect(puede(residente, "sala-tribu", "valle")).toMatchObject({ abierta: true, grado: "completa" });
+    expect(puede(residente, "sala-tribu", "taller")).toMatchObject({ abierta: true, grado: "completa" });
+    expect(puede(residente, "sala-tribu", "puerto").abierta).toBe(false);
+  });
+
+  it("ser residente sigue abriendo lo común del Lighthouse", () => {
+    const residente = con({ residente: true });
+    expect(puede(residente, "foros-red").abierta).toBe(true);
+    expect(puede(residente, "voto-asamblea-residentes").abierta).toBe(true);
+  });
+});

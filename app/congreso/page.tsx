@@ -16,13 +16,13 @@ const DIAS = [
 
 export default function CongresoPage() {
   return (
-    <main className="mx-auto max-w-5xl p-6 sm:p-10">
+    <div className="mx-auto max-w-5xl p-6 sm:p-10">
       <p className="mb-2 text-sm">
         <Link className="underline" href="/">← Inicio</Link>
       </p>
-      <p className="text-sm font-medium text-stone-700">Encontrarse en persona</p>
+      <p className="text-sm font-medium text-muted">Encontrarse en persona</p>
       <h1 className="text-3xl font-semibold">Congreso · Febrero 2027</h1>
-      <p className="mt-2 mb-4 max-w-2xl text-stone-700">
+      <p className="mt-2 mb-4 max-w-2xl text-muted">
         El Congreso lo vende su organizador por separado
         <TerminoLegal clave="ticket" />. Acá registrás tu ticket y, cada día que hagas check-in en
         el territorio, tu presencia suma. El primer check-in te da el registro <b>Genesis</b>.
@@ -30,7 +30,7 @@ export default function CongresoPage() {
       <AvisoEjemplo />
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         <RegistroTicket />
-        <section aria-labelledby="agenda" className="rounded-xl border border-stone-400 p-4">
+        <section aria-labelledby="agenda" className="rounded-xl border border-faint bg-surface p-4">
           <h2 id="agenda" className="mb-3 text-xl font-semibold">Agenda</h2>
           <ol className="grid gap-3">
             {DIAS.map((d, i) => (
@@ -39,7 +39,7 @@ export default function CongresoPage() {
                 <div>
                   <b>{d}</b>
                   {i === 2 && (
-                    <p className="text-sm text-stone-700">
+                    <p className="text-sm text-muted">
                       Con seguro y modalidad definida
                       <TerminoLegal clave="obra" />.
                     </p>
@@ -50,10 +50,10 @@ export default function CongresoPage() {
           </ol>
         </section>
       </div>
-      <p className="mt-4 text-sm text-stone-700">
+      <p className="mt-4 text-sm text-muted">
         La presencia da acceso y voz, no valor: no se compra ni se transfiere
         <TerminoLegal clave="presencia" />.
       </p>
-    </main>
+    </div>
   );
 }

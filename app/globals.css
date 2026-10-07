@@ -1,26 +1,48 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Paleta y tipografías del mock-up v6 (docs/referencia/netx-tribus-mockup-v6.html). */
+@theme {
+  --color-bg: #f6f3ea;
+  --color-surface: #fffdf7;
+  --color-surface-2: #efeadd;
+  --color-ink: #14241a;
+  --color-muted: #566258;
+  --color-faint: #8a8678;
+  --color-line: #e0d9c8;
+  --color-deep: #154626;
+  --color-deep-2: #1d5731;
+  --color-on-deep: #f6f3ea;
+  --color-on-deep-muted: #b7d4bf;
+  --color-green: #3c8c4b;
+  --color-green-soft: #dcebdf;
+  --color-gold: #eda100;
+  --color-gold-soft: #fdf0c9;
+  --color-gold-ink: #6e4d00;
+  --color-blue: #2a78d6;
+  --color-blue-soft: #dde9f8;
+  --color-gray: #9b978a;
+  --color-warn-bg: #fff3d6;
+  --color-warn-ink: #5d4300;
+  --color-water: #dbe7e4;
+  --color-danger: #991b1b;
 }
 
+/* inline: next/font define sus variables en el <body>, no en :root; sin inline quedarían inválidas. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-anek), var(--font-figtree), system-ui, sans-serif;
+  --font-sans: var(--font-figtree), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  /* @apply inlinea el valor: var(--font-sans) en :root no resolvería (las variables de next/font viven en el body). */
+  @apply font-sans;
+}
+
+h1,
+h2,
+h3 {
+  @apply font-display;
 }

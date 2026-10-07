@@ -21,14 +21,16 @@ Ojo: `calcularPermisos(persona)` no recibe tribu, así que usa el criterio conse
 | mapa-tribus-eventos | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | registrar-ticket | ✓ | ✓ | ✓ | ✓ | — | ✓ |
 | foros-red | — | ✓ | ✓ | ✓ | ✓ | ✓ |
-| sala-tribu | — | visita | visita | completa (su tribu) | — | completa |
+| sala-tribu | — | visita | visita | completa (su tribu) | — | — |
 | canal-fundadores | — | — | ✓ | — | — | — |
-| voz-tribu | — | — | — | según estatuto (su tribu) | — | ✓ |
+| voz-tribu | — | — | — | según estatuto (su tribu) | — | — |
 | voz-fondo-comun | — | — | 1 voz | — | refuerzo (solo con pase) | — |
 | voto-asamblea-residentes | — | — | — | — | — | 1 persona = 1 voto |
 | creditos | — | — | ✓ | — | — | — |
 
 Los tres pases (`semilla`, `brote`, `raiz`) abren lo mismo.
+
+**Decisión del 7-oct-2026 (Gus):** todas las tribus pertenecen al Lighthouse, que es común a todas. Ser residente abre lo que es de todo el Lighthouse (foros de la red, Asamblea de residentes), pero **no** abre salas ni voz de tribus: a una tribu se entra siendo miembro aceptado de ella, y quien es miembro de más de una tribu entra a cada una de ellas. La nota 18 §3 decía "✓" para residentes en esas dos filas; la nota se tiene que actualizar.
 
 ## A decidir
 

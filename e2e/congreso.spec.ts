@@ -52,7 +52,18 @@ test("código inválido muestra error asociado al campo y no guarda", async ({ p
   expect(await page.evaluate(() => window.localStorage.getItem("lh-congreso-ticket"))).toBeNull();
 });
 
-test("almacenamiento bloqueado: avisa que no se puede registrar", async ({ page }) => {
+test("almacenamiento bloqueado al cargar: avisa y la página sigue usable", async ({ page }) => {
+  await page.addInitScript(() => {
+    Storage.prototype.getItem = () => {
+      throw new DOMException("bloqueado", "SecurityError");
+    };
+  });
+  await page.goto("/congreso");
+  await expect(page.getByRole("alert").filter({ hasText: "no permite guardar datos" })).toBeVisible();
+  await expect(page.getByLabel(/Código de tu ticket/)).toBeVisible();
+});
+
+test("almacenamiento bloqueado: avisa que no se puede registrar",async ({ page }) => {
   await page.addInitScript(() => {
     Storage.prototype.setItem = () => {
       throw new DOMException("bloqueado", "SecurityError");

@@ -64,13 +64,13 @@ export function RegistroTicket() {
   }
 
   return (
-    <section aria-labelledby="tu-ticket" className="grid content-start gap-3 rounded-xl border border-stone-400 p-4">
+    <section aria-labelledby="tu-ticket" className="grid content-start gap-3 rounded-xl border border-faint bg-surface p-4">
       <h2 id="tu-ticket" className="text-xl font-semibold">Tu ticket</h2>
-      <p className="rounded-lg border border-dashed border-stone-500 bg-amber-50 px-3 py-2 text-sm text-stone-800">
+      <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
         Modo demostración: el registro queda solo en este navegador.
       </p>
       {falloAlmacen && (
-        <p role="alert" className="text-sm font-medium text-red-800">
+        <p role="alert" className="text-sm font-medium text-danger">
           Error: tu navegador no permite guardar datos en este sitio, así que el ticket no se puede registrar ni quitar acá. Revisá la configuración de privacidad o probá en otro navegador.
         </p>
       )}
@@ -80,20 +80,20 @@ export function RegistroTicket() {
             <span aria-hidden="true">✓ </span>
             <b>Ticket {ticket} registrado</b>
           </p>
-          <p className="rounded-lg border border-stone-400 p-3 text-sm">
+          <p className="rounded-lg border border-faint p-3 text-sm">
             <b>Genesis pendiente</b>: se confirma cuando el anfitrión escanea tu ticket en el territorio
           </p>
           <button
             type="button"
             onClick={quitar}
-            className="w-fit rounded-lg border border-stone-600 px-3 py-1.5 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-800"
+            className="w-fit rounded-lg border border-muted px-3 py-1.5 hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
           >
             Quitar ticket
           </button>
         </div>
       ) : (
         <form onSubmit={registrar} noValidate className="grid gap-2">
-          <label htmlFor="codigo-ticket" className="text-sm text-stone-700">
+          <label htmlFor="codigo-ticket" className="text-sm text-muted">
             Código de tu ticket (te llega por mail al comprarlo)
           </label>
           <div className="flex gap-2">
@@ -106,21 +106,21 @@ export function RegistroTicket() {
               autoComplete="off"
               aria-invalid={error}
               aria-describedby={error ? "error-ticket" : undefined}
-              className="min-w-0 flex-1 rounded-lg border border-stone-600 px-3 py-1.5"
+              className="min-w-0 flex-1 rounded-lg border border-muted bg-surface px-3 py-1.5"
             />
             <button
               type="submit"
-              className="rounded-lg bg-emerald-800 px-4 py-1.5 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-800"
+              className="rounded-lg bg-deep px-4 py-1.5 text-on-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
             >
               Registrar
             </button>
           </div>
           {error && (
-            <p id="error-ticket" role="alert" className="text-sm font-medium text-red-800">
+            <p id="error-ticket" role="alert" className="text-sm font-medium text-danger">
               Error: el código no tiene el formato LH27-XXXX-XX (letras y números).
             </p>
           )}
-          <p className="text-sm text-stone-700">
+          <p className="text-sm text-muted">
             ¿Todavía no tenés ticket? Lo vende el organizador del Congreso.
           </p>
         </form>

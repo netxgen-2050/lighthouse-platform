@@ -1,9 +1,9 @@
 import type { EstadoTribu } from "@/lib/tribus/tipos";
 
 const COLOR: Record<EstadoTribu, string> = {
-  activa: "bg-emerald-800 text-white border-emerald-900",
-  formacion: "bg-amber-600 text-white border-amber-800",
-  vacante: "bg-white text-stone-700 border-stone-500 border-dashed",
+  activa: "bg-deep text-on-deep border-deep",
+  formacion: "bg-gold-soft text-gold-ink border-gold-ink",
+  vacante: "bg-surface text-muted border-faint border-dashed",
 };
 
 export function SelloTribu({
