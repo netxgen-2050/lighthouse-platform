@@ -101,7 +101,7 @@ function textoAbreCon(puerta: Puerta, tribuEspecifica: boolean): string {
     const celda = TABLA[puerta][col];
     if (!celda || celda.soloRefuerzo) continue;
     let texto = TEXTO_COLUMNA[col];
-    if (col === "tribu" && tribuEspecifica) texto = "ser aceptado en esa tribu";
+    if (col === "tribu" && tribuEspecifica) texto = "ser aceptado en otra tribu";
     if (celda.grado === "visita") texto += " (como visita)";
     partes.push(texto);
   }

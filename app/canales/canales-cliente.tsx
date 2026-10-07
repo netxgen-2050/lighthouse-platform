@@ -142,8 +142,9 @@ export function CanalesCliente() {
           <p className="text-sm font-medium">
             {prueba ? "Estás viendo una situación de prueba (no se guarda)." : "Estás viendo tu situación."}
           </p>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
+          {/* Sin contenedor con scroll: recortaría la explicación del ⚖. La tabla se ajusta al ancho. */}
+          <div>
+            <table className="w-full border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-line">
                   <th scope="col" className="p-2">Puerta</th>

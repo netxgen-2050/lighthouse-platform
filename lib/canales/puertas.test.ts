@@ -77,6 +77,15 @@ describe("filasDePuertas", () => {
     expect(filas).toHaveLength(11);
   });
 
+  it("las filas de otras tribus hablan de otra tribu, no de esa", () => {
+    const filas = filasDePuertas(con({ tribus: ["valle"] }), [VALLE]);
+    expect(buscar(filas, "Voz en otras tribus").abreCon).toBe("ser aceptado en otra tribu");
+    expect(buscar(filas, "Salas de otras tribus").abreCon).toBe(
+      "plan Miembro (como visita), Pase Fundador (como visita) o ser aceptado en otra tribu",
+    );
+    expect(JSON.stringify(filas)).not.toContain("esa tribu");
+  });
+
   it("una tribu que no es de la persona no aparece", () => {
     expect(filasDePuertas(base, [VALLE])).toHaveLength(9);
   });

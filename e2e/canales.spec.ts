@@ -84,6 +84,35 @@ test("simulador: residente abre el voto, no se guarda y volver a mi situación l
   await expect(fila(page, "Voto en la Asamblea de residentes")).toContainText("Cerrada");
 });
 
+test("teclado: se recorre todo el simulador sin mouse", async ({ page }) => {
+  await page.goto("/canales");
+  await page.getByRole("radio", { name: "Explorador" }).focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(page.getByRole("radio", { name: "Miembro" })).toBeChecked();
+  await page.getByRole("radio", { name: "Sin pase" }).focus();
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown");
+  await expect(page.getByRole("radio", { name: "Brote" })).toBeChecked();
+  await expect(fila(page, "Canal de fundadores")).toContainText("Abierta");
+  await page.keyboard.press("Tab");
+  await expect(page.getByLabel("Tribu aceptada")).toBeFocused();
+  await page.keyboard.type("Valle");
+  await expect(page.getByLabel("Tribu aceptada")).toHaveValue("valle");
+  await expect(fila(page, "Sala de Valle Solar")).toContainText("Abierta");
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("checkbox", { name: "Presencia Genesis" })).toBeFocused();
+  await page.keyboard.press("Space");
+  await expect(page.getByRole("checkbox", { name: "Presencia Genesis" })).toBeChecked();
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Space");
+  await expect(fila(page, "Voto en la Asamblea de residentes")).toContainText("Abierta");
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("button", { name: "Volver a mi situación" })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(fila(page, "Voto en la Asamblea de residentes")).toContainText("Cerrada");
+  await expect(page.getByRole("checkbox", { name: "Residente" })).not.toBeChecked();
+});
+
 test("hay un solo main y los ⚖ están en la pantalla", async ({ page }) => {
   await page.goto("/canales");
   await expect(page.locator("main")).toHaveCount(1);
