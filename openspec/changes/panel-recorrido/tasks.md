@@ -11,14 +11,14 @@
 
 ## 2. Página
 
-- [ ] 2.1 Crear `app/panel/page.tsx` y `app/panel/resumen.tsx` con el próximo paso, las tres tarjetas, el aviso, el botón de borrado con `window.confirm` y el error de almacenamiento. Verificar en `pnpm dev`: completar parte del perfil, un compromiso y un ticket, abrir `/panel` y recorrerlo solo con teclado.
-- [ ] 2.2 Agregar "Mi recorrido" → `/panel` a la lista única de navegación (`lib/navegacion.ts`, del rail) si existe en la base; si no, al final de `enlaces` en `components/encabezado.tsx`. Verificar en `pnpm dev`.
-- [ ] 2.3 Verificar que no hay colores sueltos ni `<main>` nuevo: `grep -rnE "stone-|emerald-|amber-|#[0-9a-fA-F]{3,6}" app/panel` y `grep -rn "<main" app/panel` no devuelven nada.
+- [x] 2.1 Crear `app/panel/page.tsx` y `app/panel/resumen.tsx` con el próximo paso, las tres tarjetas, el aviso, el botón de borrado con `window.confirm` y el error de almacenamiento. Verificar en `pnpm dev`: completar parte del perfil, un compromiso y un ticket, abrir `/panel` y recorrerlo solo con teclado.
+- [x] 2.2 Agregar "Mi recorrido" → `/panel` a la lista única de navegación (`lib/navegacion.ts`, del rail) si existe en la base; si no, al final de `enlaces` en `components/encabezado.tsx`. Verificar en `pnpm dev`.
+- [x] 2.3 Verificar que no hay colores sueltos ni `<main>` nuevo: `grep -rnE "stone-|emerald-|amber-|#[0-9a-fA-F]{3,6}" app/panel` y `grep -rn "<main" app/panel` no devuelven nada.
 
 ## 3. Tests
 
-- [ ] 3.1 Escribir `e2e/panel.spec.ts` con todos los escenarios de la spec, cargando los datos por las páginas reales (no escribiendo `localStorage` a mano, salvo para el código inválido y el almacenamiento bloqueado): perfil a medias y sin empezar, compromisos 2/1 sin "h/mes", "USD" ni "$", sin compromisos, ticket válido e inválido, próximo paso en cada caso, borrar todo (y comprobar `/perfil`, `/compromisos` y `/congreso` vacíos), cancelar el borrado, sin pedidos de red con los datos, error de almacenamiento, orden de Tab y `aria-current`. Verificar con `pnpm test:e2e e2e/panel.spec.ts`.
-- [ ] 3.2 Correr los e2e de perfil, compromisos y congreso para confirmar que el cambio de claves no rompió nada. Verificar con `pnpm test:e2e` completo en verde.
+- [x] 3.1 Escribir `e2e/panel.spec.ts` con todos los escenarios de la spec, cargando los datos por las páginas reales (no escribiendo `localStorage` a mano, salvo para el código inválido y el almacenamiento bloqueado): perfil a medias y sin empezar, compromisos 2/1 sin "h/mes", "USD" ni "$", sin compromisos, ticket válido e inválido, próximo paso en cada caso, borrar todo (y comprobar `/perfil`, `/compromisos` y `/congreso` vacíos), cancelar el borrado, sin pedidos de red con los datos, error de almacenamiento, orden de Tab y `aria-current`. Verificar con `pnpm test:e2e e2e/panel.spec.ts`.
+- [x] 3.2 Correr los e2e de perfil, compromisos y congreso para confirmar que el cambio de claves no rompió nada. Verificar con `pnpm test:e2e` completo en verde.
 
 ## 4. Integración
 

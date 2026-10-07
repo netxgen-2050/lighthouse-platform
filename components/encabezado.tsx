@@ -8,6 +8,7 @@ const enlaces = [
   { href: "/territorios/lighthouse", texto: "Territorio" },
   { href: "/tribus", texto: "Tribus" },
   { href: "/compromisos", texto: "Compromisos" },
+  { href: "/panel", texto: "Mi recorrido" },
 ];
 
 function activo(href: string, ruta: string) {
