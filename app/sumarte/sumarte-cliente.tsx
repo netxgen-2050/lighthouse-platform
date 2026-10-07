@@ -25,7 +25,7 @@ const BOTON_SUAVE = `${BOTON} border border-muted hover:bg-surface-2`;
 const TARJETA = "grid grid-cols-1 content-start gap-3 rounded-xl border bg-surface p-4";
 const BORDE = "border-faint";
 const BORDE_ACTUAL = "border-2 border-deep";
-const ETIQUETA_ACTUAL = "w-fit rounded-full border border-deep bg-green-soft px-3 py-1 text-sm font-medium text-deep outline-none";
+const ETIQUETA_ACTUAL = "w-fit rounded-full border border-deep bg-green-soft px-3 py-1 text-sm font-medium text-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
 function Medidor({ titulo, actual, tope, unidad = "", dorado = false }: { titulo: string; actual: number; tope: number; unidad?: string; dorado?: boolean }) {
   const pct = Math.max(0, Math.min(100, Math.round((actual / tope) * 100)));
@@ -50,7 +50,6 @@ export function SumarteCliente() {
   const [estado, setEstado] = useState<EstadoSumarte>(INICIAL);
   const [listo, setListo] = useState(false);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
-  const [tribuPedida, setTribuPedida] = useState(false);
   const foco = useRef<string | null>(null);
 
   useEffect(() => {
@@ -83,8 +82,9 @@ export function SumarteCliente() {
     setEstado(siguiente);
   }
 
-  const nivel = PASSES.find((p) => p.id === estado.nivelPase)!;
   const paseActivo = estado.pase ? PASSES.find((p) => p.id === estado.pase)! : null;
+  // Con un pase activo, la tarjeta muestra siempre el nivel activado (no se puede cambiar sin deshacerlo).
+  const nivel = paseActivo ?? PASSES.find((p) => p.id === estado.nivelPase)!;
   const esExplorador = estado.plan === "explorador";
   const esMiembro = estado.plan === "miembro";
   const nombrePlan = paseActivo ? `Pase Fundador ${paseActivo.nombre}` : esMiembro ? "Miembro" : "Explorador";
@@ -107,6 +107,7 @@ export function SumarteCliente() {
               onClick={() => dispatch({ tipo: "facturacion", facturacion: f })}
               className={`rounded-lg border px-4 py-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep ${estado.facturacion === f ? "border-deep bg-deep text-on-deep" : "border-muted hover:bg-surface-2"}`}
             >
+              {estado.facturacion === f && <span aria-hidden="true">✓ </span>}
               {f === "mensual" ? "Mensual" : "Anual"}
               {f === "anual" && <span className="ml-2 text-sm">2 meses gratis</span>}
             </button>
@@ -180,13 +181,14 @@ export function SumarteCliente() {
             {PASSES.map((p) => (
               <label
                 key={p.id}
-                className={`flex cursor-pointer flex-col items-center rounded-lg border px-2 py-1.5 text-center has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-deep ${estado.nivelPase === p.id ? "border-2 border-deep bg-green-soft" : "border-muted"}`}
+                className={`flex cursor-pointer flex-col items-center rounded-lg border px-2 py-1.5 text-center has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-deep ${nivel.id === p.id ? "border-2 border-deep bg-green-soft" : "border-muted"} ${paseActivo ? "cursor-not-allowed" : ""}`}
               >
                 <input
                   type="radio"
                   name="nivel-pase"
                   value={p.id}
-                  checked={estado.nivelPase === p.id}
+                  checked={nivel.id === p.id}
+                  disabled={paseActivo !== null}
                   onChange={() => dispatch({ tipo: "nivel", nivel: p.id as NivelPase })}
                   className="sr-only"
                 />
@@ -251,17 +253,10 @@ export function SumarteCliente() {
             <li>Salas y canales propios</li>
             <li>Ritual de entrada configurable</li>
           </ul>
-          {tribuPedida ? (
+          {estado.tribu ? (
             <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="tribu">Alta del Plan Tribu pedida (simulado)</p>
           ) : (
-            <button
-              type="button"
-              className={BOTON_SUAVE}
-              onClick={() => {
-                foco.current = "tribu";
-                setTribuPedida(true);
-              }}
-            >
+            <button type="button" className={BOTON_SUAVE} onClick={() => dispatch({ tipo: "tribu" }, "tribu")}>
               Sumar mi tribu
             </button>
           )}

@@ -11,6 +11,7 @@ export type EstadoSumarte = {
   pase: NivelPase | null;
   invitacion: boolean;
   charla: boolean;
+  tribu: boolean;
 };
 
 export type Accion =
@@ -19,7 +20,8 @@ export type Accion =
   | { tipo: "nivel"; nivel: NivelPase }
   | { tipo: "pase" }
   | { tipo: "invitacion" }
-  | { tipo: "charla" };
+  | { tipo: "charla" }
+  | { tipo: "tribu" };
 
 export const INICIAL: EstadoSumarte = {
   plan: "explorador",
@@ -28,6 +30,7 @@ export const INICIAL: EstadoSumarte = {
   pase: null,
   invitacion: false,
   charla: false,
+  tribu: false,
 };
 
 const NIVELES: readonly string[] = ["semilla", "brote", "raiz"];
@@ -40,7 +43,10 @@ export function reducir(e: EstadoSumarte, a: Accion): EstadoSumarte {
     case "facturacion":
       return { ...e, facturacion: a.facturacion };
     case "nivel":
-      return { ...e, nivelPase: a.nivel };
+      // Con un pase activo el nivel no cambia: primero hay que deshacerlo.
+      return e.pase ? e : { ...e, nivelPase: a.nivel };
+    case "tribu":
+      return { ...e, tribu: true };
     case "pase":
       // El pase incluye la membresía (como en el mock-up).
       return { ...e, pase: e.nivelPase, plan: "miembro" };
@@ -63,6 +69,7 @@ export function leer(crudo: string | null): EstadoSumarte {
       pase: typeof o.pase === "string" && NIVELES.includes(o.pase) ? (o.pase as NivelPase) : null,
       invitacion: o.invitacion === true,
       charla: o.charla === true,
+      tribu: o.tribu === true,
     };
   } catch {
     return INICIAL;

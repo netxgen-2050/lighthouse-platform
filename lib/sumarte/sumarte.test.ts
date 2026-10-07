@@ -45,6 +45,15 @@ describe("estado", () => {
     expect(reducir(INICIAL, { tipo: "invitacion" }).invitacion).toBe(true);
     expect(reducir(INICIAL, { tipo: "charla" }).charla).toBe(true);
   });
+  it("con pase activo el nivel no cambia", () => {
+    const a = reducir(INICIAL, { tipo: "pase" });
+    expect(reducir(a, { tipo: "nivel", nivel: "raiz" })).toEqual(a);
+  });
+  it("el pedido de Plan Tribu se guarda y se lee", () => {
+    const t = reducir(INICIAL, { tipo: "tribu" });
+    expect(t.tribu).toBe(true);
+    expect(leer(JSON.stringify(t)).tribu).toBe(true);
+  });
   it("leer tolera basura", () => {
     expect(leer(null)).toEqual(INICIAL);
     expect(leer("{no json")).toEqual(INICIAL);

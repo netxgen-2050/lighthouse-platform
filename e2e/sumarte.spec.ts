@@ -43,8 +43,13 @@ test("medidores de la cohorte legibles en texto", async ({ page }) => {
 test("activar el pase no hace pedidos de red, sobrevive a la recarga y se deshace", async ({ page }) => {
   await page.goto("/sumarte");
   const pedidos: string[] = [];
+  // Cualquier fetch/XHR/WebSocket o método que no sea GET cuenta, sea cual sea el dominio (local o preview).
+  // Se ignoran los prefetch de enlaces del rail que hace Next (solo ?_rsc=, sin datos propios).
   page.on("request", (r) => {
-    if (["POST", "PUT", "PATCH", "DELETE"].includes(r.method()) || !r.url().startsWith("http://localhost")) pedidos.push(`${r.method()} ${r.url()}`);
+    const u = new URL(r.url());
+    const claves = [...u.searchParams.keys()];
+    if (r.method() === "GET" && claves.length === 1 && claves[0] === "_rsc" && !u.hash) return;
+    if (["fetch", "xhr", "websocket", "eventsource"].includes(r.resourceType()) || r.method() !== "GET") pedidos.push(`${r.method()} ${r.url()}`);
   });
   await page.getByRole("button", { name: "Quiero el Pase Brote" }).click();
   await expect(page.getByText("Pase Brote activo (simulado)")).toBeVisible();
@@ -95,6 +100,32 @@ test("teclado: se puede activar el pase solo con teclado", async ({ page }) => {
   await boton.focus();
   await page.keyboard.press("Enter");
   await expect(page.getByText("Pase Brote activo (simulado)")).toBeFocused();
+});
+
+test("teclado: Sumar mi tribu deja el foco en el aviso, que se guarda al recargar", async ({ page }) => {
+  await page.goto("/sumarte");
+  await page.getByRole("button", { name: "Sumar mi tribu" }).focus();
+  await page.keyboard.press("Enter");
+  const aviso = page.getByText("Alta del Plan Tribu pedida (simulado)");
+  await expect(aviso).toBeFocused();
+  await page.reload();
+  await expect(aviso).toBeVisible();
+});
+
+test("con el pase activo el nivel queda fijo y los datos no se contradicen", async ({ page }) => {
+  await page.goto("/sumarte");
+  const pase = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Pase Fundador/ }) });
+  await page.getByRole("button", { name: "Quiero el Pase Brote" }).click();
+  await expect(pase.getByRole("radio", { name: /Raíz/ })).toBeDisabled();
+  await expect(pase).toContainText("USD 1.500 · pago único");
+  await expect(pase).toContainText("USD 450 en créditos");
+});
+
+test("el botón de facturación elegido lleva una marca además del color", async ({ page }) => {
+  await page.goto("/sumarte");
+  await page.getByRole("button", { name: /^Mensual/ }).click();
+  await expect(page.getByRole("button", { name: /^Mensual/ })).toContainText("✓");
+  await expect(page.getByRole("button", { name: /^Anual/ })).not.toContainText("✓");
 });
 
 test("axe sin violaciones serias o críticas en /sumarte", async ({ page }) => {
