@@ -28,6 +28,7 @@ test("el orden de la lista es el de la spec", () => {
     "Compromisos",
     "Pactos",
     "Semillas",
+    "Fogón",
     "Congreso",
     "Sumarte",
     "Mi recorrido",

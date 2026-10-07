@@ -21,7 +21,7 @@ test("el rail trae la marca y los destinos existentes en orden", async ({ page }
   await expect(nav).toBeVisible();
   await expect(nav.locator("xpath=..").getByText("NetX", { exact: true })).toBeVisible();
   const textos = (await nav.getByRole("link").allInnerTexts()).map((t) => t.trim());
-  const orden = ["Inicio", "Territorio", "Tribus", "Perfil", "Compromisos", "Pactos", "Semillas", "Congreso", "Sumarte", "Mi recorrido"];
+  const orden = ["Inicio", "Territorio", "Tribus", "Perfil", "Compromisos", "Pactos", "Semillas", "Fogón", "Congreso", "Sumarte", "Mi recorrido"];
   expect(textos).toEqual(orden.filter((o) => textos.includes(o)));
   expect(textos).toEqual(expect.arrayContaining(["Inicio", "Tribus", "Perfil", "Congreso"]));
 });

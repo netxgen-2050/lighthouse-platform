@@ -13,10 +13,14 @@ describe("catálogo legal", () => {
     expect(Object.keys(TERMINOS).sort()).toEqual(
       [
         "art32",
+        "art35",
+        "art44",
         "caja",
         "circulo",
         "creditos",
         "espejo",
+        "estatuto",
+        "fidasamblea",
         "guardian",
         "hacienda",
         "membresia",
