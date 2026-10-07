@@ -108,15 +108,26 @@ test("solo teclado: se registra y se anuncia", async ({ page }) => {
   await expect(page.getByText(/Ayuda con la huerta · 6 h\/mes/)).toBeVisible();
 });
 
-test("dos registros seguidos cambian el contenido de la región aria-live", async ({ page }) => {
+test("dos registros seguidos: la región aria-live se vacía y se vuelve a llenar", async ({ page }) => {
   const estado = page.getByRole("status");
   await registrar(page, { descripcion: "Uno", horas: "1" });
   await expect(estado).toHaveText("Compromiso registrado.");
-  const primero = await estado.evaluate((el) => el.textContent);
+  // Se observan los cambios de texto de la región durante el segundo registro.
+  await estado.evaluate((el) => {
+    const w = window as unknown as { __vistos: string[] };
+    w.__vistos = [];
+    new MutationObserver(() => w.__vistos.push(el.textContent ?? "")).observe(el, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
+  });
   await registrar(page, { descripcion: "Dos", horas: "2" });
   await expect(estado).toHaveText("Compromiso registrado.");
-  const segundo = await estado.evaluate((el) => el.textContent);
-  expect(segundo).not.toBe(primero);
+  const vistos = await page.evaluate(() => (window as unknown as { __vistos: string[] }).__vistos);
+  expect(vistos).toContain("");
+  expect(vistos[vistos.length - 1]).toBe("Compromiso registrado.");
+  expect(vistos.indexOf("")).toBeLessThan(vistos.lastIndexOf("Compromiso registrado."));
 });
 
 test("al recargar con datos no se muestra el estado vacío", async ({ page }) => {

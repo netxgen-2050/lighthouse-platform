@@ -58,6 +58,21 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
     }
   }, [lista, cargado]);
 
+  const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (temporizador.current) clearTimeout(temporizador.current);
+    },
+    [],
+  );
+
+  function anunciar(texto: string) {
+    if (temporizador.current) clearTimeout(temporizador.current);
+    setAviso("");
+    if (texto) temporizador.current = setTimeout(() => setAviso(texto), 50);
+  }
+
   function cambiar<K extends keyof Borrador>(k: K, v: Borrador[K]) {
     setB((x) => ({ ...x, [k]: v }));
   }
@@ -73,7 +88,7 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
     const r = validarCompromiso(b);
     if (!r.ok) {
       setErrores(r.errores);
-      setAviso("");
+      anunciar("");
       const primero = (["descripcion", "horas", "bienes"] as CampoError[]).find((k) => r.errores[k]);
       if (primero) refs.current[primero]?.focus();
       return;
@@ -81,8 +96,9 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
     despachar({ tipo: "registrar", compromiso: r.compromiso });
     setErrores({});
     setB({ ...VACIO, tipo: b.tipo, clase: b.clase, para: b.para });
-    // Se alterna un espacio final para que el lector anuncie cada registro aunque el texto sea el mismo.
-    setAviso((a) => (a === "Compromiso registrado." ? "Compromiso registrado. " : "Compromiso registrado."));
+    // Se vacía la región y se vuelve a llenar en el siguiente tick para que el lector
+    // anuncie cada registro aunque el texto sea el mismo.
+    anunciar("Compromiso registrado.");
   }
 
   const describe = (k: CampoError) => (errores[k] ? `err-${k}` : undefined);
@@ -218,7 +234,7 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
               type="button"
               onClick={() => {
                 despachar({ tipo: "borrarTodo" });
-                setAviso("");
+                anunciar("");
               }}
               className={`${boton} border border-faint bg-surface hover:bg-surface-2`}
             >
@@ -241,7 +257,7 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
                   aria-label={`Quitar ${c.descripcion}`}
                   onClick={() => {
                     despachar({ tipo: "quitar", id: c.id });
-                    setAviso("");
+                    anunciar("");
                   }}
                   className={`${boton} border border-faint bg-surface hover:bg-surface-2`}
                 >
