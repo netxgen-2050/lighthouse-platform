@@ -13,9 +13,17 @@ export type ResultadoValidar =
   | { ok: true; compromiso: Compromiso }
   | { ok: false; errores: Partial<Record<CampoError, string>> };
 
+/** `crypto.randomUUID` solo existe en contexto seguro (https o localhost); se usa un respaldo. */
+export function nuevoId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `c-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export function validarCompromiso(
   b: Borrador,
-  id: string = crypto.randomUUID(),
+  id: string = nuevoId(),
   ahora: Date = new Date(),
 ): ResultadoValidar {
   const errores: Partial<Record<CampoError, string>> = {};

@@ -108,6 +108,24 @@ test("solo teclado: se registra y se anuncia", async ({ page }) => {
   await expect(page.getByText(/Ayuda con la huerta · 6 h\/mes/)).toBeVisible();
 });
 
+test("dos registros seguidos cambian el contenido de la región aria-live", async ({ page }) => {
+  const estado = page.getByRole("status");
+  await registrar(page, { descripcion: "Uno", horas: "1" });
+  await expect(estado).toHaveText("Compromiso registrado.");
+  const primero = await estado.evaluate((el) => el.textContent);
+  await registrar(page, { descripcion: "Dos", horas: "2" });
+  await expect(estado).toHaveText("Compromiso registrado.");
+  const segundo = await estado.evaluate((el) => el.textContent);
+  expect(segundo).not.toBe(primero);
+});
+
+test("al recargar con datos no se muestra el estado vacío", async ({ page }) => {
+  await registrar(page, { descripcion: "Uno", horas: "1" });
+  await page.reload();
+  await expect(page.getByText(/Uno/)).toBeVisible();
+  await expect(page.getByText("Todavía no registraste compromisos.")).toHaveCount(0);
+});
+
 test("exactamente un main y Compromisos marcado en el encabezado", async ({ page }) => {
   await expect(page.getByRole("main")).toHaveCount(1);
   const nav = page.getByRole("navigation", { name: "Principal" });

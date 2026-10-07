@@ -2,7 +2,19 @@ import { describe, expect, test } from "vitest";
 import { cargar, reducir } from "./estado";
 import { describirCompromiso } from "./formato";
 import type { Borrador, Compromiso } from "./tipos";
-import { validarCompromiso } from "./validar";
+import { nuevoId, validarCompromiso } from "./validar";
+import { afterEach, vi } from "vitest";
+
+describe("nuevoId", () => {
+  afterEach(() => vi.unstubAllGlobals());
+  test("usa un respaldo sin crypto.randomUUID", () => {
+    vi.stubGlobal("crypto", {});
+    const a = nuevoId();
+    const b = nuevoId();
+    expect(a).toMatch(/^c-/);
+    expect(a).not.toBe(b);
+  });
+});
 
 const base: Borrador = {
   tipo: "ofrezco",

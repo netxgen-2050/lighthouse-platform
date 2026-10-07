@@ -81,7 +81,8 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
     despachar({ tipo: "registrar", compromiso: r.compromiso });
     setErrores({});
     setB({ ...VACIO, tipo: b.tipo, clase: b.clase, para: b.para });
-    setAviso("Compromiso registrado.");
+    // Se alterna un espacio final para que el lector anuncie cada registro aunque el texto sea el mismo.
+    setAviso((a) => (a === "Compromiso registrado." ? "Compromiso registrado. " : "Compromiso registrado."));
   }
 
   const describe = (k: CampoError) => (errores[k] ? `err-${k}` : undefined);
@@ -225,7 +226,7 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
             </button>
           )}
         </div>
-        {lista.length === 0 ? (
+        {!cargado ? null : lista.length === 0 ? (
           <p className="mt-3 text-muted">Todavía no registraste compromisos.</p>
         ) : (
           <ul className="mt-3 grid gap-3">
