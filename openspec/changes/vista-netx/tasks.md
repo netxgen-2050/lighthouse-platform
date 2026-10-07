@@ -4,7 +4,7 @@
 
 ## 2. Pantalla
 
-- [x] 2.1 Crear `app/netx/page.tsx` según la spec, con estado simulado en `localStorage`, solo tokens del tema, sin `<main>` propio. Agregar "NetX" a `lib/navegacion.ts`. Verificar en `pnpm dev`.
+- [x] 2.1 Crear `app/netx/page.tsx` según la spec, de solo lectura (sin estado ni `localStorage`: no hay nada que la persona cambie), solo tokens del tema, sin `<main>` propio. Agregar "NetX" a `lib/navegacion.ts`. Verificar en `pnpm dev`.
 - [x] 2.2 Escribir `e2e/vista-netx.spec.ts` con todos los escenarios de la spec y sumar `/netx` a la auditoría de `e2e/accesibilidad.spec.ts`. Verificar con `pnpm test:e2e`.
 
 ## 3. Integración

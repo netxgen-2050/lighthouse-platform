@@ -131,13 +131,13 @@ export default function NetxPage() {
             </thead>
             <tbody>
               {TRIBUS_POR_PROYECTO.map((t) => {
-                const pct = porcentaje(t.plata[0], t.plata[1]);
+                const pct = t.plata ? porcentaje(t.plata[0], t.plata[1]) : null;
                 return (
                   <tr key={t.nombre} className="border-t border-line">
                     <th scope="row" className="py-1.5 pr-3 text-left font-normal">{t.nombre}</th>
                     <td className="py-1.5 pr-3">{t.fincas}</td>
                     <td className="py-1.5 pr-3 text-right">{pct === null ? "sin dato" : `${pct}%`}</td>
-                    <td className="py-1.5 pr-3 text-right">{t.roles[0]}/{t.roles[1]}</td>
+                    <td className="py-1.5 pr-3 text-right">{t.roles ? `${t.roles[0]}/${t.roles[1]}` : "sin dato"}</td>
                     <td className="py-1.5">{t.ritual}</td>
                   </tr>
                 );

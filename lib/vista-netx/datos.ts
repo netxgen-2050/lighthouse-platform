@@ -1,5 +1,6 @@
 import type { ClaveTermino } from "@/lib/legal/terminos";
 import { listarTribus } from "@/lib/tribus/datos";
+import type { Tribu } from "@/lib/tribus/tipos";
 
 // Datos de ejemplo copiados de V.franz, EMISION y TRIBES en docs/referencia/netx-tribus-mockup-v6.html.
 
@@ -34,9 +35,9 @@ export type FilaTribu = {
   /** Número de barrio (la columna "Fincas" del mock-up). */
   fincas: number;
   /** [juntado, meta] en USD. */
-  plata: readonly [number, number];
+  plata: readonly [number, number] | null;
   /** [cubiertos, necesarios]. */
-  roles: readonly [number, number];
+  roles: readonly [number, number] | null;
   ritual: string;
 };
 
@@ -56,10 +57,21 @@ const AVANCE: Record<string, { plata: readonly [number, number]; roles: readonly
   guardia: { plata: [30000, 120000], roles: [3, 6] },
 };
 
-export const TRIBUS_POR_PROYECTO: readonly FilaTribu[] = listarTribus().map((t) => ({
-  nombre: t.nombre,
-  fincas: t.barrio,
-  plata: AVANCE[t.id].plata,
-  roles: AVANCE[t.id].roles,
-  ritual: t.formaJuridica,
-}));
+/** Une cada tribu con su avance; si una tribu no tiene avance, plata y roles quedan en null (sin dato, no 0). */
+export function armarFilas(
+  tribus: readonly Pick<Tribu, "id" | "nombre" | "barrio" | "formaJuridica">[],
+  avance: Readonly<Record<string, { plata: readonly [number, number]; roles: readonly [number, number] }>>,
+): FilaTribu[] {
+  return tribus.map((t) => {
+    const a = Object.hasOwn(avance, t.id) ? avance[t.id] : undefined;
+    return {
+      nombre: t.nombre,
+      fincas: t.barrio,
+      plata: a?.plata ?? null,
+      roles: a?.roles ?? null,
+      ritual: t.formaJuridica,
+    };
+  });
+}
+
+export const TRIBUS_POR_PROYECTO: readonly FilaTribu[] = armarFilas(listarTribus(), AVANCE);

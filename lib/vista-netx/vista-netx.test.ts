@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { TERMINOS } from "@/lib/legal/terminos";
 import { anchoBarra, anchoMedidor, conversiones, formatear, porcentaje } from "./calculos";
-import { ALERTAS, EMBUDO, TRIBUS_POR_PROYECTO } from "./datos";
+import { ALERTAS, armarFilas, EMBUDO, TRIBUS_POR_PROYECTO } from "./datos";
 
 const mock = readFileSync(path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"), "utf8");
 
@@ -42,8 +42,20 @@ describe("datos", () => {
     expect(TRIBUS_POR_PROYECTO).toHaveLength(12);
     for (const t of TRIBUS_POR_PROYECTO) {
       expect(mock).toContain(`name:"${t.nombre}"`);
-      expect(mock).toContain(`cap:[${t.plata[0]},${t.plata[1]}]`);
-      expect(mock).toContain(`hum:[${t.roles[0]},${t.roles[1]}]`);
+      expect(mock).toContain(`cap:[${t.plata![0]},${t.plata![1]}]`);
+      expect(mock).toContain(`hum:[${t.roles![0]},${t.roles![1]}]`);
+    }
+  });
+  it("una tribu sin avance queda con plata y roles en null (sin dato), sin romper", () => {
+    const nueva = { id: "nueva", nombre: "Nueva", barrio: 13, formaJuridica: "A definir" };
+    const filas = armarFilas([nueva], {});
+    expect(filas).toEqual([{ nombre: "Nueva", fincas: 13, plata: null, roles: null, ritual: "A definir" }]);
+    expect(armarFilas([{ ...nueva, id: "toString" }], {})[0].plata).toBeNull();
+  });
+  it("todas las tribus de lib/tribus tienen avance", () => {
+    for (const f of TRIBUS_POR_PROYECTO) {
+      expect(f.plata).not.toBeNull();
+      expect(f.roles).not.toBeNull();
     }
   });
   it("los ⚖ de las alertas existen en el catálogo", () => {
