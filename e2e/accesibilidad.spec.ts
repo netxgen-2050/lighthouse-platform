@@ -9,14 +9,15 @@ const rutas = [
   "/panel",
   "/pactos",
   "/semillas",
+  "/canales",
   ...listarTribus().map((t) => `/tribus/${t.id}`),
   "/territorios/lighthouse",
   "/territorios/no-existe",
   "/ruta-que-no-existe",
 ];
 
-test("hay 21 rutas auditadas", () => {
-  expect(rutas).toHaveLength(21);
+test("hay 22 rutas auditadas", () => {
+  expect(rutas).toHaveLength(22);
 });
 
 for (const ruta of rutas) {

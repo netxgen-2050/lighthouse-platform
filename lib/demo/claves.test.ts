@@ -8,5 +8,6 @@ describe("CLAVES", () => {
     expect(CLAVES.congreso).toBe("lh-congreso-ticket");
     expect(CLAVES.pactos).toBe("lh-pactos");
     expect(CLAVES.semillasRonda).toBe("lh-semillas-ronda");
+    expect(CLAVES.sumarte).toBe("lh-sumarte");
   });
 });

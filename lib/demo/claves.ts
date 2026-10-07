@@ -5,4 +5,5 @@ export const CLAVES = {
   congreso: "lh-congreso-ticket",
   pactos: "lh-pactos",
   semillasRonda: "lh-semillas-ronda",
+  sumarte: "lh-sumarte",
 } as const;
