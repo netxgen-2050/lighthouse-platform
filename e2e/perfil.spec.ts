@@ -35,9 +35,11 @@ test("respuesta vacía muestra error asociado al campo y no avanza", async ({ pa
   await expect(campo).toHaveAttribute("aria-invalid", "true");
   await expect(campo).toHaveAttribute("aria-describedby", (await error.getAttribute("id")) ?? "");
   await expect(page.locator("[aria-live=polite]")).toContainText(PREGUNTAS[0]);
+  await expect(campo).toBeFocused();
   await page.getByLabel("Tu respuesta").fill("   ");
   await page.getByRole("button", { name: "Responder" }).click();
   await expect(page.locator("[aria-live=polite]")).toContainText(PREGUNTAS[0]);
+  await expect(campo).toBeFocused();
 });
 
 test("confirmar marca el dato y sube el avance", async ({ page }) => {

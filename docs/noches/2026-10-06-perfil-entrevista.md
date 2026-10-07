@@ -1,5 +1,5 @@
 # Noche 2026-10-06 — perfil-entrevista
-**PR:** https://github.com/netxgen-2050/lighthouse-platform/pull/6 · **Preview:** https://lighthouse-platform-bfklpsbiv-net-xg-en.vercel.app (commit c8937ff)
+**PR:** https://github.com/netxgen-2050/lighthouse-platform/pull/6 · **Preview:** https://lighthouse-platform-bfklpsbiv-net-xg-en.vercel.app (commit c8937ff, desactualizado: el código cambió desde entonces)
 
 ## Lo que falló o quedó trabado (primero)
 - **El tester no pudo publicar su reporte en el PR**, ni en la primera ni en la segunda pasada. La herramienta de escritura rechazó el archivo temporal `.noches/tmp/reporte-6.md`, que hace falta para `gh pr comment --body-file`. No se esquivó. Falta ese permiso. El texto del comentario está más abajo, para que lo publiques vos. Los logs están en `.noches/tmp/e2e-6.txt` y `.noches/tmp/e2e-6b.txt`.
@@ -9,13 +9,15 @@
 ## En una línea
 La página `/perfil` hace seis preguntas de a una, propone un dato de perfil con cada respuesta y la persona lo confirma o lo corrige. Todo queda solo en el navegador. Está terminada y con las pruebas en verde, pero hay decisiones tuyas pendientes.
 
-## Qué quedó hecho (tareas 4/4)
+## Qué quedó hecho (tareas 6/6)
 - [x] 1.1 Lógica: las 6 preguntas del mock-up, `propuestaDePerfil` (la única función que mañana reemplaza el agente) y el estado (responder, confirmar, corregir, borrar).
 - [x] 2.1 Página `/perfil`: conversación, panel "Tu perfil", avance, aviso de datos locales y "Borrar mis respuestas".
 - [x] 2.2 Pruebas e2e, incluida la de "sin pedidos al servidor".
 - [x] 3.1 Verificar y build en verde; PR con guion de prueba.
+- [x] 4.1 Traer la base corregida (merge de `agente/congreso-registro`).
+- [x] 4.2 Colores sueltos de `app/perfil/**` reemplazados por tokens del tema y sin `<main>` propio.
 
-Estado final: `pnpm verificar` (151 tests), build y e2e local (22) en verde. En el preview, 22 de 22.
+Estado actual (commit b7275d9 más la vuelta de corrección): `pnpm verificar` con 155 tests y build en verde; `e2e/perfil.spec.ts` local, 9 de 9. Los números "22 de 22" (local y preview) son del commit c8937ff y **no se volvieron a medir** sobre el commit actual; falta repetir el preview y la corrida completa del tester.
 
 ## Qué decidir a la mañana
 **Decisiones que dejó el revisor (baja gravedad, no las corrigió el agente):**
@@ -32,6 +34,8 @@ Estado final: `pnpm verificar` (151 tests), build y e2e local (22) en verde. En 
 **Para publicar en el PR (el tester no pudo):** el comentario está en la sección "Tester".
 
 ## Revisor: veredicto y hallazgos
+**Nota:** el veredicto de abajo es de una revisión anterior, sobre commits previos al b7275d9 (tareas 4.1 y 4.2 y correcciones). El cambio se revisa de nuevo; todavía no hay veredicto sobre el estado actual.
+
 Primera vuelta: con observaciones (5 hallazgos: 0 altos, 2 medios, 3 bajos). Segunda vuelta: **listo para revisión humana**.
 - Resueltos por el implementador (commit 197bf8f):
   - [media] Se perdía el foco del teclado al confirmar, confirmar una corrección o cancelar. Ahora vuelve al botón "Corregir" del ítem.
@@ -50,7 +54,7 @@ Primera vuelta: con observaciones (5 hallazgos: 0 altos, 2 medios, 3 bajos). Seg
 Texto del comentario que el tester quería publicar en el PR:
 
 > ## Prueba (agente tester)
-> Preview: https://lighthouse-platform-bfklpsbiv-net-xg-en.vercel.app (commit c8937ff)
+> Preview: https://lighthouse-platform-bfklpsbiv-net-xg-en.vercel.app (commit c8937ff, desactualizado: el código cambió desde entonces)
 > Resultado: ✅ pasa
 > Playwright: 22 pasaron, 0 fallaron; el test que fallaba por el POST a vercel.live ahora pasa
 > Guion manual: no hubo pasada manual aparte; pasos 1-10 (pregunta 1 y panel 0/6; respuesta vacía con error; responder; confirmar → 1/6; corregir y confirmar; propuesta larga recortada con "…"; recarga conserva estado; borrar reinicia; completar las 6: agradecimiento, "Ver las tribus" a /tribus y sin pedidos de la app; teclado y foco) cubiertos por e2e, todos verdes.

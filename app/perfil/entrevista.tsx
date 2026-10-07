@@ -64,6 +64,8 @@ export function Entrevista() {
     e.preventDefault();
     if (texto.trim() === "") {
       setError(true);
+      // El foco al campo (descrito por el error) hace que el lector lo anuncie también al repetir.
+      campoRef.current?.focus();
       return;
     }
     setError(false);
