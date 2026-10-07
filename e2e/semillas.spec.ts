@@ -58,6 +58,17 @@ test("el ticket del Congreso aparece en Presencia", async ({ page }) => {
   await expect(page.getByText("Ticket registrado")).toBeVisible();
 });
 
+test("un ticket inválido no cuenta y el Pase se nombra como en /sumarte", async ({ page }) => {
+  await page.goto("/semillas");
+  await page.evaluate(() => {
+    window.localStorage.setItem("lh-congreso-ticket", "1234");
+    window.localStorage.setItem("lh-sumarte", JSON.stringify({ pase: "raiz" }));
+  });
+  await page.reload();
+  await expect(page.getByText("Ticket registrado")).toHaveCount(0);
+  await expect(page.getByText("Pase Fundador Raíz activo")).toBeVisible();
+});
+
 test("ronda de reconocimiento: hay que puntuar las cuatro notas y se ve el factor", async ({ page }) => {
   await conPacto(page, 20);
   const enviar = page.getByRole("button", { name: "Enviar ronda" });
@@ -92,6 +103,6 @@ test("no manda datos a un servidor", async ({ page }) => {
     await page.getByRole("group", { name: grupo }).getByRole("button", { name: "3 de 5" }).click();
   }
   await page.getByRole("button", { name: "Enviar ronda" }).click();
-  await expect(page.getByTestId("factor")).toHaveText("1");
+  await expect(page.getByTestId("factor")).toHaveText("1,0");
   expect(pedidos).toEqual([]);
 });

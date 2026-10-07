@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
+import { esCodigoValido } from "@/lib/congreso/ticket";
 import { CLAVES } from "@/lib/demo/claves";
 import { clave, estadoMedidor, factorEvaluacion, rondaCompleta, semillasTiempo } from "@/lib/semillas/calculo";
 import { COMPANEROS, DIMENSIONES, META_SEMBRADOR, PERSONA } from "@/lib/semillas/datos";
@@ -16,7 +17,7 @@ import {
   RONDA_INICIAL,
   type Ronda,
 } from "@/lib/semillas/estado";
-import { miles } from "@/lib/sumarte/datos";
+import { miles, PASSES } from "@/lib/sumarte/datos";
 
 // Todo queda solo en este navegador: no hay pedidos de red ni cobros.
 const TARJETA = "grid content-start gap-1 rounded-xl border border-faint bg-surface p-4";
@@ -54,7 +55,7 @@ export function SemillasCliente() {
     setDatos({
       pacto: pactoAceptado(leerClave(CLAVES.pactos)),
       pase: paseActivo(leerClave(CLAVE_SUMARTE)),
-      ticket: Boolean(leerClave(CLAVES.congreso)),
+      ticket: esCodigoValido(leerClave(CLAVES.congreso) ?? ""),
     });
     setRonda(leerRonda(leerClave(CLAVE_RONDA)));
     setListo(true);
@@ -120,7 +121,7 @@ export function SemillasCliente() {
             </>
           )}
           {datos.pase && (
-            <p className="text-sm text-muted">Pase {datos.pase} activo (simulado), un servicio que no suma semillas.</p>
+            <p className="text-sm text-muted">Pase Fundador {PASSES.find((p) => p.id === datos.pase)?.nombre ?? datos.pase} activo (simulado), un servicio que no suma semillas.</p>
           )}
         </div>
 
@@ -239,7 +240,7 @@ export function SemillasCliente() {
           {ronda.enviada ? (
             <p role="status">
               <span className="font-medium">Ronda enviada (simulado)</span> · Factor de evaluación:{" "}
-              <strong data-testid="factor">{factor === null ? "sin dato" : factor.toLocaleString("es-AR")}</strong>
+              <strong data-testid="factor">{factor === null ? "sin dato" : factor.toLocaleString("es-AR", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}</strong>
             </p>
           ) : (
             <>

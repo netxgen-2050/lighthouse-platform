@@ -61,6 +61,10 @@ describe("lectura de otras pantallas", () => {
     expect(pactoAceptado(JSON.stringify({ paso: 2, horas: 20, parteSemilla: 50 }))).toEqual({ horas: 20, parteSemilla: 50 });
     expect(pactoAceptado("{")).toBeNull();
   });
+  it("horas y porcentaje fuera de rango se acotan", () => {
+    expect(pactoAceptado(JSON.stringify({ paso: 2, horas: 1e9, parteSemilla: 500 }))).toEqual({ horas: 80, parteSemilla: 100 });
+    expect(pactoAceptado(JSON.stringify({ paso: 2, horas: -5, parteSemilla: -1 }))).toEqual({ horas: 4, parteSemilla: 0 });
+  });
   it("el pase", () => {
     expect(paseActivo(JSON.stringify({ pase: "brote" }))).toBe("brote");
     expect(paseActivo(JSON.stringify({ pase: null }))).toBeNull();

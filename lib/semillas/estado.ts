@@ -1,5 +1,6 @@
 import { CLAVES } from "@/lib/demo/claves";
-import { clave, type Notas } from "./calculo";
+import { leer as leerPactos } from "@/lib/pactos/estado";
+import { clave,type Notas } from "./calculo";
 
 export const CLAVE_RONDA = CLAVES.semillasRonda;
 /** Clave que usa /sumarte (todavía no está en CLAVES; no cambiar el valor). */
@@ -33,13 +34,9 @@ export function leerRonda(crudo: string | null): Ronda {
 /** Pacto de tiempo aceptado (paso 2) guardado por /pactos, o null. */
 export function pactoAceptado(crudo: string | null): { horas: number; parteSemilla: number } | null {
   if (!crudo) return null;
-  try {
-    const o = JSON.parse(crudo) as Record<string, unknown>;
-    if (o.paso !== 2 || typeof o.horas !== "number" || typeof o.parteSemilla !== "number") return null;
-    return { horas: o.horas, parteSemilla: o.parteSemilla };
-  } catch {
-    return null;
-  }
+  // leer() de /pactos acota horas y porcentaje a sus rangos válidos.
+  const e = leerPactos(crudo);
+  return e.paso === 2 ? { horas: e.horas, parteSemilla: e.parteSemilla } : null;
 }
 
 /** Nivel del Pase activo guardado por /sumarte, o null. */
