@@ -1,6 +1,6 @@
 ## 0. Prerrequisitos
 
-- [ ] 0.1 Confirmar que `navegacion-base` (tokens en `app/globals.css`, `components/encabezado.tsx`, `<main id="contenido">` en el layout) y `territorios-modelo` (`lib/territorios/`) están en `main`. Si falta alguno, frenar y reportar. Verificar con `git log origin/main --oneline` y `ls lib/territorios app/globals.css`.
+- [x] 0.1 Confirmar que `navegacion-base` (tokens en `app/globals.css`, `components/encabezado.tsx`, `<main id="contenido">` en el layout) y `territorios-modelo` (`lib/territorios/`) están en `main`. Si falta alguno, frenar y reportar. Verificar con `git log origin/main --oneline` y `ls lib/territorios app/globals.css`.
 
 ## 1. Página
 
@@ -18,4 +18,9 @@
 
 ## 4. Integración
 
-- [ ] 4.1 `pnpm verificar` y `pnpm build` en verde; PR desde `agente/territorio-ficha` con guion de prueba (portada → Territorio → barrio 6 → Valle Solar) y captura de la ficha. Probar también sobre el preview con `BASE_URL=$(scripts/preview-url.sh agente/territorio-ficha) pnpm test:e2e e2e/territorio.spec.ts`.
+- [x] 4.1 `pnpm verificar` y `pnpm build` en verde; PR desde `agente/territorio-ficha` con guion de prueba (portada → Territorio → barrio 6 → Valle Solar) y captura de la ficha. Probar también sobre el preview con `BASE_URL=$(scripts/preview-url.sh agente/territorio-ficha) pnpm test:e2e e2e/territorio.spec.ts`.
+
+## 5. Vuelta de corrección (7-oct)
+
+- [x] 5.1 Traer `main` a la rama: `git fetch origin` y `git merge --no-edit origin/main` (trae el modelo de territorios ya mergeado, accesibilidad y el tooltip), conservando lo de `main` en los conflictos. Verificar con `pnpm verificar` y `pnpm test:e2e`.
+- [x] 5.2 Terminar las tareas 0.1 y 4.1 que quedaron sin marcar. El PR #12 ya existe: actualizar su descripción, no abrir otro.

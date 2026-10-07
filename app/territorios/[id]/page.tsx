@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
 import { SelloTribu } from "@/components/sello-tribu";
-import { buscarTerritorio, listarTerritorios, resumenDeTerritorio, tribusDeTerritorio } from "@/lib/territorios/datos";
+import { buscarTerritorio, listarTerritorios, resumenDeTerritorio, textoSuperficie, tribusDeTerritorio } from "@/lib/territorios/datos";
 import { TEXTO_ESTADO } from "@/lib/tribus/tipos";
 
 export const dynamicParams = false;
@@ -44,7 +44,7 @@ export default async function TerritorioPage({ params }: Props) {
       <p className="mt-2 text-muted">{territorio.ubicacion}</p>
       <p className="mt-1">{territorio.descripcion}</p>
       <p className="mt-2 mb-4 text-sm">
-        <strong>Superficie:</strong> {territorio.superficie ?? "sin dato"}
+        <strong>Superficie:</strong> {textoSuperficie(territorio)}
       </p>
       <AvisoEjemplo />
 

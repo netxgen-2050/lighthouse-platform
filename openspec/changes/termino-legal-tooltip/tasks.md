@@ -1,11 +1,11 @@
 ## 1. Componente
 
-- [ ] 1.1 Rehacer `components/termino-legal.tsx` como tooltip flotante (posición absoluta respecto del ⚖, por encima del contenido, sin librerías nuevas), con mouse (entrar/salir, incluido pasar al tooltip), foco/blur, Escape y toque en dispositivos sin hover (`matchMedia("(hover: none)")`). Usar solo tokens del tema. Verificar en `pnpm dev` en `/tribus/valle`.
+- [ ] 1.1 (pendiente de Gus: falta la verificación manual en `pnpm dev` en `/tribus/valle`; el componente está hecho y cubierto por e2e) Rehacer `components/termino-legal.tsx` como tooltip flotante (posición absoluta respecto del ⚖, por encima del contenido, sin librerías nuevas), con mouse (entrar/salir, incluido pasar al tooltip), foco/blur, Escape y toque (decidido por el `pointerType` del evento, no por el tipo de dispositivo). Usar solo tokens del tema. Verificar en `pnpm dev` en `/tribus/valle`.
 
 ## 2. Tests
 
-- [ ] 2.1 Reemplazar en los e2e los pasos de "clic para abrir" por los escenarios de la spec: hover y salida, pasar al tooltip, Tab + Escape, y un proyecto o test con `hasTouch: true` / `isMobile: true` para el toque. Agregar el escenario "Dos ⚖ cercanos" (que no se desplace el contenido y que el segundo ⚖ siga visible). Verificar con `pnpm test:e2e`, incluida la auditoría de accesibilidad.
+- [x] 2.1 Reemplazar en los e2e los pasos de "clic para abrir" por los escenarios de la spec: hover y salida, pasar al tooltip, Tab + Escape, y un proyecto o test con `hasTouch: true` / `isMobile: true` para el toque. Agregar el escenario "Dos ⚖ cercanos" (que no se desplace el contenido y que el segundo ⚖ siga visible). Verificar con `pnpm test:e2e`, incluida la auditoría de accesibilidad.
 
 ## 3. Integración
 
-- [ ] 3.1 `pnpm verificar` y `pnpm build` en verde; PR con guion de prueba para mouse, teclado y celular.
+- [x] 3.1 `pnpm verificar` y `pnpm build` en verde; PR con guion de prueba para mouse, teclado y celular.

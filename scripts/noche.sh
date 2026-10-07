@@ -102,11 +102,12 @@ correr_carril() {
     correr_claude "$dir" "$(plantilla .claude/noche.md "$c" "$base" "")" "$log" \
       || echo "[$(date +%T)] Carril $n · $c terminó con error; mirá $log"
 
-    if git ls-remote --exit-code --heads origin "agente/$c" > /dev/null 2>&1; then
+    # Solo se apila sobre un cambio que dejó PR abierto (es decir, que pasó por el revisor).
+    if [[ "$(gh pr list --head "agente/$c" --state open --json number -q length 2>/dev/null)" -gt 0 ]]; then
       base="agente/$c"
     else
-      echo "[$(date +%T)] Carril $n · $c no dejó rama; el siguiente parte de main."
-      base="main"
+      echo "[$(date +%T)] Carril $n · $c no dejó PR; el resto del carril se frena para no apilar sobre algo sin revisar."
+      break
     fi
   done
   echo "[$(date +%T)] Carril $n terminado."
