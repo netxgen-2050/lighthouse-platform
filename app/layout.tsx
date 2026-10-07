@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Anek_Latin, Figtree, JetBrains_Mono } from "next/font/google";
-import { Encabezado } from "@/components/encabezado";
+import { Rail } from "@/components/rail";
 import { Pie } from "@/components/pie";
 import "./globals.css";
 
@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body
-        className={`${anek.variable} ${figtree.variable} ${jetbrains.variable} flex min-h-screen flex-col antialiased`}
+        className={`${anek.variable} ${figtree.variable} ${jetbrains.variable} flex min-h-screen antialiased`}
       >
         <a
           href="#contenido"
@@ -29,11 +29,13 @@ export default function RootLayout({
         >
           Saltar al contenido
         </a>
-        <Encabezado />
-        <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
-          {children}
-        </main>
-        <Pie anioRespaldo={new Date().getFullYear()} />
+        <Rail />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
+            {children}
+          </main>
+          <Pie anioRespaldo={new Date().getFullYear()} />
+        </div>
       </body>
     </html>
   );

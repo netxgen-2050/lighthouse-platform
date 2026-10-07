@@ -64,7 +64,7 @@ export function RegistroTicket() {
   }
 
   return (
-    <section aria-labelledby="tu-ticket" className="grid content-start gap-3 rounded-xl border border-faint bg-surface p-4">
+    <section aria-labelledby="tu-ticket" className="grid grid-cols-1 content-start gap-3 rounded-xl border border-faint bg-surface p-4">
       <h2 id="tu-ticket" className="text-xl font-semibold">Tu ticket</h2>
       <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
         Modo demostración: el registro queda solo en este navegador.
@@ -92,7 +92,7 @@ export function RegistroTicket() {
           </button>
         </div>
       ) : (
-        <form onSubmit={registrar} noValidate className="grid gap-2">
+        <form onSubmit={registrar} noValidate className="grid grid-cols-1 gap-2">
           <label htmlFor="codigo-ticket" className="text-sm text-muted">
             Código de tu ticket (te llega por mail al comprarlo)
           </label>

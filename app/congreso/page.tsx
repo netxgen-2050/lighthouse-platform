@@ -28,7 +28,7 @@ export default function CongresoPage() {
         el territorio, tu presencia suma. El primer check-in te da el registro <b>Genesis</b>.
       </p>
       <AvisoEjemplo />
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
+      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
         <RegistroTicket />
         <section aria-labelledby="agenda" className="rounded-xl border border-faint bg-surface p-4">
           <h2 id="agenda" className="mb-3 text-xl font-semibold">Agenda</h2>
