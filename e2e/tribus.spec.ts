@@ -231,13 +231,70 @@ test.describe("⚖ como tooltip, en celular", () => {
   });
 });
 
-test("sin plata ni avales en pantalla (listado y las 12 tribus)", async ({ page }) => {
-  const rutas = ["/tribus", ...listarTribus().map((t) => `/tribus/${t.id}`)];
-  expect(rutas).toHaveLength(13);
-  for (const ruta of rutas) {
-    await page.goto(ruta);
-    const texto = await page.locator("body").innerText();
-    expect(texto, ruta).not.toMatch(/USD/);
-    expect(texto.toLowerCase(), ruta).not.toContain("avales");
-  }
+test("el listado sigue sin plata ni avales en pantalla", async ({ page }) => {
+  await page.goto("/tribus");
+  const texto = await page.locator("body").innerText();
+  expect(texto).not.toMatch(/USD/);
+  expect(texto.toLowerCase()).not.toContain("avales");
+});
+
+test.describe("ficha completa", () => {
+  test("valle: medidores, red de confianza y aviso de prototipo", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    await expect(page.getByText("USD 310.000 de USD 480.000 · 65%")).toBeVisible();
+    await expect(page.getByText("9 de 14 · 64%")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Red de confianza" })).toBeVisible();
+    await expect(page.getByText("5 personas de la red avalan a esta tribu")).toBeVisible();
+    await expect(page.getByText("Prototipo interno · datos de ejemplo")).toBeVisible();
+    await expect(page.locator("main")).toHaveCount(1);
+  });
+
+  test("avelan: plata comprometida", async ({ page }) => {
+    await page.goto("/tribus/avelan");
+    await expect(page.getByText("USD 140.000 de USD 650.000 · 22%")).toBeVisible();
+  });
+
+  test("⚖ de licencia con teclado", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    const boton = page.getByRole("button", { name: "Qué significa legalmente: Licencia de uso" }).first();
+    await page.keyboard.press("Tab");
+    await boton.focus();
+    await expect(boton).toBeFocused();
+    const tooltip = page.getByRole("tooltip");
+    await expect(tooltip).toContainText("Licencia de uso");
+    await expect(tooltip).toContainText("La tribu no compra tierra");
+  });
+
+  test("sala simulada: anuncia y no cambia la URL", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    await page.getByRole("button", { name: "Entrar a la sala" }).click();
+    await expect(page.getByText(/Telegram/)).toBeVisible();
+    await expect(page.getByText("Podés salir cuando quieras")).toBeVisible();
+    expect(new URL(page.url()).pathname).toBe("/tribus/valle");
+  });
+
+  test("proponer mi pacto lleva a /pactos y ver el barrio al mapa", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    await expect(page.getByRole("link", { name: "Proponer mi pacto" })).toHaveAttribute("href", "/pactos");
+    await page.getByRole("link", { name: "Ver su barrio en el mapa" }).click();
+    await expect(page).toHaveURL(/\/territorios\/lighthouse$/);
+  });
+
+  test("grano: vacante con medidores, sin red de confianza, proponer tribu simulado", async ({ page }) => {
+    await page.goto("/tribus/grano");
+    await expect(page.getByText("USD 0 de USD 260.000 · 0%")).toBeVisible();
+    await expect(page.getByText("0 de 10 · 0%")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "¿Tenés una tribu?" })).toBeVisible();
+    await expect(page.getByText("Red de confianza")).toHaveCount(0);
+    await page.getByRole("button", { name: "Proponer mi tribu" }).click();
+    await expect(page.getByText(/simulado/)).toBeVisible();
+    expect(new URL(page.url()).pathname).toBe("/tribus/grano");
+  });
+
+  test("las 12 fichas muestran el aviso de prototipo", async ({ page }) => {
+    for (const t of listarTribus()) {
+      await page.goto(`/tribus/${t.id}`);
+      await expect(page.getByText("Prototipo interno · datos de ejemplo"), t.id).toBeVisible();
+    }
+  });
 });
