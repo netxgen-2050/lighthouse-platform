@@ -20,3 +20,8 @@
 ## 4. Integración
 
 - [x] 4.1 `pnpm verificar` y `pnpm build` en verde; PR desde `agente/compromisos-registro` con guion de prueba (registrar una oferta de tiempo, una necesidad de bienes, recargar, quitar, borrar todo). Probar sobre el preview con `BASE_URL=$(scripts/preview-url.sh agente/compromisos-registro) pnpm test:e2e e2e/compromisos.spec.ts`.
+
+## 6. Vuelta de corrección (7-oct)
+
+- [ ] 6.1 Traer la base corregida: `git fetch origin` y `git merge --no-edit origin/agente/territorio-ficha`, conservando lo de la base en los conflictos. Verificar con `pnpm verificar` y `pnpm test:e2e`.
+- [ ] 6.2 Fase de prototipo (ver `CLAUDE.md`): agregar la clase "Plata" a los compromisos (monto orientativo en USD, opcional, "sin dato" si no se completa), además de Tiempo y Bienes. Actualizar la lógica, los tests y el e2e. El PR #10 ya existe: actualizar su descripción, no abrir otro.
