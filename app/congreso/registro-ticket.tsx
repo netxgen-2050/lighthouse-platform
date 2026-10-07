@@ -70,7 +70,7 @@ export function RegistroTicket() {
         Modo demostración: el registro queda solo en este navegador.
       </p>
       {falloAlmacen && (
-        <p role="alert" className="text-sm font-medium text-red-800">
+        <p role="alert" className="text-sm font-medium text-danger">
           Error: tu navegador no permite guardar datos en este sitio, así que el ticket no se puede registrar ni quitar acá. Revisá la configuración de privacidad o probá en otro navegador.
         </p>
       )}
@@ -116,7 +116,7 @@ export function RegistroTicket() {
             </button>
           </div>
           {error && (
-            <p id="error-ticket" role="alert" className="text-sm font-medium text-red-800">
+            <p id="error-ticket" role="alert" className="text-sm font-medium text-danger">
               Error: el código no tiene el formato LH27-XXXX-XX (letras y números).
             </p>
           )}
