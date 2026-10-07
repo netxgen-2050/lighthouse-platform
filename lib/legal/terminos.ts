@@ -89,6 +89,29 @@ export const TERMINOS = {
     texto:
       "La inversión en NetX como compañía es otra cosa: se hace con un SAFE en el holding, en conversaciones privadas, uno a uno. No se ofrece públicamente en la plataforma.",
   },
+  art32: {
+    titulo: "Reglamento de Soluna, art. 32",
+    texto:
+      "Consenso para el funcionamiento habitual, consentimiento para lo operativo y 2/3 para modificar el reglamento. El voto vale porque lo dice el reglamento, no porque lo diga la plataforma.",
+  },
+  art35: {
+    titulo: "Reglamento de Soluna, art. 35",
+    texto: "Fondo comunitario: contribución mensual fijada en asamblea, reserva de 3 meses, rendición mensual de cuentas.",
+  },
+  art44: {
+    titulo: "Reglamento de Soluna, art. 44",
+    texto: "El reglamento se modifica con 2/3 de los copropietarios con derecho a voto y aviso de 30 días.",
+  },
+  fidasamblea: {
+    titulo: "Asamblea de beneficiarios",
+    texto:
+      "La define el contrato de fideicomiso: mayorías, comité y derechos de información. El fiduciario rinde cuentas al menos una vez por año y no se puede dispensar (arts. 1675–1676 CCyCN).",
+  },
+  estatuto: {
+    titulo: "Estatuto de la tribu",
+    texto:
+      "La tribu se organiza como asociación civil: elige autoridades y decide ingresos según su estatuto. Solo puede excluir con causa y con derecho de defensa (art. 180 CCyCN).",
+  },
 } as const;
 
 export type ClaveTermino = keyof typeof TERMINOS;
