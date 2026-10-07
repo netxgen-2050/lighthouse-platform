@@ -5,6 +5,7 @@ import { AvisoEjemplo } from "@/components/aviso-ejemplo";
 import { SelloTribu } from "@/components/sello-tribu";
 import { buscarTerritorio, listarTerritorios, resumenDeTerritorio, textoSuperficie, tribusDeTerritorio } from "@/lib/territorios/datos";
 import { TEXTO_ESTADO } from "@/lib/tribus/tipos";
+import { MapaTerritorio } from "./mapa-territorio";
 
 export const dynamicParams = false;
 
@@ -47,6 +48,8 @@ export default async function TerritorioPage({ params }: Props) {
         <strong>Superficie:</strong> {textoSuperficie(territorio)}
       </p>
       <AvisoEjemplo />
+
+      <MapaTerritorio territorioId={territorio.id} nombre={territorio.nombre} tribus={tribus} />
 
       <section className="mt-6 grid gap-4">
         <h2 className="text-xl font-semibold">Tribus del territorio</h2>
