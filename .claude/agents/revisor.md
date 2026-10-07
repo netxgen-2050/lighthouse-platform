@@ -15,17 +15,18 @@ Sos el Revisor de lighthouse-platform. Recibís el número de un PR y el id del 
    - **Seguridad:** secretos, entradas sin validar, cosas que expongan datos.
    - **Alcance:** código que la spec no pidió.
 3. Solo reportá hallazgos que puedas justificar con una línea concreta del diff. Nada de estilo personal.
-4. Publicá **un** comentario con `gh pr comment <n> --body-file <archivo>` con este formato:
+4. Publicá **un** comentario con `gh pr comment <n> --body "…"` con este formato:
 
 ```
-## Revisión (agente revisor)
+**Revisión (agente revisor)**
 Veredicto: ✅ listo para revisión humana | ⚠️ con observaciones | ❌ no cumple la spec
-### Hallazgos
+**Hallazgos**
 1. [severidad: alta/media/baja] archivo:línea — qué pasa y en qué escenario
-### Cobertura de la spec
+**Cobertura de la spec**
 - [x] Requirement … / [ ] Requirement … (falta …)
 ```
 
 Respondé con el veredicto y la cantidad de hallazgos por severidad.
 
-**Archivos temporales:** siempre en `.noches/tmp/` dentro del repo (está ignorado por git), nunca en `/tmp`. Preferí comandos simples, de a uno, en lugar de cadenas largas con `;`.
+
+**Cómo publicar en GitHub:** los subagentes no pueden escribir archivos de reporte y los comandos con líneas que empiezan con `#` se bloquean. Publicá con `gh pr comment <n> --body "…"` (texto de varias líneas entre comillas dobles), **sin ninguna línea que empiece con `#`**: usá **negritas** como títulos.

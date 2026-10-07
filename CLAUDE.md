@@ -17,7 +17,7 @@ Plataforma de NetX para el Lighthouse (Soluna, BioPueblo): descubrir el territor
 Cada comando que no está en `.claude/settings.json` se rechaza solo. Para no trabarte:
 - **Archivos:** crear y editar siempre con las herramientas Write y Edit, nunca con `sed -i`, `python3`, `cat > archivo` ni `echo >`. Borrar un archivo versionado: `git rm <ruta>`.
 - **Un comando por llamada.** Sin `cd`, sin `git -C`, sin variables antes del comando (`U=… curl`), sin `;` ni `for` largos. La única excepción permitida es `BASE_URL=<url> pnpm test:e2e` (y con `PORT=`).
-- **Textos largos para GitHub** (PR, comentarios): escribilos con Write en `.noches/tmp/<nombre>.md` y usá `--body-file`.
+- **Textos para GitHub** (PR, comentarios): `--body "…"` con el texto entre comillas dobles y **ninguna línea que empiece con `#`** (usá **negritas** como títulos). Los subagentes no pueden escribir archivos de reporte.
 - **Procesos:** no uses `kill` ni `pkill`; puede haber otro carril en paralelo. Playwright levanta y baja su propio servidor.
 - **Carpetas:** trabajá solo dentro del repo en el que arrancaste (en la noche es `.carriles/N`).
 
