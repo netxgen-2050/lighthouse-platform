@@ -1,4 +1,6 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { listarTribus } from "@/lib/tribus/datos";
 
 test("listado: 12 tarjetas en orden con estado escrito", async ({ page }) => {
   await page.goto("/tribus");
@@ -46,23 +48,196 @@ test("id desconocido: 404 con vuelta al listado", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Volver a las tribus" })).toHaveAttribute("href", "/tribus");
 });
 
-test("el ⚖ se opera con teclado", async ({ page }) => {
-  await page.goto("/tribus/valle");
-  const boton = page.getByRole("button", { name: "Qué significa legalmente: Ritual de entrada" });
-  await boton.focus();
-  await page.keyboard.press("Enter");
-  await expect(page.getByRole("dialog", { name: "Ritual de entrada" })).toBeVisible();
-  await expect(page.getByText("Ley 23.592")).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog")).toHaveCount(0);
-  await expect(boton).toBeFocused();
+const RITUAL = "Qué significa legalmente: Ritual de entrada";
+const PERSONERIA = "Qué significa legalmente: Comunidad con personería";
+
+test.describe("⚖ como tooltip, con mouse", () => {
+  test("pasar y sacar el mouse", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    const boton = page.getByRole("button", { name: RITUAL });
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
+    await boton.hover();
+    const tooltip = page.getByRole("tooltip");
+    await expect(tooltip).toBeVisible();
+    await expect(tooltip).toContainText("Ritual de entrada");
+    await expect(tooltip).toContainText("Ley 23.592");
+    await expect(boton).toHaveAttribute("aria-describedby", /.+/);
+    await page.mouse.move(0, 0);
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
+    await expect(boton).not.toHaveAttribute("aria-describedby", /.+/);
+  });
+
+  test("pasar del ⚖ al tooltip lo mantiene visible", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    await page.getByRole("button", { name: RITUAL }).hover();
+    const tooltip = page.getByRole("tooltip");
+    await expect(tooltip).toBeVisible();
+    await tooltip.hover();
+    await expect(tooltip).toBeVisible();
+    await page.mouse.move(0, 0);
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
+  });
+
+  test("dos ⚖ cercanos: no se desplaza el contenido y el segundo sigue accesible", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    const ritual = page.getByRole("button", { name: RITUAL });
+    const personeria = page.getByRole("button", { name: PERSONERIA });
+    const antes = await personeria.boundingBox();
+    await ritual.hover();
+    await expect(page.getByRole("tooltip")).toBeVisible();
+    const despues = await personeria.boundingBox();
+    expect(despues).toEqual(antes);
+    // El tooltip no tapa al segundo ⚖: el punto de su centro cae sobre el botón, no sobre el tooltip.
+    const tapado = await personeria.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const arriba = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      return !el.contains(arriba);
+    });
+    expect(tapado).toBe(false);
+    // Tampoco tapa el ⚖ propio.
+    const propioTapado = await ritual.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const arriba = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      return !el.contains(arriba);
+    });
+    expect(propioTapado).toBe(false);
+    await personeria.hover();
+    await expect(page.getByRole("tooltip")).toHaveCount(1);
+    await expect(page.getByRole("tooltip")).toContainText("Comunidad con personería");
+  });
 });
 
-test("sin plata ni avales en pantalla", async ({ page }) => {
-  for (const ruta of ["/tribus", "/tribus/valle", "/tribus/avelan", "/tribus/grano"]) {
+test.describe("⚖ como tooltip, posición y accesibilidad", () => {
+  test("cerca del borde superior abre hacia abajo y queda dentro de la pantalla", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    const boton = page.getByRole("button", { name: RITUAL });
+    // La página es corta: se agrega alto para poder dejar el ⚖ pegado al borde superior.
+    await page.evaluate(() => {
+      document.body.style.paddingBottom = "2000px";
+    });
+    await boton.evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - 2));
+    await boton.hover();
+    const tooltip = page.getByRole("tooltip");
+    await expect(tooltip).toBeVisible();
+    const caja = await tooltip.boundingBox();
+    const cajaBoton = await boton.boundingBox();
+    expect(caja!.y).toBeGreaterThanOrEqual(0);
+    expect(caja!.y).toBeGreaterThanOrEqual(cajaBoton!.y + cajaBoton!.height - 1);
+  });
+
+  // LIMITACIÓN CONOCIDA (decisión de Gus): al abrir hacia abajo, por falta de lugar arriba,
+  // el tooltip de "Ritual de entrada" TAPA el ⚖ siguiente ("Forma jurídica"). Este test documenta
+  // lo que pasa hoy; si se decide otra prioridad, se invierte la aserción.
+  test("cerca del borde superior, abierto hacia abajo, tapa el ⚖ siguiente (limitación documentada)", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    const boton = page.getByRole("button", { name: RITUAL });
+    await page.evaluate(() => {
+      document.body.style.paddingBottom = "2000px";
+    });
+    await boton.evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - 2));
+    await boton.hover();
+    await expect(page.getByRole("tooltip")).toBeVisible();
+    const tapado = await page.getByRole("button", { name: PERSONERIA }).evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const arriba = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      return !el.contains(arriba);
+    });
+    expect(tapado).toBe(true);
+  });
+
+  test("axe sin violaciones serias o críticas con el tooltip abierto", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    await page.getByRole("button", { name: RITUAL }).hover();
+    await expect(page.getByRole("tooltip")).toBeVisible();
+    const r = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .analyze();
+    const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+  });
+});
+
+test.describe("⚖ como tooltip, híbrido (toque en pantalla que también tiene hover)", () => {
+  // Chromium con hasTouch reporta (hover: none) y CDP no permite forzar hover. Por eso el contexto
+  // es de escritorio (reporta hover: hover) y los toques se inyectan por CDP (Input.dispatchTouchEvent).
+  test("un toque muestra aunque el dispositivo tenga hover", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    expect(await page.evaluate(() => window.matchMedia("(hover: hover)").matches)).toBe(true);
+    const boton = page.getByRole("button", { name: RITUAL });
+    const caja = (await boton.boundingBox())!;
+    const x = caja.x + caja.width / 2;
+    const y = caja.y + caja.height / 2;
+    const cdp = await page.context().newCDPSession(page);
+    async function tocar() {
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    }
+    await tocar();
+    await expect(page.getByRole("tooltip")).toContainText("Ley 23.592");
+    await tocar();
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
+  });
+});
+
+test.describe("⚖ como tooltip, con teclado", () => {
+  test("Tab muestra, Escape esconde sin mover el foco, Tab no la vuelve a mostrar", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    const boton = page.getByRole("button", { name: RITUAL });
+    let llego = false;
+    for (let i = 0; i < 60 && !llego; i++) {
+      await page.keyboard.press("Tab");
+      llego = await boton.evaluate((el) => el === document.activeElement);
+    }
+    expect(llego).toBe(true);
+    await expect(page.getByRole("tooltip")).toContainText("Ley 23.592");
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
+    await expect(boton).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(boton).not.toBeFocused();
+    await expect(page.getByRole("tooltip")).toHaveCount(1);
+    await expect(page.getByRole("tooltip")).not.toContainText("Ley 23.592");
+  });
+
+  test("al perder el foco el tooltip desaparece y el siguiente ⚖ muestra el suyo", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    const ritual = page.getByRole("button", { name: RITUAL });
+    const personeria = page.getByRole("button", { name: PERSONERIA });
+    await page.keyboard.press("Tab");
+    await ritual.focus();
+    await expect(ritual).toBeFocused();
+    await expect(page.getByRole("tooltip")).toBeVisible();
+    await page.keyboard.press("Tab");
+    await expect(personeria).toBeFocused();
+    await expect(page.getByRole("tooltip")).toHaveCount(1);
+    await expect(page.getByRole("tooltip")).toContainText("Comunidad con personería");
+  });
+});
+
+test.describe("⚖ como tooltip, en celular", () => {
+  test.use({ hasTouch: true, isMobile: true });
+
+  test("un toque muestra, otro toque o un toque afuera esconde", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    const boton = page.getByRole("button", { name: RITUAL });
+    await boton.tap();
+    await expect(page.getByRole("tooltip")).toContainText("Ley 23.592");
+    await boton.tap();
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
+    await boton.tap();
+    await expect(page.getByRole("tooltip")).toBeVisible();
+    await page.getByRole("heading", { name: "Valle Solar" }).tap();
+    await expect(page.getByRole("tooltip")).toHaveCount(0);
+  });
+});
+
+test("sin plata ni avales en pantalla (listado y las 12 tribus)", async ({ page }) => {
+  const rutas = ["/tribus", ...listarTribus().map((t) => `/tribus/${t.id}`)];
+  expect(rutas).toHaveLength(13);
+  for (const ruta of rutas) {
     await page.goto(ruta);
     const texto = await page.locator("body").innerText();
-    expect(texto).not.toMatch(/USD/);
-    expect(texto.toLowerCase()).not.toContain("avales");
+    expect(texto, ruta).not.toMatch(/USD/);
+    expect(texto.toLowerCase(), ruta).not.toContain("avales");
   }
 });

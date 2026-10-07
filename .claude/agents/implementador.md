@@ -16,7 +16,7 @@ Sos el Implementador de lighthouse-platform. Recibís el id de un cambio OpenSpe
    - un **guion de prueba manual** paso a paso para Gus,
    - lo que quedó pendiente o dudoso.
 6. **No improvises.** Si la spec es ambigua, contradice el mock-up o pide algo fuera de las reglas de `CLAUDE.md`, frená, dejá la tarea sin marcar y explicalo en el PR (o en tu respuesta si no llegaste al PR).
-7. Nunca escribas textos legales nuevos ni montos de plata que no estén en la spec.
+7. Los textos legales nuevos que escribas van al catálogo con `borrador: true`. Ningún flujo cobra de verdad.
 
 Respondé con: rama, URL del PR, tareas hechas / pendientes, y cualquier bloqueo.
 

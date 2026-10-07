@@ -1,43 +1,122 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { TERMINOS, type ClaveTermino } from "@/lib/legal/terminos";
 
+const EVENTO_ABRIR = "termino-legal:abrir";
+
+// La explicación de un término legal se muestra como tooltip flotante:
+// mouse (entrar/salir), teclado (foco/blur, Escape) y toque (dispositivos sin hover).
 export function TerminoLegal({ clave }: { clave: ClaveTermino }) {
   const termino = TERMINOS[clave];
-  const [abierto, setAbierto] = useState(false);
+  const [conMouse, setConMouse] = useState(false);
+  const [conFoco, setConFoco] = useState(false);
+  const [conToque, setConToque] = useState(false);
+  const [desplazamiento, setDesplazamiento] = useState(0);
+  const [abajo, setAbajo] = useState(false);
+  const visible = conMouse || conFoco || conToque;
   const id = useId();
-  const boton = useRef<HTMLButtonElement>(null);
+  // Tipo del último puntero que apretó el ⚖: se decide por el evento, no por el dispositivo (híbridos).
+  const ultimoPuntero = useRef("");
+  const contenedor = useRef<HTMLSpanElement>(null);
+  const tooltip = useRef<HTMLSpanElement>(null);
 
-  function cerrarConEscape(e: React.KeyboardEvent) {
-    if (e.key === "Escape" && abierto) {
-      setAbierto(false);
-      boton.current?.focus();
-    }
+  function esconder() {
+    setConMouse(false);
+    setConFoco(false);
+    setConToque(false);
   }
 
+  // Mostrar un ⚖ esconde cualquier otro que estuviera visible.
+  useEffect(() => {
+    function alMostrarOtro(e: Event) {
+      if ((e as CustomEvent<string>).detail !== id) esconder();
+    }
+    document.addEventListener(EVENTO_ABRIR, alMostrarOtro);
+    return () => document.removeEventListener(EVENTO_ABRIR, alMostrarOtro);
+  }, [id]);
+
+  useEffect(() => {
+    if (!visible) return;
+    document.dispatchEvent(new CustomEvent(EVENTO_ABRIR, { detail: id }));
+  }, [visible, id]);
+
+  useEffect(() => {
+    if (!visible) return;
+    function alTeclear(e: KeyboardEvent) {
+      if (e.key === "Escape") esconder();
+    }
+    function alTocarAfuera(e: PointerEvent) {
+      if (!contenedor.current?.contains(e.target as Node)) esconder();
+    }
+    document.addEventListener("keydown", alTeclear);
+    document.addEventListener("pointerdown", alTocarAfuera);
+    return () => {
+      document.removeEventListener("keydown", alTeclear);
+      document.removeEventListener("pointerdown", alTocarAfuera);
+    };
+  }, [visible]);
+
+  // Mantiene el tooltip dentro de la pantalla: abre hacia arriba y, si no hay lugar, hacia abajo.
+  useLayoutEffect(() => {
+    if (!visible || !tooltip.current) {
+      setDesplazamiento(0);
+      setAbajo(false);
+      return;
+    }
+    const caja = tooltip.current.getBoundingClientRect();
+    const margen = 8;
+    if (!abajo && caja.top < margen) setAbajo(true);
+    const sobra = caja.right + desplazamiento - (window.innerWidth - margen);
+    const falta = margen - (caja.left - desplazamiento);
+    setDesplazamiento(sobra > 0 ? -sobra : falta > 0 ? falta : 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
   return (
-    <span className="relative inline-block align-baseline" onKeyDown={cerrarConEscape}>
+    <span
+      ref={contenedor}
+      className="relative inline-block align-baseline"
+      onPointerEnter={(e) => {
+        if (e.pointerType !== "touch") setConMouse(true);
+      }}
+      onPointerLeave={(e) => {
+        if (e.pointerType !== "touch") setConMouse(false);
+      }}
+    >
       <button
-        ref={boton}
         type="button"
-        aria-expanded={abierto}
-        aria-controls={abierto ? id : undefined}
+        aria-describedby={visible ? id : undefined}
         aria-label={`Qué significa legalmente: ${termino.titulo}`}
-        onClick={() => setAbierto((v) => !v)}
+        onFocus={(e) => {
+          // Solo con teclado: el foco que deja un clic de mouse no lo mantiene abierto.
+          if (e.currentTarget.matches(":focus-visible")) setConFoco(true);
+        }}
+        onBlur={() => setConFoco(false)}
+        onPointerDown={(e) => {
+          ultimoPuntero.current = e.pointerType;
+        }}
+        onClick={() => {
+          // Con mouse el tooltip sigue al puntero y con teclado al foco: el clic solo alterna si fue un toque.
+          if (ultimoPuntero.current === "touch") setConToque((v) => !v);
+          ultimoPuntero.current = "";
+        }}
         className="ml-1 rounded px-1 text-gold-ink hover:bg-gold-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-ink"
       >
         <span aria-hidden="true">⚖</span>
       </button>
-      {abierto && (
+      {visible && (
         <span
+          ref={tooltip}
           id={id}
-          role="dialog"
-          aria-label={termino.titulo}
-          className="absolute left-0 top-full z-10 mt-1 block w-72 rounded-lg border border-gold-ink bg-surface p-3 text-sm font-normal text-ink shadow-lg"
+          role="tooltip"
+          style={{ transform: `translateX(${desplazamiento}px)` }}
+          className={`absolute left-0 z-10 block w-72 max-w-[calc(100vw-1rem)] text-sm font-normal text-ink ${abajo ? "top-full pt-1" : "bottom-full pb-1"}`}
         >
-          <strong className="block">{termino.titulo}</strong>
-          {termino.texto}
+          <span className="block rounded-lg border border-gold-ink bg-surface p-3 shadow-lg">
+            <strong className="block">{termino.titulo}</strong>
+            {termino.texto}
+          </span>
         </span>
       )}
     </span>
