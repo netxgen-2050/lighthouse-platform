@@ -96,7 +96,32 @@ test("al votar el foco queda en el botón de la decisión y se anuncia en una re
   await expect(page.getByRole("status")).toHaveText("");
 });
 
-test("teclado: se vota solo con teclado", async ({ page }) => {
+test("repetir el mismo voto vuelve a escribir el anuncio en la región", async ({ page }) => {
+  await page.goto("/fogon");
+  const region = page.getByRole("status");
+  const huerta = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Plan de huerta comunitaria 2027" }) });
+  await huerta.getByRole("button", { name: "Votar" }).click();
+  await huerta.getByRole("button", { name: "A favor" }).click();
+  await expect(region).toContainText("Tu voto quedó registrado: A favor");
+  await region.evaluate((el) => {
+    const w = window as unknown as { __cambios: string[] };
+    w.__cambios = [];
+    new MutationObserver(() => w.__cambios.push(el.textContent ?? "")).observe(el, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
+  });
+  await huerta.getByRole("button", { name: "Cambiar voto" }).click();
+  await huerta.getByRole("button", { name: "A favor" }).click();
+  await expect(huerta.getByRole("button", { name: "Cambiar voto" })).toBeFocused();
+  await expect(region).toContainText("Tu voto quedó registrado: A favor");
+  const cambios = await page.evaluate(() => (window as unknown as { __cambios: string[] }).__cambios);
+  expect(cambios).toContain("");
+  expect(cambios[cambios.length - 1]).toContain("Tu voto quedó registrado: A favor");
+});
+
+test("teclado: se vota solo con teclado",async ({ page }) => {
   await page.goto("/fogon");
   const boton = page.getByRole("button", { name: "Votar" }).first();
   await boton.focus();

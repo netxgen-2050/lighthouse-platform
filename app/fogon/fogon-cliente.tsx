@@ -48,9 +48,11 @@ export function FogonCliente() {
     const d = DECISIONES.find((x) => x.id === id);
     if (!d || !guardar(votar(estado, id, opcion))) return;
     setAbierta(null);
-    setAnuncio(
-      `Tu voto quedó registrado: ${OPCIONES.find((o) => o.id === opcion)!.etiqueta} en «${d.titulo}» (simulado).`,
-    );
+    // Se vacía primero y se escribe en el próximo tick: si el texto es igual al anterior (mismo voto
+    // repetido), React no tocaría el DOM y el lector de pantalla no anunciaría nada.
+    const texto = `Tu voto quedó registrado: ${OPCIONES.find((o) => o.id === opcion)!.etiqueta} en «${d.titulo}» (simulado).`;
+    setAnuncio("");
+    setTimeout(() => setAnuncio(texto), 50);
     // El grupo de opciones se cierra: el foco vuelve al botón que lo abrió, en la misma decisión.
     document.getElementById(`abrir-${id}`)?.focus();
   }
