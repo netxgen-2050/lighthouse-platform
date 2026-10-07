@@ -69,6 +69,10 @@ describe("territorios", () => {
       bienesComunes: [],
     };
     expect(sinSuperficie.superficie).toBeUndefined();
+    for (const t of listarTerritorios()) {
+      expect(t.superficie).not.toBe("");
+      expect(t.superficie).not.toBe(0);
+    }
   });
 });
 
