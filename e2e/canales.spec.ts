@@ -113,6 +113,22 @@ test("teclado: se recorre todo el simulador sin mouse", async ({ page }) => {
   await expect(page.getByRole("checkbox", { name: "Residente" })).not.toBeChecked();
 });
 
+for (const conTribu of [false, true]) {
+  test(`a 320 px no hay scroll horizontal ${conTribu ? "con" : "sin"} tribu aceptada`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 700 });
+    await page.goto("/canales");
+    if (conTribu) {
+      await page.getByLabel("Tribu aceptada").selectOption({ label: "Valle Solar" });
+      await expect(fila(page, "Sala de Valle Solar")).toContainText("Abierta");
+    }
+    const medidas = await page.evaluate(() => ({
+      ancho: document.documentElement.scrollWidth,
+      visible: document.documentElement.clientWidth,
+    }));
+    expect(medidas.ancho).toBeLessThanOrEqual(medidas.visible);
+  });
+}
+
 test("hay un solo main y los ⚖ están en la pantalla", async ({ page }) => {
   await page.goto("/canales");
   await expect(page.locator("main")).toHaveCount(1);

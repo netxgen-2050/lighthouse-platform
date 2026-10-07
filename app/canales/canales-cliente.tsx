@@ -10,9 +10,9 @@ import { listarTribus } from "@/lib/tribus/datos";
 
 const BOTON_SUAVE =
   "w-fit rounded-lg border border-muted px-4 py-1.5 font-medium hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
-const TARJETA = "grid content-start gap-3 rounded-xl border border-faint bg-surface p-4";
+const TARJETA = "grid grid-cols-1 content-start gap-3 rounded-xl border border-faint bg-surface p-4";
 const CAMPO =
-  "rounded-lg border border-muted bg-surface px-3 py-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
+  "w-full min-w-0 rounded-lg border border-muted bg-surface px-3 py-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 const CASILLA = "size-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
 // Solo las tribus que existen de verdad pueden aceptar a alguien: los barrios vacantes no.
@@ -39,7 +39,7 @@ export function CanalesCliente() {
   const cambiar = (c: Partial<Persona>) => setPrueba({ ...persona, ...c });
 
   return (
-    <div className="grid gap-6">
+    <div className="grid grid-cols-1 gap-6">
       <section aria-labelledby="situacion" className={TARJETA}>
         <h2 id="situacion" className="text-xl font-semibold">Tu situación</h2>
         <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-[max-content_1fr]">
@@ -138,32 +138,32 @@ export function CanalesCliente() {
 
       <section aria-labelledby="puertas" className={TARJETA}>
         <h2 id="puertas" className="text-xl font-semibold">Las puertas</h2>
-        <div aria-live="polite" className="grid gap-3">
+        <div aria-live="polite" className="grid grid-cols-1 gap-3">
           <p className="text-sm font-medium">
             {prueba ? "Estás viendo una situación de prueba (no se guarda)." : "Estás viendo tu situación."}
           </p>
           {/* Sin contenedor con scroll: recortaría la explicación del ⚖. La tabla se ajusta al ancho. */}
           <div>
-            <table className="w-full border-collapse text-left text-sm">
+            <table className="w-full table-fixed border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-line">
-                  <th scope="col" className="p-2">Puerta</th>
-                  <th scope="col" className="p-2">Estado</th>
-                  <th scope="col" className="p-2">Por qué</th>
+                  <th scope="col" className="w-[36%] p-1 sm:p-2">Puerta</th>
+                  <th scope="col" className="w-[30%] p-1 sm:p-2">Estado</th>
+                  <th scope="col" className="p-1 sm:p-2">Por qué</th>
                 </tr>
               </thead>
               <tbody>
                 {filas.map((f) => (
                   <tr key={f.clave} className="border-b border-line align-top">
-                    <th scope="row" className="p-2 font-medium">
+                    <th scope="row" className="p-1 font-medium break-words sm:p-2">
                       {f.nombre}
                       {f.termino && <TerminoLegal clave={f.termino} />}
                     </th>
-                    <td className="p-2 font-medium">
+                    <td className="p-1 font-medium break-words sm:p-2">
                       <span aria-hidden="true">{f.abierta ? "✓ " : "✕ "}</span>
                       {f.estado}
                     </td>
-                    <td className="p-2">
+                    <td className="p-1 break-words sm:p-2">
                       {f.abierta ? f.motivos.join(" y ") : `Se abre con: ${f.abreCon}`}
                       {f.refuerzo && <span className="block text-muted">{f.refuerzo}</span>}
                     </td>
