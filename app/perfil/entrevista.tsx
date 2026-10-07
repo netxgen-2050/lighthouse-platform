@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useEffect, useReducer, useRef, useState } from "react";
 import { ESTADO_INICIAL, cantidadConfirmados, estaCompleta, leerGuardado, reducir } from "@/lib/perfil/estado";
+import { CLAVES } from "@/lib/demo/claves";
 import { CHATS } from "@/lib/perfil/preguntas";
 
-const CLAVE = "lh-perfil-entrevista";
 const BOTON =
   "rounded-lg border border-muted px-3 py-1.5 hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 const BOTON_PRINCIPAL =
@@ -34,7 +34,7 @@ export function Entrevista() {
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
     try {
-      const guardado = leerGuardado(window.localStorage.getItem(CLAVE));
+      const guardado = leerGuardado(window.localStorage.getItem(CLAVES.perfil));
       if (guardado.items.length > 0) despachar({ tipo: "cargar", estado: guardado });
     } catch {
       setFalloAlmacen(true);
@@ -45,8 +45,8 @@ export function Entrevista() {
   useEffect(() => {
     if (!listo) return;
     try {
-      if (estado.items.length === 0) window.localStorage.removeItem(CLAVE);
-      else window.localStorage.setItem(CLAVE, JSON.stringify(estado));
+      if (estado.items.length === 0) window.localStorage.removeItem(CLAVES.perfil);
+      else window.localStorage.setItem(CLAVES.perfil, JSON.stringify(estado));
     } catch {
       setFalloAlmacen(true);
     }
