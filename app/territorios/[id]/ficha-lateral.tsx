@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { EstadoAdministrativo } from "@/components/estado-administrativo";
 import { SelloTribu } from "@/components/sello-tribu";
+import { accionesDeLote } from "@/lib/legal/estado-administrativo";
 import { TerminoLegal } from "@/components/termino-legal";
 import {
   TEXTO_ESTADO_FINCA,
@@ -81,6 +83,7 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
   if (el?.tipo === "finca") {
     const disponible = el.estado === "disponible";
     const enviada = consultas.includes(el.id);
+    const acciones = accionesDeLote("soluna");
     return (
       <div className="grid gap-3">
         <p className="text-sm text-muted">Chacras de Soluna</p>
@@ -89,17 +92,19 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
           <strong>Superficie:</strong> {textoSuperficieM2(el.superficieM2)}
         </p>
         <p className="text-sm font-medium">Estado: {el.estado ? TEXTO_ESTADO_FINCA[el.estado] : "sin dato"}</p>
+        <EstadoAdministrativo proyecto="soluna" compacto />
         {disponible && (
           <>
-            {enviada ? (
-              <p role="status" className="font-medium">
-                Consulta enviada (simulado)
-              </p>
-            ) : (
-              <button type="button" onClick={() => alConsultar(el.id)} className={boton}>
-                Consultar por este lote
-              </button>
-            )}
+            {acciones.includes("consultar") &&
+              (enviada ? (
+                <p role="status" className="font-medium">
+                  Consulta enviada (simulado)
+                </p>
+              ) : (
+                <button type="button" onClick={() => alConsultar(el.id)} className={boton}>
+                  Consultar por este lote
+                </button>
+              ))}
             <p className="text-sm text-muted">
               NetX actúa como agencia: la compra es privada entre las partes.
               <TerminoLegal clave="agencia" />

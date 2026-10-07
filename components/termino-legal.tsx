@@ -116,7 +116,7 @@ export function TerminoLegal({ clave }: { clave: ClaveTermino }) {
           <span className="block rounded-lg border border-gold-ink bg-surface p-3 shadow-lg">
             <strong className="block">{termino.titulo}</strong>
             {termino.texto}
-            {esBorrador(clave) && <em className="mt-1 block text-muted">Texto borrador, a revisar.</em>}
+            {esBorrador(clave) && <em className="mt-1 block text-muted">Borrador: texto a revisar</em>}
           </span>
         </span>
       )}

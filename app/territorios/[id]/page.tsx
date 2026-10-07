@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
+import { EstadoAdministrativo } from "@/components/estado-administrativo";
 import { buscarTerritorio, listarTerritorios, textoSuperficie } from "@/lib/territorios/datos";
 import { VitrinaTerritorio } from "./vitrina-territorio";
 
@@ -38,6 +39,7 @@ export default async function TerritorioPage({ params }: Props) {
         <strong>Superficie:</strong> {textoSuperficie(territorio)}
       </p>
       <AvisoEjemplo />
+      <EstadoAdministrativo proyecto="soluna" />
 
       <VitrinaTerritorio />
 

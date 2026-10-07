@@ -164,6 +164,13 @@ export const TERMINOS = {
       "En las Chacras de Soluna, NetX actúa como agencia: muestra los lotes y pone en contacto a las partes. La compra es privada entre quien vende y quien compra; NetX no vende ni cobra el lote por la plataforma.",
     borrador: true,
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  loteo: {
+    titulo: "Estado del loteo",
+    texto:
+      "Los lotes de Chacras de Soluna son de BioPueblo. Su loteo está en trámite según la Ordenanza 173/2026 de Mainqué: hasta que el municipio lo apruebe no se pueden reservar, señar ni comprar. Lo que ves acá es informativo. NetX actúa como agencia y publica el número de expediente cuando exista.",
+    borrador: true,
+  },
 } as const;
 
 /** Claves de los textos que son borrador (no vienen del mock-up). */
