@@ -24,6 +24,7 @@
   --color-warn-bg: #fff3d6;
   --color-warn-ink: #5d4300;
   --color-water: #dbe7e4;
+  --color-danger: #991b1b;
 }
 
 /* inline: next/font define sus variables en el <body>, no en :root; sin inline quedarían inválidas. */

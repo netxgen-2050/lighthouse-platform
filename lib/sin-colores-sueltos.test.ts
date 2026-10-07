@@ -3,7 +3,7 @@ import path from "node:path";
 import { expect, test } from "vitest";
 
 const RAIZ = path.resolve(__dirname, "..");
-const PROHIBIDO = /#[0-9a-fA-F]{3,8}\b|\b(?:emerald|stone|amber)-\d/;
+const PROHIBIDO = /#[0-9a-fA-F]{3,8}\b|\b(?:red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|zinc|neutral|stone)-\d/;
 
 function archivos(dir: string): string[] {
   return readdirSync(dir).flatMap((n) => {
