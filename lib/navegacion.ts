@@ -1,6 +1,7 @@
 import {
   CalendarDays,
   Compass,
+  Flame,
   Handshake,
   Home,
   Map as MapaIcono,
@@ -27,6 +28,7 @@ export const DESTINOS: readonly Destino[] = [
   { href: "/tribus", etiqueta: "Tribus", icono: Users, existe: true },
   { href: "/perfil", etiqueta: "Perfil", icono: UserRound, existe: true },
   { href: "/compromisos", etiqueta: "Compromisos", icono: Handshake, existe: true },
+  { href: "/fogon", etiqueta: "Fogón", icono: Flame, existe: true },
   { href: "/congreso", etiqueta: "Congreso", icono: CalendarDays, existe: true },
   { href: "/sumarte", etiqueta: "Sumarte", icono: Sprout, existe: true },
   { href: "/panel", etiqueta: "Mi recorrido", icono: Compass, existe: true },
