@@ -10,7 +10,7 @@ La actualización del roadmap del 6-oct suma a la It.1 un **registro de compromi
   - **Tipo:** "Ofrezco" o "Necesito".
   - **Clase:** "Tiempo", "Bienes" o "Plata" (monto orientativo en USD, opcional; desde la vuelta de corrección del 7-oct, fase de prototipo).
   - **Descripción** (obligatoria, hasta 140 caracteres).
-  - **Cantidad orientativa:** para Tiempo, horas por mes (entero de 1 a 160); para Bienes, texto libre opcional (por ejemplo "20 kg por mes"). Si no se completa, se muestra "sin dato".
+  - **Cantidad orientativa:** para Tiempo, horas por mes (entero de 1 a 160); para Bienes, texto libre opcional (por ejemplo "20 kg por mes"); para Plata, monto orientativo en USD (entero de 1 a 1000000). Si no se completa, se muestra "sin dato".
   - **Para quién:** "El Lighthouse en general" o una tribu de ejemplo.
 - Lista "Tus compromisos" con lo registrado, cada uno con un botón "Quitar", y un botón "Borrar todo".
 - Todo queda **solo en el navegador**, con el aviso "Modo demostración: lo que registres queda solo en este navegador." Nada se envía a ningún servidor.
