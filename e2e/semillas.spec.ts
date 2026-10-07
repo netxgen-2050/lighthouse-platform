@@ -20,7 +20,7 @@ test("muestra título, aviso de prototipo y un único main", async ({ page }) =>
 
 test("sin pacto: Tiempo invita a proponerlo y no muestra número", async ({ page }) => {
   await page.goto("/semillas");
-  await expect(page.getByText("Todavía no tenés un pacto aceptado")).toBeVisible();
+  await expect(page.getByText("Todavía no tenés un pacto de tiempo aceptado")).toBeVisible();
   await expect(page.getByRole("link", { name: "Proponé un pacto de tiempo" })).toHaveAttribute("href", "/pactos");
   await expect(page.getByTestId("semillas-tiempo")).toHaveCount(0);
   await expect(page.getByTestId("medidor")).toContainText("sin dato");
@@ -69,6 +69,28 @@ test("un ticket inválido no cuenta y el Pase se nombra como en /sumarte", async
   await expect(page.getByText("Pase Fundador Raíz activo")).toBeVisible();
 });
 
+test("con un Pase activo, la frase 'un servicio que no suma semillas' lleva el ⚖ de Pase Fundador", async ({ page }) => {
+  await page.goto("/semillas");
+  await page.evaluate(() => window.localStorage.setItem("lh-sumarte", JSON.stringify({ pase: "brote" })));
+  await page.reload();
+  const plata = page.locator("div").filter({ has: page.getByText("Plata", { exact: true }) }).last();
+  await expect(plata).toContainText("un servicio que no suma semillas");
+  const boton = plata.getByRole("button", { name: "Qué significa legalmente: Pase Fundador" });
+  await expect(boton).toBeVisible();
+  await boton.focus();
+  await expect(page.getByRole("tooltip")).toContainText("Pase Fundador");
+});
+
+test("un pacto de convivencia aceptado no suma semillas de tiempo", async ({ page }) => {
+  await page.goto("/semillas");
+  await page.evaluate(() =>
+    window.localStorage.setItem("lh-pactos", JSON.stringify({ pestana: "convivencia", horas: 20, parteSemilla: 50, paso: 2 })),
+  );
+  await page.reload();
+  await expect(page.getByRole("link", { name: "Proponé un pacto de tiempo" })).toBeVisible();
+  await expect(page.getByTestId("semillas-tiempo")).toHaveCount(0);
+});
+
 test("ronda de reconocimiento: hay que puntuar las cuatro notas y se ve el factor", async ({ page }) => {
   await conPacto(page, 20);
   const enviar = page.getByRole("button", { name: "Enviar ronda" });
@@ -79,8 +101,8 @@ test("ronda de reconocimiento: hay que puntuar las cuatro notas y se ve el facto
   await expect(page.getByText("Puntaje: 5 de 5")).toHaveCount(4);
   await enviar.click();
   await expect(page.getByText("Ronda enviada (simulado)")).toBeVisible();
-  await expect(page.getByTestId("factor")).toHaveText("1,67");
-  await expect(page.getByTestId("semillas-tiempo")).toHaveText("252 semillas");
+  await expect(page.getByTestId("factor")).toHaveText("1,0");
+  await expect(page.getByTestId("semillas-tiempo")).toHaveText("150 semillas");
   await page.reload();
   await expect(page.getByText("Ronda enviada (simulado)")).toBeVisible();
 });
@@ -94,10 +116,16 @@ test("las notas se pueden poner con teclado", async ({ page }) => {
 });
 
 test("no manda datos a un servidor", async ({ page }) => {
+  await page.goto("/semillas");
+  const origenApp = new URL(page.url()).origin;
   const pedidos: string[] = [];
   page.on("request", (r) => {
+    const u = new URL(r.url());
     // vercel.live es la barra de comentarios que Vercel inyecta en los previews, no la app.
-    if (r.method() !== "GET" && new URL(r.url()).hostname !== "vercel.live") pedidos.push(r.url());
+    if (u.hostname === "vercel.live") return;
+    // Cuentan los envíos (no GET) y cualquier pedido a otro origen distinto de la app.
+    // Los GET al propio origen (navegación, recarga, prefetch de Next) no mandan datos.
+    if (r.method() !== "GET" || u.origin !== origenApp) pedidos.push(`${r.method()} ${r.url()}`);
   });
   await conPacto(page, 20);
   for (const grupo of ["Cumplió su rol, Martina", "Aporte al grupo, Martina", "Cumplió su rol, Joaquín", "Aporte al grupo, Joaquín"]) {

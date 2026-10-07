@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { estadoMedidor, factorEvaluacion, rondaCompleta, semillasTiempo } from "./calculo";
+import { estadoMedidor, FACTOR_EVALUACION, rondaCompleta, semillasTiempo } from "./calculo";
 import { COMPANEROS, META_SEMBRADOR } from "./datos";
 import { leerRonda, paseActivo, pactoAceptado, ponerNota, RONDA_INICIAL } from "./estado";
 
@@ -33,12 +33,11 @@ describe("ronda de reconocimiento", () => {
   const todas = (n: number) => ({ "0|rol": n, "0|cultura": n, "1|rol": n, "1|cultura": n });
   it("sin las cuatro notas no hay factor", () => {
     expect(rondaCompleta({ "0|rol": 3 }, 2)).toBe(false);
-    expect(factorEvaluacion({ "0|rol": 3 }, 2)).toBeNull();
   });
-  it("3 de 5 es neutro: 1,0; 5 de 5 sube y 1 de 5 baja", () => {
-    expect(factorEvaluacion(todas(3), 2)).toBe(1);
-    expect(factorEvaluacion(todas(5), 2)).toBe(1.67);
-    expect(factorEvaluacion(todas(1), 2)).toBe(0.33);
+  it("las notas no cambian el factor: es 1,0 fijo", () => {
+    expect(rondaCompleta(todas(5), 2)).toBe(true);
+    expect(FACTOR_EVALUACION).toBe(1);
+    expect(semillasTiempo(20, 50, FACTOR_EVALUACION)).toBe(150);
   });
   it("las notas fuera de 1 a 5 se ignoran y enviada no se edita", () => {
     expect(ponerNota(RONDA_INICIAL, 0, "rol", 6)).toBe(RONDA_INICIAL);
@@ -60,6 +59,12 @@ describe("lectura de otras pantallas", () => {
     expect(pactoAceptado(JSON.stringify({ paso: 1, horas: 20, parteSemilla: 50 }))).toBeNull();
     expect(pactoAceptado(JSON.stringify({ paso: 2, horas: 20, parteSemilla: 50 }))).toEqual({ horas: 20, parteSemilla: 50 });
     expect(pactoAceptado("{")).toBeNull();
+  });
+  it("solo el pacto de tiempo suma: plata y convivencia no", () => {
+    const base = { paso: 2, horas: 20, parteSemilla: 50 };
+    expect(pactoAceptado(JSON.stringify({ ...base, pestana: "tiempo" }))).toEqual({ horas: 20, parteSemilla: 50 });
+    expect(pactoAceptado(JSON.stringify({ ...base, pestana: "plata" }))).toBeNull();
+    expect(pactoAceptado(JSON.stringify({ ...base, pestana: "convivencia" }))).toBeNull();
   });
   it("horas y porcentaje fuera de rango se acotan", () => {
     expect(pactoAceptado(JSON.stringify({ paso: 2, horas: 1e9, parteSemilla: 500 }))).toEqual({ horas: 80, parteSemilla: 100 });

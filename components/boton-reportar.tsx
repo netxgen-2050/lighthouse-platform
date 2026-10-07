@@ -249,9 +249,12 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
                 value={contacto}
                 onChange={(e) => setContacto(e.target.value)}
                 aria-invalid={errores.contacto ? true : undefined}
-                aria-describedby={describe("contacto")}
+                aria-describedby={[describe("contacto"), "aviso-rep-contacto"].filter(Boolean).join(" ")}
                 className={campo}
               />
+              <p id="aviso-rep-contacto" className="mt-1 text-sm text-muted">
+                Tu reporte, y tu contacto si lo dejás, lo ve el equipo de NetX.
+              </p>
               {errores.contacto && (
                 <p id="err-rep-contacto" role="alert" className="mt-1 text-sm font-medium text-warn-ink">
                   Error: {errores.contacto}

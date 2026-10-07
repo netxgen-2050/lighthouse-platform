@@ -36,7 +36,8 @@ export function pactoAceptado(crudo: string | null): { horas: number; parteSemil
   if (!crudo) return null;
   // leer() de /pactos acota horas y porcentaje a sus rangos válidos.
   const e = leerPactos(crudo);
-  return e.paso === 2 ? { horas: e.horas, parteSemilla: e.parteSemilla } : null;
+  // Solo el pacto de tiempo suma Semillas de tiempo; plata y convivencia no.
+  return e.paso === 2 && e.pestana === "tiempo" ? { horas: e.horas, parteSemilla: e.parteSemilla } : null;
 }
 
 /** Nivel del Pase activo guardado por /sumarte, o null. */

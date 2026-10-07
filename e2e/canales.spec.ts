@@ -119,7 +119,7 @@ for (const conTribu of [false, true]) {
     await page.goto("/canales");
     if (conTribu) {
       await page.getByLabel("Tribu aceptada").selectOption({ label: "Valle Solar" });
-      await expect(fila(page, "Sala de Valle Solar")).toContainText("Abierta");
+      await expect(page.getByTestId("puertas-tarjetas").getByRole("listitem").filter({ hasText: "Sala de Valle Solar" })).toContainText("Abierta");
     }
     const medidas = await page.evaluate(() => ({
       ancho: document.documentElement.scrollWidth,
@@ -128,6 +128,24 @@ for (const conTribu of [false, true]) {
     expect(medidas.ancho).toBeLessThanOrEqual(medidas.visible);
   });
 }
+
+test("a 320 px las puertas son tarjetas y no hay tabla; desde 640 px es la tabla", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto("/canales");
+  await expect(page.getByRole("table")).toHaveCount(0);
+  const tarjetas = page.getByTestId("puertas-tarjetas").getByRole("listitem");
+  await expect(tarjetas).toHaveCount(9);
+  await expect(tarjetas.filter({ hasText: "Canal de fundadores" })).toContainText("Cerrada");
+  await expect(tarjetas.filter({ hasText: "Canal de fundadores" })).toContainText("Se abre con: Pase Fundador");
+  const medidas = await page.evaluate(() => ({
+    ancho: document.documentElement.scrollWidth,
+    visible: document.documentElement.clientWidth,
+  }));
+  expect(medidas.ancho).toBeLessThanOrEqual(medidas.visible);
+  await page.setViewportSize({ width: 640, height: 700 });
+  await expect(page.getByRole("table")).toBeVisible();
+  await expect(page.getByTestId("puertas-tarjetas")).toBeHidden();
+});
 
 test("hay un solo main y los ⚖ están en la pantalla", async ({ page }) => {
   await page.goto("/canales");

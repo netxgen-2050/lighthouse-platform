@@ -27,13 +27,5 @@ export function rondaCompleta(notas: Notas, companeros: number): boolean {
   return true;
 }
 
-/**
- * Factor de evaluación (simulado): promedio de las notas dividido 3, así 3 de 5 es neutro (1,0).
- * Va de 0,33 a 1,67. El mock-up solo muestra 1,0; esta fórmula es de ejemplo.
- */
-export function factorEvaluacion(notas: Notas, companeros: number): number | null {
-  if (!rondaCompleta(notas, companeros)) return null;
-  let suma = 0;
-  for (let i = 0; i < companeros; i++) suma += notas[clave(i, "rol")] + notas[clave(i, "cultura")];
-  return Math.round((suma / (companeros * 2) / 3) * 100) / 100;
-}
+/** Factor de evaluación entre pares: fijo en 1,0, como en el mock-up (la ronda no lo cambia). */
+export const FACTOR_EVALUACION = 1;
