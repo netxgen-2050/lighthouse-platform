@@ -3,4 +3,5 @@ export const CLAVES = {
   perfil: "lh-perfil-entrevista",
   compromisos: "lighthouse.compromisos.v1",
   congreso: "lh-congreso-ticket",
+  pactos: "lh-pactos",
 } as const;

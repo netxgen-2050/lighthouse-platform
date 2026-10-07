@@ -84,6 +84,21 @@ export const TERMINOS = {
     titulo: "Plan Tribu",
     texto: "Un servicio de software que NetX le factura a la tribu (asociación civil o SAS). No es un aporte ni una inversión.",
   },
+  remoto: {
+    titulo: "Aporte remoto",
+    texto:
+      "Desde el exterior, un aporte de trabajo remunerado sería una locación de servicios (exportación de servicios para quien lo presta). A definir con el contador.",
+  },
+  pase: {
+    titulo: "Pase de estadías",
+    texto:
+      "Créditos de hospedaje intransferibles: un contrato de servicios con defensa del consumidor (Ley 24.240). Es un saldo de noches, no un token que se pueda vender.",
+  },
+  pacto: {
+    titulo: "Pacto de convivencia",
+    texto:
+      "Reglamento de propiedad horizontal especial (arts. 2078–2086 CCyCN): reglas ecológicas medibles que se transcriben en cada escritura. Puede limitar pero no impedir que vendas, y da preferencia de compra a la comunidad.",
+  },
   safe: {
     titulo: "Invertir en la empresa",
     texto:
