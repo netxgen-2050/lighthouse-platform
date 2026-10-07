@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   CalendarDays,
   Compass,
   FileSignature,
@@ -36,6 +37,7 @@ export const DESTINOS: readonly Destino[] = [
   { href: "/congreso", etiqueta: "Congreso", icono: CalendarDays, existe: true },
   { href: "/sumarte", etiqueta: "Sumarte", icono: Sprout, existe: true },
   { href: "/panel", etiqueta: "Mi recorrido", icono: Compass, existe: true },
+  { href: "/netx", etiqueta: "NetX", icono: BarChart3, existe: true },
 ];
 
 export function destinosDisponibles() {

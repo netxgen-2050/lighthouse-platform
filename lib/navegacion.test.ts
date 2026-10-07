@@ -32,6 +32,7 @@ test("el orden de la lista es el de la spec", () => {
     "Congreso",
     "Sumarte",
     "Mi recorrido",
+    "NetX",
   ]);
 });
 

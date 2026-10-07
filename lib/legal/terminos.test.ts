@@ -32,6 +32,7 @@ describe("catálogo legal", () => {
         "plantribu",
         "presencia",
         "remoto",
+        "ribera",
         "ritual",
         "ronda0",
         "safe",

@@ -21,6 +21,11 @@ export const TERMINOS = {
     texto:
       "Un registro que confirma el anfitrión con el check-in. Da acceso y voz (con un tope), nunca valor económico. No se compra ni se transfiere.",
   },
+  ribera: {
+    titulo: "Tierra ribereña",
+    texto:
+      "Ley 26.737 de Tierras Rurales: una persona extranjera no puede adquirir dominio de tierra rural ribereña de cuerpos de agua de envergadura. El derecho de superficie es la etapa favorable; la conversión a dominio es la sensible. A confirmar si el predio queda en el ejido urbano.",
+  },
   obra: {
     titulo: "Horas de obra",
     texto:
