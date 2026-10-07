@@ -22,6 +22,10 @@ test("hay 21 rutas auditadas", () => {
 for (const ruta of rutas) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);
+    if (ruta === "/territorios/lighthouse") {
+      // El mapa se arma en el navegador: auditar con los 12 sellos ya puestos.
+      await expect(page.locator('[aria-label^="Barrio "][role="link"]')).toHaveCount(12);
+    }
     const r = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
       .analyze();

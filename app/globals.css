@@ -46,3 +46,124 @@ h2,
 h3 {
   @apply font-display;
 }
+
+/* Mapa del territorio (Leaflet): solo tokens del tema. */
+.mapa-leaflet {
+  background: var(--color-water);
+}
+
+.mapa-contorno {
+  stroke: var(--color-deep);
+  stroke-width: 2.5;
+  stroke-dasharray: 8 5;
+  fill: var(--color-green-soft);
+  fill-opacity: 0.35;
+}
+
+.mapa-nucleo {
+  stroke: var(--color-gold-ink);
+  stroke-width: 1;
+  fill: var(--color-gold-soft);
+  fill-opacity: 0.8;
+}
+
+.mapa-barrio {
+  stroke-width: 1;
+  fill-opacity: 0.55;
+}
+
+.mapa-barrio-activa {
+  stroke: var(--color-deep);
+  fill: var(--color-green-soft);
+}
+
+.mapa-barrio-formacion {
+  stroke: var(--color-gold-ink);
+  stroke-width: 2;
+  stroke-dasharray: 1 4;
+  stroke-linecap: round;
+  fill: var(--color-gold-soft);
+}
+
+.mapa-barrio-vacante {
+  stroke: var(--color-faint);
+  stroke-dasharray: 4 3;
+  fill: var(--color-surface);
+}
+
+.mapa-sello-wrap {
+  background: none;
+  border: 0;
+}
+
+.mapa-sello-wrap:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+  border-radius: 9999px;
+}
+
+.mapa-sello {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  border: 2px solid;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mapa-sello-activa {
+  background: var(--color-deep);
+  color: var(--color-on-deep);
+  border-color: var(--color-deep);
+}
+
+.mapa-sello-formacion {
+  background: var(--color-gold-soft);
+  color: var(--color-gold-ink);
+  border-color: var(--color-gold-ink);
+  border-style: dotted;
+  border-width: 3px;
+}
+
+.mapa-sello-vacante {
+  background: var(--color-surface);
+  color: var(--color-muted);
+  border-color: var(--color-faint);
+  border-style: dashed;
+}
+
+.mapa-leyenda {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid;
+}
+
+.mapa-leyenda-activa {
+  background: var(--color-deep);
+  border-color: var(--color-deep);
+  border-radius: 9999px;
+}
+
+.mapa-leyenda-formacion {
+  background: var(--color-gold-soft);
+  border-color: var(--color-gold-ink);
+  border-style: dotted;
+  border-width: 3px;
+  border-radius: 9999px;
+}
+
+.mapa-leyenda-vacante {
+  background: var(--color-surface);
+  border-color: var(--color-faint);
+  border-style: dashed;
+  border-radius: 9999px;
+}
+
+.mapa-leyenda-nucleo {
+  background: var(--color-gold-soft);
+  border-color: var(--color-gold-ink);
+}
