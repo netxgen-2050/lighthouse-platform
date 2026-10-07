@@ -35,6 +35,8 @@ test("votar a favor en la huerta actualiza el conteo, sin red, y sobrevive a la 
   const pedidos: string[] = [];
   page.on("request", (r) => {
     const u = new URL(r.url());
+    // vercel.live es la barra de comentarios que Vercel inyecta en los previews, no la app.
+    if (u.hostname === "vercel.live") return;
     const claves = [...u.searchParams.keys()];
     if (r.method() === "GET" && claves.length === 1 && claves[0] === "_rsc" && !u.hash) return;
     if (["fetch", "xhr", "websocket", "eventsource"].includes(r.resourceType()) || r.method() !== "GET") pedidos.push(`${r.method()} ${r.url()}`);

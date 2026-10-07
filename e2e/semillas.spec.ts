@@ -67,7 +67,18 @@ test("un ticket inválido no cuenta y el Pase se nombra como en /sumarte", async
   await page.reload();
   await expect(page.getByText("Ticket registrado")).toHaveCount(0);
   await expect(page.getByText("Pase Fundador Raíz activo")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Qué significa legalmente: Pase Fundador" })).toBeVisible();
+});
+
+test("con un Pase activo, la frase 'un servicio que no suma semillas' lleva el ⚖ de Pase Fundador", async ({ page }) => {
+  await page.goto("/semillas");
+  await page.evaluate(() => window.localStorage.setItem("lh-sumarte", JSON.stringify({ pase: "brote" })));
+  await page.reload();
+  const plata = page.locator("div").filter({ has: page.getByText("Plata", { exact: true }) }).last();
+  await expect(plata).toContainText("un servicio que no suma semillas");
+  const boton = plata.getByRole("button", { name: "Qué significa legalmente: Pase Fundador" });
+  await expect(boton).toBeVisible();
+  await boton.focus();
+  await expect(page.getByRole("tooltip")).toContainText("Pase Fundador");
 });
 
 test("un pacto de convivencia aceptado no suma semillas de tiempo", async ({ page }) => {
@@ -105,10 +116,16 @@ test("las notas se pueden poner con teclado", async ({ page }) => {
 });
 
 test("no manda datos a un servidor", async ({ page }) => {
+  await page.goto("/semillas");
+  const origenApp = new URL(page.url()).origin;
   const pedidos: string[] = [];
   page.on("request", (r) => {
+    const u = new URL(r.url());
     // vercel.live es la barra de comentarios que Vercel inyecta en los previews, no la app.
-    if (r.method() !== "GET" && new URL(r.url()).hostname !== "vercel.live") pedidos.push(r.url());
+    if (u.hostname === "vercel.live") return;
+    // Cuentan los envíos (no GET) y cualquier pedido a otro origen distinto de la app.
+    // Los GET al propio origen (navegación, recarga, prefetch de Next) no mandan datos.
+    if (r.method() !== "GET" || u.origin !== origenApp) pedidos.push(`${r.method()} ${r.url()}`);
   });
   await conPacto(page, 20);
   for (const grupo of ["Cumplió su rol, Martina", "Aporte al grupo, Martina", "Cumplió su rol, Joaquín", "Aporte al grupo, Joaquín"]) {
