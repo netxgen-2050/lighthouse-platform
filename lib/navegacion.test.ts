@@ -32,11 +32,16 @@ test("el orden de la lista es el de la spec", () => {
   ]);
 });
 
+/** ¿Alguna ruta de app/ (incluidas las dinámicas, como /territorios/[id]) atiende este href? */
+function atiende(href: string, rutas: string[]) {
+  return rutas.some((r) => new RegExp(`^${r.replace(/\[[^\]]+\]/g, "[^/]+")}$`).test(href));
+}
+
 test("`existe` de cada destino coincide con las páginas reales de app/", () => {
   const reales = rutasDeApp();
   for (const d of DESTINOS) {
-    expect(d.existe, `${d.href}: existe=${d.existe} pero app/ ${reales.includes(d.href) ? "sí" : "no"} la tiene`).toBe(
-      reales.includes(d.href),
+    expect(d.existe, `${d.href}: existe=${d.existe} pero app/ ${atiende(d.href, reales) ? "sí" : "no"} la tiene`).toBe(
+      atiende(d.href, reales),
     );
   }
 });
@@ -44,7 +49,7 @@ test("`existe` de cada destino coincide con las páginas reales de app/", () => 
 test("solo destinos que existen: sin la ruta /panel no se muestra Mi recorrido", () => {
   const etiquetas = destinosDisponibles().map((d) => d.etiqueta);
   // Mientras app/ no tenga /panel; el día que exista, el test de coincidencia obliga a poner existe: true.
-  expect(rutasDeApp().includes("/panel")).toBe(etiquetas.includes("Mi recorrido"));
+  expect(atiende("/panel", rutasDeApp())).toBe(etiquetas.includes("Mi recorrido"));
   expect(etiquetas).toContain("Tribus");
   expect(destinosDisponibles().every((d) => d.existe)).toBe(true);
 });

@@ -23,13 +23,13 @@ export type Destino = {
 // falla si `existe` no coincide con las páginas reales de app/.
 export const DESTINOS: readonly Destino[] = [
   { href: "/", etiqueta: "Inicio", icono: Home, existe: true },
-  { href: "/territorio", etiqueta: "Territorio", icono: MapaIcono, existe: false },
+  { href: "/territorios/lighthouse", etiqueta: "Territorio", icono: MapaIcono, existe: true },
   { href: "/tribus", etiqueta: "Tribus", icono: Users, existe: true },
   { href: "/perfil", etiqueta: "Perfil", icono: UserRound, existe: true },
-  { href: "/compromisos", etiqueta: "Compromisos", icono: Handshake, existe: false },
+  { href: "/compromisos", etiqueta: "Compromisos", icono: Handshake, existe: true },
   { href: "/congreso", etiqueta: "Congreso", icono: CalendarDays, existe: true },
   { href: "/sumarte", etiqueta: "Sumarte", icono: Sprout, existe: true },
-  { href: "/panel", etiqueta: "Mi recorrido", icono: Compass, existe: false },
+  { href: "/panel", etiqueta: "Mi recorrido", icono: Compass, existe: true },
 ];
 
 export function destinosDisponibles() {
