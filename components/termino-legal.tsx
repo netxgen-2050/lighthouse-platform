@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { TERMINOS, type ClaveTermino } from "@/lib/legal/terminos";
 
 export function TerminoLegal({ clave }: { clave: ClaveTermino }) {
@@ -8,16 +8,38 @@ export function TerminoLegal({ clave }: { clave: ClaveTermino }) {
   const [abierto, setAbierto] = useState(false);
   const id = useId();
   const boton = useRef<HTMLButtonElement>(null);
+  const contenedor = useRef<HTMLSpanElement>(null);
 
-  function cerrarConEscape(e: React.KeyboardEvent) {
-    if (e.key === "Escape" && abierto) {
+  // Abrir un ⚖ cierra cualquier otro que estuviera abierto.
+  useEffect(() => {
+    function alAbrirOtro(e: Event) {
+      if ((e as CustomEvent<string>).detail !== id) setAbierto(false);
+    }
+    document.addEventListener("termino-legal:abrir", alAbrirOtro);
+    return () => document.removeEventListener("termino-legal:abrir", alAbrirOtro);
+  }, [id]);
+
+  useEffect(() => {
+    if (!abierto) return;
+    document.dispatchEvent(new CustomEvent("termino-legal:abrir", { detail: id }));
+    function alTeclear(e: KeyboardEvent) {
+      if (e.key !== "Escape") return;
       setAbierto(false);
       boton.current?.focus();
     }
-  }
+    function alHacerClic(e: MouseEvent) {
+      if (!contenedor.current?.contains(e.target as Node)) setAbierto(false);
+    }
+    document.addEventListener("keydown", alTeclear);
+    document.addEventListener("mousedown", alHacerClic);
+    return () => {
+      document.removeEventListener("keydown", alTeclear);
+      document.removeEventListener("mousedown", alHacerClic);
+    };
+  }, [abierto, id]);
 
   return (
-    <span className="relative inline-block align-baseline" onKeyDown={cerrarConEscape}>
+    <span ref={contenedor} className="relative inline-block align-baseline">
       <button
         ref={boton}
         type="button"
