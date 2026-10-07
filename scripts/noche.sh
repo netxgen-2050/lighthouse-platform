@@ -114,11 +114,14 @@ correr_carril() {
 
 echo "🌙 Noche $FECHA · $# carril(es) · ${#TODOS[@]} cambio(s)"
 n=0
+CARRILES=()
 for carril in "$@"; do
   n=$((n + 1))
   correr_carril "$n" "$carril" &
+  CARRILES+=($!)
 done
-wait
+# Esperar solo a los carriles: caffeinate también corre en segundo plano y espera a este script.
+wait "${CARRILES[@]}"
 
 echo "[$(date +%T)] Cierre: integración, propuestas y resumen."
 correr_claude "$RAIZ" "$(plantilla .claude/cierre.md "" "" "${TODOS[*]}")" "$RAIZ/.noches/$FECHA-cierre.jsonl" \
