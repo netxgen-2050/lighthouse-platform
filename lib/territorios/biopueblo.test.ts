@@ -36,8 +36,8 @@ describe("biopueblo", () => {
     expect(listarContexto().length).toBeGreaterThan(0);
   });
 
-  it("conteo de tribus por estado: 5 activas, 5 en formación, 2 vacantes", () => {
-    expect(contarTribusPorEstado()).toEqual({ activa: 5, formacion: 5, vacante: 2, total: 12 });
+  it("conteo de tribus por estado: 3 activas, 5 en formación, 4 vacantes", () => {
+    expect(contarTribusPorEstado()).toEqual({ activa: 3, formacion: 5, vacante: 4, total: 12 });
   });
 
   it("una finca sin superficie o sin número queda sin dato, no en 0", () => {

@@ -25,6 +25,13 @@
   --color-warn-ink: #5d4300;
   --color-water: #dbe7e4;
   --color-danger: #991b1b;
+  /* Paletas del mapa por grupo: violeta (terreno común), arcilla (fincas reservadas) y rosa (lugares de interés). */
+  --color-violet: #6b3fa0;
+  --color-violet-soft: #e6dcf3;
+  --color-clay: #c2571a;
+  --color-clay-ink: #7a3408;
+  --color-rose: #a8325e;
+  --color-rose-soft: #f6dbe5;
 }
 
 /* inline: next/font define sus variables en el <body>, no en :root; sin inline quedarían inválidas. */
@@ -164,32 +171,32 @@ h3 {
 }
 
 .mapa-leyenda-nucleo {
-  background: var(--color-gold-soft);
-  border-color: var(--color-gold-ink);
+  background: var(--color-violet-soft);
+  border-color: var(--color-violet);
 }
 
 .mapa-sello-comun {
-  background: var(--color-gold-soft);
-  color: var(--color-gold-ink);
-  border-color: var(--color-gold-ink);
+  background: var(--color-violet-soft);
+  color: var(--color-violet);
+  border-color: var(--color-violet);
 }
 
 .mapa-sello-lugar {
   width: 24px;
   height: 24px;
-  background: var(--color-surface);
-  color: var(--color-ink);
-  border-color: var(--color-ink);
+  background: var(--color-rose-soft);
+  color: var(--color-rose);
+  border-color: var(--color-rose);
 }
 
 .mapa-leyenda-finca-disponible {
-  background: var(--color-green);
-  border-color: var(--color-deep);
+  background: var(--color-blue);
+  border-color: var(--color-blue-soft);
 }
 
 .mapa-leyenda-finca-reservada {
-  background: var(--color-gold);
-  border-color: var(--color-gold-ink);
+  background: var(--color-clay);
+  border-color: var(--color-clay-ink);
   border-style: dashed;
 }
 
@@ -205,7 +212,7 @@ h3 {
 }
 
 .mapa-leyenda-lugar {
-  background: var(--color-surface);
-  border-color: var(--color-ink);
+  background: var(--color-rose-soft);
+  border-color: var(--color-rose);
   border-radius: 9999px;
 }

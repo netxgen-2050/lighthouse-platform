@@ -13,7 +13,7 @@ nombre: "Semilla Viva", iniciales: "SV", barrio: 1, foco: "Suelo y semillas", es
   },
   {
     id: "barda", territorioId: "lighthouse", plata: { comprometida: 520000, meta: 600000 }, roles: { cubiertos: 6, necesarios: 8 }, avales: 1,
-nombre: "Barda Productiva", iniciales: "BP", barrio: 2, foco: "Huerto y fermentación", estado: "activa",
+nombre: "Barda Productiva", iniciales: "BP", barrio: 2, foco: "Huerto y fermentación", estado: "formacion",
     hogares: "4 hogares", subtitulo: "Olivos y vid · proyectos individuales",
     declaracion: "Producimos aceite y vino con manejo regenerativo, y abrimos la bodega a los vecinos.",
     tiene: ["Agronomía", "Enología", "Comercialización"], busca: ["Riego"],
@@ -71,13 +71,11 @@ nombre: "Barrio 8", iniciales: "+", barrio: 8, foco: "Cuidado", estado: "vacante
     ritual: "Convocatoria abierta: la tribu que llegue define su ritual.", formaJuridica: "A definir",
   },
   {
-    id: "escuela", territorioId: "lighthouse", plata: { comprometida: 70000, meta: 240000 }, roles: { cubiertos: 4, necesarios: 10 }, avales: 2,
-nombre: "Escuela de la Tierra", iniciales: "ET", barrio: 9, foco: "Aprendizaje", estado: "formacion",
-    hogares: "3 hogares", subtitulo: "Escuela al aire libre y cursos",
-    declaracion: "Una escuela para los chicos del Lighthouse y de los barrios vecinos.",
-    tiene: ["Docencia", "Permacultura"], busca: ["Pedagogía Waldorf", "Administración"],
-    ritual: "Dar una clase abierta y una entrevista con las familias.", formaJuridica: "Asociación civil",
-    pozo: ["Cursos para vecinos", "Estadías de aprendizaje"],
+    id: "escuela", territorioId: "lighthouse", plata: { comprometida: 0, meta: 240000 }, roles: { cubiertos: 0, necesarios: 10 }, avales: 0,
+nombre: "Barrio 9", iniciales: "+", barrio: 9, foco: "Aprendizaje", estado: "vacante",
+    hogares: "lugar para 6 hogares",
+    tiene: [], busca: ["Docencia", "Permacultura", "Pedagogía Waldorf"],
+    ritual: "Convocatoria abierta: la tribu que llegue define su ritual.", formaJuridica: "A definir",
   },
   {
     id: "avelan", territorioId: "lighthouse", plata: { comprometida: 140000, meta: 650000 }, roles: { cubiertos: 5, necesarios: 12 }, avales: 2,
@@ -92,7 +90,7 @@ nombre: "Fundación Avelan Kerum", iniciales: "AK", barrio: 10, foco: "Cultura y
   },
   {
     id: "puerto", territorioId: "lighthouse", plata: { comprometida: 260000, meta: 400000 }, roles: { cubiertos: 7, necesarios: 11 }, avales: 4,
-nombre: "Puerto Trueque", iniciales: "PT", barrio: 11, foco: "Intercambio y hospitalidad", estado: "activa",
+nombre: "Puerto Trueque", iniciales: "PT", barrio: 11, foco: "Intercambio y hospitalidad", estado: "formacion",
     hogares: "5 hogares", subtitulo: "Hospedaje, mercado y eventos",
     declaracion: "La puerta de entrada del Lighthouse: hospedaje, mercado de los barrios y eventos.",
     tiene: ["Hospitalidad", "Cocina", "Eventos"], busca: ["Marketing"],
@@ -100,20 +98,52 @@ nombre: "Puerto Trueque", iniciales: "PT", barrio: 11, foco: "Intercambio y hosp
     pozo: ["Noches para el Pase de estadías", "Mercado mensual"],
   },
   {
-    id: "guardia", territorioId: "lighthouse", plata: { comprometida: 30000, meta: 120000 }, roles: { cubiertos: 3, necesarios: 6 }, avales: 3,
-nombre: "Guardianes del Monte", iniciales: "GM", barrio: 12, foco: "Ecología y biorregión", estado: "formacion",
-    hogares: "2 hogares", subtitulo: "Monitoreo del bosque ribereño y del santuario",
-    declaracion: "Cuidamos el bosque ribereño y medimos cómo mejora la tierra año a año.",
-    tiene: ["Biología", "Monitoreo"], busca: ["Datos", "Guardaparques"],
-    ritual: "Una caminata de monitoreo y una entrevista.", formaJuridica: "Asociación civil",
-    pozo: ["Informe de biodiversidad anual"],
+    id: "guardia", territorioId: "lighthouse", plata: { comprometida: 0, meta: 120000 }, roles: { cubiertos: 0, necesarios: 6 }, avales: 0,
+nombre: "Barrio 12", iniciales: "+", barrio: 12, foco: "Ecología y biorregión", estado: "vacante",
+    hogares: "lugar para 4 hogares",
+    tiene: [], busca: ["Biología", "Monitoreo", "Guardaparques"],
+    ritual: "Convocatoria abierta: la tribu que llegue define su ritual.", formaJuridica: "A definir",
   },
 ];
 
+/**
+ * Destino del botón "Proponer una comunidad" de un barrio vacante.
+ * Lleva al formulario de postulación de ese barrio.
+ */
+export function rutaProponerComunidad(id: string): string {
+  return `/tribus/${id}/postular`;
+}
+
+/** Etapa de ejemplo de las tribus en formación (dato de prototipo). */
+const ETAPAS: Record<string, string> = {
+  barda: "Reuniendo socios",
+  monte: "Armando su propuesta",
+  agua: "Armando su propuesta",
+  avelan: "Eligiendo representantes",
+  puerto: "Sumando hogares",
+};
+
+function conEtapa(t: Tribu): Tribu {
+  return t.estado === "formacion" ? { ...t, etapa: ETAPAS[t.id] } : t;
+}
+
 export function listarTribus(): Tribu[] {
-  return [...TRIBUS].sort((a, b) => a.barrio - b.barrio);
+  return TRIBUS.map(conEtapa).sort((a, b) => a.barrio - b.barrio);
 }
 
 export function buscarTribu(id: string): Tribu | undefined {
-  return TRIBUS.find((t) => t.id === id);
+  const t = TRIBUS.find((x) => x.id === id);
+  return t && conEtapa(t);
+}
+
+export type TribusAgrupadas = { activas: Tribu[]; formacion: Tribu[]; vacantes: Tribu[] };
+
+/** Agrupa por estado, cada grupo en orden de barrio. */
+export function agruparPorEstado(tribus: Tribu[] = listarTribus()): TribusAgrupadas {
+  const ordenadas = [...tribus].sort((a, b) => a.barrio - b.barrio);
+  return {
+    activas: ordenadas.filter((t) => t.estado === "activa"),
+    formacion: ordenadas.filter((t) => t.estado === "formacion"),
+    vacantes: ordenadas.filter((t) => t.estado === "vacante"),
+  };
 }

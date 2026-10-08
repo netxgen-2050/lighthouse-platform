@@ -24,8 +24,23 @@ test("sin pacto: Tiempo invita a proponerlo y no muestra número", async ({ page
   await expect(page.getByRole("link", { name: "Proponé un pacto de tiempo" })).toHaveAttribute("href", "/pactos");
   await expect(page.getByTestId("semillas-tiempo")).toHaveCount(0);
   await expect(page.getByTestId("medidor")).toContainText("sin dato");
-  await expect(page.getByText("No disponible por residencia fiscal")).toBeVisible();
+  await expect(page.getByText("Sin dato de tu residencia fiscal")).toBeVisible();
   await expect(page.getByText("Registrá tu ticket del Congreso")).toBeVisible();
+});
+
+test("sin personas de ejemplo: no aparecen Lucía ni Lucas", async ({ page }) => {
+  await page.goto("/semillas");
+  await expect(page.getByText(/Lucía|Lucas/)).toHaveCount(0);
+});
+
+test("con residencia en el exterior cargada, la plata no está disponible", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("lh-pasaporte", JSON.stringify({ residencia: "exterior" }));
+  });
+  await page.goto("/semillas");
+  await expect(page.getByText("No disponible por residencia fiscal")).toBeVisible();
+  await expect(page.getByText("No disponible hoy")).toBeVisible();
+  await expect(page.getByText("Vive afuera")).toBeVisible();
 });
 
 test("la escalera muestra los cinco pasos con su estado en texto", async ({ page }) => {
@@ -34,8 +49,6 @@ test("la escalera muestra los cinco pasos con su estado en texto", async ({ page
   await expect(pasos).toHaveCount(5);
   await expect(page.getByText("Explorador/a")).toBeVisible();
   await expect(page.getByText("Parte del proyecto")).toBeVisible();
-  await expect(page.getByText("No disponible hoy")).toBeVisible();
-  await expect(page.getByText("Vive afuera")).toBeVisible();
 });
 
 test("con un pacto de 20 h/mes aceptado se ve el medidor de 120", async ({ page }) => {

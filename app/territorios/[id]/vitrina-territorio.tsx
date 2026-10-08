@@ -8,15 +8,31 @@ import { FichaLateral } from "./ficha-lateral";
 import MapaCliente from "./mapa-cliente";
 
 const LEYENDA = [
-  { clase: "mapa-leyenda-activa", texto: "Barrio con tribu activa" },
-  { clase: "mapa-leyenda-formacion", texto: "Barrio con tribu en formación" },
-  { clase: "mapa-leyenda-vacante", texto: "Barrio que busca tribu" },
-  { clase: "mapa-leyenda-nucleo", texto: "Terreno común" },
-  { clase: "mapa-leyenda-finca-disponible", texto: "Finca disponible" },
-  { clase: "mapa-leyenda-finca-reservada", texto: "Finca reservada" },
-  { clase: "mapa-leyenda-finca-cantera", texto: "Finca cantera" },
-  { clase: "mapa-leyenda-soluna", texto: "Contorno de Chacras de Soluna" },
-  { clase: "mapa-leyenda-lugar", texto: "Lugar de interés" },
+  {
+    id: "leyenda-lighthouse",
+    titulo: "Lighthouse · Macrolote 7",
+    items: [
+      { clase: "mapa-leyenda-activa", texto: "Barrio con tribu activa" },
+      { clase: "mapa-leyenda-formacion", texto: "Barrio con tribu en formación" },
+      { clase: "mapa-leyenda-vacante", texto: "Barrio que busca tribu" },
+      { clase: "mapa-leyenda-nucleo", texto: "Terreno común" },
+    ],
+  },
+  {
+    id: "leyenda-soluna",
+    titulo: "Chacras de Soluna · venta privada",
+    items: [
+      { clase: "mapa-leyenda-finca-disponible", texto: "Finca disponible" },
+      { clase: "mapa-leyenda-finca-reservada", texto: "Finca reservada" },
+      { clase: "mapa-leyenda-finca-cantera", texto: "Finca cantera" },
+      { clase: "mapa-leyenda-soluna", texto: "Contorno de Chacras de Soluna" },
+    ],
+  },
+  {
+    id: "leyenda-lugares",
+    titulo: "Lugares de interés",
+    items: [{ clase: "mapa-leyenda-lugar", texto: "Lugar de interés" }],
+  },
 ];
 
 const botonLista =
@@ -58,14 +74,23 @@ export function VitrinaTerritorio() {
           Mapa del Macrolote 7
         </h2>
         <MapaCliente seleccion={seleccion} alElegir={setSeleccion} />
-        <ul aria-label="Leyenda del mapa" className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
-          {LEYENDA.map((l) => (
-            <li key={l.texto} className="flex items-center gap-2">
-              <span aria-hidden="true" className={`mapa-leyenda ${l.clase}`} />
-              {l.texto}
-            </li>
+        <div role="group" aria-label="Leyenda del mapa" className="grid gap-3 text-sm">
+          {LEYENDA.map((g) => (
+            <div key={g.id} className="grid gap-1">
+              <p id={g.id} className="font-semibold">
+                {g.titulo}
+              </p>
+              <ul aria-labelledby={g.id} className="flex flex-wrap gap-x-5 gap-y-2">
+                {g.items.map((l) => (
+                  <li key={l.texto} className="flex items-center gap-2">
+                    <span aria-hidden="true" className={`mapa-leyenda ${l.clase}`} />
+                    {l.texto}
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </ul>
+        </div>
         <p className="text-sm text-muted">
           Los barrios y el terreno común están distribuidos al azar, solo de forma ilustrativa, hasta el masterplan.
         </p>

@@ -2,14 +2,13 @@ import { expect, test, type Page } from "@playwright/test";
 
 async function registrar(
   page: Page,
-  o: { tipo?: string; clase?: string; descripcion: string; horas?: string; bienes?: string; para?: string },
+  o: { tipo?: string; clase?: string; descripcion: string; horas?: string; bienes?: string },
 ) {
   await page.getByRole("radio", { name: o.tipo ?? "Ofrezco" }).check();
   await page.getByRole("radio", { name: o.clase ?? "Tiempo" }).check();
   await page.getByLabel("Descripción").fill(o.descripcion);
   if (o.horas !== undefined) await page.getByLabel("Horas por mes").fill(o.horas);
   if (o.bienes !== undefined) await page.getByLabel("Cantidad orientativa").fill(o.bienes);
-  if (o.para) await page.getByLabel("Para quién").selectOption({ label: o.para });
   await page.getByRole("button", { name: "Registrar" }).click();
 }
 
@@ -19,14 +18,91 @@ test.beforeEach(async ({ page }) => {
   await page.reload();
 });
 
+function suLista(page: Page) {
+  return page.getByRole("region", { name: "Tus compromisos" });
+}
+
 test("registrar una oferta de tiempo", async ({ page }) => {
-  await registrar(page, { descripcion: "Taller de compost", horas: "8", para: "Semilla Viva" });
-  await expect(page.getByText("Ofrezco · Tiempo · Taller de compost · 8 h/mes · Para: Semilla Viva")).toBeVisible();
+  await registrar(page, { descripcion: "Taller de compost", horas: "8" });
+  await expect(suLista(page).getByText("Ofrezco · Tiempo · Taller de compost · 8 h/mes")).toBeVisible();
 });
 
 test("necesidad de bienes sin cantidad muestra sin dato", async ({ page }) => {
   await registrar(page, { tipo: "Necesito", clase: "Bienes", descripcion: "Herramientas de poda" });
-  await expect(page.getByText(/Herramientas de poda · sin dato/)).toBeVisible();
+  await expect(suLista(page).getByText(/Herramientas de poda · sin dato/)).toBeVisible();
+});
+
+test("no existe el campo Para quién", async ({ page }) => {
+  await expect(page.getByLabel("Para quién")).toHaveCount(0);
+  await expect(page.getByText("Para quién")).toHaveCount(0);
+});
+
+test("trueque: sin cantidad, se registra y se publica en el mercado", async ({ page }) => {
+  await registrar(page, { clase: "Trueque", descripcion: "Mi trueque de prueba" });
+  await expect(suLista(page).getByText("Ofrezco · Trueque · Mi trueque de prueba")).toBeVisible();
+  const mercado = page.getByRole("region", { name: "Mercado" });
+  await expect(mercado.getByText("Mi trueque de prueba")).toBeVisible();
+  await expect(mercado.getByText("Publica: Vos")).toBeVisible();
+});
+
+test("el mercado muestra ejemplos, el primer paso y el aviso de match con IA", async ({ page }) => {
+  const mercado = page.getByRole("region", { name: "Mercado" });
+  await expect(mercado.getByText(/primer paso para entrar al mercado es publicar una oferta o una necesidad/)).toBeVisible();
+  await expect(
+    mercado.getByText("Pronto, una inteligencia artificial va a sugerirte el mejor match entre ofertas y necesidades."),
+  ).toBeVisible();
+  await expect(mercado.getByRole("listitem").first()).toBeVisible();
+  await expect(mercado.getByText("Publica: Comunidad (ejemplo)").first()).toBeVisible();
+  await expect(mercado.getByRole("img")).toHaveCount(0);
+});
+
+test("filtrar el mercado por Necesito y Tiempo", async ({ page }) => {
+  const mercado = page.getByRole("region", { name: "Mercado" });
+  await mercado.getByLabel("Filtrar por tipo").selectOption({ label: "Necesito" });
+  await mercado.getByLabel("Filtrar por medio de intercambio").selectOption({ label: "Tiempo" });
+  const items = mercado.getByRole("listitem");
+  await expect(items).toHaveCount(1);
+  await expect(items.first()).toContainText("Necesito · Tiempo");
+  await mercado.getByLabel("Filtrar por medio de intercambio").selectOption({ label: "Plata" });
+  await expect(items.first()).toContainText("Necesito · Plata");
+  await mercado.getByLabel("Filtrar por tipo").selectOption({ label: "Todos" });
+  await mercado.getByLabel("Filtrar por medio de intercambio").selectOption({ label: "Todos" });
+  await expect(items).toHaveCount(8);
+});
+
+test("el conteo se anuncia solo al cambiar un filtro, no al registrar", async ({ page }) => {
+  const mercado = page.getByRole("region", { name: "Mercado" });
+  const vivo = mercado.locator("p[aria-live=polite]");
+  await expect(vivo).toHaveText("");
+  await registrar(page, { descripcion: "Algo", horas: "1" });
+  await expect(page.getByRole("status")).toHaveText("Compromiso registrado.");
+  await expect(vivo).toHaveText("");
+  await mercado.getByLabel("Filtrar por tipo").selectOption({ label: "Necesito" });
+  await expect(vivo).toHaveText("Necesito, todos los medios: 4 publicaciones");
+  // Mismo conteo con otro filtro: el texto igual cambia, así que se vuelve a anunciar.
+  await mercado.getByLabel("Filtrar por tipo").selectOption({ label: "Ofrezco" });
+  await expect(vivo).toHaveText("Ofrezco, todos los medios: 5 publicaciones");
+  // Al registrar algo el anuncio viejo se vacía.
+  await registrar(page, { tipo: "Necesito", descripcion: "Otra cosa", horas: "1" });
+  await expect(vivo).toHaveText("");
+});
+
+test("Me interesa se marca y se desmarca (simulado)", async ({ page }) => {
+  const mercado = page.getByRole("region", { name: "Mercado" });
+  const boton = mercado.getByRole("button", { name: /^Me interesa: / }).first();
+  await boton.click();
+  await expect(mercado.getByRole("button", { pressed: true })).toHaveCount(1);
+  await expect(mercado.getByText("Marcado como de interés (simulado)")).toBeVisible();
+  // El nombre accesible no cambia al marcar (WCAG 2.5.3); el estado lo da aria-pressed.
+  await expect(mercado.getByRole("button", { pressed: true })).toHaveText("Me interesa");
+  await mercado.getByRole("button", { pressed: true }).click();
+  await expect(mercado.getByRole("button", { pressed: true })).toHaveCount(0);
+});
+
+test("lo propio no tiene Me interesa", async ({ page }) => {
+  await registrar(page, { descripcion: "Algo propio", horas: "2" });
+  const mercado = page.getByRole("region", { name: "Mercado" });
+  await expect(mercado.getByRole("button", { name: "Me interesa: Algo propio" })).toHaveCount(0);
 });
 
 test("descripción vacía: error asociado, foco y nada agregado", async ({ page }) => {
@@ -49,12 +125,13 @@ for (const h of ["0", "161", "2,5"]) {
   });
 }
 
-test("la clase Plata existe junto a Tiempo y Bienes", async ({ page }) => {
-  const grupo = page.getByRole("group", { name: "Clase" });
-  await expect(grupo.getByRole("radio")).toHaveCount(3);
+test("el medio de intercambio ofrece Tiempo, Bienes, Plata y Trueque", async ({ page }) => {
+  const grupo = page.getByRole("group", { name: "Medio de intercambio" });
+  await expect(grupo.getByRole("radio")).toHaveCount(4);
   await expect(grupo).toContainText("Tiempo");
   await expect(grupo).toContainText("Bienes");
   await expect(grupo).toContainText("Plata");
+  await expect(grupo).toContainText("Trueque");
 });
 
 test("registrar plata con monto en USD", async ({ page }) => {
@@ -63,12 +140,12 @@ test("registrar plata con monto en USD", async ({ page }) => {
   await page.getByLabel("Descripción").fill("Fondo para semillas");
   await page.getByLabel("Monto orientativo en USD").fill("500");
   await page.getByRole("button", { name: "Registrar" }).click();
-  await expect(page.getByText("Necesito · Plata · Fondo para semillas · USD 500 · Para: El Lighthouse en general")).toBeVisible();
+  await expect(suLista(page).getByText("Necesito · Plata · Fondo para semillas · USD 500")).toBeVisible();
 });
 
 test("plata sin monto muestra sin dato", async ({ page }) => {
   await registrar(page, { clase: "Plata", descripcion: "Aporte abierto" });
-  await expect(page.getByText(/Aporte abierto · sin dato/)).toBeVisible();
+  await expect(suLista(page).getByText(/Aporte abierto · sin dato/)).toBeVisible();
 });
 
 for (const m of ["0", "1000001", "2,5"]) {
@@ -91,7 +168,7 @@ test("quitar uno y borrar todo", async ({ page }) => {
   await expect(items.first()).toContainText("Segundo");
   await page.getByRole("button", { name: "Quitar Segundo" }).click();
   await expect(page.getByText("Segundo")).toHaveCount(0);
-  await expect(page.getByText(/Primero/)).toBeVisible();
+  await expect(suLista(page).getByText(/Primero/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "Tus compromisos" })).toBeFocused();
   await expect(page.getByRole("status")).toHaveText("Compromiso quitado.");
   await page.getByRole("button", { name: "Borrar todo" }).click();
@@ -114,8 +191,8 @@ test("recargar conserva los compromisos", async ({ page }) => {
   await registrar(page, { descripcion: "Uno", horas: "1" });
   await registrar(page, { descripcion: "Dos", horas: "2" });
   await page.reload();
-  await expect(page.getByText(/Uno/)).toBeVisible();
-  await expect(page.getByText(/Dos/)).toBeVisible();
+  await expect(suLista(page).getByText(/Uno/)).toBeVisible();
+  await expect(suLista(page).getByText(/Dos/)).toBeVisible();
 });
 
 test("sin pedidos al servidor con las descripciones", async ({ page }) => {
@@ -138,12 +215,11 @@ test("solo teclado: se registra y se anuncia", async ({ page }) => {
   await page.keyboard.type("Ayuda con la huerta");
   await page.keyboard.press("Tab"); // Horas
   await page.keyboard.type("6");
-  await page.keyboard.press("Tab"); // Para quién
   await page.keyboard.press("Tab"); // Registrar
   await expect(page.getByRole("button", { name: "Registrar" })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("status")).toHaveText("Compromiso registrado.");
-  await expect(page.getByText(/Ayuda con la huerta · 6 h\/mes/)).toBeVisible();
+  await expect(suLista(page).getByText(/Ayuda con la huerta · 6 h\/mes/)).toBeVisible();
 });
 
 test("dos registros seguidos: la región aria-live se vacía y se vuelve a llenar", async ({ page }) => {
@@ -171,7 +247,7 @@ test("dos registros seguidos: la región aria-live se vacía y se vuelve a llena
 test("al recargar con datos no se muestra el estado vacío", async ({ page }) => {
   await registrar(page, { descripcion: "Uno", horas: "1" });
   await page.reload();
-  await expect(page.getByText(/Uno/)).toBeVisible();
+  await expect(suLista(page).getByText(/Uno/)).toBeVisible();
   await expect(page.getByText("Todavía no registraste compromisos.")).toHaveCount(0);
 });
 

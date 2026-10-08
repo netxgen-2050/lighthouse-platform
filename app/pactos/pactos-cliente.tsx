@@ -11,11 +11,12 @@ import {
   MONTO_USD,
   PARTE_SEMILLA,
   PASOS,
-  PERSONA,
   PESTANAS,
   REGLAS_CONVIVENCIA,
 } from "@/lib/pactos/datos";
 import { CLAVE_PACTOS, INICIAL, leer, reducir, type Accion, type EstadoPactos } from "@/lib/pactos/estado";
+import { DATOS_VACIOS, type DatosPersona } from "@/lib/pasaporte/datos";
+import { leerPasaporteDelNavegador } from "@/lib/pasaporte/del-navegador";
 import { miles } from "@/lib/sumarte/datos";
 
 // Todo queda solo en este navegador: no hay pedidos de red ni cobros.
@@ -35,9 +36,12 @@ export function PactosCliente() {
   const [estado, setEstado] = useState<EstadoPactos>(INICIAL);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const foco = useRef(false);
+  // Lo que la persona cargó en "Tus datos"; lo que no cargó queda sin dato.
+  const [datos, setDatos] = useState<DatosPersona>(DATOS_VACIOS);
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
+    setDatos(leerPasaporteDelNavegador());
     try {
       setEstado(leer(window.localStorage.getItem(CLAVE_PACTOS)));
     } catch {
@@ -135,7 +139,7 @@ export function PactosCliente() {
               <div className="grid content-start gap-4">
                 <p className="grid gap-1 text-sm">
                   <span className="font-medium">Rol en la tribu</span>
-                  <span>{PERSONA.rol}</span>
+                  <span>sin dato</span>
                 </p>
                 <label className="grid gap-1 text-sm">
                   <span className="font-medium">Compromiso mensual: {estado.horas} h/mes</span>
@@ -170,19 +174,27 @@ export function PactosCliente() {
                     className="accent-deep"
                   />
                 </label>
-                {PERSONA.modo === "obra" ? (
+                {datos.modalidad === "obra" ? (
                   <p className={AVISO}>
                     Horas de obra presenciales
                     <TerminoLegal clave="obra" />: antes de la primera minga hace falta el seguro y la modalidad
                     (voluntariado o locación de servicios).
                   </p>
-                ) : (
+                ) : datos.modalidad === "remoto" ? (
                   <p className={AVISO}>
                     Aporte remoto desde el exterior
                     <TerminoLegal clave="remoto" />
                     {estado.horas > 20
-                      ? `: comprometés ${estado.horas} h/mes viviendo en Oslo. ¿Parte es presencial? Conviene un pacto de verano aparte.`
+                      ? `: comprometés ${estado.horas} h/mes${datos.paisResidencia ? ` viviendo en ${datos.paisResidencia}` : ""}. ¿Parte es presencial? Conviene un pacto de verano aparte.`
                       : "."}
+                  </p>
+                ) : (
+                  <p className={AVISO}>
+                    Sin dato de tu modalidad (presencial o remota).{" "}
+                    <Link className="underline" href="/pasaporte">
+                      Cargala en Tus datos
+                    </Link>{" "}
+                    para ver los avisos que te tocan.
                   </p>
                 )}
               </div>
@@ -211,7 +223,17 @@ export function PactosCliente() {
           )}
 
           {estado.pestana === "plata" &&
-            (PERSONA.residenciaArgentina ? (
+            (datos.residencia === undefined ? (
+              <div className="grid gap-3">
+                <p className="text-sm">
+                  <b>Sin dato de tu residencia fiscal</b>
+                  <TerminoLegal clave="hacienda" />: la necesitamos para decirte si este camino está abierto.
+                </p>
+                <Link className={BOTON_SUAVE} href="/pasaporte">
+                  Cargala en Tus datos
+                </Link>
+              </div>
+            ) : datos.residencia === "argentina" ? (
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="grid content-start gap-3">
                   <p className="text-sm">
@@ -247,7 +269,8 @@ export function PactosCliente() {
               <div className="grid gap-3">
                 <p className="text-sm">
                   <b>Por ahora no podés sumarte con plata al fideicomiso</b>, por tu residencia fiscal
-                  <TerminoLegal clave="hacienda" /> ({PERSONA.residencia}). Podés sumar tiempo, tener un{" "}
+                  <TerminoLegal clave="hacienda" />
+                  {datos.paisResidencia ? ` (${datos.paisResidencia})` : ""}. Podés sumar tiempo, tener un{" "}
                   <b>Pase de estadías</b>
                   <TerminoLegal clave="pase" /> o esperar la vía para aportantes del exterior.
                 </p>

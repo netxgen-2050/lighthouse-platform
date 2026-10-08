@@ -13,3 +13,5 @@ Reglas:
 - Si algo bloquea (falta un permiso, Vercel no responde, la spec es ambigua), no lo esquives: que quede escrito en el reporte.
 
 Terminá con 3 líneas: PR, veredicto final del revisor, resultado final del tester.
+
+**Importante:** lanzá cada subagente **en primer plano** (nunca en segundo plano) y esperá su resultado. Nunca termines tu respuesta mientras un subagente está trabajando: en esta corrida automática, terminar tu turno cierra la sesión y deja el trabajo a medias.

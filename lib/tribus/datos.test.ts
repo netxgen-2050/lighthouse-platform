@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { buscarTribu, listarTribus } from "./datos";
+import { agruparPorEstado, buscarTribu, listarTribus, rutaProponerComunidad } from "./datos";
 
 describe("datos de tribus", () => {
   const tribus = listarTribus();
@@ -17,6 +17,12 @@ describe("datos de tribus", () => {
       expect(v.pozo).toBeUndefined();
     }
   });
+  it("distribución 3 activas, 5 en formación y 4 vacantes (3, 8, 9 y 12)", () => {
+    const ids = (e: string) => tribus.filter((t) => t.estado === e).map((t) => t.barrio);
+    expect(ids("activa")).toEqual([1, 6, 7]);
+    expect(ids("formacion")).toEqual([2, 4, 5, 10, 11]);
+    expect(ids("vacante")).toEqual([3, 8, 9, 12]);
+  });
   it("plata, roles y avales coinciden con el mock-up v6 (las 12)", () => {
     const mock = readFileSync(
       path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"),
@@ -27,9 +33,11 @@ describe("datos de tribus", () => {
         new RegExp(`id:"${t.id}",[\\s\\S]*?cap:\\[(\\d+),(\\d+)\\], hum:\\[(\\d+),(\\d+)\\][\\s\\S]*?avales:(\\d+)`),
       );
       expect(m, t.id).not.toBeNull();
-      expect(t.plata, t.id).toEqual({ comprometida: Number(m![1]), meta: Number(m![2]) });
-      expect(t.roles, t.id).toEqual({ cubiertos: Number(m![3]), necesarios: Number(m![4]) });
-      expect(t.avales, t.id).toBe(Number(m![5]));
+      // Barrios 9 y 12 pasaron a vacantes el 8-oct-2026: conservan meta y roles necesarios, sin lo comprometido.
+      const vacanteNueva = t.id === "escuela" || t.id === "guardia";
+      expect(t.plata, t.id).toEqual({ comprometida: vacanteNueva ? 0 : Number(m![1]), meta: Number(m![2]) });
+      expect(t.roles, t.id).toEqual({ cubiertos: vacanteNueva ? 0 : Number(m![3]), necesarios: Number(m![4]) });
+      expect(t.avales, t.id).toBe(vacanteNueva ? 0 : Number(m![5]));
     }
   });
   it("valle, avelan y grano con los valores esperados", () => {
@@ -42,6 +50,16 @@ describe("datos de tribus", () => {
       expect(t.plata.comprometida, t.id).toBeLessThanOrEqual(t.plata.meta);
       expect(t.roles.cubiertos, t.id).toBeLessThanOrEqual(t.roles.necesarios);
     }
+  });
+  it("agruparPorEstado: 3, 5 y 4, y solo las en formación tienen etapa", () => {
+    const g = agruparPorEstado();
+    expect([g.activas.length, g.formacion.length, g.vacantes.length]).toEqual([3, 5, 4]);
+    for (const t of g.formacion) expect(t.etapa, t.id).toBeTruthy();
+    for (const t of [...g.activas, ...g.vacantes]) expect(t.etapa, t.id).toBeUndefined();
+    expect(buscarTribu("monte")?.etapa).toBe("Armando su propuesta");
+  });
+  it("rutaProponerComunidad apunta al formulario de postulación del barrio", () => {
+    expect(rutaProponerComunidad("grano")).toBe("/tribus/grano/postular");
   });
   it("buscarTribu", () => {
     expect(buscarTribu("valle")?.nombre).toBe("Valle Solar");

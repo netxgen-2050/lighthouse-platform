@@ -114,7 +114,7 @@ test("el Lighthouse tiene su pacto de convivencia y su resumen ofrece lo mismo",
 });
 
 test("las tribus activas y en formación tienen manifiesto; las vacantes no ofrecen adherir", async ({ page }) => {
-  for (const id of ["semilla", "barda", "monte", "agua", "valle", "taller", "escuela", "avelan", "puerto", "guardia"]) {
+  for (const id of ["semilla", "barda", "monte", "agua", "valle", "taller", "avelan", "puerto"]) {
     const r = await page.goto(`/tribus/${id}/manifiesto`);
     expect(r?.status(), id).toBe(200);
     await expect(page.getByRole("heading", { level: 1 }), id).toContainText("Manifiesto");

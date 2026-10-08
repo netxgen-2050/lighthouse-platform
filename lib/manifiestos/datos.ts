@@ -299,45 +299,6 @@ const BASES: Base[] = [
     ],
   },
   {
-    id: "escuela",
-    comunidad: "Escuela de la Tierra",
-    titulo: "Manifiesto de Escuela de la Tierra",
-    introduccion:
-      "Una escuela al aire libre para los chicos del Lighthouse y de los barrios vecinos. Aprender es un acto de confianza: quien se suma acepta cuidar la curiosidad y la dignidad de cada niño y de cada adulto.",
-    compromisos: [
-      {
-        titulo: "Cuidamos a quienes aprenden",
-        texto:
-          "Ningún niño ni adulto es expuesto, comparado ni humillado. Cuidamos los tiempos de cada uno y avisamos a las familias cuando algo les preocupa a sus hijos.",
-      },
-      {
-        titulo: "Decidimos con las familias",
-        texto:
-          "Lo pedagógico se decide en el equipo docente y lo que afecta a las familias se conversa con ellas en reuniones abiertas, con voz para todas.",
-      },
-      {
-        titulo: "Los conflictos son parte de aprender",
-        texto:
-          "Los resolvemos con la misma pedagogía que enseñamos: escuchar, nombrar lo que pasó, reparar y volver a intentar. Si hace falta, pedimos acompañamiento externo.",
-      },
-      {
-        titulo: "Aprendemos de la tierra",
-        texto:
-          "Las clases salen al campo: huerta, monte y agua. Cuidamos los lugares donde aprendemos y enseñamos a cuidarlos.",
-      },
-      {
-        titulo: "Un aula abierta a los vecinos",
-        texto:
-          "Ofrecemos cursos y estadías de aprendizaje abiertos al Lighthouse y a los barrios cercanos, y compartimos lo que producimos en la escuela.",
-      },
-      {
-        titulo: "Cerrar un ciclo con cuidado",
-        texto:
-          "Quien se va, o se va un alumno, lo hace con una despedida y un cierre de lo trabajado. Una despedida bien hecha también enseña.",
-      },
-    ],
-  },
-  {
     id: "avelan",
     comunidad: "Fundación Avelan Kerum",
     titulo: "Manifiesto de la Fundación Avelan Kerum",
@@ -412,45 +373,6 @@ const BASES: Base[] = [
         titulo: "Salir dejando la puerta abierta",
         texto:
           "Quien deja la tribu avisa con tiempo, cumple los compromisos de los eventos ya confirmados y puede volver a trabajar con nosotros más adelante.",
-      },
-    ],
-  },
-  {
-    id: "guardia",
-    comunidad: "Guardianes del Monte",
-    titulo: "Manifiesto de Guardianes del Monte",
-    introduccion:
-      "Cuidamos el bosque ribereño y medimos cómo mejora la tierra año a año. Un guardián no es dueño del monte: es alguien a quien el monte, y la comunidad, le confían su cuidado.",
-    compromisos: [
-      {
-        titulo: "Nos cuidamos en el campo",
-        texto:
-          "Salimos de a dos o más a monitorear, avisamos adónde vamos y volvemos juntos. El monte se cuida mejor si quienes lo cuidan están bien.",
-      },
-      {
-        titulo: "Decidimos con datos y con la tribu",
-        texto:
-          "Las decisiones sobre qué cuidar primero se basan en lo que medimos y se acuerdan en la reunión de la tribu, con voz para todas.",
-      },
-      {
-        titulo: "Los conflictos se hablan a la vuelta de la caminata",
-        texto:
-          "Después de monitorear conversamos con calma. Si queda una diferencia sin resolver, pedimos a alguien de otra tribu que nos ayude a escucharnos.",
-      },
-      {
-        titulo: "Medimos con honestidad",
-        texto:
-          "Registramos lo que vemos aunque no sea lo que esperábamos, y compartimos los datos tal cual. Un dato incómodo vale más que uno maquillado.",
-      },
-      {
-        titulo: "Un informe para todos",
-        texto:
-          "Entregamos cada año al Lighthouse un informe de biodiversidad, claro y abierto, y proponemos cuidados concretos para el santuario.",
-      },
-      {
-        titulo: "Pasar la posta",
-        texto:
-          "Quien deja la guardia entrega su cuaderno de campo y enseña su recorrido a quien sigue, para que el cuidado del monte no se interrumpa.",
       },
     ],
   },

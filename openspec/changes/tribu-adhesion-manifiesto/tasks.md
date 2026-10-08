@@ -1,6 +1,6 @@
 ## 1. Datos
 
-- [x] 1.1 `lib/manifiestos/` con los 9 manifiestos de ejemplo y `lib/membresia/` con estados por comunidad y la lista de comunidades donde se es miembro, con tests. Verificar con `pnpm test`.
+- [x] 1.1 `lib/manifiestos/` con los 8 manifiestos de ejemplo y `lib/membresia/` con estados por comunidad y la lista de comunidades donde se es miembro, con tests. Verificar con `pnpm test`.
 
 ## 2. Pantallas
 

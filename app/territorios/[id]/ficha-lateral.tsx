@@ -21,6 +21,7 @@ import {
   tribuDeBarrio,
 } from "@/lib/territorios/biopueblo";
 import { TEXTO_COMUN, descripcionDeLugar, nombreDeLugar } from "@/lib/territorios/textos";
+import { rutaProponerComunidad } from "@/lib/tribus/datos";
 import { TEXTO_ESTADO } from "@/lib/tribus/tipos";
 
 type Props = {
@@ -104,9 +105,15 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
             </ul>
           </div>
         )}
-        <Link href={`/tribus/${t.id}`} className={boton}>
-          Conocer la tribu
-        </Link>
+        {vacante ? (
+          <Link href={rutaProponerComunidad(t.id)} className={boton}>
+            Proponer una comunidad
+          </Link>
+        ) : (
+          <Link href={`/tribus/${t.id}`} className={boton}>
+            Conocer la tribu
+          </Link>
+        )}
       </div>
     );
   }

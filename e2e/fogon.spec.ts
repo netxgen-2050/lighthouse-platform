@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 test("lista las cinco decisiones con dónde, regla y ⚖, y el aviso de prototipo", async ({ page }) => {
   const respuesta = await page.goto("/fogon");
@@ -14,7 +14,23 @@ test("lista las cinco decisiones con dónde, regla y ⚖, y el aviso de prototip
   await expect(bomba.getByRole("button", { name: "Qué significa legalmente: Reglamento de Soluna, art. 35" })).toBeVisible();
 });
 
-test("quien no puede votar ve el motivo", async ({ page }) => {
+function cargarResidencia(page: Page, residencia: "argentina" | "exterior") {
+  return page.addInitScript((r) => {
+    window.localStorage.setItem("lh-pasaporte", JSON.stringify({ residencia: r }));
+  }, residencia);
+}
+
+test("sin residencia cargada no se asume nada: dice que falta el dato y no hay personas de ejemplo", async ({ page }) => {
+  await page.goto("/fogon");
+  await expect(page.getByText("Sin dato de tu residencia", { exact: true })).toHaveCount(3);
+  await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(2);
+  await expect(page.getByRole("link", { name: "Cargala en Tus datos" })).toBeVisible();
+  await expect(page.getByLabel("Persona de ejemplo")).toHaveCount(0);
+  await expect(page.getByText(/Lucía|Lucas/)).toHaveCount(0);
+});
+
+test("con residencia en el exterior ve el motivo de cada decisión", async ({ page }) => {
+  await cargarResidencia(page, "exterior");
   await page.goto("/fogon");
   await expect(page.getByText("Solo residentes")).toHaveCount(2);
   await expect(page.getByText("No sos beneficiaria/o")).toBeVisible();
@@ -53,9 +69,9 @@ test("votar a favor en la huerta actualiza el conteo, sin red, y sobrevive a la 
   await expect(huerta).toContainText("A favor 15");
 });
 
-test("como Lucas se puede votar en la asamblea y en el fideicomiso", async ({ page }) => {
+test("con residencia en Argentina se puede votar en la asamblea y en el fideicomiso", async ({ page }) => {
+  await cargarResidencia(page, "argentina");
   await page.goto("/fogon");
-  await page.getByLabel("Persona de ejemplo").selectOption("lucas");
   await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(5);
   await expect(page.getByText("Solo residentes")).toHaveCount(0);
   const bomba = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: /bomba solar/ }) });
@@ -64,22 +80,17 @@ test("como Lucas se puede votar en la asamblea y en el fideicomiso", async ({ pa
   await expect(bomba).toContainText("Abstención 3");
 });
 
-test("cambiar de persona con un voto guardado no filtra el voto a quien no puede votar", async ({ page }) => {
+test("un voto guardado en la asamblea no se muestra si la residencia cargada pasa a ser del exterior", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("lh-pasaporte", JSON.stringify({ residencia: "exterior" }));
+    window.localStorage.setItem("lh-fogon", JSON.stringify({ votos: { bomba: "favor", huerta: "favor" } }));
+  });
   await page.goto("/fogon");
   const bomba = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: /bomba solar/ }) });
   const huerta = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Plan de huerta comunitaria 2027" }) });
-  await huerta.getByRole("button", { name: "Votar" }).click();
-  await huerta.getByRole("button", { name: "A favor" }).click();
-  await page.getByLabel("Persona de ejemplo").selectOption("lucas");
-  await expect(huerta.getByText("Tu voto:")).toHaveCount(0);
-  await expect(huerta).toContainText("A favor 14");
-  await bomba.getByRole("button", { name: "Votar" }).click();
-  await bomba.getByRole("button", { name: "A favor" }).click();
-  await expect(bomba).toContainText("Tu voto: A favor (simulado)");
-  await page.getByLabel("Persona de ejemplo").selectOption("lucia");
   await expect(bomba).toContainText("Solo residentes");
   await expect(bomba.getByText("Tu voto:")).toHaveCount(0);
-  await expect(bomba.getByText(/votó a favor/)).toHaveCount(0);
+  await expect(bomba).toContainText("A favor 21");
   await expect(huerta).toContainText("Tu voto: A favor (simulado)");
 });
 

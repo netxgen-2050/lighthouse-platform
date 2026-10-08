@@ -9,7 +9,7 @@ test("muestra los cinco indicadores, el aviso de prototipo y un solo main", asyn
   await expect(page.locator("main")).toHaveCount(1);
   for (const [n, l] of [
     ["412", "perfiles completos"],
-    ["9", "tribus activas"],
+    ["3", "tribus activas"],
     ["37", "pactos aceptados"],
     ["USD 1,2 M", "en el espejo de aportes"],
     ["640 h", "horas comprometidas por mes"],

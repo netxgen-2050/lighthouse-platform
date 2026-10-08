@@ -60,7 +60,7 @@ export function validarCompromiso(
         montoUsd = n;
       }
     }
-  } else {
+  } else if (b.clase === "bienes") {
     const t = b.bienes.trim();
     if (t.length > MAX_BIENES) {
       errores.bienes = `La cantidad puede tener hasta ${MAX_BIENES} caracteres.`;
@@ -76,7 +76,6 @@ export function validarCompromiso(
     tipo: b.tipo,
     clase: b.clase,
     descripcion,
-    para: b.para,
     creado: ahora.toISOString(),
   };
   if (horasPorMes !== undefined) compromiso.horasPorMes = horasPorMes;

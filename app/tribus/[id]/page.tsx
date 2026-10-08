@@ -6,9 +6,9 @@ import { SelloTribu } from "@/components/sello-tribu";
 import { TerminoLegal } from "@/components/termino-legal";
 import { Medidor } from "@/components/medidor";
 import { destinosDisponibles } from "@/lib/navegacion";
-import { buscarTribu, listarTribus } from "@/lib/tribus/datos";
+import { buscarTribu, listarTribus, rutaProponerComunidad } from "@/lib/tribus/datos";
 import { MembresiaAcciones } from "@/components/membresia-acciones";
-import { ProponerTribu, VerBarrio } from "./acciones";
+import { VerBarrio } from "./acciones";
 
 export const dynamicParams = false;
 
@@ -74,14 +74,19 @@ export default async function TribuPage({ params }: Props) {
             <Medidor titulo="Plata para arrancar" actual={0} tope={t.plata.meta} unidad="USD " />
             <Medidor titulo="Roles" actual={0} tope={t.roles.necesarios} dorado />
           </section>
-          <section className={tarjeta}>
+          <section id="proponer" className={tarjeta}>
             <h2 className="text-lg font-semibold">¿Tenés una tribu?</h2>
             <p className="text-sm">
               Proponela: contá quiénes son, qué van a producir y qué van a aportar al pozo común. La tribu define su
               propio ritual de entrada
               <TerminoLegal clave="ritual" />.
             </p>
-            <ProponerTribu />
+            <Link
+              href={rutaProponerComunidad(t.id)}
+              className="w-fit rounded-lg bg-gold px-4 py-1.5 font-medium text-ink hover:bg-gold-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+            >
+              Proponer una comunidad
+            </Link>
           </section>
         </div>
       </div>
@@ -101,6 +106,15 @@ export default async function TribuPage({ params }: Props) {
       </div>
       <AvisoEjemplo />
       <Prototipo />
+      {t.estado === "formacion" && (
+        <p
+          role="note"
+          className="mt-4 rounded-lg border border-gold-ink bg-gold-soft px-4 py-3 text-sm font-medium"
+        >
+          Esta comunidad está en formación: todavía no tiene un compromiso firmado con el Lighthouse
+          {t.etapa ? ` (etapa: ${t.etapa})` : ""}.
+        </p>
+      )}
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         <section className={tarjeta}>
           <h2 className="text-lg font-semibold">Lo que tiene</h2>

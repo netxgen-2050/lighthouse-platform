@@ -20,3 +20,5 @@ Sos el orquestador del cierre de la noche {{FECHA}} en lighthouse-platform. Gus 
 ```
 
 Terminá con 3 líneas: cuántos PRs quedaron listos, resultado de la integración y link al PR de propuestas.
+
+**Importante:** lanzá cada subagente **en primer plano** (nunca en segundo plano) y esperá su resultado. Nunca termines tu respuesta mientras un subagente está trabajando: en esta corrida automática, terminar tu turno cierra la sesión y deja el trabajo a medias.
