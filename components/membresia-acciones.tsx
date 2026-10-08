@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { TerminoLegal } from "@/components/termino-legal";
+import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
 import { useMembresia } from "@/lib/membresia/usar-membresia";
 
 const BOTON =
@@ -27,20 +29,31 @@ type Props = {
 export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
   const { estado, cargado, falloAlmacen, aceptar } = useMembresia(comunidad);
   const [mensaje, setMensaje] = useState("");
-  const esLighthouse = comunidad === "lighthouse";
+  const aviso = useRef<HTMLParagraphElement>(null);
+  const moverFoco = useRef(false);
+  const esLighthouse = comunidad === COMUNIDAD_LIGHTHOUSE;
   const de = esLighthouse ? "del Lighthouse" : "de la tribu";
   const manifiesto = `/tribus/${comunidad}/manifiesto`;
+
+  // Si el botón que tenía el foco desaparece (por ejemplo al aceptar), el foco pasa a la zona de avisos.
+  useEffect(() => {
+    if (moverFoco.current) {
+      moverFoco.current = false;
+      aviso.current?.focus();
+    }
+  }, [estado]);
 
   // Hasta leer lo guardado no se muestra ningún botón, para no mostrar "Adherir" a quien ya es miembro.
   if (!cargado) return <div className="min-h-10" aria-hidden="true" />;
 
+  const textoPedido = `Tu pedido llegó ${esLighthouse ? "al Lighthouse" : `a ${nombre}`}. Quien ${esLighthouse ? "lo" : "la"} administra lo va a revisar.`;
+
   return (
     <div className="grid gap-2">
-      {estado === "pedido" && (
-        <p role="status" className="rounded-lg border border-faint bg-surface-2 px-3 py-2 text-sm font-medium">
-          Tu pedido llegó {esLighthouse ? "al Lighthouse" : `a ${nombre}`}. Quien {esLighthouse ? "lo" : "la"} administra lo va a revisar.
-        </p>
-      )}
+      {/* Zona de avisos siempre presente: así los lectores de pantalla leen lo que se escribe en ella. */}
+      <p ref={aviso} tabIndex={-1} role="status" className="text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
+        {estado === "pedido" ? textoPedido : mensaje}
+      </p>
       <div className="flex flex-wrap gap-3">
         {estado === "miembro" ? (
           <>
@@ -69,11 +82,22 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
               Leer el manifiesto {de}
             </Link>
             {estado === "no-miembro" ? (
-              <Link className={DORADO} href={manifiesto}>
-                Adherir al manifiesto {de}
-              </Link>
+              <span className="inline-flex items-center">
+                <Link className={DORADO} href={manifiesto}>
+                  Adherir al manifiesto {de}
+                </Link>
+                <TerminoLegal clave="adhesion" />
+              </span>
             ) : (
-              <button type="button" className={PRIMARIO} onClick={aceptar}>
+              <button
+                type="button"
+                className={PRIMARIO}
+                onClick={() => {
+                  moverFoco.current = true;
+                  setMensaje(`Ya sos parte ${esLighthouse ? "del Lighthouse" : `de ${nombre}`}.`);
+                  aceptar();
+                }}
+              >
                 Simular: la comunidad me acepta
               </button>
             )}
@@ -91,9 +115,6 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
           No se pudo guardar en este navegador: la membresía vale solo hasta que recargues la página.
         </p>
       )}
-      <p aria-live="polite" className="text-sm font-medium">
-        {mensaje}
-      </p>
     </div>
   );
 }

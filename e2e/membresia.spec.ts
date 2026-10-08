@@ -140,6 +140,18 @@ test("con teclado: se llega al texto, se marcan las casillas y se adhiere", asyn
   await adherir.focus();
   await page.keyboard.press("Enter");
   await expect(page.getByText(/Tu pedido llegó a Valle Solar/)).toBeVisible();
+  // El botón desapareció: el foco pasa al aviso en vez de perderse.
+  await expect(page.getByRole("status").filter({ hasText: /Tu pedido llegó/ })).toBeFocused();
+  await page.getByRole("button", { name: "Simular: la comunidad me acepta" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("status").filter({ hasText: "Ya sos parte de Valle Solar." })).toBeFocused();
+});
+
+test("el ⚖ de adherir está junto al botón y junto al enlace", async ({ page }) => {
+  await page.goto("/tribus/valle");
+  await expect(page.getByRole("button", { name: "Qué significa legalmente: Adherir a un manifiesto" })).toHaveCount(1);
+  await page.goto("/tribus/valle/manifiesto");
+  await expect(page.getByRole("button", { name: "Qué significa legalmente: Adherir a un manifiesto" })).toHaveCount(2);
 });
 
 for (const ruta of ["/tribus/valle/manifiesto", "/tribus/valle", "/territorios/lighthouse"]) {

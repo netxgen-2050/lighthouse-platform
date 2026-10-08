@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { TerminoLegal } from "@/components/termino-legal";
 import type { Manifiesto } from "@/lib/manifiestos/datos";
+import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
 import { useMembresia } from "@/lib/membresia/usar-membresia";
 
 const BOTON =
@@ -15,8 +16,10 @@ const HUELGA = 8; // píxeles de tolerancia para dar por llegado al final
 
 export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manifiesto; pactos: boolean }) {
   const { estado, cargado, falloAlmacen, adherir, aceptar } = useMembresia(m.id);
-  const esLighthouse = m.id === "lighthouse";
+  const esLighthouse = m.id === COMUNIDAD_LIGHTHOUSE;
   const texto = useRef<HTMLDivElement>(null);
+  const aviso = useRef<HTMLParagraphElement>(null);
+  const moverFoco = useRef(false);
   const [llegoAlFinal, setLlegoAlFinal] = useState(false);
   const [leyo, setLeyo] = useState(false);
   const [cuidar, setCuidar] = useState(false);
@@ -33,6 +36,22 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
     window.addEventListener("resize", revisarFinal);
     return () => window.removeEventListener("resize", revisarFinal);
   }, [revisarFinal, cargado]);
+
+  // Si el botón que tenía el foco desaparece (al adherir o al aceptar), el foco pasa a la zona de avisos.
+  useEffect(() => {
+    if (moverFoco.current) {
+      moverFoco.current = false;
+      aviso.current?.focus();
+    }
+  }, [estado]);
+
+  const textoAviso = !cargado
+    ? ""
+    : estado === "pedido"
+      ? `Tu pedido llegó ${esLighthouse ? "al Lighthouse" : `a ${m.comunidad}`}. Quien ${esLighthouse ? "lo" : "la"} administra lo va a revisar.`
+      : estado === "miembro"
+        ? `Ya sos parte ${esLighthouse ? "del Lighthouse" : `de ${m.comunidad}`}.`
+        : "";
 
   const puede = llegoAlFinal && leyo && cuidar;
   const faltan: string[] = [];
@@ -69,12 +88,26 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
         <p className="text-sm text-muted">Fin del manifiesto.</p>
       </div>
 
+      {/* Zona de avisos siempre presente: los lectores de pantalla leen lo que se escribe en ella y recibe el foco
+          cuando el botón que lo tenía desaparece. */}
+      <p
+        ref={aviso}
+        tabIndex={-1}
+        role="status"
+        className={`font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep ${textoAviso ? "mt-4" : ""}`}
+      >
+        {textoAviso}
+      </p>
+
       {!cargado ? null : estado === "no-miembro" ? (
         <form
           className="mt-4 grid gap-3 rounded-xl border border-faint bg-surface-2 p-4"
           onSubmit={(e) => {
             e.preventDefault();
-            if (puede) adherir();
+            if (puede) {
+              moverFoco.current = true;
+              adherir();
+            }
           }}
         >
           <h2 className="text-lg font-semibold">Antes de adherir</h2>
@@ -92,9 +125,12 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
               Me comprometo a cuidar estos acuerdos y a hablar con la comunidad si algún día no puedo cumplirlos
             </span>
           </label>
-          <button type="submit" className={PRIMARIO} disabled={!puede} aria-describedby="adherir-ayuda">
-            Adherir
-          </button>
+          <span className="inline-flex items-center">
+            <button type="submit" className={PRIMARIO} disabled={!puede} aria-describedby="adherir-ayuda">
+              Adherir
+            </button>
+            <TerminoLegal clave="adhesion" />
+          </span>
           <p id="adherir-ayuda" className="text-sm text-muted">
             {puede
               ? "Tu pedido le llega a quien administra la comunidad, que decide si te acepta."
@@ -103,19 +139,19 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
         </form>
       ) : estado === "pedido" ? (
         <div className="mt-4 grid gap-3 rounded-xl border border-faint bg-surface-2 p-4">
-          <p role="status" className="font-medium">
-            Tu pedido llegó {esLighthouse ? "al Lighthouse" : `a ${m.comunidad}`}. Quien {esLighthouse ? "lo" : "la"} administra lo va a
-            revisar.
-          </p>
-          <button type="button" className={PRIMARIO} onClick={aceptar}>
+          <button
+            type="button"
+            className={PRIMARIO}
+            onClick={() => {
+              moverFoco.current = true;
+              aceptar();
+            }}
+          >
             Simular: la comunidad me acepta
           </button>
         </div>
       ) : (
         <div className="mt-4 grid gap-3 rounded-xl border border-faint bg-surface-2 p-4">
-          <p role="status" className="font-medium">
-            Ya sos parte de {esLighthouse ? "el Lighthouse" : m.comunidad}.
-          </p>
           <div className="flex flex-wrap gap-3">
             {pactos && (
               <Link className={PRIMARIO} href={`/pactos?comunidad=${m.id}`}>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { listarTribus } from "@/lib/tribus/datos";
-import { buscarManifiesto, idsConManifiesto, tieneManifiesto, tribusConManifiesto } from "./datos";
+import { buscarManifiesto, idsConManifiesto } from "./datos";
 
 describe("manifiestos de ejemplo", () => {
   it("hay uno por cada tribu activa o en formación y uno del Lighthouse", () => {
@@ -13,9 +13,7 @@ describe("manifiestos de ejemplo", () => {
   it("las tribus vacantes no tienen manifiesto", () => {
     for (const t of listarTribus().filter((t) => t.estado === "vacante")) {
       expect(buscarManifiesto(t.id)).toBeUndefined();
-      expect(tieneManifiesto(t.id)).toBe(false);
     }
-    expect(tribusConManifiesto().every((t) => t.estado !== "vacante")).toBe(true);
   });
 
   it("el del Lighthouse es el Pacto de convivencia", () => {

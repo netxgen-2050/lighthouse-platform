@@ -1,7 +1,6 @@
 // Manifiestos de EJEMPLO para el prototipo interno. Los redactó un agente inspirándose en el foco, el ritual
 // y la forma de decidir de cada tribu (lib/tribus/datos.ts). No son los textos reales de ninguna comunidad:
 // son borradores a revisar con cada una antes de cualquier uso real.
-import { buscarTribu, listarTribus } from "@/lib/tribus/datos";
 
 export type Compromiso = { titulo: string; texto: string };
 
@@ -388,14 +387,4 @@ export function buscarManifiesto(id: string): Manifiesto | undefined {
 /** Ids con manifiesto: el Lighthouse y cada tribu activa o en formación. */
 export function idsConManifiesto(): string[] {
   return MANIFIESTOS.map((m) => m.id);
-}
-
-/** Tribus activas o en formación (las que tienen manifiesto), en el orden de los barrios. */
-export function tribusConManifiesto() {
-  return listarTribus().filter((t) => t.estado !== "vacante");
-}
-
-export function tieneManifiesto(id: string): boolean {
-  const t = buscarTribu(id);
-  return id === "lighthouse" || (t !== undefined && t.estado !== "vacante");
 }

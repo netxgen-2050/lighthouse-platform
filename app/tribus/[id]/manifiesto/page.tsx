@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buscarManifiesto, idsConManifiesto } from "@/lib/manifiestos/datos";
+import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
 import { destinosDisponibles } from "@/lib/navegacion";
 import { LecturaManifiesto } from "./lectura";
 
@@ -22,7 +23,7 @@ export default async function ManifiestoPage({ params }: Props) {
   const { id } = await params;
   const m = buscarManifiesto(id);
   if (!m) notFound();
-  const esLighthouse = id === "lighthouse";
+  const esLighthouse = id === COMUNIDAD_LIGHTHOUSE;
 
   return (
     <div className="mx-auto max-w-3xl p-6 sm:p-10">
