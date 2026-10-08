@@ -20,17 +20,19 @@ describe("biopueblo", () => {
     for (const b of barrios) expect(tribuDeBarrio(b)?.barrio).toBe(b.barrio);
   });
 
-  it("175 fincas: 167 disponibles, 7 reservadas, 1 cantera", () => {
+  it("174 fincas: 166 disponibles, 7 reservadas, 1 cantera (la 303 repetida en el KMZ queda como 303-a y 303-b)", () => {
     const fincas = listarFincas();
-    expect(fincas).toHaveLength(175);
+    expect(fincas).toHaveLength(174);
+    expect(new Set(fincas.map((f) => f.id)).size).toBe(174);
+    expect(fincas.some((f) => f.id === "finca-None")).toBe(false);
     const n = (e: string) => fincas.filter((f) => f.estado === e).length;
-    expect([n("disponible"), n("reservada"), n("cantera")]).toEqual([167, 7, 1]);
+    expect([n("disponible"), n("reservada"), n("cantera")]).toEqual([166, 7, 1]);
   });
 
   it("macrolote, común, lugares y contexto", () => {
     expect(macrolote7().id).toBe("macrolote-7");
     expect(terrenoComun().nombre).toBe("Terreno común del Lighthouse");
-    expect(listarLugares()).toHaveLength(5);
+    expect(listarLugares()).toHaveLength(6);
     expect(listarContexto().length).toBeGreaterThan(0);
   });
 
