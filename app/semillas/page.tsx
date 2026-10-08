@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { TerminoLegal } from "@/components/termino-legal";
+import { TerminoEconomico } from "@/components/termino-economico";
 import { SemillasCliente } from "./semillas-cliente";
 
 export const metadata: Metadata = { title: "Semillas" };
@@ -16,7 +16,7 @@ export default function SemillasPage() {
       </p>
       <p className="text-sm font-medium text-muted">
         Semillas
-        <TerminoLegal clave="semillas" /> · Valle Solar
+        <TerminoEconomico clave="semillas" /> · por comunidad
       </p>
       <h1 className="text-3xl font-semibold">Lo que sembraste y lo que te abre</h1>
       <p className="mt-2 mb-4 max-w-2xl text-muted">

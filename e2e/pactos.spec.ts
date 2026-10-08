@@ -151,6 +151,10 @@ test("el pacto aceptado se guarda por comunidad y suma en /semillas", async ({ p
   await expect(page.getByText("Pacto aceptado")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Enviar a la comunidad" })).toBeVisible();
   await page.goto("/semillas");
+  // El pacto es de Semilla Viva: esa tarjeta suma y la del Lighthouse sigue sin dato.
+  await expect(page.getByTestId("total-semilla")).toHaveText("150 semillas");
+  await expect(page.getByTestId("total-lighthouse")).toHaveText("sin dato");
+  await page.getByRole("button", { name: "Ver el detalle de Semilla Viva" }).click();
   await expect(page.getByTestId("semillas-tiempo")).toHaveText("150 semillas");
 });
 
