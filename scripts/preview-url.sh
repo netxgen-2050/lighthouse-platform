@@ -5,7 +5,7 @@ set -euo pipefail
 
 RAMA="${1:?Uso: scripts/preview-url.sh <rama> [minutos]}"
 MINUTOS="${2:-15}"
-REPO="$(gh repo view --json nameWithOwner -q .nameWithOwner)"
+REPO="$(git remote get-url origin | sed -E 's#^(git@github.com:|https://github.com/)##; s#\.git$##')"
 
 git fetch -q origin "$RAMA"
 SHA="$(git rev-parse "origin/$RAMA")"

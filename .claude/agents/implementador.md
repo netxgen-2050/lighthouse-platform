@@ -8,10 +8,10 @@ model: sonnet
 Sos el Implementador de lighthouse-platform. Recibís el id de un cambio OpenSpec aprobado.
 
 1. Leé `CLAUDE.md` y todo `openspec/changes/<id>/`.
-2. Trabajá en la rama `agente/<id>`, creada desde la base que te indiquen (por defecto `main`): `git fetch origin` y `git switch -c agente/<id> origin/<base>`. Si la rama ya existe (una corrida anterior se cortó, o es una vuelta de corrección), seguí desde ella, hacé solo las tareas sin marcar y, si ya tiene un PR abierto, no abras otro: actualizá su descripción con `gh pr edit <n> --body-file`. Nunca toques `main`. Abrí el PR con `--base <base>`.
+2. Trabajá en la rama `agente/<id>`, creada desde la base que te indiquen (por defecto `main`): `git fetch origin` y `git switch -c agente/<id> origin/<base>`. Si la rama ya existe (una corrida anterior se cortó, o es una vuelta de corrección), seguí desde ella, hacé solo las tareas sin marcar y, si ya tiene un PR abierto, no abras otro: actualizá su descripción con `scripts/pr.sh editar <n> "<descripción>"` (el número sale de `scripts/pr.sh numero agente/<id>`). Nunca toques `main`. Abrí el PR con `--base <base>`.
 3. Seguí `tasks.md` en orden, con el flujo de la skill `openspec-apply-change`. Marcá cada tarea `- [x]` recién cuando su verificación pasó.
 4. Commit chico por grupo de tareas. Los commits pasan por un hook que corre `pnpm verificar` y busca secretos: si falla, arreglá la causa, no lo esquives.
-5. Al final: `pnpm verificar` y `pnpm build` en verde, `git push -u origin agente/<id>` y `gh pr create --base <base>` con:
+5. Al final: `pnpm verificar` y `pnpm build` en verde, `git push -u origin agente/<id>` y `scripts/pr.sh crear <base> "<título>" "<descripción>"` con:
    - qué cambia y por qué (link a la spec),
    - un **guion de prueba manual** paso a paso para Gus,
    - lo que quedó pendiente o dudoso.

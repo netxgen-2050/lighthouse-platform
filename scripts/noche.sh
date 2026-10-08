@@ -107,7 +107,7 @@ correr_carril() {
       || echo "[$(date +%T)] Carril $n · $c terminó con error; mirá $log"
 
     # Solo se apila sobre un cambio que dejó PR abierto (es decir, que pasó por el revisor).
-    if [[ "$(gh pr list --head "agente/$c" --state open --json number -q length 2>/dev/null)" -gt 0 ]]; then
+    if [[ -n "$(scripts/pr.sh numero "agente/$c" 2>/dev/null)" ]]; then
       base="agente/$c"
     else
       echo "[$(date +%T)] Carril $n · $c no dejó PR; el resto del carril se frena para no apilar sobre algo sin revisar."

@@ -17,7 +17,7 @@ const ramaActual = () => {
 };
 
 // 1. Solo Gus mergea, y nadie reescribe historia.
-if (/\bgh\s+pr\s+merge\b/.test(cmd)) bloquear("solo Gus mergea PRs.");
+if (/\bgh\s+pr\s+merge\b|\/merge\b.*-X\s*PUT|-X\s*PUT.*\/merge\b/.test(cmd)) bloquear("solo Gus mergea PRs.");
 if (/\bgit\s+merge\b[^;&|]*\b(main|master)\b/.test(cmd) && ramaActual() === "main") bloquear("no se mergea en main.");
 if (/\bgit\s+push\b[^;&|]*(--force|--force-with-lease|\s-f\b|\s\+)/.test(cmd)) bloquear("push forzado prohibido.");
 if (/\bgit\s+push\b[^;&|]*\b(main|master)\b/.test(cmd)) bloquear("no se pushea a main; usá la rama agente/<cambio>.");
@@ -57,7 +57,7 @@ if (/\bgit\s+commit\b/.test(cmd)) {
 }
 
 // 4. Antes de abrir un PR: build en verde.
-if (/\bgh\s+pr\s+create\b/.test(cmd)) {
+if (/\bgh\s+pr\s+create\b|\bscripts\/pr\.sh\s+crear\b/.test(cmd)) {
   try {
     sh("pnpm build");
   } catch (e) {

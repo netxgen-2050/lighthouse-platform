@@ -46,3 +46,10 @@ Modelos pensados para Max 5x: Opus solo donde se piensa (spec y revisión). Con 
 - Cada carril es una copia del repo en `.carriles/N` (worktree de git, ignorado) con su propio puerto local (`3000 + N`).
 - Dentro de un carril los cambios se **apilan**: el segundo parte de la rama del primero y su PR apunta a esa rama. Se mergean en orden; al mergear el primero, GitHub reapunta el siguiente a `main`.
 - Si se toca el límite de uso del plan, el script espera 30 minutos y retoma (hasta ~6 h).
+
+## Nube (Claude Code en la web y rutinas)
+- Entorno `lighthouse-noche` en claude.ai/code: red Full (o Custom con los dominios de Vercel, Google Fonts, Playwright y Esri), setup script con pnpm 12.4.2 y Chromium, y `VERCEL_AUTOMATION_BYPASS_SECRET` como variable del entorno.
+- Al arrancar, el hook `scripts/nube-inicio.sh` instala dependencias (solo si `CLAUDE_CODE_REMOTE=true`).
+- **GraphQL de GitHub está bloqueado en la nube**: los PRs se manejan con `scripts/pr.sh` (REST), que funciona igual en la Mac.
+- La noche en la nube la arman rutinas que leen `noches/cola.md`: una por carril (`.claude/nube-carril.md`) y una de cierre (`.claude/nube-cierre.md`).
+- Prueba del entorno del 8-oct: verificar 387, build y 284 e2e en verde; preview de Vercel accesible.
