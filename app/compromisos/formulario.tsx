@@ -307,10 +307,20 @@ export function Formulario() {
 const TIPOS_FILTRO = ["todos", "ofrezco", "necesito"] as const;
 const CLASES_FILTRO = ["todas", "tiempo", "bienes", "plata", "trueque"] as const;
 
+function textoConteo(n: number): string {
+  return n === 1 ? "1 publicación" : `${n} publicaciones`;
+}
+
 function Mercado({ propios }: { propios: Compromiso[] }) {
   const [filtro, setFiltro] = useState<FiltroMercado>({ tipo: "todos", clase: "todas" });
   const [interesa, setInteresa] = useState<Set<string>>(new Set());
+  const [anuncio, setAnuncio] = useState("");
   const items = filtrarMercado(armarMercado(propios), filtro);
+
+  function cambiarFiltro(nuevo: FiltroMercado) {
+    setFiltro(nuevo);
+    setAnuncio(textoConteo(filtrarMercado(armarMercado(propios), nuevo).length));
+  }
 
   function alternar(id: string) {
     setInteresa((s) => {
@@ -336,7 +346,7 @@ function Mercado({ propios }: { propios: Compromiso[] }) {
           <select
             id="filtro-tipo"
             value={filtro.tipo}
-            onChange={(e) => setFiltro((f) => ({ ...f, tipo: e.target.value as FiltroMercado["tipo"] }))}
+            onChange={(e) => cambiarFiltro({ ...filtro, tipo: e.target.value as FiltroMercado["tipo"] })}
             className={campo}
           >
             {TIPOS_FILTRO.map((t) => (
@@ -349,7 +359,7 @@ function Mercado({ propios }: { propios: Compromiso[] }) {
           <select
             id="filtro-medio"
             value={filtro.clase}
-            onChange={(e) => setFiltro((f) => ({ ...f, clase: e.target.value as FiltroMercado["clase"] }))}
+            onChange={(e) => cambiarFiltro({ ...filtro, clase: e.target.value as FiltroMercado["clase"] })}
             className={campo}
           >
             {CLASES_FILTRO.map((c) => (
@@ -358,9 +368,9 @@ function Mercado({ propios }: { propios: Compromiso[] }) {
           </select>
         </div>
       </div>
-      <p aria-live="polite" className="text-sm text-muted">
-        {items.length === 1 ? "1 publicación" : `${items.length} publicaciones`}
-      </p>
+      <p className="text-sm text-muted">{textoConteo(items.length)}</p>
+      {/* Solo se anuncia cuando cambia un filtro, no al registrar o quitar compromisos. */}
+      <p aria-live="polite" className="sr-only">{anuncio}</p>
       {items.length === 0 ? (
         <p className="text-muted">No hay publicaciones con esos filtros.</p>
       ) : (
@@ -385,8 +395,9 @@ function Mercado({ propios }: { propios: Compromiso[] }) {
                       onClick={() => alternar(c.id)}
                       className={`${boton} border border-faint ${marcado ? "bg-deep text-on-deep" : "bg-surface hover:bg-surface-2"}`}
                     >
-                      {marcado ? "Te interesa (simulado)" : "Me interesa"}
+                      Me interesa
                     </button>
+                    {marcado && <span className="ml-2 text-sm font-medium">Marcado como de interés (simulado)</span>}
                   </div>
                 )}
               </li>

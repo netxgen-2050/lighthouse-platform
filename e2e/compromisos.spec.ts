@@ -70,12 +70,25 @@ test("filtrar el mercado por Necesito y Tiempo", async ({ page }) => {
   await expect(items).toHaveCount(8);
 });
 
+test("el conteo se anuncia solo al cambiar un filtro, no al registrar", async ({ page }) => {
+  const mercado = page.getByRole("region", { name: "Mercado" });
+  const vivo = mercado.locator("p[aria-live=polite]");
+  await expect(vivo).toHaveText("");
+  await registrar(page, { descripcion: "Algo", horas: "1" });
+  await expect(page.getByRole("status")).toHaveText("Compromiso registrado.");
+  await expect(vivo).toHaveText("");
+  await mercado.getByLabel("Filtrar por tipo").selectOption({ label: "Necesito" });
+  await expect(vivo).toHaveText("4 publicaciones");
+});
+
 test("Me interesa se marca y se desmarca (simulado)", async ({ page }) => {
   const mercado = page.getByRole("region", { name: "Mercado" });
   const boton = mercado.getByRole("button", { name: /^Me interesa: / }).first();
   await boton.click();
   await expect(mercado.getByRole("button", { pressed: true })).toHaveCount(1);
-  await expect(mercado.getByText("Te interesa (simulado)")).toBeVisible();
+  await expect(mercado.getByText("Marcado como de interés (simulado)")).toBeVisible();
+  // El nombre accesible no cambia al marcar (WCAG 2.5.3); el estado lo da aria-pressed.
+  await expect(mercado.getByRole("button", { pressed: true })).toHaveText("Me interesa");
   await mercado.getByRole("button", { pressed: true }).click();
   await expect(mercado.getByRole("button", { pressed: true })).toHaveCount(0);
 });
