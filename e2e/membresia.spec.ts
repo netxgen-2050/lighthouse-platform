@@ -147,7 +147,30 @@ test("con teclado: se llega al texto, se marcan las casillas y se adhiere", asyn
   await expect(page.getByRole("status").filter({ hasText: "Ya sos parte de Valle Solar." })).toBeFocused();
 });
 
-test("el ⚖ de adherir está junto al botón y junto al enlace", async ({ page }) => {
+test("al aceptar desde la tribu el foco pasa al aviso, y al volver con el pedido guardado no hay aviso", async ({ page }) => {
+  await adherirAValle(page);
+  await page.goto("/tribus/valle");
+  // Estado guardado: texto común, la zona de avisos sigue vacía.
+  await expect(page.getByText(/Tu pedido llegó a Valle Solar/)).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: /Tu pedido llegó/ })).toHaveCount(0);
+  await page.getByRole("button", { name: "Simular: la comunidad me acepta" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("status").filter({ hasText: "Ya sos parte de Valle Solar." })).toBeFocused();
+});
+
+test("al aceptar desde el Lighthouse el foco pasa al aviso", async ({ page }) => {
+  await page.goto("/tribus/lighthouse/manifiesto");
+  await alFinal(page);
+  await page.getByLabel(LEYO).check();
+  await page.getByLabel(CUIDAR).check();
+  await page.getByRole("button", { name: "Adherir", exact: true }).click();
+  await page.goto("/territorios/lighthouse");
+  await page.getByRole("button", { name: "Simular: la comunidad me acepta" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("status").filter({ hasText: "Ya sos parte del Lighthouse." })).toBeFocused();
+});
+
+test("el ⚖ de adherir está junto al botón y junto al enlace",async ({ page }) => {
   await page.goto("/tribus/valle");
   await expect(page.getByRole("button", { name: "Qué significa legalmente: Adherir a un manifiesto" })).toHaveCount(1);
   await page.goto("/tribus/valle/manifiesto");

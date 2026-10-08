@@ -52,8 +52,9 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
     <div className="grid gap-2">
       {/* Zona de avisos siempre presente: así los lectores de pantalla leen lo que se escribe en ella. */}
       <p ref={aviso} tabIndex={-1} role="status" className="text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
-        {estado === "pedido" ? textoPedido : mensaje}
+        {mensaje}
       </p>
+      {estado === "pedido" && !mensaje && <p className="text-sm font-medium">{textoPedido}</p>}
       <div className="flex flex-wrap gap-3">
         {estado === "miembro" ? (
           <>

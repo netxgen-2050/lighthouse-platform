@@ -23,6 +23,7 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
   const [llegoAlFinal, setLlegoAlFinal] = useState(false);
   const [leyo, setLeyo] = useState(false);
   const [cuidar, setCuidar] = useState(false);
+  const [mensaje, setMensaje] = useState("");
 
   const revisarFinal = useCallback(() => {
     const el = texto.current;
@@ -45,13 +46,10 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
     }
   }, [estado]);
 
-  const textoAviso = !cargado
-    ? ""
-    : estado === "pedido"
-      ? `Tu pedido llegó ${esLighthouse ? "al Lighthouse" : `a ${m.comunidad}`}. Quien ${esLighthouse ? "lo" : "la"} administra lo va a revisar.`
-      : estado === "miembro"
-        ? `Ya sos parte ${esLighthouse ? "del Lighthouse" : `de ${m.comunidad}`}.`
-        : "";
+  const textoPedido = `Tu pedido llegó ${esLighthouse ? "al Lighthouse" : `a ${m.comunidad}`}. Quien ${esLighthouse ? "lo" : "la"} administra lo va a revisar.`;
+  const textoMiembro = `Ya sos parte ${esLighthouse ? "del Lighthouse" : `de ${m.comunidad}`}.`;
+  // El estado guardado se muestra como texto común; la zona de avisos solo se llena por una acción de esta sesión.
+  const textoGuardado = !cargado || mensaje ? "" : estado === "pedido" ? textoPedido : estado === "miembro" ? textoMiembro : "";
 
   const puede = llegoAlFinal && leyo && cuidar;
   const faltan: string[] = [];
@@ -94,10 +92,11 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
         ref={aviso}
         tabIndex={-1}
         role="status"
-        className={`font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep ${textoAviso ? "mt-4" : ""}`}
+        className={`font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep ${mensaje ? "mt-4" : ""}`}
       >
-        {textoAviso}
+        {mensaje}
       </p>
+      {textoGuardado && <p className="mt-4 font-medium">{textoGuardado}</p>}
 
       {!cargado ? null : estado === "no-miembro" ? (
         <form
@@ -106,6 +105,7 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
             e.preventDefault();
             if (puede) {
               moverFoco.current = true;
+              setMensaje(textoPedido);
               adherir();
             }
           }}
@@ -144,6 +144,7 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
             className={PRIMARIO}
             onClick={() => {
               moverFoco.current = true;
+              setMensaje(textoMiembro);
               aceptar();
             }}
           >
