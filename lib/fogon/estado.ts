@@ -54,6 +54,8 @@ export function leer(crudo: string | null): EstadoFogon {
   if (!crudo) return INICIAL;
   try {
     const o = JSON.parse(crudo) as Record<string, unknown>;
+    // Cualquier formato con "persona" es de cuando había personas de ejemplo: no es un voto de quien mira.
+    if ("persona" in o) return INICIAL;
     const crudos = o.votos && typeof o.votos === "object" ? (o.votos as Record<string, unknown>) : {};
     const votos: Record<string, Opcion> = {};
     for (const d of DECISIONES) {

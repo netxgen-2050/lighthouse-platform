@@ -87,4 +87,7 @@ describe("leer", () => {
     );
     expect(viejo).toEqual({ votos: {} });
   });
+  it("el formato plano más viejo con persona tampoco pasa a quien mira", () => {
+    expect(leer(JSON.stringify({ persona: "lucas", votos: { bomba: "contra" } }))).toEqual({ votos: {} });
+  });
 });

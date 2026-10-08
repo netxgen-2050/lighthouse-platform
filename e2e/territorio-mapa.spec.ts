@@ -41,6 +41,36 @@ test("leyenda con texto para cada estado", async ({ page }) => {
   }
 });
 
+test("colores distintos: ningún color de borde ni de relleno se repite entre grupos de la leyenda", async ({ page }) => {
+  await abrir(page);
+  const leyenda = region(page).getByRole("group", { name: "Leyenda del mapa" });
+  const grupos = ["Lighthouse · Macrolote 7", "Chacras de Soluna · venta privada", "Lugares de interés"];
+  const colores: { borde: string; relleno: string }[][] = [];
+  for (const g of grupos) {
+    const muestras = leyenda.getByRole("list", { name: g }).locator("span.mapa-leyenda");
+    colores.push(
+      await muestras.evaluateAll((els) =>
+        els.map((e) => ({
+          borde: getComputedStyle(e).borderTopColor,
+          relleno: getComputedStyle(e).backgroundColor,
+        })),
+      ),
+    );
+  }
+  // Tribu activa (Lighthouse) y finca disponible (Soluna) se distinguen.
+  expect(colores[0][0]).not.toEqual(colores[1][0]);
+  for (let i = 0; i < colores.length; i++) {
+    for (let j = i + 1; j < colores.length; j++) {
+      for (const a of colores[i]) {
+        for (const b of colores[j]) {
+          expect(a.borde, `${grupos[i]} vs ${grupos[j]}`).not.toBe(b.borde);
+          if (a.relleno !== "rgba(0, 0, 0, 0)") expect(a.relleno, `${grupos[i]} vs ${grupos[j]}`).not.toBe(b.relleno);
+        }
+      }
+    }
+  }
+});
+
 test("sin selección: resumen y conteos, sin el listado de tribus", async ({ page }) => {
   await abrir(page);
   const valor = async (etiqueta: string) =>

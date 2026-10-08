@@ -35,7 +35,7 @@ function estiloBarrio(estado: EstadoTribu): PathOptions {
   if (estado === "activa") return { color: token("deep"), weight: 2, fillColor: token("green"), fillOpacity: 0.5 };
   if (estado === "formacion")
     return { color: token("gold-ink"), weight: 2, dashArray: "2 5", lineCap: "round", fillColor: token("gold"), fillOpacity: 0.4 };
-  return { color: token("muted"), weight: 2, dashArray: "6 4", fillColor: token("surface"), fillOpacity: 0.35 };
+  return { color: token("faint"), weight: 2, dashArray: "6 4", fillColor: token("surface"), fillOpacity: 0.35 };
 }
 
 function estiloFinca(estado: EstadoFinca | undefined): PathOptions {

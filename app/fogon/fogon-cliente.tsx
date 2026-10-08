@@ -94,7 +94,8 @@ export function FogonCliente() {
 
       <ul className="grid gap-3">
         {lista.map((d) => {
-          const motivo = motivoSinVoto(d, condicion);
+          // Hasta terminar de leer lo guardado (residencia) no se muestra ni el motivo ni el botón.
+          const motivo = listo ? motivoSinVoto(d, condicion) : null;
           const propio = votoPropio(estado, d, condicion);
           const c = contar(d, propio);
           const idTitulo = `dec-${d.id}`;
@@ -113,7 +114,7 @@ export function FogonCliente() {
                   </p>
                 </div>
                 <div className="text-right">
-                  {motivo ? (
+                  {!listo ? null : motivo ? (
                     <span className={`${CHIP} text-muted`}>{motivo}</span>
                   ) : (
                     <button
