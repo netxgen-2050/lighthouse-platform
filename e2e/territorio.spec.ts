@@ -23,7 +23,7 @@ test("territorio inexistente: 404 con vuelta", async ({ page }) => {
 test("el listado completo de tribus ya no está en la página", async ({ page }) => {
   await page.goto("/territorios/lighthouse");
   await expect(page.getByRole("heading", { name: "Mapa del Macrolote 7" })).toBeVisible();
-  await expect(page.locator("main a[href^='/tribus/']")).toHaveCount(0);
+  await expect(page.locator("main a[href^='/tribus/']:not([href$='/manifiesto'])")).toHaveCount(0);
 });
 
 test("barrio 6 por la lista con teclado lleva a Valle Solar", async ({ page }) => {

@@ -7,7 +7,8 @@ import { TerminoLegal } from "@/components/termino-legal";
 import { Medidor } from "@/components/medidor";
 import { destinosDisponibles } from "@/lib/navegacion";
 import { buscarTribu, listarTribus } from "@/lib/tribus/datos";
-import { Acciones, ProponerTribu } from "./acciones";
+import { MembresiaAcciones } from "@/components/membresia-acciones";
+import { ProponerTribu, VerBarrio } from "./acciones";
 
 export const dynamicParams = false;
 
@@ -180,7 +181,12 @@ export default async function TribuPage({ params }: Props) {
         <p className="text-sm text-muted">&ldquo;Si confiás en quien confía en ellos, empezás con confianza.&rdquo;</p>
       </section>
       <div className="mt-4">
-        <Acciones pactos={destinosDisponibles().some((d) => d.href === "/pactos")} />
+        <MembresiaAcciones
+          comunidad={t.id}
+          nombre={t.nombre}
+          pactos={destinosDisponibles().some((d) => d.href === "/pactos")}
+          extra={<VerBarrio />}
+        />
       </div>
     </div>
   );

@@ -46,7 +46,7 @@ test("sin selección: resumen y conteos, sin el listado de tribus", async ({ pag
   expect(await valor("En formación")).toBe(5);
   expect(await valor("Vacantes")).toBe(2);
   await expect(page.getByRole("heading", { name: "Tribus del territorio" })).toHaveCount(1);
-  await expect(page.locator("main a[href^='/tribus/']")).toHaveCount(0);
+  await expect(page.locator("main a[href^='/tribus/']:not([href$='/manifiesto'])")).toHaveCount(0);
 });
 
 test("elegir Valle Solar en el mapa y ir a la tribu", async ({ page }) => {

@@ -269,7 +269,8 @@ test.describe("ficha completa", () => {
     await expect(tooltip).toContainText("La tribu no compra tierra");
   });
 
-  test("sala simulada: anuncia y no cambia la URL", async ({ page }) => {
+  test("sala simulada (siendo miembro): anuncia y no cambia la URL", async ({ page }) => {
+    await page.addInitScript(() => window.localStorage.setItem("lh-membresia", JSON.stringify({ valle: "miembro" })));
     await page.goto("/tribus/valle");
     await page.getByRole("button", { name: "Entrar a la sala" }).click();
     await expect(page.getByText(/Telegram/)).toBeVisible();
@@ -277,9 +278,10 @@ test.describe("ficha completa", () => {
     expect(new URL(page.url()).pathname).toBe("/tribus/valle");
   });
 
-  test("proponer mi pacto lleva a /pactos y ver el barrio al mapa", async ({ page }) => {
+  test("proponer mi pacto (siendo miembro) lleva a /pactos y ver el barrio al mapa", async ({ page }) => {
+    await page.addInitScript(() => window.localStorage.setItem("lh-membresia", JSON.stringify({ valle: "miembro" })));
     await page.goto("/tribus/valle");
-    await expect(page.getByRole("link", { name: "Proponer mi pacto" })).toHaveAttribute("href", "/pactos");
+    await expect(page.getByRole("link", { name: "Proponer mi pacto" })).toHaveAttribute("href", "/pactos?comunidad=valle");
     await page.getByRole("link", { name: "Ver su barrio en el mapa" }).click();
     await expect(page).toHaveURL(/\/territorios\/lighthouse$/);
   });

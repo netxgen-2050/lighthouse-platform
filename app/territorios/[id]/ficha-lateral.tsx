@@ -3,6 +3,8 @@
 import { useId, useState } from "react";
 import Link from "next/link";
 import { EstadoAdministrativo } from "@/components/estado-administrativo";
+import { MembresiaAcciones } from "@/components/membresia-acciones";
+import { destinosDisponibles } from "@/lib/navegacion";
 import { PedidoContacto } from "@/components/pedido-contacto";
 import { SelloTribu } from "@/components/sello-tribu";
 import { referenciaDeFinca } from "@/lib/contactos/pedidos";
@@ -193,6 +195,12 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
           </div>
         ))}
       </dl>
+      <h3 className="font-semibold">Pertenecer al Lighthouse</h3>
+      <MembresiaAcciones
+        comunidad="lighthouse"
+        nombre="Lighthouse"
+        pactos={destinosDisponibles().some((d) => d.href === "/pactos")}
+      />
     </div>
   );
 }
