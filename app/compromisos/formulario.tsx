@@ -2,15 +2,16 @@
 
 import { useEffect, useReducer, useRef, useState } from "react";
 import { cargar, reducir } from "@/lib/compromisos/estado";
-import { describirCompromiso, TEXTO_CLASE, TEXTO_LIGHTHOUSE, TEXTO_TIPO } from "@/lib/compromisos/formato";
+import { describirCantidad, describirCompromiso, TEXTO_CLASE, TEXTO_TIPO } from "@/lib/compromisos/formato";
+import { armarMercado, filtrarMercado, type FiltroMercado } from "@/lib/compromisos/mercado";
 import {
   MAX_BIENES,
   MAX_DESCRIPCION,
   MAX_MONTO,
   MIN_MONTO,
-  PARA_LIGHTHOUSE,
   type Borrador,
   type ClaseCompromiso,
+  type Compromiso,
   type TipoCompromiso,
 } from "@/lib/compromisos/tipos";
 import { validarCompromiso, type CampoError } from "@/lib/compromisos/validar";
@@ -23,7 +24,6 @@ const VACIO: Borrador = {
   horas: "",
   bienes: "",
   monto: "",
-  para: PARA_LIGHTHOUSE,
 };
 
 const campo =
@@ -31,7 +31,7 @@ const campo =
 const boton =
   "rounded-full px-5 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
-export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[] }) {
+export function Formulario() {
   const [lista, despachar] = useReducer(reducir, []);
   const [cargado, setCargado] = useState(false);
   const [b, setB] = useState<Borrador>(VACIO);
@@ -98,7 +98,7 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
     }
     despachar({ tipo: "registrar", compromiso: r.compromiso });
     setErrores({});
-    setB({ ...VACIO, tipo: b.tipo, clase: b.clase, para: b.para });
+    setB({ ...VACIO, tipo: b.tipo, clase: b.clase });
     // Se vacía la región y se vuelve a llenar en el siguiente tick para que el lector
     // anuncie cada registro aunque el texto sea el mismo.
     anunciar("Compromiso registrado.");
@@ -107,7 +107,8 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
   const describe = (k: CampoError) => (errores[k] ? `err-${k}` : undefined);
 
   return (
-    <div className="mt-6 grid gap-8">
+    <div className="mt-6 grid gap-8 lg:grid-cols-2 lg:items-start">
+      <div className="grid gap-8">
       <form onSubmit={enviar} noValidate className="grid gap-5 rounded-xl border border-line bg-surface p-5">
         <fieldset className="grid gap-2">
           <legend className="font-medium">Tipo</legend>
@@ -122,7 +123,7 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
         </fieldset>
 
         <fieldset className="grid gap-2">
-          <legend className="font-medium">Clase</legend>
+          <legend className="font-medium">Medio de intercambio</legend>
           <div className="flex flex-wrap gap-4">
             {(Object.keys(TEXTO_CLASE) as ClaseCompromiso[]).map((c) => (
               <label key={c} className="flex items-center gap-2">
@@ -207,6 +208,10 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
               Es solo una referencia: en el prototipo no se cobra ni se paga nada.
             </p>
           </div>
+        ) : b.clase === "trueque" ? (
+          <p className="text-sm text-muted">
+            En el trueque no se pone cantidad: contá en la descripción qué ofrecés y a cambio de qué.
+          </p>
         ) : (
           <div>
             <label htmlFor="bienes" className="font-medium">
@@ -232,18 +237,6 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
             <p className="mt-1 text-sm text-muted">Hasta {MAX_BIENES} caracteres.</p>
           </div>
         )}
-
-        <div>
-          <label htmlFor="para" className="font-medium">Para quién</label>
-          <select id="para" value={b.para} onChange={(e) => cambiar("para", e.target.value)} className={campo}>
-            <option value={PARA_LIGHTHOUSE}>{TEXTO_LIGHTHOUSE}</option>
-            {tribus.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
 
         <div>
           <button type="submit" className={`${boton} bg-deep text-on-deep hover:bg-deep-2`}>
@@ -287,7 +280,7 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
                 key={c.id}
                 className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-surface p-4"
               >
-                <span>{describirCompromiso(c, tribus)}</span>
+                <span>{describirCompromiso(c)}</span>
                 <button
                   type="button"
                   aria-label={`Quitar ${c.descripcion}`}
@@ -305,6 +298,102 @@ export function Formulario({ tribus }: { tribus: { id: string; nombre: string }[
           </ul>
         )}
       </section>
+      </div>
+      <Mercado propios={lista} />
     </div>
+  );
+}
+
+const TIPOS_FILTRO = ["todos", "ofrezco", "necesito"] as const;
+const CLASES_FILTRO = ["todas", "tiempo", "bienes", "plata", "trueque"] as const;
+
+function Mercado({ propios }: { propios: Compromiso[] }) {
+  const [filtro, setFiltro] = useState<FiltroMercado>({ tipo: "todos", clase: "todas" });
+  const [interesa, setInteresa] = useState<Set<string>>(new Set());
+  const items = filtrarMercado(armarMercado(propios), filtro);
+
+  function alternar(id: string) {
+    setInteresa((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  }
+
+  return (
+    <section aria-labelledby="titulo-mercado" className="grid gap-4">
+      <h2 id="titulo-mercado" className="text-xl font-semibold">Mercado</h2>
+      <p className="rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm">
+        El primer paso para entrar al mercado es publicar una oferta o una necesidad: registrala en el formulario y aparece acá.
+      </p>
+      <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+        Pronto, una inteligencia artificial va a sugerirte el mejor match entre ofertas y necesidades.
+      </p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label htmlFor="filtro-tipo" className="font-medium">Filtrar por tipo</label>
+          <select
+            id="filtro-tipo"
+            value={filtro.tipo}
+            onChange={(e) => setFiltro((f) => ({ ...f, tipo: e.target.value as FiltroMercado["tipo"] }))}
+            className={campo}
+          >
+            {TIPOS_FILTRO.map((t) => (
+              <option key={t} value={t}>{t === "todos" ? "Todos" : TEXTO_TIPO[t]}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="filtro-medio" className="font-medium">Filtrar por medio de intercambio</label>
+          <select
+            id="filtro-medio"
+            value={filtro.clase}
+            onChange={(e) => setFiltro((f) => ({ ...f, clase: e.target.value as FiltroMercado["clase"] }))}
+            className={campo}
+          >
+            {CLASES_FILTRO.map((c) => (
+              <option key={c} value={c}>{c === "todas" ? "Todos" : TEXTO_CLASE[c]}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <p aria-live="polite" className="text-sm text-muted">
+        {items.length === 1 ? "1 publicación" : `${items.length} publicaciones`}
+      </p>
+      {items.length === 0 ? (
+        <p className="text-muted">No hay publicaciones con esos filtros.</p>
+      ) : (
+        <ul className="grid gap-3" aria-label="Publicaciones del mercado">
+          {items.map(({ compromiso: c, autor, propio }) => {
+            const cantidad = describirCantidad(c);
+            const marcado = interesa.has(c.id);
+            return (
+              <li key={c.id} className="grid gap-2 rounded-xl border border-line bg-surface p-4">
+                <p className="text-sm font-medium">
+                  {TEXTO_TIPO[c.tipo]} · {TEXTO_CLASE[c.clase]}
+                  {cantidad !== null && ` · ${cantidad}`}
+                </p>
+                <p>{c.descripcion}</p>
+                <p className="text-sm text-muted">Publica: {autor}</p>
+                {!propio && (
+                  <div>
+                    <button
+                      type="button"
+                      aria-pressed={marcado}
+                      aria-label={`Me interesa: ${c.descripcion}`}
+                      onClick={() => alternar(c.id)}
+                      className={`${boton} border border-faint ${marcado ? "bg-deep text-on-deep" : "bg-surface hover:bg-surface-2"}`}
+                    >
+                      {marcado ? "Te interesa (simulado)" : "Me interesa"}
+                    </button>
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
   );
 }
