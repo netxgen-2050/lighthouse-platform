@@ -106,10 +106,36 @@ nombre: "Barrio 12", iniciales: "+", barrio: 12, foco: "Ecología y biorregión"
   },
 ];
 
+/** Etapa de ejemplo de las tribus en formación (dato de prototipo). */
+const ETAPAS: Record<string, string> = {
+  barda: "Reuniendo socios",
+  monte: "Armando su propuesta",
+  agua: "Armando su propuesta",
+  avelan: "Eligiendo representantes",
+  puerto: "Sumando hogares",
+};
+
+function conEtapa(t: Tribu): Tribu {
+  return t.estado === "formacion" ? { ...t, etapa: ETAPAS[t.id] } : t;
+}
+
 export function listarTribus(): Tribu[] {
-  return [...TRIBUS].sort((a, b) => a.barrio - b.barrio);
+  return TRIBUS.map(conEtapa).sort((a, b) => a.barrio - b.barrio);
 }
 
 export function buscarTribu(id: string): Tribu | undefined {
-  return TRIBUS.find((t) => t.id === id);
+  const t = TRIBUS.find((x) => x.id === id);
+  return t && conEtapa(t);
+}
+
+export type TribusAgrupadas = { activas: Tribu[]; formacion: Tribu[]; vacantes: Tribu[] };
+
+/** Agrupa por estado, cada grupo en orden de barrio. */
+export function agruparPorEstado(tribus: Tribu[] = listarTribus()): TribusAgrupadas {
+  const ordenadas = [...tribus].sort((a, b) => a.barrio - b.barrio);
+  return {
+    activas: ordenadas.filter((t) => t.estado === "activa"),
+    formacion: ordenadas.filter((t) => t.estado === "formacion"),
+    vacantes: ordenadas.filter((t) => t.estado === "vacante"),
+  };
 }

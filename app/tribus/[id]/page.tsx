@@ -100,6 +100,15 @@ export default async function TribuPage({ params }: Props) {
       </div>
       <AvisoEjemplo />
       <Prototipo />
+      {t.estado === "formacion" && (
+        <p
+          role="note"
+          className="mt-4 rounded-lg border border-gold-ink bg-gold-soft px-4 py-3 text-sm font-medium"
+        >
+          Esta comunidad está en formación: todavía no tiene un compromiso firmado con el Lighthouse
+          {t.etapa ? ` (etapa: ${t.etapa})` : ""}.
+        </p>
+      )}
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         <section className={tarjeta}>
           <h2 className="text-lg font-semibold">Lo que tiene</h2>

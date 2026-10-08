@@ -4,7 +4,7 @@ import { listarTribus } from "@/lib/tribus/datos";
 
 test("listado: 12 tarjetas en orden con estado escrito", async ({ page }) => {
   await page.goto("/tribus");
-  const links = page.locator("main ul > li > a");
+  const links = page.locator("main ul > li > a[href^='/tribus/']:not([aria-label])");
   await expect(links).toHaveCount(12);
   await expect(links.first()).toContainText("Barrio 1");
   await expect(links.last()).toContainText("Barrio 12");
@@ -13,6 +13,42 @@ test("listado: 12 tarjetas en orden con estado escrito", async ({ page }) => {
   await expect(page.getByText("Estado: En formación").first()).toBeVisible();
   await expect(page.getByText("Estado: Busca tribu").first()).toBeVisible();
   await expect(page.getByText("Tribus, personas y cifras de ejemplo.")).toBeVisible();
+});
+
+test("listado: tres secciones con 3, 5 y 4 tarjetas", async ({ page }) => {
+  await page.goto("/tribus");
+  const secciones = [
+    ["Tribus activas", "Ya tienen un compromiso con el Lighthouse y están construyendo su barrio.", 3],
+    ["En formación", "Se están organizando para postularse a un barrio del Lighthouse.", 5],
+    ["Barrios vacantes", "Buscan una comunidad. ¿Tenés una?", 4],
+  ] as const;
+  for (const [titulo, texto, n] of secciones) {
+    const sec = page.locator("main section").filter({ has: page.getByRole("heading", { name: titulo, level: 2 }) });
+    await expect(sec.getByText(texto)).toBeVisible();
+    await expect(sec.locator("ul > li")).toHaveCount(n);
+  }
+});
+
+test("listado: tarjetas distintas por estado", async ({ page }) => {
+  await page.goto("/tribus");
+  const tarjeta = (href: string) => page.locator(`main ul > li:has(a[href='${href}'])`).first();
+  const monte = tarjeta("/tribus/monte");
+  await expect(monte).toContainText("Etapa: Armando su propuesta");
+  await expect(monte).toContainText("Roles que busca: Bioconstrucción, Maquinaria");
+  await expect(monte).not.toContainText("pozo común");
+  const valle = tarjeta("/tribus/valle");
+  await expect(valle).toContainText("Aporta al pozo común");
+  await expect(valle).toContainText("hogares");
+  const grano = tarjeta("/tribus/grano");
+  await expect(grano).toContainText("El barrio necesita: Agricultura extensiva, Animales, Molienda");
+  await expect(grano.getByRole("link", { name: /Proponer una comunidad/ })).toHaveAttribute("href", "/tribus/grano");
+});
+
+test("monte: aviso de comunidad en formación; valle no lo tiene", async ({ page }) => {
+  await page.goto("/tribus/monte");
+  await expect(page.getByText("Esta comunidad está en formación: todavía no tiene un compromiso firmado con el Lighthouse")).toBeVisible();
+  await page.goto("/tribus/valle");
+  await expect(page.getByText("Esta comunidad está en formación")).toHaveCount(0);
 });
 
 test("valle: tribu activa", async ({ page }) => {

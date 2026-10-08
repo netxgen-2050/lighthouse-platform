@@ -23,6 +23,8 @@ export type Tribu = {
   plata: { comprometida: number; meta: number };
   /** Roles cubiertos y necesarios. */
   roles: { cubiertos: number; necesarios: number };
+  /** Etapa de ejemplo, solo para las tribus en formación. */
+  etapa?: string;
   /** Cantidad de avales de la red (ejemplo). */
   avales: number;
 };

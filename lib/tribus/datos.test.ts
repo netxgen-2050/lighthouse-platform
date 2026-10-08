@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { buscarTribu, listarTribus } from "./datos";
+import { agruparPorEstado, buscarTribu, listarTribus } from "./datos";
 
 describe("datos de tribus", () => {
   const tribus = listarTribus();
@@ -50,6 +50,13 @@ describe("datos de tribus", () => {
       expect(t.plata.comprometida, t.id).toBeLessThanOrEqual(t.plata.meta);
       expect(t.roles.cubiertos, t.id).toBeLessThanOrEqual(t.roles.necesarios);
     }
+  });
+  it("agruparPorEstado: 3, 5 y 4, y solo las en formación tienen etapa", () => {
+    const g = agruparPorEstado();
+    expect([g.activas.length, g.formacion.length, g.vacantes.length]).toEqual([3, 5, 4]);
+    for (const t of g.formacion) expect(t.etapa, t.id).toBeTruthy();
+    for (const t of [...g.activas, ...g.vacantes]) expect(t.etapa, t.id).toBeUndefined();
+    expect(buscarTribu("monte")?.etapa).toBe("Armando su propuesta");
   });
   it("buscarTribu", () => {
     expect(buscarTribu("valle")?.nombre).toBe("Valle Solar");
