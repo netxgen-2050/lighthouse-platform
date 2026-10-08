@@ -58,8 +58,8 @@ describe("datos de tribus", () => {
     for (const t of [...g.activas, ...g.vacantes]) expect(t.etapa, t.id).toBeUndefined();
     expect(buscarTribu("monte")?.etapa).toBe("Armando su propuesta");
   });
-  it("rutaProponerComunidad apunta a la sección de proponer del barrio", () => {
-    expect(rutaProponerComunidad("grano")).toBe("/tribus/grano#proponer");
+  it("rutaProponerComunidad apunta al formulario de postulación del barrio", () => {
+    expect(rutaProponerComunidad("grano")).toBe("/tribus/grano/postular");
   });
   it("buscarTribu", () => {
     expect(buscarTribu("valle")?.nombre).toBe("Valle Solar");

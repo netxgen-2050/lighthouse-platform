@@ -10,4 +10,5 @@ export const CLAVES = {
   consultasLotes: "lh-consultas-lotes",
   contactos: "lh-contactos",
   bitacora: "lh-bitacora",
+  postulaciones: "lh-postulaciones",
 } as const;
