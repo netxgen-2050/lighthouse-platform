@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { cargar, reducir } from "./estado";
 import { describirCompromiso } from "./formato";
+import { armarMercado, AUTOR_EJEMPLO, EJEMPLOS_MERCADO, filtrarMercado } from "./mercado";
 import type { Borrador, Compromiso } from "./tipos";
 import { nuevoId, validarCompromiso } from "./validar";
 import { afterEach, vi } from "vitest";
@@ -23,7 +24,6 @@ const base: Borrador = {
   horas: "8",
   bienes: "",
   monto: "",
-  para: "semilla",
 };
 
 function errores(b: Borrador) {
@@ -42,7 +42,6 @@ describe("validar", () => {
         clase: "tiempo",
         descripcion: "Taller de compost",
         horasPorMes: 8,
-        para: "semilla",
         creado: "2026-10-07T00:00:00.000Z",
       },
     });
@@ -94,24 +93,22 @@ describe("plata", () => {
   test("monto vacío no guarda monto y se describe como sin dato", () => {
     const r = validarCompromiso({ ...p, monto: "" }, "x");
     expect(r.ok && r.compromiso.montoUsd).toBeUndefined();
-    expect(r.ok && describirCompromiso(r.compromiso, [{ id: "semilla", nombre: "Semilla Viva" }])).toBe(
-      "Ofrezco · Plata · Taller de compost · sin dato · Para: Semilla Viva",
-    );
+    expect(r.ok && describirCompromiso(r.compromiso)).toBe("Ofrezco · Plata · Taller de compost · sin dato");
   });
   test("monto se describe en USD", () => {
     const r = validarCompromiso(p, "x");
-    expect(r.ok && describirCompromiso(r.compromiso, [{ id: "semilla", nombre: "Semilla Viva" }])).toContain("USD 500");
+    expect(r.ok && describirCompromiso(r.compromiso)).toContain("USD 500");
   });
   test("cargar acepta la clase plata", () => {
     const e: Compromiso[] = [
-      { id: "a", tipo: "ofrezco", clase: "plata", descripcion: "a", montoUsd: 5, para: "lighthouse", creado: "2026-10-07T10:00:00Z" },
+      { id: "a", tipo: "ofrezco", clase: "plata", descripcion: "a", montoUsd: 5, creado: "2026-10-07T10:00:00Z" },
     ];
     expect(cargar(JSON.stringify(e))).toEqual(e);
   });
 });
 
 function comp(id: string, creado: string): Compromiso {
-  return { id, tipo: "necesito", clase: "bienes", descripcion: id, para: "lighthouse", creado };
+  return { id, tipo: "necesito", clase: "bienes", descripcion: id, creado };
 }
 
 describe("estado", () => {
@@ -139,24 +136,57 @@ describe("estado", () => {
 });
 
 describe("formato", () => {
-  const tribus = [{ id: "semilla", nombre: "Semilla Viva" }];
-  test("tiempo con tribu", () => {
+  test("tiempo", () => {
     const r = validarCompromiso(base, "x");
-    expect(r.ok && describirCompromiso(r.compromiso, tribus)).toBe(
-      "Ofrezco · Tiempo · Taller de compost · 8 h/mes · Para: Semilla Viva",
-    );
+    expect(r.ok && describirCompromiso(r.compromiso)).toBe("Ofrezco · Tiempo · Taller de compost · 8 h/mes");
   });
-  test("sin cantidad dice sin dato y destino Lighthouse", () => {
+  test("sin cantidad dice sin dato", () => {
     const r = validarCompromiso(
-      { ...base, tipo: "necesito", clase: "bienes", descripcion: "Herramientas de poda", para: "lighthouse" },
+      { ...base, tipo: "necesito", clase: "bienes", descripcion: "Herramientas de poda" },
       "x",
     );
-    expect(r.ok && describirCompromiso(r.compromiso, tribus)).toBe(
-      "Necesito · Bienes · Herramientas de poda · sin dato · Para: El Lighthouse en general",
-    );
+    expect(r.ok && describirCompromiso(r.compromiso)).toBe("Necesito · Bienes · Herramientas de poda · sin dato");
   });
   test("tiempo sin horas dice sin dato", () => {
     const r = validarCompromiso({ ...base, horas: "" }, "x");
-    expect(r.ok && describirCompromiso(r.compromiso, tribus)).toContain("sin dato");
+    expect(r.ok && describirCompromiso(r.compromiso)).toContain("sin dato");
+  });
+  test("trueque no lleva cantidad ni descarta nada de otras clases", () => {
+    const r = validarCompromiso({ ...base, clase: "trueque", horas: "999", bienes: "x", monto: "5" }, "x");
+    expect(r.ok && r.compromiso.horasPorMes).toBeUndefined();
+    expect(r.ok && r.compromiso.cantidadBienes).toBeUndefined();
+    expect(r.ok && r.compromiso.montoUsd).toBeUndefined();
+    expect(r.ok && describirCompromiso(r.compromiso)).toBe("Ofrezco · Trueque · Taller de compost");
+  });
+  test("cargar acepta trueque y compromisos viejos con para", () => {
+    const e = [
+      { id: "a", tipo: "ofrezco", clase: "trueque", descripcion: "a", creado: "2026-10-07T10:00:00Z" },
+      { id: "b", tipo: "ofrezco", clase: "tiempo", descripcion: "b", para: "lighthouse", creado: "2026-10-07T10:00:00Z" },
+    ];
+    expect(cargar(JSON.stringify(e))).toHaveLength(2);
+  });
+});
+
+describe("mercado", () => {
+  const propio = comp("mio", "2026-10-08T10:00:00Z");
+  test("incluye los propios y los de ejemplo, marcando de quién son", () => {
+    const m = armarMercado([propio]);
+    expect(m[0]).toMatchObject({ autor: "Vos", propio: true });
+    expect(m.length).toBe(1 + EJEMPLOS_MERCADO.length);
+    expect(m.slice(1).every((i) => !i.propio && i.autor === AUTOR_EJEMPLO)).toBe(true);
+  });
+  test("los ejemplos cubren cada tipo y cada medio", () => {
+    for (const tipo of ["ofrezco", "necesito"] as const) {
+      for (const clase of ["tiempo", "bienes", "plata", "trueque"] as const) {
+        expect(EJEMPLOS_MERCADO.some((c) => c.tipo === tipo && c.clase === clase), `${tipo} ${clase}`).toBe(true);
+      }
+    }
+  });
+  test("filtra por tipo y por medio", () => {
+    const m = armarMercado([propio]);
+    const r = filtrarMercado(m, { tipo: "necesito", clase: "tiempo" });
+    expect(r.length).toBeGreaterThan(0);
+    expect(r.every((i) => i.compromiso.tipo === "necesito" && i.compromiso.clase === "tiempo")).toBe(true);
+    expect(filtrarMercado(m, { tipo: "todos", clase: "todas" })).toHaveLength(m.length);
   });
 });
