@@ -78,7 +78,13 @@ test("el conteo se anuncia solo al cambiar un filtro, no al registrar", async ({
   await expect(page.getByRole("status")).toHaveText("Compromiso registrado.");
   await expect(vivo).toHaveText("");
   await mercado.getByLabel("Filtrar por tipo").selectOption({ label: "Necesito" });
-  await expect(vivo).toHaveText("4 publicaciones");
+  await expect(vivo).toHaveText("Necesito, todos los medios: 4 publicaciones");
+  // Mismo conteo con otro filtro: el texto igual cambia, así que se vuelve a anunciar.
+  await mercado.getByLabel("Filtrar por tipo").selectOption({ label: "Ofrezco" });
+  await expect(vivo).toHaveText("Ofrezco, todos los medios: 5 publicaciones");
+  // Al registrar algo el anuncio viejo se vacía.
+  await registrar(page, { tipo: "Necesito", descripcion: "Otra cosa", horas: "1" });
+  await expect(vivo).toHaveText("");
 });
 
 test("Me interesa se marca y se desmarca (simulado)", async ({ page }) => {

@@ -314,12 +314,19 @@ function textoConteo(n: number): string {
 function Mercado({ propios }: { propios: Compromiso[] }) {
   const [filtro, setFiltro] = useState<FiltroMercado>({ tipo: "todos", clase: "todas" });
   const [interesa, setInteresa] = useState<Set<string>>(new Set());
-  const [anuncio, setAnuncio] = useState("");
+  // El anuncio guarda la lista de propios con la que se calculó: si cambia (se registra o quita
+  // algo), queda viejo y se deja vacío en vez de decir un número desactualizado.
+  const [anunciado, setAnunciado] = useState<{ texto: string; propios: Compromiso[] } | null>(null);
+  const anuncio = anunciado && anunciado.propios === propios ? anunciado.texto : "";
   const items = filtrarMercado(armarMercado(propios), filtro);
 
   function cambiarFiltro(nuevo: FiltroMercado) {
     setFiltro(nuevo);
-    setAnuncio(textoConteo(filtrarMercado(armarMercado(propios), nuevo).length));
+    const n = filtrarMercado(armarMercado(propios), nuevo).length;
+    // Se nombra el filtro elegido para que el anuncio cambie aunque el conteo sea el mismo.
+    const tipo = nuevo.tipo === "todos" ? "Todos los tipos" : TEXTO_TIPO[nuevo.tipo];
+    const medio = nuevo.clase === "todas" ? "todos los medios" : TEXTO_CLASE[nuevo.clase];
+    setAnunciado({ texto: `${tipo}, ${medio}: ${textoConteo(n)}`, propios });
   }
 
   function alternar(id: string) {
