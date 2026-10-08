@@ -22,10 +22,10 @@ export default function Home() {
         </p>
         <p className="flex flex-wrap items-center gap-4">
           <Link
-            href="/tribus"
+            href="/territorios/lighthouse"
             className="inline-block rounded-full bg-deep px-5 py-3 font-medium text-on-deep hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
           >
-            Ver las tribus
+            Explorar el Lighthouse
           </Link>
           {haySumarte && (
             <Link

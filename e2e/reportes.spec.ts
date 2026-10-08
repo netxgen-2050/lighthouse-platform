@@ -23,6 +23,13 @@ for (const ruta of ["/", "/tribus/valle", "/sumarte", "/netx"]) {
   });
 }
 
+test("el botón Reportar muestra un ícono decorativo y el texto", async ({ page }) => {
+  await page.goto("/");
+  const boton = page.getByRole("button", { name: NOMBRE_BOTON });
+  await expect(boton).toContainText("Reportar");
+  await expect(boton.locator("svg[aria-hidden='true']")).toHaveCount(1);
+});
+
 test("celular 390 x 844: el botón se ve, no tapa el rail y no hay scroll horizontal", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");

@@ -20,9 +20,9 @@ export function caminosDePortada(): Camino[] {
   return [
     {
       etiqueta: "Descubrir",
-      titulo: "Explorar el Lighthouse",
+      titulo: "Ver las tribus",
       descripcion: descripcionBarrios(barrios),
-      href: "/territorios/lighthouse",
+      href: "/tribus",
     },
     {
       etiqueta: "Encontrarse",

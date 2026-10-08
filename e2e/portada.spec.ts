@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { tribusDeTerritorio } from "@/lib/territorios/datos";
 
 const CAMINOS = [
-  { titulo: "Explorar el Lighthouse", href: "/territorios/lighthouse" },
+  { titulo: "Ver las tribus", href: "/tribus" },
   { titulo: "Encontrar mi tribu", href: "/perfil" },
   { titulo: "Congreso · Feb 2027", href: "/congreso" },
 ];
@@ -15,7 +15,9 @@ test("la portada responde", async ({ page }) => {
 test("muestra los tres caminos en orden, con titular y botón", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Encontrá tu tribu");
-  await expect(page.getByRole("link", { name: "Ver las tribus" })).toBeVisible();
+  const principal = page.getByRole("link", { name: "Explorar el Lighthouse", exact: true });
+  await expect(principal).toBeVisible();
+  await expect(principal).toHaveAttribute("href", "/territorios/lighthouse");
   await expect(page.getByRole("heading", { level: 2, name: "Por dónde empezar" })).toBeVisible();
   const seccion = page.getByRole("region", { name: "Por dónde empezar" });
   const titulos = await seccion.getByRole("heading", { level: 3 }).allTextContents();
@@ -25,10 +27,10 @@ test("muestra los tres caminos en orden, con titular y botón", async ({ page })
 for (const camino of CAMINOS) {
   test(`el camino "${camino.titulo}" apunta a ${camino.href}`, async ({ page }) => {
     await page.goto("/");
-    const enlace = page.getByRole("link", { name: new RegExp(camino.titulo) });
+    const enlace = page
+      .getByRole("region", { name: "Por dónde empezar" })
+      .getByRole("link", { name: new RegExp(camino.titulo) });
     await expect(enlace).toHaveAttribute("href", camino.href);
-    // /territorios/lighthouse la trae la rama de integración: acá solo se navega a las que existen.
-    if (camino.href === "/territorios/lighthouse") return;
     await enlace.click();
     await expect(page).toHaveURL(new RegExp(`${camino.href}$`));
     // La navegación del cliente no expone el estado: se pide la ruta aparte y se mira que no sea la not-found.
@@ -67,7 +69,7 @@ test("se recorre con Tab y Enter lleva a /perfil", async ({ page }) => {
 test("la cantidad de barrios sale de los datos", async ({ page }) => {
   await page.goto("/");
   const n = tribusDeTerritorio("lighthouse").length;
-  await expect(page.getByRole("link", { name: /Explorar el Lighthouse/ })).toContainText(
+  await expect(page.getByRole("link", { name: /Ver las tribus/ }).last()).toContainText(
     `${n} barrios`,
   );
 });

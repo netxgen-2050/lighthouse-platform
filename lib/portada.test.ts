@@ -5,7 +5,7 @@ import { tribusDeTerritorio } from "./territorios/datos";
 describe("portada", () => {
   it("devuelve los tres caminos en orden", () => {
     expect(caminosDePortada().map((c) => c.href)).toEqual([
-      "/territorios/lighthouse",
+      "/tribus",
       "/perfil",
       "/congreso",
     ]);
