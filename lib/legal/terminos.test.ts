@@ -12,6 +12,7 @@ describe("catálogo legal", () => {
   it("las claves del catálogo", () => {
     expect(Object.keys(TERMINOS).sort()).toEqual(
       [
+        "adhesion",
         "adherente",
         "agencia",
         "bitacora",
