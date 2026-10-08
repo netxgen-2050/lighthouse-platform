@@ -1,5 +1,5 @@
 import { CLAVES } from "@/lib/demo/claves";
-import { leer as leerPactos } from "@/lib/pactos/estado";
+import { leer as leerPactos, pactosAceptados } from "@/lib/pactos/estado";
 import { clave,type Notas } from "./calculo";
 
 export const CLAVE_RONDA = CLAVES.semillasRonda;
@@ -31,13 +31,16 @@ export function leerRonda(crudo: string | null): Ronda {
   }
 }
 
-/** Pacto de tiempo aceptado (paso 2) guardado por /pactos, o null. */
+/**
+ * Pactos de tiempo aceptados guardados por /pactos (todas las comunidades), o null si no hay ninguno.
+ * Desde `pactos-v2` ya no hay parte en caja: todo el tiempo comprometido es Semillas (parteSemilla = 100).
+ */
 export function pactoAceptado(crudo: string | null): { horas: number; parteSemilla: number } | null {
   if (!crudo) return null;
-  // leer() de /pactos acota horas y porcentaje a sus rangos válidos.
-  const e = leerPactos(crudo);
-  // Solo el pacto de tiempo suma Semillas de tiempo; plata y convivencia no.
-  return e.paso === 2 && e.pestana === "tiempo" ? { horas: e.horas, parteSemilla: e.parteSemilla } : null;
+  // leer() de /pactos descarta lo raro y acota las horas a su rango válido.
+  const aceptados = pactosAceptados(leerPactos(crudo));
+  if (aceptados.length === 0) return null;
+  return { horas: aceptados.reduce((s, p) => s + p.horas, 0), parteSemilla: 100 };
 }
 
 /** Nivel del Pase activo guardado por /sumarte, o null. */

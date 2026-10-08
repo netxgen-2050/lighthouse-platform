@@ -56,19 +56,27 @@ describe("ronda de reconocimiento", () => {
 describe("lectura de otras pantallas", () => {
   it("el pacto cuenta solo si está aceptado", () => {
     expect(pactoAceptado(null)).toBeNull();
-    expect(pactoAceptado(JSON.stringify({ paso: 1, horas: 20, parteSemilla: 50 }))).toBeNull();
-    expect(pactoAceptado(JSON.stringify({ paso: 2, horas: 20, parteSemilla: 50 }))).toEqual({ horas: 20, parteSemilla: 50 });
+    const tiempo = (paso: number, horas: number) => ({
+      tiempo: { rol: "facilitacion", descripcion: "Facilito las asambleas", horas, paso },
+      aportes: [],
+    });
+    const guardado = (comunidades: object) => JSON.stringify({ pestana: "tiempo", comunidades });
+    expect(pactoAceptado(guardado({ lighthouse: tiempo(1, 20) }))).toBeNull();
+    expect(pactoAceptado(guardado({ lighthouse: tiempo(2, 20) }))).toEqual({ horas: 20, parteSemilla: 100 });
     expect(pactoAceptado("{")).toBeNull();
   });
-  it("solo el pacto de tiempo suma: plata y convivencia no", () => {
-    const base = { paso: 2, horas: 20, parteSemilla: 50 };
-    expect(pactoAceptado(JSON.stringify({ ...base, pestana: "tiempo" }))).toEqual({ horas: 20, parteSemilla: 50 });
-    expect(pactoAceptado(JSON.stringify({ ...base, pestana: "plata" }))).toBeNull();
-    expect(pactoAceptado(JSON.stringify({ ...base, pestana: "convivencia" }))).toBeNull();
+  it("suma las horas de los pactos aceptados de todas las comunidades; los aportes en plata no entran", () => {
+    const tiempo = (paso: number, horas: number) => ({
+      tiempo: { rol: "jardineria", descripcion: "Huerta", horas, paso },
+      aportes: [200],
+    });
+    const crudo = JSON.stringify({ comunidades: { lighthouse: tiempo(2, 10), agua: tiempo(2, 6), barda: tiempo(0, 40) } });
+    expect(pactoAceptado(crudo)).toEqual({ horas: 16, parteSemilla: 100 });
   });
-  it("horas y porcentaje fuera de rango se acotan", () => {
-    expect(pactoAceptado(JSON.stringify({ paso: 2, horas: 1e9, parteSemilla: 500 }))).toEqual({ horas: 80, parteSemilla: 100 });
-    expect(pactoAceptado(JSON.stringify({ paso: 2, horas: -5, parteSemilla: -1 }))).toEqual({ horas: 4, parteSemilla: 0 });
+  it("el formato anterior (un solo pacto) ya no cuenta, y las horas fuera de rango se acotan", () => {
+    expect(pactoAceptado(JSON.stringify({ paso: 2, horas: 20, parteSemilla: 50 }))).toBeNull();
+    const enorme = { tiempo: { rol: "facilitacion", descripcion: "x", horas: 1e9, paso: 2 }, aportes: [] };
+    expect(pactoAceptado(JSON.stringify({ comunidades: { lighthouse: enorme } }))).toEqual({ horas: 80, parteSemilla: 100 });
   });
   it("el pase", () => {
     expect(paseActivo(JSON.stringify({ pase: "brote" }))).toBe("brote");

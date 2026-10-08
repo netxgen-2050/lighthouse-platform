@@ -1,10 +1,17 @@
 import { expect, test, type Page } from "@playwright/test";
 
-async function conPacto(page: Page, horas: number, parteSemilla = 50) {
+async function conPacto(page: Page, horas: number, paso = 2) {
   await page.goto("/semillas");
   await page.evaluate(
-    ([h, p]) => window.localStorage.setItem("lh-pactos", JSON.stringify({ horas: h, parteSemilla: p, paso: 2 })),
-    [horas, parteSemilla],
+    ([h, p]) =>
+      window.localStorage.setItem(
+        "lh-pactos",
+        JSON.stringify({
+          pestana: "tiempo",
+          comunidades: { lighthouse: { tiempo: { rol: "facilitacion", rolOtro: "", descripcion: "Facilito", horas: h, paso: p }, aportes: [] } },
+        }),
+      ),
+    [horas, paso],
   );
   await page.reload();
 }
@@ -53,14 +60,14 @@ test("la escalera muestra los cinco pasos con su estado en texto", async ({ page
 
 test("con un pacto de 20 h/mes aceptado se ve el medidor de 120", async ({ page }) => {
   await conPacto(page, 20);
-  await expect(page.getByTestId("semillas-tiempo")).toHaveText("150 semillas");
-  await expect(page.getByTestId("medidor")).toHaveText("150 de 120 semillas");
+  await expect(page.getByTestId("semillas-tiempo")).toHaveText("303 semillas");
+  await expect(page.getByTestId("medidor")).toHaveText("303 de 120 semillas");
   await expect(page.getByText("Lista", { exact: true })).toBeVisible();
 });
 
 test("con un pacto chico el estado es En camino", async ({ page }) => {
-  await conPacto(page, 10);
-  await expect(page.getByTestId("medidor")).toHaveText("75 de 120 semillas");
+  await conPacto(page, 4);
+  await expect(page.getByTestId("medidor")).toHaveText("60 de 120 semillas");
   await expect(page.getByText("En camino", { exact: true })).toBeVisible();
 });
 
@@ -94,12 +101,8 @@ test("con un Pase activo, la frase 'un servicio que no suma semillas' lleva el ‚
   await expect(page.getByRole("tooltip")).toContainText("Pase Fundador");
 });
 
-test("un pacto de convivencia aceptado no suma semillas de tiempo", async ({ page }) => {
-  await page.goto("/semillas");
-  await page.evaluate(() =>
-    window.localStorage.setItem("lh-pactos", JSON.stringify({ pestana: "convivencia", horas: 20, parteSemilla: 50, paso: 2 })),
-  );
-  await page.reload();
+test("un pacto enviado pero no aceptado no suma semillas de tiempo", async ({ page }) => {
+  await conPacto(page, 20, 1);
   await expect(page.getByRole("link", { name: "Propon√© un pacto de tiempo" })).toBeVisible();
   await expect(page.getByTestId("semillas-tiempo")).toHaveCount(0);
 });
@@ -115,7 +118,7 @@ test("ronda de reconocimiento: hay que puntuar las cuatro notas y se ve el facto
   await enviar.click();
   await expect(page.getByText("Ronda enviada (simulado)")).toBeVisible();
   await expect(page.getByTestId("factor")).toHaveText("1,0");
-  await expect(page.getByTestId("semillas-tiempo")).toHaveText("150 semillas");
+  await expect(page.getByTestId("semillas-tiempo")).toHaveText("303 semillas");
   await page.reload();
   await expect(page.getByText("Ronda enviada (simulado)")).toBeVisible();
 });
