@@ -77,7 +77,11 @@ test("las Semillas por mes son horas × valor de referencia y no hay caja ni cob
 test("no se puede enviar sin rol y descripción", async ({ page }) => {
   await comoMiembro(page);
   await page.goto("/pactos");
-  await expect(page.getByRole("button", { name: "Enviar a la comunidad" })).toBeDisabled();
+  const enviar = page.getByRole("button", { name: "Enviar a la comunidad" });
+  await expect(enviar).toBeDisabled();
+  await expect(enviar).toHaveAccessibleDescription(/elegí un rol/);
+  await enviar.focus();
+  await expect(enviar).toBeFocused();
   await llenarPacto(page);
   await expect(page.getByRole("button", { name: "Enviar a la comunidad" })).toBeEnabled();
 });
@@ -142,7 +146,10 @@ test("tooltip 🌱 de Semillas con teclado: Tab lo abre y Escape lo cierra", asy
   await page.goto("/pactos");
   const boton = page.getByRole("button", { name: "Qué significa en la economía de la comunidad: Semillas" });
   await expect(boton).toBeVisible();
-  await boton.focus();
+  // Navegación real con teclado: Tab hasta que el foco llegue al botón 🌱.
+  for (let i = 0; i < 40 && !(await boton.evaluate((el) => el === document.activeElement)); i++) {
+    await page.keyboard.press("Tab");
+  }
   await expect(boton).toBeFocused();
   const tooltip = page.getByRole("tooltip");
   await expect(tooltip).toContainText("potencial de acceso");

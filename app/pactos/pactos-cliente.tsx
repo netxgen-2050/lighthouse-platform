@@ -27,7 +27,7 @@ import { buscarTribu } from "@/lib/tribus/datos";
 
 // Todo queda solo en este navegador: no hay pedidos de red ni cobros.
 const BOTON =
-  "w-fit rounded-lg px-4 py-1.5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep disabled:cursor-not-allowed disabled:opacity-60";
+  "w-fit rounded-lg px-4 py-1.5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep disabled:cursor-not-allowed disabled:opacity-60 aria-disabled:cursor-not-allowed aria-disabled:opacity-60";
 const BOTON_PRIMARIO = `${BOTON} bg-deep text-on-deep hover:bg-deep-2`;
 const BOTON_DORADO = `${BOTON} bg-gold text-ink hover:bg-gold-soft`;
 const AVISO = "rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink";
@@ -47,6 +47,7 @@ export function PactosCliente() {
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [listo, setListo] = useState(false);
   const foco = useRef(false);
+  const [anuncio, setAnuncio] = useState("");
   // Lo que la persona cargó en "Tus datos"; lo que no cargó queda sin dato.
   const [datos, setDatos] = useState<DatosPersona>(DATOS_VACIOS);
   // Comunidades donde la persona es miembro: solo ahí puede proponer un pacto.
@@ -86,7 +87,13 @@ export function PactosCliente() {
       // No se pudo guardar: la pantalla sigue respondiendo en memoria y se avisa.
       setFalloAlmacen(true);
     }
-    if (accion.tipo === "avanzar") foco.current = true;
+    if (accion.tipo === "avanzar") {
+      foco.current = true;
+      // Solo se anuncia lo que provoca la persona en esta sesión, no lo que ya estaba guardado.
+      const paso = deComunidad(siguiente, accion.comunidad).tiempo.paso;
+      const donde = nombreComunidad(accion.comunidad);
+      setAnuncio(paso === 1 ? `Pacto enviado a ${donde}.` : paso === 2 ? `Quien administra ${donde} aceptó el pacto.` : "");
+    }
     setEstado(siguiente);
   }
 
@@ -137,7 +144,10 @@ export function PactosCliente() {
           <span className="font-medium">¿En qué comunidad es el pacto?</span>
           <select
             value={comunidad}
-            onChange={(e) => setElegida(e.target.value)}
+            onChange={(e) => {
+              setAnuncio("");
+              setElegida(e.target.value);
+            }}
             className={`${CAMPO} w-fit`}
           >
             {miembro.map((id) => (
@@ -153,23 +163,25 @@ export function PactosCliente() {
       </section>
 
       <section aria-label="Estado del pacto" className="grid gap-4 rounded-xl border border-faint bg-surface p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <ol className="flex flex-wrap gap-2" aria-label="Pasos del pacto">
-            {PASOS.map((p, i) => (
-              <li
-                key={p}
-                aria-current={i === t.paso ? "step" : undefined}
-                className={`rounded-full border px-3 py-1 text-sm ${
-                  i <= t.paso ? "border-deep bg-green-soft font-medium text-deep" : "border-faint text-muted"
-                }`}
-              >
-                {i < t.paso ? "✓ " : ""}
-                {p}
-              </li>
-            ))}
-          </ol>
-          <span className="text-sm text-muted">Versión {t.paso + 1}</span>
-        </div>
+        {estado.pestana === "tiempo" && (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <ol className="flex flex-wrap gap-2" aria-label="Pasos del pacto">
+              {PASOS.map((p, i) => (
+                <li
+                  key={p}
+                  aria-current={i === t.paso ? "step" : undefined}
+                  className={`rounded-full border px-3 py-1 text-sm ${
+                    i <= t.paso ? "border-deep bg-green-soft font-medium text-deep" : "border-faint text-muted"
+                  }`}
+                >
+                  {i < t.paso ? "✓ " : ""}
+                  {p}
+                </li>
+              ))}
+            </ol>
+            <span className="text-sm text-muted">Versión {t.paso + 1}</span>
+          </div>
+        )}
 
         <div role="tablist" aria-label="Tipo de pacto" className="flex flex-wrap gap-2 border-b border-line pb-2">
           {PESTANAS.map(([clave, titulo], i) => {
@@ -376,13 +388,18 @@ export function PactosCliente() {
                   type="button"
                   data-foco-paso
                   className={BOTON_PRIMARIO}
-                  disabled={!pactoCompleto(t)}
-                  onClick={() => dispatch({ tipo: "avanzar", comunidad })}
+                  aria-disabled={!pactoCompleto(t)}
+                  aria-describedby={!pactoCompleto(t) ? "ayuda-enviar" : undefined}
+                  onClick={() => {
+                    if (pactoCompleto(t)) dispatch({ tipo: "avanzar", comunidad });
+                  }}
                 >
                   Enviar a la comunidad
                 </button>
                 {!pactoCompleto(t) && (
-                  <span className="text-sm text-muted">Para enviarlo elegí un rol y contá qué vas a hacer.</span>
+                  <span id="ayuda-enviar" className="text-sm text-muted">
+                    Para enviarlo elegí un rol y contá qué vas a hacer.
+                  </span>
                 )}
               </>
             )}
@@ -406,11 +423,7 @@ export function PactosCliente() {
           </div>
         )}
         <p role="status" className="sr-only">
-          {t.paso === 1
-            ? `Pacto enviado a ${nombre}.`
-            : t.paso === 2
-              ? `Quien administra ${nombre} aceptó el pacto.`
-              : ""}
+          {anuncio}
         </p>
       </section>
     </div>
