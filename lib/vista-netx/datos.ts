@@ -6,7 +6,7 @@ import type { Tribu } from "@/lib/tribus/tipos";
 
 export const INDICADORES = [
   { numero: "412", etiqueta: "perfiles completos" },
-  { numero: "9", etiqueta: "tribus activas" },
+  { numero: String(listarTribus().filter((t) => t.estado === "activa").length), etiqueta: "tribus activas" },
   { numero: "37", etiqueta: "pactos aceptados" },
   { numero: "USD 1,2 M", etiqueta: "en el espejo de aportes" },
   { numero: "640 h", etiqueta: "horas comprometidas por mes" },
@@ -51,10 +51,10 @@ const AVANCE: Record<string, { plata: readonly [number, number]; roles: readonly
   valle: { plata: [310000, 480000], roles: [9, 14] },
   taller: { plata: [90000, 150000], roles: [7, 9] },
   cuidado: { plata: [0, 200000], roles: [0, 9] },
-  escuela: { plata: [70000, 240000], roles: [4, 10] },
+  escuela: { plata: [0, 240000], roles: [0, 10] },
   avelan: { plata: [140000, 650000], roles: [5, 12] },
   puerto: { plata: [260000, 400000], roles: [7, 11] },
-  guardia: { plata: [30000, 120000], roles: [3, 6] },
+  guardia: { plata: [0, 120000], roles: [0, 6] },
 };
 
 /** Une cada tribu con su avance; si una tribu no tiene avance, plata y roles quedan en null (sin dato, no 0). */

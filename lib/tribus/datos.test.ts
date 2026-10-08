@@ -17,6 +17,12 @@ describe("datos de tribus", () => {
       expect(v.pozo).toBeUndefined();
     }
   });
+  it("distribución 3 activas, 5 en formación y 4 vacantes (3, 8, 9 y 12)", () => {
+    const ids = (e: string) => tribus.filter((t) => t.estado === e).map((t) => t.barrio);
+    expect(ids("activa")).toEqual([1, 6, 7]);
+    expect(ids("formacion")).toEqual([2, 4, 5, 10, 11]);
+    expect(ids("vacante")).toEqual([3, 8, 9, 12]);
+  });
   it("plata, roles y avales coinciden con el mock-up v6 (las 12)", () => {
     const mock = readFileSync(
       path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"),
@@ -27,9 +33,11 @@ describe("datos de tribus", () => {
         new RegExp(`id:"${t.id}",[\\s\\S]*?cap:\\[(\\d+),(\\d+)\\], hum:\\[(\\d+),(\\d+)\\][\\s\\S]*?avales:(\\d+)`),
       );
       expect(m, t.id).not.toBeNull();
-      expect(t.plata, t.id).toEqual({ comprometida: Number(m![1]), meta: Number(m![2]) });
-      expect(t.roles, t.id).toEqual({ cubiertos: Number(m![3]), necesarios: Number(m![4]) });
-      expect(t.avales, t.id).toBe(Number(m![5]));
+      // Barrios 9 y 12 pasaron a vacantes el 8-oct-2026: conservan meta y roles necesarios, sin lo comprometido.
+      const vacanteNueva = t.id === "escuela" || t.id === "guardia";
+      expect(t.plata, t.id).toEqual({ comprometida: vacanteNueva ? 0 : Number(m![1]), meta: Number(m![2]) });
+      expect(t.roles, t.id).toEqual({ cubiertos: vacanteNueva ? 0 : Number(m![3]), necesarios: Number(m![4]) });
+      expect(t.avales, t.id).toBe(vacanteNueva ? 0 : Number(m![5]));
     }
   });
   it("valle, avelan y grano con los valores esperados", () => {

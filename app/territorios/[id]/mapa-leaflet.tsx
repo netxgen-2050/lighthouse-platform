@@ -39,9 +39,9 @@ function estiloBarrio(estado: EstadoTribu): PathOptions {
 }
 
 function estiloFinca(estado: EstadoFinca | undefined): PathOptions {
-  if (estado === "disponible") return { color: token("deep"), weight: 1, fillColor: token("green"), fillOpacity: 0.55 };
+  if (estado === "disponible") return { color: token("blue-soft"), weight: 1, fillColor: token("blue"), fillOpacity: 0.55 };
   if (estado === "reservada")
-    return { color: token("gold-ink"), weight: 1.5, dashArray: "3 3", fillColor: token("gold"), fillOpacity: 0.6 };
+    return { color: token("clay-ink"), weight: 1.5, dashArray: "3 3", fillColor: token("clay"), fillOpacity: 0.6 };
   return { color: token("muted"), weight: 1.5, dashArray: "1 4", lineCap: "round", fillColor: token("gray"), fillOpacity: 0.6 };
 }
 
@@ -137,7 +137,7 @@ export default function MapaLeaflet({ seleccion, alElegir }: Props) {
         fillOpacity: 0.08,
       }).addTo(mapa);
       const comun = terrenoComun();
-      const baseComun: PathOptions = { color: token("gold-ink"), weight: 2, fillColor: token("gold-soft"), fillOpacity: 0.6 };
+      const baseComun: PathOptions = { color: token("violet"), weight: 2, fillColor: token("violet-soft"), fillOpacity: 0.6 };
       registrar(comun.id, L.polygon(aLatLng(comun.anillo), { renderer, ...baseComun }).addTo(mapa), baseComun);
 
       const barrios = listarBarrios();

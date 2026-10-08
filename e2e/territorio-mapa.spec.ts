@@ -24,7 +24,10 @@ test("ver el macrolote: 12 barrios, común y aviso de distribución ilustrativa"
 
 test("leyenda con texto para cada estado", async ({ page }) => {
   await abrir(page);
-  const leyenda = region(page).getByRole("list", { name: "Leyenda del mapa" });
+  const leyenda = region(page).getByRole("group", { name: "Leyenda del mapa" });
+  for (const g of ["Lighthouse · Macrolote 7", "Chacras de Soluna · venta privada", "Lugares de interés"]) {
+    await expect(leyenda.getByRole("list", { name: g })).toBeVisible();
+  }
   for (const t of [
     "Barrio con tribu activa",
     "Barrio con tribu en formación",
@@ -42,9 +45,9 @@ test("sin selección: resumen y conteos, sin el listado de tribus", async ({ pag
   await abrir(page);
   const valor = async (etiqueta: string) =>
     Number(await ficha(page).locator("dl > div", { hasText: etiqueta }).locator("dd").innerText());
-  expect(await valor("Activas")).toBe(5);
+  expect(await valor("Activas")).toBe(3);
   expect(await valor("En formación")).toBe(5);
-  expect(await valor("Vacantes")).toBe(2);
+  expect(await valor("Vacantes")).toBe(4);
   await expect(page.getByRole("heading", { name: "Tribus del territorio" })).toHaveCount(1);
   await expect(page.locator("main a[href^='/tribus/']")).toHaveCount(0);
 });
