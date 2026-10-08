@@ -185,6 +185,13 @@ export const TERMINOS = {
       "Anotamos qué estado del loteo y qué explicaciones legales te mostramos, y cuándo, para poder probar con qué información contabas al decidir (Ley 24.240 de Defensa del Consumidor). En el prototipo queda solo en este navegador, no tiene datos personales y se borra con 'Borrar todo'.",
     borrador: true,
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  adhesion: {
+    titulo: "Adherir a un manifiesto",
+    texto:
+      "Adherir es aceptar por escrito las reglas de convivencia de una comunidad. No te hace dueño de nada ni te obliga a pagar: te compromete a cuidar esos acuerdos, y la comunidad decide si te acepta. Podés retirarte siguiendo lo que diga el propio manifiesto. En el prototipo todo es simulado y queda solo en este navegador.",
+    borrador: true,
+  },
 } as const;
 
 /** Claves de los textos que son borrador (no vienen del mock-up). */
