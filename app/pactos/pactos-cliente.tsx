@@ -398,7 +398,9 @@ export function PactosCliente() {
                 </button>
                 {!pactoCompleto(t) && (
                   <span id="ayuda-enviar" className="text-sm text-muted">
-                    Para enviarlo elegí un rol y contá qué vas a hacer.
+                    {t.rol === "otro" && !t.rolOtro.trim() && t.descripcion.trim()
+                      ? "Para enviarlo nombrá el rol."
+                      : "Para enviarlo elegí un rol y contá qué vas a hacer."}
                   </span>
                 )}
               </>

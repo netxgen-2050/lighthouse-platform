@@ -104,6 +104,42 @@ test("enviar, aceptar y seguir aceptado al recargar", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Enviar a la comunidad" })).toHaveCount(0);
 });
 
+test("con rol Otro sin nombre, el motivo pide nombrar el rol", async ({ page }) => {
+  await comoMiembro(page);
+  await page.goto("/pactos");
+  await page.getByLabel(/Rol que asumís/).selectOption({ label: "Otro" });
+  await page.getByLabel("Tu descripción: qué vas a hacer").fill("Ayudo con lo que haga falta");
+  await expect(page.getByRole("button", { name: "Enviar a la comunidad" })).toHaveAccessibleDescription(/nombrá el rol/);
+});
+
+test("al recargar con el pacto enviado o aceptado no se anuncia nada", async ({ page }) => {
+  await comoMiembro(page);
+  await page.goto("/pactos");
+  await llenarPacto(page);
+  await page.getByRole("button", { name: "Enviar a la comunidad" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Pacto enviado" })).toHaveCount(1);
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Simular: la comunidad acepta" })).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: /Pacto enviado|aceptó el pacto/ })).toHaveCount(0);
+  await page.getByRole("button", { name: "Simular: la comunidad acepta" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "aceptó el pacto" })).toHaveCount(1);
+  await page.reload();
+  await expect(page.getByText("Pacto aceptado")).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: /Pacto enviado|aceptó el pacto/ })).toHaveCount(0);
+});
+
+test("la pestaña de plata no muestra los pasos ni la versión del pacto de tiempo", async ({ page }) => {
+  await comoMiembro(page);
+  await page.goto("/pactos");
+  await llenarPacto(page);
+  await page.getByRole("button", { name: "Enviar a la comunidad" }).click();
+  await expect(page.getByRole("list", { name: "Pasos del pacto" })).toBeVisible();
+  await expect(page.getByText(/Versión \d/)).toBeVisible();
+  await page.getByRole("tab", { name: "Sumarte con plata" }).click();
+  await expect(page.getByRole("list", { name: "Pasos del pacto" })).toHaveCount(0);
+  await expect(page.getByText(/Versión \d/)).toHaveCount(0);
+});
+
 test("el pacto aceptado se guarda por comunidad y suma en /semillas", async ({ page }) => {
   await comoMiembro(page, ["lighthouse", "semilla"]);
   await page.goto("/pactos?comunidad=semilla");
