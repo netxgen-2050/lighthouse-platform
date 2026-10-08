@@ -14,11 +14,11 @@ export const FORMAS_JURIDICAS: Record<FormaJuridica, string> = {
 };
 
 /** Requisitos de ejemplo que se muestran antes del formulario. */
-export const REQUISITOS: string[] = [
-  "Un grupo de al menos 3 hogares.",
-  "Una persona responsable de la postulación.",
-  "Adherir al Pacto de convivencia del Lighthouse y a la regeneración de la tierra.",
-  "Disponibilidad para una llamada con el equipo.",
+export const REQUISITOS: { texto: string; legal?: "pacto" }[] = [
+  { texto: "Un grupo de al menos 3 hogares." },
+  { texto: "Una persona responsable de la postulación." },
+  { texto: "Adherir al Pacto de convivencia del Lighthouse y a la regeneración de la tierra.", legal: "pacto" },
+  { texto: "Disponibilidad para una llamada con el equipo." },
 ];
 
 export const BORRADOR_VACIO: Borrador = {

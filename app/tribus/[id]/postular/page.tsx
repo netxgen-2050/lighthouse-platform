@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
+import { TerminoLegal } from "@/components/termino-legal";
 import { REQUISITOS } from "@/lib/postulaciones/postulaciones";
 import { buscarTribu, listarTribus } from "@/lib/tribus/datos";
 import { FormularioPostulacion } from "./formulario";
@@ -46,7 +47,10 @@ export default async function PostularPage({ params }: Props) {
         </h2>
         <ul className="list-disc pl-5">
           {REQUISITOS.map((r) => (
-            <li key={r}>{r}</li>
+            <li key={r.texto}>
+              {r.texto}
+              {r.legal && <TerminoLegal clave={r.legal} />}
+            </li>
           ))}
         </ul>
       </section>

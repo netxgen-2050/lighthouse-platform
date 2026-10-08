@@ -8,11 +8,14 @@ import type { Postulacion } from "@/lib/postulaciones/tipos";
 const CARTA = "rounded-xl border border-faint bg-surface p-4";
 
 export function PostulacionesComunidades() {
-  // null = todavía no se leyó el navegador (evita romper la hidratación).
+  // leido = false: todavía no se leyó el navegador (evita romper la hidratación).
+  // lista null con leido = true: el navegador no deja leer (sin dato, no cero).
+  const [leido, setLeido] = useState(false);
   const [lista, setLista] = useState<Postulacion[] | null>(null);
 
   useEffect(() => {
     setLista(leerPostulacionesDelNavegador());
+    setLeido(true);
   }, []);
 
   return (
@@ -21,8 +24,10 @@ export function PostulacionesComunidades() {
         Postulaciones de comunidades · este navegador (simulado)
       </h2>
       <p className="mb-3 text-sm text-muted">En el producto real las revisaría un administrador del Lighthouse.</p>
-      {lista === null ? (
+      {!leido ? (
         <p>Cargando postulaciones…</p>
+      ) : lista === null ? (
+        <p data-testid="total-postulaciones">sin dato (el navegador no deja leer lo guardado)</p>
       ) : (
         <>
           <p>

@@ -22,7 +22,7 @@ type Def = {
   campo: CampoBorrador;
   etiqueta: string;
   obligatorio?: boolean;
-  tipo?: "texto" | "numero" | "largo";
+  tipo?: "texto" | "numero" | "largo" | "forma";
   ayuda?: string;
 };
 
@@ -66,7 +66,7 @@ const GRUPOS: Grupo[] = [
   {
     titulo: "5. Forma jurídica",
     legal: "personeria",
-    campos: [],
+    campos: [{ campo: "formaJuridica", etiqueta: "Forma jurídica actual o prevista", obligatorio: true, tipo: "forma" }],
   },
   {
     titulo: "6. Decisiones y entrada",
@@ -101,10 +101,7 @@ const GRUPOS: Grupo[] = [
 ];
 
 // Orden en pantalla, para llevar el foco al primer error.
-const ORDEN: CampoBorrador[] = [
-  "nombreComunidad", "lider", "contacto", "personas", "hogares", "desdeCuando", "foco", "rolesTienen", "rolesBuscan",
-  "pozo", "formaJuridica", "decisiones", "ritual", "tierra", "compromisoTiempo",
-];
+const ORDEN: CampoBorrador[] = GRUPOS.flatMap((g) => g.campos.map((c) => c.campo));
 
 export function FormularioPostulacion({ tribuId, barrio }: { tribuId: string; barrio: number }) {
   const id = useId();
@@ -180,7 +177,20 @@ export function FormularioPostulacion({ tribuId, barrio }: { tribuId: string; ba
           {d.etiqueta}
           {d.obligatorio ? " (obligatorio)" : ""}
         </label>
-        {d.tipo === "largo" ? (
+        {d.tipo === "forma" ? (
+          <select
+            {...comunes}
+            onChange={(e) => cambiar(d.campo, e.target.value as FormaJuridica | "")}
+            className={`${CAMPO} sm:w-fit`}
+          >
+            <option value="">Elegí una</option>
+            {(Object.keys(FORMAS_JURIDICAS) as FormaJuridica[]).map((f) => (
+              <option key={f} value={f}>
+                {FORMAS_JURIDICAS[f]}
+              </option>
+            ))}
+          </select>
+        ) : d.tipo === "largo" ? (
           <textarea {...comunes} rows={3} onChange={(e) => cambiar(d.campo, e.target.value)} />
         ) : (
           <input
@@ -219,35 +229,6 @@ export function FormularioPostulacion({ tribuId, barrio }: { tribuId: string; ba
             {g.legal && <TerminoLegal clave={g.legal} />}
           </legend>
           {g.campos.map(campoDe)}
-          {g.titulo.startsWith("5.") && (
-            <div className="grid gap-1">
-              <label htmlFor={`${id}-formaJuridica`} className="font-medium">
-                Forma jurídica actual o prevista (obligatorio)
-              </label>
-              <select
-                id={`${id}-formaJuridica`}
-                value={b.formaJuridica}
-                onChange={(e) => cambiar("formaJuridica", e.target.value as FormaJuridica | "")}
-                aria-invalid={errores.formaJuridica ? true : undefined}
-                aria-required="true"
-                aria-describedby={errores.formaJuridica ? `${id}-formaJuridica-error` : undefined}
-                className={`${CAMPO} sm:w-fit`}
-              >
-                <option value="">Elegí una</option>
-                {(Object.keys(FORMAS_JURIDICAS) as FormaJuridica[]).map((f) => (
-                  <option key={f} value={f}>
-                    {FORMAS_JURIDICAS[f]}
-                  </option>
-                ))}
-              </select>
-              {errores.formaJuridica && (
-                <p id={`${id}-formaJuridica-error`} className="text-sm font-medium text-danger">
-                  <span aria-hidden="true">▲ </span>
-                  {errores.formaJuridica}
-                </p>
-              )}
-            </div>
-          )}
         </fieldset>
       ))}
 

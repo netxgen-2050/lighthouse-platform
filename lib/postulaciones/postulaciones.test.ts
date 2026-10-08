@@ -82,6 +82,7 @@ describe("guardado", () => {
 describe("textos fijos", () => {
   it("hay cuatro requisitos y el enlace de ejemplo", () => {
     expect(REQUISITOS).toHaveLength(4);
+    expect(REQUISITOS.find((r) => r.texto.includes("Pacto de convivencia"))?.legal).toBe("pacto");
     expect(ENLACE_LLAMADA).toBe("https://calendly.com/netx-ejemplo/postulacion");
   });
 });

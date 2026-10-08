@@ -45,6 +45,28 @@ test("muestra los requisitos y las preguntas, con un solo main", async ({ page }
   await expect(page.getByRole("group")).toHaveCount(8);
 });
 
+test("el requisito del Pacto de convivencia lleva el ⚖", async ({ page }) => {
+  await page.goto("/tribus/grano/postular");
+  const req = page.getByRole("region", { name: /Requisitos para postular/ });
+  await expect(req.getByRole("button", { name: "Qué significa legalmente: Pacto de convivencia" })).toBeVisible();
+});
+
+test("el selector de forma jurídica está en su grupo y se puede elegir", async ({ page }) => {
+  await page.goto("/tribus/grano/postular");
+  const grupo = page.getByRole("group", { name: /Forma jurídica/ });
+  await expect(grupo.getByLabel(/^Forma jurídica/)).toBeVisible();
+});
+
+test("/netx muestra sin dato (no 0) si el navegador no deja leer", async ({ page }) => {
+  await page.addInitScript(() => {
+    Storage.prototype.getItem = () => {
+      throw new Error("bloqueado");
+    };
+  });
+  await page.goto("/netx");
+  await expect(page.getByTestId("total-postulaciones")).toContainText("sin dato");
+});
+
 test("no existe el formulario para barrios que no están vacantes", async ({ page }) => {
   for (const id of ["valle", "monte", "no-existe"]) {
     const r = await page.goto(`/tribus/${id}/postular`);
