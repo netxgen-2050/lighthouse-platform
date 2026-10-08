@@ -43,7 +43,7 @@ test("listado: tarjetas distintas por estado", async ({ page }) => {
   await expect(grano).toContainText("El barrio necesita: Agricultura extensiva, Animales, Molienda");
   await expect(grano.getByRole("link", { name: /Proponer una comunidad/ })).toHaveAttribute("href", rutaProponerComunidad("grano"));
   await grano.getByRole("link", { name: /Proponer una comunidad/ }).click();
-  await expect(page.getByRole("heading", { name: "¿Tenés una tribu?" })).toBeVisible();
+  await expect(page).toHaveURL(/\/tribus\/grano\/postular$/);
 });
 
 test("monte: aviso de comunidad en formación; valle no lo tiene", async ({ page }) => {
@@ -322,15 +322,14 @@ test.describe("ficha completa", () => {
     await expect(page).toHaveURL(/\/territorios\/lighthouse$/);
   });
 
-  test("grano: vacante con medidores, sin red de confianza, proponer tribu simulado", async ({ page }) => {
+  test("grano: vacante con medidores, sin red de confianza, proponer una comunidad lleva al formulario", async ({ page }) => {
     await page.goto("/tribus/grano");
     await expect(page.getByText("USD 0 de USD 260.000 · 0%")).toBeVisible();
     await expect(page.getByText("0 de 10 · 0%")).toBeVisible();
     await expect(page.getByRole("heading", { name: "¿Tenés una tribu?" })).toBeVisible();
     await expect(page.getByText("Red de confianza")).toHaveCount(0);
-    await page.getByRole("button", { name: "Proponer mi tribu" }).click();
-    await expect(page.getByText(/simulado/)).toBeVisible();
-    expect(new URL(page.url()).pathname).toBe("/tribus/grano");
+    await page.getByRole("link", { name: "Proponer una comunidad" }).click();
+    await expect(page).toHaveURL(/\/tribus\/grano\/postular$/);
   });
 
   test("las 12 fichas muestran el aviso de prototipo", async ({ page }) => {
