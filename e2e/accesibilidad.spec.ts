@@ -34,6 +34,18 @@ test("axe sin violaciones serias o críticas: /pasaporte con datos cargados", as
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
+test("axe sin violaciones serias o críticas: /pactos siendo miembro, con las dos pestañas", async ({ page }) => {
+  await page.addInitScript(() => window.localStorage.setItem("lh-membresia", JSON.stringify({ lighthouse: "miembro" })));
+  await page.goto("/pactos");
+  await page.getByLabel(/Rol que asumís/).selectOption({ label: "Otro" });
+  for (const pestana of ["Pacto de tiempo", "Sumarte con plata"]) {
+    await page.getByRole("tab", { name: pestana }).click();
+    const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+  }
+});
+
 test("axe sin violaciones serias o críticas: /sumarte con el formulario de contacto abierto", async ({ page }) => {
   await page.goto("/sumarte");
   await page.getByRole("button", { name: "Pedir invitación" }).click();

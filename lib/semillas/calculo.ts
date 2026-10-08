@@ -1,9 +1,9 @@
-import { semillasPorMes } from "@/lib/pactos/calculo";
+import { HOUR_REF_USD } from "@/lib/pactos/datos";
 import { META_SEMBRADOR, MESES } from "./datos";
 
-/** Semillas de tiempo en 3 meses (como `seedsContrib()*3` del mock-up). */
+/** Semillas de tiempo en 3 meses (como `seedsContrib()*3` del mock-up). `parteSemilla` en % (los pactos nuevos usan 100). */
 export function semillasTiempo(horas: number, parteSemilla: number, factor = 1): number {
-  return semillasPorMes(horas, parteSemilla, factor) * MESES;
+  return Math.round(horas * HOUR_REF_USD * (parteSemilla / 100) * factor) * MESES;
 }
 
 export function estadoMedidor(semillas: number): "Lista" | "En camino" {

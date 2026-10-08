@@ -97,7 +97,7 @@ export function SemillasCliente() {
             <>
               <p className={GRANDE} data-testid="semillas-tiempo">{miles(tiempo)} semillas</p>
               <p className="text-sm text-muted">
-                {datos.pacto.horas} h/mes · {datos.pacto.parteSemilla}% en semilla
+                {datos.pacto.horas} h/mes en pactos aceptados
               </p>
             </>
           ) : (
