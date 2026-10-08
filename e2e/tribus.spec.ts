@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { listarTribus } from "@/lib/tribus/datos";
+import { listarTribus, rutaProponerComunidad } from "@/lib/tribus/datos";
 
 test("listado: 12 tarjetas en orden con estado escrito", async ({ page }) => {
   await page.goto("/tribus");
@@ -41,7 +41,9 @@ test("listado: tarjetas distintas por estado", async ({ page }) => {
   await expect(valle).toContainText("hogares");
   const grano = tarjeta("/tribus/grano");
   await expect(grano).toContainText("El barrio necesita: Agricultura extensiva, Animales, Molienda");
-  await expect(grano.getByRole("link", { name: /Proponer una comunidad/ })).toHaveAttribute("href", "/tribus/grano");
+  await expect(grano.getByRole("link", { name: /Proponer una comunidad/ })).toHaveAttribute("href", rutaProponerComunidad("grano"));
+  await grano.getByRole("link", { name: /Proponer una comunidad/ }).click();
+  await expect(page.getByRole("heading", { name: "¿Tenés una tribu?" })).toBeVisible();
 });
 
 test("monte: aviso de comunidad en formación; valle no lo tiene", async ({ page }) => {

@@ -106,6 +106,14 @@ nombre: "Barrio 12", iniciales: "+", barrio: 12, foco: "Ecología y biorregión"
   },
 ];
 
+/**
+ * Destino del botón "Proponer una comunidad" de un barrio vacante.
+ * Cuando exista la ruta de postulación (barrio-vacante-postulacion), cambiar solo esta función.
+ */
+export function rutaProponerComunidad(id: string): string {
+  return `/tribus/${id}#proponer`;
+}
+
 /** Etapa de ejemplo de las tribus en formación (dato de prototipo). */
 const ETAPAS: Record<string, string> = {
   barda: "Reuniendo socios",

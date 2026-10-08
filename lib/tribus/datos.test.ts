@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { agruparPorEstado, buscarTribu, listarTribus } from "./datos";
+import { agruparPorEstado, buscarTribu, listarTribus, rutaProponerComunidad } from "./datos";
 
 describe("datos de tribus", () => {
   const tribus = listarTribus();
@@ -57,6 +57,9 @@ describe("datos de tribus", () => {
     for (const t of g.formacion) expect(t.etapa, t.id).toBeTruthy();
     for (const t of [...g.activas, ...g.vacantes]) expect(t.etapa, t.id).toBeUndefined();
     expect(buscarTribu("monte")?.etapa).toBe("Armando su propuesta");
+  });
+  it("rutaProponerComunidad apunta a la sección de proponer del barrio", () => {
+    expect(rutaProponerComunidad("grano")).toBe("/tribus/grano#proponer");
   });
   it("buscarTribu", () => {
     expect(buscarTribu("valle")?.nombre).toBe("Valle Solar");

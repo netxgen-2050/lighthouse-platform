@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
 import { SelloTribu } from "@/components/sello-tribu";
-import { agruparPorEstado } from "@/lib/tribus/datos";
+import { agruparPorEstado, rutaProponerComunidad } from "@/lib/tribus/datos";
 import { TEXTO_ESTADO, type Tribu } from "@/lib/tribus/tipos";
 
 export const metadata: Metadata = { title: "Tribus del Lighthouse" };
@@ -65,11 +65,10 @@ export default function TribusPage() {
           <li key={t.id}>
             <Tarjeta t={t}>
               <span className="text-sm text-muted">{t.hogares}</span>
-              {t.pozo && (
-                <span className="text-sm">
-                  <span className="font-medium">Aporta al pozo común:</span> {t.pozo.join("; ")}
-                </span>
-              )}
+              <span className="text-sm">
+                <span className="font-medium">Aporta al pozo común:</span>{" "}
+                {t.pozo?.length ? t.pozo.join("; ") : "sin dato"}
+              </span>
             </Tarjeta>
           </li>
         ))}
@@ -104,12 +103,12 @@ export default function TribusPage() {
             <Tarjeta t={t}>
               <span className="text-sm text-muted">{t.hogares}</span>
               <span className="text-sm">
-                <span className="font-medium">El barrio necesita:</span> {t.busca.join(", ")}
+                <span className="font-medium">El barrio necesita:</span> {t.busca.length ? t.busca.join(", ") : "sin dato"}
               </span>
             </Tarjeta>
             <div>
               <Link
-                href={`/tribus/${t.id}`}
+                href={rutaProponerComunidad(t.id)}
                 aria-label={`Proponer una comunidad para el Barrio ${t.barrio}`}
                 className="inline-block rounded-lg bg-deep px-4 py-2 text-sm font-semibold text-on-deep hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
               >

@@ -73,7 +73,7 @@ export default async function TribuPage({ params }: Props) {
             <Medidor titulo="Plata para arrancar" actual={0} tope={t.plata.meta} unidad="USD " />
             <Medidor titulo="Roles" actual={0} tope={t.roles.necesarios} dorado />
           </section>
-          <section className={tarjeta}>
+          <section id="proponer" className={tarjeta}>
             <h2 className="text-lg font-semibold">¿Tenés una tribu?</h2>
             <p className="text-sm">
               Proponela: contá quiénes son, qué van a producir y qué van a aportar al pozo común. La tribu define su
