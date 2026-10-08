@@ -1,5 +1,5 @@
 import { CLAVES } from "@/lib/demo/claves";
-import { deComunidad, leer as leerPactos, totalAportes } from "@/lib/pactos/estado";
+import { deComunidad, leer as leerPactos, pactosAceptados, totalAportes } from "@/lib/pactos/estado";
 import { semillasDePlata } from "@/lib/pactos/calculo";
 import { clave, rondaCompleta, semillasTiempo, totalConDato, type Notas, type Parte, type Razones } from "./calculo";
 import { MAX_RAZON } from "./datos";
@@ -94,8 +94,9 @@ export type SemillasDeComunidad = {
  * Tiempo: solo con pacto aceptado. Plata: aportes registrados. Presencia: todavía no suma Semillas (sin dato).
  */
 export function semillasDeComunidad(pactosCrudo: string | null, comunidad: string): SemillasDeComunidad {
-  const p = deComunidad(leerPactos(pactosCrudo), comunidad);
-  const aceptado = p.tiempo.paso === 2 && Boolean(p.tiempo.rol);
+  const guardados = leerPactos(pactosCrudo);
+  const p = deComunidad(guardados, comunidad);
+  const aceptado = pactosAceptados(guardados).some((a) => a.comunidad === comunidad);
   const tiempo = aceptado ? semillasTiempo(p.tiempo.horas, 100) : null;
   const plata = p.aportes.length > 0 ? semillasDePlata(totalAportes(p)) : null;
   return {

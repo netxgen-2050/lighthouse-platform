@@ -227,7 +227,20 @@ test("sin puntuar también se avisa y no se envía", async ({ page }) => {
   await page.goto("/semillas");
   await page.getByRole("button", { name: "Enviar ronda" }).click();
   await expect(page.getByText("Error: elegí una puntuación de 1 a 5.").first()).toBeVisible();
+  await expect(page.getByRole("alert").filter({ hasText: "Faltan 4 puntuaciones" })).toBeVisible();
+  // El foco cae en "1 de 5" y el error de la puntuación está asociado a ese botón.
+  const primero = page.getByRole("group", { name: "Rol, Martina" }).getByRole("button", { name: "1 de 5" });
+  await expect(primero).toBeFocused();
+  await expect(primero).toHaveAccessibleDescription(/Error: elegí una puntuación de 1 a 5\./);
   await expect(page.getByText("Ronda enviada (simulado)")).toHaveCount(0);
+  // Con una sola explicación faltante el aviso concuerda en singular.
+  await puntuar(page, 4);
+  await page.getByRole("group", { name: "Aporte al grupo, Joaquín" }).getByLabel("¿Por qué le das esta puntuación?").fill("");
+  await expect(page.getByRole("alert").filter({ hasText: "Falta 1 explicación" })).toBeVisible();
+  // La descripción del criterio se anuncia en el campo de explicación.
+  await expect(page.getByRole("group", { name: "Rol, Martina" }).getByLabel("¿Por qué le das esta puntuación?")).toHaveAccessibleDescription(
+    /Cómo cumple con las responsabilidades de su trabajo\./,
+  );
 });
 
 test("ronda completa: se envía, el factor es 1,0 y queda guardada al recargar", async ({ page }) => {

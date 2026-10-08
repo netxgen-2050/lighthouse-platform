@@ -35,6 +35,18 @@ export function faltantes(notas: Notas, razones: Razones, companeros: number): F
   return salida;
 }
 
+/** Aviso de por qué no se envió la ronda: dice qué falta (puntuaciones, explicaciones o ambas) y concuerda en número. */
+export function mensajeFaltante(falta: Falta[]): string {
+  const notas = falta.filter((f) => f.falta === "nota").length;
+  const razones = falta.length - notas;
+  const plural = (n: number, uno: string, varios: string) => (n === 1 ? `1 ${uno}` : `${n} ${varios}`);
+  const partes: string[] = [];
+  if (notas > 0) partes.push(plural(notas, "puntuación", "puntuaciones"));
+  if (razones > 0) partes.push(plural(razones, "explicación", "explicaciones"));
+  const verbo = falta.length === 1 ? "Falta" : "Faltan";
+  return `Error: la ronda no se envió. ${verbo} ${partes.join(" y ")}.`;
+}
+
 /** ¿Están todas las puntuaciones con su explicación? */
 export function rondaCompleta(notas: Notas, razones: Razones, companeros: number): boolean {
   return faltantes(notas, razones, companeros).length === 0;

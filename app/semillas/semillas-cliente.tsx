@@ -6,7 +6,7 @@ import { TerminoLegal } from "@/components/termino-legal";
 import { esCodigoValido } from "@/lib/congreso/ticket";
 import { CLAVES } from "@/lib/demo/claves";
 import { COMUNIDAD_LIGHTHOUSE, comunidadesDondeEsMiembro, leerMembresiaDelNavegador } from "@/lib/membresia/estado";
-import { clave, estadoMedidor, FACTOR_EVALUACION, faltantes } from "@/lib/semillas/calculo";
+import { clave, estadoMedidor, FACTOR_EVALUACION, faltantes, mensajeFaltante } from "@/lib/semillas/calculo";
 import { leerPasaporteDelNavegador } from "@/lib/pasaporte/del-navegador";
 import type { Residencia } from "@/lib/pasaporte/datos";
 import {
@@ -383,10 +383,12 @@ function RondaDeComunidad({ comunidad, nombre, habilitada, ronda, intento, onInt
               const k = clave(i, d);
               const nota = ronda.notas[k] ?? 0;
               const error = intento ? faltaDe(k) : undefined;
+              const idAyuda = `ayuda-${comunidad}-${k.replace("|", "-")}`;
+              const idErrorNota = `${idAyuda}-error-nota`;
               return (
                 <div key={d} role="group" aria-label={`${titulo}, ${c.nombre}`} className="grid content-start gap-1">
                   <p className="text-sm font-medium">{titulo}</p>
-                  <p className="text-sm text-muted" id={`ayuda-${comunidad}-${k.replace("|", "-")}`}>{ayuda}</p>
+                  <p className="text-sm text-muted" id={idAyuda}>{ayuda}</p>
                   <div className="flex gap-1">
                     {[1, 2, 3, 4, 5].map((n) => (
                       <button
@@ -395,6 +397,7 @@ function RondaDeComunidad({ comunidad, nombre, habilitada, ronda, intento, onInt
                         type="button"
                         aria-pressed={nota === n}
                         aria-label={`${n} de 5`}
+                        aria-describedby={error === "nota" ? `${idAyuda} ${idErrorNota}` : idAyuda}
                         disabled={ronda.enviada}
                         onClick={() => onCambio((r) => ponerNota(r, i, d, n))}
                         className={`h-9 w-9 rounded-lg border font-medium ${FOCO} ${
@@ -407,7 +410,7 @@ function RondaDeComunidad({ comunidad, nombre, habilitada, ronda, intento, onInt
                   </div>
                   <p className="text-sm text-muted">{nota ? `Puntaje: ${nota} de 5` : "Sin puntaje"}</p>
                   {error === "nota" && (
-                    <p className="text-sm font-medium text-danger">Error: elegí una puntuación de 1 a 5.</p>
+                    <p id={idErrorNota} className="text-sm font-medium text-danger">Error: elegí una puntuación de 1 a 5.</p>
                   )}
                   <label htmlFor={idRazon(k)} className="text-sm font-medium">{PREGUNTA_PORQUE}</label>
                   <textarea
@@ -418,7 +421,7 @@ function RondaDeComunidad({ comunidad, nombre, habilitada, ronda, intento, onInt
                     readOnly={ronda.enviada}
                     value={ronda.razones[k] ?? ""}
                     aria-invalid={error === "razon" ? true : undefined}
-                    aria-describedby={error === "razon" ? `${idRazon(k)}-error` : undefined}
+                    aria-describedby={error === "razon" ? `${idAyuda} ${idRazon(k)}-error` : idAyuda}
                     onChange={(e) => onCambio((r) => ponerRazon(r, i, d, e.target.value))}
                     className={`w-full rounded-lg border border-muted bg-surface p-2 text-sm ${FOCO}`}
                   />
@@ -442,8 +445,7 @@ function RondaDeComunidad({ comunidad, nombre, habilitada, ronda, intento, onInt
             <>
               {intento && falta.length > 0 && (
                 <p role="alert" className="text-sm font-medium text-danger">
-                  Error: la ronda no se envió. Falta {falta.length === 1 ? "1 dato" : `${falta.length} datos`}: cada puntuación
-                  necesita su explicación.
+                  {mensajeFaltante(falta)}
                 </p>
               )}
               <div className="flex flex-wrap items-center gap-3">

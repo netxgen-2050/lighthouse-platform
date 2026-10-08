@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { estadoMedidor, FACTOR_EVALUACION, faltantes, rondaCompleta, semillasTiempo, totalConDato } from "./calculo";
+import { estadoMedidor, FACTOR_EVALUACION, faltantes, mensajeFaltante, rondaCompleta, semillasTiempo, totalConDato } from "./calculo";
 import { COMPANEROS, DIMENSIONES, META_SEMBRADOR, RECONOCIMIENTO_RECIBIDO } from "./datos";
 import {
   enviarRonda,
@@ -72,6 +72,18 @@ describe("ronda de reconocimiento", () => {
       { clave: "0|rol", falta: "nota" },
       { clave: "0|cultura", falta: "nota" },
     ]);
+  });
+  it("el aviso dice qué falta y concuerda en número", () => {
+    expect(mensajeFaltante([{ clave: "0|rol", falta: "nota" }])).toBe("Error: la ronda no se envió. Falta 1 puntuación.");
+    expect(mensajeFaltante([{ clave: "0|rol", falta: "razon" }])).toBe("Error: la ronda no se envió. Falta 1 explicación.");
+    expect(mensajeFaltante(faltantes({}, {}, 2))).toBe("Error: la ronda no se envió. Faltan 4 puntuaciones.");
+    expect(
+      mensajeFaltante([
+        { clave: "0|rol", falta: "nota" },
+        { clave: "0|cultura", falta: "razon" },
+        { clave: "1|cultura", falta: "razon" },
+      ]),
+    ).toBe("Error: la ronda no se envió. Faltan 1 puntuación y 2 explicaciones.");
   });
   it("con notas y explicaciones se puede enviar, y el factor sigue fijo en 1,0", () => {
     expect(rondaCompleta(notas(5), razones, 2)).toBe(true);
