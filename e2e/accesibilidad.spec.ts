@@ -46,6 +46,20 @@ test("axe sin violaciones serias o críticas: /pactos siendo miembro, con las do
   }
 });
 
+test("axe sin violaciones serias o críticas: /semillas con la ronda y sus errores a la vista", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("lh-membresia", JSON.stringify({ lighthouse: "miembro", valle: "miembro" }));
+    const tiempo = { rol: "facilitacion", rolOtro: "", descripcion: "Facilito", horas: 20, paso: 2 };
+    window.localStorage.setItem("lh-pactos", JSON.stringify({ comunidades: { lighthouse: { tiempo, aportes: [200] } } }));
+  });
+  await page.goto("/semillas");
+  await page.getByRole("button", { name: "Enviar ronda" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "la ronda no se envió" })).toBeVisible();
+  const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+});
+
 test("axe sin violaciones serias o críticas: /sumarte con el formulario de contacto abierto", async ({ page }) => {
   await page.goto("/sumarte");
   await page.getByRole("button", { name: "Pedir invitación" }).click();
