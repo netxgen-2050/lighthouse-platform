@@ -84,10 +84,3 @@ export const OPCIONES: readonly { id: Opcion; etiqueta: string }[] = [
   { id: "abstencion", etiqueta: "Abstención" },
 ];
 
-export type PersonaId = "lucia" | "lucas";
-
-/** Las dos personas de ejemplo del mock-up: `residente` y `beneficiaria` (residencia fiscal argentina). */
-export const PERSONAS: Record<PersonaId, { nombre: string; residente: boolean; beneficiaria: boolean }> = {
-  lucia: { nombre: "Lucía", residente: false, beneficiaria: false },
-  lucas: { nombre: "Lucas", residente: true, beneficiaria: true },
-};

@@ -15,9 +15,24 @@ test("cambiar de pestaña", async ({ page }) => {
   await page.getByRole("tab", { name: "Sumarte con plata" }).click();
   await expect(page.getByRole("tab", { name: "Sumarte con plata" })).toHaveAttribute("aria-selected", "true");
   await expect(page.getByRole("tab", { name: "Pacto de tiempo" })).toHaveAttribute("aria-selected", "false");
-  await expect(page.getByText("Por ahora no podés sumarte con plata al fideicomiso")).toBeVisible();
+  await expect(page.getByText("Sin dato de tu residencia fiscal")).toBeVisible();
   await page.getByRole("tab", { name: "Pacto de convivencia" }).click();
   await expect(page.getByText("Nada de agroquímicos ni semillas transgénicas")).toBeVisible();
+});
+
+test("con residencia en el exterior cargada, sumarse con plata no está disponible", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("lh-pasaporte", JSON.stringify({ residencia: "exterior", paisResidencia: "Noruega" }));
+  });
+  await page.goto("/pactos");
+  await page.getByRole("tab", { name: "Sumarte con plata" }).click();
+  await expect(page.getByText("Por ahora no podés sumarte con plata al fideicomiso")).toBeVisible();
+  await expect(page.getByText("(Noruega)")).toBeVisible();
+});
+
+test("sin personas de ejemplo: no aparecen Lucía ni Lucas ni Oslo", async ({ page }) => {
+  await page.goto("/pactos");
+  await expect(page.getByText(/Lucía|Lucas|Oslo/)).toHaveCount(0);
 });
 
 test("cambiar las horas duplica las semillas y la fórmula sigue visible", async ({ page }) => {

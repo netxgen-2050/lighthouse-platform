@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
-import { AMBITOS, DECISIONES, OPCIONES, PERSONAS, type Ambito, type Opcion, type PersonaId } from "@/lib/fogon/datos";
-import { cambiarPersona, contar, filtrar, INICIAL, leer, motivoSinVoto, votar, votoPropio, type EstadoFogon } from "@/lib/fogon/estado";
+import Link from "next/link";
+import { AMBITOS, DECISIONES, OPCIONES, type Ambito, type Opcion } from "@/lib/fogon/datos";
+import { contar, filtrar, INICIAL, leer, motivoSinVoto, votar, votoPropio, type Condicion, type EstadoFogon } from "@/lib/fogon/estado";
+import { leerPasaporteDelNavegador } from "@/lib/pasaporte/del-navegador";
 
 // Todo queda solo en este navegador: no hay pedidos de red.
 const CLAVE = "lh-fogon";
@@ -21,9 +23,11 @@ export function FogonCliente() {
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [listo, setListo] = useState(false);
   const [anuncio, setAnuncio] = useState("");
+  const [condicion, setCondicion] = useState<Condicion>(undefined);
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
+    setCondicion(leerPasaporteDelNavegador().residencia);
     try {
       setEstado(leer(window.localStorage.getItem(CLAVE)));
     } catch {
@@ -46,7 +50,7 @@ export function FogonCliente() {
 
   function elegir(id: string, opcion: Opcion) {
     const d = DECISIONES.find((x) => x.id === id);
-    if (!d || !guardar(votar(estado, id, opcion))) return;
+    if (!d || !guardar(votar(estado, id, opcion, condicion))) return;
     setAbierta(null);
     // Se vacía primero y se escribe en el próximo tick: si el texto es igual al anterior (mismo voto
     // repetido), React no tocaría el DOM y el lector de pantalla no anunciaría nada.
@@ -57,7 +61,6 @@ export function FogonCliente() {
     document.getElementById(`abrir-${id}`)?.focus();
   }
 
-  const persona = PERSONAS[estado.persona];
   const lista = filtrar(ambito);
 
   return (
@@ -87,30 +90,12 @@ export function FogonCliente() {
             </button>
           ))}
         </div>
-        <label className="flex items-center gap-2 text-sm">
-          Persona de ejemplo
-          <select
-            value={estado.persona}
-            onChange={(e) => {
-              setAbierta(null);
-              setAnuncio("");
-              guardar(cambiarPersona(estado, e.target.value as PersonaId));
-            }}
-            className="rounded-lg border border-muted bg-surface px-2 py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
-          >
-            {(Object.keys(PERSONAS) as PersonaId[]).map((id) => (
-              <option key={id} value={id}>
-                {PERSONAS[id].nombre}
-              </option>
-            ))}
-          </select>
-        </label>
       </div>
 
       <ul className="grid gap-3">
         {lista.map((d) => {
-          const motivo = motivoSinVoto(d, estado.persona);
-          const propio = votoPropio(estado, d);
+          const motivo = motivoSinVoto(d, condicion);
+          const propio = votoPropio(estado, d, condicion);
           const c = contar(d, propio);
           const idTitulo = `dec-${d.id}`;
           return (
@@ -163,7 +148,7 @@ export function FogonCliente() {
                   <span aria-hidden="true">✓ </span>
                   Tu voto: {OPCIONES.find((o) => o.id === propio)!.etiqueta} (simulado)
                   <span className="block">
-                    Acta (ejemplo): {persona.nombre} votó {OPCIONES.find((o) => o.id === propio)!.etiqueta.toLowerCase()} en
+                    Acta (ejemplo): votaste {OPCIONES.find((o) => o.id === propio)!.etiqueta.toLowerCase()} en
                     «{d.titulo}». Tu voto quedó registrado en el historial del acta (simulado).
                   </span>
                 </p>
@@ -179,12 +164,16 @@ export function FogonCliente() {
 
       {listo && (
         <p className="text-sm text-muted">
-          {persona.nombre}:{" "}
-          {persona.residente ? "residente, vota en la Asamblea" : "no residente: participa en su tribu y ve las actas de la Asamblea"}
-          {persona.beneficiaria
-            ? " · beneficiario/a del fideicomiso, vota en su asamblea"
-            : " · sin acceso a la asamblea del fideicomiso"}
-          .
+          {condicion === "argentina"
+            ? "Con tu residencia fiscal en Argentina (simulado) votás en la Asamblea y en la asamblea del fideicomiso."
+            : condicion === "exterior"
+              ? "Con tu residencia fiscal en el exterior participás en tu tribu y ves las actas de la Asamblea; no votás en la asamblea del fideicomiso."
+              : (
+                <>
+                  Todavía no cargaste tu residencia fiscal, así que no sabemos en qué asambleas podés votar.{" "}
+                  <Link className="underline" href="/pasaporte">Cargala en Tus datos</Link>.
+                </>
+              )}
         </p>
       )}
     </div>

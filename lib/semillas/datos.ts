@@ -13,6 +13,3 @@ export const DIMENSIONES = [
   ["rol", "Cumplió su rol"],
   ["cultura", "Aporte al grupo"],
 ] as const;
-
-/** Lucía vive en Noruega: la plata no está disponible por su residencia fiscal y no es residente (como en el mock-up). */
-export const PERSONA = { residenciaArgentina: false, residente: false };

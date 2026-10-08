@@ -6,7 +6,9 @@ import { TerminoLegal } from "@/components/termino-legal";
 import { esCodigoValido } from "@/lib/congreso/ticket";
 import { CLAVES } from "@/lib/demo/claves";
 import { clave, estadoMedidor, FACTOR_EVALUACION, rondaCompleta, semillasTiempo } from "@/lib/semillas/calculo";
-import { COMPANEROS, DIMENSIONES, META_SEMBRADOR, PERSONA } from "@/lib/semillas/datos";
+import { leerPasaporteDelNavegador } from "@/lib/pasaporte/del-navegador";
+import type { Residencia } from "@/lib/pasaporte/datos";
+import { COMPANEROS, DIMENSIONES, META_SEMBRADOR } from "@/lib/semillas/datos";
 import {
   CLAVE_RONDA,
   CLAVE_SUMARTE,
@@ -29,6 +31,8 @@ type Datos = {
   pacto: { horas: number; parteSemilla: number } | null;
   pase: string | null;
   ticket: boolean;
+  /** Residencia fiscal que la persona cargó en "Tus datos"; undefined si no la cargó (sin dato). */
+  residencia: Residencia | undefined;
 };
 
 function Ficha({ texto, tono }: { texto: string; tono?: "ok" | "no" }) {
@@ -46,7 +50,7 @@ function leerClave(k: string): string | null {
 
 export function SemillasCliente() {
   const [listo, setListo] = useState(false);
-  const [datos, setDatos] = useState<Datos>({ pacto: null, pase: null, ticket: false });
+  const [datos, setDatos] = useState<Datos>({ pacto: null, pase: null, ticket: false, residencia: undefined });
   const [ronda, setRonda] = useState<Ronda>(RONDA_INICIAL);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
 
@@ -56,6 +60,7 @@ export function SemillasCliente() {
       pacto: pactoAceptado(leerClave(CLAVES.pactos)),
       pase: paseActivo(leerClave(CLAVE_SUMARTE)),
       ticket: esCodigoValido(leerClave(CLAVES.congreso) ?? ""),
+      residencia: leerPasaporteDelNavegador().residencia,
     });
     setRonda(leerRonda(leerClave(CLAVE_RONDA)));
     setListo(true);
@@ -108,16 +113,15 @@ export function SemillasCliente() {
 
         <div className={TARJETA}>
           <p className={ETIQUETA}>Plata</p>
-          {PERSONA.residenciaArgentina ? (
-            <>
-              <p className={GRANDE}>sin dato</p>
-              <p className="text-sm text-muted">Pendiente de firma con el fiduciario</p>
-            </>
+          <p className={GRANDE}>sin dato</p>
+          {datos.residencia === "argentina" ? (
+            <p className="text-sm text-muted">Pendiente de firma con el fiduciario</p>
+          ) : datos.residencia === "exterior" ? (
+            <p className="text-sm text-muted">No disponible por residencia fiscal</p>
           ) : (
-            <>
-              <p className={GRANDE}>sin dato</p>
-              <p className="text-sm text-muted">No disponible por residencia fiscal</p>
-            </>
+            <p className="text-sm text-muted">
+              Sin dato de tu residencia fiscal. <Link className="underline" href="/pasaporte">Cargala en Tus datos</Link>.
+            </p>
           )}
           {datos.pase && (
             <p className="text-sm text-muted">Pase Fundador {PASSES.find((p) => p.id === datos.pase)?.nombre ?? datos.pase} activo (simulado), un servicio que no suma semillas
@@ -182,7 +186,12 @@ export function SemillasCliente() {
                 <TerminoLegal clave="sumarte" />
               </>
             }
-            ficha={<Ficha texto={PERSONA.residenciaArgentina ? "Pendiente legal" : "No disponible hoy"} tono="no" />}
+            ficha={
+              <Ficha
+                texto={datos.residencia === "argentina" ? "Pendiente legal" : datos.residencia === "exterior" ? "No disponible hoy" : "sin dato"}
+                tono="no"
+              />
+            }
           />
           <Paso
             titulo="Residente"
@@ -192,8 +201,7 @@ export function SemillasCliente() {
                 <TerminoLegal clave="art32" />
               </>
             }
-            ficha={PERSONA.residente ? <Ficha texto="Desde marzo (ejemplo)" tono="ok" /> : <Ficha texto="Vive afuera" tono="no" />}
-            hecho={PERSONA.residente}
+            ficha={<Ficha texto={datos.residencia === "exterior" ? "Vive afuera" : "sin dato"} tono="no" />}
           />
         </ol>
       </section>
