@@ -82,6 +82,23 @@ test("con un tooltip visible, Escape lo oculta, Hifa sigue abierta y el foco no 
   await expect(termino).toBeFocused();
 });
 
+test("mouse quieto sobre Reportar, abrir Hifa con el teclado: el primer Escape solo oculta el tooltip y el segundo cierra Hifa", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Reportar un problema o una idea" }).hover();
+  await expect(page.getByRole("tooltip")).toBeVisible();
+  await page.keyboard.press("Shift"); // modalidad teclado
+  await page.getByRole("button", { name: BOTON }).focus();
+  await page.keyboard.press("Enter");
+  const chat = page.getByRole("dialog", { name: "Chat con Hifa" });
+  await expect(chat).toBeVisible();
+  await expect(page.getByRole("tooltip")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("tooltip")).toHaveCount(0);
+  await expect(chat).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(chat).toBeHidden();
+});
+
 test("con el mouse sobre Reportar y el foco en el chat, Escape oculta el tooltip y un segundo Escape cierra Hifa", async ({ page }) => {
   await page.goto("/");
   const chat = await abrir(page);

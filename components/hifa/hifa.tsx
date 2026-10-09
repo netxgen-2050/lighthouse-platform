@@ -81,8 +81,9 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
       setAbierto(false);
       if (dentro) disparador.current?.focus();
     }
-    document.addEventListener("keydown", alTeclear);
-    return () => document.removeEventListener("keydown", alTeclear);
+    // En captura, para mirar el tooltip antes de que el listener de Reportar lo descarte en el mismo evento.
+    document.addEventListener("keydown", alTeclear, true);
+    return () => document.removeEventListener("keydown", alTeclear, true);
   }, [abierto]);
 
   // Envío al equipo: se dispara cuando la persona aceptó (fase "enviando").
