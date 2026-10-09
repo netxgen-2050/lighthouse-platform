@@ -1,7 +1,8 @@
 "use client";
 
 import { Bug } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { TAMANO_FLOTANTE } from "@/lib/ui/flotantes";
 import {
   armarContexto,
   CONTEXTO_VACIO,
@@ -41,7 +42,23 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
   const [estado, setEstado] = useState<Estado>({ fase: "editando" });
   const [contexto, setContexto] = useState<Contexto>(CONTEXTO_VACIO);
   const [copiado, setCopiado] = useState<"si" | "no" | null>(null);
-  const [sugerencia, setSugerencia] = useState(false);
+  const [sobre, setSobre] = useState(false);
+  const [conFoco, setConFoco] = useState(false);
+  const [descartada, setDescartada] = useState(false);
+  // Visible mientras el puntero esté encima o el botón tenga foco, salvo que se haya descartado con Escape.
+  const sugerencia = (sobre || conFoco) && !descartada;
+
+  // Escape descarta la sugerencia esté donde esté el foco (WCAG 1.4.13), sin mover puntero ni foco.
+  useEffect(() => {
+    if (!sugerencia) return;
+    function alTeclear(ev: KeyboardEvent) {
+      if (ev.key !== "Escape") return;
+      ev.preventDefault();
+      setDescartada(true);
+    }
+    document.addEventListener("keydown", alTeclear);
+    return () => document.removeEventListener("keydown", alTeclear);
+  }, [sugerencia]);
 
   function leerContexto(): Contexto {
     return armarContexto({
@@ -140,20 +157,20 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
         onClick={abrir}
         aria-label="Reportar un problema o una idea"
         aria-describedby={sugerencia ? "tooltip-reportar" : undefined}
-        onMouseEnter={() => setSugerencia(true)}
-        onMouseLeave={() => setSugerencia(false)}
-        onFocus={() => setSugerencia(true)}
-        onBlur={() => setSugerencia(false)}
-        onKeyDown={(ev) => {
-          if (ev.key === "Escape" && sugerencia) {
-            ev.preventDefault();
-            setSugerencia(false);
-          }
+        onMouseEnter={() => {
+          setSobre(true);
+          setDescartada(false);
         }}
+        onMouseLeave={() => setSobre(false)}
+        onFocus={() => {
+          setConFoco(true);
+          setDescartada(false);
+        }}
+        onBlur={() => setConFoco(false)}
         className="group fixed right-0 top-1/2 z-40 grid -translate-y-1/2 place-items-center rounded-full border-2 border-dashed border-ink p-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
       >
-        {/* Mismo tamaño que el botón de Hifa (size-14); el anillo punteado queda separado por 3 px. */}
-        <span className="grid size-14 place-items-center rounded-full bg-deep text-on-deep shadow-lg group-hover:bg-deep-2">
+        {/* Mismo tamaño que el botón de Hifa (TAMANO_FLOTANTE); el anillo punteado queda separado por 3 px. */}
+        <span className={`grid ${TAMANO_FLOTANTE} place-items-center rounded-full bg-deep text-on-deep shadow-lg group-hover:bg-deep-2`}>
           <Bug aria-hidden="true" className="size-7" />
         </span>
         {sugerencia && (

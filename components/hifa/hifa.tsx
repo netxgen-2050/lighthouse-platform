@@ -18,6 +18,7 @@ import {
   textoParaCopiarHifa,
 } from "@/lib/hifa/estado";
 import { armarContexto } from "@/lib/reportes/reporte";
+import { TAMANO_FLOTANTE } from "@/lib/ui/flotantes";
 import { AvatarHifa } from "./avatar-hifa";
 
 const BOTON =
@@ -161,7 +162,7 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
         aria-label="Hablar con Hifa"
         aria-expanded={abierto}
         aria-controls="chat-hifa"
-        className="fixed bottom-4 right-4 z-40 grid size-14 place-items-center rounded-full border-2 border-deep bg-surface shadow-lg hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+        className={`fixed bottom-4 right-4 z-40 grid ${TAMANO_FLOTANTE} place-items-center rounded-full border-2 border-deep bg-surface shadow-lg hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep`}
       >
         <AvatarHifa className="size-10" />
       </button>
