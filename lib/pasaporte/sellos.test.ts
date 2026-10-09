@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { INICIAL } from "@/lib/sumarte/estado";
 import { KYC_VACIO } from "./kyc";
-import { fechasPorGuardar, leerFechas, sellos, type EntradaSellos } from "./sellos";
+import { fechasPorGuardar, fechasPorQuitar,leerFechas, sellos, type EntradaSellos } from "./sellos";
 
 const ahora = new Date("2026-10-09T15:00:00Z");
 
@@ -91,6 +91,8 @@ describe("sellos", () => {
     expect(i.estado).toBe("no-disponible");
     expect(i.detalle).toContain("residencia fiscal es del exterior");
     expect(i.legal).toContain("hacienda");
+    expect(i.legal).toContain("inversorexterior");
+    expect(i.detalle).not.toContain("Ganancias");
   });
 
   it("Genesis: ticket registrado es en trámite; solo el check-in lo obtiene", () => {
@@ -114,6 +116,12 @@ describe("fechas", () => {
       "miembro-red": ahora.toISOString(),
     });
     expect(fechasPorGuardar(lista, { explorador: "2026-09-01T00:00:00.000Z" })).toEqual({ "miembro-red": ahora.toISOString() });
+  });
+  it("quita las fechas de sellos que ya no están obtenidos", () => {
+    const lista = sellos({ ...vacia, fechas: {}, sumarte: { ...INICIAL, plan: "miembro" } }, ahora);
+    const previas = { explorador: "2026-09-01T00:00:00.000Z", "miembro-red": "2026-09-02T00:00:00.000Z", fundador: "2026-09-03T00:00:00.000Z" };
+    expect(fechasPorQuitar(lista, previas)).toEqual(["fundador"]);
+    expect(fechasPorQuitar([], previas)).toEqual([]);
   });
   it("lee fechas y descarta lo raro", () => {
     expect(leerFechas(null)).toEqual({});

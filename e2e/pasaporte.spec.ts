@@ -176,6 +176,34 @@ test("KYC a pedido: Pedir invitación sin el sello abre la verificación; con el
   await expect(page.getByText("Invitación pedida (simulado)")).toHaveCount(0);
 });
 
+test("KYC a pedido en Pactos: al aprobarse la verificación el aporte se registra solo", async ({ page }) => {
+  await page.addInitScript(() => {
+    if (window.localStorage.getItem("lh-membresia")) return;
+    window.localStorage.setItem("lh-membresia", JSON.stringify({ lighthouse: "miembro" }));
+  });
+  await page.goto("/pactos");
+  await page.getByRole("tab", { name: "Sumarte con plata" }).click();
+  await page.getByLabel("Monto (USD)").fill("200");
+  await page.getByRole("button", { name: "Registrar aporte (simulado)" }).click();
+  const dialogo = page.getByRole("dialog", { name: /Verificar mi identidad/ });
+  await llenarPasos(dialogo);
+  await dialogo.getByRole("button", { name: "Enviar verificación (simulado)" }).click();
+  await dialogo.getByRole("button", { name: "Simular: verificación aprobada" }).click();
+  await dialogo.getByRole("button", { name: "Listo" }).click();
+  await expect(page.getByTestId("semillas-plata")).toHaveText("200 Semillas de plata (simulado)");
+});
+
+test("si un sello deja de estar obtenido, al volver a obtenerlo la fecha es nueva", async ({ page }) => {
+  await page.addInitScript(() => {
+    if (window.localStorage.getItem("lh-sellos")) return;
+    window.localStorage.setItem("lh-sellos", JSON.stringify({ explorador: "2026-09-01T00:00:00.000Z", fundador: "2026-09-02T00:00:00.000Z" }));
+  });
+  await page.goto("/pasaporte");
+  await expect(sello(page, "fundador")).toContainText("Disponible");
+  await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-sellos"))).not.toContain("fundador");
+  expect(await page.evaluate(() => window.localStorage.getItem("lh-sellos"))).toContain("2026-09-01");
+});
+
 test("horas fuera de rango: mensaje, aria-invalid y se repite al recargar", async ({ page }) => {
   await page.goto("/pasaporte");
   await page.getByLabel("Obra presencial").check();

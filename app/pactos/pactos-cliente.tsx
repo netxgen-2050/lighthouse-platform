@@ -440,7 +440,11 @@ export function PactosCliente() {
         abierto={dialogoKyc}
         kyc={kyc.kyc}
         motivo="Para registrar un aporte en plata primero necesitamos verificar tu identidad."
-        alCerrar={() => setDialogoKyc(false)}
+        alCerrar={() => {
+          setDialogoKyc(false);
+          // Con el sello ya obtenido, se sigue con lo que la persona quería hacer.
+          if (kyc.verificada && montoValido) dispatch({ tipo: "aporte", comunidad, montoUsd: montoNumero });
+        }}
         alEnviar={kyc.enviar}
         alAprobar={kyc.aprobar}
       />

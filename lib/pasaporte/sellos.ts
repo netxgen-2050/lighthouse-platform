@@ -150,10 +150,9 @@ export function sellos(e: EntradaSellos, ahora: Date): Sello[] {
       id: "inversor",
       nombre: "Inversor habilitado",
       estado: "no-disponible",
-      detalle:
-        "Por ahora, no: tu residencia fiscal es del exterior y, si entrás al fideicomiso, todo el fideicomiso pasa a pagar Ganancias como sujeto. El equipo está estudiando una vía separada para aportantes del exterior.",
+      detalle: "Por ahora, no: tu residencia fiscal es del exterior. Tocá el ⚖ para ver el motivo.",
       abre: [],
-      legal: ["sumarte", "hacienda"],
+      legal: ["sumarte", "hacienda", "inversorexterior"],
     };
   } else {
     inversor = {
@@ -216,6 +215,13 @@ export function fechasPorGuardar(lista: readonly Sello[], previas: FechasSellos)
     if (s.estado === "obtenido" && s.fecha && !Object.hasOwn(previas, s.id)) nuevas[s.id] = s.fecha;
   }
   return nuevas;
+}
+
+/** Ids de las fechas guardadas de sellos que ya no están obtenidos: hay que borrarlas para que, si se vuelve a obtener, tenga fecha nueva. */
+export function fechasPorQuitar(lista: readonly Sello[], previas: FechasSellos): string[] {
+  if (lista.length === 0) return [];
+  const obtenidos = new Set(lista.filter((s) => s.estado === "obtenido").map((s) => s.id));
+  return Object.keys(previas).filter((id) => !obtenidos.has(id));
 }
 
 /** Lee las fechas guardadas; descarta lo que no sea una fecha. */

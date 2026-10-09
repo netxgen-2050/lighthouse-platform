@@ -199,6 +199,13 @@ export const TERMINOS = {
       "Antes de aportar plata, quien administra el fideicomiso tiene que saber quién sos, dónde tributás y de dónde vienen los fondos (prevención de lavado de activos). En la versión real lo hace el fiduciario y custodia tus datos. En el prototipo es una simulación: no se verifica ningún documento y nada sale de este navegador.",
     borrador: true,
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  inversorexterior: {
+    titulo: "Aportantes con residencia fiscal en el exterior",
+    texto:
+      "Si entrara al fideicomiso una persona con residencia fiscal en el exterior, todo el fideicomiso pasaría a pagar Ganancias como sujeto, y eso afectaría a todos los aportantes. Por eso, por ahora, no se habilita. El equipo está estudiando una vía separada para aportantes del exterior.",
+    borrador: true,
+  },
 } as const;
 
 /** Claves de los textos que son borrador (no vienen del mock-up). */

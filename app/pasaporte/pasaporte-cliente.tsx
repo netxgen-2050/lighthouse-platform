@@ -11,6 +11,7 @@ import { DATOS_VACIOS, leerDatos, MAX_HORAS, type DatosPersona } from "@/lib/pas
 import { fechaLarga } from "@/lib/pasaporte/kyc";
 import {
   fechasPorGuardar,
+  fechasPorQuitar,
   leerFechas,
   sellos,
   TEXTO_ESTADO_SELLO,
@@ -164,11 +165,14 @@ export function PasaporteCliente() {
     [ahora, kyc.cargado, kyc.kyc, kyc.datos, sumarte, membresias, ticket, fechas],
   );
 
-  // Cada sello obtenido guarda el día en que se lo vio por primera vez.
+  // Cada sello obtenido guarda el día en que se lo vio por primera vez;
+  // si deja de estar obtenido, se borra su fecha para que la próxima vez cuente de nuevo.
   useEffect(() => {
     const nuevas = fechasPorGuardar(lista, fechas);
-    if (Object.keys(nuevas).length === 0) return;
+    const quitar = fechasPorQuitar(lista, fechas);
+    if (Object.keys(nuevas).length === 0 && quitar.length === 0) return;
     const siguiente = { ...fechas, ...nuevas };
+    for (const id of quitar) delete siguiente[id];
     try {
       window.localStorage.setItem(CLAVES.sellos, JSON.stringify(siguiente));
     } catch {
