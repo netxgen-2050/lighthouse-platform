@@ -14,14 +14,15 @@ const rutas = [
   "/fogon",
   "/netx",
   "/pasaporte",
+  "/perfil",
   ...listarTribus().map((t) => `/tribus/${t.id}`),
   "/territorios/lighthouse",
   "/territorios/no-existe",
   "/ruta-que-no-existe",
 ];
 
-test("hay 25 rutas auditadas", () => {
-  expect(rutas).toHaveLength(25);
+test("hay 26 rutas auditadas", () => {
+  expect(rutas).toHaveLength(26);
 });
 
 async function graves(page: Page) {
@@ -40,6 +41,26 @@ test("axe sin violaciones serias o críticas: /pasaporte con sellos obtenidos, e
   });
   await page.goto("/pasaporte");
   await page.getByLabel("Obra presencial").check();
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /perfil con datos, comunidades y el formulario con errores a la vista", async ({ page }) => {
+  await page.addInitScript(() => {
+    if (window.localStorage.getItem("lh-perfil")) return;
+    window.localStorage.setItem("lh-membresia", JSON.stringify({ lighthouse: "miembro", valle: "pedido" }));
+    window.localStorage.setItem(
+      "lh-perfil",
+      JSON.stringify({ nombre: "Ana Pérez", lugar: "Mendoza", frase: "Vivir en comunidad", roles: ["jardineria"] }),
+    );
+  });
+  await page.goto("/perfil");
+  await expect(page.getByRole("heading", { name: "Ana Pérez" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+  await page.getByRole("button", { name: "Editar mi perfil" }).click();
+  await page.getByLabel("Otro", { exact: true }).check();
+  await page.getByLabel("Nombre", { exact: true }).fill("");
+  await page.getByRole("button", { name: "Guardar" }).click();
+  await expect(page.getByText("Error: Escribí tu nombre.")).toBeVisible();
   expect(await graves(page)).toEqual([]);
 });
 
