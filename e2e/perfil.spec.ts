@@ -116,9 +116,52 @@ test("comunidades y resumen salen de la membresía y los pactos guardados", asyn
   await expect(comunidades).toContainText("Pedido enviado");
   const resumen = page.getByRole("region", { name: "Resumen" });
   await expect(resumen).toContainText("Pactos activos: 1");
-  await expect(resumen).not.toContainText("Semillas totales: sin dato");
+  // 20 h × 5,035 USD/h = 101 Semillas por mes × 3 meses = 303, más 200 del aporte.
+  await expect(resumen).toContainText("Semillas totales: 503");
   await expect(resumen.getByRole("link", { name: "Ir a Pactos" })).toHaveAttribute("href", "/pactos");
   await expect(resumen.getByRole("link", { name: "Ir a Semillas" })).toHaveAttribute("href", "/semillas");
+});
+
+test("con el almacenamiento bloqueado: comunidades y resumen dicen 'sin dato' y se avisa", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "localStorage", {
+      get() {
+        throw new DOMException("bloqueado", "SecurityError");
+      },
+    });
+  });
+  await page.goto("/perfil");
+  const comunidades = page.getByRole("region", { name: "Tus comunidades" });
+  await expect(comunidades).toContainText("sin dato");
+  await expect(comunidades).not.toContainText("Todavía no pertenecés");
+  await expect(page.getByRole("region", { name: "Resumen" })).toContainText("Pactos activos: sin dato");
+  await expect(page.getByRole("alert").filter({ hasText: "no permite guardar" })).toBeVisible();
+});
+
+test("si el navegador no deja guardar, aparece el error y no el 'Listo'", async ({ page }) => {
+  await page.goto("/perfil");
+  await page.evaluate(() => {
+    Storage.prototype.setItem = () => {
+      throw new DOMException("lleno", "QuotaExceededError");
+    };
+  });
+  await page.getByRole("button", { name: "Completar mi perfil" }).click();
+  await page.getByLabel("Nombre", { exact: true }).fill("Ana");
+  await page.getByRole("button", { name: "Guardar" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "no permite guardar" })).toBeVisible();
+  await expect(page.getByText("Listo: guardamos tu perfil.")).toHaveCount(0);
+});
+
+test("con varios errores el foco va al primer campo en el orden del formulario", async ({ page }) => {
+  await page.goto("/perfil");
+  await page.getByRole("button", { name: "Completar mi perfil" }).click();
+  await page.getByLabel("Nombre", { exact: true }).fill("Ana");
+  await page.getByLabel("Otro", { exact: true }).check();
+  await page.getByLabel("Qué no negociás").fill("x".repeat(2000));
+  await page.getByRole("button", { name: "Guardar" }).click();
+  await expect(page.locator("#error-rolOtro")).toBeVisible();
+  await expect(page.locator("#error-noNegociables")).toBeVisible();
+  await expect(page.getByLabel("Qué otro rol tenés")).toBeFocused();
 });
 
 test("guardar no hace pedidos de red con los datos", async ({ page }) => {

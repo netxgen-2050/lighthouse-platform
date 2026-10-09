@@ -27,6 +27,9 @@ const CAMPO = `mt-1 block w-full rounded-lg border border-muted bg-surface px-3 
 const TARJETA = "grid content-start gap-3 rounded-xl border border-faint bg-surface p-5";
 const ETIQUETA = "rounded-full border border-muted bg-surface-2 px-3 py-0.5 text-sm";
 
+/** Campos del formulario en el orden en que se ven, para llevar el foco al primer error. */
+const ORDEN_CAMPOS: (keyof ErroresPerfil)[] = ["nombre", "lugar", "frase", "ofrezco", "rolOtro", "decision", "noNegociables"];
+
 type Resumen = { pactos: number | null; semillas: number | null };
 type Comunidad = { id: string; nombre: string; href: string; estado: "miembro" | "pedido" };
 
@@ -59,7 +62,7 @@ export function PerfilCliente() {
   const [listo, setListo] = useState(false);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [perfil, setPerfil] = useState<Perfil>(PERFIL_VACIO);
-  const [comunidades, setComunidades] = useState<Comunidad[]>([]);
+  const [comunidades, setComunidades] = useState<Comunidad[] | null>(null);
   const [resumen, setResumen] = useState<Resumen | null>(null);
   const [editando, setEditando] = useState(false);
   const [borrador, setBorrador] = useState<Perfil>(PERFIL_VACIO);
@@ -116,7 +119,7 @@ export function PerfilCliente() {
     e.preventDefault();
     const errs = validar(borrador);
     setErrores(errs);
-    const primero = Object.keys(errs)[0];
+    const primero = ORDEN_CAMPOS.find((c) => errs[c]);
     if (primero) {
       // El foco al primer campo con error (descrito por su mensaje) hace que el lector lo anuncie.
       const campo = formRef.current?.querySelector<HTMLElement>(`[data-campo="${primero}"]`);
@@ -124,15 +127,17 @@ export function PerfilCliente() {
       return;
     }
     const limpio = normalizar(borrador);
+    let seGuardo = true;
     try {
       window.localStorage.setItem(CLAVES.perfilDatos, JSON.stringify(limpio));
-      setFalloAlmacen(false);
     } catch {
-      setFalloAlmacen(true);
+      seGuardo = false;
     }
+    setFalloAlmacen(!seGuardo);
     setPerfil(limpio);
     setEditando(false);
-    setGuardado(true);
+    // Si no se pudo guardar, solo se muestra el error (nunca el "Listo").
+    setGuardado(seGuardo);
     foco.current = "editar";
   }
 
@@ -333,7 +338,9 @@ export function PerfilCliente() {
 
         <section aria-labelledby="t-comunidades" className={TARJETA}>
           <h2 id="t-comunidades" className="text-xl font-semibold">Tus comunidades</h2>
-          {comunidades.length > 0 ? (
+          {comunidades === null ? (
+            <p><SinDato /></p>
+          ) : comunidades.length > 0 ? (
             <ul className="grid gap-2">
               {comunidades.map((c) => (
                 <li key={c.id} className="flex flex-wrap items-center gap-2">
