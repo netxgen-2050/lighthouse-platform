@@ -119,11 +119,10 @@ export function PerfilCliente() {
     e.preventDefault();
     const errs = validar(borrador);
     setErrores(errs);
-    const primero = ORDEN_CAMPOS.find((c) => errs[c]);
-    if (primero) {
+    if (Object.keys(errs).length > 0) {
       // El foco al primer campo con error (descrito por su mensaje) hace que el lector lo anuncie.
-      const campo = formRef.current?.querySelector<HTMLElement>(`[data-campo="${primero}"]`);
-      campo?.focus();
+      const primero = ORDEN_CAMPOS.find((c) => errs[c]);
+      if (primero) formRef.current?.querySelector<HTMLElement>(`[data-campo="${primero}"]`)?.focus();
       return;
     }
     const limpio = normalizar(borrador);

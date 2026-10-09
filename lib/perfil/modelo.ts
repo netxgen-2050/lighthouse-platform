@@ -43,8 +43,11 @@ export function validar(p: Perfil): ErroresPerfil {
   for (const campo of ["lugar", "frase", "ofrezco", "decision", "noNegociables"] as const) {
     if (p[campo].trim().length > MAX[campo]) e[campo] = `Puede tener hasta ${MAX[campo]} caracteres.`;
   }
-  if (p.roles.includes("otro") && p.rolOtro.trim() === "") e.rolOtro = "Contanos qué otro rol tenés.";
-  else if (p.rolOtro.trim().length > MAX.rolOtro) e.rolOtro = `Puede tener hasta ${MAX.rolOtro} caracteres.`;
+  // El texto de "Otro" solo cuenta si "Otro" está marcado (si no, el campo ni se ve).
+  if (p.roles.includes("otro")) {
+    if (p.rolOtro.trim() === "") e.rolOtro = "Contanos qué otro rol tenés.";
+    else if (p.rolOtro.trim().length > MAX.rolOtro) e.rolOtro = `Puede tener hasta ${MAX.rolOtro} caracteres.`;
+  }
   return e;
 }
 

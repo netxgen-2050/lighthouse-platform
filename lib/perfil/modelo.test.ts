@@ -37,6 +37,12 @@ describe("validar", () => {
     expect(validar({ ...ANA, roles: ["otro"] }).rolOtro).toBeDefined();
     expect(validar({ ...ANA, roles: ["otro"], rolOtro: "Apicultura" }).rolOtro).toBeUndefined();
     expect(validar({ ...ANA, roles: ["jardineria"] }).rolOtro).toBeUndefined();
+    // Con "Otro" marcado, el largo se controla.
+    expect(validar({ ...ANA, roles: ["otro"], rolOtro: "x".repeat(81) }).rolOtro).toBeDefined();
+    // Con "Otro" desmarcado, el texto largo no bloquea el guardado y no se guarda.
+    const largo = { ...ANA, roles: ["jardineria" as const], rolOtro: "x".repeat(200) };
+    expect(validar(largo)).toEqual({});
+    expect(normalizar(largo).rolOtro).toBe("");
   });
 });
 
