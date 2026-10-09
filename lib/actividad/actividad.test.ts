@@ -98,7 +98,7 @@ describe("lectura de lo guardado", () => {
   it("solo acepta enlaces a rutas del propio sitio", () => {
     const buena = con([], EVENTOS.registrasteTicket(), t0, "a");
     const con_ = (enlace: string) => ({ ...buena[0], enlace });
-    const crudo = JSON.stringify([con_("//ejemplo.com"), con_("https://ejemplo.com"), con_("/\\ejemplo.com"), con_("congreso"), con_("/congreso")]);
+    const crudo = JSON.stringify([con_("//ejemplo.com"), con_("https://ejemplo.com"), con_("/\\ejemplo.com"), con_("/\t/ejemplo.com"), con_("/\n/ejemplo.com"), con_("/ a"), con_("congreso"), con_("/congreso")]);
     expect(leerEventos(crudo)).toEqual([con_("/congreso")]);
   });
 

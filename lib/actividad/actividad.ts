@@ -28,9 +28,16 @@ export type NuevoEvento = {
 
 export const MAX_EVENTOS = 200;
 
-/** Solo rutas del propio sitio: empiezan con una sola "/" (no "//" ni "/\"). */
+/**
+ * Solo rutas del propio sitio: empiezan con una sola "/" (no "//" ni "/\") y no tienen
+ * espacios ni caracteres de control (el navegador quita tabulaciones y saltos al leer la URL).
+ */
 function esRutaInterna(enlace: unknown): boolean {
-  return typeof enlace === "string" && /^\/(?![/\\])/.test(enlace);
+  return (
+    typeof enlace === "string" &&
+    /^\/(?![/\\])/.test(enlace) &&
+    !/[\s\u0000-\u001f\u007f]/.test(enlace)
+  );
 }
 
 /** Lee lo guardado. Ante datos dañados o ausentes devuelve una lista vacía y descarta lo que no sirve. */
