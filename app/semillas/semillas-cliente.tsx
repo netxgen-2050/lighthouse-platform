@@ -55,11 +55,6 @@ function nombreComunidad(id: string): string {
   return id === COMUNIDAD_LIGHTHOUSE ? "Lighthouse" : (buscarTribu(id)?.nombre ?? id);
 }
 
-function Ficha({ texto, tono }: { texto: string; tono?: "ok" | "no" }) {
-  const cls = tono === "ok" ? "border-deep bg-green-soft text-deep" : tono === "no" ? "border-faint text-muted" : "border-gold-ink bg-gold-soft text-gold-ink";
-  return <span className={`h-fit w-fit shrink-0 rounded-full border px-3 py-0.5 text-sm font-medium ${cls}`}>{texto}</span>;
-}
-
 function leerClave(k: string): string | null {
   try {
     return window.localStorage.getItem(k);
@@ -246,7 +241,7 @@ export function SemillasCliente() {
         </>
       )}
 
-      <AbreTe tiempo={tiempo} tienePacto={Boolean(semillas?.pactoAceptado)} residencia={datos.residencia} />
+      <MetaSembrador tiempo={tiempo} />
 
       {hayComunidad && semillas && (
         <RondaDeComunidad
@@ -263,64 +258,32 @@ export function SemillasCliente() {
   );
 }
 
-function AbreTe({ tiempo, tienePacto, residencia }: { tiempo: number | null; tienePacto: boolean; residencia: Residencia | undefined }) {
+/** Meta de Semillas de tiempo para ser sembrador/a activo/a. Lo que se abre con cada paso vive en el pasaporte. */
+function MetaSembrador({ tiempo }: { tiempo: number | null }) {
   return (
-    <section aria-labelledby="se-abre" className="grid gap-3 rounded-xl border border-faint bg-surface p-4">
-      <h2 id="se-abre" className="text-xl font-semibold">Lo que se te abre</h2>
-      <ol className="grid gap-3">
-        <Paso titulo="Explorador/a" detalle="Mapa, fichas y eventos abiertos" ficha={<Ficha texto="Activa" tono="ok" />} hecho />
-        <Paso
-          titulo="Miembro de tribu"
-          detalle="Sala, llamadas y jornadas · pacto aceptado"
-          ficha={tienePacto ? <Ficha texto="Activa" tono="ok" /> : <Ficha texto="Falta el pacto aceptado" tono="no" />}
-          hecho={tienePacto}
-        />
-        <Paso
-          titulo="Sembrador/a activo/a"
-          detalle="Uso de espacios comunes y voz en el diseño"
-          ficha={tiempo === null ? <Ficha texto="sin dato" tono="no" /> : <Ficha texto={estadoMedidor(tiempo)} />}
-          actual
-        >
-          <p className="text-sm">Semillas de tiempo en 3 meses</p>
-          {tiempo === null ? (
-            <p className="text-sm text-muted" data-testid="medidor">sin dato de 120 semillas: falta un pacto aceptado</p>
-          ) : (
-            <>
-              <div className="h-2 w-full max-w-xs overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
-                <div className="h-full bg-gold" style={{ width: `${Math.min(100, (tiempo / META_SEMBRADOR) * 100)}%` }} />
-              </div>
-              <p className="text-sm font-medium" data-testid="medidor">
-                {miles(tiempo)} de {META_SEMBRADOR} semillas
-              </p>
-            </>
-          )}
-        </Paso>
-        <Paso
-          titulo="Parte del proyecto"
-          detalle={
-            <>
-              Derechos del fideicomiso, según su contrato
-              <TerminoLegal clave="sumarte" />
-            </>
-          }
-          ficha={
-            <Ficha
-              texto={residencia === "argentina" ? "Pendiente legal" : residencia === "exterior" ? "No disponible hoy" : "sin dato"}
-              tono="no"
-            />
-          }
-        />
-        <Paso
-          titulo="Residente"
-          detalle={
-            <>
-              Voz y voto en la Asamblea: una persona, un voto
-              <TerminoLegal clave="art32" />
-            </>
-          }
-          ficha={<Ficha texto={residencia === "exterior" ? "Vive afuera" : "sin dato"} tono="no" />}
-        />
-      </ol>
+    <section aria-labelledby="meta-sembrador" className="grid gap-2 rounded-xl border border-faint bg-surface p-4">
+      <h2 id="meta-sembrador" className="text-xl font-semibold">Sembrador/a activo/a</h2>
+      <p className="flex flex-wrap items-center gap-2 text-sm">
+        Semillas de tiempo en 3 meses
+        <span className="w-fit rounded-full border border-gold-ink bg-gold-soft px-3 py-0.5 font-medium text-gold-ink">
+          {tiempo === null ? "sin dato" : estadoMedidor(tiempo)}
+        </span>
+      </p>
+      {tiempo === null ? (
+        <p className="text-sm text-muted" data-testid="medidor">sin dato de 120 semillas: falta un pacto aceptado</p>
+      ) : (
+        <>
+          <div className="h-2 w-full max-w-xs overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
+            <div className="h-full bg-gold" style={{ width: `${Math.min(100, (tiempo / META_SEMBRADOR) * 100)}%` }} />
+          </div>
+          <p className="text-sm font-medium" data-testid="medidor">
+            {miles(tiempo)} de {META_SEMBRADOR} semillas
+          </p>
+        </>
+      )}
+      <p className="text-sm">
+        <Link className="underline" href="/pasaporte">Ver lo que te abre tu pasaporte</Link>
+      </p>
     </section>
   );
 }
@@ -494,40 +457,5 @@ function RondaDeComunidad({ comunidad, nombre, habilitada, ronda, intento, onInt
         </ul>
       </section>
     </>
-  );
-}
-
-function Paso({
-  titulo,
-  detalle,
-  ficha,
-  hecho,
-  actual,
-  children,
-}: {
-  titulo: string;
-  detalle: React.ReactNode;
-  ficha: React.ReactNode;
-  hecho?: boolean;
-  actual?: boolean;
-  children?: React.ReactNode;
-}) {
-  return (
-    <li
-      aria-current={actual ? "step" : undefined}
-      className={`flex flex-wrap items-start justify-between gap-3 rounded-lg border p-3 ${
-        hecho ? "border-deep bg-green-soft" : actual ? "border-gold-ink bg-gold-soft" : "border-line"
-      }`}
-    >
-      <div className="grid gap-1">
-        <p className="font-medium">
-          {hecho ? <span aria-hidden="true">✓ </span> : null}
-          {titulo}
-        </p>
-        <p className="text-sm text-muted">{detalle}</p>
-        {children}
-      </div>
-      {ficha}
-    </li>
   );
 }

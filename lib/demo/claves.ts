@@ -13,4 +13,6 @@ export const CLAVES = {
   membresia: "lh-membresia",
   postulaciones: "lh-postulaciones",
   actividad: "lh-actividad",
+  kyc: "lh-kyc",
+  sellos: "lh-sellos",
 } as const;

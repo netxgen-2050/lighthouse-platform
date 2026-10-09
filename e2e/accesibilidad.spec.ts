@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { listarTribus } from "@/lib/tribus/datos";
+import { conIdentidadVerificada } from "./ayudas";
 
 const rutas = [
   "/",
@@ -34,15 +35,40 @@ test("hay 27 rutas auditadas", () => {
   expect(rutas).toHaveLength(27);
 });
 
-test("axe sin violaciones serias o críticas: /pasaporte con datos cargados", async ({ page }) => {
-  await page.goto("/pasaporte");
-  await page.getByRole("group", { name: "Nacionalidad" }).getByLabel("Otra").check();
-  await page.getByLabel("País de nacionalidad").fill("Noruega");
-  await page.getByLabel("Exterior").check();
-  await page.getByLabel("Remoto").check();
+async function graves(page: Page) {
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
-  const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
-  expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+  return r.violations
+    .filter((v) => v.impact === "serious" || v.impact === "critical")
+    .map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }));
+}
+
+test("axe sin violaciones serias o críticas: /pasaporte con sellos obtenidos, en trámite y modalidad cargada", async ({ page }) => {
+  await page.addInitScript(() => {
+    if (window.localStorage.getItem("lh-membresia")) return;
+    window.localStorage.setItem("lh-membresia", JSON.stringify({ lighthouse: "miembro", valle: "pedido" }));
+    window.localStorage.setItem("lh-sumarte", JSON.stringify({ plan: "miembro", pase: "brote", nivelPase: "brote" }));
+    window.localStorage.setItem("lh-kyc", JSON.stringify({ estado: "en-tramite", enviado: "2026-10-09T12:00:00.000Z" }));
+  });
+  await page.goto("/pasaporte");
+  await page.getByLabel("Obra presencial").check();
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: el diálogo de verificación en cada paso, con errores a la vista", async ({ page }) => {
+  await page.goto("/pasaporte");
+  await page.locator('[data-sello="identidad"]').getByRole("button", { name: "Verificar mi identidad" }).click();
+  const dialogo = page.getByRole("dialog", { name: /Verificar mi identidad/ });
+  await dialogo.getByRole("button", { name: "Siguiente" }).click();
+  await expect(dialogo.getByText("Error: Escribí tu nombre completo.")).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+  await dialogo.getByLabel("Nombre completo").fill("Ana Pérez");
+  await dialogo.getByLabel("Número de documento").fill("30123456");
+  await dialogo.getByLabel("Fecha de nacimiento").fill("1985-03-02");
+  await dialogo.getByRole("button", { name: "Siguiente" }).click();
+  expect(await graves(page)).toEqual([]);
+  await dialogo.getByRole("radio", { name: "Otra" }).check();
+  await dialogo.getByRole("radio", { name: "Exterior" }).check();
+  expect(await graves(page)).toEqual([]);
 });
 
 test("axe sin violaciones serias o críticas: /pactos siendo miembro, con las dos pestañas", async ({ page }) => {
@@ -72,6 +98,7 @@ test("axe sin violaciones serias o críticas: /semillas con la ronda y sus error
 });
 
 test("axe sin violaciones serias o críticas: /sumarte con el formulario de contacto abierto", async ({ page }) => {
+  await conIdentidadVerificada(page);
   await page.goto("/sumarte");
   await page.getByRole("button", { name: "Pedir invitación" }).click();
   await expect(page.getByRole("button", { name: "Enviar pedido (simulado)" })).toBeVisible();

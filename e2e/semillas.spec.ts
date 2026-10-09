@@ -103,16 +103,14 @@ test("con residencia en el exterior cargada, la plata no está disponible", asyn
   });
   await page.goto("/semillas");
   await expect(page.getByText("No disponible por residencia fiscal")).toBeVisible();
-  await expect(page.getByText("No disponible hoy")).toBeVisible();
-  await expect(page.getByText("Vive afuera")).toBeVisible();
 });
 
-test("la escalera muestra los cinco pasos con su estado en texto", async ({ page }) => {
+test("ya no hay escalera: solo el medidor y el enlace al pasaporte", async ({ page }) => {
   await page.goto("/semillas");
-  const pasos = page.getByRole("listitem").filter({ has: page.locator("p.font-medium") });
-  await expect(pasos).toHaveCount(5);
-  await expect(page.getByText("Explorador/a")).toBeVisible();
-  await expect(page.getByText("Parte del proyecto")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Lo que se te abre" })).toHaveCount(0);
+  await expect(page.getByText("Parte del proyecto")).toHaveCount(0);
+  await page.getByRole("link", { name: "Ver lo que te abre tu pasaporte" }).click();
+  await expect(page).toHaveURL(/\/pasaporte$/);
 });
 
 test("con un pacto de 20 h/mes aceptado se ve el medidor de 120", async ({ page }) => {

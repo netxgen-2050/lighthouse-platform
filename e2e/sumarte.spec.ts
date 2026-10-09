@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { conIdentidadVerificada } from "./ayudas";
 
 test("muestra título, aviso de prototipo, cuatro planes y la tabla", async ({ page }) => {
   const respuesta = await page.goto("/sumarte");
@@ -67,6 +68,7 @@ test("activar el pase no hace pedidos de red, sobrevive a la recarga y se deshac
 });
 
 test("pedir invitación suma un lugar y pedir una charla queda simulado", async ({ page }) => {
+  await conIdentidadVerificada(page);
   await page.goto("/sumarte");
   await expect(page.getByText("22 de 35")).toBeVisible();
   await page.getByRole("button", { name: "Pedir invitación" }).click();

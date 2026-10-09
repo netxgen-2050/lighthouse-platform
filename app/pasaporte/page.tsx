@@ -17,10 +17,11 @@ export default function PasaportePage() {
       <p className="text-sm font-medium text-muted">
         Pasaporte<TerminoLegal clave="pasaporte" />
       </p>
-      <h1 className="text-3xl font-semibold">Tu pasaporte para sumarte</h1>
+      <h1 className="text-3xl font-semibold">Tu pasaporte</h1>
       <p className="mt-2 mb-6 max-w-2xl text-muted">
-        Antes de poner plata, el fiduciario necesita saber quién sos. Lo completás una vez y te muestra qué caminos
-        tenés abiertos. Es una simulación: no se verifica ningún documento ni se cobra nada.
+        Como un pasaporte con sellos: cada sello certifica algo y abre puertas concretas. Ves cuáles tenés, cuáles
+        están en trámite y cómo conseguir el resto. Es una simulación: no se verifica ningún documento ni se cobra
+        nada, y todo queda solo en este navegador.
       </p>
       <PasaporteCliente />
     </div>

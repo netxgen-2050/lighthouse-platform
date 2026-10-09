@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { KycDialogo } from "@/components/kyc-dialogo";
 import { TerminoEconomico } from "@/components/termino-economico";
 import { TerminoLegal } from "@/components/termino-legal";
 import { semillasDePlata, semillasPorMes } from "@/lib/pactos/calculo";
@@ -24,6 +25,7 @@ import { EVENTOS } from "@/lib/actividad/eventos";
 import { COMUNIDAD_LIGHTHOUSE, comunidadesDondeEsMiembro, leerMembresiaDelNavegador } from "@/lib/membresia/estado";
 import { DATOS_VACIOS, type DatosPersona } from "@/lib/pasaporte/datos";
 import { leerPasaporteDelNavegador } from "@/lib/pasaporte/del-navegador";
+import { useKyc } from "@/lib/pasaporte/usar-kyc";
 import { miles } from "@/lib/sumarte/datos";
 import { buscarTribu } from "@/lib/tribus/datos";
 
@@ -56,6 +58,8 @@ export function PactosCliente() {
   const [miembro, setMiembro] = useState<string[]>([]);
   const [elegida, setElegida] = useState("");
   const [monto, setMonto] = useState(String(MONTO_USD.inicial));
+  const [dialogoKyc, setDialogoKyc] = useState(false);
+  const kyc = useKyc();
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
@@ -359,7 +363,11 @@ export function PactosCliente() {
                   type="button"
                   className={BOTON_PRIMARIO}
                   disabled={!montoValido}
-                  onClick={() => dispatch({ tipo: "aporte", comunidad, montoUsd: montoNumero })}
+                  onClick={() => {
+                    // Sin el sello de identidad, primero se ofrece la verificación.
+                    if (kyc.verificada) dispatch({ tipo: "aporte", comunidad, montoUsd: montoNumero });
+                    else setDialogoKyc(true);
+                  }}
                 >
                   Registrar aporte (simulado)
                 </button>
@@ -436,6 +444,18 @@ export function PactosCliente() {
           {anuncio}
         </p>
       </section>
+      <KycDialogo
+        abierto={dialogoKyc}
+        kyc={kyc.kyc}
+        motivo="Para registrar un aporte en plata primero necesitamos verificar tu identidad."
+        alCerrar={() => {
+          setDialogoKyc(false);
+          // Con el sello ya obtenido, se sigue con lo que la persona quería hacer.
+          if (kyc.verificada && montoValido) dispatch({ tipo: "aporte", comunidad, montoUsd: montoNumero });
+        }}
+        alEnviar={kyc.enviar}
+        alAprobar={kyc.aprobar}
+      />
     </div>
   );
 }

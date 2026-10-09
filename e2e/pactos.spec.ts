@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { conIdentidadVerificada } from "./ayudas";
 
 async function comoMiembro(page: Page, comunidades: string[] = ["lighthouse"]) {
   await page.addInitScript((ids) => {
@@ -160,6 +161,7 @@ test("el pacto aceptado se guarda por comunidad y suma en /semillas", async ({ p
 
 test("sumarte con plata: USD 200 se registran como 200 Semillas de plata, simulado", async ({ page }) => {
   await comoMiembro(page);
+  await conIdentidadVerificada(page);
   await page.goto("/pactos");
   await page.getByRole("tab", { name: "Sumarte con plata" }).click();
   await expect(page.getByRole("tab", { name: "Sumarte con plata" })).toHaveAttribute("aria-selected", "true");
@@ -171,6 +173,19 @@ test("sumarte con plata: USD 200 se registran como 200 Semillas de plata, simula
   await page.getByRole("tab", { name: "Sumarte con plata" }).click();
   await expect(page.getByTestId("semillas-plata")).toHaveText("200 Semillas de plata (simulado)");
   await expect(page.getByText(/caja|cobrás/i)).toHaveCount(0);
+});
+
+test("sin el sello de identidad, registrar un aporte en plata abre la verificación y no registra nada", async ({ page }) => {
+  await comoMiembro(page);
+  await page.goto("/pactos");
+  await page.getByRole("tab", { name: "Sumarte con plata" }).click();
+  await page.getByRole("button", { name: "Registrar aporte (simulado)" }).click();
+  const dialogo = page.getByRole("dialog", { name: /Verificar mi identidad/ });
+  await expect(dialogo).toBeVisible();
+  await expect(dialogo).toContainText("registrar un aporte en plata");
+  await dialogo.getByRole("button", { name: "Cerrar" }).click();
+  await expect(dialogo).toBeHidden();
+  await expect(page.getByText("Todavía no registraste aportes en plata.")).toBeVisible();
 });
 
 test("un monto inválido no se registra", async ({ page }) => {
