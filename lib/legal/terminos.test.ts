@@ -30,6 +30,7 @@ describe("catálogo legal", () => {
         "fidasamblea",
         "guardian",
         "hacienda",
+        "kyc",
         "licencia",
         "loteo",
         "membresia",

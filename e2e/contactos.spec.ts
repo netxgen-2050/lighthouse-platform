@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { conIdentidadVerificada } from "./ayudas";
 
 test.beforeEach(async ({ page }) => {
   await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
@@ -80,6 +81,7 @@ test("enviar una consulta: anuncio, sigue tras recargar y aparece en /netx", asy
 });
 
 test("pedir invitación al círculo: suma uno al medidor y queda en la bandeja", async ({ page }) => {
+  await conIdentidadVerificada(page);
   await page.goto("/sumarte");
   await page.getByRole("button", { name: "Pedir invitación" }).click();
   await page.getByRole("radio", { name: "Email" }).check();
@@ -93,6 +95,7 @@ test("pedir invitación al círculo: suma uno al medidor y queda en la bandeja",
 });
 
 test("cancelar la invitación o la charla no cambia nada", async ({ page }) => {
+  await conIdentidadVerificada(page);
   await page.goto("/sumarte");
   await page.getByRole("button", { name: "Pedir una charla" }).click();
   await page.getByRole("button", { name: "Cancelar" }).click();
@@ -167,6 +170,7 @@ test("solo teclado: abrir, elegir canal y enviar", async ({ page }) => {
 });
 
 test("no se puede guardar el pedido: avisa solo el formulario y no marca la invitación", async ({ page }) => {
+  await conIdentidadVerificada(page);
   await page.addInitScript(() => {
     const original = Storage.prototype.setItem;
     Storage.prototype.setItem = function (clave: string, valor: string) {
@@ -185,6 +189,7 @@ test("no se puede guardar el pedido: avisa solo el formulario y no marca la invi
 });
 
 test("falla guardar la página después del pedido: una sola alerta y reintentar no duplica", async ({ page }) => {
+  await conIdentidadVerificada(page);
   await page.addInitScript(() => {
     const original = Storage.prototype.setItem;
     Storage.prototype.setItem = function (clave: string, valor: string) {

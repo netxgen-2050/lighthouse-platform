@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { KycDialogo } from "@/components/kyc-dialogo";
 import { Medidor } from "@/components/medidor";
 import { PedidoContacto } from "@/components/pedido-contacto";
 import { TerminoLegal } from "@/components/termino-legal";
@@ -18,6 +19,7 @@ import {
   PLAN_TRIBU_MENSUAL,
   type NivelPase,
 } from "@/lib/sumarte/datos";
+import { useKyc } from "@/lib/pasaporte/usar-kyc";
 import { INICIAL, leer, reducir, type Accion, type EstadoSumarte } from "@/lib/sumarte/estado";
 
 // Todo queda solo en este navegador: no hay pedidos de red ni cobros.
@@ -38,6 +40,8 @@ export function SumarteCliente() {
   const [listo, setListo] = useState(false);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [formulario, setFormulario] = useState<"invitacion" | "charla" | null>(null);
+  const [dialogoKyc, setDialogoKyc] = useState(false);
+  const kyc = useKyc();
   const foco = useRef<string | null>(null);
 
   useEffect(() => {
@@ -288,7 +292,7 @@ export function SumarteCliente() {
           </table>
         </div>
         <p className="mt-3 text-sm">
-          <Link className="underline" href="/canales">Ver qué te abre cada plan</Link>
+          <Link className="underline" href="/pasaporte">Ver qué te abre cada sello de tu pasaporte</Link>
         </p>
       </section>
 
@@ -319,7 +323,11 @@ export function SumarteCliente() {
                 type="button"
                 aria-expanded={formulario === "invitacion"}
                 className={BOTON_PRIMARIO}
-                onClick={() => setFormulario("invitacion")}
+                onClick={() => {
+                  // Sin el sello de identidad, primero se ofrece la verificación.
+                  if (kyc.verificada) setFormulario("invitacion");
+                  else setDialogoKyc(true);
+                }}
               >
                 Pedir invitación
               </button>
@@ -372,6 +380,19 @@ export function SumarteCliente() {
           </article>
         </div>
       </section>
+
+      <KycDialogo
+        abierto={dialogoKyc}
+        kyc={kyc.kyc}
+        motivo="Para pedir una invitación a invertir primero necesitamos verificar tu identidad."
+        alCerrar={() => {
+          setDialogoKyc(false);
+          // Con el sello ya obtenido, se sigue con lo que la persona quería hacer.
+          if (kyc.verificada && !estado.invitacion) setFormulario("invitacion");
+        }}
+        alEnviar={kyc.enviar}
+        alAprobar={kyc.aprobar}
+      />
     </div>
   );
 }

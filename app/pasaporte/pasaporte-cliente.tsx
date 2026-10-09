@@ -1,26 +1,50 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { KycDialogo } from "@/components/kyc-dialogo";
 import { TerminoLegal } from "@/components/termino-legal";
-import { caminos, TEXTO_ESTADO, type EstadoCamino } from "@/lib/pasaporte/caminos";
-import { DATOS_VACIOS, leerDatos, MAX_HORAS, type DatosPersona } from "@/lib/pasaporte/datos";
+import { esCodigoValido } from "@/lib/congreso/ticket";
 import { CLAVES } from "@/lib/demo/claves";
-import { EMISION } from "@/lib/sumarte/datos";
+import { leerMembresiaDelNavegador, type Membresias } from "@/lib/membresia/estado";
+import { DATOS_VACIOS, leerDatos, MAX_HORAS, type DatosPersona } from "@/lib/pasaporte/datos";
+import { fechaLarga } from "@/lib/pasaporte/kyc";
+import {
+  fechasPorGuardar,
+  leerFechas,
+  sellos,
+  TEXTO_ESTADO_SELLO,
+  type EstadoSello,
+  type FechasSellos,
+  type Sello,
+} from "@/lib/pasaporte/sellos";
+import { useKyc } from "@/lib/pasaporte/usar-kyc";
+import { INICIAL, leer as leerSumarte, type EstadoSumarte } from "@/lib/sumarte/estado";
 
 // Todo queda solo en este navegador: no hay pedidos de red ni KYC real.
 const CLAVE = CLAVES.pasaporte;
 const CLAVE_HORAS_TEXTO = `${CLAVES.pasaporte}:horas-texto`;
 
-const CAMPO =
-  "mt-1 block w-full rounded-lg border border-faint bg-surface px-3 py-2 text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
+const FOCO = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
+const BOTON = `w-fit rounded-lg px-4 py-1.5 font-medium ${FOCO}`;
+const BOTON_PRIMARIO = `${BOTON} bg-deep text-on-deep hover:bg-deep-2`;
+const BOTON_SUAVE = `${BOTON} border border-muted hover:bg-surface-2`;
+const CAMPO = `mt-1 block w-full rounded-lg border border-faint bg-surface px-3 py-2 text-ink ${FOCO}`;
 const TARJETA = "grid content-start gap-4 rounded-xl border border-faint bg-surface p-5";
 
-const ICONO: Record<EstadoCamino, string> = { abierto: "✓", no: "!", condiciones: "~", completar: "?" };
-const ETIQUETA: Record<EstadoCamino, string> = {
-  abierto: "border-deep bg-green-soft text-deep",
-  no: "border-warn-ink bg-warn-bg text-warn-ink",
-  condiciones: "border-gold-ink bg-gold-soft text-gold-ink",
-  completar: "border-muted bg-surface-2 text-muted",
+// El sello es decorativo (el estado también está escrito): cambia la forma del borde, no solo el color.
+const SELLO_VISUAL: Record<EstadoSello, string> = {
+  obtenido: "-rotate-3 border-4 border-double border-deep bg-green-soft text-deep",
+  "en-tramite": "border-4 border-dashed border-gold-ink bg-gold-soft text-gold-ink",
+  disponible: "border-2 border-dashed border-faint bg-surface-2 text-muted",
+  "no-disponible": "border-2 border-dotted border-faint bg-surface-2 text-muted",
+};
+const ICONO: Record<EstadoSello, string> = { obtenido: "✓", "en-tramite": "…", disponible: "○", "no-disponible": "—" };
+const ETIQUETA: Record<EstadoSello, string> = {
+  obtenido: "border-deep bg-green-soft text-deep",
+  "en-tramite": "border-gold-ink bg-gold-soft text-gold-ink",
+  disponible: "border-muted bg-surface-2 text-muted",
+  "no-disponible": "border-muted bg-surface-2 text-muted",
 };
 
 function Opcion<T extends string>({
@@ -44,125 +68,172 @@ function Opcion<T extends string>({
   );
 }
 
+function TarjetaSello({ s, alVerificar, alAprobar }: { s: Sello; alVerificar: () => void; alAprobar: () => void }) {
+  return (
+    <li data-sello={s.id} className="grid content-start gap-3 rounded-xl border border-faint bg-surface p-4">
+      <div className="flex items-start gap-4">
+        <div
+          aria-hidden="true"
+          className={`flex size-20 shrink-0 flex-col items-center justify-center rounded-full text-center ${SELLO_VISUAL[s.estado]}`}
+        >
+          <span className="text-2xl leading-none">{ICONO[s.estado]}</span>
+        </div>
+        <div className="grid min-w-0 gap-1">
+          <h3 className="text-lg font-semibold break-words">
+            {s.nombre}
+            {s.legal?.map((k) => <TerminoLegal key={k} clave={k} />)}
+          </h3>
+          <p className="flex flex-wrap items-center gap-2">
+            <span className={`rounded-full border px-2 py-0.5 text-sm font-medium ${ETIQUETA[s.estado]}`}>
+              {TEXTO_ESTADO_SELLO[s.estado]}
+            </span>
+            {s.fecha && <span className="text-sm text-muted">{fechaLarga(s.fecha)}</span>}
+          </p>
+        </div>
+      </div>
+      <p className="text-sm">{s.detalle}</p>
+      {s.id === "identidad" && s.estado === "en-tramite" && (
+        <button type="button" className={BOTON_PRIMARIO} onClick={alAprobar}>
+          Simular: verificación aprobada
+        </button>
+      )}
+      {s.accion?.tipo === "kyc" && (
+        <button type="button" className={BOTON_PRIMARIO} onClick={alVerificar}>
+          {s.accion.texto}
+        </button>
+      )}
+      {s.accion?.tipo === "enlace" && (
+        <Link className={BOTON_SUAVE} href={s.accion.href}>
+          {s.accion.texto}
+        </Link>
+      )}
+      {s.abre.length > 0 && (
+        <div>
+          <p className="text-sm font-medium">{s.estado === "obtenido" ? "Qué abre" : "Qué abriría"}</p>
+          <ul className="list-disc pl-5 text-sm">
+            {s.abre.map((a) => (
+              <li key={a}>{a}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </li>
+  );
+}
+
 export function PasaporteCliente() {
-  const [datos, setDatos] = useState<DatosPersona>(DATOS_VACIOS);
+  const kyc = useKyc();
+  const [listo, setListo] = useState(false);
+  const [ahora, setAhora] = useState<Date | null>(null);
+  const [sumarte, setSumarte] = useState<EstadoSumarte>(INICIAL);
+  const [membresias, setMembresias] = useState<Membresias>({});
+  const [ticket, setTicket] = useState(false);
+  const [fechas, setFechas] = useState<FechasSellos>({});
+  const [dialogo, setDialogo] = useState(false);
+  const [datosAporte, setDatosAporte] = useState<DatosPersona>(DATOS_VACIOS);
   const [horasTexto, setHorasTexto] = useState("");
   const [falloAlmacen, setFalloAlmacen] = useState(false);
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
     try {
+      setSumarte(leerSumarte(window.localStorage.getItem(CLAVES.sumarte)));
+      setTicket(esCodigoValido(window.localStorage.getItem(CLAVES.congreso) ?? ""));
+      setFechas(leerFechas(window.localStorage.getItem(CLAVES.sellos)));
       const guardados = leerDatos(window.localStorage.getItem(CLAVE));
-      setDatos(guardados);
+      setDatosAporte(guardados);
       // Si lo escrito estaba fuera de rango, se restaura el texto para repetir el mensaje.
       const textoCrudo = window.localStorage.getItem(CLAVE_HORAS_TEXTO);
-      setHorasTexto(
-        guardados.horas !== undefined ? String(guardados.horas) : (textoCrudo ?? ""),
-      );
+      setHorasTexto(guardados.horas !== undefined ? String(guardados.horas) : (textoCrudo ?? ""));
     } catch {
       setFalloAlmacen(true);
     }
+    setMembresias(leerMembresiaDelNavegador());
+    setAhora(new Date());
+    setListo(true);
   }, []);
 
-  function cambiar(parcial: Partial<DatosPersona>) {
-    const siguiente = { ...datos, ...parcial };
+  const lista = useMemo(
+    () =>
+      ahora && kyc.cargado
+        ? sellos(
+            { sumarte, membresias, kyc: kyc.kyc, datos: kyc.datos, ticket, presenciaGenesis: false, fechas },
+            ahora,
+          )
+        : [],
+    [ahora, kyc.cargado, kyc.kyc, kyc.datos, sumarte, membresias, ticket, fechas],
+  );
+
+  // Cada sello obtenido guarda el día en que se lo vio por primera vez.
+  useEffect(() => {
+    const nuevas = fechasPorGuardar(lista, fechas);
+    if (Object.keys(nuevas).length === 0) return;
+    const siguiente = { ...fechas, ...nuevas };
+    try {
+      window.localStorage.setItem(CLAVES.sellos, JSON.stringify(siguiente));
+    } catch {
+      setFalloAlmacen(true);
+    }
+    setFechas(siguiente);
+  }, [lista, fechas]);
+
+  function cambiarAporte(parcial: Partial<DatosPersona>) {
+    // Se relee antes de escribir: el trámite de identidad también guarda en "Tus datos".
+    let base = datosAporte;
+    try {
+      base = leerDatos(window.localStorage.getItem(CLAVE));
+    } catch {
+      // Sin almacenamiento: se sigue en memoria.
+    }
+    const siguiente = { ...base, ...parcial };
     try {
       window.localStorage.setItem(CLAVE, JSON.stringify(siguiente));
       setFalloAlmacen(false);
     } catch {
       setFalloAlmacen(true);
     }
-    setDatos(siguiente);
+    setDatosAporte(siguiente);
   }
 
-  const horasInvalidas = horasTexto !== "" && datos.horas === undefined;
-  const lista = useMemo(() => caminos(datos, EMISION), [datos]);
+  if (!listo || !kyc.cargado) return <p role="status" className="text-sm text-muted">Cargando tu pasaporte…</p>;
+
+  const horasInvalidas = horasTexto !== "" && datosAporte.horas === undefined;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <section aria-labelledby="titulo-datos" className={TARJETA}>
-        <h2 id="titulo-datos" className="text-xl font-semibold">
-          Tus datos
-        </h2>
-        <p className="text-sm text-muted">
-          Simulado: no se verifica nada y lo que cargues queda solo en este navegador.
+    <div className="grid gap-8">
+      {(falloAlmacen || kyc.falloAlmacen) && (
+        <p role="alert" className="text-sm font-medium text-warn-ink">
+          No pudimos guardar tus datos en este navegador. Se ven ahora, pero se pierden al recargar.
         </p>
+      )}
 
-        <fieldset className="grid gap-2">
-          <legend className="font-medium">Nacionalidad</legend>
-          <div className="flex flex-wrap gap-4">
-            <Opcion nombre="nacionalidad" valor="argentina" actual={datos.nacionalidad} etiqueta="Argentina" alElegir={(v) => cambiar({ nacionalidad: v, paisNacionalidad: undefined })} />
-            <Opcion nombre="nacionalidad" valor="otra" actual={datos.nacionalidad} etiqueta="Otra" alElegir={(v) => cambiar({ nacionalidad: v })} />
-          </div>
-          {datos.nacionalidad === "otra" && (
-            <div>
-              <label htmlFor="pais-nacionalidad" className="text-sm">País de nacionalidad</label>
-              <input
-                id="pais-nacionalidad"
-                type="text"
-                maxLength={120}
-                className={CAMPO}
-                value={datos.paisNacionalidad ?? ""}
-                onChange={(e) => cambiar({ paisNacionalidad: e.target.value || undefined })}
-              />
-            </div>
-          )}
-        </fieldset>
+      <section aria-labelledby="titulo-sellos" className="grid gap-4">
+        <h2 id="titulo-sellos" className="text-xl font-semibold">Tus sellos</h2>
+        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {lista.map((s) => (
+            <TarjetaSello
+              key={s.id}
+              s={s}
+              alVerificar={() => setDialogo(true)}
+              alAprobar={kyc.aprobar}
+            />
+          ))}
+        </ul>
+      </section>
 
-        <fieldset className="grid gap-2">
-          <legend className="font-medium">
-            Residencia fiscal<TerminoLegal clave="hacienda" />
-          </legend>
-          <div className="flex flex-wrap gap-4">
-            <Opcion nombre="residencia" valor="argentina" actual={datos.residencia} etiqueta="Argentina" alElegir={(v) => cambiar({ residencia: v, paisResidencia: undefined })} />
-            <Opcion nombre="residencia" valor="exterior" actual={datos.residencia} etiqueta="Exterior" alElegir={(v) => cambiar({ residencia: v })} />
-          </div>
-          {datos.residencia === "exterior" && (
-            <div>
-              <label htmlFor="pais-residencia" className="text-sm">País de residencia fiscal</label>
-              <input
-                id="pais-residencia"
-                type="text"
-                maxLength={120}
-                className={CAMPO}
-                value={datos.paisResidencia ?? ""}
-                onChange={(e) => cambiar({ paisResidencia: e.target.value || undefined })}
-              />
-            </div>
-          )}
-        </fieldset>
-
-        <div>
-          <label htmlFor="origen-fondos" className="font-medium">Origen de fondos</label>
-          <input
-            id="origen-fondos"
-            type="text"
-            maxLength={120}
-            className={CAMPO}
-            value={datos.origenFondos ?? ""}
-            onChange={(e) => cambiar({ origenFondos: e.target.value || undefined })}
-          />
-        </div>
-
-        <fieldset className="grid gap-2">
-          <legend className="font-medium">
-            Tipo de inversor<TerminoLegal clave="calificado" />
-          </legend>
-          <div className="flex flex-wrap gap-4">
-            <Opcion nombre="inversor" valor="no-calificado" actual={datos.inversor} etiqueta="No calificado" alElegir={(v) => cambiar({ inversor: v })} />
-            <Opcion nombre="inversor" valor="calificado" actual={datos.inversor} etiqueta="Calificado" alElegir={(v) => cambiar({ inversor: v })} />
-          </div>
-        </fieldset>
-
+      <section aria-labelledby="titulo-aporte" className={`${TARJETA} max-w-xl`}>
+        <h2 id="titulo-aporte" className="text-xl font-semibold">Cómo vas a aportar</h2>
+        <p className="text-sm text-muted">
+          Lo usa Pactos para mostrarte los avisos que te tocan. Simulado: lo que cargues queda solo en este navegador.
+        </p>
         <fieldset className="grid gap-2">
           <legend className="font-medium">Modalidad de aporte</legend>
           <div className="flex flex-wrap gap-4">
-            <Opcion nombre="modalidad" valor="obra" actual={datos.modalidad} etiqueta="Obra presencial" alElegir={(v) => cambiar({ modalidad: v })} />
-            <Opcion nombre="modalidad" valor="remoto" actual={datos.modalidad} etiqueta="Remoto" alElegir={(v) => cambiar({ modalidad: v })} />
+            <Opcion nombre="modalidad" valor="obra" actual={datosAporte.modalidad} etiqueta="Obra presencial" alElegir={(v) => cambiarAporte({ modalidad: v })} />
+            <Opcion nombre="modalidad" valor="remoto" actual={datosAporte.modalidad} etiqueta="Remoto" alElegir={(v) => cambiarAporte({ modalidad: v })} />
           </div>
         </fieldset>
-
-        {datos.modalidad === "obra" && (
+        {datosAporte.modalidad === "obra" && (
           <div>
             <label htmlFor="horas" className="font-medium">Horas por mes</label>
             <input
@@ -181,10 +252,10 @@ export function PasaporteCliente() {
                 try {
                   window.localStorage.setItem(CLAVE_HORAS_TEXTO, t);
                 } catch {
-                  // el aviso de almacenamiento lo da cambiar()
+                  // el aviso de almacenamiento lo da cambiarAporte()
                 }
                 const n = t === "" ? undefined : Number(t);
-                cambiar({ horas: n !== undefined && Number.isFinite(n) && n >= 0 && n <= MAX_HORAS ? n : undefined });
+                cambiarAporte({ horas: n !== undefined && Number.isFinite(n) && n >= 0 && n <= MAX_HORAS ? n : undefined });
               }}
             />
             {horasInvalidas && (
@@ -194,40 +265,19 @@ export function PasaporteCliente() {
             )}
           </div>
         )}
-
-        {falloAlmacen && (
-          <p role="alert" className="text-sm font-medium text-warn-ink">
-            No pudimos guardar tus datos en este navegador. Se ven ahora, pero se pierden al recargar.
-          </p>
-        )}
-        <p className="text-sm text-muted">
-          Estos datos los custodiaría el fiduciario. La plataforma guardaría qué se te mostró y cuándo.
-        </p>
       </section>
 
-      <section aria-labelledby="titulo-caminos" className={TARJETA}>
-        <h2 id="titulo-caminos" className="text-xl font-semibold">
-          Tus caminos
-        </h2>
-        <ul className="grid gap-4" aria-live="polite">
-          {lista.map((c) => (
-            <li key={c.id} data-camino={c.id} className="grid gap-1">
-              <p className="flex flex-wrap items-center gap-2">
-                <span aria-hidden="true">{ICONO[c.estado]}</span>
-                <strong>{c.titulo}</strong>
-                {c.legalTitulo?.map((k) => <TerminoLegal key={k} clave={k} />)}
-                <span className={`rounded-full border px-2 py-0.5 text-sm font-medium ${ETIQUETA[c.estado]}`}>
-                  {TEXTO_ESTADO[c.estado]}
-                </span>
-              </p>
-              <p className="text-sm">
-                {c.texto}
-                {c.legalTexto?.map((k) => <TerminoLegal key={k} clave={k} />)}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <p className="text-sm text-muted">
+        Estos datos los custodiaría el fiduciario. La plataforma guardaría qué se te mostró y cuándo.
+      </p>
+
+      <KycDialogo
+        abierto={dialogo}
+        kyc={kyc.kyc}
+        alCerrar={() => setDialogo(false)}
+        alEnviar={kyc.enviar}
+        alAprobar={kyc.aprobar}
+      />
     </div>
   );
 }

@@ -14,5 +14,7 @@ describe("CLAVES", () => {
     expect(CLAVES.bitacora).toBe("lh-bitacora");
     expect(CLAVES.membresia).toBe("lh-membresia");
     expect(CLAVES.postulaciones).toBe("lh-postulaciones");
+    expect(CLAVES.kyc).toBe("lh-kyc");
+    expect(CLAVES.sellos).toBe("lh-sellos");
   });
 });

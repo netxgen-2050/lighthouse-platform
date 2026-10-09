@@ -192,6 +192,13 @@ export const TERMINOS = {
       "Adherir es aceptar por escrito las reglas de convivencia de una comunidad. No te hace dueño de nada ni te obliga a pagar: te compromete a cuidar esos acuerdos, y la comunidad decide si te acepta. Podés retirarte siguiendo lo que diga el propio manifiesto. En el prototipo todo es simulado y queda solo en este navegador.",
     borrador: true,
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  kyc: {
+    titulo: "Verificación de identidad",
+    texto:
+      "Antes de aportar plata, quien administra el fideicomiso tiene que saber quién sos, dónde tributás y de dónde vienen los fondos (prevención de lavado de activos). En la versión real lo hace el fiduciario y custodia tus datos. En el prototipo es una simulación: no se verifica ningún documento y nada sale de este navegador.",
+    borrador: true,
+  },
 } as const;
 
 /** Claves de los textos que son borrador (no vienen del mock-up). */
