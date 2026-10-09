@@ -5,6 +5,7 @@ import {
   ESTADO_INICIAL,
   armarReporteHifa,
   elegir,
+  idMensaje,
   leerGuardado,
   reducir,
   textoParaCopiarHifa,
@@ -104,6 +105,28 @@ describe("conversación", () => {
     e = reducir(e, { tipo: "decidir", enviar: true });
     expect(e.pendiente?.fase).toBe("enviando");
   });
+  it("reintentar y dejarlo quedan en la conversación con su etiqueta real", () => {
+    let e = reducir(ESTADO_INICIAL, { tipo: "escribir", texto: "una idea", azar: 0 });
+    e = reducir(e, { tipo: "decidir", enviar: true });
+    expect(e.mensajes.at(-2)!.texto).toBe("Sí, pasalo");
+    e = reducir(e, { tipo: "envio-fallo" });
+    const reintento = reducir(e, { tipo: "decidir", enviar: true });
+    expect(reintento.mensajes.at(-2)).toEqual({ de: "persona", texto: "Reintentar" });
+    const dejado = reducir(e, { tipo: "decidir", enviar: false });
+    expect(dejado.mensajes.at(-2)).toEqual({ de: "persona", texto: "Dejarlo" });
+  });
+  it("al llegar al tope el total sigue creciendo y los ids son estables", () => {
+    let e = ESTADO_INICIAL;
+    for (let i = 0; i < 80; i++) e = reducir(e, { tipo: "escribir", texto: `m${i}`, azar: 0 });
+    expect(e.mensajes.length).toBe(200);
+    expect(e.total).toBe(1 + 80 * 3);
+    const ultimo = e.mensajes.length - 1;
+    expect(idMensaje(e, ultimo)).toBe(e.total - 1);
+    const antes = idMensaje(e, ultimo);
+    const siguiente = reducir(e, { tipo: "atajo", atajo: "idea" });
+    expect(siguiente.total).toBe(e.total + 2);
+    expect(idMensaje(siguiente, siguiente.mensajes.length - 3)).toBe(antes);
+  });
   it("rechazar no envía", () => {
     let e = reducir(ESTADO_INICIAL, { tipo: "escribir", texto: "una idea", azar: 0 });
     e = reducir(e, { tipo: "decidir", enviar: false });
@@ -131,11 +154,17 @@ describe("leerGuardado", () => {
   it("recupera lo guardado y trata un envío a medias como fallido", () => {
     const e: Estado = {
       mensajes: [{ de: "persona", texto: "hola" }],
+      total: 1,
       modo: "idea",
       pendiente: { tipo: "idea", texto: "hola", fase: "enviando" },
     };
     const l = leerGuardado(JSON.stringify(e));
     expect(l.mensajes).toEqual(e.mensajes);
     expect(l.pendiente?.fase).toBe("fallo");
+    expect(l.total).toBe(1);
+  });
+  it("un guardado sin total (versión anterior) usa el largo de la conversación", () => {
+    const l = leerGuardado('{"mensajes":[{"de":"hifa","texto":"a"},{"de":"persona","texto":"b"}],"modo":null,"pendiente":null}');
+    expect(l.total).toBe(2);
   });
 });

@@ -6,8 +6,13 @@ import { CLAVES } from "@/lib/demo/claves";
 import { ATAJOS } from "@/lib/hifa/guion";
 import {
   ESTADO_INICIAL,
+  ETIQUETA_DEJARLO,
+  ETIQUETA_NO,
+  ETIQUETA_REINTENTAR,
+  ETIQUETA_SI,
   MAX_MENSAJE,
   armarReporteHifa,
+  idMensaje,
   leerGuardado,
   reducir,
   textoParaCopiarHifa,
@@ -61,7 +66,19 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
   useEffect(() => {
     const r = registro.current;
     if (abierto && r) r.scrollTop = r.scrollHeight;
-  }, [abierto, estado.mensajes.length, fase]);
+  }, [abierto, estado.total, fase]);
+
+  // Escape cierra el chat esté donde esté el foco (también tras un clic en la página).
+  useEffect(() => {
+    if (!abierto) return;
+    function alTeclear(ev: KeyboardEvent) {
+      if (ev.key !== "Escape" || ev.defaultPrevented) return;
+      setAbierto(false);
+      disparador.current?.focus();
+    }
+    document.addEventListener("keydown", alTeclear);
+    return () => document.removeEventListener("keydown", alTeclear);
+  }, [abierto]);
 
   // Envío al equipo: se dispara cuando la persona aceptó (fase "enviando").
   useEffect(() => {
@@ -98,6 +115,13 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
     disparador.current?.focus();
   }
 
+  // El botón que se apretó desaparece y el campo puede quedar deshabilitado:
+  // el foco pasa a la conversación para que el teclado siga dentro del chat.
+  function decidir(enviar: boolean) {
+    despachar({ tipo: "decidir", enviar });
+    registro.current?.focus();
+  }
+
   function enviarTexto(ev: React.FormEvent) {
     ev.preventDefault();
     if (texto.trim() === "") return;
@@ -125,14 +149,7 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
   const ocupada = fase === "enviando";
 
   return (
-    <div
-      onKeyDown={(ev) => {
-        if (ev.key === "Escape" && abierto) {
-          ev.stopPropagation();
-          cerrar();
-        }
-      }}
-    >
+    <div>
       <button
         ref={disparador}
         type="button"
@@ -150,7 +167,7 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
         role="dialog"
         aria-label="Chat con Hifa"
         hidden={!abierto}
-        className="fixed bottom-20 right-4 z-50 flex max-h-[min(34rem,calc(100dvh-6rem))] w-[min(22rem,calc(100vw-6rem))] flex-col overflow-hidden rounded-xl border border-line bg-surface text-ink shadow-lg"
+        className="fixed bottom-20 right-12 z-50 flex max-h-[min(34rem,calc(100dvh-6rem))] w-[min(22rem,calc(100vw-6rem))] flex-col overflow-hidden rounded-xl border border-line bg-surface text-ink shadow-lg"
       >
         <header className="flex items-center gap-2 border-b border-line bg-deep px-3 py-2 text-on-deep">
           <span className="grid size-9 shrink-0 place-items-center rounded-full bg-surface">
@@ -176,7 +193,7 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
         >
           {estado.mensajes.map((m, i) => (
             <p
-              key={i}
+              key={idMensaje(estado, i)}
               className={
                 m.de === "hifa"
                   ? "max-w-[90%] rounded-lg bg-green-soft px-3 py-2"
@@ -192,24 +209,24 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
         <div className="grid gap-2 border-t border-line p-3">
           {fase === "ofrecido" && (
             <div className="flex flex-wrap gap-2">
-              <button type="button" className={BOTON_PRINCIPAL} onClick={() => despachar({ tipo: "decidir", enviar: true })}>
-                Sí, pasalo
+              <button type="button" className={BOTON_PRINCIPAL} onClick={() => decidir(true)}>
+                {ETIQUETA_SI}
               </button>
-              <button type="button" className={BOTON} onClick={() => despachar({ tipo: "decidir", enviar: false })}>
-                No, gracias
+              <button type="button" className={BOTON} onClick={() => decidir(false)}>
+                {ETIQUETA_NO}
               </button>
             </div>
           )}
           {fase === "fallo" && (
             <div className="flex flex-wrap gap-2">
-              <button type="button" className={BOTON_PRINCIPAL} onClick={() => despachar({ tipo: "decidir", enviar: true })}>
-                Reintentar
+              <button type="button" className={BOTON_PRINCIPAL} onClick={() => decidir(true)}>
+                {ETIQUETA_REINTENTAR}
               </button>
               <button type="button" className={BOTON} onClick={copiar}>
                 Copiar el texto
               </button>
-              <button type="button" className={BOTON} onClick={() => despachar({ tipo: "decidir", enviar: false })}>
-                Dejarlo
+              <button type="button" className={BOTON} onClick={() => decidir(false)}>
+                {ETIQUETA_DEJARLO}
               </button>
             </div>
           )}

@@ -50,6 +50,44 @@ test("abre con el saludo y los cuatro atajos; Escape cierra y devuelve el foco",
   await expect(page.getByRole("button", { name: BOTON })).toBeFocused();
 });
 
+test("Escape cierra el chat aunque el foco esté en la página", async ({ page }) => {
+  await page.goto("/");
+  const chat = await abrir(page);
+  await page.mouse.click(5, 300);
+  await page.keyboard.press("Escape");
+  await expect(chat).toBeHidden();
+});
+
+test("tras aceptar, el foco queda dentro del chat y Escape lo cierra", async ({ page }) => {
+  await page.route("**/api/reportes", async (ruta) => {
+    await new Promise((r) => setTimeout(r, 400));
+    return ruta.fulfill({ status: 200, json: { ok: true, numero: 51 } });
+  });
+  await page.goto("/");
+  const chat = await abrir(page);
+  await chat.getByLabel("Escribile a Hifa").fill("una idea");
+  await chat.getByRole("button", { name: "Enviar", exact: true }).click();
+  await chat.getByRole("button", { name: "Sí, pasalo" }).click();
+  await expect(chat.getByRole("log")).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(chat).toBeHidden();
+});
+
+for (const [ancho, alto] of [
+  [1280, 720],
+  [390, 844],
+] as const) {
+  test(`${ancho} px: con el chat abierto no tapa la pestaña Reportar`, async ({ page }) => {
+    await page.setViewportSize({ width: ancho, height: alto });
+    await page.goto("/");
+    const chat = await abrir(page);
+    const ventana = (await chat.boundingBox())!;
+    const rep = (await page.getByRole("button", { name: "Reportar un problema o una idea" }).boundingBox())!;
+    expect(ventana.x + ventana.width).toBeLessThanOrEqual(rep.x);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+  });
+}
+
 test("el botón cerrar cierra y devuelve el foco", async ({ page }) => {
   await page.goto("/");
   const chat = await abrir(page);

@@ -22,7 +22,16 @@ export type Pendiente = {
   fase: "ofrecido" | "enviando" | "fallo";
 };
 
-export type Estado = { mensajes: Mensaje[]; modo: Modo | null; pendiente: Pendiente | null };
+/**
+ * `total` cuenta todos los mensajes que hubo alguna vez (incluidos los recortados):
+ * da ids estables (`total - mensajes.length + posición`) y sirve de disparador del scroll.
+ */
+export type Estado = { mensajes: Mensaje[]; total: number; modo: Modo | null; pendiente: Pendiente | null };
+
+/** Id estable del mensaje en la posición `i` de `estado.mensajes`. */
+export function idMensaje(estado: Estado, i: number): number {
+  return estado.total - estado.mensajes.length + i;
+}
 
 export type Accion =
   | { tipo: "atajo"; atajo: Atajo }
@@ -33,10 +42,20 @@ export type Accion =
   | { tipo: "cargar"; estado: Estado }
   | { tipo: "borrar" };
 
+export const ETIQUETA_SI = "Sí, pasalo";
+export const ETIQUETA_NO = "No, gracias";
+export const ETIQUETA_REINTENTAR = "Reintentar";
+export const ETIQUETA_DEJARLO = "Dejarlo";
+
 export const MAX_MENSAJE = 1000;
 const MAX_MENSAJES = 200;
 
-export const ESTADO_INICIAL: Estado = { mensajes: [{ de: "hifa", texto: SALUDO }], modo: null, pendiente: null };
+export const ESTADO_INICIAL: Estado = {
+  mensajes: [{ de: "hifa", texto: SALUDO }],
+  total: 1,
+  modo: null,
+  pendiente: null,
+};
 
 /** Elige una frase; `azar` es un número en [0, 1) para poder probarlo. */
 export function elegir<T>(lista: readonly T[], azar: number): T {
@@ -45,7 +64,12 @@ export function elegir<T>(lista: readonly T[], azar: number): T {
 }
 
 function sumar(estado: Estado, nuevos: Mensaje[], resto: Partial<Estado>): Estado {
-  return { ...estado, ...resto, mensajes: [...estado.mensajes, ...nuevos].slice(-MAX_MENSAJES) };
+  return {
+    ...estado,
+    ...resto,
+    mensajes: [...estado.mensajes, ...nuevos].slice(-MAX_MENSAJES),
+    total: estado.total + nuevos.length,
+  };
 }
 
 export function reducir(estado: Estado, accion: Accion): Estado {
@@ -85,7 +109,7 @@ export function reducir(estado: Estado, accion: Accion): Estado {
         return sumar(
           estado,
           [
-            { de: "persona", texto: "No, gracias" },
+            { de: "persona", texto: p.fase === "fallo" ? ETIQUETA_DEJARLO : ETIQUETA_NO },
             { de: "hifa", texto: AL_DECLINAR },
           ],
           { pendiente: null },
@@ -94,7 +118,7 @@ export function reducir(estado: Estado, accion: Accion): Estado {
       return sumar(
         estado,
         [
-          { de: "persona", texto: "Sí, pasalo" },
+          { de: "persona", texto: p.fase === "fallo" ? ETIQUETA_REINTENTAR : ETIQUETA_SI },
           { de: "hifa", texto: AL_ENVIAR },
         ],
         { pendiente: { ...p, fase: "enviando" } },
@@ -154,7 +178,8 @@ export function leerGuardado(crudo: string | null): Estado {
       // Un envío que quedó a medias al cerrar la pestaña se trata como fallido.
       pendiente = { tipo: p.tipo, texto: p.texto, fase: p.fase === "ofrecido" ? "ofrecido" : "fallo" };
     }
-    return { mensajes, modo, pendiente };
+    const total = typeof d.total === "number" && Number.isFinite(d.total) && d.total >= mensajes.length ? Math.floor(d.total) : mensajes.length;
+    return { mensajes, total, modo, pendiente };
   } catch {
     return ESTADO_INICIAL;
   }
