@@ -20,10 +20,64 @@ test("el rail trae la marca y los destinos existentes en orden", async ({ page }
   const nav = page.getByRole("navigation", { name: "Principal" });
   await expect(nav).toBeVisible();
   await expect(nav.locator("xpath=..").locator("p").getByText("NetX", { exact: true })).toBeVisible();
-  const textos = (await nav.getByRole("link").allInnerTexts()).map((t) => t.trim());
-  const orden = ["Inicio", "Territorio", "Tribus", "Perfil", "Pasaporte", "Compromisos", "Pactos", "Semillas", "Fogón", "Congreso", "Sumarte", "Mi recorrido", "NetX"];
+  const textos = (await nav.getByRole("link").allInnerTexts()).map((t) => t.trim().split("\n")[0]);
+  const orden = ["Inicio", "Territorio", "Tribus", "Pactos", "Semillas", "Fogón", "Compromisos", "Congreso", "Sumarte", "NetX"];
   expect(textos).toEqual(orden.filter((o) => textos.includes(o)));
-  expect(textos).toEqual(expect.arrayContaining(["Inicio", "Tribus", "Perfil", "Congreso"]));
+  expect(textos).toEqual(expect.arrayContaining(["Inicio", "Tribus", "Congreso", "Sumarte"]));
+  // Perfil, Pasaporte y Mi recorrido viven en el menú del avatar, no en el rail.
+  await expect(nav.getByRole("link", { name: "Perfil" })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "NetX" })).toContainText("Interno");
+});
+
+test("el rail muestra los grupos Descubrir y Participar en la computadora", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/");
+  const nav = page.getByRole("navigation", { name: "Principal" });
+  await expect(nav.getByText("Descubrir", { exact: true })).toBeVisible();
+  await expect(nav.getByText("Participar", { exact: true })).toBeVisible();
+  await expect(nav.getByRole("list", { name: "Descubrir" }).getByRole("link")).toHaveCount(3);
+  await expect(nav.getByRole("list", { name: "Participar" }).getByRole("link")).toHaveCount(5);
+});
+
+test("menú de la persona: se abre con Enter, trae Perfil, Pasaporte y Mi recorrido, y Escape lo cierra", async ({ page }) => {
+  await page.goto("/");
+  const avatar = page.getByRole("button", { name: "Menú de la persona" });
+  await avatar.focus();
+  await page.keyboard.press("Enter");
+  const menu = page.locator("#menu-persona");
+  await expect(menu.getByRole("link", { name: "Perfil" })).toBeVisible();
+  await expect(menu.getByRole("link", { name: "Pasaporte" })).toBeVisible();
+  await expect(menu.getByRole("link", { name: "Mi recorrido" })).toBeVisible();
+  await expect(menu.getByRole("button", { name: "Salir" })).toBeDisabled();
+  await expect(menu).toContainText("Llega con el login");
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveCount(0);
+  await expect(avatar).toBeFocused();
+});
+
+test("en /pasaporte el avatar se marca como actual y el menú lleva a Mi recorrido", async ({ page }) => {
+  await page.goto("/pasaporte");
+  const avatar = page.getByRole("button", { name: "Menú de la persona" });
+  await expect(avatar).toHaveAttribute("aria-current", "page");
+  await avatar.click();
+  await expect(page.locator("#menu-persona").getByRole("link", { name: "Pasaporte" })).toHaveAttribute("aria-current", "page");
+  await page.locator("#menu-persona").getByRole("link", { name: "Mi recorrido" }).click();
+  await expect(page).toHaveURL(/\/panel$/);
+  await expect(page.locator("#menu-persona")).toHaveCount(0);
+});
+
+test("en la portada el avatar no está marcado como actual", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "Menú de la persona" })).not.toHaveAttribute("aria-current", "page");
+});
+
+test("celular: el menú de la persona cabe en pantalla y no hay scroll horizontal", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Menú de la persona" }).click();
+  const caja = (await page.locator("#menu-persona").boundingBox())!;
+  expect(caja.x + caja.width).toBeLessThanOrEqual(390);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
 });
 
 test("el rail está a la izquierda en computadora", async ({ page }) => {
@@ -48,14 +102,15 @@ test("celular 390 x 844: rail a la izquierda, 72 px o menos, sin scroll horizont
   }
 });
 
-test("Tab: primero Saltar al contenido, después la campanita y después Inicio en el rail", async ({ page }) => {
+test("Tab: primero Saltar al contenido y después Inicio en el rail; la campanita y el avatar van al final", async ({ page }) => {
   await page.goto("/");
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Saltar al contenido" })).toBeFocused();
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: /^Notificaciones|sin leer$/ })).toBeFocused();
-  await page.keyboard.press("Tab");
   await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Inicio" })).toBeFocused();
+  await page.getByRole("link", { name: /^Notificaciones|sin leer$/ }).focus();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("button", { name: "Menú de la persona" })).toBeFocused();
 });
 
 for (const ruta of ["/", "/tribus", "/tribus/valle"]) {

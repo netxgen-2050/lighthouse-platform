@@ -21,6 +21,15 @@ const rutas = [
   "/ruta-que-no-existe",
 ];
 
+test("axe sin violaciones serias o críticas: el menú de la persona abierto en /pasaporte", async ({ page }) => {
+  await page.goto("/pasaporte");
+  await page.getByRole("button", { name: "Menú de la persona" }).click();
+  await expect(page.locator("#menu-persona")).toBeVisible();
+  const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+});
+
 test("hay 27 rutas auditadas", () => {
   expect(rutas).toHaveLength(27);
 });

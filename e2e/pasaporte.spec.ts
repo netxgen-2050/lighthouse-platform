@@ -98,7 +98,8 @@ test("al volver a Argentina se borra el país escrito", async ({ page }) => {
 
 test("desde el rail se llega a /pasaporte", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: "Pasaporte" }).first().click();
+  await page.getByRole("button", { name: "Menú de la persona" }).click();
+  await page.locator("#menu-persona").getByRole("link", { name: "Pasaporte" }).click();
   await expect(page).toHaveURL(/\/pasaporte$/);
-  await expect(page.getByRole("link", { name: "Pasaporte" }).first()).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("button", { name: "Menú de la persona" })).toHaveAttribute("aria-current", "page");
 });

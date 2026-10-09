@@ -1,7 +1,7 @@
 import { readdirSync } from "node:fs";
 import path from "node:path";
 import { expect, test } from "vitest";
-import { DESTINOS, destinosDisponibles } from "./navegacion";
+import { DESTINOS, destinosDeGrupo, destinosDisponibles, GRUPOS_RAIL } from "./navegacion";
 import { esActivo } from "./ruta-activa";
 
 const APP = path.resolve(__dirname, "..", "app");
@@ -24,17 +24,31 @@ test("el orden de la lista es el de la spec", () => {
     "Inicio",
     "Territorio",
     "Tribus",
-    "Perfil",
-    "Pasaporte",
-    "Compromisos",
     "Pactos",
     "Semillas",
     "Fogón",
+    "Compromisos",
     "Congreso",
     "Sumarte",
+    "Perfil",
+    "Pasaporte",
     "Mi recorrido",
     "NetX",
   ]);
+});
+
+test("los grupos del rail y del menú de la persona salen de la lista única", () => {
+  const etiquetas = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => d.etiqueta);
+  expect(GRUPOS_RAIL.map((g) => g.titulo)).toEqual(["Descubrir", "Participar", "Sumarte"]);
+  expect(etiquetas("descubrir")).toEqual(["Inicio", "Territorio", "Tribus"]);
+  expect(etiquetas("participar")).toEqual(["Pactos", "Semillas", "Fogón", "Compromisos", "Congreso"]);
+  expect(etiquetas("sumarte")).toEqual(["Sumarte"]);
+  expect(etiquetas("persona")).toEqual(["Perfil", "Pasaporte", "Mi recorrido"]);
+  expect(etiquetas("interno")).toEqual(["NetX"]);
+});
+
+test("ningún destino apunta a /canales", () => {
+  expect(DESTINOS.some((d) => d.href.startsWith("/canales"))).toBe(false);
 });
 
 /** ¿Alguna ruta de app/ (incluidas las dinámicas, como /territorios/[id]) atiende este href? */

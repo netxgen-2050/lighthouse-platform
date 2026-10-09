@@ -221,10 +221,8 @@ test("almacenamiento bloqueado: error en texto y no los estados vacíos", async 
 test("con teclado: próximo paso, pestañas, borrado y aria-current en la navegación", async ({ page }) => {
   await page.goto("/panel");
   await expect(proximo(page)).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Mi recorrido" })).toHaveAttribute(
-    "aria-current",
-    "page",
-  );
+  // Mi recorrido vive en el menú del avatar: el avatar queda marcado como actual.
+  await expect(page.getByRole("button", { name: "Menú de la persona" })).toHaveAttribute("aria-current", "page");
   const orden = [
     proximo(page).getByRole("link"),
     page.getByRole("tab", { name: "Tu camino" }),
