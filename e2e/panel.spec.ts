@@ -189,6 +189,10 @@ test("sin pedidos de red con los datos guardados", async ({ page }) => {
   await page.goto("/perfil");
   await page.getByLabel("Tu respuesta").fill("secreto-panel");
   await page.getByRole("button", { name: "Responder" }).click();
+  // Sin esto la prueba pasaría aunque el guardado fallara: el dato tiene que estar en el navegador.
+  await expect
+    .poll(() => page.evaluate(() => window.localStorage.getItem("lh-perfil-entrevista") ?? ""))
+    .toContain("secreto-panel");
   await page.goto("/panel");
   await expect(proximo(page)).toContainText("Completá tu perfil");
   const origen = new URL(page.url()).origin;
