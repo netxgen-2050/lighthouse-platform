@@ -3,6 +3,7 @@ import { Anek_Latin, Figtree, JetBrains_Mono } from "next/font/google";
 import { Rail } from "@/components/rail";
 import { Pie } from "@/components/pie";
 import { BotonReportar } from "@/components/boton-reportar";
+import { Hifa } from "@/components/hifa/hifa";
 import { versionDesplegada } from "@/lib/reportes/reporte";
 import "./globals.css";
 
@@ -41,10 +42,11 @@ export default function RootLayout({
             {children}
           </main>
           <Pie anioRespaldo={new Date().getFullYear()} />
-          {/* Espacio para que el botón fijo de reportar no tape el final de la página. */}
+          {/* Espacio para que el botón fijo de Hifa no tape el final de la página. */}
           <div aria-hidden="true" className="h-16 shrink-0" />
         </div>
         <BotonReportar version={despliegue.version} entorno={despliegue.entorno} />
+        <Hifa version={despliegue.version} entorno={despliegue.entorno} />
       </body>
     </html>
   );

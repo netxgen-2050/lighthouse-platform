@@ -11,15 +11,15 @@ async function abrir(page: Page) {
 }
 
 for (const ruta of ["/", "/tribus/valle", "/sumarte", "/netx"]) {
-  test(`el botón Reportar sigue visible abajo a la derecha al final de ${ruta}`, async ({ page }) => {
+  test(`el botón Reportar sigue pegado al borde derecho, a media altura, al final de ${ruta}`, async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto(ruta);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     const boton = page.getByRole("button", { name: NOMBRE_BOTON });
     await expect(boton).toBeInViewport();
     const caja = (await boton.boundingBox())!;
-    expect(caja.x + caja.width).toBeGreaterThan(1280 - 80);
-    expect(caja.y + caja.height).toBeGreaterThan(720 - 80);
+    expect(Math.abs(caja.x + caja.width - 1280)).toBeLessThanOrEqual(1);
+    expect(Math.abs(caja.y + caja.height / 2 - 360)).toBeLessThanOrEqual(2);
   });
 }
 
