@@ -27,7 +27,7 @@ export function caminosDePortada(): Camino[] {
     {
       etiqueta: "Encontrarse",
       titulo: "Encontrar mi tribu",
-      descripcion: "Una conversación de 5 minutos para armar tu perfil.",
+      descripcion: "Armá tu perfil: quién sos, qué sabés hacer y cómo te gusta decidir.",
       href: "/perfil",
     },
     {

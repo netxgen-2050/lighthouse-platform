@@ -2,8 +2,8 @@ import { esCodigoValido } from "@/lib/congreso/ticket";
 import { CLAVES } from "@/lib/demo/claves";
 import { leer as leerMembresia } from "@/lib/membresia/estado";
 import { leer as leerPactos } from "@/lib/pactos/estado";
-import { cantidadConfirmados, leerGuardado } from "@/lib/perfil/estado";
-import { CHATS } from "@/lib/perfil/preguntas";
+import { basicosCompletos, cargarPerfil } from "@/lib/perfil/modelo";
+import { leerKyc } from "@/lib/pasaporte/kyc";
 
 export type ClavePaso = "perfil" | "comunidad" | "pacto" | "identidad" | "ticket";
 
@@ -70,20 +70,21 @@ export function proximoPaso(p: Progreso): ProximoPaso | null {
 /**
  * Lee el progreso del navegador. Deja pasar los errores del almacenamiento para que la pantalla
  * los muestre (no se confunde "no se pudo leer" con "no hizo nada").
- * Pendiente (cambio `pasaporte-sellos`): hasta que exista el sello de identidad y una forma de saber
- * si la persona quiere invertir, `quiereInvertir` es false y el paso de identidad no aparece.
+ * El perfil se lee del modelo nuevo (o de la entrevista vieja, migrada). "Quiere invertir" = inició el
+ * KYC del Pasaporte; la identidad está verificada cuando el KYC fue aprobado.
  */
 export function leerProgreso(leer: (clave: string) => string | null): Progreso {
-  const perfil = leerGuardado(leer(CLAVES.perfil));
+  const perfil = cargarPerfil(leer(CLAVES.perfilDatos), leer(CLAVES.perfil));
+  const kyc = leerKyc(leer(CLAVES.kyc));
   const pactos = leerPactos(leer(CLAVES.pactos));
   const membresia = leerMembresia(leer(CLAVES.membresia));
   const crudoTicket = leer(CLAVES.congreso);
   return {
-    perfilCompleto: perfil.items.length > 0 && cantidadConfirmados(perfil) >= CHATS.length,
+    perfilCompleto: basicosCompletos(perfil),
     adhirioAComunidad: Object.keys(membresia).length > 0,
     propusoPacto: Object.values(pactos.comunidades).some((c) => c.tiempo.paso >= 1 || c.aportes.length > 0),
-    quiereInvertir: false,
-    identidadVerificada: false,
+    quiereInvertir: kyc.estado !== "sin-tramite",
+    identidadVerificada: kyc.estado === "aprobado",
     tieneTicket: crudoTicket !== null && esCodigoValido(crudoTicket),
   };
 }

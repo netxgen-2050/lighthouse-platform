@@ -1,8 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const PERFIL_COMPLETO = JSON.stringify({
-  items: Array.from({ length: 6 }, (_, i) => ({ respuesta: `r${i}`, propuesta: `p${i}`, confirmado: `p${i}` })),
-});
+const PERFIL_COMPLETO = JSON.stringify({ nombre: "Gus", lugar: "Lisboa", frase: "Construir en común", roles: [], rolOtro: "", ofrezco: "", decision: "", noNegociables: "" });
 const MEMBRESIA = JSON.stringify({ lighthouse: "pedido" });
 const PACTOS = JSON.stringify({
   pestana: "tiempo",
@@ -32,7 +30,7 @@ test("panel vacío: próximo paso perfil, camino vacío y aviso", async ({ page 
 });
 
 test("el próximo paso avanza en orden: comunidad, pacto, ticket y listo", async ({ page }) => {
-  await sembrar(page, { "lh-perfil-entrevista": PERFIL_COMPLETO });
+  await sembrar(page, { "lh-perfil": PERFIL_COMPLETO });
   await page.goto("/panel");
   await expect(proximo(page).getByRole("link")).toHaveAttribute("href", "/tribus");
 
@@ -61,7 +59,7 @@ test("perfil a medias: el próximo paso sigue siendo el perfil", async ({ page }
 
 test("ticket guardado con formato inválido se trata como sin ticket", async ({ page }) => {
   await sembrar(page, {
-    "lh-perfil-entrevista": PERFIL_COMPLETO,
+    "lh-perfil": PERFIL_COMPLETO,
     "lh-membresia": MEMBRESIA,
     "lh-pactos": PACTOS,
     "lh-congreso-ticket": "1234",
@@ -145,7 +143,7 @@ test("las pestañas se mueven con las flechas", async ({ page }) => {
 
 test("borrar todo: confirma, vacía el camino, la actividad y las notificaciones", async ({ page }) => {
   await sembrar(page, {
-    "lh-perfil-entrevista": PERFIL_COMPLETO,
+    "lh-perfil": PERFIL_COMPLETO,
     "lh-actividad": JSON.stringify([
       { id: "1", tipo: "x", texto: "Algo que hice", fecha: "2026-10-08T12:00:00", enlace: "/tribus", notificacion: true, leida: false },
     ]),
@@ -177,7 +175,7 @@ test("borrar dos veces seguidas vuelve a montar el mensaje de la región de esta
 });
 
 test("cancelar el borrado no borra nada", async ({ page }) => {
-  await sembrar(page, { "lh-perfil-entrevista": PERFIL_COMPLETO });
+  await sembrar(page, { "lh-perfil": PERFIL_COMPLETO });
   await page.goto("/panel");
   page.once("dialog", (d) => void d.dismiss());
   await page.getByRole("button", { name: "Borrar todo lo de este navegador" }).click();
@@ -186,13 +184,10 @@ test("cancelar el borrado no borra nada", async ({ page }) => {
 });
 
 test("sin pedidos de red con los datos guardados", async ({ page }) => {
-  await page.goto("/perfil");
-  await page.getByLabel("Tu respuesta").fill("secreto-panel");
-  await page.getByRole("button", { name: "Responder" }).click();
-  // Sin esto la prueba pasaría aunque el guardado fallara: el dato tiene que estar en el navegador.
-  await expect
-    .poll(() => page.evaluate(() => window.localStorage.getItem("lh-perfil-entrevista") ?? ""))
-    .toContain("secreto-panel");
+  // Perfil nuevo a medias (sin lugar), con un dato reconocible para detectar si sale por la red.
+  await sembrar(page, {
+    "lh-perfil": JSON.stringify({ nombre: "Gus", lugar: "", frase: "secreto-panel", roles: [], rolOtro: "", ofrezco: "", decision: "", noNegociables: "" }),
+  });
   await page.goto("/panel");
   await expect(proximo(page)).toContainText("Completá tu perfil");
   const origen = new URL(page.url()).origin;

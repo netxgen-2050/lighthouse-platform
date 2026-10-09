@@ -1,3 +1,4 @@
+import { PERFIL_VACIO } from "@/lib/perfil/modelo";
 import { describe, expect, it } from "vitest";
 import type { EventoActividad } from "@/lib/actividad/actividad";
 import { CLAVES } from "@/lib/demo/claves";
@@ -62,9 +63,21 @@ describe("leerProgreso", () => {
     });
   });
 
-  it("perfil a medias no cuenta; con los 6 confirmados sí", () => {
-    expect(leerProgreso(lector({ [CLAVES.perfil]: perfilCon(5) })).perfilCompleto).toBe(false);
-    expect(leerProgreso(lector({ [CLAVES.perfil]: perfilCon(6) })).perfilCompleto).toBe(true);
+  it("el perfil cuenta cuando tiene nombre, lugar y frase (perfil nuevo)", () => {
+    const perfil = (lugar: string) =>
+      JSON.stringify({ ...PERFIL_VACIO, nombre: "Gus", lugar, frase: "Construir en común" });
+    expect(leerProgreso(lector({ [CLAVES.perfilDatos]: perfil("") })).perfilCompleto).toBe(false);
+    expect(leerProgreso(lector({ [CLAVES.perfilDatos]: perfil("Lisboa") })).perfilCompleto).toBe(true);
+    // La entrevista vieja sola no alcanza: se migra, pero no trae nombre ni lugar.
+    expect(leerProgreso(lector({ [CLAVES.perfil]: perfilCon(6) })).perfilCompleto).toBe(false);
+  });
+
+  it("iniciar el KYC enciende el paso de identidad; aprobado lo cumple", () => {
+    expect(leerProgreso(lector({})).quiereInvertir).toBe(false);
+    const enTramite = JSON.stringify({ estado: "en-tramite", enviado: "2026-10-09T10:00:00.000Z" });
+    expect(leerProgreso(lector({ [CLAVES.kyc]: enTramite }))).toMatchObject({ quiereInvertir: true, identidadVerificada: false });
+    const aprobado = JSON.stringify({ estado: "aprobado", enviado: "2026-10-09T10:00:00.000Z", aprobado: "2026-10-09T11:00:00.000Z" });
+    expect(leerProgreso(lector({ [CLAVES.kyc]: aprobado }))).toMatchObject({ quiereInvertir: true, identidadVerificada: true });
   });
 
   it("un pedido de adhesión ya cuenta como adherir", () => {
