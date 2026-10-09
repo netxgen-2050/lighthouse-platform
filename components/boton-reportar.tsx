@@ -41,6 +41,7 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
   const [estado, setEstado] = useState<Estado>({ fase: "editando" });
   const [contexto, setContexto] = useState<Contexto>(CONTEXTO_VACIO);
   const [copiado, setCopiado] = useState<"si" | "no" | null>(null);
+  const [sugerencia, setSugerencia] = useState(false);
 
   function leerContexto(): Contexto {
     return armarContexto({
@@ -138,10 +139,32 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
         type="button"
         onClick={abrir}
         aria-label="Reportar un problema o una idea"
-        className="fixed right-0 top-1/2 z-40 inline-flex -translate-y-1/2 flex-col items-center gap-2 rounded-l-xl bg-deep px-2 py-3 text-sm font-medium text-on-deep shadow-lg hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+        aria-describedby={sugerencia ? "tooltip-reportar" : undefined}
+        onMouseEnter={() => setSugerencia(true)}
+        onMouseLeave={() => setSugerencia(false)}
+        onFocus={() => setSugerencia(true)}
+        onBlur={() => setSugerencia(false)}
+        onKeyDown={(ev) => {
+          if (ev.key === "Escape" && sugerencia) {
+            ev.preventDefault();
+            setSugerencia(false);
+          }
+        }}
+        className="group fixed right-0 top-1/2 z-40 grid -translate-y-1/2 place-items-center rounded-full border-2 border-dashed border-ink p-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
       >
-        <Bug aria-hidden="true" className="size-4" />
-        <span className="[writing-mode:vertical-rl]">Reportar</span>
+        {/* Mismo tamaño que el botón de Hifa (size-14); el anillo punteado queda separado por 3 px. */}
+        <span className="grid size-14 place-items-center rounded-full bg-deep text-on-deep shadow-lg group-hover:bg-deep-2">
+          <Bug aria-hidden="true" className="size-7" />
+        </span>
+        {sugerencia && (
+          <span
+            id="tooltip-reportar"
+            role="tooltip"
+            className="absolute right-full top-1/2 mr-2 -translate-y-1/2 whitespace-nowrap rounded-md bg-ink px-2 py-1 text-sm font-medium text-bg"
+          >
+            Reportar
+          </span>
+        )}
       </button>
 
       <dialog

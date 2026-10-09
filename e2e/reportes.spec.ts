@@ -23,11 +23,38 @@ for (const ruta of ["/", "/tribus/valle", "/sumarte", "/netx"]) {
   });
 }
 
-test("el botón Reportar muestra un ícono decorativo y el texto", async ({ page }) => {
+for (const ancho of [1280, 390]) {
+  test(`${ancho} px: el botón Reportar es un círculo del tamaño del de Hifa, solo con el bicho y anillo punteado`, async ({ page }) => {
+    await page.setViewportSize({ width: ancho, height: 800 });
+    await page.goto("/");
+    const boton = page.getByRole("button", { name: NOMBRE_BOTON });
+    await expect(boton).toHaveText("");
+    await expect(boton.locator("svg[aria-hidden='true']")).toHaveCount(1);
+    const estilo = await boton.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { borde: s.borderTopStyle, radio: parseFloat(s.borderTopLeftRadius) };
+    });
+    expect(estilo.borde).toBe("dashed");
+    expect(estilo.radio).toBeGreaterThan(30);
+    const interno = (await boton.locator("span").first().boundingBox())!;
+    const hifa = (await page.getByRole("button", { name: "Hablar con Hifa" }).boundingBox())!;
+    expect(Math.round(interno.width)).toBe(Math.round(hifa.width));
+    expect(Math.round(interno.height)).toBe(Math.round(hifa.height));
+  });
+}
+
+test("el tooltip Reportar aparece con el mouse y con el foco, y Escape lo oculta", async ({ page }) => {
   await page.goto("/");
   const boton = page.getByRole("button", { name: NOMBRE_BOTON });
-  await expect(boton).toContainText("Reportar");
-  await expect(boton.locator("svg[aria-hidden='true']")).toHaveCount(1);
+  await boton.hover();
+  await expect(page.getByRole("tooltip")).toHaveText("Reportar");
+  await page.mouse.move(5, 5);
+  await expect(page.getByRole("tooltip")).toHaveCount(0);
+  await boton.focus();
+  await expect(page.getByRole("tooltip")).toHaveText("Reportar");
+  await expect(boton).toHaveAccessibleName(NOMBRE_BOTON);
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("tooltip")).toHaveCount(0);
 });
 
 test("celular 390 x 844: el botón se ve, no tapa el rail y no hay scroll horizontal", async ({ page }) => {

@@ -172,7 +172,7 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
         role="dialog"
         aria-label="Chat con Hifa"
         hidden={!abierto}
-        className="fixed bottom-20 right-12 z-50 flex max-h-[min(34rem,calc(100dvh-6rem))] w-[min(22rem,calc(100vw-6rem))] flex-col overflow-hidden rounded-xl border border-line bg-surface text-ink shadow-lg"
+        className="fixed bottom-20 right-[4.75rem] z-50 flex max-h-[min(34rem,calc(100dvh-6rem))] w-[min(22rem,calc(100vw-8rem))] flex-col overflow-hidden rounded-xl border border-line bg-surface text-ink shadow-lg"
       >
         <header className="flex items-center gap-2 border-b border-line bg-deep px-3 py-2 text-on-deep">
           <span className="grid size-9 shrink-0 place-items-center rounded-full bg-surface">
