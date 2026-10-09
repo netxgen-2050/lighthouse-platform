@@ -1,6 +1,6 @@
 ## 1. Perfil
 
-- [ ] 1.1 Modelo nuevo de perfil y migración en `lib/perfil/`, con tests. Verificar con `pnpm test`.
+- [x] 1.1 Modelo nuevo de perfil y migración en `lib/perfil/`, con tests. Verificar con `pnpm test`.
 - [ ] 1.2 Rehacer `/perfil` (vista y edición). e2e. Verificar con `pnpm test:e2e`.
 
 ## Integración

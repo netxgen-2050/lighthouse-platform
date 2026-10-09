@@ -6,7 +6,8 @@ function lector(datos: Record<string, string>) {
   return (clave: string) => datos[clave] ?? null;
 }
 
-function perfil(respondidas: number, confirmadas: number): string {
+/** Entrevista anterior: se migra a los campos nuevos. */
+function entrevista(respondidas: number, confirmadas: number): string {
   const items = Array.from({ length: respondidas }, (_, i) => ({
     respuesta: `r${i}`,
     propuesta: `p${i}`,
@@ -14,6 +15,16 @@ function perfil(respondidas: number, confirmadas: number): string {
   }));
   return JSON.stringify({ items });
 }
+
+const BASICOS = { nombre: "Ana", lugar: "Mendoza", frase: "Vivir en comunidad" };
+const PERFIL_BASICOS = JSON.stringify(BASICOS);
+const PERFIL_TODO = JSON.stringify({
+  ...BASICOS,
+  ofrezco: "Huerta",
+  roles: ["jardineria"],
+  decision: "Por consenso",
+  noNegociables: "El agua",
+});
 
 const compromiso = (tipo: "ofrezco" | "necesito", id: string) => ({
   id,
@@ -37,22 +48,31 @@ describe("resumirDemo", () => {
     });
   });
 
-  it("perfil a medias: cuenta solo los confirmados y el próximo es perfil", () => {
-    const r = resumirDemo(lector({ [CLAVES.perfil]: perfil(3, 2), [CLAVES.compromisos]: UN_COMPROMISO }));
-    expect(r.perfil).toEqual({ confirmados: 2, total: 6 });
+  it("perfil sin los campos básicos: cuenta los datos con algo y el próximo es perfil", () => {
+    const r = resumirDemo(
+      lector({ [CLAVES.perfilDatos]: JSON.stringify({ nombre: "Ana", decision: "Consenso" }), [CLAVES.compromisos]: UN_COMPROMISO }),
+    );
+    expect(r.perfil).toEqual({ completos: 2, total: 6, basicos: false });
     expect(r.proximo).toBe("perfil");
   });
 
-  it("perfil respondido pero sin confirmar: sigue en perfil", () => {
-    expect(resumirDemo(lector({ [CLAVES.perfil]: perfil(6, 5) })).proximo).toBe("perfil");
+  it("la entrevista anterior se migra: cuenta sus datos y sigue faltando lo básico", () => {
+    const r = resumirDemo(lector({ [CLAVES.perfil]: entrevista(6, 2) }));
+    expect(r.perfil).toEqual({ completos: 4, total: 6, basicos: false });
+    expect(r.proximo).toBe("perfil");
   });
 
-  it("perfil 6/6 sin compromisos: próximo compromisos", () => {
-    expect(resumirDemo(lector({ [CLAVES.perfil]: perfil(6, 6) })).proximo).toBe("compromisos");
+  it("el perfil nuevo manda sobre la entrevista anterior", () => {
+    const r = resumirDemo(lector({ [CLAVES.perfil]: entrevista(6, 6), [CLAVES.perfilDatos]: PERFIL_BASICOS }));
+    expect(r.perfil).toEqual({ completos: 3, total: 6, basicos: true });
   });
 
-  it("perfil 6/6 con compromiso y sin ticket: próximo congreso", () => {
-    const r = resumirDemo(lector({ [CLAVES.perfil]: perfil(6, 6), [CLAVES.compromisos]: UN_COMPROMISO }));
+  it("perfil con lo básico, sin compromisos: próximo compromisos", () => {
+    expect(resumirDemo(lector({ [CLAVES.perfilDatos]: PERFIL_BASICOS })).proximo).toBe("compromisos");
+  });
+
+  it("perfil con lo básico y compromiso, sin ticket: próximo congreso", () => {
+    const r = resumirDemo(lector({ [CLAVES.perfilDatos]: PERFIL_BASICOS, [CLAVES.compromisos]: UN_COMPROMISO }));
     expect(r.proximo).toBe("congreso");
   });
 
@@ -63,15 +83,16 @@ describe("resumirDemo", () => {
       compromiso("necesito", "c"),
     ]);
     const r = resumirDemo(
-      lector({ [CLAVES.perfil]: perfil(6, 6), [CLAVES.compromisos]: compromisos, [CLAVES.congreso]: "lh27-8f3k-2q" }),
+      lector({ [CLAVES.perfilDatos]: PERFIL_TODO, [CLAVES.compromisos]: compromisos, [CLAVES.congreso]: "lh27-8f3k-2q" }),
     );
+    expect(r.perfil).toEqual({ completos: 6, total: 6, basicos: true });
     expect(r.compromisos).toEqual({ ofrezco: 2, necesito: 1 });
     expect(r.ticket).toBe("LH27-8F3K-2Q");
     expect(r.proximo).toBeNull();
   });
 
   it("JSON roto en cada clave: null en ese campo", () => {
-    const r = resumirDemo(lector({ [CLAVES.perfil]: "{roto", [CLAVES.compromisos]: "[roto", [CLAVES.congreso]: "{roto" }));
+    const r = resumirDemo(lector({ [CLAVES.perfil]: "{roto", [CLAVES.perfilDatos]: "{roto", [CLAVES.compromisos]: "[roto", [CLAVES.congreso]: "{roto" }));
     expect(r.perfil).toBeNull();
     expect(r.compromisos).toBeNull();
     expect(r.ticket).toBeNull();

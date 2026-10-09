@@ -11,7 +11,7 @@ const ENLACE_PRINCIPAL =
   "w-fit rounded-lg bg-deep px-4 py-1.5 text-on-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
 const PASOS: Record<Paso, { texto: string; enlace: string; href: string }> = {
-  perfil: { texto: "Terminá la entrevista de tu perfil.", enlace: "Terminar la entrevista", href: "/perfil" },
+  perfil: { texto: "Completá tu perfil.", enlace: "Completar mi perfil", href: "/perfil" },
   compromisos: {
     texto: "Registrá tu primer compromiso.",
     enlace: "Registrar un compromiso",
@@ -97,8 +97,8 @@ export function Resumen() {
           <h2 id="t-perfil" className="text-xl font-semibold">Perfil</h2>
           <p>
             {perfil
-              ? `${perfil.confirmados} de ${perfil.total} datos confirmados`
-              : "Todavía no empezaste la entrevista"}
+              ? `${perfil.completos} de ${perfil.total} datos completos`
+              : "Todavía no completaste tu perfil"}
           </p>
           <Link href="/perfil" className={ENLACE}>Ir a Perfil</Link>
         </section>

@@ -1,14 +1,13 @@
 import { cargar } from "@/lib/compromisos/estado";
 import { esCodigoValido, normalizarCodigo } from "@/lib/congreso/ticket";
-import { CHATS } from "@/lib/perfil/preguntas";
-import { cantidadConfirmados, leerGuardado } from "@/lib/perfil/estado";
+import { basicosCompletos, cargarPerfil, datosCompletos, perfilVacio, TOTAL_DATOS } from "@/lib/perfil/modelo";
 import { CLAVES } from "./claves";
 
 export type Paso = "perfil" | "compromisos" | "congreso";
 
 export type ResumenDemo = {
   /** null = no hay dato guardado (nunca 0 inventado). */
-  perfil: { confirmados: number; total: number } | null;
+  perfil: { completos: number; total: number; basicos: boolean } | null;
   compromisos: { ofrezco: number; necesito: number } | null;
   ticket: string | null;
   /** Primer paso que falta; null si no falta nada. */
@@ -16,11 +15,11 @@ export type ResumenDemo = {
 };
 
 export function resumirDemo(leer: (clave: string) => string | null): ResumenDemo {
-  const estado = leerGuardado(leer(CLAVES.perfil));
-  const perfil =
-    estado.items.length === 0
-      ? null
-      : { confirmados: cantidadConfirmados(estado), total: CHATS.length };
+  // El perfil nuevo; si no hay, lo migrado de la entrevista anterior.
+  const datos = cargarPerfil(leer(CLAVES.perfilDatos), leer(CLAVES.perfil));
+  const perfil = perfilVacio(datos)
+    ? null
+    : { completos: datosCompletos(datos), total: TOTAL_DATOS, basicos: basicosCompletos(datos) };
 
   const lista = cargar(leer(CLAVES.compromisos));
   const compromisos =
@@ -35,7 +34,7 @@ export function resumirDemo(leer: (clave: string) => string | null): ResumenDemo
   const ticket = crudo && esCodigoValido(crudo) ? normalizarCodigo(crudo) : null;
 
   let proximo: Paso | null = null;
-  if (!perfil || perfil.confirmados < perfil.total) proximo = "perfil";
+  if (!perfil || !perfil.basicos) proximo = "perfil";
   else if (!compromisos) proximo = "compromisos";
   else if (!ticket) proximo = "congreso";
 
