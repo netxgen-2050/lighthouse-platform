@@ -152,9 +152,16 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
           })}
         </div>
 
-        <div role="tabpanel" id={`panel-${pestana}`} aria-labelledby={`pestana-${pestana}`} className="grid gap-4">
-          {pestana === "camino" ? (
-            grupos.length === 0 ? (
+        <div
+          role="tabpanel"
+          id="panel-camino"
+          aria-labelledby="pestana-camino"
+          hidden={pestana !== "camino"}
+          tabIndex={0}
+          className="grid gap-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+        >
+          {pestana === "camino" &&
+            (grupos.length === 0 ? (
               <p className="rounded-xl border border-faint bg-surface p-4">
                 Todavía no hay nada en tu camino. Lo que hagas en la plataforma va a aparecer acá.
               </p>
@@ -178,8 +185,18 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
                   </section>
                 ))}
               </div>
-            )
-          ) : (
+            ))}
+        </div>
+
+        <div
+          role="tabpanel"
+          id="panel-bitacora"
+          aria-labelledby="pestana-bitacora"
+          hidden={pestana !== "bitacora"}
+          tabIndex={0}
+          className="grid gap-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+        >
+          {pestana === "bitacora" && (
             <>
               <p className="max-w-2xl text-muted">
                 Lo que te mostramos: anotamos qué estado del loteo y qué explicaciones legales viste, y cuándo,

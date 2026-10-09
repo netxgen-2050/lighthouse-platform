@@ -186,15 +186,20 @@ test("cancelar el borrado no borra nada", async ({ page }) => {
 });
 
 test("sin pedidos de red con los datos guardados", async ({ page }) => {
-  await sembrar(page, { "lh-perfil-entrevista": PERFIL_COMPLETO });
+  await page.goto("/perfil");
+  await page.getByLabel("Tu respuesta").fill("secreto-panel");
+  await page.getByRole("button", { name: "Responder" }).click();
   await page.goto("/panel");
+  await expect(proximo(page)).toContainText("Completá tu perfil");
   const origen = new URL(page.url()).origin;
   const pedidos: string[] = [];
   page.on("request", (r) => {
-    if (r.url().startsWith(origen + "/") && r.method() !== "GET") pedidos.push(`${r.method()} ${r.url()}`);
+    const propio = r.url().startsWith(origen + "/");
+    const lleva = r.url().includes("secreto-") || (r.postData() ?? "").includes("secreto-");
+    if ((propio && r.method() !== "GET") || lleva) pedidos.push(`${r.method()} ${r.url()}`);
   });
   await page.reload();
-  await expect(proximo(page).getByRole("link")).toHaveAttribute("href", "/tribus");
+  await expect(proximo(page)).toContainText("Completá tu perfil");
   expect(pedidos).toEqual([]);
 });
 
@@ -219,6 +224,7 @@ test("con teclado: próximo paso, pestañas, borrado y aria-current en la navega
   const orden = [
     proximo(page).getByRole("link"),
     page.getByRole("tab", { name: "Tu camino" }),
+    page.getByRole("tabpanel", { name: "Tu camino" }),
     page.getByRole("button", { name: "Borrar todo lo de este navegador" }),
   ];
   await orden[0].focus();
