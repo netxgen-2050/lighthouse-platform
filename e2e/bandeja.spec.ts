@@ -34,6 +34,118 @@ const evento = (id: string, texto: string, fecha: string, extra = {}) => ({
   ...extra,
 });
 
+type Guardado = { texto: string; notificacion: boolean; enlace: string; visibleDesde?: string };
+
+async function actividad(page: Page): Promise<Guardado[]> {
+  return page.evaluate(() => JSON.parse(window.localStorage.getItem("lh-actividad") ?? "[]"));
+}
+
+async function comoMiembros(page: Page, ids: string[], pactoAceptado = false) {
+  await page.addInitScript(
+    ([comunidades, aceptado]) => {
+      if (window.localStorage.getItem("lh-membresia")) return;
+      window.localStorage.setItem("lh-membresia", JSON.stringify(Object.fromEntries((comunidades as string[]).map((id) => [id, "miembro"]))));
+      if (!aceptado) return;
+      const porComunidad = Object.fromEntries(
+        (comunidades as string[]).map((id) => [
+          id,
+          { tiempo: { rol: "facilitacion", rolOtro: "", descripcion: "Facilito", horas: 20, paso: 2 }, aportes: [] },
+        ]),
+      );
+      window.localStorage.setItem("lh-pactos", JSON.stringify({ pestana: "tiempo", comunidades: porComunidad }));
+    },
+    [ids, pactoAceptado] as const,
+  );
+}
+
+test("pactos: proponer, aceptar y abrir ronda registran sus eventos", async ({ page }) => {
+  await comoMiembros(page, ["lighthouse"]);
+  await page.goto("/pactos");
+  await page.getByLabel(/Rol que asumís/).selectOption({ label: "Facilitación" });
+  await page.getByLabel("Tu descripción: qué vas a hacer").fill("Facilito las asambleas");
+  await page.getByRole("button", { name: "Enviar a la comunidad" }).click();
+  await expect.poll(async () => (await actividad(page)).map((e) => e.texto)).toEqual([expect.stringContaining("Propusiste un pacto en")]);
+  await page.getByRole("button", { name: "Simular: la comunidad acepta" }).click();
+  await expect.poll(async () => (await actividad(page)).length).toBe(3);
+  const eventos = await actividad(page);
+  expect(eventos[1].texto).toContain("aceptó tu pacto");
+  expect(eventos[1].notificacion).toBe(true);
+  expect(eventos[2].texto).toContain("Se abrió una ronda de reconocimiento en");
+  expect(eventos[2].notificacion).toBe(true);
+});
+
+test("compromisos: una oferta registra la publicación y un aviso de interés con demora", async ({ page }) => {
+  await page.goto("/compromisos");
+  await page.getByRole("radio", { name: "Ofrezco" }).check();
+  await page.getByRole("radio", { name: "Tiempo" }).check();
+  await page.getByLabel("Descripción").fill("Taller de compost");
+  await page.getByLabel("Horas por mes").fill("8");
+  await page.getByRole("button", { name: "Registrar" }).click();
+  await expect.poll(async () => (await actividad(page)).length).toBe(2);
+  const [publicacion, interes] = await actividad(page);
+  expect(publicacion.texto).toBe("Publicaste en el mercado: Taller de compost");
+  expect(publicacion.notificacion).toBe(false);
+  expect(interes.notificacion).toBe(true);
+  expect(interes.visibleDesde).toBeTruthy();
+  // Todavía no pasaron los 20 segundos: no cuenta como novedad.
+  await expect(campanita(page)).toHaveAttribute("aria-label", "Notificaciones, sin novedades");
+});
+
+test("postulación: enviar registra la actividad y el aviso de recibida", async ({ page }) => {
+  await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+  await page.goto("/tribus/grano/postular");
+  await page.getByLabel(/^Nombre de la comunidad/).fill("Los Álamos");
+  await page.getByLabel(/^Persona que lidera/).fill("Ana Ejemplo");
+  await page.getByLabel(/^Contacto de esa persona/).fill("contacto de ejemplo");
+  await page.getByLabel(/^Cantidad de personas/).fill("12");
+  await page.getByLabel(/^Cantidad de hogares/).fill("4");
+  await page.getByLabel(/^Qué van a producir/).fill("Granos y harinas");
+  await page.getByLabel(/^Qué aportarían al pozo común/).fill("Harina para el núcleo común");
+  await page.getByLabel(/^Forma jurídica/).selectOption("cooperativa");
+  await page.getByLabel(/^Cómo toman decisiones/).fill("Por consenso");
+  await page.getByLabel(/^Cuál sería su ritual/).fill("Una minga");
+  await page.getByLabel(/^Compromiso inicial de tiempo/).fill("10 horas por semana");
+  await page.getByRole("button", { name: "Enviar postulación (simulado)" }).click();
+  await expect.poll(async () => (await actividad(page)).length).toBe(2);
+  const [envio, recibida] = await actividad(page);
+  expect(envio.texto).toBe("Enviaste una postulación de Los Álamos");
+  expect(envio.notificacion).toBe(false);
+  expect(recibida.texto).toBe("Recibimos tu postulación");
+  expect(recibida.notificacion).toBe(true);
+});
+
+test("congreso: registrar el ticket deja el evento", async ({ page }) => {
+  await page.goto("/congreso");
+  await page.getByLabel(/Código de tu ticket/).fill("LH27-8F3K-2Q");
+  await page.getByRole("button", { name: "Registrar" }).click();
+  await expect.poll(async () => (await actividad(page)).map((e) => e.texto)).toEqual(["Registraste tu ticket del Congreso"]);
+});
+
+test("semillas: enviar la ronda deja el evento", async ({ page }) => {
+  await comoMiembros(page, ["valle"], true);
+  await page.goto("/semillas");
+  for (const grupo of ["Rol, Martina", "Aporte al grupo, Martina", "Rol, Joaquín", "Aporte al grupo, Joaquín"]) {
+    const g = page.getByRole("group", { name: grupo });
+    await g.getByRole("button", { name: "4 de 5" }).click();
+    await g.getByLabel("¿Por qué le das esta puntuación?").fill("Porque sí");
+  }
+  await page.getByRole("button", { name: "Enviar ronda" }).click();
+  await expect(page.getByText("Ronda enviada (simulado)")).toBeVisible();
+  await expect.poll(async () => (await actividad(page)).map((e) => e.texto)).toEqual(["Enviaste tu ronda de reconocimiento en Valle Solar"]);
+});
+
+test("un enlace externo guardado a mano se descarta", async ({ page }) => {
+  await semilla(page, [
+    evento("1", "Mala", "2026-10-01T10:00:00Z", { enlace: "//ejemplo.com" }),
+    evento("2", "Peor", "2026-10-01T10:00:00Z", { enlace: "https://ejemplo.com" }),
+    evento("3", "Buena", "2026-10-01T10:00:00Z"),
+  ]);
+  await page.goto("/bandeja");
+  await expect(page.getByRole("link", { name: "Buena" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Mala" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Peor" })).toHaveCount(0);
+});
+
 test("sin novedades: la campanita no muestra número y la bandeja lo explica", async ({ page }) => {
   await page.goto("/bandeja");
   await expect(campanita(page)).toHaveAttribute("aria-label", "Notificaciones, sin novedades");

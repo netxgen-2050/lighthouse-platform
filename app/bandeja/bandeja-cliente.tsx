@@ -33,8 +33,9 @@ export function BandejaCliente() {
   const sinLeer = contarNoLeidas(lista, ahora);
 
   function marcar() {
-    setFalloAlmacen(!marcarTodasLeidasEnNavegador());
-    setAviso("Todas las notificaciones quedaron como leídas.");
+    const guardo = marcarTodasLeidasEnNavegador();
+    setFalloAlmacen(!guardo);
+    setAviso(guardo ? "Todas las notificaciones quedaron como leídas." : "");
   }
 
   return (
@@ -73,7 +74,7 @@ export function BandejaCliente() {
                   {n.texto}
                 </Link>
                 <p className="mt-1 text-sm text-muted">
-                  <time dateTime={n.fecha}>{fecha.format(new Date(n.visibleDesde ?? n.fecha))}</time>
+                  <time dateTime={n.visibleDesde ?? n.fecha}>{fecha.format(new Date(n.visibleDesde ?? n.fecha))}</time>
                   {" · "}
                   <span className="font-medium">{n.leida ? "Leída" : "Sin leer"}</span>
                 </p>

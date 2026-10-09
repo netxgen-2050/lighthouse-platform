@@ -95,6 +95,13 @@ describe("lectura de lo guardado", () => {
     expect(leerEventos(crudo)).toEqual(buena);
   });
 
+  it("solo acepta enlaces a rutas del propio sitio", () => {
+    const buena = con([], EVENTOS.registrasteTicket(), t0, "a");
+    const con_ = (enlace: string) => ({ ...buena[0], enlace });
+    const crudo = JSON.stringify([con_("//ejemplo.com"), con_("https://ejemplo.com"), con_("/\\ejemplo.com"), con_("congreso"), con_("/congreso")]);
+    expect(leerEventos(crudo)).toEqual([con_("/congreso")]);
+  });
+
   it("guarda solo los últimos 200", () => {
     let l: EventoActividad[] = [];
     for (let i = 0; i < 205; i++) l = con(l, EVENTOS.registrasteTicket(), t0, String(i));

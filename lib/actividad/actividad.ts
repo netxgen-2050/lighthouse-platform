@@ -28,6 +28,11 @@ export type NuevoEvento = {
 
 export const MAX_EVENTOS = 200;
 
+/** Solo rutas del propio sitio: empiezan con una sola "/" (no "//" ni "/\"). */
+function esRutaInterna(enlace: unknown): boolean {
+  return typeof enlace === "string" && /^\/(?![/\\])/.test(enlace);
+}
+
 /** Lee lo guardado. Ante datos dañados o ausentes devuelve una lista vacía y descarta lo que no sirve. */
 export function leerEventos(crudo: string | null): EventoActividad[] {
   if (!crudo) return [];
@@ -41,7 +46,7 @@ export function leerEventos(crudo: string | null): EventoActividad[] {
         typeof e.id === "string" &&
         typeof e.tipo === "string" &&
         typeof e.texto === "string" &&
-        typeof e.enlace === "string" &&
+        esRutaInterna(e.enlace) &&
         typeof e.fecha === "string" &&
         !Number.isNaN(Date.parse(e.fecha)) &&
         typeof e.notificacion === "boolean" &&
