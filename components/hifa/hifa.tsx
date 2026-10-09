@@ -34,6 +34,7 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
   const disparador = useRef<HTMLButtonElement | null>(null);
   const campo = useRef<HTMLInputElement | null>(null);
   const registro = useRef<HTMLDivElement | null>(null);
+  const ventana = useRef<HTMLElement | null>(null);
   const enCurso = useRef(false);
 
   const fase = estado.pendiente?.fase;
@@ -73,8 +74,11 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
     if (!abierto) return;
     function alTeclear(ev: KeyboardEvent) {
       if (ev.key !== "Escape" || ev.defaultPrevented) return;
+      // Si Escape es para otra capa (diálogo nativo como Reportar, o un tooltip visible), no se cierra Hifa.
+      if (document.querySelector("dialog[open], [role='tooltip']")) return;
+      const dentro = ventana.current?.contains(document.activeElement) ?? false;
       setAbierto(false);
-      disparador.current?.focus();
+      if (dentro) disparador.current?.focus();
     }
     document.addEventListener("keydown", alTeclear);
     return () => document.removeEventListener("keydown", alTeclear);
@@ -164,6 +168,7 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
 
       <section
         id="chat-hifa"
+        ref={ventana}
         role="dialog"
         aria-label="Chat con Hifa"
         hidden={!abierto}

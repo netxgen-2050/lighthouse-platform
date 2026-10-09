@@ -58,6 +58,30 @@ test("Escape cierra el chat aunque el foco esté en la página", async ({ page }
   await expect(chat).toBeHidden();
 });
 
+test("con Reportar abierto, Escape cierra solo Reportar y Hifa sigue abierta", async ({ page }) => {
+  await page.goto("/");
+  const chat = await abrir(page);
+  await page.getByRole("button", { name: "Reportar un problema o una idea" }).click();
+  const reportar = page.locator("dialog[open]");
+  await expect(reportar).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(reportar).toHaveCount(0);
+  await expect(chat).toBeVisible();
+});
+
+test("con un tooltip visible, Escape lo oculta, Hifa sigue abierta y el foco no se mueve", async ({ page }) => {
+  await page.goto("/semillas");
+  const chat = await abrir(page);
+  const termino = page.getByRole("button", { name: "Qué significa en la economía de la comunidad: Semillas" });
+  await page.keyboard.press("Shift"); // pasa a modalidad teclado para que el foco sea visible
+  await termino.focus();
+  await expect(page.getByRole("tooltip")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("tooltip")).toHaveCount(0);
+  await expect(chat).toBeVisible();
+  await expect(termino).toBeFocused();
+});
+
 test("tras aceptar, el foco queda dentro del chat y Escape lo cierra", async ({ page }) => {
   await page.route("**/api/reportes", async (ruta) => {
     await new Promise((r) => setTimeout(r, 400));
