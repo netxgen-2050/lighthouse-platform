@@ -33,11 +33,19 @@ export function MenuPersona({ items }: { items: ItemMenu[] }) {
     const alClicAfuera = (ev: MouseEvent) => {
       if (raiz.current && !raiz.current.contains(ev.target as Node)) setAbierto(false);
     };
+    // Si el foco sale del menú con Tab, el panel se cierra para no tapar el contenido.
+    const alSalirFoco = (ev: FocusEvent) => {
+      const destino = ev.relatedTarget as Node | null;
+      if (destino && raiz.current && !raiz.current.contains(destino)) setAbierto(false);
+    };
+    const nodo = raiz.current;
     document.addEventListener("keydown", alTeclear);
     document.addEventListener("mousedown", alClicAfuera);
+    nodo?.addEventListener("focusout", alSalirFoco);
     return () => {
       document.removeEventListener("keydown", alTeclear);
       document.removeEventListener("mousedown", alClicAfuera);
+      nodo?.removeEventListener("focusout", alSalirFoco);
     };
   }, [abierto]);
 
@@ -58,7 +66,6 @@ export function MenuPersona({ items }: { items: ItemMenu[] }) {
         }`}
       >
         <UserRound aria-hidden="true" size={20} />
-        {enMenu && <span className="sr-only"> (página actual)</span>}
       </button>
       {abierto && (
         <div

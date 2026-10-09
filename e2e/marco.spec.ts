@@ -107,10 +107,31 @@ test("Tab: primero Saltar al contenido y después Inicio en el rail; la campanit
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Saltar al contenido" })).toBeFocused();
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Inicio" })).toBeFocused();
-  await page.getByRole("link", { name: /^Notificaciones|sin leer$/ }).focus();
+  const nav = page.getByRole("navigation", { name: "Principal" });
+  await expect(nav.getByRole("link", { name: "Inicio" })).toBeFocused();
+  // Se llega con Tab hasta el último enlace del rail (NetX); justo después va la campanita y luego el avatar.
+  const netx = nav.getByRole("link", { name: "NetX" });
+  for (let i = 0; i < 20 && !(await netx.evaluate((el) => el === document.activeElement)); i++) {
+    await page.keyboard.press("Tab");
+  }
+  await expect(netx).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.locator('a[href="/bandeja"]')).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("button", { name: "Menú de la persona" })).toBeFocused();
+});
+
+test("menú de la persona: se cierra cuando el foco sale del menú con Tab", async ({ page }) => {
+  await page.goto("/");
+  const avatar = page.getByRole("button", { name: "Menú de la persona" });
+  await avatar.focus();
+  await page.keyboard.press("Enter");
+  const menu = page.locator("#menu-persona");
+  await expect(menu).toBeVisible();
+  for (let i = 0; i < 6 && (await menu.count()) > 0; i++) {
+    await page.keyboard.press("Tab");
+  }
+  await expect(menu).toHaveCount(0);
 });
 
 for (const ruta of ["/", "/tribus", "/tribus/valle"]) {
