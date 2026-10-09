@@ -90,8 +90,10 @@ describe("sellos", () => {
     const i = por({ ...vacia, kyc: aprobado, datos: { residencia: "exterior" } }).inversor;
     expect(i.estado).toBe("no-disponible");
     expect(i.detalle).toContain("residencia fiscal es del exterior");
-    expect(i.legal).toContain("hacienda");
-    expect(i.legal).toContain("inversorexterior");
+    expect(i.legal).toEqual(["sumarte"]);
+    expect(i.legalDetalle).toBe("inversorexterior");
+    expect(i.detalle).toContain("Aportantes con residencia fiscal en el exterior");
+    expect(i.detalle).not.toMatch(/Tocá/);
     expect(i.detalle).not.toContain("Ganancias");
   });
 

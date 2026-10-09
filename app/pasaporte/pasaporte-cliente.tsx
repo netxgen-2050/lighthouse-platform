@@ -92,7 +92,10 @@ function TarjetaSello({ s, alVerificar, alAprobar }: { s: Sello; alVerificar: ()
           </p>
         </div>
       </div>
-      <p className="text-sm">{s.detalle}</p>
+      <p className="text-sm">
+        {s.detalle}
+        {s.legalDetalle && <TerminoLegal clave={s.legalDetalle} />}
+      </p>
       {s.id === "identidad" && s.estado === "en-tramite" && (
         <button type="button" className={BOTON_PRIMARIO} onClick={alAprobar}>
           Simular: verificación aprobada

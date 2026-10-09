@@ -33,6 +33,8 @@ export type Sello = {
   /** Puertas que abre, en lenguaje simple. */
   abre: string[];
   legal?: ClaveTermino[];
+  /** Término que se explica junto al detalle (no junto al título). */
+  legalDetalle?: ClaveTermino;
 };
 
 export type FechasSellos = Record<string, string>;
@@ -150,9 +152,10 @@ export function sellos(e: EntradaSellos, ahora: Date): Sello[] {
       id: "inversor",
       nombre: "Inversor habilitado",
       estado: "no-disponible",
-      detalle: "Por ahora, no: tu residencia fiscal es del exterior. Tocá el ⚖ para ver el motivo.",
+      detalle: "Por ahora, no: tu residencia fiscal es del exterior. Ver el motivo en «Aportantes con residencia fiscal en el exterior».",
       abre: [],
-      legal: ["sumarte", "hacienda", "inversorexterior"],
+      legal: ["sumarte"],
+      legalDetalle: "inversorexterior",
     };
   } else {
     inversor = {
