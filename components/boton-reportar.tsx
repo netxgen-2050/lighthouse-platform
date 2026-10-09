@@ -138,10 +138,10 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
         type="button"
         onClick={abrir}
         aria-label="Reportar un problema o una idea"
-        className="fixed bottom-4 right-4 z-40 inline-flex items-center gap-2 rounded-full bg-deep px-5 py-3 text-sm font-medium text-on-deep shadow-lg hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+        className="fixed right-0 top-1/2 z-40 inline-flex -translate-y-1/2 flex-col items-center gap-2 rounded-l-xl bg-deep px-2 py-3 text-sm font-medium text-on-deep shadow-lg hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
       >
         <Bug aria-hidden="true" className="size-4" />
-        Reportar
+        <span className="[writing-mode:vertical-rl]">Reportar</span>
       </button>
 
       <dialog
