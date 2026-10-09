@@ -57,6 +57,16 @@ test("el tooltip Reportar aparece con el mouse y con el foco, y Escape lo oculta
   await expect(page.getByRole("tooltip")).toHaveCount(0);
 });
 
+test("clic en Reportar y un solo Escape (sin mover el mouse) cierra el diálogo", async ({ page }) => {
+  await page.goto("/");
+  const boton = page.getByRole("button", { name: NOMBRE_BOTON });
+  await boton.click();
+  const dialogo = page.getByRole("dialog");
+  await expect(dialogo).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialogo).toBeHidden();
+});
+
 test("celular 390 x 844: el botón se ve, no tapa el rail y no hay scroll horizontal", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");

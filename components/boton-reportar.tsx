@@ -53,7 +53,7 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
     if (!sugerencia) return;
     function alTeclear(ev: KeyboardEvent) {
       if (ev.key !== "Escape") return;
-      ev.preventDefault();
+      // Sin preventDefault: un keydown cancelado no cierra un <dialog> abierto.
       setDescartada(true);
     }
     document.addEventListener("keydown", alTeclear);
@@ -73,6 +73,8 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
   }
 
   function abrir() {
+    // Al abrir el diálogo la sugerencia sobra, aunque el navegador no dispare mouseleave.
+    setSobre(false);
     // Mientras se envía no se toca nada: reabrir no habilita un segundo envío.
     if (estado.fase === "enviando") {
       dialogo.current?.showModal();
