@@ -2,6 +2,8 @@
 
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
+import { registrarEvento } from "@/lib/actividad/almacen";
+import { EVENTOS } from "@/lib/actividad/eventos";
 import { guardarPostulacion } from "@/lib/postulaciones/almacen";
 import {
   BORRADOR_VACIO,
@@ -137,6 +139,8 @@ export function FormularioPostulacion({ tribuId, barrio }: { tribuId: string; ba
       return;
     }
     setFalloGuardar(false);
+    registrarEvento(EVENTOS.enviastePostulacion(b.nombreComunidad.trim() || "tu comunidad"));
+    registrarEvento(EVENTOS.postulacionRecibida(p.id));
     setEnviada(true);
   }
 

@@ -19,6 +19,8 @@ import {
   type Accion,
   type EstadoPactos,
 } from "@/lib/pactos/estado";
+import { registrarEvento } from "@/lib/actividad/almacen";
+import { EVENTOS } from "@/lib/actividad/eventos";
 import { COMUNIDAD_LIGHTHOUSE, comunidadesDondeEsMiembro, leerMembresiaDelNavegador } from "@/lib/membresia/estado";
 import { DATOS_VACIOS, type DatosPersona } from "@/lib/pasaporte/datos";
 import { leerPasaporteDelNavegador } from "@/lib/pasaporte/del-navegador";
@@ -93,6 +95,12 @@ export function PactosCliente() {
       const paso = deComunidad(siguiente, accion.comunidad).tiempo.paso;
       const donde = nombreComunidad(accion.comunidad);
       setAnuncio(paso === 1 ? `Pacto enviado a ${donde}.` : paso === 2 ? `Quien administra ${donde} aceptó el pacto.` : "");
+      const antes = deComunidad(estado, accion.comunidad).tiempo.paso;
+      if (paso === 1 && antes === 0) registrarEvento(EVENTOS.propusistePacto(donde, accion.comunidad));
+      if (paso === 2 && antes === 1) {
+        registrarEvento(EVENTOS.pactoAceptado(donde, accion.comunidad));
+        registrarEvento(EVENTOS.rondaAbierta(donde, accion.comunidad));
+      }
     }
     setEstado(siguiente);
   }

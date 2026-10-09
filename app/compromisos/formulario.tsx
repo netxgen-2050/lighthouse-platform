@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useReducer, useRef, useState } from "react";
+import { registrarEvento } from "@/lib/actividad/almacen";
+import { EVENTOS } from "@/lib/actividad/eventos";
 import { cargar, reducir } from "@/lib/compromisos/estado";
 import { describirCantidad, describirCompromiso, TEXTO_CLASE, TEXTO_TIPO } from "@/lib/compromisos/formato";
 import { armarMercado, filtrarMercado, type FiltroMercado } from "@/lib/compromisos/mercado";
@@ -97,6 +99,8 @@ export function Formulario() {
       return;
     }
     despachar({ tipo: "registrar", compromiso: r.compromiso });
+    registrarEvento(EVENTOS.publicasteEnMercado(r.compromiso.descripcion));
+    if (r.compromiso.tipo === "ofrezco") registrarEvento(EVENTOS.interesEnOferta(r.compromiso.id));
     setErrores({});
     setB({ ...VACIO, tipo: b.tipo, clase: b.clase });
     // Se vacía la región y se vuelve a llenar en el siguiente tick para que el lector

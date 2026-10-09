@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { registrarEvento } from "@/lib/actividad/almacen";
+import { EVENTOS } from "@/lib/actividad/eventos";
 import { TerminoLegal } from "@/components/termino-legal";
 import { esCodigoValido } from "@/lib/congreso/ticket";
 import { CLAVES } from "@/lib/demo/claves";
@@ -360,6 +362,7 @@ function RondaDeComunidad({ comunidad, nombre, habilitada, ronda, intento, onInt
       return;
     }
     onCambio((r) => enviarRonda(r, COMPANEROS.length));
+    registrarEvento(EVENTOS.enviasteRonda(nombre, comunidad));
   }
 
   return (

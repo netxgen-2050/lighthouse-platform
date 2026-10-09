@@ -48,10 +48,12 @@ test("celular 390 x 844: rail a la izquierda, 72 px o menos, sin scroll horizont
   }
 });
 
-test("Tab: primero Saltar al contenido y después Inicio en el rail", async ({ page }) => {
+test("Tab: primero Saltar al contenido, después la campanita y después Inicio en el rail", async ({ page }) => {
   await page.goto("/");
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Saltar al contenido" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: /^Notificaciones|sin leer$/ })).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Inicio" })).toBeFocused();
 });

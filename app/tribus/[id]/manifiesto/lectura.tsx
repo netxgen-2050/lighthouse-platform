@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { TerminoLegal } from "@/components/termino-legal";
+import { registrarEvento } from "@/lib/actividad/almacen";
+import { EVENTOS } from "@/lib/actividad/eventos";
 import type { Manifiesto } from "@/lib/manifiestos/datos";
 import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
 import { useMembresia } from "@/lib/membresia/usar-membresia";
@@ -107,6 +109,7 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
               moverFoco.current = true;
               setMensaje(textoPedido);
               adherir();
+              registrarEvento(EVENTOS.adheriste(m.comunidad, m.id));
             }
           }}
         >
@@ -146,6 +149,7 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
               moverFoco.current = true;
               setMensaje(textoMiembro);
               aceptar();
+              registrarEvento(EVENTOS.adhesionAceptada(m.comunidad, m.id));
             }}
           >
             Simular: la comunidad me acepta

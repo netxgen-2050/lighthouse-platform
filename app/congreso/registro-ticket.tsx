@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { registrarEvento } from "@/lib/actividad/almacen";
+import { EVENTOS } from "@/lib/actividad/eventos";
 import { esCodigoValido, normalizarCodigo } from "@/lib/congreso/ticket";
 
 import { CLAVES } from "@/lib/demo/claves";
@@ -46,6 +48,7 @@ export function RegistroTicket() {
       return;
     }
     setFalloAlmacen(false);
+    registrarEvento(EVENTOS.registrasteTicket());
     moverFoco.current = "mensaje";
     setTicket(codigo);
     setError(false);

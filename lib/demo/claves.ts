@@ -12,4 +12,5 @@ export const CLAVES = {
   bitacora: "lh-bitacora",
   membresia: "lh-membresia",
   postulaciones: "lh-postulaciones",
+  actividad: "lh-actividad",
 } as const;
