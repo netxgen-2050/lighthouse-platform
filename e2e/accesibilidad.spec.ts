@@ -14,14 +14,15 @@ const rutas = [
   "/netx",
   "/pasaporte",
   "/bandeja",
+  "/panel/bitacora",
   ...listarTribus().map((t) => `/tribus/${t.id}`),
   "/territorios/lighthouse",
   "/territorios/no-existe",
   "/ruta-que-no-existe",
 ];
 
-test("hay 26 rutas auditadas", () => {
-  expect(rutas).toHaveLength(26);
+test("hay 27 rutas auditadas", () => {
+  expect(rutas).toHaveLength(27);
 });
 
 test("axe sin violaciones serias o críticas: /pasaporte con datos cargados", async ({ page }) => {

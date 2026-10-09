@@ -117,7 +117,7 @@ test("borrar todo desde /panel vacía la bitácora", async ({ page }) => {
   page.once("dialog", (d) => void d.accept());
   await page.getByRole("button", { name: "Borrar todo lo de este navegador" }).click();
   await expect(page.getByText("Listo: se borró todo lo guardado en este navegador.")).toBeVisible();
-  await page.getByRole("link", { name: "Ver lo que te mostramos" }).click();
+  await page.getByRole("tab", { name: "Bitácora" }).click();
   await expect(page.getByText("Todavía no hay nada anotado en este navegador.")).toBeVisible();
 });
 
