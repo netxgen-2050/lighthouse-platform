@@ -93,9 +93,18 @@ function masNuevoPrimero(a: EventoActividad, b: EventoActividad): number {
   return fechaVisible(b) - fechaVisible(a);
 }
 
-/** Notificaciones que ya se ven, de la más nueva a la más vieja. */
-export function listarNotificaciones(lista: EventoActividad[], ahora: Date): EventoActividad[] {
-  return lista.filter((e) => e.notificacion && yaSeVe(e, ahora)).sort(masNuevoPrimero);
+/**
+ * Notificaciones que ya se ven, de la más nueva a la más vieja.
+ * `tiposOcultos`: tipos de evento que la persona apagó en Configuración; no se listan ni se cuentan.
+ */
+export function listarNotificaciones(
+  lista: EventoActividad[],
+  ahora: Date,
+  tiposOcultos: readonly string[] = [],
+): EventoActividad[] {
+  return lista
+    .filter((e) => e.notificacion && yaSeVe(e, ahora) && !tiposOcultos.includes(e.tipo))
+    .sort(masNuevoPrimero);
 }
 
 /** Todo lo que hizo o le pasó a la persona, de lo más nuevo a lo más viejo (para Mi recorrido). */
@@ -103,8 +112,8 @@ export function listarActividad(lista: EventoActividad[], ahora: Date): EventoAc
   return lista.filter((e) => yaSeVe(e, ahora)).sort(masNuevoPrimero);
 }
 
-export function contarNoLeidas(lista: EventoActividad[], ahora: Date): number {
-  return listarNotificaciones(lista, ahora).filter((e) => !e.leida).length;
+export function contarNoLeidas(lista: EventoActividad[], ahora: Date, tiposOcultos: readonly string[] = []): number {
+  return listarNotificaciones(lista, ahora, tiposOcultos).filter((e) => !e.leida).length;
 }
 
 /** Marca como leídas las notificaciones que ya se ven. Las que todavía no llegaron siguen sin leer. */

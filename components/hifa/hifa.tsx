@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { useEffect, useReducer, useRef, useState } from "react";
+import { usePreferencias } from "@/lib/configuracion/almacen";
 import { CLAVES } from "@/lib/demo/claves";
 import { ATAJOS } from "@/lib/hifa/guion";
 import {
@@ -27,6 +28,7 @@ const BOTON_PRINCIPAL =
   "rounded-full bg-deep px-4 py-1.5 text-sm font-medium text-on-deep hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep disabled:opacity-60";
 
 export function Hifa({ version, entorno }: { version: string; entorno: string }) {
+  const { mostrarHifa } = usePreferencias();
   const [abierto, setAbierto] = useState(false);
   const [estado, despachar] = useReducer(reducir, ESTADO_INICIAL);
   const [listo, setListo] = useState(false);
@@ -153,6 +155,9 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
   }
 
   const ocupada = fase === "enviando";
+
+  // Se apaga en Configuración. La conversación guardada se conserva para cuando vuelva a prenderse.
+  if (!mostrarHifa) return null;
 
   return (
     <div>

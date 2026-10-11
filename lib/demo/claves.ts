@@ -18,4 +18,5 @@ export const CLAVES = {
   kyc: "lh-kyc",
   sellos: "lh-sellos",
   hifa: "lh-hifa",
+  configuracion: "lh-configuracion",
 } as const;

@@ -5,7 +5,10 @@ import { useEffect, useState } from "react";
 import { contarNoLeidas, listarNotificaciones, type EventoActividad } from "@/lib/actividad/actividad";
 import { EVENTO_CAMBIO, leerActividadDelNavegador, marcarTodasLeidasEnNavegador } from "@/lib/actividad/almacen";
 
-const fecha = new Intl.DateTimeFormat("es-AR", { dateStyle: "medium", timeStyle: "short" });
+import { usePreferencias } from "@/lib/configuracion/almacen";
+import { tiposOcultos } from "@/lib/configuracion/preferencias";
+
+const fecha =new Intl.DateTimeFormat("es-AR", { dateStyle: "medium", timeStyle: "short" });
 
 export function BandejaCliente() {
   const [lista, setLista] = useState<EventoActividad[]>([]);
@@ -28,9 +31,10 @@ export function BandejaCliente() {
     };
   }, []);
 
+  const ocultos = tiposOcultos(usePreferencias());
   const ahora = new Date();
-  const notificaciones = listarNotificaciones(lista, ahora);
-  const sinLeer = contarNoLeidas(lista, ahora);
+  const notificaciones = listarNotificaciones(lista, ahora, ocultos);
+  const sinLeer = contarNoLeidas(lista, ahora, ocultos);
 
   function marcar() {
     const guardo = marcarTodasLeidasEnNavegador();

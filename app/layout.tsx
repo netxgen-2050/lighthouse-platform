@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Anek_Latin, Figtree, JetBrains_Mono } from "next/font/google";
+import { AplicarPreferencias } from "@/components/aplicar-preferencias";
+import { BarraSuperior } from "@/components/barra-superior";
 import { Rail } from "@/components/rail";
+import { SCRIPT_APARIENCIA } from "@/lib/configuracion/script-apariencia";
 import { Pie } from "@/components/pie";
 import { BotonReportar } from "@/components/boton-reportar";
 import { Hifa } from "@/components/hifa/hifa";
@@ -26,7 +29,11 @@ export default function RootLayout({
     VERCEL_ENV: process.env.VERCEL_ENV,
   });
   return (
-    <html lang="es">
+    // suppressHydrationWarning: el script de apariencia pone data-tema, data-texto y data-movimiento antes de hidratar.
+    <html lang="es" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_APARIENCIA }} />
+      </head>
       <body
         className={`${anek.variable} ${figtree.variable} ${jetbrains.variable} flex min-h-screen antialiased`}
       >
@@ -36,8 +43,10 @@ export default function RootLayout({
         >
           Saltar al contenido
         </a>
+        <AplicarPreferencias />
         <Rail />
         <div className="flex min-w-0 flex-1 flex-col">
+          <BarraSuperior />
           <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
             {children}
           </main>

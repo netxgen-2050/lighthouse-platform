@@ -33,6 +33,7 @@ test("el orden de la lista es el de la spec", () => {
     "Perfil",
     "Pasaporte",
     "Mi recorrido",
+    "Configuración",
     "NetX",
   ]);
 });
@@ -43,7 +44,7 @@ test("los grupos del rail y del menú de la persona salen de la lista única", (
   expect(etiquetas("descubrir")).toEqual(["Inicio", "Territorio", "Tribus"]);
   expect(etiquetas("participar")).toEqual(["Pactos", "Semillas", "Fogón", "Compromisos", "Congreso"]);
   expect(etiquetas("sumarte")).toEqual(["Sumarte"]);
-  expect(etiquetas("persona")).toEqual(["Perfil", "Pasaporte", "Mi recorrido"]);
+  expect(etiquetas("persona")).toEqual(["Perfil", "Pasaporte", "Mi recorrido", "Configuración"]);
   expect(etiquetas("interno")).toEqual(["NetX"]);
 });
 

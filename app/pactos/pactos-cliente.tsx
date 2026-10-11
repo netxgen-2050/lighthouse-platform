@@ -21,6 +21,8 @@ import {
   type EstadoPactos,
 } from "@/lib/pactos/estado";
 import { registrarEvento } from "@/lib/actividad/almacen";
+import { usePreferencias } from "@/lib/configuracion/almacen";
+import { formatearMonto, NOTA_TIPO_DE_CAMBIO } from "@/lib/configuracion/preferencias";
 import { EVENTOS } from "@/lib/actividad/eventos";
 import { COMUNIDAD_LIGHTHOUSE, comunidadesDondeEsMiembro, leerMembresiaDelNavegador } from "@/lib/membresia/estado";
 import { DATOS_VACIOS, type DatosPersona } from "@/lib/pasaporte/datos";
@@ -60,6 +62,7 @@ export function PactosCliente() {
   const [monto, setMonto] = useState(String(MONTO_USD.inicial));
   const [dialogoKyc, setDialogoKyc] = useState(false);
   const kyc = useKyc();
+  const { moneda } = usePreferencias();
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
@@ -356,9 +359,10 @@ export function PactosCliente() {
                 </label>
                 <p id="ayuda-monto" className="text-sm text-muted">
                   {montoValido
-                    ? `Este aporte equivale a ${miles(semillasDePlata(montoNumero))} Semillas.`
+                    ? `Este aporte equivale a ${miles(semillasDePlata(montoNumero))} Semillas${moneda === "ARS" ? ` (${formatearMonto(montoNumero, moneda)})` : ""}.`
                     : `Poné un monto entero de USD ${miles(MONTO_USD.min)} a ${miles(MONTO_USD.max)}.`}
                 </p>
+                {moneda === "ARS" && <p className="text-sm text-muted">{NOTA_TIPO_DE_CAMBIO}</p>}
                 <button
                   type="button"
                   className={BOTON_PRIMARIO}
@@ -385,7 +389,7 @@ export function PactosCliente() {
                     <ul className="grid gap-1 text-sm">
                       {mias.aportes.map((a, i) => (
                         <li key={i}>
-                          USD {miles(a)} · {miles(semillasDePlata(a))} Semillas
+                          {formatearMonto(a, moneda)} · {miles(semillasDePlata(a))} Semillas
                         </li>
                       ))}
                     </ul>
