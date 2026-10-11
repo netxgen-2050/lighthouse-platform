@@ -29,7 +29,7 @@ export default function RootLayout({
     VERCEL_ENV: process.env.VERCEL_ENV,
   });
   return (
-    // suppressHydrationWarning: el script de apariencia pone data-tema, data-texto y data-movimiento antes de hidratar.
+    // suppressHydrationWarning: el script de apariencia pone data-tema, data-texto, data-movimiento y data-hifa antes de hidratar.
     <html lang="es" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_APARIENCIA }} />

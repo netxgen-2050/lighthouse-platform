@@ -99,5 +99,6 @@ export function atributosDeApariencia(p: Preferencias, sistemaOscuro: boolean) {
     "data-tema": p.tema === "sistema" ? (sistemaOscuro ? "oscuro" : "claro") : p.tema,
     "data-texto": p.texto,
     "data-movimiento": p.reducirAnimaciones ? "reducido" : "normal",
+    "data-hifa": p.mostrarHifa ? "visible" : "apagada",
   } as const;
 }

@@ -90,6 +90,11 @@ html {
 }
 
 /* Reducir animaciones: sin transiciones ni movimientos. */
+/* Hifa apagada: el script del <head> lo marca antes de hidratar, así el botón no parpadea. */
+:root[data-hifa="apagada"] [aria-controls="chat-hifa"] {
+  display: none;
+}
+
 :root[data-movimiento="reducido"] *,
 :root[data-movimiento="reducido"] *::before,
 :root[data-movimiento="reducido"] *::after {

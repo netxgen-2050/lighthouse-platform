@@ -96,6 +96,13 @@ test("apagar rondas: esas notificaciones dejan de contarse y de verse", async ({
   await expect(campanita).toHaveAttribute("aria-label", "2 notificaciones sin leer");
 });
 
+test("Hifa apagada: el <html> lo marca y el botón nunca se ve (sin parpadeo)", async ({ page }) => {
+  await page.addInitScript(() => window.localStorage.setItem("lh-configuracion", JSON.stringify({ mostrarHifa: false })));
+  await page.goto("/");
+  await expect(html(page)).toHaveAttribute("data-hifa", "apagada");
+  await expect(page.locator('[aria-controls="chat-hifa"]')).toBeHidden();
+});
+
 test("ocultar a Hifa: el botón desaparece en todas las páginas y vuelve al prenderlo", async ({ page }) => {
   const hifa = page.getByRole("button", { name: "Hablar con Hifa" });
   await page.goto("/configuracion");
@@ -179,7 +186,7 @@ test("axe sin violaciones serias o críticas: /configuracion en claro y en oscur
   expect(await graves(page)).toEqual([]);
 });
 
-for (const ruta of ["/", "/tribus", "/sumarte", "/pactos", "/bandeja", "/panel", "/perfil", "/pasaporte", "/semillas", "/compromisos"]) {
+for (const ruta of ["/", "/tribus", "/sumarte", "/pactos", "/bandeja", "/panel", "/perfil", "/pasaporte", "/semillas", "/compromisos", "/tribus/valle", "/territorios/lighthouse", "/congreso", "/netx", "/fogon"]) {
   test(`axe sin violaciones serias o críticas en tema oscuro: ${ruta}`, async ({ page }) => {
     await page.addInitScript(() => window.localStorage.setItem("lh-configuracion", JSON.stringify({ tema: "oscuro" })));
     await page.goto(ruta);

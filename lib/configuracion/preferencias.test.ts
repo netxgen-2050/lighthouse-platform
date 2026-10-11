@@ -80,4 +80,9 @@ describe("atributosDeApariencia", () => {
     expect(a["data-texto"]).toBe("grande");
     expect(a["data-movimiento"]).toBe("reducido");
   });
+
+  it("Hifa apagada se marca para ocultar el botón antes de hidratar", () => {
+    expect(atributosDeApariencia(PREFERENCIAS_INICIALES, false)["data-hifa"]).toBe("visible");
+    expect(atributosDeApariencia({ ...PREFERENCIAS_INICIALES, mostrarHifa: false }, false)["data-hifa"]).toBe("apagada");
+  });
 });
