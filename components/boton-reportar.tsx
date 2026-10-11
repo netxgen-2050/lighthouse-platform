@@ -1,7 +1,8 @@
 "use client";
 
 import { Bug } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { TAMANO_FLOTANTE } from "@/lib/ui/flotantes";
 import {
   armarContexto,
   CONTEXTO_VACIO,
@@ -41,6 +42,23 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
   const [estado, setEstado] = useState<Estado>({ fase: "editando" });
   const [contexto, setContexto] = useState<Contexto>(CONTEXTO_VACIO);
   const [copiado, setCopiado] = useState<"si" | "no" | null>(null);
+  const [sobre, setSobre] = useState(false);
+  const [conFoco, setConFoco] = useState(false);
+  const [descartada, setDescartada] = useState(false);
+  // Visible mientras el puntero esté encima o el botón tenga foco, salvo que se haya descartado con Escape.
+  const sugerencia = (sobre || conFoco) && !descartada;
+
+  // Escape descarta la sugerencia esté donde esté el foco (WCAG 1.4.13), sin mover puntero ni foco.
+  useEffect(() => {
+    if (!sugerencia) return;
+    function alTeclear(ev: KeyboardEvent) {
+      if (ev.key !== "Escape") return;
+      // Sin preventDefault: un keydown cancelado no cierra un <dialog> abierto.
+      setDescartada(true);
+    }
+    document.addEventListener("keydown", alTeclear);
+    return () => document.removeEventListener("keydown", alTeclear);
+  }, [sugerencia]);
 
   function leerContexto(): Contexto {
     return armarContexto({
@@ -55,6 +73,8 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
   }
 
   function abrir() {
+    // Al abrir el diálogo la sugerencia sobra, aunque el navegador no dispare mouseleave.
+    setSobre(false);
     // Mientras se envía no se toca nada: reabrir no habilita un segundo envío.
     if (estado.fase === "enviando") {
       dialogo.current?.showModal();
@@ -138,10 +158,32 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
         type="button"
         onClick={abrir}
         aria-label="Reportar un problema o una idea"
-        className="fixed right-0 top-1/2 z-40 inline-flex -translate-y-1/2 flex-col items-center gap-2 rounded-l-xl bg-deep px-2 py-3 text-sm font-medium text-on-deep shadow-lg hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+        aria-describedby={sugerencia ? "tooltip-reportar" : undefined}
+        onMouseEnter={() => {
+          setSobre(true);
+          setDescartada(false);
+        }}
+        onMouseLeave={() => setSobre(false)}
+        onFocus={() => {
+          setConFoco(true);
+          setDescartada(false);
+        }}
+        onBlur={() => setConFoco(false)}
+        className="group fixed right-0 top-1/2 z-40 grid -translate-y-1/2 place-items-center rounded-full border-2 border-dashed border-ink p-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
       >
-        <Bug aria-hidden="true" className="size-4" />
-        <span className="[writing-mode:vertical-rl]">Reportar</span>
+        {/* Mismo tamaño que el botón de Hifa (TAMANO_FLOTANTE); el anillo punteado queda separado por 3 px. */}
+        <span className={`grid ${TAMANO_FLOTANTE} place-items-center rounded-full bg-deep text-on-deep shadow-lg group-hover:bg-deep-2`}>
+          <Bug aria-hidden="true" className="size-7" />
+        </span>
+        {sugerencia && (
+          <span
+            id="tooltip-reportar"
+            role="tooltip"
+            className="absolute right-full top-1/2 mr-2 -translate-y-1/2 whitespace-nowrap rounded-md bg-ink px-2 py-1 text-sm font-medium text-bg"
+          >
+            Reportar
+          </span>
+        )}
       </button>
 
       <dialog

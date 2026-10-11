@@ -18,6 +18,7 @@ import {
   textoParaCopiarHifa,
 } from "@/lib/hifa/estado";
 import { armarContexto } from "@/lib/reportes/reporte";
+import { TAMANO_FLOTANTE } from "@/lib/ui/flotantes";
 import { AvatarHifa } from "./avatar-hifa";
 
 const BOTON =
@@ -80,8 +81,9 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
       setAbierto(false);
       if (dentro) disparador.current?.focus();
     }
-    document.addEventListener("keydown", alTeclear);
-    return () => document.removeEventListener("keydown", alTeclear);
+    // En captura, para mirar el tooltip antes de que el listener de Reportar lo descarte en el mismo evento.
+    document.addEventListener("keydown", alTeclear, true);
+    return () => document.removeEventListener("keydown", alTeclear, true);
   }, [abierto]);
 
   // Envío al equipo: se dispara cuando la persona aceptó (fase "enviando").
@@ -161,7 +163,7 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
         aria-label="Hablar con Hifa"
         aria-expanded={abierto}
         aria-controls="chat-hifa"
-        className="fixed bottom-4 right-4 z-40 grid size-14 place-items-center rounded-full border-2 border-deep bg-surface shadow-lg hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+        className={`fixed bottom-4 right-4 z-40 grid ${TAMANO_FLOTANTE} place-items-center rounded-full border-2 border-deep bg-surface shadow-lg hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep`}
       >
         <AvatarHifa className="size-10" />
       </button>
@@ -172,7 +174,7 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
         role="dialog"
         aria-label="Chat con Hifa"
         hidden={!abierto}
-        className="fixed bottom-20 right-12 z-50 flex max-h-[min(34rem,calc(100dvh-6rem))] w-[min(22rem,calc(100vw-6rem))] flex-col overflow-hidden rounded-xl border border-line bg-surface text-ink shadow-lg"
+        className="fixed bottom-20 right-[4.75rem] z-50 flex max-h-[min(34rem,calc(100dvh-6rem))] w-[min(22rem,calc(100vw-8rem))] flex-col overflow-hidden rounded-xl border border-line bg-surface text-ink shadow-lg"
       >
         <header className="flex items-center gap-2 border-b border-line bg-deep px-3 py-2 text-on-deep">
           <span className="grid size-9 shrink-0 place-items-center rounded-full bg-surface">
