@@ -15,6 +15,7 @@ const rutas = [
   "/netx",
   "/pasaporte",
   "/bandeja",
+  "/configuracion",
   "/panel/bitacora",
   ...listarTribus().map((t) => `/tribus/${t.id}`),
   "/territorios/lighthouse",
@@ -31,8 +32,8 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 27 rutas auditadas", () => {
-  expect(rutas).toHaveLength(27);
+test("hay 28 rutas auditadas", () => {
+  expect(rutas).toHaveLength(28);
 });
 
 async function graves(page: Page) {

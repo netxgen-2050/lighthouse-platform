@@ -39,7 +39,7 @@ test("cumplimiento con medidores y ⚖, y tabla de tribus con encabezados", asyn
   await expect(fila.getByRole("cell").nth(1)).toHaveText("65%");
 });
 
-test("/netx aparece en el rail", async ({ page }) => {
+test("/netx aparece en la barra superior", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("link", { name: "NetX" }).first()).toHaveAttribute("href", "/netx");
+  await expect(page.getByRole("banner").getByRole("link", { name: /NetX/ })).toHaveAttribute("href", "/netx");
 });

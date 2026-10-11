@@ -110,13 +110,14 @@ test("vacía: muestra el mensaje", async ({ page }) => {
   await expect(page.getByText("Todavía no hay nada anotado en este navegador.")).toBeVisible();
 });
 
-test("borrar todo desde /panel vacía la bitácora", async ({ page }) => {
+test("borrar todo desde /configuracion vacía la bitácora", async ({ page }) => {
   await page.goto("/territorios/lighthouse");
   await expect.poll(async () => (await leerBitacora(page)).length).toBeGreaterThan(0);
-  await page.goto("/panel");
+  await page.goto("/configuracion");
   page.once("dialog", (d) => void d.accept());
-  await page.getByRole("button", { name: "Borrar todo lo de este navegador" }).click();
-  await expect(page.getByText("Listo: se borró todo lo guardado en este navegador.")).toBeVisible();
+  await page.getByRole("button", { name: "Borrar todo lo guardado en este navegador" }).click();
+  await expect(page.getByText("Listo: se borró todo lo guardado en este navegador")).toBeVisible();
+  await page.goto("/panel");
   await page.getByRole("tab", { name: "Bitácora" }).click();
   await expect(page.getByText("Todavía no hay nada anotado en este navegador.")).toBeVisible();
 });

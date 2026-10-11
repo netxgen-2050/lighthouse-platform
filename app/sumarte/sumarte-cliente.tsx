@@ -274,9 +274,10 @@ export function SumarteCliente() {
         </article>
       </div>
 
-      <section aria-labelledby="comparativa" className={`rounded-xl border bg-surface p-4 ${BORDE}`}>
+      <section aria-labelledby="comparativa" className={`min-w-0 rounded-xl border bg-surface p-4 ${BORDE}`}>
         <h2 id="comparativa" className="mb-2 text-xl font-semibold">Qué incluye cada plan</h2>
-        <div className="overflow-x-auto">
+        {/* relative: los textos sr-only de la tabla (position: absolute) quedan recortados con la tabla y no ensanchan la página. */}
+        <div className="relative overflow-x-auto">
           <table className="w-full min-w-[32rem] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-line">

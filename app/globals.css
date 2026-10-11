@@ -79,6 +79,11 @@
   --color-rose-soft: #3d1f2d;
 }
 
+/* La barra superior es fija: al saltar a un ancla o al enfocar con el teclado, el elemento no queda debajo de ella. */
+html {
+  scroll-padding-top: 4rem;
+}
+
 /* Tamaño de texto: todo el diseño usa rem, así que cambiar la base escala la página entera. */
 :root[data-texto="grande"] {
   font-size: 118.75%;

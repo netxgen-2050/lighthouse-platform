@@ -84,7 +84,9 @@ export function TooltipTermino({ titulo, texto, simbolo, etiqueta, claseBoton, c
     }
     const caja = tooltip.current.getBoundingClientRect();
     const margen = 8;
-    if (!abajo && caja.top < margen) setAbajo(true);
+    // La barra superior es fija: un tooltip que abriera hacia arriba por debajo de ella quedaría tapado.
+    const barra = document.querySelector("header")?.getBoundingClientRect().bottom ?? 0;
+    if (!abajo && caja.top < Math.max(margen, barra + margen)) setAbajo(true);
     const sobra = caja.right + desplazamiento - (window.innerWidth - margen);
     const falta = margen - (caja.left - desplazamiento);
     setDesplazamiento(sobra > 0 ? -sobra : falta > 0 ? falta : 0);

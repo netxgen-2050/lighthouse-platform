@@ -135,15 +135,15 @@ test("dato guardado inválido: la bandeja se lee vacía y la pantalla no falla",
   await expect(page.getByText("Todavía no hay pedidos en este navegador.")).toBeVisible();
 });
 
-test("borrar todo desde /panel vacía la bandeja", async ({ page }) => {
+test("borrar todo desde /configuracion vacía la bandeja", async ({ page }) => {
   await page.goto("/sumarte");
   await page.getByRole("button", { name: "Pedir una charla" }).click();
   await page.getByRole("radio", { name: "Email" }).check();
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
   await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
-  await page.goto("/panel");
+  await page.goto("/configuracion");
   page.once("dialog", (d) => void d.accept());
-  await page.getByRole("button", { name: "Borrar todo lo de este navegador" }).click();
+  await page.getByRole("button", { name: "Borrar todo lo guardado en este navegador" }).click();
   await expect(page.getByRole("status").filter({ hasText: "se borró todo" })).toBeVisible();
   await page.goto("/netx");
   await expect(page.getByText("Todavía no hay pedidos en este navegador.")).toBeVisible();
