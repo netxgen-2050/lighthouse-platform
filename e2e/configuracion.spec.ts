@@ -96,11 +96,21 @@ test("apagar rondas: esas notificaciones dejan de contarse y de verse", async ({
   await expect(campanita).toHaveAttribute("aria-label", "2 notificaciones sin leer");
 });
 
-test("Hifa apagada: el <html> lo marca y el botón nunca se ve (sin parpadeo)", async ({ page }) => {
-  await page.addInitScript(() => window.localStorage.setItem("lh-configuracion", JSON.stringify({ mostrarHifa: false })));
+test("Hifa apagada: sin hidratar, el CSS ya oculta el botón (sin parpadeo); con Hifa visible, el botón sí se ve", async ({ page }) => {
+  // Se bloquea el JS para que la página no hidrate: lo que se ve es solo el HTML del servidor + el CSS + el script del <head>.
+  await page.route("**/_next/static/**/*.js", (ruta) => ruta.abort());
+  const boton = page.locator('[aria-controls="chat-hifa"]');
+
+  // Control: con Hifa visible, el servidor dibuja el botón y se ve aunque no hidrate.
+  await page.goto("/");
+  await expect(boton).toBeVisible();
+
+  // Con Hifa apagada, el botón sigue en el HTML del servidor pero el CSS lo oculta.
+  await page.evaluate(() => window.localStorage.setItem("lh-configuracion", JSON.stringify({ mostrarHifa: false })));
   await page.goto("/");
   await expect(html(page)).toHaveAttribute("data-hifa", "apagada");
-  await expect(page.locator('[aria-controls="chat-hifa"]')).toBeHidden();
+  await expect(boton).toHaveCount(1);
+  await expect(boton).toBeHidden();
 });
 
 test("ocultar a Hifa: el botón desaparece en todas las páginas y vuelve al prenderlo", async ({ page }) => {
