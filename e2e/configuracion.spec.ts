@@ -98,7 +98,11 @@ test("apagar rondas: esas notificaciones dejan de contarse y de verse", async ({
 
 test("Hifa apagada: sin hidratar, el CSS ya oculta el botón (sin parpadeo); con Hifa visible, el botón sí se ve", async ({ page }) => {
   // Se bloquea el JS para que la página no hidrate: lo que se ve es solo el HTML del servidor + el CSS + el script del <head>.
-  await page.route("**/_next/static/**/*.js", (ruta) => ruta.abort());
+  // Se matchea por pathname con regex: en Vercel los scripts llevan "?dpl=..." y un glob terminado en ".js" no los atrapa.
+  await page.route(
+    (url) => /\/_next\/static\/.*\.js$/.test(url.pathname),
+    (ruta) => ruta.abort(),
+  );
   const boton = page.locator('[aria-controls="chat-hifa"]');
 
   // Control: con Hifa visible, el servidor dibuja el botón y se ve aunque no hidrate.
