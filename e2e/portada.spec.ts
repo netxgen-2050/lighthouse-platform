@@ -117,8 +117,16 @@ test("la primera visita con campaña guarda el origen; la segunda no lo pisa", a
   const primero = JSON.parse((await leerOrigenGuardado(page)) ?? "{}");
   expect(primero).toMatchObject({ fuente: "newsletter", medio: "email", campana: "congreso-2027", camino: "congreso" });
   expect(typeof primero.fecha).toBe("string");
+  // Marca cuándo corrió el guardado de la segunda visita: GuardarOrigen lee lh-origen antes de decidir.
+  await page.addInitScript(() => {
+    const leer = Storage.prototype.getItem;
+    Storage.prototype.getItem = function (clave: string) {
+      if (clave === "lh-origen") (window as unknown as { __origenLeido?: boolean }).__origenLeido = true;
+      return leer.call(this, clave);
+    };
+  });
   await page.goto("/?utm_source=telegram");
-  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await page.waitForFunction(() => (window as unknown as { __origenLeido?: boolean }).__origenLeido === true);
   const despues = JSON.parse((await leerOrigenGuardado(page)) ?? "{}");
   expect(despues.fuente).toBe("newsletter");
 });

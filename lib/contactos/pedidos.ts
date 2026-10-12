@@ -1,3 +1,4 @@
+import { limpiar } from "@/lib/origen/origen";
 import type { Borrador, Canal, Errores, Momento, Motivo, OrigenPedido, Pedido } from "./tipos";
 
 export const MAX_MENSAJE = 500;
@@ -59,10 +60,14 @@ function leerOrigenDePedido(x: unknown): OrigenPedido | undefined {
   const o = x as Record<string, unknown>;
   const partes = { fuente: o.fuente, medio: o.medio, campana: o.campana };
   if (Object.values(partes).some((v) => v !== undefined && typeof v !== "string")) return undefined;
+  // Misma limpieza que al leer lh-origen: minúsculas, solo [a-z0-9._-] y hasta 60 caracteres.
+  const fuente = limpiar(partes.fuente as string | undefined);
+  const medio = limpiar(partes.medio as string | undefined);
+  const campana = limpiar(partes.campana as string | undefined);
   const origen: OrigenPedido = {
-    ...(typeof partes.fuente === "string" ? { fuente: partes.fuente } : {}),
-    ...(typeof partes.medio === "string" ? { medio: partes.medio } : {}),
-    ...(typeof partes.campana === "string" ? { campana: partes.campana } : {}),
+    ...(fuente ? { fuente } : {}),
+    ...(medio ? { medio } : {}),
+    ...(campana ? { campana } : {}),
   };
   return origen.fuente || origen.medio || origen.campana ? origen : undefined;
 }

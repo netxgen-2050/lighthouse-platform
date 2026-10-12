@@ -95,6 +95,15 @@ describe("origen del pedido", () => {
     const viejo = crearPedido(base, ahora, "a");
     expect(leerBandeja(JSON.stringify([viejo]))).toEqual([viejo]);
   });
+  it("al leer, el origen se vuelve a limpiar y a cortar a 60 caracteres", () => {
+    const ok = crearPedido(base, ahora, "a");
+    const [p] = leerBandeja(
+      JSON.stringify([{ ...ok, origen: { fuente: "<B>IG</B>", medio: "a".repeat(100), campana: "@@" } }]),
+    );
+    expect(p.origen?.fuente).toBe("bigb");
+    expect(p.origen?.medio).toHaveLength(60);
+    expect(p.origen).not.toHaveProperty("campana");
+  });
   it("un origen mal formado se ignora pero el pedido se conserva", () => {
     const ok = crearPedido(base, ahora, "a");
     const leidos = leerBandeja(
