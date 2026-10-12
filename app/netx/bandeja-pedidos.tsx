@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { leerBandejaDelNavegador } from "@/lib/contactos/almacen";
 import { CANALES, MOMENTOS, MOTIVOS } from "@/lib/contactos/pedidos";
 import type { Pedido } from "@/lib/contactos/tipos";
+import { formatoOrigen } from "@/lib/origen/origen";
 
 const CARTA = "rounded-xl border border-faint bg-surface p-4";
 
@@ -44,6 +45,7 @@ export function BandejaPedidos() {
                 <th scope="col" className="py-1.5 pr-3">Mejor momento</th>
                 <th scope="col" className="py-1.5 pr-3">Mensaje</th>
                 <th scope="col" className="py-1.5 pr-3">Destino</th>
+                <th scope="col" className="py-1.5 pr-3">Origen</th>
                 <th scope="col" className="py-1.5">Estado</th>
               </tr>
             </thead>
@@ -60,6 +62,7 @@ export function BandejaPedidos() {
                   <td className="py-1.5 pr-3">{p.momento ?MOMENTOS[p.momento] : "sin dato"}</td>
                   <td className="py-1.5 pr-3">{p.mensaje ?? "sin dato"}</td>
                   <td className="py-1.5 pr-3">{p.destino}</td>
+                  <td className="py-1.5 pr-3">{formatoOrigen(p.origen)}</td>
                   <td className="py-1.5">Recibido (simulado)</td>
                 </tr>
               ))}

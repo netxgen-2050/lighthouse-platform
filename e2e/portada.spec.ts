@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { tribusDeTerritorio } from "@/lib/territorios/datos";
 
 const CAMINOS = [
@@ -80,4 +80,61 @@ test("héroe con la propuesta, aviso de prototipo y sin otros nodos", async ({ p
   await expect(page.getByText("Prototipo interno · datos de ejemplo")).toBeVisible();
   await expect(page.getByText("San Martín de los Andes")).toHaveCount(0);
   await expect(page.getByText("Atlántico Sur")).toHaveCount(0);
+});
+
+const leerOrigenGuardado = (page: Page) => page.evaluate(() => window.localStorage.getItem("lh-origen"));
+
+test("camino recomendado: /?camino=congreso marca solo esa tarjeta, sin cambiar el orden", async ({ page }) => {
+  await page.goto("/?camino=congreso");
+  const seccion = page.getByRole("region", { name: "Por dónde empezar" });
+  await expect(seccion.getByText("Recomendado para vos")).toHaveCount(1);
+  await expect(seccion.getByRole("link", { name: /Congreso · Feb 2027/ })).toContainText("Recomendado para vos");
+  await expect(seccion.getByRole("link", { name: /Ver las tribus/ })).not.toContainText("Recomendado para vos");
+  await expect(seccion.getByRole("link", { name: /Encontrar mi tribu/ })).not.toContainText("Recomendado para vos");
+  const titulos = await seccion.getByRole("heading", { level: 3 }).allTextContents();
+  expect(titulos).toEqual(CAMINOS.map((c) => c.titulo));
+  expect(await leerOrigenGuardado(page)).toBeNull();
+});
+
+test("camino recomendado: el nombre accesible del enlace incluye la marca y recibe el foco", async ({ page }) => {
+  await page.goto("/?camino=perfil");
+  const enlace = page.getByRole("region", { name: "Por dónde empezar" }).getByRole("link", { name: /Recomendado para vos/ });
+  await expect(enlace).toHaveCount(1);
+  await expect(enlace).toHaveAttribute("href", "/perfil");
+  await enlace.focus();
+  await expect(enlace).toBeFocused();
+});
+
+test("camino desconocido: ninguna tarjeta marcada y la página no falla", async ({ page }) => {
+  const respuesta = await page.goto("/?camino=lotes");
+  expect(respuesta?.status()).toBe(200);
+  await expect(page.getByText("Recomendado para vos")).toHaveCount(0);
+});
+
+test("la primera visita con campaña guarda el origen; la segunda no lo pisa", async ({ page }) => {
+  await page.goto("/?utm_source=newsletter&utm_medium=email&utm_campaign=congreso-2027&camino=congreso");
+  await expect.poll(() => leerOrigenGuardado(page)).not.toBeNull();
+  const primero = JSON.parse((await leerOrigenGuardado(page)) ?? "{}");
+  expect(primero).toMatchObject({ fuente: "newsletter", medio: "email", campana: "congreso-2027", camino: "congreso" });
+  expect(typeof primero.fecha).toBe("string");
+  await page.goto("/?utm_source=telegram");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  const despues = JSON.parse((await leerOrigenGuardado(page)) ?? "{}");
+  expect(despues.fuente).toBe("newsletter");
+});
+
+test("sin utm_* no se guarda nada", async ({ page }) => {
+  await page.goto("/?camino=perfil");
+  await expect(page.getByText("Recomendado para vos")).toBeVisible();
+  expect(await leerOrigenGuardado(page)).toBeNull();
+});
+
+test("un parámetro no permitido se descarta y los valores quedan limpios", async ({ page }) => {
+  await page.goto("/?utm_source=ig&email=ana@ejemplo.com&utm_campaign=%3Cscript%3EPromo%20Feb%3C/script%3E");
+  await expect.poll(() => leerOrigenGuardado(page)).not.toBeNull();
+  const crudo = (await leerOrigenGuardado(page)) ?? "";
+  expect(crudo).not.toContain("ana@ejemplo.com");
+  const o = JSON.parse(crudo);
+  expect(o.fuente).toBe("ig");
+  expect(o.campana).toMatch(/^[a-z0-9._-]+$/);
 });

@@ -144,6 +144,29 @@ test("axe sin violaciones serias o críticas: /netx con un pedido en la bandeja"
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
+test("axe sin violaciones serias o críticas: /?camino=congreso con la tarjeta recomendada", async ({ page }) => {
+  await page.goto("/?camino=congreso&utm_source=newsletter");
+  await expect(page.getByText("Recomendado para vos")).toBeVisible();
+  const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /netx con un pedido con origen", async ({ page }) => {
+  await page.goto("/?utm_source=newsletter&utm_campaign=congreso-2027");
+  await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-origen"))).not.toBeNull();
+  await page.goto("/sumarte");
+  await page.getByRole("button", { name: "Pedir una charla" }).click();
+  await page.getByRole("radio", { name: "Email" }).check();
+  await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
+  await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
+  await page.goto("/netx");
+  await expect(page.getByRole("row").filter({ hasText: "newsletter · sin dato · congreso-2027" })).toBeVisible();
+  const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+});
+
 test("axe sin violaciones serias o críticas: /panel/bitacora con entradas", async ({ page }) => {
   await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
   await page.goto("/territorios/lighthouse");

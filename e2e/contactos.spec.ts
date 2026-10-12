@@ -224,3 +224,51 @@ test("un mensaje o estado de tipo raro en lh-contactos no rompe /netx", async ({
   await page.reload();
   await expect(page.getByText("Todavía no hay pedidos en este navegador.")).toBeVisible();
 });
+
+async function pedirCharla(page: Page) {
+  await page.goto("/sumarte");
+  await page.getByRole("button", { name: "Pedir una charla" }).click();
+  await page.getByRole("radio", { name: "Email" }).check();
+  await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
+  await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
+}
+
+test("pedido después de una campaña: guarda el origen y /netx muestra la columna Origen", async ({ page }) => {
+  await page.goto("/?utm_source=newsletter&utm_campaign=congreso-2027");
+  await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-origen"))).not.toBeNull();
+  await pedirCharla(page);
+  const guardado = await page.evaluate(() => JSON.parse(window.localStorage.getItem("lh-contactos") ?? "[]"));
+  expect(guardado[0].origen).toEqual({ fuente: "newsletter", campana: "congreso-2027" });
+  await page.goto("/netx");
+  await expect(page.getByRole("columnheader", { name: "Origen" })).toBeVisible();
+  const fila = page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" });
+  await expect(fila).toContainText("newsletter · sin dato · congreso-2027");
+});
+
+test("pedido sin origen: la columna Origen dice sin dato", async ({ page }) => {
+  await pedirCharla(page);
+  const guardado = await page.evaluate(() => JSON.parse(window.localStorage.getItem("lh-contactos") ?? "[]"));
+  expect(guardado[0]).not.toHaveProperty("origen");
+  await page.goto("/netx");
+  const celdas = page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" }).getByRole("cell");
+  await expect(celdas.nth(7)).toHaveText("sin dato");
+});
+
+test("borrar todo quita también lh-origen", async ({ page }) => {
+  await page.goto("/?utm_source=ig");
+  await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-origen"))).not.toBeNull();
+  await page.goto("/configuracion");
+  page.once("dialog", (d) => void d.accept());
+  await page.getByRole("button", { name: "Borrar todo lo guardado en este navegador" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "se borró todo" })).toBeVisible();
+  expect(await page.evaluate(() => window.localStorage.getItem("lh-origen"))).toBeNull();
+});
+
+test("lh-origen inválido: el pedido se guarda igual, sin origen", async ({ page }) => {
+  await page.goto("/sumarte");
+  await page.evaluate(() => window.localStorage.setItem("lh-origen", "{roto"));
+  await pedirCharla(page);
+  const guardado = await page.evaluate(() => JSON.parse(window.localStorage.getItem("lh-contactos") ?? "[]"));
+  expect(guardado).toHaveLength(1);
+  expect(guardado[0]).not.toHaveProperty("origen");
+});

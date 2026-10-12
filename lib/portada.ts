@@ -1,6 +1,8 @@
+import type { CaminoId } from "./origen/origen";
 import { tribusDeTerritorio } from "./territorios/datos";
 
 export type Camino = {
+  id: CaminoId;
   etiqueta: string;
   titulo: string;
   descripcion: string;
@@ -19,18 +21,21 @@ export function caminosDePortada(): Camino[] {
   const barrios = tribusDeTerritorio("lighthouse").length;
   return [
     {
+      id: "tribus",
       etiqueta: "Descubrir",
       titulo: "Ver las tribus",
       descripcion: descripcionBarrios(barrios),
       href: "/tribus",
     },
     {
+      id: "perfil",
       etiqueta: "Encontrarse",
       titulo: "Encontrar mi tribu",
       descripcion: "Armá tu perfil: quién sos, qué sabés hacer y cómo te gusta decidir.",
       href: "/perfil",
     },
     {
+      id: "congreso",
       etiqueta: "Encontrarse en persona",
       titulo: "Congreso · Feb 2027",
       descripcion: "Visita al Lighthouse, encuentros de tribus y mingas.",

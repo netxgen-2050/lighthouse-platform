@@ -9,14 +9,14 @@
 
 ## 2. Pantallas
 
-- [ ] 2.1 En `lib/portada.ts` sumar `id` a cada camino; en `app/page.tsx` leer `searchParams`, marcar la tarjeta recomendada con "Recomendado para vos" dentro del enlace y pintar `GuardarOrigen` cuando haya `utm_*`. Verificar en `pnpm dev` con `/?camino=congreso&utm_source=newsletter` (marca visible y `lh-origen` guardado en las herramientas del navegador) y con `/?camino=lotes` (sin marca).
-- [ ] 2.2 En `components/pedido-contacto.tsx`, pasar el origen guardado al crear el pedido; en `app/netx/bandeja-pedidos.tsx`, sumar la columna "Origen". Verificar en `pnpm dev`: llegar con campaña, pedir una charla en `/sumarte` y ver el origen en `/netx`.
+- [x] 2.1 En `lib/portada.ts` sumar `id` a cada camino; en `app/page.tsx` leer `searchParams`, marcar la tarjeta recomendada con "Recomendado para vos" dentro del enlace y pintar `GuardarOrigen` cuando haya `utm_*`. Verificar en `pnpm dev` con `/?camino=congreso&utm_source=newsletter` (marca visible y `lh-origen` guardado en las herramientas del navegador) y con `/?camino=lotes` (sin marca).
+- [x] 2.2 En `components/pedido-contacto.tsx`, pasar el origen guardado al crear el pedido; en `app/netx/bandeja-pedidos.tsx`, sumar la columna "Origen". Verificar en `pnpm dev`: llegar con campaña, pedir una charla en `/sumarte` y ver el origen en `/netx`.
 
 ## 3. Tests
 
-- [ ] 3.1 Ampliar `e2e/portada.spec.ts` (link al Congreso, valor desconocido, primera visita guarda, segunda no pisa, sin `utm_*` no guarda, parámetro no permitido, nombre accesible con "Recomendado para vos") y `e2e/contactos.spec.ts` (pedido después de una campaña, columna Origen con "sin dato", pedido sin origen, borrar todo quita `lh-origen`). Verificar con `pnpm test:e2e e2e/portada.spec.ts e2e/contactos.spec.ts`.
-- [ ] 3.2 Sumar a `e2e/accesibilidad.spec.ts` `/?camino=congreso` y `/netx` con un pedido con origen. Verificar sin violaciones `serious` ni `critical` con `pnpm test:e2e e2e/accesibilidad.spec.ts`.
+- [x] 3.1 Ampliar `e2e/portada.spec.ts` (link al Congreso, valor desconocido, primera visita guarda, segunda no pisa, sin `utm_*` no guarda, parámetro no permitido, nombre accesible con "Recomendado para vos") y `e2e/contactos.spec.ts` (pedido después de una campaña, columna Origen con "sin dato", pedido sin origen, borrar todo quita `lh-origen`). Verificar con `pnpm test:e2e e2e/portada.spec.ts e2e/contactos.spec.ts`.
+- [x] 3.2 Sumar a `e2e/accesibilidad.spec.ts` `/?camino=congreso` y `/netx` con un pedido con origen. Verificar sin violaciones `serious` ni `critical` con `pnpm test:e2e e2e/accesibilidad.spec.ts`.
 
 ## 4. Integración
 
-- [ ] 4.1 `pnpm verificar` y `pnpm build` en verde (el build tiene que mostrar `/` como dinámica sin errores); PR desde `agente/portada-origen` con guion de prueba (abrir `/?camino=congreso&utm_source=newsletter&utm_medium=email&utm_campaign=congreso-2027` → ver la tarjeta recomendada → `/sumarte` → "Pedir una charla" → `/netx` con el origen → "Borrar todo"). Probar sobre el preview con `BASE_URL=<url de scripts/preview-url.sh agente/portada-origen> pnpm test:e2e e2e/portada.spec.ts e2e/contactos.spec.ts`.
+- [x] 4.1 `pnpm verificar` y `pnpm build` en verde (el build tiene que mostrar `/` como dinámica sin errores); PR desde `agente/portada-origen` con guion de prueba (abrir `/?camino=congreso&utm_source=newsletter&utm_medium=email&utm_campaign=congreso-2027` → ver la tarjeta recomendada → `/sumarte` → "Pedir una charla" → `/netx` con el origen → "Borrar todo"). Probar sobre el preview con `BASE_URL=<url de scripts/preview-url.sh agente/portada-origen> pnpm test:e2e e2e/portada.spec.ts e2e/contactos.spec.ts`.
