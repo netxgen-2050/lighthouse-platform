@@ -120,6 +120,8 @@ test.describe("⚖ como tooltip, con mouse", () => {
     await page.goto("/tribus/valle");
     const ritual = page.getByRole("button", { name: RITUAL });
     const personeria = page.getByRole("button", { name: PERSONERIA });
+    // Los dos ⚖ tienen que estar a la vista para poder medir qué hay encima de cada uno.
+    await ritual.evaluate((el) => el.scrollIntoView({ block: "center" }));
     const antes = await personeria.boundingBox();
     await ritual.hover();
     await expect(page.getByRole("tooltip")).toBeVisible();
@@ -153,7 +155,8 @@ test.describe("⚖ como tooltip, posición y accesibilidad", () => {
     await page.evaluate(() => {
       document.body.style.paddingBottom = "2000px";
     });
-    await boton.evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - 2));
+    // Justo debajo de la barra superior fija (48 px): arriba no hay lugar para el tooltip.
+    await boton.evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - 52));
     await boton.hover();
     const tooltip = page.getByRole("tooltip");
     await expect(tooltip).toBeVisible();
@@ -172,7 +175,7 @@ test.describe("⚖ como tooltip, posición y accesibilidad", () => {
     await page.evaluate(() => {
       document.body.style.paddingBottom = "2000px";
     });
-    await boton.evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - 2));
+    await boton.evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - 52));
     await boton.hover();
     await expect(page.getByRole("tooltip")).toBeVisible();
     const tapado = await page.getByRole("button", { name: PERSONERIA }).evaluate((el) => {

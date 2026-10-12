@@ -9,6 +9,7 @@ import {
   IdCard,
   Leaf,
   Map as MapaIcono,
+  Settings,
   Sprout,
   UserRound,
   Users,
@@ -21,7 +22,7 @@ export type Destino = {
   href: string;
   etiqueta: string;
   icono: LucideIcon;
-  /** Grupo del rail al que pertenece. "persona" va en el menú del avatar; "interno" al final con la marca. */
+  /** Grupo del rail al que pertenece. "persona" va en el menú del avatar y "interno" (NetX) en la barra superior, junto a la campanita. */
   grupo: IdGrupo;
   /** ¿Existe la página en app/? Se mantiene a mano y lo vigila lib/navegacion.test.ts contra el disco. */
   existe: boolean;
@@ -43,6 +44,7 @@ export const DESTINOS: readonly Destino[] = [
   { href: "/perfil", etiqueta: "Perfil", icono: UserRound, grupo: "persona", existe: true },
   { href: "/pasaporte", etiqueta: "Pasaporte", icono: IdCard, grupo: "persona", existe: true },
   { href: "/panel", etiqueta: "Mi recorrido", icono: Compass, grupo: "persona", existe: true },
+  { href: "/configuracion", etiqueta: "Configuración", icono: Settings, grupo: "persona", existe: true },
   { href: "/netx", etiqueta: "NetX", icono: BarChart3, grupo: "interno", existe: true },
 ];
 

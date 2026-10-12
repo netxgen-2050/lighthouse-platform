@@ -15,18 +15,62 @@ test("en una tribu, Tribus sigue marcado", async ({ page }) => {
   await expect(nav.getByRole("link", { name: "Tribus" })).toHaveAttribute("aria-current", "page");
 });
 
-test("el rail trae la marca y los destinos existentes en orden", async ({ page }) => {
+test("el rail trae solo la navegación, en orden", async ({ page }) => {
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Principal" });
   await expect(nav).toBeVisible();
-  await expect(nav.locator("xpath=..").locator("p").getByText("NetX", { exact: true })).toBeVisible();
   const textos = (await nav.getByRole("link").allInnerTexts()).map((t) => t.trim().split("\n")[0]);
-  const orden = ["Inicio", "Territorio", "Tribus", "Pactos", "Semillas", "Fogón", "Compromisos", "Congreso", "Sumarte", "NetX"];
+  const orden = ["Inicio", "Territorio", "Tribus", "Pactos", "Semillas", "Fogón", "Compromisos", "Congreso", "Sumarte"];
   expect(textos).toEqual(orden.filter((o) => textos.includes(o)));
   expect(textos).toEqual(expect.arrayContaining(["Inicio", "Tribus", "Congreso", "Sumarte"]));
-  // Perfil, Pasaporte y Mi recorrido viven en el menú del avatar, no en el rail.
+  // Perfil, Pasaporte, Mi recorrido y Configuración viven en el menú del avatar; NetX y la campanita, en la barra superior.
   await expect(nav.getByRole("link", { name: "Perfil" })).toHaveCount(0);
-  await expect(nav.getByRole("link", { name: "NetX" })).toContainText("Interno");
+  await expect(nav.getByRole("link", { name: "NetX" })).toHaveCount(0);
+  await expect(nav.locator('a[href="/bandeja"]')).toHaveCount(0);
+  await expect(nav.getByRole("button")).toHaveCount(0);
+});
+
+test("la barra superior está arriba a la derecha con NetX (interno), la campanita y el avatar", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/");
+  const barra = page.getByRole("banner");
+  await expect(barra).toBeVisible();
+  const caja = (await barra.boundingBox())!;
+  expect(caja.y).toBe(0);
+  const netx = barra.getByRole("link", { name: /NetX/ });
+  await expect(netx).toHaveAttribute("href", "/netx");
+  await expect(netx).toContainText("Interno");
+  const campanita = barra.locator('a[href="/bandeja"]');
+  const avatar = barra.getByRole("button", { name: "Menú de la persona" });
+  const [a, b, c] = await Promise.all([netx.boundingBox(), campanita.boundingBox(), avatar.boundingBox()]);
+  // De izquierda a derecha: NetX, campanita, avatar; el avatar queda contra el borde derecho.
+  expect(a!.x).toBeLessThan(b!.x);
+  expect(b!.x).toBeLessThan(c!.x);
+  expect(c!.x + c!.width).toBeGreaterThan(1280 - 40);
+  await expect(page.locator("main")).toHaveCount(1);
+});
+
+test("la barra superior queda fija al bajar la página", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 600 });
+  await page.goto("/pactos");
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  const caja = (await page.getByRole("banner").boundingBox())!;
+  expect(caja.y).toBe(0);
+});
+
+test("celular 390 x 844: la barra superior muestra NetX, la campanita y el avatar sin desbordar", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const ruta of ["/", "/configuracion", "/sumarte"]) {
+    await page.goto(ruta);
+    const barra = page.getByRole("banner");
+    await expect(barra.getByRole("link", { name: /NetX/ })).toBeVisible();
+    await expect(barra.locator('a[href="/bandeja"]')).toBeVisible();
+    await expect(barra.getByRole("button", { name: "Menú de la persona" })).toBeVisible();
+    const caja = (await barra.boundingBox())!;
+    expect(caja.height).toBeLessThanOrEqual(56);
+    expect(caja.x + caja.width).toBeLessThanOrEqual(390);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), `scroll horizontal en ${ruta}`).toBe(false);
+  }
 });
 
 test("el rail muestra los grupos Descubrir y Participar en la computadora", async ({ page }) => {
@@ -39,7 +83,7 @@ test("el rail muestra los grupos Descubrir y Participar en la computadora", asyn
   await expect(nav.getByRole("list", { name: "Participar" }).getByRole("link")).toHaveCount(5);
 });
 
-test("menú de la persona: se abre con Enter, trae Perfil, Pasaporte y Mi recorrido, y Escape lo cierra", async ({ page }) => {
+test("menú de la persona: se abre con Enter, trae Perfil, Pasaporte, Mi recorrido y Configuración, y Escape lo cierra", async ({ page }) => {
   await page.goto("/");
   const avatar = page.getByRole("button", { name: "Menú de la persona" });
   await avatar.focus();
@@ -48,6 +92,7 @@ test("menú de la persona: se abre con Enter, trae Perfil, Pasaporte y Mi recorr
   await expect(menu.getByRole("link", { name: "Perfil" })).toBeVisible();
   await expect(menu.getByRole("link", { name: "Pasaporte" })).toBeVisible();
   await expect(menu.getByRole("link", { name: "Mi recorrido" })).toBeVisible();
+  await expect(menu.getByRole("link", { name: "Configuración" })).toBeVisible();
   await expect(menu.getByRole("button", { name: "Salir" })).toBeDisabled();
   await expect(menu).toContainText("Llega con el login");
   await page.keyboard.press("Escape");
@@ -64,6 +109,20 @@ test("en /pasaporte el avatar se marca como actual y el menú lleva a Mi recorri
   await page.locator("#menu-persona").getByRole("link", { name: "Mi recorrido" }).click();
   await expect(page).toHaveURL(/\/panel$/);
   await expect(page.locator("#menu-persona")).toHaveCount(0);
+});
+
+test("en /configuracion el avatar se marca como actual y Configuración también en el menú", async ({ page }) => {
+  await page.goto("/configuracion");
+  const avatar = page.getByRole("button", { name: "Menú de la persona" });
+  await expect(avatar).toHaveAttribute("aria-current", "page");
+  await avatar.click();
+  await expect(page.locator("#menu-persona").getByRole("link", { name: "Configuración" })).toHaveAttribute("aria-current", "page");
+});
+
+test("el avatar muestra las iniciales del perfil guardado", async ({ page }) => {
+  await page.addInitScript(() => window.localStorage.setItem("lh-perfil", JSON.stringify({ nombre: "Ana Pérez", roles: [] })));
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "Menú de la persona" })).toContainText("AP");
 });
 
 test("en la portada el avatar no está marcado como actual", async ({ page }) => {
@@ -102,19 +161,21 @@ test("celular 390 x 844: rail a la izquierda, 72 px o menos, sin scroll horizont
   }
 });
 
-test("Tab: primero Saltar al contenido y después Inicio en el rail; la campanita y el avatar van al final", async ({ page }) => {
+test("Tab: primero Saltar al contenido y después Inicio en el rail; justo después del rail van NetX, la campanita y el avatar", async ({ page }) => {
   await page.goto("/");
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Saltar al contenido" })).toBeFocused();
   await page.keyboard.press("Tab");
   const nav = page.getByRole("navigation", { name: "Principal" });
   await expect(nav.getByRole("link", { name: "Inicio" })).toBeFocused();
-  // Se llega con Tab hasta el último enlace del rail (NetX); justo después va la campanita y luego el avatar.
-  const netx = nav.getByRole("link", { name: "NetX" });
-  for (let i = 0; i < 20 && !(await netx.evaluate((el) => el === document.activeElement)); i++) {
+  // Se llega con Tab hasta el último enlace del rail (Sumarte); justo después va NetX, la campanita y luego el avatar.
+  const sumarte = nav.getByRole("link", { name: "Sumarte" });
+  for (let i = 0; i < 20 && !(await sumarte.evaluate((el) => el === document.activeElement)); i++) {
     await page.keyboard.press("Tab");
   }
-  await expect(netx).toBeFocused();
+  await expect(sumarte).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("banner").getByRole("link", { name: /NetX/ })).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(page.locator('a[href="/bandeja"]')).toBeFocused();
   await page.keyboard.press("Tab");
@@ -129,12 +190,12 @@ test("menú de la persona: se cierra cuando el foco sale del menú con Tab", asy
   const menu = page.locator("#menu-persona");
   await expect(menu).toBeVisible();
   // Mientras el foco recorre los enlaces del menú, este sigue abierto.
-  for (const nombre of ["Perfil", "Pasaporte", "Mi recorrido"]) {
+  for (const nombre of ["Perfil", "Pasaporte", "Mi recorrido", "Configuración"]) {
     await page.keyboard.press("Tab");
     await expect(menu.getByRole("link", { name: nombre })).toBeFocused();
     await expect(menu).toBeVisible();
   }
-  // Recién cuando el foco sale después de Mi recorrido, se cierra.
+  // Recién cuando el foco sale después de Configuración, se cierra.
   await page.keyboard.press("Tab");
   await expect(menu).toHaveCount(0);
 });

@@ -8,13 +8,14 @@ import { PedidoContacto } from "@/components/pedido-contacto";
 import { TerminoLegal } from "@/components/termino-legal";
 import { guardarPedido } from "@/lib/contactos/almacen";
 import type { Pedido } from "@/lib/contactos/tipos";
+import { usePreferencias } from "@/lib/configuracion/almacen";
+import { formatearMonto, NOTA_TIPO_DE_CAMBIO, TIPO_DE_CAMBIO } from "@/lib/configuracion/preferencias";
 import { CLAVES } from "@/lib/demo/claves";
 import {
   COHORT,
   EMISION,
   FILAS,
   MEMBRESIA,
-  miles,
   PASSES,
   PLAN_TRIBU_MENSUAL,
   type NivelPase,
@@ -42,6 +43,7 @@ export function SumarteCliente() {
   const [formulario, setFormulario] = useState<"invitacion" | "charla" | null>(null);
   const [dialogoKyc, setDialogoKyc] = useState(false);
   const kyc = useKyc();
+  const { moneda } = usePreferencias();
   const foco = useRef<string | null>(null);
 
   useEffect(() => {
@@ -90,6 +92,7 @@ export function SumarteCliente() {
   const esMiembro = estado.plan === "miembro";
   const nombrePlan = paseActivo ? `Pase Fundador ${paseActivo.nombre}` : esMiembro ? "Miembro" : "Explorador";
   const sumaInvitacion = estado.invitacion ? 1 : 0;
+  const factorMoneda = moneda === "ARS" ? TIPO_DE_CAMBIO : 1;
 
   return (
     <div className="grid gap-6">
@@ -123,6 +126,13 @@ export function SumarteCliente() {
         </p>
       </div>
 
+      {moneda === "ARS" && (
+        <p className="text-sm text-muted">
+          Montos en pesos argentinos (ARS). {NOTA_TIPO_DE_CAMBIO}{" "}
+          <Link className="underline" href="/configuracion">Cambiar la moneda</Link>
+        </p>
+      )}
+
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <article aria-labelledby="plan-explorador" className={`${TARJETA} ${esExplorador ? BORDE_ACTUAL : BORDE}`}>
           <h2 id="plan-explorador" className="text-xl font-semibold">Explorador</h2>
@@ -149,7 +159,7 @@ export function SumarteCliente() {
             <TerminoLegal clave="membresia" />
           </h2>
           <p className="text-2xl font-bold">
-            {estado.facturacion === "anual" ? `USD ${MEMBRESIA.anual}` : `USD ${MEMBRESIA.mensual}`}
+            {formatearMonto(estado.facturacion === "anual" ? MEMBRESIA.anual : MEMBRESIA.mensual, moneda)}
             <span className="text-base font-normal text-muted">{estado.facturacion === "anual" ? "/año" : "/mes"}</span>
           </p>
           <p className="text-muted">Entrá a las salas, proponé pactos y empezá a sumar.</p>
@@ -194,12 +204,12 @@ export function SumarteCliente() {
                   className="sr-only"
                 />
                 <span className="font-medium">{p.nombre}</span>
-                <span className="text-sm">USD {miles(p.precio)}</span>
+                <span className="text-sm">{formatearMonto(p.precio, moneda)}</span>
               </label>
             ))}
           </fieldset>
           <p className="text-2xl font-bold">
-            USD {miles(nivel.precio)}
+            {formatearMonto(nivel.precio, moneda)}
             <span className="text-base font-normal text-muted"> · pago único</span>
           </p>
           <p className="text-muted">
@@ -213,7 +223,7 @@ export function SumarteCliente() {
               <TerminoLegal clave="ronda0" />: 1 persona = 1 voz
             </li>
             <li>
-              USD {miles(nivel.creditos)} en créditos comunes y de estadía
+              {formatearMonto(nivel.creditos, moneda)} en créditos comunes y de estadía
               <TerminoLegal clave="creditos" />, en 3 años
             </li>
             <li>Canal de fundadores</li>
@@ -222,9 +232,9 @@ export function SumarteCliente() {
           <Medidor titulo="Pases de la cohorte" actual={COHORT.vendidos + (paseActivo ? 1 : 0)} tope={COHORT.cupo} dorado />
           <Medidor
             titulo="Mínimo para abrir el Fondo Común"
-            actual={COHORT.recaudado + (paseActivo ? paseActivo.precio : 0)}
-            tope={COHORT.minimo}
-            unidad="USD "
+            actual={(COHORT.recaudado + (paseActivo ? paseActivo.precio : 0)) * factorMoneda}
+            tope={COHORT.minimo * factorMoneda}
+            unidad={`${moneda} `}
           />
           {paseActivo ? (
             <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="pase">
@@ -244,7 +254,7 @@ export function SumarteCliente() {
             <TerminoLegal clave="plantribu" />
           </h2>
           <p className="text-2xl font-bold">
-            USD {PLAN_TRIBU_MENSUAL}
+            {formatearMonto(PLAN_TRIBU_MENSUAL, moneda)}
             <span className="text-base font-normal text-muted">/mes</span>
           </p>
           <p className="text-muted">Para tribus con personería que quieren organizarse acá.</p>
@@ -264,9 +274,10 @@ export function SumarteCliente() {
         </article>
       </div>
 
-      <section aria-labelledby="comparativa" className={`rounded-xl border bg-surface p-4 ${BORDE}`}>
+      <section aria-labelledby="comparativa" className={`min-w-0 rounded-xl border bg-surface p-4 ${BORDE}`}>
         <h2 id="comparativa" className="mb-2 text-xl font-semibold">Qué incluye cada plan</h2>
-        <div className="overflow-x-auto">
+        {/* relative: los textos sr-only de la tabla (position: absolute) quedan recortados con la tabla y no ensanchan la página. */}
+        <div className="relative overflow-x-auto">
           <table className="w-full min-w-[32rem] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-line">

@@ -53,7 +53,7 @@ export function RailEnlaces({ grupos }: { grupos: GrupoRail[] }) {
                         activo
                           ? "bg-on-deep text-deep"
                           : e.destacado
-                            ? "bg-gold text-deep"
+                            ? "bg-gold text-ink"
                             : "hover:bg-deep-2"
                       }`}
                     >

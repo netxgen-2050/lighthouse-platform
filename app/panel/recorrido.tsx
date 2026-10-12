@@ -5,7 +5,6 @@ import { useEffect, useState, type KeyboardEvent } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
 import { listarActividad, type EventoActividad } from "@/lib/actividad/actividad";
 import { EVENTO_CAMBIO, leerActividadDelNavegador } from "@/lib/actividad/almacen";
-import { borrarDemo } from "@/lib/demo/borrar";
 import { agruparPorDia } from "@/lib/panel/linea-tiempo";
 import { leerProgreso, proximoPaso, type ProximoPaso } from "@/lib/panel/proximo-paso";
 import { TablaBitacora } from "./bitacora/tabla-bitacora";
@@ -19,8 +18,6 @@ const PESTANAS: readonly [Pestana, string][] = [
 
 const ENLACE_PRINCIPAL =
   "w-fit rounded-lg bg-deep px-4 py-1.5 text-on-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
-const BOTON =
-  "w-fit rounded-lg border border-muted px-3 py-1.5 hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
 const hora = new Intl.DateTimeFormat("es-AR", { timeStyle: "short" });
 const diaLargo = new Intl.DateTimeFormat("es-AR", { dateStyle: "full" });
@@ -35,7 +32,6 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
   const [paso, setPaso] = useState<ProximoPaso | null>(null);
   const [actividad, setActividad] = useState<EventoActividad[]>([]);
   const [pestana, setPestana] = useState<Pestana>(pestanaInicial);
-  const [mensaje, setMensaje] = useState({ n: 0, texto: "" });
 
   useEffect(() => {
     const leerActividad = () => setActividad(listarActividad(leerActividadDelNavegador(), new Date()));
@@ -55,28 +51,6 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
       window.clearInterval(reloj);
     };
   }, []);
-
-  function borrar() {
-    if (!window.confirm("¿Borrar todo lo que guardaste en este navegador?")) return;
-    const fallidas = borrarDemo((c) => window.localStorage.removeItem(c));
-    try {
-      setPaso(proximoPaso(leerProgreso((c) => window.localStorage.getItem(c))));
-    } catch {
-      setFalloAlmacen(true);
-      return;
-    }
-    setActividad(listarActividad(leerActividadDelNavegador(), new Date()));
-    // Para que la campanita y la bandeja se enteren.
-    window.dispatchEvent(new Event(EVENTO_CAMBIO));
-    // El número cambia en cada borrado: el texto se vuelve a montar y la región de estado lo anuncia otra vez.
-    setMensaje((previo) => ({
-      n: previo.n + 1,
-      texto:
-        fallidas.length > 0
-          ? "Error: no se pudo borrar todo. Algunos datos siguen guardados en este navegador."
-          : "Listo: se borró todo lo guardado en este navegador.",
-    }));
-  }
 
   function alTeclear(e: KeyboardEvent, i: number) {
     let destino = -1;
@@ -207,7 +181,7 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
                 En el prototipo la bitácora queda solo en este navegador y la podés borrar: todavía no sirve como
                 prueba. Con el login y la base de datos se va a guardar de verdad.
               </p>
-              <TablaBitacora key={mensaje.n} />
+              <TablaBitacora />
             </>
           )}
         </div>
@@ -215,11 +189,12 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
 
       <div className="grid gap-3">
         {aviso}
-        <button type="button" onClick={borrar} className={BOTON}>
-          Borrar todo lo de este navegador
-        </button>
-        <p role="status" className="text-sm font-medium">
-          <span key={mensaje.n} data-borrado={mensaje.n}>{mensaje.texto}</span>
+        <p className="text-sm">
+          Para borrar lo que guardaste en este navegador, andá a{" "}
+          <Link className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/configuracion">
+            Configuración, en Tus datos
+          </Link>
+          .
         </p>
       </div>
     </div>

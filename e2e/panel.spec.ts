@@ -151,21 +151,25 @@ test("borrar todo: confirma, vacía el camino, la actividad y las notificaciones
   await page.goto("/panel");
   await expect(page.getByText("Algo que hice")).toBeVisible();
   await expect(proximo(page).getByRole("link")).toHaveAttribute("href", "/tribus");
+  // El borrado vive en Configuración; desde Mi recorrido hay un enlace.
+  await page.getByRole("link", { name: "Configuración, en Tus datos" }).click();
+  await expect(page).toHaveURL(/\/configuracion$/);
   page.once("dialog", (d) => {
     expect(d.message()).toBe("¿Borrar todo lo que guardaste en este navegador?");
     void d.accept();
   });
-  await page.getByRole("button", { name: "Borrar todo lo de este navegador" }).click();
+  await page.getByRole("button", { name: "Borrar todo lo guardado en este navegador" }).click();
   await expect(page.getByRole("status").filter({ hasText: "se borró todo" })).toBeVisible();
+  await page.goto("/panel");
   await expect(proximo(page).getByRole("link")).toHaveAttribute("href", "/perfil");
   await expect(page.getByText("Algo que hice")).toHaveCount(0);
   expect(await page.evaluate(() => window.localStorage.getItem("lh-actividad"))).toBeNull();
 });
 
 test("borrar dos veces seguidas vuelve a montar el mensaje de la región de estado", async ({ page }) => {
-  await page.goto("/panel");
+  await page.goto("/configuracion");
   page.on("dialog", (d) => void d.accept());
-  const boton = page.getByRole("button", { name: "Borrar todo lo de este navegador" });
+  const boton = page.getByRole("button", { name: "Borrar todo lo guardado en este navegador" });
   const mensaje = page.getByRole("status").locator("[data-borrado]");
   await boton.click();
   await expect(mensaje).toHaveAttribute("data-borrado", "1");
@@ -176,10 +180,10 @@ test("borrar dos veces seguidas vuelve a montar el mensaje de la región de esta
 
 test("cancelar el borrado no borra nada", async ({ page }) => {
   await sembrar(page, { "lh-perfil": PERFIL_COMPLETO });
-  await page.goto("/panel");
+  await page.goto("/configuracion");
   page.once("dialog", (d) => void d.dismiss());
-  await page.getByRole("button", { name: "Borrar todo lo de este navegador" }).click();
-  await page.reload();
+  await page.getByRole("button", { name: "Borrar todo lo guardado en este navegador" }).click();
+  await page.goto("/panel");
   await expect(proximo(page).getByRole("link")).toHaveAttribute("href", "/tribus");
 });
 
@@ -213,7 +217,7 @@ test("almacenamiento bloqueado: error en texto y no los estados vacíos", async 
   await expect(page.getByText("Todavía no hay nada en tu camino.")).toHaveCount(0);
 });
 
-test("con teclado: próximo paso, pestañas, borrado y aria-current en la navegación", async ({ page }) => {
+test("con teclado: próximo paso, pestañas, enlace a Configuración y aria-current en la navegación", async ({ page }) => {
   await page.goto("/panel");
   await expect(proximo(page)).toBeVisible();
   // Mi recorrido vive en el menú del avatar: el avatar queda marcado como actual.
@@ -222,7 +226,7 @@ test("con teclado: próximo paso, pestañas, borrado y aria-current en la navega
     proximo(page).getByRole("link"),
     page.getByRole("tab", { name: "Tu camino" }),
     page.getByRole("tabpanel", { name: "Tu camino" }),
-    page.getByRole("button", { name: "Borrar todo lo de este navegador" }),
+    page.getByRole("link", { name: "Configuración, en Tus datos" }),
   ];
   await orden[0].focus();
   await expect(orden[0]).toBeFocused();

@@ -41,6 +41,69 @@
   --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 }
 
+/*
+ * Tema oscuro: mismos nombres de token, otros valores (los pone <html data-tema="oscuro">).
+ * Los tokens "deep" se invierten: en oscuro son el verde claro de acento, y "on-deep" el texto oscuro que va encima.
+ * "gold" se oscurece porque en la app siempre lleva texto "ink" (que en oscuro es claro).
+ */
+:root[data-tema="oscuro"] {
+  color-scheme: dark;
+  --color-bg: #101a14;
+  --color-surface: #17251d;
+  --color-surface-2: #203128;
+  --color-ink: #eef1e8;
+  --color-muted: #b9c4bb;
+  --color-faint: #93a095;
+  --color-line: #33473b;
+  --color-deep: #8fd0a0;
+  --color-deep-2: #aadfb8;
+  --color-on-deep: #0d1f14;
+  --color-on-deep-muted: #1f4a2c;
+  --color-green: #6fc283;
+  --color-green-soft: #1d3a28;
+  --color-gold: #8a5d00;
+  --color-gold-soft: #3a2d0a;
+  --color-gold-ink: #f2c25a;
+  --color-blue: #6aa8f0;
+  --color-blue-soft: #1c2f4a;
+  --color-gray: #8a9a8f;
+  --color-warn-bg: #3a2d0a;
+  --color-warn-ink: #f3d58a;
+  --color-water: #1a2e2e;
+  --color-danger: #f19a9a;
+  --color-violet: #b799e0;
+  --color-violet-soft: #2f2347;
+  --color-clay: #e08a4f;
+  --color-clay-ink: #f0b48a;
+  --color-rose: #e58aab;
+  --color-rose-soft: #3d1f2d;
+}
+
+/* La barra superior es fija: al saltar a un ancla o al enfocar con el teclado, el elemento no queda debajo de ella. */
+html {
+  scroll-padding-top: 4rem;
+}
+
+/* Tamaño de texto: todo el diseño usa rem, así que cambiar la base escala la página entera. */
+:root[data-texto="grande"] {
+  font-size: 118.75%;
+}
+
+/* Hifa apagada: el script del <head> lo marca antes de hidratar, así el botón no parpadea. */
+:root[data-hifa="apagada"] [aria-controls="chat-hifa"] {
+  display: none;
+}
+
+/* Reducir animaciones: sin transiciones ni movimientos. */
+:root[data-movimiento="reducido"] *,
+:root[data-movimiento="reducido"] *::before,
+:root[data-movimiento="reducido"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
 body {
   background: var(--color-bg);
   color: var(--color-ink);

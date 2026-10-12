@@ -115,3 +115,27 @@ it("el borrado de la demo quita también la actividad", () => {
   borrarDemo((k) => quitadas.push(k));
   expect(quitadas).toContain(CLAVES.actividad);
 });
+
+describe("tipos de notificación apagados", () => {
+  const lista = () => {
+    let l: EventoActividad[] = [];
+    l = con(l, EVENTOS.rondaAbierta("Valle Solar", "valle-solar"), t0, "a");
+    l = con(l, EVENTOS.pactoAceptado("Valle Solar", "valle-solar"), t0, "b");
+    return l;
+  };
+
+  it("un tipo apagado no se lista ni se cuenta", () => {
+    expect(listarNotificaciones(lista(), en(1), ["ronda-abierta"]).map((e) => e.tipo)).toEqual(["pacto-aceptado"]);
+    expect(contarNoLeidas(lista(), en(1), ["ronda-abierta"])).toBe(1);
+  });
+
+  it("sin tipos apagados se ve todo", () => {
+    expect(contarNoLeidas(lista(), en(1))).toBe(2);
+  });
+});
+
+it("el borrado de la demo quita también las preferencias", () => {
+  const quitadas: string[] = [];
+  borrarDemo((k) => quitadas.push(k));
+  expect(quitadas).toContain(CLAVES.configuracion);
+});
