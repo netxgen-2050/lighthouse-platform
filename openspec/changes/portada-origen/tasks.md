@@ -1,11 +1,11 @@
 ## 0. Prerrequisitos
 
-- [ ] 0.1 Confirmar que `portada-caminos` y `contactos-bandeja` están en `main` (`lib/portada.ts`, `components/pedido-contacto.tsx`, `app/netx/bandeja-pedidos.tsx`, `lib/demo/claves.ts` con `contactos`). Si falta alguno, frenar y reportar. Verificar con `git log origin/main --oneline` y `ls lib/contactos app/netx`.
+- [x] 0.1 Confirmar que `portada-caminos` y `contactos-bandeja` están en `main` (`lib/portada.ts`, `components/pedido-contacto.tsx`, `app/netx/bandeja-pedidos.tsx`, `lib/demo/claves.ts` con `contactos`). Si falta alguno, frenar y reportar. Verificar con `git log origin/main --oneline` y `ls lib/contactos app/netx`.
 
 ## 1. Lógica
 
-- [ ] 1.1 Crear `lib/origen/origen.ts` con `limpiar`, `leerParametros`, `leerOrigen`, `formatoOrigen` y el guardado "solo si no hay uno", y sumar `origen: "lh-origen"` a `lib/demo/claves.ts`. Verificar con Vitest: valor con mayúsculas y símbolos queda limpio; más de 60 caracteres se corta; `email=` se descarta; `camino=lotes` se ignora; sin `utm_*` no se guarda; un segundo origen no pisa al primero; JSON inválido → `null`; `formatoOrigen` con partes faltantes da "sin dato"; `borrarDemo` quita `lh-origen`. Correr `pnpm test`.
-- [ ] 1.2 Sumar `origen` opcional a `Pedido` y `Borrador` en `lib/contactos/tipos.ts`, copiarlo en `crearPedido` y aceptarlo en `esPedido` (pedidos viejos sin origen siguen valiendo). Verificar con Vitest: pedido con origen lo conserva; pedido viejo sin origen se lee; `origen` mal formado no descarta el pedido. Correr `pnpm test`.
+- [x] 1.1 Crear `lib/origen/origen.ts` con `limpiar`, `leerParametros`, `leerOrigen`, `formatoOrigen` y el guardado "solo si no hay uno", y sumar `origen: "lh-origen"` a `lib/demo/claves.ts`. Verificar con Vitest: valor con mayúsculas y símbolos queda limpio; más de 60 caracteres se corta; `email=` se descarta; `camino=lotes` se ignora; sin `utm_*` no se guarda; un segundo origen no pisa al primero; JSON inválido → `null`; `formatoOrigen` con partes faltantes da "sin dato"; `borrarDemo` quita `lh-origen`. Correr `pnpm test`.
+- [x] 1.2 Sumar `origen` opcional a `Pedido` y `Borrador` en `lib/contactos/tipos.ts`, copiarlo en `crearPedido` y aceptarlo en `esPedido` (pedidos viejos sin origen siguen valiendo). Verificar con Vitest: pedido con origen lo conserva; pedido viejo sin origen se lee; `origen` mal formado no descarta el pedido. Correr `pnpm test`.
 
 ## 2. Pantallas
 

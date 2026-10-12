@@ -79,6 +79,36 @@ describe("leerBandeja", () => {
   });
 });
 
+describe("origen del pedido", () => {
+  const ahora = new Date("2026-10-12T12:00:00Z");
+  it("el pedido conserva el origen", () => {
+    const origen = { fuente: "newsletter", campana: "congreso-2027" };
+    const p = crearPedido({ ...base, origen }, ahora, "a");
+    expect(p.origen).toEqual(origen);
+    expect(leerBandeja(JSON.stringify([p]))[0].origen).toEqual(origen);
+  });
+  it("sin origen (o vacío) no se guarda el campo", () => {
+    expect(crearPedido(base, ahora, "a")).not.toHaveProperty("origen");
+    expect(crearPedido({ ...base, origen: {} }, ahora, "b")).not.toHaveProperty("origen");
+  });
+  it("un pedido viejo sin origen se lee", () => {
+    const viejo = crearPedido(base, ahora, "a");
+    expect(leerBandeja(JSON.stringify([viejo]))).toEqual([viejo]);
+  });
+  it("un origen mal formado se ignora pero el pedido se conserva", () => {
+    const ok = crearPedido(base, ahora, "a");
+    const leidos = leerBandeja(
+      JSON.stringify([
+        { ...ok, id: "b", origen: "texto" },
+        { ...ok, id: "c", origen: { fuente: 5 } },
+        { ...ok, id: "d", origen: { fuente: "ig", medio: {} } },
+      ]),
+    );
+    expect(leidos.map((p) => p.id)).toEqual(["b", "c", "d"]);
+    for (const p of leidos) expect(p).not.toHaveProperty("origen");
+  });
+});
+
 describe("agregar", () => {
   it("deja el más nuevo primero", () => {
     const a: Pedido = crearPedido(base, new Date(), "a");
