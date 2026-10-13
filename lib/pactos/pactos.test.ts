@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { semillasDePlata, semillasPorMes } from "./calculo";
 import { HOUR_REF_ARS, HOUR_REF_USD, ROLES, USD_ARS } from "./datos";
 import {
-  CLAVE_PACTOS,
   INICIAL,
   deComunidad,
   leer,
@@ -130,8 +129,5 @@ describe("lectura de lo guardado", () => {
     const e = leer(crudo);
     expect(deComunidad(e, C).tiempo.paso).toBe(0);
     expect(deComunidad(e, C).aportes).toEqual([30]);
-  });
-  it("la clave guardada no cambia", () => {
-    expect(CLAVE_PACTOS).toBe("lh-pactos");
   });
 });

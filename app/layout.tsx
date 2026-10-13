@@ -3,6 +3,8 @@ import { Anek_Latin, Figtree, JetBrains_Mono } from "next/font/google";
 import { AplicarPreferencias } from "@/components/aplicar-preferencias";
 import { BarraSuperior } from "@/components/barra-superior";
 import { Rail } from "@/components/rail";
+import { ProveedorSesion } from "@/components/sesion/proveedor-sesion";
+import { Puerta, SoloConSesion } from "@/components/sesion/puerta";
 import { SCRIPT_APARIENCIA } from "@/lib/configuracion/script-apariencia";
 import { Pie } from "@/components/pie";
 import { BotonReportar } from "@/components/boton-reportar";
@@ -43,19 +45,25 @@ export default function RootLayout({
         >
           Saltar al contenido
         </a>
-        <AplicarPreferencias />
-        <Rail />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <BarraSuperior />
-          <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
-            {children}
-          </main>
-          <Pie anioRespaldo={new Date().getFullYear()} />
-          {/* Espacio para que el botón fijo de Hifa no tape el final de la página. */}
-          <div aria-hidden="true" className="h-16 shrink-0" />
-        </div>
-        <BotonReportar version={despliegue.version} entorno={despliegue.entorno} />
-        <Hifa version={despliegue.version} entorno={despliegue.entorno} />
+        <ProveedorSesion>
+          <SoloConSesion>
+            <AplicarPreferencias />
+          </SoloConSesion>
+          <Rail />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <BarraSuperior />
+            <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
+              <Puerta>{children}</Puerta>
+            </main>
+            <Pie anioRespaldo={new Date().getFullYear()} />
+            {/* Espacio para que el botón fijo de Hifa no tape el final de la página. */}
+            <div aria-hidden="true" className="h-16 shrink-0" />
+          </div>
+          <SoloConSesion>
+            <BotonReportar version={despliegue.version} entorno={despliegue.entorno} />
+            <Hifa version={despliegue.version} entorno={despliegue.entorno} />
+          </SoloConSesion>
+        </ProveedorSesion>
       </body>
     </html>
   );

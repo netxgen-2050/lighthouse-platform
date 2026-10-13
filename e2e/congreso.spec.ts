@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtura";
 
 test("agenda de 5 días en orden, con ⚖ de obra en el día 3", async ({ page }) => {
   await page.goto("/congreso");

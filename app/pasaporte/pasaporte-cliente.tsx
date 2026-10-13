@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { KycDialogo } from "@/components/kyc-dialogo";
+import { useSesion } from "@/components/sesion/contexto";
+import { SelloBilletera } from "./sello-billetera";
 import { TerminoLegal } from "@/components/termino-legal";
 import { esCodigoValido } from "@/lib/congreso/ticket";
 import { CLAVES } from "@/lib/demo/claves";
@@ -23,8 +25,6 @@ import { useKyc } from "@/lib/pasaporte/usar-kyc";
 import { INICIAL, leer as leerSumarte, type EstadoSumarte } from "@/lib/sumarte/estado";
 
 // Todo queda solo en este navegador: no hay pedidos de red ni KYC real.
-const CLAVE = CLAVES.pasaporte;
-const CLAVE_HORAS_TEXTO = `${CLAVES.pasaporte}:horas-texto`;
 
 const FOCO = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 const BOTON = `w-fit rounded-lg px-4 py-1.5 font-medium ${FOCO}`;
@@ -127,6 +127,7 @@ function TarjetaSello({ s, alVerificar, alAprobar }: { s: Sello; alVerificar: ()
 
 export function PasaporteCliente() {
   const kyc = useKyc();
+  const { billetera } = useSesion();
   const [listo, setListo] = useState(false);
   const [ahora, setAhora] = useState<Date | null>(null);
   const [sumarte, setSumarte] = useState<EstadoSumarte>(INICIAL);
@@ -144,10 +145,10 @@ export function PasaporteCliente() {
       setSumarte(leerSumarte(window.localStorage.getItem(CLAVES.sumarte)));
       setTicket(esCodigoValido(window.localStorage.getItem(CLAVES.congreso) ?? ""));
       setFechas(leerFechas(window.localStorage.getItem(CLAVES.sellos)));
-      const guardados = leerDatos(window.localStorage.getItem(CLAVE));
+      const guardados = leerDatos(window.localStorage.getItem(CLAVES.pasaporte));
       setDatosAporte(guardados);
       // Si lo escrito estaba fuera de rango, se restaura el texto para repetir el mensaje.
-      const textoCrudo = window.localStorage.getItem(CLAVE_HORAS_TEXTO);
+      const textoCrudo = window.localStorage.getItem(CLAVES.pasaporteHorasTexto);
       setHorasTexto(guardados.horas !== undefined ? String(guardados.horas) : (textoCrudo ?? ""));
     } catch {
       setFalloAlmacen(true);
@@ -188,13 +189,13 @@ export function PasaporteCliente() {
     // Se relee antes de escribir: el trámite de identidad también guarda en "Tus datos".
     let base = datosAporte;
     try {
-      base = leerDatos(window.localStorage.getItem(CLAVE));
+      base = leerDatos(window.localStorage.getItem(CLAVES.pasaporte));
     } catch {
       // Sin almacenamiento: se sigue en memoria.
     }
     const siguiente = { ...base, ...parcial };
     try {
-      window.localStorage.setItem(CLAVE, JSON.stringify(siguiente));
+      window.localStorage.setItem(CLAVES.pasaporte, JSON.stringify(siguiente));
       setFalloAlmacen(false);
     } catch {
       setFalloAlmacen(true);
@@ -225,6 +226,7 @@ export function PasaporteCliente() {
               alAprobar={kyc.aprobar}
             />
           ))}
+          <SelloBilletera billetera={billetera} />
         </ul>
       </section>
 
@@ -257,7 +259,7 @@ export function PasaporteCliente() {
                 const t = e.target.value;
                 setHorasTexto(t);
                 try {
-                  window.localStorage.setItem(CLAVE_HORAS_TEXTO, t);
+                  window.localStorage.setItem(CLAVES.pasaporteHorasTexto, t);
                 } catch {
                   // el aviso de almacenamiento lo da cambiarAporte()
                 }

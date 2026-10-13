@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtura";
 
 test("navegar de la portada a Tribus marca aria-current", async ({ page }) => {
   await page.goto("/");
@@ -93,8 +93,7 @@ test("menú de la persona: se abre con Enter, trae Perfil, Pasaporte, Mi recorri
   await expect(menu.getByRole("link", { name: "Pasaporte" })).toBeVisible();
   await expect(menu.getByRole("link", { name: "Mi recorrido" })).toBeVisible();
   await expect(menu.getByRole("link", { name: "Configuración" })).toBeVisible();
-  await expect(menu.getByRole("button", { name: "Salir" })).toBeDisabled();
-  await expect(menu).toContainText("Llega con el login");
+  await expect(menu.getByRole("button", { name: "Salir" })).toBeEnabled();
   await page.keyboard.press("Escape");
   await expect(menu).toHaveCount(0);
   await expect(avatar).toBeFocused();
@@ -163,6 +162,8 @@ test("celular 390 x 844: rail a la izquierda, 72 px o menos, sin scroll horizont
 
 test("Tab: primero Saltar al contenido y después Inicio en el rail; justo después del rail van NetX, la campanita y el avatar", async ({ page }) => {
   await page.goto("/");
+  // La barra superior aparece cuando termina de verificarse la sesión: se espera antes de recorrer con Tab.
+  await expect(page.getByRole("button", { name: "Menú de la persona" })).toBeVisible();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Saltar al contenido" })).toBeFocused();
   await page.keyboard.press("Tab");
@@ -195,7 +196,9 @@ test("menú de la persona: se cierra cuando el foco sale del menú con Tab", asy
     await expect(menu.getByRole("link", { name: nombre })).toBeFocused();
     await expect(menu).toBeVisible();
   }
-  // Recién cuando el foco sale después de Configuración, se cierra.
+  await page.keyboard.press("Tab");
+  await expect(menu.getByRole("button", { name: "Salir" })).toBeFocused();
+  // Recién cuando el foco sale después de Salir (lo último del menú), se cierra.
   await page.keyboard.press("Tab");
   await expect(menu).toHaveCount(0);
 });

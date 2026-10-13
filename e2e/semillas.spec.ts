@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtura";
+import { ignorarEnSinRed } from "./ayudas";
 
 type PactoDeEjemplo = { horas?: number; paso?: number; aportes?: number[] };
 
@@ -301,8 +302,8 @@ test("no manda datos a un servidor", async ({ page }) => {
   const pedidos: string[] = [];
   page.on("request", (r) => {
     const u = new URL(r.url());
-    // vercel.live es la barra de comentarios que Vercel inyecta en los previews, no la app.
-    if (u.hostname === "vercel.live") return;
+    // Vercel, Privy y WalletConnect no son la app ni llevan datos de la persona.
+    if (ignorarEnSinRed(r)) return;
     // Cuentan los envíos (no GET) y cualquier pedido a otro origen distinto de la app.
     // Los GET al propio origen (navegación, recarga, prefetch de Next) no mandan datos.
     if (r.method() !== "GET" || u.origin !== origenApp) pedidos.push(`${r.method()} ${r.url()}`);

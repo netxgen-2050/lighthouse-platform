@@ -1,10 +1,9 @@
 import { CLAVES } from "@/lib/demo/claves";
 
-/**
- * Clave de localStorage de la membresía (simulada, solo en este navegador).
+/*
+ * La membresía (simulada) vive en localStorage bajo `CLAVES.membresia` (que lleva el prefijo de la persona).
  * Pactos y Semillas leen `comunidadesDondeEsMiembro` sobre este estado.
  */
-export const CLAVE_MEMBRESIA = CLAVES.membresia;
 
 /** Identificador de la comunidad del Lighthouse en sí; las tribus usan su propio id. */
 export const COMUNIDAD_LIGHTHOUSE = "lighthouse";
@@ -58,7 +57,7 @@ export function leer(crudo: string | null): Membresias {
 /** Lee la membresía guardada en el navegador (para Pactos y Semillas). Fuera del navegador devuelve vacío. */
 export function leerMembresiaDelNavegador(): Membresias {
   try {
-    return leer(window.localStorage.getItem(CLAVE_MEMBRESIA));
+    return leer(window.localStorage.getItem(CLAVES.membresia));
   } catch {
     return INICIAL;
   }

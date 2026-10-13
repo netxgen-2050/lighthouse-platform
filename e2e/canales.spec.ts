@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtura";
 
 test("/canales redirige a /pasaporte", async ({ page }) => {
   await page.goto("/canales");

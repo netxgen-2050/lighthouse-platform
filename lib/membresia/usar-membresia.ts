@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { CLAVES } from "@/lib/demo/claves";
 import {
-  CLAVE_MEMBRESIA,
   INICIAL,
   estadoDe,
   leer,
@@ -21,7 +21,7 @@ export function useMembresia(comunidad: string) {
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
     try {
-      setTodas(leer(window.localStorage.getItem(CLAVE_MEMBRESIA)));
+      setTodas(leer(window.localStorage.getItem(CLAVES.membresia)));
     } catch {
       setFalloAlmacen(true);
     }
@@ -33,13 +33,13 @@ export function useMembresia(comunidad: string) {
       // Se relee antes de escribir: otra pestaña o componente pudo haber cambiado otra comunidad.
       let base = todas;
       try {
-        base = leer(window.localStorage.getItem(CLAVE_MEMBRESIA));
+        base = leer(window.localStorage.getItem(CLAVES.membresia));
       } catch {
         // Sin almacenamiento: se sigue en memoria.
       }
       const siguiente = reducir(base, accion);
       try {
-        window.localStorage.setItem(CLAVE_MEMBRESIA, JSON.stringify(siguiente));
+        window.localStorage.setItem(CLAVES.membresia, JSON.stringify(siguiente));
         setFalloAlmacen(false);
       } catch {
         setFalloAlmacen(true);

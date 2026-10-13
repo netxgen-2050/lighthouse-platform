@@ -85,6 +85,13 @@ export function datosCompletos(p: Perfil): number {
   ].filter(Boolean).length;
 }
 
+/** Borrador con el que arranca el formulario: si el perfil no tiene nombre y la cuenta (Privy) trae uno, se precarga. */
+export function borradorInicial(perfil: Perfil, nombreCuenta: string | null): Perfil {
+  const nombre = nombreCuenta?.trim() ?? "";
+  if (perfil.nombre !== "" || nombre === "") return perfil;
+  return { ...perfil, nombre: nombre.slice(0, MAX.nombre) };
+}
+
 export function perfilVacio(p: Perfil): boolean {
   return datosCompletos(p) === 0;
 }

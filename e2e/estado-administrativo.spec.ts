@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtura";
 import { VISTAS_CON_LOTES } from "../lib/legal/vistas-con-lotes";
 
 test.beforeEach(async ({ page }) => {

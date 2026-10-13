@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtura";
 
 // Las teselas satelitales son externas: los tests no dependen de ellas.
 test.beforeEach(async ({ page }) => {

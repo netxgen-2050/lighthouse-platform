@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { KycDialogo } from "@/components/kyc-dialogo";
+import { CLAVES } from "@/lib/demo/claves";
 import { TerminoEconomico } from "@/components/termino-economico";
 import { TerminoLegal } from "@/components/termino-legal";
 import { semillasDePlata, semillasPorMes } from "@/lib/pactos/calculo";
 import { HORAS, HOUR_REF_ARS, HOUR_REF_USD, MONTO_USD, PASOS, PESTANAS, ROLES, buscarRol, type ClaveRol } from "@/lib/pactos/datos";
 import {
-  CLAVE_PACTOS,
   INICIAL,
   MAX_DESCRIPCION,
   MAX_ROL_OTRO,
@@ -72,7 +72,7 @@ export function PactosCliente() {
     const pedida = new URLSearchParams(window.location.search).get("comunidad");
     setElegida(pedida && comunidades.includes(pedida) ? pedida : (comunidades[0] ?? ""));
     try {
-      setEstado(leer(window.localStorage.getItem(CLAVE_PACTOS)));
+      setEstado(leer(window.localStorage.getItem(CLAVES.pactos)));
     } catch {
       setFalloAlmacen(true);
     }
@@ -90,7 +90,7 @@ export function PactosCliente() {
   function dispatch(accion: Accion) {
     const siguiente = reducir(estado, accion);
     try {
-      window.localStorage.setItem(CLAVE_PACTOS, JSON.stringify(siguiente));
+      window.localStorage.setItem(CLAVES.pactos, JSON.stringify(siguiente));
       setFalloAlmacen(false);
     } catch {
       // No se pudo guardar: la pantalla sigue respondiendo en memoria y se avisa.

@@ -10,3 +10,25 @@ export async function conIdentidadVerificada(page: Page) {
     );
   });
 }
+
+/**
+ * Pedidos de infraestructura de terceros que no son la app ni llevan datos de la persona:
+ * la barra de Vercel en los previews (vercel.live) y el SDK de login (Privy y WalletConnect).
+ * Los tests de "sin pedidos de red" los ignoran.
+ */
+export function esInfraDeTerceros(url: string): boolean {
+  const host = new URL(url).hostname;
+  return (
+    host === "vercel.live" ||
+    host.endsWith(".vercel.live") ||
+    host === "privy.io" ||
+    host.endsWith(".privy.io") ||
+    host.endsWith(".walletconnect.com") ||
+    host.endsWith(".walletconnect.org")
+  );
+}
+
+/** Para los tests de "sin pedidos de red": infraestructura de terceros o pedidos HEAD y OPTIONS (no llevan cuerpo ni datos). */
+export function ignorarEnSinRed(r: { url(): string; method(): string }): boolean {
+  return r.method() === "HEAD" || r.method() === "OPTIONS" || esInfraDeTerceros(r.url());
+}

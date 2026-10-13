@@ -19,6 +19,7 @@ import {
   textoParaCopiarHifa,
 } from "@/lib/hifa/estado";
 import { armarContexto } from "@/lib/reportes/reporte";
+import { useSesion } from "@/components/sesion/contexto";
 import { TAMANO_FLOTANTE } from "@/lib/ui/flotantes";
 import { AvatarHifa } from "./avatar-hifa";
 
@@ -28,6 +29,7 @@ const BOTON_PRINCIPAL =
   "rounded-full bg-deep px-4 py-1.5 text-sm font-medium text-on-deep hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep disabled:opacity-60";
 
 export function Hifa({ version, entorno }: { version: string; entorno: string }) {
+  const { cabeceras } = useSesion();
   const { mostrarHifa } = usePreferencias();
   const [abierto, setAbierto] = useState(false);
   const [estado, despachar] = useReducer(reducir, ESTADO_INICIAL);
@@ -102,11 +104,14 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
       version,
       entorno,
     });
-    fetch("/api/reportes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(armarReporteHifa(pendiente, contexto)),
-    })
+    cabeceras()
+      .then((extra) =>
+        fetch("/api/reportes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...extra },
+          body: JSON.stringify(armarReporteHifa(pendiente, contexto)),
+        }),
+      )
       .then(async (res) => {
         if (!res.ok) throw new Error("rechazado");
         const datos = (await res.json()) as { numero?: number };
@@ -116,7 +121,7 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
       .finally(() => {
         enCurso.current = false;
       });
-  }, [estado.pendiente, version, entorno]);
+  }, [estado.pendiente, version, entorno, cabeceras]);
 
   function cerrar() {
     setAbierto(false);

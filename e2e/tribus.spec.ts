@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtura";
 import { listarTribus, rutaProponerComunidad } from "@/lib/tribus/datos";
 
 test("listado: 12 tarjetas en orden con estado escrito", async ({ page }) => {

@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtura";
 import { listarTribus } from "@/lib/tribus/datos";
 import { conIdentidadVerificada } from "./ayudas";
 

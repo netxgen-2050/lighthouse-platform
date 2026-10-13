@@ -1,12 +1,7 @@
-import { CLAVES } from "@/lib/demo/claves";
 import { deComunidad, leer as leerPactos, pactosAceptados, totalAportes } from "@/lib/pactos/estado";
 import { semillasDePlata } from "@/lib/pactos/calculo";
 import { clave, rondaCompleta, semillasTiempo, totalConDato, type Notas, type Parte, type Razones } from "./calculo";
 import { MAX_RAZON } from "./datos";
-
-export const CLAVE_RONDA = CLAVES.semillasRonda;
-/** Clave que usa /sumarte (todavía no está en CLAVES; no cambiar el valor). */
-export const CLAVE_SUMARTE = "lh-sumarte";
 
 /** Ronda de una comunidad: puntuaciones, explicaciones y si ya se envió (simulado). */
 export type Ronda = { notas: Notas; razones: Razones; enviada: boolean };

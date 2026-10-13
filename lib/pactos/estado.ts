@@ -1,12 +1,10 @@
-import { CLAVES } from "@/lib/demo/claves";
 import { HORAS, MONTO_USD, ROLES, type ClaveRol } from "./datos";
 
-/**
- * Clave de localStorage donde quedan los pactos (simulados, solo en este navegador).
+/*
+ * Los pactos (simulados, solo en este navegador) quedan en localStorage bajo `CLAVES.pactos`.
  * Desde `pactos-v2` el JSON es un EstadoPactos con los pactos por comunidad; `lib/semillas/estado`
- * lee los aceptados con `pactosAceptados`. No cambiar el valor: borraría lo ya guardado.
+ * lee los aceptados con `pactosAceptados`. No cambiar el nombre base: borraría lo ya guardado.
  */
-export const CLAVE_PACTOS = CLAVES.pactos;
 
 export type Pestana = "tiempo" | "plata";
 /** 0 = Borrador, 1 = Enviado a la comunidad, 2 = Aceptado por quien administra la comunidad. */
