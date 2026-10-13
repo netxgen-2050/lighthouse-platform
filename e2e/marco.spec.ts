@@ -162,6 +162,8 @@ test("celular 390 x 844: rail a la izquierda, 72 px o menos, sin scroll horizont
 
 test("Tab: primero Saltar al contenido y después Inicio en el rail; justo después del rail van NetX, la campanita y el avatar", async ({ page }) => {
   await page.goto("/");
+  // La barra superior aparece cuando termina de verificarse la sesión: se espera antes de recorrer con Tab.
+  await expect(page.getByRole("button", { name: "Menú de la persona" })).toBeVisible();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Saltar al contenido" })).toBeFocused();
   await page.keyboard.press("Tab");

@@ -14,8 +14,13 @@ export default defineConfig({
   reporter: [["list"]],
   use: {
     baseURL,
-    extraHTTPHeaders: bypass
-      ? { "x-vercel-protection-bypass": bypass, "x-vercel-set-bypass-cookie": "true" }
+    // Contra un preview de Vercel: el secreto para entrar y sin la barra de comentarios de Vercel
+    // (vercel-live-feedback), que no es la app y atrapa el foco del teclado.
+    extraHTTPHeaders: process.env.BASE_URL
+      ? {
+          "x-vercel-skip-toolbar": "1",
+          ...(bypass ? { "x-vercel-protection-bypass": bypass, "x-vercel-set-bypass-cookie": "true" } : {}),
+        }
       : undefined,
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
