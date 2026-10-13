@@ -1,6 +1,6 @@
 ## 1. Lógica
 
-- [ ] 1.1 `lib/privacidad/` (versión de la política, `registrarConsentimiento`, lectura, exportación de los datos de la persona) y `borrador: true` en el catálogo legal, con tests. Verificar con `pnpm test`.
+- [x] 1.1 `lib/privacidad/` (versión de la política, `registrarConsentimiento`, lectura, exportación de los datos de la persona) y `borrador: true` en el catálogo legal, con tests. Verificar con `pnpm test`.
 
 ## 2. Pantallas
 

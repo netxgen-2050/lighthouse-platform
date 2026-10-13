@@ -82,6 +82,15 @@ describe("issue", () => {
     expect(cuerpo).toContain("- Ruta:");
     expect(armarEtiquetas("idea")).toEqual(["reporte", "idea"]);
   });
+  it("un pedido de privacidad suma la etiqueta `privacidad`, pero solo siendo una pregunta", () => {
+    const pregunta = validarReporte({ ...valido, tipo: "pregunta", privacidad: true });
+    expect(pregunta.ok && pregunta.reporte.privacidad).toBe(true);
+    expect(armarEtiquetas("pregunta", true)).toEqual(["reporte", "pregunta", "privacidad"]);
+    const bug = validarReporte({ ...valido, privacidad: true });
+    expect(bug.ok && bug.reporte.privacidad).toBeUndefined();
+    const sin = validarReporte({ ...valido, tipo: "pregunta" });
+    expect(sin.ok && sin.reporte.privacidad).toBeUndefined();
+  });
   it("neutraliza menciones y referencias en título y cuerpo", () => {
     const r = validarReporte({
       ...valido,
