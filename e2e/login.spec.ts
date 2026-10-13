@@ -27,7 +27,7 @@ test.describe("sin sesión", () => {
   test.use({ rol: "ninguno" });
 
   test("la pantalla de entrada ofrece Entrar y Entrar como…, no muestra datos y la API responde 401", async ({ page, request }) => {
-    await page.goto("/");
+    await page.goto("/pactos");
     await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toBeVisible();
     await expect(page.getByText("Prototipo interno · datos de ejemplo").first()).toBeVisible();
     await expect(barra(page).getByRole("button", { name: "Entrar" })).toBeVisible();
@@ -51,17 +51,17 @@ test.describe("sin sesión", () => {
   });
 
   test("axe sin violaciones serias o críticas en la pantalla de entrada", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/pactos");
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
     const r = await new AxeBuilder({ page }).analyze();
     expect(r.violations.filter((v) => v.impact === "serious" || v.impact === "critical")).toEqual([]);
   });
 
   test("entrar como una persona de la lista abre la app y recuerda la sesión al recargar", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/pactos");
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(menuAvatar(page)).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1, name: /Encontrá tu tribu/ })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toHaveCount(0);
     await page.reload();
     await expect(menuAvatar(page)).toBeVisible();
   });
@@ -147,7 +147,9 @@ test.describe("email fuera de la lista", () => {
     expect((await request.get("/api/sesion", { headers: { "x-lh-prueba": EMAIL_FUERA_DE_LISTA } })).status()).toBe(403);
     // Salir vuelve a la pantalla de entrada.
     await page.getByRole("button", { name: "Salir" }).click();
-    await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toBeVisible();
+    // Sin sesión, "/" es una página pública: se ve el Inicio, no la pantalla de entrada.
+    await expect(page.getByRole("heading", { level: 1, name: /Encontrá tu tribu/ })).toBeVisible();
+    await expect(barra(page).getByRole("button", { name: "Entrar" })).toBeVisible();
   });
 });
 
@@ -168,7 +170,7 @@ test.describe("cookie de prueba vencida", () => {
         await ruta.continue();
       }
     });
-    await page.goto("/");
+    await page.goto("/pactos");
     await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toBeVisible();
     await expect(page.getByText("No pudimos verificar tu sesión")).toHaveCount(0);
     const cookies = await context.cookies(baseURL!);
@@ -180,7 +182,7 @@ test.describe("salir y cambiar de cuenta", () => {
   test.use({ rol: "persona" });
 
   test("Salir vuelve a la pantalla de entrada, la barra muestra Entrar y la sesión no vuelve al recargar", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/pactos");
     await salir(page);
     await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toBeVisible();
     await expect(barra(page).getByRole("button", { name: "Entrar" })).toBeVisible();
@@ -194,7 +196,9 @@ test.describe("salir y cambiar de cuenta", () => {
     await page.goto("/tribus/valle");
     await expect(page.getByText("Tu pedido llegó a Valle Solar.")).toBeVisible();
 
-    // Persona B entra en el mismo navegador: no ve el pedido de A.
+    // Persona B entra en el mismo navegador: no ve el pedido de A. (Se sale desde una página que pide sesión,
+    // para que aparezca "Entrar como…".)
+    await page.goto("/pactos");
     await salir(page);
     await page.getByRole("button", { name: EMAILS.superadmin }).click();
     await expect(menuAvatar(page)).toBeVisible();
@@ -203,6 +207,7 @@ test.describe("salir y cambiar de cuenta", () => {
     await expect(page.getByText("Tu pedido llegó a Valle Solar.")).toHaveCount(0);
 
     // A vuelve a entrar y su pedido sigue ahí.
+    await page.goto("/pactos");
     await salir(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(menuAvatar(page)).toBeVisible();
@@ -222,7 +227,7 @@ test.describe("datos de antes del login", () => {
         window.localStorage.setItem("lh-membresia", JSON.stringify({ valle: "pedido" }));
       }
     });
-    await page.goto("/");
+    await page.goto("/pactos");
     await page.getByRole("button", { name: EMAILS.persona }).click();
     const aviso = page.getByRole("region", { name: "Encontramos datos de antes del login" });
     await expect(aviso).toBeVisible();
@@ -232,6 +237,7 @@ test.describe("datos de antes del login", () => {
     await expect(page.getByText("Tu pedido llegó a Valle Solar.")).toBeVisible();
 
     // La segunda cuenta ya no recibe la oferta.
+    await page.goto("/pactos");
     await salir(page);
     await page.getByRole("button", { name: EMAILS.superadmin }).click();
     await expect(menuAvatar(page)).toBeVisible();

@@ -1,6 +1,7 @@
 "use client";
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { CLAVE_ULTIMA_PERSONA, establecerPersona } from "@/lib/demo/claves";
 import { ContextoSesion, type EstadoSesion, type PrivyMinimo, type SesionCliente, type ValorSesion } from "./contexto";
 
@@ -108,15 +109,28 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
     }
   }, [idPersona]);
 
+  // Sin Privy no hay ventana de login: "Entrar" en una página pública muestra la pantalla de entrada sobre la misma URL
+  // (vale solo para esa ruta). Al entrar, la persona sigue donde estaba.
+  const [pidiendo, setPidiendo] = useState<string | null>(null);
+  const ruta = usePathname();
+  const [rutaVista, setRutaVista] = useState(ruta);
+  // Al navegar, el pedido de entrar se descarta: volver a esta página después no vuelve a abrir la pantalla de entrada.
+  if (rutaVista !== ruta) {
+    setRutaVista(ruta);
+    setPidiendo(null);
+  }
+
   const entrarComo = useCallback((email: string) => {
     document.cookie = `${COOKIE_PRUEBA}=${encodeURIComponent(email)}; path=/; SameSite=Lax`;
     setPrueba(email);
+    setPidiendo(null);
   }, []);
 
   const logout = privy?.logout;
   const salir = useCallback(async () => {
     document.cookie = `${COOKIE_PRUEBA}=; path=/; max-age=0; SameSite=Lax`;
     setPrueba(null);
+    setPidiendo(null);
     setResultado({ estado: "sin-sesion", sesion: null });
     try {
       // Sin persona recordada, el script de tema no pinta con las preferencias de quien acaba de salir.
@@ -147,12 +161,23 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       nombre: privy?.nombre ?? null,
       billetera: privy?.billetera ?? null,
       privyDisponible: privy !== null,
-      entrar: () => login?.(),
+      // Sin Privy no hay ventana de login: se muestra la pantalla de entrada en esta página. El contenido cambia y el botón
+      // apretado desaparece, así que el foco pasa al contenido (que no se desmonta) para que el Tab no arranque desde el inicio.
+      entrar: () => {
+        if (login) return login();
+        setPidiendo(ruta);
+        document.getElementById("contenido")?.focus();
+      },
+      pidiendoEntrar: pidiendo === ruta,
+      cancelarEntrar: () => {
+        setPidiendo(null);
+        document.getElementById("contenido")?.focus();
+      },
       entrarComo,
       salir,
       cabeceras,
     }),
-    [resultado, prueba, privy, login, entrarComo, salir, cabeceras],
+    [resultado, prueba, privy, login, ruta, pidiendo, entrarComo, salir, cabeceras],
   );
 
   return (

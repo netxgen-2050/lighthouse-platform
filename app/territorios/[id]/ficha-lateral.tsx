@@ -2,6 +2,8 @@
 
 import { useId, useState } from "react";
 import Link from "next/link";
+import { useSesion } from "@/components/sesion/contexto";
+import { EnlaceConCuenta, EntrarPara } from "@/components/sesion/entrar-para";
 import { EstadoAdministrativo } from "@/components/estado-administrativo";
 import { MembresiaAcciones } from "@/components/membresia-acciones";
 import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
@@ -49,6 +51,8 @@ function ConsultaFinca({
   const [abierto, setAbierto] = useState(false);
   const idBoton = `consultar-${useId()}`;
   const estado = ESTADOS_ADMINISTRATIVOS.soluna;
+  const { estado: estadoSesion } = useSesion();
+  if (estadoSesion !== "ok") return <EntrarPara texto="Entrá para consultar por este lote" clase={boton} />;
   return (
     <div className="grid gap-3">
       {enviada ? (
@@ -107,9 +111,9 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
           </div>
         )}
         {vacante ? (
-          <Link href={rutaProponerComunidad(t.id)} className={boton}>
+          <EnlaceConCuenta href={rutaProponerComunidad(t.id)} textoEntrar="Entrá para proponer una comunidad" clase={boton}>
             Proponer una comunidad
-          </Link>
+          </EnlaceConCuenta>
         ) : (
           <Link href={`/tribus/${t.id}`} className={boton}>
             Conocer la tribu

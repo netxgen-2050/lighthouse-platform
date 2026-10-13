@@ -13,12 +13,14 @@ import {
 } from "./estado";
 
 /** Membresía simulada de una comunidad, guardada en el navegador. `cargado` es falso hasta leer lo guardado. */
-export function useMembresia(comunidad: string) {
+export function useMembresia(comunidad: string, activo = true) {
   const [todas, setTodas] = useState<Membresias>(INICIAL);
   const [cargado, setCargado] = useState(false);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
 
   useEffect(() => {
+    // Sin sesión no hay membresía que leer (ni se toca el almacenamiento).
+    if (!activo) return;
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
     try {
       setTodas(leer(window.localStorage.getItem(CLAVES.membresia)));
@@ -26,7 +28,7 @@ export function useMembresia(comunidad: string) {
       setFalloAlmacen(true);
     }
     setCargado(true);
-  }, []);
+  }, [activo]);
 
   const dispatch = useCallback(
     (accion: Accion) => {
