@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { useSesion } from "@/components/sesion/contexto";
 import { TerminoLegal } from "@/components/termino-legal";
+import { registrarConsentimientoSensible } from "@/lib/privacidad/consentimiento";
+import { useConsentimiento } from "@/lib/privacidad/usar-consentimiento";
 import {
   BORRADOR_VACIO,
   fechaLarga,
@@ -47,6 +50,11 @@ export function KycDialogo({ abierto, kyc, alCerrar, alEnviar, alAprobar, motivo
   const [errores, setErrores] = useState<ErroresKyc>({});
   const [fallo, setFallo] = useState(false);
   const moverFoco = useRef(false);
+  // Los datos de identidad, residencia fiscal y origen de fondos son sensibles: antes del primer paso se pide un consentimiento aparte.
+  const { sesion } = useSesion();
+  const { sensibles } = useConsentimiento(sesion?.idPersona ?? null);
+  const [acepta, setAcepta] = useState(false);
+  const [errorConsentimiento, setErrorConsentimiento] = useState<string | null>(null);
 
   useEffect(() => {
     const d = dialogo.current;
@@ -64,7 +72,26 @@ export function KycDialogo({ abierto, kyc, alCerrar, alEnviar, alAprobar, motivo
     if (!moverFoco.current) return;
     moverFoco.current = false;
     titulo.current?.focus();
-  }, [paso, kyc.estado]);
+  }, [paso, kyc.estado, sensibles]);
+
+  function consentir() {
+    if (!acepta) {
+      setErrorConsentimiento("Error: para empezar tenés que marcar la casilla.");
+      return;
+    }
+    let guardado = false;
+    try {
+      guardado = registrarConsentimientoSensible(window.localStorage);
+    } catch {
+      guardado = false;
+    }
+    if (!guardado) {
+      setErrorConsentimiento("Error: no pudimos registrar tu consentimiento. Revisá que tu navegador permita guardar datos en este sitio.");
+      return;
+    }
+    setErrorConsentimiento(null);
+    moverFoco.current = true;
+  }
 
   function cambiar<K extends keyof BorradorKyc>(campo: K, valor: BorradorKyc[K]) {
     setB((x) => ({ ...x, [campo]: valor }));
@@ -173,7 +200,59 @@ export function KycDialogo({ abierto, kyc, alCerrar, alEnviar, alAprobar, motivo
       </p>
       {motivo && <p className="mt-2 text-sm">{motivo}</p>}
 
-      {enCurso && (
+      {enCurso && !sensibles && (
+        <form
+          className="mt-4 grid gap-4"
+          noValidate
+          onSubmit={(ev) => {
+            ev.preventDefault();
+            consentir();
+          }}
+        >
+          <h3 ref={titulo} tabIndex={-1} className="text-lg font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
+            Antes de empezar: tus datos sensibles
+            <TerminoLegal clave="datos" />
+          </h3>
+          <p>
+            Para verificar tu identidad vas a cargar tu nombre, documento, fecha de nacimiento, nacionalidad, residencia fiscal y
+            el origen de tus fondos. Son datos sensibles y necesitamos tu consentimiento específico para tratarlos.
+          </p>
+          <p className="text-sm text-muted">
+            En la versión real los verifica un tercero (el fiduciario o un proveedor de KYC), que los custodia. Podés retirar
+            tu consentimiento cuando quieras desde Mis datos.
+          </p>
+          <label className="flex items-start gap-2">
+            <input
+              type="checkbox"
+              checked={acepta}
+              aria-describedby={errorConsentimiento ? id("err-consentimiento") : undefined}
+              onChange={(e) => {
+                setAcepta(e.target.checked);
+                setErrorConsentimiento(null);
+              }}
+              className="mt-1 size-4 accent-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+            />
+            <span>
+              Acepto que NetXGen trate mis datos de identidad, residencia fiscal y origen de fondos para verificar mi identidad.
+            </span>
+          </label>
+          {errorConsentimiento && (
+            <p id={id("err-consentimiento")} role="alert" className="text-sm font-medium text-warn-ink">
+              {errorConsentimiento}
+            </p>
+          )}
+          <div className="flex flex-wrap gap-3">
+            <button type="submit" className={PRIMARIO}>
+              Aceptar y empezar
+            </button>
+            <button type="button" onClick={alCerrar} className={SUAVE}>
+              Ahora no
+            </button>
+          </div>
+        </form>
+      )}
+
+      {enCurso && sensibles && (
         <form
           className="mt-4 grid gap-4"
           noValidate

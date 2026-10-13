@@ -206,6 +206,11 @@ export function ConfiguracionCliente() {
         <p>
           <Link className={`underline ${FOCO}`} href="/panel/bitacora">Ver la Bitácora</Link>
         </p>
+        <p>
+          <Link className={`underline ${FOCO}`} href="/mis-datos">Mis datos: descargarlos, retirar mi consentimiento o pedir el borrado</Link>
+          {" · "}
+          <Link className={`underline ${FOCO}`} href="/privacidad">Política de privacidad</Link>
+        </p>
         <button
           type="button"
           onClick={borrar}

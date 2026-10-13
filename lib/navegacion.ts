@@ -10,6 +10,7 @@ import {
   Leaf,
   Map as MapaIcono,
   Settings,
+  ShieldCheck,
   Sprout,
   UserRound,
   Users,
@@ -45,6 +46,7 @@ export const DESTINOS: readonly Destino[] = [
   { href: "/pasaporte", etiqueta: "Pasaporte", icono: IdCard, grupo: "persona", existe: true },
   { href: "/panel", etiqueta: "Mi recorrido", icono: Compass, grupo: "persona", existe: true },
   { href: "/configuracion", etiqueta: "Configuración", icono: Settings, grupo: "persona", existe: true },
+  { href: "/mis-datos", etiqueta: "Mis datos", icono: ShieldCheck, grupo: "persona", existe: true },
   { href: "/netx", etiqueta: "NetX", icono: BarChart3, grupo: "interno", existe: true },
 ];
 

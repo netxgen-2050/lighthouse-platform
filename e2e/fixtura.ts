@@ -1,6 +1,9 @@
 import { expect, test as base } from "@playwright/test";
+// Versión de la política vigente: el consentimiento sembrado tiene que ser de esta versión.
+import { VERSION_POLITICA } from "@/lib/privacidad/consentimiento";
 
 export { expect };
+export const VERSION_PRUEBA = VERSION_POLITICA;
 export type { Locator, Page } from "@playwright/test";
 
 export type RolPrueba = "superadmin" | "admin-tribu" | "persona" | "ninguno";
@@ -30,7 +33,17 @@ export function prefijoDe(email: string): string {
 /** Plan de Sumarte con el que arranca la persona de prueba (el nivel sale de lo elegido en Sumarte). */
 export type PlanPrueba = "explorador" | "miembro" | "ninguno";
 
-type Opciones = { rol: RolPrueba; plan: PlanPrueba };
+/**
+ * Consentimiento de privacidad con el que arranca la persona: "completo" (política y datos sensibles del KYC, el valor por
+ * defecto para que los e2e existentes no pasen por la pantalla de consentimiento), "basico" (solo la política) o "ninguno".
+ */
+export type ConsentimientoPrueba = "completo" | "basico" | "ninguno";
+
+type Opciones = { rol: RolPrueba; plan: PlanPrueba; consentimiento: ConsentimientoPrueba };
+
+
+/** Todos los emails con los que un e2e puede entrar (por la cookie o por "Entrar como…"). */
+const EMAILS_CONOCIDOS = [...Object.values(EMAILS), EMAIL_FUERA_DE_LISTA, "nueva@prueba.test"];
 
 /**
  * `test` de todos los e2e: antes de navegar, la persona entra con el modo de prueba (cookie) y el almacenamiento
@@ -42,7 +55,35 @@ type Opciones = { rol: RolPrueba; plan: PlanPrueba };
 export const test = base.extend<Opciones>({
   rol: ["superadmin", { option: true }],
   plan: ["miembro", { option: true }],
-  page: async ({ page, context, baseURL, rol, plan }, entregar) => {
+  consentimiento: ["completo", { option: true }],
+  page: async ({ page, context, baseURL, rol, plan, consentimiento }, entregar) => {
+    if (consentimiento !== "ninguno") {
+      // Se siembra el consentimiento de todos los emails de prueba, con o sin sesión, una sola vez por persona
+      // (si ya hay un registro, no se pisa: así un test puede retirarlo o cambiarlo).
+      await page.addInitScript(
+        ([prefijos, version, completo]) => {
+          try {
+            for (const prefijo of prefijos) {
+              const clave = `${prefijo}lh-consentimiento`;
+              if (window.localStorage.getItem(clave) !== null) continue;
+              const ahora = new Date().toISOString();
+              window.localStorage.setItem(
+                clave,
+                JSON.stringify({
+                  version,
+                  aceptadoEn: ahora,
+                  aceptado: { politica: true, terminos: true },
+                  sensibles: completo ? { version, aceptadoEn: ahora } : null,
+                }),
+              );
+            }
+          } catch {
+            // Páginas sin almacenamiento (about:blank): no hay nada que sembrar.
+          }
+        },
+        [EMAILS_CONOCIDOS.map(prefijoDe), VERSION_POLITICA, consentimiento === "completo"] as const,
+      );
+    }
     if (rol !== "ninguno" && baseURL) {
       const email = EMAILS[rol];
       await context.addCookies([{ name: COOKIE_PRUEBA, value: encodeURIComponent(email), url: baseURL }]);

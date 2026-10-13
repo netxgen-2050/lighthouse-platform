@@ -3,6 +3,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { CLAVE_ULTIMA_PERSONA, establecerPersona } from "@/lib/demo/claves";
+import { useConsentimiento } from "@/lib/privacidad/usar-consentimiento";
 import { calcularNivel, EVENTO_NIVEL, leerEstadoGuardado } from "@/lib/sesion/nivel";
 import { INICIAL, type EstadoSumarte } from "@/lib/sumarte/estado";
 import { ContextoSesion, type EstadoSesion, type PrivyMinimo, type SesionCliente, type ValorSesion } from "./contexto";
@@ -143,6 +144,9 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
     resultado.estado === "ok" && resultado.sesion ? resultado.sesion : null,
   );
 
+  // Qué aceptó la persona de la política de privacidad: sin eso no usa la app con sesión (lo aplica la puerta).
+  const { estado: consentimiento } = useConsentimiento(idPersona);
+
   const router = useRouter();
   const ruta = usePathname();
 
@@ -199,11 +203,12 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       entrarComo,
       nivel,
       nivelListo,
+      consentimiento,
       tribuLider,
       salir,
       cabeceras,
     }),
-    [resultado, prueba, privy, login, ruta, router, entrarComo, nivel, nivelListo, tribuLider, salir, cabeceras],
+    [resultado, prueba, privy, login, ruta, router, entrarComo, nivel, nivelListo, consentimiento, tribuLider, salir, cabeceras],
   );
 
   return (
