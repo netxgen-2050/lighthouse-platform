@@ -29,3 +29,5 @@ Para que lo que hace una persona lo vea otra (aprobaciones de admins, roles, not
 ## Impact
 
 Dependencias: `drizzle-orm`, `drizzle-kit`, `@neondatabase/serverless`, `@electric-sql/pglite`. Archivos: `lib/db/` (cliente, esquema, migrador), `drizzle/` (migraciones), `drizzle.config.ts`, `app/api/sesion/`, `app/api/personas/`, `lib/sesion/` (buscar en la base), panel de `/netx`, `package.json` (scripts `db:generate`, `db:migrate` y build), e2e y tests de Vitest con PGlite. Variables: `DATABASE_URL` (la crea la integración de Neon en Vercel).
+
+> **Actualización 14-oct (Gus, spec `sumarte-acceso`):** el acceso es abierto y el nivel (Explorador, Miembro, Líder de tribu) lo elige la persona en Sumarte. Si `sumarte-acceso` ya está en la base: la tabla `personas` guarda también el **nivel** y la tribu que lidera; el nivel elegido en Sumarte se guarda en la base (en lugar del navegador); `LH_PERSONAS` queda solo para ajustes por email (super admin); y el panel de NetX permite cambiar el nivel además del rol.
