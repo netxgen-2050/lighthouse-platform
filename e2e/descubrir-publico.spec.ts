@@ -114,6 +114,28 @@ test.describe("navegación sin sesión", () => {
     await expect(page).toHaveURL(/\/pactos$/);
   });
 
+  test("el pedido de entrar se descarta al navegar: al volver no reaparece la pantalla de entrada", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    await barra(page).getByRole("button", { name: "Entrar" }).click();
+    await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
+    await rail(page).getByRole("link", { name: "Tribus", exact: true }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "Tribus del Lighthouse" })).toBeVisible();
+    await page.getByRole("link", { name: /Valle Solar/ }).first().click();
+    await expect(page.getByRole("heading", { level: 1, name: "Valle Solar" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Entrar como…" })).toHaveCount(0);
+  });
+
+  test("los botones Entrá para … y Seguir explorando dejan el foco en el contenido", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    await page.getByRole("button", { name: "Entrá para adherir" }).click();
+    await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
+    await expect(page.locator("#contenido")).toBeFocused();
+    await page.getByRole("button", { name: "Seguir explorando" }).focus();
+    await page.getByRole("button", { name: "Seguir explorando" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "Valle Solar" })).toBeVisible();
+    await expect(page.locator("#contenido")).toBeFocused();
+  });
+
   test("Seguir explorando cierra la pantalla de entrada pedida en una página pública", async ({ page }) => {
     await page.goto("/tribus/valle");
     await barra(page).getByRole("button", { name: "Entrar" }).click();

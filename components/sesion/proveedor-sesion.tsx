@@ -112,6 +112,13 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
   // Sin Privy no hay ventana de login: "Entrar" en una página pública muestra la pantalla de entrada sobre la misma URL
   // (vale solo para esa ruta). Al entrar, la persona sigue donde estaba.
   const [pidiendo, setPidiendo] = useState<string | null>(null);
+  const ruta = usePathname();
+  const [rutaVista, setRutaVista] = useState(ruta);
+  // Al navegar, el pedido de entrar se descarta: volver a esta página después no vuelve a abrir la pantalla de entrada.
+  if (rutaVista !== ruta) {
+    setRutaVista(ruta);
+    setPidiendo(null);
+  }
 
   const entrarComo = useCallback((email: string) => {
     document.cookie = `${COOKIE_PRUEBA}=${encodeURIComponent(email)}; path=/; SameSite=Lax`;
@@ -146,7 +153,6 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
   }, [prueba]);
 
   const login = privy?.login;
-  const ruta = usePathname();
   const valor = useMemo<ValorSesion>(
     () => ({
       estado: resultado.estado,
@@ -155,10 +161,18 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       nombre: privy?.nombre ?? null,
       billetera: privy?.billetera ?? null,
       privyDisponible: privy !== null,
-      // Sin Privy (modo de prueba) no hay ventana de login: se va a una página que pide sesión y muestra "Entrar como…".
-      entrar: () => (login ? login() : setPidiendo(ruta)),
+      // Sin Privy no hay ventana de login: se muestra la pantalla de entrada en esta página. El contenido cambia y el botón
+      // apretado desaparece, así que el foco pasa al contenido (que no se desmonta) para que el Tab no arranque desde el inicio.
+      entrar: () => {
+        if (login) return login();
+        setPidiendo(ruta);
+        document.getElementById("contenido")?.focus();
+      },
       pidiendoEntrar: pidiendo === ruta,
-      cancelarEntrar: () => setPidiendo(null),
+      cancelarEntrar: () => {
+        setPidiendo(null);
+        document.getElementById("contenido")?.focus();
+      },
       entrarComo,
       salir,
       cabeceras,
