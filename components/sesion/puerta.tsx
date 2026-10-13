@@ -1,8 +1,8 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { esPublica } from "@/lib/sesion/rutas-publicas";
+import { nivelMinimoDeRuta, puedeCapacidad, puedeRuta, type Capacidad } from "@/lib/permisos/niveles";
 import {
   corresponderOfrecerImportacion,
   descartarImportacion,
@@ -16,24 +16,49 @@ const BOTON_PRIMARIO = `${BOTON} bg-deep text-on-deep hover:bg-deep-2`;
 const BOTON_SECUNDARIO = `${BOTON} border border-faint hover:bg-surface-2`;
 
 /**
- * Muestra el contenido solo con una sesión válida; en cualquier otro caso, la pantalla de entrada o el aviso que corresponda.
- * Excepción: las páginas públicas (`lib/sesion/rutas-publicas.ts`) se ven sin sesión; sus acciones con cuenta piden entrar.
+ * Muestra la página solo si el nivel de la persona la habilita (`lib/permisos/niveles.ts`). Si no, va a Sumarte con el aviso
+ * de qué plan la habilita y, al sumarse, vuelve a esta página. Sin pantalla de entrada repetida: la puerta de entrada es Sumarte.
+ * Lo que no es una sesión (verificando, sin acceso con `LH_ACCESO=lista`, error) sí muestra su aviso.
  */
 export function Puerta({ children }: { children: ReactNode }) {
-  const { estado, pidiendoEntrar } = useSesion();
+  const { estado, nivel, nivelListo } = useSesion();
   const ruta = usePathname();
-  if (estado === "ok") return <ConSesion>{children}</ConSesion>;
-  if (pidiendoEntrar) return <PantallaDeEntrada />;
   // Mientras se verifica la sesión se espera ("Cargando…"): mostrar la página y rearmarla al confirmar la sesión
   // haría perder lo que la persona ya estaba haciendo (foco, scroll, casillas).
-  if (estado === "sin-sesion" && esPublica(ruta)) return <>{children}</>;
-  return <PantallaDeEntrada />;
+  if (estado === "sin-sesion") return puedeRuta("sin-cuenta", ruta) ? <>{children}</> : <IrASumarte ruta={ruta} />;
+  if (estado !== "ok") return <PantallaDeEntrada />;
+  if (!nivelListo) return <PantallaDeEntrada />;
+  // NetX no redirige: su propia página explica que es solo del super admin.
+  if (!puedeRuta(nivel, ruta) && nivelMinimoDeRuta(ruta) !== "superadmin") return <IrASumarte ruta={ruta} />;
+  return <ConSesion>{children}</ConSesion>;
 }
 
-/** Dibuja `children` solo si hay una sesión válida (para piezas fijas del layout, como Hifa o el botón de reportes). */
+/** Lleva a Sumarte con la página que se quería abrir, para avisar qué plan la habilita y volver después. */
+function IrASumarte({ ruta }: { ruta: string }) {
+  const router = useRouter();
+  useEffect(() => {
+    // Se conserva la query (por ejemplo ?sel=) para volver exactamente a la misma vista.
+    router.replace(`/sumarte?volver=${encodeURIComponent(ruta + window.location.search)}`);
+  }, [router, ruta]);
+  return (
+    <div className="mx-auto max-w-xl p-6 sm:p-10">
+      <p role="status" className="text-muted">
+        Cargando…
+      </p>
+    </div>
+  );
+}
+
+/** Dibuja `children` solo si hay una sesión válida (para piezas fijas del layout). */
 export function SoloConSesion({ children }: { children: ReactNode }) {
   const { estado } = useSesion();
   return estado === "ok" ? <>{children}</> : null;
+}
+
+/** Dibuja `children` solo si el nivel de la persona habilita la capacidad (por ejemplo Hifa o el botón de reportes). */
+export function SoloConCapacidad({ capacidad, children }: { capacidad: Capacidad; children: ReactNode }) {
+  const { estado, nivel } = useSesion();
+  return estado === "ok" && puedeCapacidad(nivel, capacidad) ? <>{children}</> : null;
 }
 
 function ConSesion({ children }: { children: ReactNode }) {
@@ -113,28 +138,11 @@ function Aviso() {
   );
 }
 
+/** Lo que se ve cuando todavía no hay sesión utilizable: verificando, sin acceso (`LH_ACCESO=lista`) o con error. */
 function PantallaDeEntrada() {
-  const { estado, emailIntento, privyDisponible, entrar, entrarComo, salir, pidiendoEntrar, cancelarEntrar } = useSesion();
-  const [emailsPrueba, setEmailsPrueba] = useState<string[]>([]);
-  const ruta = usePathname();
+  const { estado, emailIntento, salir } = useSesion();
 
-  useEffect(() => {
-    if (estado !== "sin-sesion") return;
-    let vigente = true;
-    fetch("/api/sesion/prueba", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d: { activo?: boolean; emails?: string[] } | null) => {
-        if (vigente && d?.activo && Array.isArray(d.emails)) setEmailsPrueba(d.emails);
-      })
-      .catch(() => {
-        // Sin la lista de prueba solo queda "Entrar" con Privy.
-      });
-    return () => {
-      vigente = false;
-    };
-  }, [estado]);
-
-  if (estado === "cargando") {
+  if (estado === "cargando" || estado === "ok" || estado === "sin-sesion") {
     return (
       <div className="mx-auto max-w-xl p-6 sm:p-10">
         <Aviso />
@@ -159,54 +167,14 @@ function PantallaDeEntrada() {
     );
   }
 
-  if (estado === "error") {
-    return (
-      <div className="mx-auto max-w-xl p-6 sm:p-10">
-        <Aviso />
-        <h1 className="text-2xl font-semibold">No pudimos verificar tu sesión</h1>
-        <p className="mt-3">Probá de nuevo en un momento.</p>
-        <button type="button" className={`${BOTON_SECUNDARIO} mt-4`} onClick={() => void salir()}>
-          Volver a la entrada
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="mx-auto max-w-xl p-6 sm:p-10">
       <Aviso />
-      <h1 className="text-3xl font-semibold">Bienvenida al Lighthouse</h1>
-      <p className="mt-3 text-muted">
-        Esta es la plataforma de NetX para descubrir el territorio, encontrar tu tribu y sumarte al Congreso. Por ahora es un
-        prototipo para el equipo: entrá con tu cuenta para verlo.
-      </p>
-      {privyDisponible && (
-        <button type="button" className={`${BOTON_PRIMARIO} mt-5`} onClick={entrar}>
-          Entrar
-        </button>
-      )}
-      {pidiendoEntrar && esPublica(ruta) && (
-        <button type="button" className={`${BOTON_SECUNDARIO} mt-5 block`} onClick={cancelarEntrar}>
-          Seguir explorando
-        </button>
-      )}
-      {emailsPrueba.length > 0 && (
-        <section aria-labelledby="entrar-como" className="mt-6 rounded-xl border border-dashed border-faint p-4">
-          <h2 id="entrar-como" className="text-base font-semibold">
-            Entrar como…
-          </h2>
-          <p className="mt-1 text-sm text-muted">Modo de prueba: no usa Privy y no existe en producción.</p>
-          <ul className="mt-3 flex flex-col gap-2">
-            {emailsPrueba.map((e) => (
-              <li key={e}>
-                <button type="button" className={BOTON_SECUNDARIO} onClick={() => entrarComo(e)}>
-                  {e}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <h1 className="text-2xl font-semibold">No pudimos verificar tu sesión</h1>
+      <p className="mt-3">Probá de nuevo en un momento.</p>
+      <button type="button" className={`${BOTON_SECUNDARIO} mt-4`} onClick={() => void salir()}>
+        Volver a la entrada
+      </button>
     </div>
   );
 }

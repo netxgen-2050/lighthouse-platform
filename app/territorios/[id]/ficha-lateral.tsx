@@ -52,7 +52,7 @@ function ConsultaFinca({
   const idBoton = `consultar-${useId()}`;
   const estado = ESTADOS_ADMINISTRATIVOS.soluna;
   const { estado: estadoSesion } = useSesion();
-  if (estadoSesion !== "ok") return <EntrarPara texto="Entrá para consultar por este lote" clase={boton} />;
+  if (estadoSesion !== "ok") return <EntrarPara texto="Sumate para consultar por este lote" clase={boton} />;
   return (
     <div className="grid gap-3">
       {enviada ? (
@@ -111,7 +111,7 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
           </div>
         )}
         {vacante ? (
-          <EnlaceConCuenta href={rutaProponerComunidad(t.id)} textoEntrar="Entrá para proponer una comunidad" clase={boton}>
+          <EnlaceConCuenta href={rutaProponerComunidad(t.id)} textoEntrar="Sumate para proponer una comunidad" clase={boton}>
             Proponer una comunidad
           </EnlaceConCuenta>
         ) : (

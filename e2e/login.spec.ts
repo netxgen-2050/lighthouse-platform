@@ -26,10 +26,12 @@ async function adherirAValle(page: Page) {
 test.describe("sin sesión", () => {
   test.use({ rol: "ninguno" });
 
-  test("la pantalla de entrada ofrece Entrar y Entrar como…, no muestra datos y la API responde 401", async ({ page, request }) => {
+  test("una página interna lleva a Sumarte, que ofrece Entrar como…; no muestra datos y la API responde 401", async ({ page, request }) => {
     await page.goto("/pactos");
-    await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
+    await expect(page).toHaveURL(/\/sumarte\?volver=%2Fpactos$/);
     await expect(page.getByText("Prototipo interno · datos de ejemplo").first()).toBeVisible();
+    await expect(barra(page).getByRole("link", { name: "Sumarte" })).toBeVisible();
     await expect(barra(page).getByRole("button", { name: "Entrar" })).toBeVisible();
     await expect(barra(page).getByRole("button", { name: "Menú de la persona" })).toHaveCount(0);
     await expect(barra(page).getByRole("link", { name: /NetX/ })).toHaveCount(0);
@@ -42,15 +44,15 @@ test.describe("sin sesión", () => {
     expect((await request.get("/api/sesion", { headers: { cookie: `${COOKIE_PRUEBA}=${EMAILS.superadmin}` } })).status()).toBe(401);
   });
 
-  test("las rutas internas no se ven sin sesión", async ({ page }) => {
+  test("las rutas internas no se ven sin sesión: llevan a Sumarte", async ({ page }) => {
     await page.goto("/perfil");
-    await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /Perfil/ })).toHaveCount(0);
+    await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /Perfil/ })).toHaveCount(0);
     await page.goto("/netx");
-    await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
   });
 
-  test("axe sin violaciones serias o críticas en la pantalla de entrada", async ({ page }) => {
+  test("axe sin violaciones serias o críticas en Sumarte sin cuenta", async ({ page }) => {
     await page.goto("/pactos");
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
     const r = await new AxeBuilder({ page }).analyze();
@@ -58,10 +60,9 @@ test.describe("sin sesión", () => {
   });
 
   test("entrar como una persona de la lista abre la app y recuerda la sesión al recargar", async ({ page }) => {
-    await page.goto("/pactos");
+    await page.goto("/sumarte");
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(menuAvatar(page)).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toHaveCount(0);
     await page.reload();
     await expect(menuAvatar(page)).toBeVisible();
   });
@@ -135,19 +136,22 @@ test.describe("persona", () => {
   });
 });
 
-test.describe("email fuera de la lista", () => {
+test.describe("email fuera de LH_PERSONAS (acceso abierto)", () => {
   test.use({ rol: "ninguno" });
 
-  test("ve el aviso de sin acceso y la API responde 403", async ({ page, context, baseURL, request }) => {
+  test("entra como Explorador: sin marca de admin ni NetX, y la API responde 200 como persona común", async ({ page, context, baseURL, request }) => {
     await context.addCookies([{ name: COOKIE_PRUEBA, value: encodeURIComponent(EMAIL_FUERA_DE_LISTA), url: baseURL! }]);
     await page.goto("/");
-    await expect(page.getByText("Tu email todavía no tiene acceso a este prototipo. Pedíselo a Gus.")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Bienvenida al Lighthouse" })).toHaveCount(0);
+    await expect(menuAvatar(page)).toBeVisible();
+    await expect(page.getByText("Tu email todavía no tiene acceso a este prototipo")).toHaveCount(0);
     await expect(barra(page).getByRole("link", { name: /NetX/ })).toHaveCount(0);
-    expect((await request.get("/api/sesion", { headers: { "x-lh-prueba": EMAIL_FUERA_DE_LISTA } })).status()).toBe(403);
-    // Salir vuelve a la pantalla de entrada.
-    await page.getByRole("button", { name: "Salir" }).click();
-    // Sin sesión, "/" es una página pública: se ve el Inicio, no la pantalla de entrada.
+    await menuAvatar(page).click();
+    await expect(page.locator("#menu-persona")).toContainText("Nivel: Explorador");
+    const r = await request.get("/api/sesion", { headers: { "x-lh-prueba": EMAIL_FUERA_DE_LISTA } });
+    expect(r.status()).toBe(200);
+    expect(await r.json()).toMatchObject({ email: EMAIL_FUERA_DE_LISTA, rol: "persona", tribuAdmin: null });
+    // Salir vuelve a Descubrir sin cuenta.
+    await page.locator("#menu-persona").getByRole("button", { name: "Salir" }).click();
     await expect(page.getByRole("heading", { level: 1, name: /Encontrá tu tribu/ })).toBeVisible();
     await expect(barra(page).getByRole("button", { name: "Entrar" })).toBeVisible();
   });
@@ -156,7 +160,7 @@ test.describe("email fuera de la lista", () => {
 test.describe("cookie de prueba vencida", () => {
   test.use({ rol: "ninguno" });
 
-  test("si el servidor responde 401 al modo de prueba, se borra la cookie y vuelve la pantalla de entrada", async ({
+  test("si el servidor responde 401 al modo de prueba, se borra la cookie y se vuelve a Sumarte sin cuenta", async ({
     page,
     context,
     baseURL,
@@ -171,7 +175,7 @@ test.describe("cookie de prueba vencida", () => {
       }
     });
     await page.goto("/pactos");
-    await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
     await expect(page.getByText("No pudimos verificar tu sesión")).toHaveCount(0);
     const cookies = await context.cookies(baseURL!);
     expect(cookies.find((c) => c.name === COOKIE_PRUEBA)).toBeUndefined();
@@ -181,13 +185,14 @@ test.describe("cookie de prueba vencida", () => {
 test.describe("salir y cambiar de cuenta", () => {
   test.use({ rol: "persona" });
 
-  test("Salir vuelve a la pantalla de entrada, la barra muestra Entrar y la sesión no vuelve al recargar", async ({ page }) => {
+  test("Salir lleva a Sumarte, la barra muestra Sumarte y Entrar y la sesión no vuelve al recargar", async ({ page }) => {
     await page.goto("/pactos");
     await salir(page);
-    await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
     await expect(barra(page).getByRole("button", { name: "Entrar" })).toBeVisible();
     await page.reload();
-    await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
+    await expect(barra(page).getByRole("button", { name: "Menú de la persona" })).toHaveCount(0);
   });
 
   test("cada persona ve solo sus datos en el mismo navegador", async ({ page }) => {
@@ -233,6 +238,9 @@ test.describe("datos de antes del login", () => {
     await expect(aviso).toBeVisible();
     await aviso.getByRole("button", { name: "Importar a mi cuenta" }).click();
     await expect(aviso).toHaveCount(0);
+    // Adherir es de Miembro: la persona nueva (Explorador) pasa a Miembro en Sumarte para ver el pedido importado.
+    await page.goto("/sumarte");
+    await page.getByRole("button", { name: "Hacerme miembro" }).click();
     await page.goto("/tribus/valle");
     await expect(page.getByText("Tu pedido llegó a Valle Solar.")).toBeVisible();
 

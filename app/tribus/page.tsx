@@ -114,7 +114,7 @@ export default function TribusPage() {
               <EnlaceConCuenta
                 href={rutaProponerComunidad(t.id)}
                 etiqueta={`Proponer una comunidad para el Barrio ${t.barrio}`}
-                textoEntrar="Entrá para proponer una comunidad"
+                textoEntrar="Sumate para proponer una comunidad"
                 clase="inline-block rounded-lg bg-deep px-4 py-2 text-sm font-semibold text-on-deep hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
               >
                 Proponer una comunidad

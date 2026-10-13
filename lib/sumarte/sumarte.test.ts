@@ -54,6 +54,13 @@ describe("estado", () => {
     expect(t.tribu).toBe(true);
     expect(leer(JSON.stringify(t)).tribu).toBe(true);
   });
+  it("el Plan Tribu guarda la tribu elegida y cambiar de plan la quita", () => {
+    const t = reducir(INICIAL, { tipo: "tribu", tribuId: "valle" });
+    expect(t).toMatchObject({ plan: "miembro", tribu: true, tribuId: "valle" });
+    expect(leer(JSON.stringify(t))).toMatchObject({ tribu: true, tribuId: "valle" });
+    expect(reducir(t, { tipo: "plan", plan: "miembro" })).toMatchObject({ tribu: false, tribuId: null });
+    expect(reducir(t, { tipo: "plan", plan: "explorador" })).toMatchObject({ plan: "explorador", tribu: false, tribuId: null });
+  });
   it("leer tolera basura", () => {
     expect(leer(null)).toEqual(INICIAL);
     expect(leer("{no json")).toEqual(INICIAL);

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { EntrarPara } from "@/components/sesion/entrar-para";
 import { useSesion } from "@/components/sesion/contexto";
+import { puedeCapacidad } from "@/lib/permisos/niveles";
 import { TerminoLegal } from "@/components/termino-legal";
 import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
 import { useMembresia } from "@/lib/membresia/usar-membresia";
@@ -29,8 +30,10 @@ type Props = {
  * no miembro (leer / adherir), pedido enviado (esperando) o miembro (proponer pacto / sala).
  */
 export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
-  const { estado: estadoSesion } = useSesion();
+  const { estado: estadoSesion, nivel, nivelListo } = useSesion();
   const conSesion = estadoSesion === "ok";
+  // Adherir es de Miembro en adelante; Explorador y sin cuenta ven "Sumate para adherir".
+  const puedeAdherir = conSesion && puedeCapacidad(nivel, "adherir");
   const { estado, cargado, falloAlmacen, aceptar } = useMembresia(comunidad, conSesion);
   const [mensaje, setMensaje] = useState("");
   const aviso = useRef<HTMLParagraphElement>(null);
@@ -47,18 +50,18 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
     }
   }, [estado]);
 
-  // Sin sesión se puede leer el manifiesto, pero adherir pide entrar. Mientras se verifica la sesión no se muestra ningún botón.
-  if (!conSesion && estadoSesion !== "cargando") {
+  // Sin ser Miembro se puede leer el manifiesto, pero adherir pide sumarse. Mientras se verifica la sesión no se muestra ningún botón.
+  if (!puedeAdherir && estadoSesion !== "cargando" && !(conSesion && !nivelListo)) {
     return (
       <div className="grid gap-2">
         <div className="flex flex-wrap gap-3">
           <Link className={SUAVE} href={manifiesto}>
             Leer el manifiesto {de}
           </Link>
-          <EntrarPara texto="Entrá para adherir" clase={DORADO} />
+          <EntrarPara texto="Sumate para adherir" clase={DORADO} nivelMinimo="miembro" />
           {extra}
         </div>
-        <p className="text-sm text-muted">Podés leer el manifiesto sin cuenta. Para adherir, entrá primero.</p>
+        <p className="text-sm text-muted">Podés leer el manifiesto sin cuenta. Para adherir, sumate como Miembro.</p>
       </div>
     );
   }

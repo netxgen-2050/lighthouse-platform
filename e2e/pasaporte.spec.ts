@@ -18,6 +18,10 @@ async function llenarPasos(dialogo: Locator, residencia: "Argentina" | "Exterior
   await sig.click();
 }
 
+test.describe("una persona que recién se suma", () => {
+  // Quien se suma gratis es Explorador: todavía no eligió ni el plan Miembro ni el Pase.
+  test.use({ plan: "explorador" });
+
 test("una persona nueva: Explorador/a obtenido con fecha y los demás con su botón o enlace", async ({ page }) => {
   const r = await page.goto("/pasaporte");
   expect(r?.status()).toBe(200);
@@ -38,6 +42,7 @@ test("una persona nueva: Explorador/a obtenido con fecha y los demás con su bot
   for (const li of await page.locator("[data-sello]").all()) {
     await expect(li).toContainText(/Obtenido|En trámite|Disponible|No disponible todavía/);
   }
+});
 });
 
 test("cada sello dice qué abre: el Pase Fundador abre canal de fundadores, voz en el Fondo Común y créditos", async ({ page }) => {

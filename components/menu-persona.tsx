@@ -6,7 +6,9 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { UserRound } from "lucide-react";
 import { CLAVES } from "@/lib/demo/claves";
 import { cargarPerfil, iniciales } from "@/lib/perfil/modelo";
+import { ETIQUETA_NIVEL } from "@/lib/permisos/niveles";
 import { esActivo } from "@/lib/ruta-activa";
+import { buscarTribu } from "@/lib/tribus/datos";
 import { inicialesDeEmail } from "@/lib/sesion/iniciales";
 import { useSesion } from "./sesion/contexto";
 
@@ -25,29 +27,32 @@ function inicialesGuardadas(): string {
   }
 }
 
+const BOTON_SUMARTE =
+  "flex h-9 items-center rounded-full bg-gold px-4 text-sm font-bold text-ink hover:bg-gold-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 const BOTON_ENTRAR =
-  "flex h-9 items-center rounded-full bg-deep px-4 text-sm font-medium text-on-deep hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
+  "flex h-9 items-center rounded-full border border-muted px-4 text-sm font-medium hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
-/** Sin sesión, la barra muestra "Entrar"; con sesión, el avatar con su menú. */
+/** Sin sesión, la barra muestra "Sumarte" (destacado) y "Entrar" (para quien ya tiene cuenta); con sesión, el avatar con su menú. */
 export function MenuPersona({ items }: { items: ItemMenu[] }) {
   const { estado, entrar } = useSesion();
   if (estado === "ok") return <MenuConSesion items={items} />;
   if (estado === "cargando") return null;
   if (estado === "sin-acceso") return null;
   return (
-    <button
-      type="button"
-      className={BOTON_ENTRAR}
-      onClick={entrar}
-    >
-      Entrar
-    </button>
+    <>
+      <Link href="/sumarte" className={BOTON_SUMARTE}>
+        Sumarte
+      </Link>
+      <button type="button" className={BOTON_ENTRAR} onClick={entrar}>
+        Entrar
+      </button>
+    </>
   );
 }
 
 /** Avatar de la persona (iniciales del perfil, del nombre de la cuenta o del email) con el menú Perfil / Pasaporte / Mi recorrido / Configuración / Salir. */
 function MenuConSesion({ items }: { items: ItemMenu[] }) {
-  const { sesion, nombre, salir } = useSesion();
+  const { sesion, nombre, salir, nivel, tribuLider } = useSesion();
   const ruta = usePathname();
   const [abierto, setAbierto] = useState(false);
   const [rutaAbierta, setRutaAbierta] = useState(ruta);
@@ -119,7 +124,10 @@ function MenuConSesion({ items }: { items: ItemMenu[] }) {
           <ul className="flex flex-col gap-1">
             <li className="px-2 pb-1">
               <p className="break-all text-xs text-muted">{sesion?.email}</p>
-              {sesion?.tribuAdmin === "valle" && <p className="mt-1 text-xs font-bold">Admin de Valle Solar</p>}
+              <p className="mt-1 text-xs text-muted">Nivel: {ETIQUETA_NIVEL[nivel]}</p>
+              {tribuLider && buscarTribu(tribuLider) && (
+                <p className="mt-1 text-xs font-bold">Admin de {buscarTribu(tribuLider)?.nombre}</p>
+              )}
             </li>
             {items.map((i) => {
               const activo = esActivo(i.href, ruta);

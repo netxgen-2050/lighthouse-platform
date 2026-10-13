@@ -26,8 +26,20 @@ describe("resolverSesion", () => {
     expect(r.estado).toBe(401);
   });
 
-  it("403 si el email no está en la lista", async () => {
-    const r = await resolverSesion({ authorization: "Bearer ok", prueba: null }, personas, {}, cliente("otra@x.com"));
+  it("acceso abierto: un email que no está en LH_PERSONAS entra como persona común", async () => {
+    const r = await resolverSesion({ authorization: "Bearer ok", prueba: null }, personas, {}, cliente("Otra@x.com"));
+    expect(r).toMatchObject({ estado: 200, persona: { email: "otra@x.com", rol: "persona", tribuAdmin: null } });
+  });
+
+  it("LH_ACCESO=lista: un email que no está en la lista no entra", async () => {
+    const r = await resolverSesion({ authorization: "Bearer ok", prueba: null }, personas, { LH_ACCESO: "lista" }, cliente("otra@x.com"));
+    expect(r.estado).toBe(403);
+    const ok = await resolverSesion({ authorization: "Bearer ok", prueba: null }, personas, { LH_ACCESO: "lista" }, cliente("ana@x.com"));
+    expect(ok.estado).toBe(200);
+  });
+
+  it("403 si la cuenta no tiene un email válido", async () => {
+    const r = await resolverSesion({ authorization: "Bearer ok", prueba: null }, personas, {}, cliente(null));
     expect(r.estado).toBe(403);
   });
 
@@ -48,8 +60,9 @@ describe("resolverSesion", () => {
     expect((await resolverSesion(h, personas, { LH_AUTH_PRUEBA: "1", VERCEL_ENV: "production" }, () => null)).estado).toBe(401);
   });
 
-  it("el modo de prueba también respeta la lista", async () => {
+  it("el modo de prueba también tiene acceso abierto y respeta LH_ACCESO=lista", async () => {
     const h = { authorization: null, prueba: "otra@x.com" };
-    expect((await resolverSesion(h, personas, { LH_AUTH_PRUEBA: "1" }, () => null)).estado).toBe(403);
+    expect((await resolverSesion(h, personas, { LH_AUTH_PRUEBA: "1" }, () => null)).estado).toBe(200);
+    expect((await resolverSesion(h, personas, { LH_AUTH_PRUEBA: "1", LH_ACCESO: "lista" }, () => null)).estado).toBe(403);
   });
 });

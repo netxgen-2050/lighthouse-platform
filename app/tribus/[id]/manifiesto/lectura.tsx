@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSesion } from "@/components/sesion/contexto";
 import { EntrarPara } from "@/components/sesion/entrar-para";
+import { puedeCapacidad } from "@/lib/permisos/niveles";
 import { TerminoLegal } from "@/components/termino-legal";
 import { registrarEvento } from "@/lib/actividad/almacen";
 import { EVENTOS } from "@/lib/actividad/eventos";
@@ -19,8 +20,10 @@ const SUAVE = `${BOTON} border border-muted hover:bg-surface-2`;
 const HUELGA = 8; // píxeles de tolerancia para dar por llegado al final
 
 export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manifiesto; pactos: boolean }) {
-  const { estado: estadoSesion } = useSesion();
+  const { estado: estadoSesion, nivel, nivelListo } = useSesion();
   const conSesion = estadoSesion === "ok";
+  // Adherir es de Miembro en adelante; Explorador y sin cuenta ven "Sumate para adherir".
+  const puedeAdherir = conSesion && puedeCapacidad(nivel, "adherir");
   const { estado, cargado, falloAlmacen, adherir, aceptar } = useMembresia(m.id, conSesion);
   const esLighthouse = m.id === COMUNIDAD_LIGHTHOUSE;
   const texto = useRef<HTMLDivElement>(null);
@@ -104,11 +107,11 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
       </p>
       {textoGuardado && <p className="mt-4 font-medium">{textoGuardado}</p>}
 
-      {!conSesion ? (
-        estadoSesion === "cargando" ? null : (
+      {!puedeAdherir ? (
+        estadoSesion === "cargando" || (conSesion && !nivelListo) ? null : (
           <div className="mt-4 grid gap-3 rounded-xl border border-faint bg-surface-2 p-4">
-            <p className="text-sm">Podés leer el manifiesto sin cuenta. Para adherir, entrá primero.</p>
-            <EntrarPara texto="Entrá para adherir" />
+            <p className="text-sm">Podés leer el manifiesto sin cuenta. Para adherir, sumate como Miembro.</p>
+            <EntrarPara texto="Sumate para adherir" nivelMinimo="miembro" />
           </div>
         )
       ) : !cargado ? null : estado === "no-miembro" ? (

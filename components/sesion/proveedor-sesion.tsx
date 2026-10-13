@@ -1,8 +1,10 @@
 "use client";
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { CLAVE_ULTIMA_PERSONA, establecerPersona } from "@/lib/demo/claves";
+import { calcularNivel, EVENTO_NIVEL, leerEstadoGuardado } from "@/lib/sesion/nivel";
+import { INICIAL, type EstadoSumarte } from "@/lib/sumarte/estado";
 import { ContextoSesion, type EstadoSesion, type PrivyMinimo, type SesionCliente, type ValorSesion } from "./contexto";
 
 /**
@@ -109,28 +111,50 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
     }
   }, [idPersona]);
 
-  // Sin Privy no hay ventana de login: "Entrar" en una página pública muestra la pantalla de entrada sobre la misma URL
-  // (vale solo para esa ruta). Al entrar, la persona sigue donde estaba.
-  const [pidiendo, setPidiendo] = useState<string | null>(null);
+  // Lo que la persona eligió en Sumarte define su nivel. Se lee del navegador (con el prefijo de la persona) al entrar y
+  // cada vez que Sumarte avisa un cambio. `id` dice de qué persona es lo leído, para no usar lo de la anterior.
+  const [guardado, setGuardado] = useState<{ id: string; estado: EstadoSumarte } | null>(null);
+  useEffect(() => {
+    if (!idPersona) {
+      setGuardado(null);
+      return;
+    }
+    const cargar = () => {
+      let estado = INICIAL;
+      try {
+        estado = leerEstadoGuardado(window.localStorage);
+      } catch {
+        // Sin almacenamiento queda el nivel mínimo.
+      }
+      setGuardado({ id: idPersona, estado });
+    };
+    cargar();
+    window.addEventListener(EVENTO_NIVEL, cargar);
+    window.addEventListener("storage", cargar);
+    return () => {
+      window.removeEventListener(EVENTO_NIVEL, cargar);
+      window.removeEventListener("storage", cargar);
+    };
+  }, [idPersona]);
+
+  const nivelListo = resultado.estado !== "ok" || (guardado !== null && guardado.id === idPersona);
+  const { nivel, tribuLider } = calcularNivel(
+    guardado && guardado.id === idPersona ? guardado.estado : INICIAL,
+    resultado.estado === "ok" && resultado.sesion ? resultado.sesion : null,
+  );
+
+  const router = useRouter();
   const ruta = usePathname();
-  const [rutaVista, setRutaVista] = useState(ruta);
-  // Al navegar, el pedido de entrar se descarta: volver a esta página después no vuelve a abrir la pantalla de entrada.
-  if (rutaVista !== ruta) {
-    setRutaVista(ruta);
-    setPidiendo(null);
-  }
 
   const entrarComo = useCallback((email: string) => {
     document.cookie = `${COOKIE_PRUEBA}=${encodeURIComponent(email)}; path=/; SameSite=Lax`;
     setPrueba(email);
-    setPidiendo(null);
   }, []);
 
   const logout = privy?.logout;
   const salir = useCallback(async () => {
     document.cookie = `${COOKIE_PRUEBA}=; path=/; max-age=0; SameSite=Lax`;
     setPrueba(null);
-    setPidiendo(null);
     setResultado({ estado: "sin-sesion", sesion: null });
     try {
       // Sin persona recordada, el script de tema no pinta con las preferencias de quien acaba de salir.
@@ -161,23 +185,25 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       nombre: privy?.nombre ?? null,
       billetera: privy?.billetera ?? null,
       privyDisponible: privy !== null,
-      // Sin Privy no hay ventana de login: se muestra la pantalla de entrada en esta página. El contenido cambia y el botón
-      // apretado desaparece, así que el foco pasa al contenido (que no se desmonta) para que el Tab no arranque desde el inicio.
+      // Sin Privy no hay ventana de login: se lleva a Sumarte, que ofrece "Entrar como…" (modo de prueba). Desde Sumarte el
+      // botón no navega: avisa y se queda (el panel ya está en la página).
       entrar: () => {
         if (login) return login();
-        setPidiendo(ruta);
-        document.getElementById("contenido")?.focus();
-      },
-      pidiendoEntrar: pidiendo === ruta,
-      cancelarEntrar: () => {
-        setPidiendo(null);
-        document.getElementById("contenido")?.focus();
+        if (ruta === "/sumarte") {
+          document.getElementById("entrar-como")?.scrollIntoView?.({ block: "center" });
+          document.getElementById("entrar-como")?.focus();
+          return;
+        }
+        router.push(`/sumarte?volver=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}#entrar-como`);
       },
       entrarComo,
+      nivel,
+      nivelListo,
+      tribuLider,
       salir,
       cabeceras,
     }),
-    [resultado, prueba, privy, login, ruta, pidiendo, entrarComo, salir, cabeceras],
+    [resultado, prueba, privy, login, ruta, router, entrarComo, nivel, nivelListo, tribuLider, salir, cabeceras],
   );
 
   return (

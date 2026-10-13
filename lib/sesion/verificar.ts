@@ -1,4 +1,4 @@
-import { buscarPersona, modoPruebaActivo, normalizarEmail, type Persona } from "./personas";
+import { modoPruebaActivo, normalizarEmail, personaConAcceso, type Persona } from "./personas";
 
 /** Lo mínimo que usamos del cliente de Privy en el servidor (se simula en los tests). */
 export type ClientePrivy = {
@@ -10,14 +10,15 @@ export type ClientePrivy = {
   }>;
 };
 
-export type Entorno = { LH_AUTH_PRUEBA?: string; VERCEL_ENV?: string };
+export type Entorno = { LH_AUTH_PRUEBA?: string; VERCEL_ENV?: string; LH_ACCESO?: string };
 
 export type Resultado =
   | { estado: 200; persona: Persona; idPersona: string; nombre?: string }
   | { estado: 401 | 403 | 503 };
 
 /**
- * Decide quién es la persona que pide. 401 sin sesión o con token inválido, 403 si el email no está en la lista,
+ * Decide quién es la persona que pide. Acceso abierto: cualquier email verificado entra (con los ajustes de `personas` si
+ * los tiene). 401 sin sesión o con token inválido, 403 si no hay email válido o, con `LH_ACCESO=lista`, si no está en la lista,
  * 503 si el servidor no tiene Privy configurado. El header de prueba solo vale con `modoPruebaActivo`.
  */
 export async function resolverSesion(
@@ -28,7 +29,7 @@ export async function resolverSesion(
 ): Promise<Resultado> {
   if (cabeceras.prueba && modoPruebaActivo(entorno)) {
     const email = normalizarEmail(cabeceras.prueba);
-    const persona = buscarPersona(personas, email);
+    const persona = personaConAcceso(personas, email, entorno);
     // En el modo de prueba el "id de Privy" es el email, para que los datos queden separados por persona.
     return persona ? { estado: 200, persona, idPersona: `prueba:${email}` } : { estado: 403 };
   }
@@ -47,7 +48,7 @@ export async function resolverSesion(
     return { estado: 401 };
   }
   const email = usuario.email?.address ?? usuario.google?.email ?? null;
-  const persona = buscarPersona(personas, email);
+  const persona = personaConAcceso(personas, email, entorno);
   if (!persona) return { estado: 403 };
   return { estado: 200, persona, idPersona: usuario.id };
 }

@@ -1,4 +1,4 @@
-/** Lista de acceso del prototipo: viene de la variable de entorno `LH_PERSONAS` (solo servidor, nunca en el repo). */
+/** Ajustes por email del prototipo (super admin, nivel asignado de antemano): vienen de la variable de entorno `LH_PERSONAS` (solo servidor, nunca en el repo). */
 
 export const ROLES_SESION = ["superadmin", "admin-tribu", "persona"] as const;
 export const PERFILES_PRUEBA = ["usuario", "inversor", "comunidad"] as const;
@@ -59,6 +59,23 @@ export function buscarPersona(personas: Persona[], email: string | null | undefi
   if (!email) return null;
   const e = normalizarEmail(email);
   return personas.find((p) => p.email === e) ?? null;
+}
+
+/**
+ * Acceso abierto: quien se registra con un email válido entra como persona común (Explorador como mínimo) aunque no esté en
+ * `LH_PERSONAS`, que solo ajusta emails puntuales. Con `LH_ACCESO=lista` vuelve la lista cerrada (solo entran los de la lista).
+ */
+export function personaConAcceso(
+  personas: Persona[],
+  email: string | null | undefined,
+  entorno: { LH_ACCESO?: string },
+): Persona | null {
+  const ajustada = buscarPersona(personas, email);
+  if (ajustada) return ajustada;
+  if (entorno.LH_ACCESO?.trim().toLowerCase() === "lista" || !email) return null;
+  const limpio = normalizarEmail(email);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(limpio)) return null;
+  return { email: limpio, rol: "persona", perfil: "usuario", tribuAdmin: null };
 }
 
 /** El modo de prueba solo existe fuera de producción de Vercel y con `LH_AUTH_PRUEBA=1`. */

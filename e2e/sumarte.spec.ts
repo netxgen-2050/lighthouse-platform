@@ -112,11 +112,15 @@ test("teclado: se puede activar el pase solo con teclado", async ({ page }) => {
   await expect(page.getByText("Pase Brote activo (simulado)")).toBeFocused();
 });
 
-test("teclado: Sumar mi tribu deja el foco en el aviso, que se guarda al recargar", async ({ page }) => {
+test("teclado: elegir la tribu con el Plan Tribu deja el foco en el aviso, que se guarda al recargar", async ({ page }) => {
   await page.goto("/sumarte");
   await page.getByRole("button", { name: "Sumar mi tribu" }).focus();
   await page.keyboard.press("Enter");
-  const aviso = page.getByText("Alta del Plan Tribu pedida (simulado)");
+  await page.getByRole("radio", { name: /Valle Solar/ }).focus();
+  await page.keyboard.press("Space");
+  await page.getByRole("button", { name: "Ser líder de esta tribu" }).focus();
+  await page.keyboard.press("Enter");
+  const aviso = page.getByText("Sos líder de Valle Solar (simulado)");
   await expect(aviso).toBeFocused();
   await page.reload();
   await expect(aviso).toBeVisible();

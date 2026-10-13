@@ -32,6 +32,20 @@ Los tres pases (`semilla`, `brote`, `raiz`) abren lo mismo.
 
 **Decisión del 7-oct-2026 (Gus):** todas las tribus pertenecen al Lighthouse, que es común a todas. Ser residente abre lo que es de todo el Lighthouse (foros de la red, Asamblea de residentes), pero **no** abre salas ni voz de tribus: a una tribu se entra siendo miembro aceptado de ella, y quien es miembro de más de una tribu entra a cada una de ellas. La nota 18 §3 decía "✓" para residentes en esas dos filas; la nota se tiene que actualizar.
 
+## Niveles de acceso (`niveles.ts`)
+
+Otra mirada, la de la navegación: cómo se suma la persona en Sumarte define qué puede abrir. Cada nivel incluye al anterior.
+
+| Nivel | Cómo se llega | Suma |
+|---|---|---|
+| Sin cuenta | no se registró | Descubrir (Inicio, Territorio, Tribus) y Sumarte |
+| Explorador | se suma gratis | Hifa, Congreso, espacio personal (Perfil, Pasaporte, Mi recorrido, Bandeja, Configuración) y Reportar |
+| Miembro | plan Miembro o Pase Fundador | Participar (Pactos, Semillas, Fogón, Compromisos) y adherir a tribus |
+| Líder de tribu | Plan Tribu y la tribu elegida | admin de su tribu |
+| Super admin | solo `LH_PERSONAS` | NetX y todo lo demás |
+
+`puedeCapacidad(nivel, capacidad)` y `puedeRuta(nivel, ruta)` responden; el rail, la puerta de cada página y las acciones "Sumate para…" las consultan. El nivel sale de `lib/sesion/nivel.ts` (hoy en el navegador, con el prefijo de la persona; lo guarda la base con `base-neon`).
+
 ## A decidir
 
 - Refuerzo de la voz por presencia en el Fondo Común (la nota dice "×1,5 a ×2 con tope"): se devuelve `refuerzoPresencia: "a decidir"`, nunca un número.

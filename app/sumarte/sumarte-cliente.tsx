@@ -2,15 +2,35 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { KycDialogo } from "@/components/kyc-dialogo";
 import { Medidor } from "@/components/medidor";
 import { PedidoContacto } from "@/components/pedido-contacto";
+import { useSesion } from "@/components/sesion/contexto";
+import { EntrarComo } from "@/components/sesion/entrar-como";
 import { TerminoLegal } from "@/components/termino-legal";
+import {
+  alcanza,
+  avisoDeNivel,
+  avisoDeRuta,
+  nivelDeParametro,
+  nivelMinimoDeRuta,
+  type Nivel,
+} from "@/lib/permisos/niveles";
+import {
+  aplicarAcciones,
+  CLAVE_PENDIENTE,
+  guardarEstado,
+  guardarPendiente,
+  leerEstadoGuardado,
+  leerPendiente,
+} from "@/lib/sesion/nivel";
+import { buscarTribu, listarTribus } from "@/lib/tribus/datos";
+import { TEXTO_ESTADO } from "@/lib/tribus/tipos";
 import { guardarPedido } from "@/lib/contactos/almacen";
 import type { Pedido } from "@/lib/contactos/tipos";
 import { usePreferencias } from "@/lib/configuracion/almacen";
 import { formatearMonto, NOTA_TIPO_DE_CAMBIO, TIPO_DE_CAMBIO } from "@/lib/configuracion/preferencias";
-import { CLAVES } from "@/lib/demo/claves";
 import {
   COHORT,
   EMISION,
@@ -21,7 +41,7 @@ import {
   type NivelPase,
 } from "@/lib/sumarte/datos";
 import { useKyc } from "@/lib/pasaporte/usar-kyc";
-import { INICIAL, leer, reducir, type Accion, type EstadoSumarte } from "@/lib/sumarte/estado";
+import { INICIAL, reducir, type Accion, type EstadoSumarte } from "@/lib/sumarte/estado";
 
 // Todo queda solo en este navegador: no hay pedidos de red ni cobros.
 
@@ -35,25 +55,69 @@ const BORDE = "border-faint";
 const BORDE_ACTUAL = "border-2 border-deep";
 const ETIQUETA_ACTUAL = "w-fit rounded-full border border-deep bg-green-soft px-3 py-1 text-sm font-medium text-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
-export function SumarteCliente() {
+const ACCIONES_DE_PLAN: readonly Accion["tipo"][] = ["plan", "pase", "tribu"];
+
+export function SumarteCliente({ volver, para }: { volver: string | null; para: string | null }) {
+  const router = useRouter();
+  const { estado: estadoSesion, nivel: nivelCuenta, nivelListo, tribuLider, entrar } = useSesion();
+  const conSesion = estadoSesion === "ok";
   const [estado, setEstado] = useState<EstadoSumarte>(INICIAL);
   const [listo, setListo] = useState(false);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [formulario, setFormulario] = useState<"invitacion" | "charla" | null>(null);
   const [dialogoKyc, setDialogoKyc] = useState(false);
+  // Elección de la tribu que se va a liderar con el Plan Tribu ("" = todavía no eligió; "nueva" = proponer una tribu nueva).
+  const [eligiendoTribu, setEligiendoTribu] = useState(false);
+  const [tribuElegida, setTribuElegida] = useState("");
   const kyc = useKyc();
   const { moneda } = usePreferencias();
   const foco = useRef<string | null>(null);
 
+  // Nivel que hace falta para lo que se quería abrir (la página, o la acción que pidió sumarse).
+  const requerido: Nivel | null = nivelDeParametro(para) ?? (volver ? nivelMinimoDeRuta(volver) : null);
+  const volverAlLugar = volver && !volver.startsWith("/sumarte") ? volver : null;
+  const faltaNivel = requerido !== null && requerido !== "sin-cuenta" && !alcanza(nivelCuenta, requerido);
+  const aviso = !volverAlLugar || !faltaNivel ? null : para ? avisoDeNivel(requerido!) : avisoDeRuta(volverAlLugar);
+
   useEffect(() => {
-    // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
+    // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor). Sin sesión no se lee ni se guarda nada.
+    if (!conSesion) {
+      setEstado(INICIAL);
+      setListo(true);
+      return;
+    }
+    let leido = INICIAL;
     try {
-      setEstado(leer(window.localStorage.getItem(CLAVES.sumarte)));
+      leido = leerEstadoGuardado(window.localStorage);
     } catch {
       setFalloAlmacen(true);
     }
+    // Si la persona eligió un plan antes de registrarse, se aplica ahora que ya tiene cuenta.
+    let pendiente: Accion[] = [];
+    try {
+      pendiente = leerPendiente(window.sessionStorage);
+    } catch {
+      // Sin almacenamiento de la pestaña no hay pedido que aplicar.
+    }
+    if (pendiente.length > 0) {
+      try {
+        window.sessionStorage.removeItem(CLAVE_PENDIENTE);
+      } catch {
+        // Si no se puede borrar, se vuelve a aplicar lo mismo: el resultado es igual.
+      }
+      leido = aplicarAcciones(leido, pendiente);
+      if (!guardarEstado(window.localStorage, leido)) setFalloAlmacen(true);
+      // Propuso una tribu nueva: sigue en la postulación de un barrio vacante.
+      if (pendiente.some((a) => a.tipo === "tribu" && !a.tribuId)) router.push("/tribus#sec-vacantes");
+    }
+    setEstado(leido);
     setListo(true);
-  }, []);
+  }, [conSesion, router]);
+
+  // Con el nivel que hacía falta, vuelve a donde la persona estaba (por ejemplo, la página que abrió por dirección).
+  useEffect(() => {
+    if (conSesion && nivelListo && listo && volverAlLugar && requerido && alcanza(nivelCuenta, requerido)) router.replace(volverAlLugar);
+  }, [conSesion, nivelListo, listo, volverAlLugar, requerido, nivelCuenta, router]);
 
   // Tras un cambio, el botón que se apretó puede desaparecer: el foco pasa al estado nuevo.
   useEffect(() => {
@@ -62,18 +126,46 @@ export function SumarteCliente() {
     foco.current = null;
   }, [estado]);
 
+  /**
+   * Sin cuenta, elegir un plan abre el registro (Privy, o "Entrar como…" en el modo de prueba): lo elegido queda pendiente
+   * en esta pestaña y se aplica al volver con la cuenta. La facturación y el nivel del pase solo mueven la pantalla.
+   */
   function dispatch(accion: Accion, enfocar?: string): boolean {
+    if (!conSesion) {
+      if (accion.tipo === "facturacion" || accion.tipo === "nivel") {
+        setEstado(reducir(estado, accion));
+        return true;
+      }
+      const acciones: Accion[] = accion.tipo === "pase" ? [{ tipo: "nivel", nivel: estado.nivelPase }, accion] : [accion];
+      try {
+        guardarPendiente(window.sessionStorage, ACCIONES_DE_PLAN.includes(accion.tipo) ? acciones : []);
+      } catch {
+        // Sin almacenamiento de la pestaña, la persona tendrá que volver a elegir al registrarse.
+      }
+      entrar();
+      return true;
+    }
     const siguiente = reducir(estado, accion);
-    try {
-      window.localStorage.setItem(CLAVES.sumarte, JSON.stringify(siguiente));
-      setFalloAlmacen(false);
-    } catch {
+    if (!guardarEstado(window.localStorage, siguiente)) {
       setFalloAlmacen(true);
       return false;
     }
+    setFalloAlmacen(false);
     foco.current = enfocar ?? null;
     setEstado(siguiente);
     return true;
+  }
+
+  const tribusParaLiderar = listarTribus().filter((t) => t.estado === "activa" || t.estado === "formacion");
+
+  function confirmarTribu() {
+    if (tribuElegida === "") return;
+    const nueva = tribuElegida === "nueva";
+    const ok = dispatch({ tipo: "tribu", tribuId: nueva ? null : tribuElegida }, "tribu");
+    if (!ok) return;
+    setEligiendoTribu(false);
+    // Una tribu nueva se arma desde la postulación de un barrio vacante (con sesión; sin sesión se sigue al registrarse).
+    if (nueva && conSesion) router.push("/tribus#sec-vacantes");
   }
 
   // El pedido se guarda primero; recién ahí se hace lo que el botón hacía antes.
@@ -87,14 +179,35 @@ export function SumarteCliente() {
   const paseActivo = estado.pase ? PASSES.find((p) => p.id === estado.pase)! : null;
   // Con un pase activo, la tarjeta muestra siempre el nivel activado (no se puede cambiar sin deshacerlo).
   const nivel = paseActivo ?? PASSES.find((p) => p.id === estado.nivelPase)!;
-  const esExplorador = estado.plan === "explorador";
-  const esMiembro = estado.plan === "miembro";
-  const nombrePlan = paseActivo ? `Pase Fundador ${paseActivo.nombre}` : esMiembro ? "Miembro" : "Explorador";
+  // Sin cuenta ningún plan está elegido: las tarjetas no marcan "tu plan".
+  const esLider = conSesion && estado.tribu;
+  const esExplorador = conSesion && estado.plan === "explorador";
+  const esMiembro = conSesion && estado.plan === "miembro" && !estado.tribu;
+  const tribuLiderada = esLider && estado.tribuId ? buscarTribu(estado.tribuId) : undefined;
+  const nombrePlan = esLider
+    ? "Líder de tribu"
+    : paseActivo
+      ? `Pase Fundador ${paseActivo.nombre}`
+      : esMiembro
+        ? "Miembro"
+        : "Explorador";
   const sumaInvitacion = estado.invitacion ? 1 : 0;
   const factorMoneda = moneda === "ARS" ? TIPO_DE_CAMBIO : 1;
 
   return (
     <div className="grid gap-6">
+      {aviso && (
+        <p role="status" className="rounded-lg border border-gold-ink bg-gold-soft px-4 py-3 text-sm font-medium">
+          {aviso} Elegí un plan para sumarte{volverAlLugar ? " y volvemos a donde estabas" : ""}.
+        </p>
+      )}
+      {!conSesion && listo && (
+        <p className="max-w-2xl text-sm">
+          Al elegir un plan te registrás o entrás con tu email o con Google, sin salir de esta página. Si ya tenés cuenta, usá
+          &quot;Entrar&quot; arriba.
+        </p>
+      )}
+      <EntrarComo />
       {falloAlmacen && (
         <p role="alert" className="text-sm font-medium text-danger">
           Error: tu navegador no permite guardar datos en este sitio, así que la elección no se puede guardar. Revisá la configuración de privacidad o probá en otro navegador.
@@ -118,9 +231,13 @@ export function SumarteCliente() {
         </div>
         <p className="text-sm text-muted" aria-live="polite">
           {listo ? (
-            <>
-              Tu plan actual: <b>{nombrePlan}</b> (simulado)
-            </>
+            conSesion ? (
+              <>
+                Tu plan actual: <b>{nombrePlan}</b> (simulado)
+              </>
+            ) : (
+              "Todavía no te sumaste: elegí un plan."
+            )
           ) : null}
         </p>
       </div>
@@ -142,12 +259,13 @@ export function SumarteCliente() {
             <li>Entrevista con el agente</li>
             <li>Eventos abiertos</li>
             <li>Registro de tu ticket del Congreso</li>
+            <li>Hifa, Congreso y tu espacio personal</li>
           </ul>
           {esExplorador ? (
             <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="plan-explorador">Tu plan (simulado)</p>
           ) : (
             <button type="button" className={BOTON_SUAVE} onClick={() => dispatch({ tipo: "plan", plan: "explorador" }, "plan-explorador")}>
-              Volver a Explorador
+              {conSesion ? "Volver a Explorador" : "Sumarme gratis"}
             </button>
           )}
         </article>
@@ -247,7 +365,7 @@ export function SumarteCliente() {
           <p className="text-sm text-muted">No es una inversión: no da tierra, lotes, prioridad ni rendimiento, y no se revende.</p>
         </article>
 
-        <article aria-labelledby="plan-tribu" className={`${TARJETA} ${BORDE}`}>
+        <article aria-labelledby="plan-tribu" className={`${TARJETA} ${esLider ? BORDE_ACTUAL : BORDE}`}>
           <h2 id="plan-tribu" className="text-xl font-semibold">
             Plan Tribu
             <TerminoLegal clave="plantribu" />
@@ -263,10 +381,69 @@ export function SumarteCliente() {
             <li>Salas y canales propios</li>
             <li>Ritual de entrada configurable</li>
           </ul>
-          {estado.tribu ? (
-            <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="tribu">Alta del Plan Tribu pedida (simulado)</p>
+          <p className="text-sm">
+            Al elegirlo sos líder de tu tribu: todo lo de Miembro y la administración de la tribu que elijas. Cobro simulado, sin
+            aprobación todavía.
+          </p>
+          {esLider && !eligiendoTribu ? (
+            <>
+              <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="tribu">
+                {tribuLiderada
+                  ? `Sos líder de ${tribuLiderada.nombre} (simulado)`
+                  : "Tu tribu nueva está por proponerse (simulado)"}
+              </p>
+              <button type="button" className={BOTON_SUAVE} onClick={() => setEligiendoTribu(true)}>
+                Cambiar de tribu
+              </button>
+              {!tribuLiderada && (
+                <Link className="w-fit text-sm underline" href="/tribus#sec-vacantes">
+                  Elegir un barrio vacante para proponerla
+                </Link>
+              )}
+            </>
+          ) : eligiendoTribu ? (
+            <fieldset className="grid gap-2">
+              <legend className="mb-1 text-sm font-medium">¿Qué tribu vas a liderar?</legend>
+              {tribusParaLiderar.map((t) => (
+                <label key={t.id} className="flex cursor-pointer items-center gap-2 text-sm has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-deep">
+                  <input
+                    type="radio"
+                    name="tribu-a-liderar"
+                    value={t.id}
+                    checked={tribuElegida === t.id}
+                    onChange={() => setTribuElegida(t.id)}
+                  />
+                  {t.nombre} <span className="text-muted">({TEXTO_ESTADO[t.estado]})</span>
+                </label>
+              ))}
+              <label className="flex cursor-pointer items-center gap-2 text-sm has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-deep">
+                <input
+                  type="radio"
+                  name="tribu-a-liderar"
+                  value="nueva"
+                  checked={tribuElegida === "nueva"}
+                  onChange={() => setTribuElegida("nueva")}
+                />
+                Proponer una tribu nueva
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" className={BOTON_PRIMARIO} disabled={tribuElegida === ""} onClick={confirmarTribu}>
+                  Ser líder de esta tribu
+                </button>
+                <button type="button" className={BOTON_SUAVE} onClick={() => setEligiendoTribu(false)}>
+                  Cancelar
+                </button>
+              </div>
+            </fieldset>
           ) : (
-            <button type="button" className={BOTON_SUAVE} onClick={() => dispatch({ tipo: "tribu" }, "tribu")}>
+            <button
+              type="button"
+              className={BOTON_SUAVE}
+              onClick={() => {
+                setTribuElegida(tribuLider ?? "");
+                setEligiendoTribu(true);
+              }}
+            >
               Sumar mi tribu
             </button>
           )}
@@ -334,6 +511,8 @@ export function SumarteCliente() {
                 aria-expanded={formulario === "invitacion"}
                 className={BOTON_PRIMARIO}
                 onClick={() => {
+                  // Sin cuenta, primero hay que registrarse.
+                  if (!conSesion) return entrar();
                   // Sin el sello de identidad, primero se ofrece la verificación.
                   if (kyc.verificada) setFormulario("invitacion");
                   else setDialogoKyc(true);
@@ -373,7 +552,7 @@ export function SumarteCliente() {
                 type="button"
                 aria-expanded={formulario === "charla"}
                 className={BOTON_SUAVE}
-                onClick={() => setFormulario("charla")}
+                onClick={() => (conSesion ? setFormulario("charla") : entrar())}
               >
                 Pedir una charla
               </button>
