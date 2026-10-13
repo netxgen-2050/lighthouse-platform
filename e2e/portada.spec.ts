@@ -137,12 +137,14 @@ test("sin utm_* no se guarda nada", async ({ page }) => {
   expect(await leerOrigenGuardado(page)).toBeNull();
 });
 
-test("un parámetro no permitido se descarta y los valores quedan limpios", async ({ page }) => {
-  await page.goto("/?utm_source=ig&email=ana@ejemplo.com&utm_campaign=%3Cscript%3EPromo%20Feb%3C/script%3E");
+test("un parámetro no permitido se descarta y los valores del origen se guardan tal cual", async ({ page }) => {
+  await page.goto("/?utm_source=ana@ejemplo.com&email=otra@ejemplo.com&utm_campaign=Promo%20Feb%202027");
   await expect.poll(() => leerOrigenGuardado(page)).not.toBeNull();
   const crudo = (await leerOrigenGuardado(page)) ?? "";
-  expect(crudo).not.toContain("ana@ejemplo.com");
+  // El parámetro email= no es de origen: se descarta.
+  expect(crudo).not.toContain("otra@ejemplo.com");
   const o = JSON.parse(crudo);
-  expect(o.fuente).toBe("ig");
-  expect(o.campana).toMatch(/^[a-z0-9._-]+$/);
+  // Los valores de los utm se guardan sin filtros (decisión de Gus, 13-oct).
+  expect(o.fuente).toBe("ana@ejemplo.com");
+  expect(o.campana).toBe("Promo Feb 2027");
 });

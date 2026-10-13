@@ -33,12 +33,16 @@ Si la portada se abre con `utm_source`, `utm_medium` o `utm_campaign`, el sistem
 - **WHEN** la persona abre `/` o `/?camino=perfil` sin ningún `utm_*`
 - **THEN** no se guarda nada en `lh-origen`
 
-### Requirement: Solo parámetros permitidos y limpios
-El sistema MUST guardar únicamente `utm_source`, `utm_medium`, `utm_campaign` y `camino`, y MUST descartar cualquier otro parámetro de la URL. Cada valor SHALL quedar solo con letras, números, `-`, `_` y `.`, en minúsculas y con hasta 60 caracteres; un valor que queda vacío se trata como faltante.
+### Requirement: Solo parámetros permitidos, con su valor tal cual
+El sistema MUST guardar únicamente `utm_source`, `utm_medium`, `utm_campaign` y `camino`, y MUST descartar cualquier otro parámetro de la URL. Los valores de los `utm_` SHALL guardarse tal como vienen, sin filtros (decisión de Gus, 13-oct-2026): solo se sacan los espacios de los bordes y se corta a 200 caracteres; un valor vacío se trata como faltante. `camino` solo vale si es uno de los caminos de la portada.
 
 #### Scenario: Parámetro no permitido
 - **WHEN** la persona abre `/?utm_source=ig&email=ana@ejemplo.com`
 - **THEN** `lh-origen` guarda fuente "ig" y no contiene "ana@ejemplo.com"
+
+#### Scenario: Valor sin filtros
+- **WHEN** la persona abre `/?utm_source=ana@ejemplo.com&utm_campaign=Promo%20Feb`
+- **THEN** `lh-origen` guarda fuente "ana@ejemplo.com" y campaña "Promo Feb"
 
 #### Scenario: Valor con caracteres raros
 - **WHEN** la persona abre `/?utm_campaign=<script>Promo Feb</script>`

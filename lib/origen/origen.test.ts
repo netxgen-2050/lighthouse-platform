@@ -13,15 +13,16 @@ function almacenFalso() {
 }
 
 describe("limpiar", () => {
-  it("pasa a minúsculas y quita símbolos", () => {
-    expect(limpiar("<script>Promo Feb</script>")).toBe("scriptpromofebscript");
-    expect(limpiar("Congreso_2027.v1-A")).toBe("congreso_2027.v1-a");
+  it("guarda el valor tal como viene, sin filtros (solo saca los espacios de los bordes)", () => {
+    expect(limpiar("ana@ejemplo.com")).toBe("ana@ejemplo.com");
+    expect(limpiar("  Promo Feb 2027 ")).toBe("Promo Feb 2027");
+    expect(limpiar("Congreso_2027.v1-A")).toBe("Congreso_2027.v1-A");
   });
-  it("corta a 60 caracteres", () => {
-    expect(limpiar("a".repeat(100))).toHaveLength(60);
+  it("corta a 200 caracteres", () => {
+    expect(limpiar("a".repeat(300))).toHaveLength(200);
   });
   it("vacío o sin valor es undefined; toma el primero si viene repetido", () => {
-    expect(limpiar("@@ ")).toBeUndefined();
+    expect(limpiar("   ")).toBeUndefined();
     expect(limpiar(undefined)).toBeUndefined();
     expect(limpiar(["uno", "dos"])).toBe("uno");
   });
@@ -71,8 +72,8 @@ describe("leerOrigen", () => {
     expect(leerOrigen("[]")).toBeNull();
     expect(leerOrigen(JSON.stringify({ camino: "perfil", fecha: "x" }))).toBeNull();
   });
-  it("vuelve a limpiar cada campo", () => {
-    expect(leerOrigen(JSON.stringify({ fuente: "<b>IG</b>", fecha: "x" }))?.fuente).toBe("bigb");
+  it("conserva cada campo tal como se guardó", () => {
+    expect(leerOrigen(JSON.stringify({ fuente: "<b>IG</b>", fecha: "x" }))?.fuente).toBe("<b>IG</b>");
   });
 });
 

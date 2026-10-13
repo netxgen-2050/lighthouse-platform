@@ -4,7 +4,8 @@ import type { OrigenPedido } from "@/lib/contactos/tipos";
 export const CAMINOS_VALIDOS = ["tribus", "perfil", "congreso"] as const;
 export type CaminoId = (typeof CAMINOS_VALIDOS)[number];
 
-const MAX_VALOR = 60;
+/** Único límite: evita que un link malicioso llene el navegador con un texto gigante. */
+const MAX_VALOR = 200;
 
 export type Parametros = {
   camino?: CaminoId;
@@ -18,16 +19,21 @@ export type OrigenGuardado = Parametros & { fecha: string };
 
 type Valor = string | string[] | undefined | null;
 
-/** Deja solo letras, números, `-`, `_` y `.`, en minúsculas y hasta 60 caracteres. Vacío → undefined. */
+/**
+ * Guarda el valor tal como viene en el link (decisión de Gus, 13-oct-2026: sin filtros):
+ * solo saca los espacios de los bordes y corta a 200 caracteres. Vacío → undefined.
+ * React lo muestra siempre como texto, así que no hay riesgo de inyectar HTML.
+ */
 export function limpiar(valor: Valor): string | undefined {
   const primero = Array.isArray(valor) ? valor[0] : valor;
   if (typeof primero !== "string") return undefined;
-  const limpio = primero.toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, MAX_VALOR);
+  const limpio = primero.trim().slice(0, MAX_VALOR);
   return limpio === "" ? undefined : limpio;
 }
 
+/** El camino sí se valida: solo puede ser uno de los caminos de la portada. */
 function caminoValido(valor: Valor): CaminoId | undefined {
-  const limpio = limpiar(valor);
+  const limpio = limpiar(valor)?.toLowerCase();
   return CAMINOS_VALIDOS.find((c) => c === limpio);
 }
 
