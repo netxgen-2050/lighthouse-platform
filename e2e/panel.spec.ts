@@ -209,7 +209,10 @@ test("sin pedidos de red con los datos guardados", async ({ page }) => {
 
 test("almacenamiento bloqueado: error en texto y no los estados vacíos", async ({ page }) => {
   await page.addInitScript(() => {
-    Storage.prototype.getItem = () => {
+    // El consentimiento de privacidad ya está dado (lo siembra la fixture): lo demás no se puede leer.
+    const leer = Storage.prototype.getItem;
+    Storage.prototype.getItem = function (clave: string) {
+      if (String(clave).endsWith("lh-consentimiento")) return leer.call(this, clave);
       throw new DOMException("bloqueado", "SecurityError");
     };
   });
