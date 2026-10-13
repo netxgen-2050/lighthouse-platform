@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { ESTADO_INICIAL, reducir } from "./estado";
 import {
   PERFIL_VACIO,
+  MAX,
   basicosCompletos,
+  borradorInicial,
   cargarPerfil,
   datosCompletos,
   iniciales,
@@ -22,6 +24,22 @@ function entrevistaCon(respuestas: string[], confirmar: number[] = []) {
   for (const i of confirmar) e = reducir(e, { tipo: "confirmar", indice: i });
   return e;
 }
+
+describe("borradorInicial (nombre de Privy)", () => {
+  it("precarga el nombre de la cuenta si el perfil no tiene nombre", () => {
+    expect(borradorInicial(PERFIL_VACIO, "Ana de Google").nombre).toBe("Ana de Google");
+  });
+  it("no pisa un nombre ya guardado", () => {
+    expect(borradorInicial(ANA, "Otra").nombre).toBe("Ana Pérez");
+  });
+  it("sin nombre de cuenta deja el perfil como está", () => {
+    expect(borradorInicial(PERFIL_VACIO, null)).toBe(PERFIL_VACIO);
+    expect(borradorInicial(PERFIL_VACIO, "   ")).toBe(PERFIL_VACIO);
+  });
+  it("recorta al máximo permitido", () => {
+    expect(borradorInicial(PERFIL_VACIO, "x".repeat(200)).nombre).toHaveLength(MAX.nombre);
+  });
+});
 
 describe("validar", () => {
   it("el nombre es obligatorio", () => {

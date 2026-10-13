@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { KycDialogo } from "@/components/kyc-dialogo";
 import { useSesion } from "@/components/sesion/contexto";
-import { abreviarDireccion } from "@/lib/sesion/billetera";
+import { SelloBilletera } from "./sello-billetera";
 import { TerminoLegal } from "@/components/termino-legal";
 import { esCodigoValido } from "@/lib/congreso/ticket";
 import { CLAVES } from "@/lib/demo/claves";
@@ -226,28 +226,7 @@ export function PasaporteCliente() {
               alAprobar={kyc.aprobar}
             />
           ))}
-          {billetera && (
-            <li data-sello="billetera" className="grid content-start gap-3 rounded-xl border border-faint bg-surface p-4">
-              <div className="flex items-start gap-4">
-                <div
-                  aria-hidden="true"
-                  className={`flex size-20 shrink-0 flex-col items-center justify-center rounded-full text-center ${SELLO_VISUAL.obtenido}`}
-                >
-                  <span className="text-2xl leading-none">{ICONO.obtenido}</span>
-                </div>
-                <div className="grid min-w-0 gap-1">
-                  <h3 className="text-lg font-semibold break-words">Billetera creada</h3>
-                  <p>
-                    <span className={`rounded-full border px-2 py-0.5 text-sm font-medium ${ETIQUETA.obtenido}`}>Obtenido</span>
-                  </p>
-                </div>
-              </div>
-              <p className="text-sm">
-                Privy creó tu billetera: <span className="font-mono">{abreviarDireccion(billetera)}</span>. No se escribe nada
-                en la blockchain.
-              </p>
-            </li>
-          )}
+          <SelloBilletera billetera={billetera} />
         </ul>
       </section>
 

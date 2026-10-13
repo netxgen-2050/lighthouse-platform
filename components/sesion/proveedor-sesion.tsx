@@ -71,7 +71,12 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
           return poner({ estado: "ok", sesion: datos });
         }
         if (res.status === 403) return poner({ estado: "sin-acceso", sesion: null });
-        if (res.status === 401 && prueba) return poner({ estado: "sin-sesion", sesion: null });
+        if (res.status === 401 && prueba) {
+          // El servidor ya no acepta el modo de prueba: se borra la cookie y se vuelve a resolver (con Privy si hay).
+          document.cookie = `${COOKIE_PRUEBA}=; path=/; max-age=0; SameSite=Lax`;
+          if (vigente) setPrueba(null);
+          return;
+        }
         return poner({ estado: "error", sesion: null });
       } catch {
         return poner({ estado: "error", sesion: null });
@@ -108,6 +113,12 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
     document.cookie = `${COOKIE_PRUEBA}=; path=/; max-age=0; SameSite=Lax`;
     setPrueba(null);
     setResultado({ estado: "sin-sesion", sesion: null });
+    try {
+      // Sin persona recordada, el script de tema no pinta con las preferencias de quien acaba de salir.
+      window.localStorage.removeItem(CLAVE_ULTIMA_PERSONA);
+    } catch {
+      // Sin almacenamiento no hay nada que olvidar.
+    }
     try {
       await logout?.();
     } catch {

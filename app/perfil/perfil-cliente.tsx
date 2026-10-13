@@ -8,8 +8,8 @@ import { COMUNIDAD_LIGHTHOUSE, leer as leerMembresia, type Membresias } from "@/
 import { ROLES, buscarRol } from "@/lib/pactos/datos";
 import { leer as leerPactos, pactosAceptados } from "@/lib/pactos/estado";
 import {
-  MAX,
   PERFIL_VACIO,
+  borradorInicial,
   cargarPerfil,
   iniciales,
   normalizar,
@@ -99,7 +99,7 @@ export function PerfilCliente() {
 
   function empezar() {
     // Primera vez: si Privy trae el nombre (por ejemplo de Google), el formulario arranca con él.
-    setBorrador(perfil.nombre === "" && nombreCuenta ? { ...perfil, nombre: nombreCuenta.slice(0, MAX.nombre) } : perfil);
+    setBorrador(borradorInicial(perfil, nombreCuenta));
     setErrores({});
     setGuardado(false);
     setEditando(true);

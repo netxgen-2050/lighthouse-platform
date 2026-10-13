@@ -95,6 +95,14 @@ function ConSesion({ children }: { children: ReactNode }) {
   );
 }
 
+function Aviso() {
+  return (
+    <p className="mb-4 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+      Prototipo interno · datos de ejemplo
+    </p>
+  );
+}
+
 function PantallaDeEntrada() {
   const { estado, emailIntento, privyDisponible, entrar, entrarComo, salir } = useSesion();
   const [emailsPrueba, setEmailsPrueba] = useState<string[]>([]);
@@ -128,6 +136,7 @@ function PantallaDeEntrada() {
   if (estado === "sin-acceso") {
     return (
       <div className="mx-auto max-w-xl p-6 sm:p-10">
+        <Aviso />
         <h1 className="text-2xl font-semibold">Todavía no tenés acceso</h1>
         <p className="mt-3">Tu email todavía no tiene acceso a este prototipo. Pedíselo a Gus.</p>
         {emailIntento && <p className="mt-2 text-sm text-muted">Entraste con {emailIntento}.</p>}
@@ -141,6 +150,7 @@ function PantallaDeEntrada() {
   if (estado === "error") {
     return (
       <div className="mx-auto max-w-xl p-6 sm:p-10">
+        <Aviso />
         <h1 className="text-2xl font-semibold">No pudimos verificar tu sesión</h1>
         <p className="mt-3">Probá de nuevo en un momento.</p>
         <button type="button" className={`${BOTON_SECUNDARIO} mt-4`} onClick={() => void salir()}>
@@ -152,9 +162,7 @@ function PantallaDeEntrada() {
 
   return (
     <div className="mx-auto max-w-xl p-6 sm:p-10">
-      <p className="mb-4 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-        Prototipo interno · datos de ejemplo
-      </p>
+      <Aviso />
       <h1 className="text-3xl font-semibold">Bienvenida al Lighthouse</h1>
       <p className="mt-3 text-muted">
         Esta es la plataforma de NetX para descubrir el territorio, encontrar tu tribu y sumarte al Congreso. Por ahora es un
