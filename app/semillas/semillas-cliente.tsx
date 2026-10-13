@@ -20,8 +20,6 @@ import {
   RECONOCIMIENTO_RECIBIDO,
 } from "@/lib/semillas/datos";
 import {
-  CLAVE_RONDA,
-  CLAVE_SUMARTE,
   enviarRonda,
   guardarRondas,
   leerRondas,
@@ -80,7 +78,7 @@ export function SemillasCliente() {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
     setDatos({
       pactos: leerClave(CLAVES.pactos),
-      pase: paseActivo(leerClave(CLAVE_SUMARTE)),
+      pase: paseActivo(leerClave(CLAVES.sumarte)),
       ticket: esCodigoValido(leerClave(CLAVES.congreso) ?? ""),
       residencia: leerPasaporteDelNavegador().residencia,
     });
@@ -88,7 +86,7 @@ export function SemillasCliente() {
     setMiembro(comunidades);
     const pedida = new URLSearchParams(window.location.search).get("comunidad");
     setElegida(pedida && comunidades.includes(pedida) ? pedida : (comunidades[0] ?? ""));
-    setRondas(leerRondas(leerClave(CLAVE_RONDA)));
+    setRondas(leerRondas(leerClave(CLAVES.semillasRonda)));
     setListo(true);
   }, []);
 
@@ -96,7 +94,7 @@ export function SemillasCliente() {
     const siguiente: Rondas = { ...rondas, [comunidad]: cambio(rondaDe(rondas, comunidad)) };
     setRondas(siguiente);
     try {
-      window.localStorage.setItem(CLAVE_RONDA, guardarRondas(siguiente));
+      window.localStorage.setItem(CLAVES.semillasRonda, guardarRondas(siguiente));
       setFalloAlmacen(false);
     } catch {
       setFalloAlmacen(true);

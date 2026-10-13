@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtura";
 
 async function completar(page: Page) {
   await page.getByRole("button", { name: "Completar mi perfil" }).click();

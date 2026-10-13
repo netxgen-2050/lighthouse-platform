@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtura";
 
 test("muestra los cinco indicadores, el aviso de prototipo y un solo main", async ({ page }) => {
   const respuesta = await page.goto("/netx");

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
+import { MarcaAdmin } from "@/components/sesion/marca-admin";
 import { SelloTribu } from "@/components/sello-tribu";
 import { TerminoLegal } from "@/components/termino-legal";
 import { Medidor } from "@/components/medidor";
@@ -106,6 +107,7 @@ export default async function TribuPage({ params }: Props) {
       </div>
       <AvisoEjemplo />
       <Prototipo />
+      {t.id === "valle" && <MarcaAdmin tribu="valle" />}
       {t.estado === "formacion" && (
         <p
           role="note"

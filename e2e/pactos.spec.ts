@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtura";
 import { conIdentidadVerificada } from "./ayudas";
 
 async function comoMiembro(page: Page, comunidades: string[] = ["lighthouse"]) {

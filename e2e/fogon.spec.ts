@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtura";
 
 test("lista las cinco decisiones con dónde, regla y ⚖, y el aviso de prototipo", async ({ page }) => {
   const respuesta = await page.goto("/fogon");
@@ -53,6 +53,8 @@ test("votar a favor en la huerta actualiza el conteo, sin red, y sobrevive a la 
     const u = new URL(r.url());
     // La barra de comentarios de Vercel (vercel.live) solo existe en los previews: no es la app.
     if (u.hostname.endsWith("vercel.live")) return;
+    // La verificación de la sesión (login) no es un dato de la pantalla.
+    if (u.pathname === "/api/sesion") return;
     const claves = [...u.searchParams.keys()];
     if (r.method() === "GET" && claves.length === 1 && claves[0] === "_rsc" && !u.hash) return;
     if (["fetch", "xhr", "websocket", "eventsource"].includes(r.resourceType()) || r.method() !== "GET") pedidos.push(`${r.method()} ${r.url()}`);

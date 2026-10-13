@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtura";
 import { conIdentidadVerificada } from "./ayudas";
 
 test("muestra título, aviso de prototipo, cuatro planes y la tabla", async ({ page }) => {
@@ -50,6 +50,8 @@ test("activar el pase no hace pedidos de red, sobrevive a la recarga y se deshac
     const u = new URL(r.url());
     // vercel.live es la barra de comentarios que Vercel inyecta en los previews, no la app.
     if (u.hostname === "vercel.live") return;
+    // La verificación de la sesión (login) no es un dato de la pantalla.
+    if (u.pathname === "/api/sesion") return;
     const claves = [...u.searchParams.keys()];
     if (r.method() === "GET" && claves.length === 1 && claves[0] === "_rsc" && !u.hash) return;
     if (["fetch", "xhr", "websocket", "eventsource"].includes(r.resourceType()) || r.method() !== "GET") pedidos.push(`${r.method()} ${r.url()}`);

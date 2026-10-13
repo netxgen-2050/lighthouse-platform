@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtura";
 
 type PactoDeEjemplo = { horas?: number; paso?: number; aportes?: number[] };
 

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtura";
 
 test.beforeEach(async ({ page }) => {
   await page.route("**://server.arcgisonline.com/**", (r) => r.abort());

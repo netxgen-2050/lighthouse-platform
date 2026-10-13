@@ -24,7 +24,6 @@ import { useKyc } from "@/lib/pasaporte/usar-kyc";
 import { INICIAL, leer, reducir, type Accion, type EstadoSumarte } from "@/lib/sumarte/estado";
 
 // Todo queda solo en este navegador: no hay pedidos de red ni cobros.
-const CLAVE = CLAVES.sumarte;
 
 const BOTON =
   "w-fit rounded-lg px-4 py-1.5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
@@ -49,7 +48,7 @@ export function SumarteCliente() {
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
     try {
-      setEstado(leer(window.localStorage.getItem(CLAVE)));
+      setEstado(leer(window.localStorage.getItem(CLAVES.sumarte)));
     } catch {
       setFalloAlmacen(true);
     }
@@ -66,7 +65,7 @@ export function SumarteCliente() {
   function dispatch(accion: Accion, enfocar?: string): boolean {
     const siguiente = reducir(estado, accion);
     try {
-      window.localStorage.setItem(CLAVE, JSON.stringify(siguiente));
+      window.localStorage.setItem(CLAVES.sumarte, JSON.stringify(siguiente));
       setFalloAlmacen(false);
     } catch {
       setFalloAlmacen(true);

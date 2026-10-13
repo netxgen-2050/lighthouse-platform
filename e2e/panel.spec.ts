@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtura";
 
 const PERFIL_COMPLETO = JSON.stringify({ nombre: "Gus", lugar: "Lisboa", frase: "Construir en común", roles: [], rolOtro: "", ofrezco: "", decision: "", noNegociables: "" });
 const MEMBRESIA = JSON.stringify({ lighthouse: "pedido" });

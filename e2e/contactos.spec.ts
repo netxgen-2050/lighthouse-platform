@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtura";
 import { conIdentidadVerificada } from "./ayudas";
 
 test.beforeEach(async ({ page }) => {
@@ -174,7 +174,7 @@ test("no se puede guardar el pedido: avisa solo el formulario y no marca la invi
   await page.addInitScript(() => {
     const original = Storage.prototype.setItem;
     Storage.prototype.setItem = function (clave: string, valor: string) {
-      if (clave === "lh-contactos") throw new DOMException("bloqueado", "SecurityError");
+      if (clave.endsWith("lh-contactos")) throw new DOMException("bloqueado", "SecurityError");
       return original.call(this, clave, valor);
     };
   });
@@ -193,7 +193,7 @@ test("falla guardar la página después del pedido: una sola alerta y reintentar
   await page.addInitScript(() => {
     const original = Storage.prototype.setItem;
     Storage.prototype.setItem = function (clave: string, valor: string) {
-      if (clave === "lh-sumarte") throw new DOMException("bloqueado", "SecurityError");
+      if (clave.endsWith("lh-sumarte")) throw new DOMException("bloqueado", "SecurityError");
       return original.call(this, clave, valor);
     };
   });

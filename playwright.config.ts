@@ -4,6 +4,8 @@ import { defineConfig, devices } from "@playwright/test";
 const puerto = process.env.PORT ?? "3000";
 const baseURL = process.env.BASE_URL ?? `http://localhost:${puerto}`;
 const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+const LISTA_DE_PRUEBA =
+  "super@prueba.test=superadmin:usuario;admin@prueba.test=admin-tribu:usuario;persona@prueba.test=persona:inversor";
 
 export default defineConfig({
   testDir: "e2e",
@@ -19,5 +21,19 @@ export default defineConfig({
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: process.env.BASE_URL
     ? undefined
-    : { command: `pnpm build && pnpm start -p ${puerto}`, url: baseURL, reuseExistingServer: true, timeout: 180_000 },
+    : {
+        command: `pnpm build && pnpm start -p ${puerto}`,
+        url: baseURL,
+        reuseExistingServer: true,
+        timeout: 180_000,
+        // El e2e local no depende de Vercel ni de Privy: entra con el modo de prueba y una lista de emails inventados
+        // (los emails reales del equipo nunca van al repo). Sin app id de Privy, la app solo ofrece el modo de prueba.
+        env: {
+          LH_AUTH_PRUEBA: "1",
+          LH_PERSONAS: LISTA_DE_PRUEBA,
+          NEXT_PUBLIC_PRIVY_APP_ID: "",
+          PRIVY_APP_SECRET: "",
+          VERCEL_ENV: "",
+        },
+      },
 });

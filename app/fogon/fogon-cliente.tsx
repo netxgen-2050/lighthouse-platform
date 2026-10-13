@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
 import Link from "next/link";
+import { CLAVES } from "@/lib/demo/claves";
 import { AMBITOS, DECISIONES, OPCIONES, type Ambito, type Opcion } from "@/lib/fogon/datos";
 import { contar, filtrar, INICIAL, leer, motivoSinVoto, votar, votoPropio, type Condicion, type EstadoFogon } from "@/lib/fogon/estado";
 import { leerPasaporteDelNavegador } from "@/lib/pasaporte/del-navegador";
 
 // Todo queda solo en este navegador: no hay pedidos de red.
-const CLAVE = "lh-fogon";
 
 const BOTON =
   "rounded-lg border px-4 py-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
@@ -29,7 +29,7 @@ export function FogonCliente() {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
     setCondicion(leerPasaporteDelNavegador().residencia);
     try {
-      setEstado(leer(window.localStorage.getItem(CLAVE)));
+      setEstado(leer(window.localStorage.getItem(CLAVES.fogon)));
     } catch {
       setFalloAlmacen(true);
     }
@@ -38,7 +38,7 @@ export function FogonCliente() {
 
   function guardar(siguiente: EstadoFogon): boolean {
     try {
-      window.localStorage.setItem(CLAVE, JSON.stringify(siguiente));
+      window.localStorage.setItem(CLAVES.fogon, JSON.stringify(siguiente));
       setFalloAlmacen(false);
     } catch {
       setFalloAlmacen(true);

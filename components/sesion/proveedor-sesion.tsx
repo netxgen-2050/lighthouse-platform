@@ -1,0 +1,150 @@
+"use client";
+
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { CLAVE_ULTIMA_PERSONA, establecerPersona } from "@/lib/demo/claves";
+import { ContextoSesion, type EstadoSesion, type PrivyMinimo, type SesionCliente, type ValorSesion } from "./contexto";
+
+/**
+ * Con el modo de prueba, el email elegido en "Entrar como…" queda en esta cookie de sesión (no en localStorage:
+ * así no depende del almacenamiento de datos de la demo, que se puede bloquear o borrar sin cerrar la sesión).
+ * Solo vale si el servidor tiene el modo de prueba activo; en producción `/api/sesion` ignora el header.
+ */
+export const COOKIE_PRUEBA = "lh-auth-prueba";
+
+type Resultado = { estado: EstadoSesion; sesion: SesionCliente | null };
+
+function leerPrueba(): string | null {
+  for (const parte of document.cookie.split(";")) {
+    const [nombre, ...valor] = parte.trim().split("=");
+    if (nombre === COOKIE_PRUEBA && valor.length > 0) {
+      try {
+        return decodeURIComponent(valor.join("=")) || null;
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
+function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: ReactNode }) {
+  // undefined = todavía no se leyó el almacenamiento del navegador.
+  const [prueba, setPrueba] = useState<string | null | undefined>(undefined);
+  const [resultado, setResultado] = useState<Resultado>({ estado: "cargando", sesion: null });
+
+  useEffect(() => {
+    // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
+    setPrueba(leerPrueba());
+  }, []);
+
+  const privyListo = privy?.ready ?? true;
+  const privyAutenticado = privy?.authenticated ?? false;
+  // La función de Privy puede cambiar de identidad en cada render: se guarda en una ref para no repetir la verificación.
+  const obtenerToken = useRef(privy?.getAccessToken);
+  useEffect(() => {
+    obtenerToken.current = privy?.getAccessToken;
+  });
+
+  useEffect(() => {
+    if (prueba === undefined) return;
+    let vigente = true;
+    const poner = (r: Resultado) => {
+      if (vigente) setResultado(r);
+    };
+
+    async function resolver() {
+      const cabeceras: Record<string, string> = {};
+      if (prueba) {
+        cabeceras["x-lh-prueba"] = prueba;
+      } else {
+        if (!privyListo) return;
+        const pedirToken = obtenerToken.current;
+        if (!privyAutenticado || !pedirToken) return poner({ estado: "sin-sesion", sesion: null });
+        const token = await pedirToken();
+        if (!token) return poner({ estado: "sin-sesion", sesion: null });
+        cabeceras.Authorization = `Bearer ${token}`;
+      }
+      try {
+        const res = await fetch("/api/sesion", { headers: cabeceras, cache: "no-store" });
+        if (res.status === 200) {
+          const datos = (await res.json()) as SesionCliente;
+          return poner({ estado: "ok", sesion: datos });
+        }
+        if (res.status === 403) return poner({ estado: "sin-acceso", sesion: null });
+        if (res.status === 401 && prueba) return poner({ estado: "sin-sesion", sesion: null });
+        return poner({ estado: "error", sesion: null });
+      } catch {
+        return poner({ estado: "error", sesion: null });
+      }
+    }
+
+    // La verificación pasa por el servidor; mientras tanto la app no muestra nada personal.
+    setResultado((r) => (r.estado === "cargando" ? r : { estado: "cargando", sesion: null }));
+    void resolver();
+    return () => {
+      vigente = false;
+    };
+  }, [prueba, privyListo, privyAutenticado]);
+
+  // Se fija antes de dibujar la app: todas las claves del navegador salen con el prefijo de esta persona.
+  const idPersona = resultado.estado === "ok" ? (resultado.sesion?.idPersona ?? null) : null;
+  establecerPersona(idPersona);
+
+  useEffect(() => {
+    try {
+      if (idPersona) window.localStorage.setItem(CLAVE_ULTIMA_PERSONA, idPersona);
+    } catch {
+      // Sin almacenamiento no se recuerda la última persona; el tema se aplica al hidratar igual.
+    }
+  }, [idPersona]);
+
+  const entrarComo = useCallback((email: string) => {
+    document.cookie = `${COOKIE_PRUEBA}=${encodeURIComponent(email)}; path=/; SameSite=Lax`;
+    setPrueba(email);
+  }, []);
+
+  const logout = privy?.logout;
+  const salir = useCallback(async () => {
+    document.cookie = `${COOKIE_PRUEBA}=; path=/; max-age=0; SameSite=Lax`;
+    setPrueba(null);
+    setResultado({ estado: "sin-sesion", sesion: null });
+    try {
+      await logout?.();
+    } catch {
+      // Si Privy falla al salir, la sesión de la app igual quedó cerrada.
+    }
+  }, [logout]);
+
+  const login = privy?.login;
+  const valor = useMemo<ValorSesion>(
+    () => ({
+      estado: resultado.estado,
+      sesion: resultado.sesion,
+      emailIntento: prueba ?? privy?.email ?? null,
+      nombre: privy?.nombre ?? null,
+      billetera: privy?.billetera ?? null,
+      privyDisponible: privy !== null,
+      entrar: () => login?.(),
+      entrarComo,
+      salir,
+    }),
+    [resultado, prueba, privy, login, entrarComo, salir],
+  );
+
+  return (
+    <ContextoSesion.Provider value={valor}>{children}</ContextoSesion.Provider>
+  );
+}
+
+const PuentePrivy = lazy(() => import("./privy-puente"));
+
+/** Sesión de la app: Privy (si está configurado) más la verificación en `/api/sesion`. Sin Privy solo funciona el modo de prueba. */
+export function ProveedorSesion({ children }: { children: ReactNode }) {
+  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
+  if (!appId) return <Nucleo privy={null}>{children}</Nucleo>;
+  return (
+    <Suspense fallback={null}>
+      <PuentePrivy appId={appId} hijo={(privy) => <Nucleo privy={privy}>{children}</Nucleo>} />
+    </Suspense>
+  );
+}

@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useSesion } from "@/components/sesion/contexto";
 import { CLAVES } from "@/lib/demo/claves";
 import { COMUNIDAD_LIGHTHOUSE, leer as leerMembresia, type Membresias } from "@/lib/membresia/estado";
 import { ROLES, buscarRol } from "@/lib/pactos/datos";
 import { leer as leerPactos, pactosAceptados } from "@/lib/pactos/estado";
 import {
+  MAX,
   PERFIL_VACIO,
   cargarPerfil,
   iniciales,
@@ -59,6 +61,7 @@ function comunidadesDe(m: Membresias): Comunidad[] {
 }
 
 export function PerfilCliente() {
+  const { sesion, nombre: nombreCuenta } = useSesion();
   const [listo, setListo] = useState(false);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [perfil, setPerfil] = useState<Perfil>(PERFIL_VACIO);
@@ -95,7 +98,8 @@ export function PerfilCliente() {
   });
 
   function empezar() {
-    setBorrador(perfil);
+    // Primera vez: si Privy trae el nombre (por ejemplo de Google), el formulario arranca con él.
+    setBorrador(perfil.nombre === "" && nombreCuenta ? { ...perfil, nombre: nombreCuenta.slice(0, MAX.nombre) } : perfil);
     setErrores({});
     setGuardado(false);
     setEditando(true);
@@ -288,6 +292,11 @@ export function PerfilCliente() {
   return (
     <div className="grid gap-6">
       {aviso}
+      {sesion?.email && (
+        <p className="text-sm text-muted">
+          Tu cuenta: <span className="font-medium text-ink">{sesion.email}</span>
+        </p>
+      )}
       {falloAlmacen && (
         <p role="alert" className="text-sm font-medium text-danger">
           Error: tu navegador no permite guardar datos en este sitio, así que tu perfil se pierde al recargar.

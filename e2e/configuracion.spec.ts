@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtura";
 
 const html = (page: Page) => page.locator("html");
 const fondo = (page: Page) => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
@@ -96,25 +96,24 @@ test("apagar rondas: esas notificaciones dejan de contarse y de verse", async ({
   await expect(campanita).toHaveAttribute("aria-label", "2 notificaciones sin leer");
 });
 
-test("Hifa apagada: sin hidratar, el CSS ya oculta el botón (sin parpadeo); con Hifa visible, el botón sí se ve", async ({ page }) => {
-  // Se bloquea el JS para que la página no hidrate: lo que se ve es solo el HTML del servidor + el CSS + el script del <head>.
+test("Hifa apagada: el script del <head> ya lo sabe antes de hidratar (sin parpadeo); con Hifa visible, el botón sí se ve", async ({ page }) => {
+  const boton = page.locator('[aria-controls="chat-hifa"]');
+
+  // Control: con sesión y Hifa visible, el botón se ve. De paso la app recuerda quién fue la última persona.
+  await page.goto("/");
+  await expect(boton).toBeVisible();
+
+  // Con Hifa apagada y el JS bloqueado (la página no hidrata), el script del <head> ya aplica la preferencia de esa persona.
   // Se matchea por pathname con regex: en Vercel los scripts llevan "?dpl=..." y un glob terminado en ".js" no los atrapa.
+  await page.evaluate(() => window.localStorage.setItem("lh-configuracion", JSON.stringify({ mostrarHifa: false })));
   await page.route(
     (url) => /\/_next\/static\/.*\.js$/.test(url.pathname),
     (ruta) => ruta.abort(),
   );
-  const boton = page.locator('[aria-controls="chat-hifa"]');
-
-  // Control: con Hifa visible, el servidor dibuja el botón y se ve aunque no hidrate.
-  await page.goto("/");
-  await expect(boton).toBeVisible();
-
-  // Con Hifa apagada, el botón sigue en el HTML del servidor pero el CSS lo oculta.
-  await page.evaluate(() => window.localStorage.setItem("lh-configuracion", JSON.stringify({ mostrarHifa: false })));
   await page.goto("/");
   await expect(html(page)).toHaveAttribute("data-hifa", "apagada");
-  await expect(boton).toHaveCount(1);
-  await expect(boton).toBeHidden();
+  // Sin sesión verificada el botón ni existe: nunca llega a verse un destello.
+  await expect(boton).toHaveCount(0);
 });
 
 test("ocultar a Hifa: el botón desaparece en todas las páginas y vuelve al prenderlo", async ({ page }) => {

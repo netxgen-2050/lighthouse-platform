@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PanelPersonas } from "@/components/sesion/panel-personas";
+import { SoloSuperAdmin } from "@/components/sesion/solo-super-admin";
 import { TerminoLegal } from "@/components/termino-legal";
 import { anchoBarra, anchoMedidor, conversiones, formatear, porcentaje } from "@/lib/vista-netx/calculos";
 import { BandejaPedidos } from "./bandeja-pedidos";
@@ -27,7 +29,16 @@ function Medidor({ etiqueta, actual, maximo, dorado }: { etiqueta: string; actua
   );
 }
 
+/** La vista NetX es solo para el super admin: para el resto, "no tenés acceso" (ver `SoloSuperAdmin`). */
 export default function NetxPage() {
+  return (
+    <SoloSuperAdmin>
+      <VistaNetx />
+    </SoloSuperAdmin>
+  );
+}
+
+function VistaNetx() {
   const conv = conversiones(EMBUDO);
   const maximo = Math.max(...EMBUDO.map((e) => e.valor));
   return (
@@ -149,6 +160,7 @@ export default function NetxPage() {
         </div>
       </section>
 
+      <PanelPersonas />
       <PostulacionesComunidades />
       <BandejaPedidos />
     </div>
