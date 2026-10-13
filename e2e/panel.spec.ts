@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "./fixtura";
+import { ignorarEnSinRed } from "./ayudas";
 
 const PERFIL_COMPLETO = JSON.stringify({ nombre: "Gus", lugar: "Lisboa", frase: "Construir en común", roles: [], rolOtro: "", ofrezco: "", decision: "", noNegociables: "" });
 const MEMBRESIA = JSON.stringify({ lighthouse: "pedido" });
@@ -199,7 +200,7 @@ test("sin pedidos de red con los datos guardados", async ({ page }) => {
   page.on("request", (r) => {
     const propio = r.url().startsWith(origen + "/");
     const lleva = r.url().includes("secreto-") || (r.postData() ?? "").includes("secreto-");
-    if ((propio && r.method() !== "GET") || lleva) pedidos.push(`${r.method()} ${r.url()}`);
+    if ((propio && r.method() !== "GET" && !ignorarEnSinRed(r)) || lleva) pedidos.push(`${r.method()} ${r.url()}`);
   });
   await page.reload();
   await expect(proximo(page)).toContainText("Completá tu perfil");

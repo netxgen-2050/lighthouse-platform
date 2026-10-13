@@ -142,6 +142,9 @@ test("con el almacenamiento bloqueado: comunidades y resumen dicen 'sin dato' y 
 });
 
 test("si el navegador no deja guardar, aparece el error y no el 'Listo'", async ({ page }) => {
+  // Con Privy activo (previews y producción) el login necesita el almacenamiento del navegador: sin él no hay sesión
+  // y este caso no aplica. Se prueba en el e2e local, que corre sin Privy.
+  test.skip(Boolean(process.env.BASE_URL || process.env.NEXT_PUBLIC_PRIVY_APP_ID), "Con Privy el login necesita el almacenamiento");
   await page.goto("/perfil");
   await page.evaluate(() => {
     Storage.prototype.setItem = () => {

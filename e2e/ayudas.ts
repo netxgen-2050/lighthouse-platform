@@ -28,7 +28,7 @@ export function esInfraDeTerceros(url: string): boolean {
   );
 }
 
-/** Para los tests de "sin pedidos de red": infraestructura de terceros o pedidos HEAD (no llevan cuerpo ni datos). */
+/** Para los tests de "sin pedidos de red": infraestructura de terceros o pedidos HEAD y OPTIONS (no llevan cuerpo ni datos). */
 export function ignorarEnSinRed(r: { url(): string; method(): string }): boolean {
-  return r.method() === "HEAD" || esInfraDeTerceros(r.url());
+  return r.method() === "HEAD" || r.method() === "OPTIONS" || esInfraDeTerceros(r.url());
 }

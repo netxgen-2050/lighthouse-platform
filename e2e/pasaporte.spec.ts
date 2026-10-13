@@ -220,6 +220,9 @@ test("horas fuera de rango: mensaje, aria-invalid y se repite al recargar", asyn
 });
 
 test("almacenamiento bloqueado: el envío del KYC avisa y no queda en trámite", async ({ page }) => {
+  // Con Privy activo (previews y producción) el login necesita el almacenamiento del navegador: sin él no hay sesión
+  // y este caso no aplica. Se prueba en el e2e local, que corre sin Privy.
+  test.skip(Boolean(process.env.BASE_URL || process.env.NEXT_PUBLIC_PRIVY_APP_ID), "Con Privy el login necesita el almacenamiento");
   await page.goto("/pasaporte");
   await page.evaluate(() => {
     Storage.prototype.setItem = () => {
