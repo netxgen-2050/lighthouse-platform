@@ -4,7 +4,12 @@ import { EMAILS, expect, test, type Page } from "./fixtura";
 // Sin el fixture de login: la persona no entró.
 test.use({ rol: "ninguno" });
 
-const barra = (page: Page) => page.getByRole("banner");
+// Con Privy (previews y producción) "Entrar" abre el modal de Privy, no la pantalla "Entrar como…": estos casos
+// dependen del modo de prueba y se corren en el e2e local, que va sin Privy.
+const CON_PRIVY = Boolean(process.env.BASE_URL || process.env.NEXT_PUBLIC_PRIVY_APP_ID);
+const SIN_PRIVY = "Con Privy, Entrar abre el modal de Privy; este caso usa la pantalla Entrar como… del modo de prueba";
+
+const barra =(page: Page) => page.getByRole("banner");
 const rail = (page: Page) => page.getByRole("navigation", { name: "Principal" });
 
 test.describe("páginas públicas sin sesión", () => {
@@ -94,6 +99,7 @@ test.describe("navegación sin sesión", () => {
   });
 
   test("Entrar muestra la pantalla de entrada en la misma página y, al entrar, la persona sigue ahí", async ({ page }) => {
+    test.skip(CON_PRIVY, SIN_PRIVY);
     await page.goto("/tribus/valle");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
@@ -105,6 +111,7 @@ test.describe("navegación sin sesión", () => {
   });
 
   test("Entrar desde una página que pide sesión no cambia de página", async ({ page }) => {
+    test.skip(CON_PRIVY, SIN_PRIVY);
     await page.goto("/pactos");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
@@ -115,6 +122,7 @@ test.describe("navegación sin sesión", () => {
   });
 
   test("el pedido de entrar se descarta al navegar: al volver no reaparece la pantalla de entrada", async ({ page }) => {
+    test.skip(CON_PRIVY, SIN_PRIVY);
     await page.goto("/tribus/valle");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
@@ -126,6 +134,7 @@ test.describe("navegación sin sesión", () => {
   });
 
   test("los botones Entrá para … y Seguir explorando dejan el foco en el contenido", async ({ page }) => {
+    test.skip(CON_PRIVY, SIN_PRIVY);
     await page.goto("/tribus/valle");
     await page.getByRole("button", { name: "Entrá para adherir" }).click();
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
@@ -137,6 +146,7 @@ test.describe("navegación sin sesión", () => {
   });
 
   test("Seguir explorando cierra la pantalla de entrada pedida en una página pública", async ({ page }) => {
+    test.skip(CON_PRIVY, SIN_PRIVY);
     await page.goto("/tribus/valle");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
     await page.getByRole("button", { name: "Seguir explorando" }).click();
@@ -144,6 +154,7 @@ test.describe("navegación sin sesión", () => {
   });
 
   test("Entrá para consultar por este lote: al entrar vuelve a la misma finca elegida", async ({ page }) => {
+    test.skip(CON_PRIVY, SIN_PRIVY);
     await page.goto("/territorios/lighthouse");
     await page.getByText(/Fincas disponibles de Soluna/).click();
     await page.getByRole("button", { name: /^Finca / }).first().click();
@@ -182,8 +193,10 @@ test.describe("sin datos guardados sin sesión", () => {
     await page.getByLabel("Escribile a Hifa").fill("hola");
     await page.getByRole("button", { name: "Enviar", exact: true }).click();
     const claves = await page.evaluate(() => Object.keys(window.localStorage));
-    expect(claves.filter((c) => c.startsWith("u:") || c.startsWith("lh-bitacora") || c.startsWith("lh-hifa"))).toEqual([]);
-    expect(claves).toEqual([]);
+    // Con Privy el SDK guarda sus propias claves (privy:…, base-acc-sdk.store, etc.): no son de la app ni de una persona.
+    const deLaApp = claves.filter((c) => !/^privy[:.]|^base-acc-sdk|^walletconnect|^wc@|^WCM_|^-walletlink/i.test(c));
+    expect(deLaApp.filter((c) => c.startsWith("u:") || c.startsWith("lh-bitacora") || c.startsWith("lh-hifa"))).toEqual([]);
+    expect(deLaApp).toEqual([]);
   });
 });
 
