@@ -1,6 +1,6 @@
 ## 1. Sesión en el servidor
 
-- [ ] 1.1 Instalar `@privy-io/react-auth` y `@privy-io/server-auth`. `lib/sesion/personas.ts` (parser de `LH_PERSONAS`) y `app/api/sesion/route.ts` (verificación, 401/403, modo de prueba solo fuera de producción), con tests (simular el cliente de Privy). Verificar con `pnpm test`.
+- [x] 1.1 Instalar `@privy-io/react-auth` y `@privy-io/server-auth`. `lib/sesion/personas.ts` (parser de `LH_PERSONAS`) y `app/api/sesion/route.ts` (verificación, 401/403, modo de prueba solo fuera de producción), con tests (simular el cliente de Privy). Verificar con `pnpm test`.
 
 ## 2. Cliente
 

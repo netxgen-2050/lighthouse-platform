@@ -14,6 +14,8 @@
     "noche": "scripts/noche.sh"
   },
   "dependencies": {
+    "@privy-io/react-auth": "^3.48.1",
+    "@privy-io/server-auth": "^1.32.5",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.52.0",
     "next": "15.5.27",
