@@ -87,7 +87,8 @@ test("elegir Valle Solar en el mapa y ir a la tribu", async ({ page }) => {
   await marcador(page, "Barrio 6 ").click();
   await expect(ficha(page).getByRole("heading", { name: "Valle Solar" })).toBeVisible();
   await expect(ficha(page).getByText("Estado: Activa")).toBeVisible();
-  await expect(page).toHaveURL(/\/territorios\/lighthouse$/);
+  // Sigue en la misma página; la selección queda en ?sel= para no perderse al entrar.
+  await expect(page).toHaveURL(/\/territorios\/lighthouse\?sel=barrio-6$/);
   await ficha(page).getByRole("link", { name: "Conocer la tribu" }).click();
   await expect(page).toHaveURL(/\/tribus\/valle$/);
 });

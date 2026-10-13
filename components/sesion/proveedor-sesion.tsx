@@ -1,7 +1,7 @@
 "use client";
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { CLAVE_ULTIMA_PERSONA, establecerPersona } from "@/lib/demo/claves";
 import { ContextoSesion, type EstadoSesion, type PrivyMinimo, type SesionCliente, type ValorSesion } from "./contexto";
 
@@ -109,15 +109,21 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
     }
   }, [idPersona]);
 
+  // Sin Privy no hay ventana de login: "Entrar" en una página pública muestra la pantalla de entrada sobre la misma URL
+  // (vale solo para esa ruta). Al entrar, la persona sigue donde estaba.
+  const [pidiendo, setPidiendo] = useState<string | null>(null);
+
   const entrarComo = useCallback((email: string) => {
     document.cookie = `${COOKIE_PRUEBA}=${encodeURIComponent(email)}; path=/; SameSite=Lax`;
     setPrueba(email);
+    setPidiendo(null);
   }, []);
 
   const logout = privy?.logout;
   const salir = useCallback(async () => {
     document.cookie = `${COOKIE_PRUEBA}=; path=/; max-age=0; SameSite=Lax`;
     setPrueba(null);
+    setPidiendo(null);
     setResultado({ estado: "sin-sesion", sesion: null });
     try {
       // Sin persona recordada, el script de tema no pinta con las preferencias de quien acaba de salir.
@@ -140,7 +146,7 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
   }, [prueba]);
 
   const login = privy?.login;
-  const router = useRouter();
+  const ruta = usePathname();
   const valor = useMemo<ValorSesion>(
     () => ({
       estado: resultado.estado,
@@ -150,12 +156,14 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       billetera: privy?.billetera ?? null,
       privyDisponible: privy !== null,
       // Sin Privy (modo de prueba) no hay ventana de login: se va a una página que pide sesión y muestra "Entrar como…".
-      entrar: () => (login ? login() : router.push("/perfil")),
+      entrar: () => (login ? login() : setPidiendo(ruta)),
+      pidiendoEntrar: pidiendo === ruta,
+      cancelarEntrar: () => setPidiendo(null),
       entrarComo,
       salir,
       cabeceras,
     }),
-    [resultado, prueba, privy, login, router, entrarComo, salir, cabeceras],
+    [resultado, prueba, privy, login, ruta, pidiendo, entrarComo, salir, cabeceras],
   );
 
   return (

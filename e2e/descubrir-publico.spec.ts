@@ -62,9 +62,9 @@ test.describe("páginas públicas sin sesión", () => {
     await page.getByRole("button", { name: /^Barrio \d+$/ }).first().click();
     const ficha = page.getByRole("complementary", { name: "Ficha del territorio" });
     await expect(ficha).toBeVisible();
-    // Algunos barrios tienen tribu; el llamado aparece en los que buscan una.
-    const vacante = ficha.getByRole("button", { name: "Entrá para proponer una comunidad" });
-    if ((await vacante.count()) === 0) await expect(ficha.getByRole("link", { name: "Conocer la tribu" })).toBeVisible();
+    // El botón "Barrio N" a secas es el de un barrio vacante (los que tienen tribu llevan su nombre).
+    await expect(ficha.getByRole("button", { name: "Entrá para proponer una comunidad" })).toBeVisible();
+    await expect(ficha.getByRole("link", { name: "Conocer la tribu" })).toHaveCount(0);
   });
 });
 
@@ -93,11 +93,45 @@ test.describe("navegación sin sesión", () => {
     await expect(page.getByRole("button", { name: "Hablar con Hifa" })).toBeVisible();
   });
 
-  test("Entrar lleva a la pantalla de entrada y, al entrar, se ve la persona", async ({ page }) => {
+  test("Entrar muestra la pantalla de entrada en la misma página y, al entrar, la persona sigue ahí", async ({ page }) => {
     await page.goto("/tribus/valle");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
+    await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
+    await expect(page).toHaveURL(/\/tribus\/valle$/);
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(barra(page).getByRole("button", { name: "Menú de la persona" })).toBeVisible();
+    await expect(page).toHaveURL(/\/tribus\/valle$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Valle Solar" })).toBeVisible();
+  });
+
+  test("Entrar desde una página que pide sesión no cambia de página", async ({ page }) => {
+    await page.goto("/pactos");
+    await barra(page).getByRole("button", { name: "Entrar" }).click();
+    await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
+    await expect(page).toHaveURL(/\/pactos$/);
+    await page.getByRole("button", { name: EMAILS.persona }).click();
+    await expect(barra(page).getByRole("button", { name: "Menú de la persona" })).toBeVisible();
+    await expect(page).toHaveURL(/\/pactos$/);
+  });
+
+  test("Seguir explorando cierra la pantalla de entrada pedida en una página pública", async ({ page }) => {
+    await page.goto("/tribus/valle");
+    await barra(page).getByRole("button", { name: "Entrar" }).click();
+    await page.getByRole("button", { name: "Seguir explorando" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "Valle Solar" })).toBeVisible();
+  });
+
+  test("Entrá para consultar por este lote: al entrar vuelve a la misma finca elegida", async ({ page }) => {
+    await page.goto("/territorios/lighthouse");
+    await page.getByText(/Fincas disponibles de Soluna/).click();
+    await page.getByRole("button", { name: /^Finca / }).first().click();
+    const ficha = page.getByRole("complementary", { name: "Ficha del territorio" });
+    const titulo = await ficha.getByRole("heading", { level: 2 }).first().innerText();
+    await ficha.getByRole("button", { name: "Entrá para consultar por este lote" }).click();
+    await page.getByRole("button", { name: EMAILS.persona }).click();
+    await expect(page).toHaveURL(/\/territorios\/lighthouse\?sel=/);
+    await expect(ficha.getByRole("heading", { level: 2, name: titulo })).toBeVisible();
+    await expect(ficha.getByRole("button", { name: "Consultar por este lote", exact: true })).toBeVisible();
   });
 
   test("Hifa funciona sin entrar, pero pasarlo al equipo pide entrar", async ({ page }) => {

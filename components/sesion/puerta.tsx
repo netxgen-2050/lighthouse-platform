@@ -20,9 +20,10 @@ const BOTON_SECUNDARIO = `${BOTON} border border-faint hover:bg-surface-2`;
  * Excepción: las páginas públicas (`lib/sesion/rutas-publicas.ts`) se ven sin sesión; sus acciones con cuenta piden entrar.
  */
 export function Puerta({ children }: { children: ReactNode }) {
-  const { estado } = useSesion();
+  const { estado, pidiendoEntrar } = useSesion();
   const ruta = usePathname();
   if (estado === "ok") return <ConSesion>{children}</ConSesion>;
+  if (pidiendoEntrar) return <PantallaDeEntrada />;
   // Mientras se verifica la sesión se espera ("Cargando…"): mostrar la página y rearmarla al confirmar la sesión
   // haría perder lo que la persona ya estaba haciendo (foco, scroll, casillas).
   if (estado === "sin-sesion" && esPublica(ruta)) return <>{children}</>;
@@ -113,8 +114,9 @@ function Aviso() {
 }
 
 function PantallaDeEntrada() {
-  const { estado, emailIntento, privyDisponible, entrar, entrarComo, salir } = useSesion();
+  const { estado, emailIntento, privyDisponible, entrar, entrarComo, salir, pidiendoEntrar, cancelarEntrar } = useSesion();
   const [emailsPrueba, setEmailsPrueba] = useState<string[]>([]);
+  const ruta = usePathname();
 
   useEffect(() => {
     if (estado !== "sin-sesion") return;
@@ -181,6 +183,11 @@ function PantallaDeEntrada() {
       {privyDisponible && (
         <button type="button" className={`${BOTON_PRIMARIO} mt-5`} onClick={entrar}>
           Entrar
+        </button>
+      )}
+      {pidiendoEntrar && esPublica(ruta) && (
+        <button type="button" className={`${BOTON_SECUNDARIO} mt-5 block`} onClick={cancelarEntrar}>
+          Seguir explorando
         </button>
       )}
       {emailsPrueba.length > 0 && (

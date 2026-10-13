@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSesion } from "@/components/sesion/contexto";
 import { guardarPedido, leerBandejaDelNavegador } from "@/lib/contactos/almacen";
 import type { Pedido } from "@/lib/contactos/tipos";
@@ -48,6 +48,18 @@ export function VitrinaTerritorio() {
     const sel = new URLSearchParams(window.location.search).get("sel");
     if (sel && buscarElemento(sel)) setSeleccion(sel);
   }, []);
+
+  // La selección queda en la URL (?sel=…, sin recargar ni sumar al historial): al entrar, la página se rearma
+  // y la persona sigue viendo lo que había elegido. No se toca la URL hasta que la selección cambia, para no borrar un ?sel= recién llegado.
+  const escrita = useRef<string | null>(null);
+  useEffect(() => {
+    if (seleccion === escrita.current) return;
+    escrita.current = seleccion;
+    const url = new URL(window.location.href);
+    if (seleccion) url.searchParams.set("sel", seleccion);
+    else url.searchParams.delete("sel");
+    window.history.replaceState(window.history.state, "", url);
+  }, [seleccion]);
 
   const { estado: estadoSesion } = useSesion();
   const conSesion = estadoSesion === "ok";

@@ -30,7 +30,7 @@ const BOTON_ENTRAR =
 
 /** Sin sesión, la barra muestra "Entrar"; con sesión, el avatar con su menú. */
 export function MenuPersona({ items }: { items: ItemMenu[] }) {
-  const { estado, entrar } = useSesion();
+  const { estado, entrar, privyDisponible } = useSesion();
   if (estado === "ok") return <MenuConSesion items={items} />;
   if (estado === "cargando") return null;
   if (estado === "sin-acceso") return null;
@@ -38,7 +38,11 @@ export function MenuPersona({ items }: { items: ItemMenu[] }) {
     <button
       type="button"
       className={BOTON_ENTRAR}
-      onClick={entrar}
+      onClick={() => {
+        entrar();
+        // Sin Privy se muestra la pantalla de entrada en esta misma página: el foco va al contenido.
+        if (!privyDisponible) document.getElementById("contenido")?.focus();
+      }}
     >
       Entrar
     </button>
