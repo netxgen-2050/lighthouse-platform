@@ -4,7 +4,7 @@
 
 ## 2. Pantallas
 
-- [ ] 2.1 Pantalla de consentimiento dentro de la puerta de sesión; consentimiento específico al iniciar el KYC. Verificar en `pnpm dev`.
+- [ ] 2.1 Pantalla de consentimiento al registrarse (si `sumarte-acceso` está en la base, va en el paso de registro de Sumarte, antes de aplicar el nivel; si no, dentro de la puerta de sesión); consentimiento específico al iniciar el KYC. Verificar en `pnpm dev`.
 - [ ] 2.2 `/privacidad` (pública) y `/mis-datos` (descargar, retirar, pedir borrado); enlaces en el pie, Configuración y el menú del avatar. Verificar en `pnpm dev`.
 
 ## 3. Tests
