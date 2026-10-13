@@ -1,6 +1,7 @@
 "use client";
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { CLAVE_ULTIMA_PERSONA, establecerPersona } from "@/lib/demo/claves";
 import { ContextoSesion, type EstadoSesion, type PrivyMinimo, type SesionCliente, type ValorSesion } from "./contexto";
 
@@ -139,6 +140,7 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
   }, [prueba]);
 
   const login = privy?.login;
+  const router = useRouter();
   const valor = useMemo<ValorSesion>(
     () => ({
       estado: resultado.estado,
@@ -147,12 +149,13 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       nombre: privy?.nombre ?? null,
       billetera: privy?.billetera ?? null,
       privyDisponible: privy !== null,
-      entrar: () => login?.(),
+      // Sin Privy (modo de prueba) no hay ventana de login: se va a una página que pide sesión y muestra "Entrar como…".
+      entrar: () => (login ? login() : router.push("/perfil")),
       entrarComo,
       salir,
       cabeceras,
     }),
-    [resultado, prueba, privy, login, entrarComo, salir, cabeceras],
+    [resultado, prueba, privy, login, router, entrarComo, salir, cabeceras],
   );
 
   return (

@@ -1,6 +1,8 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
+import { esPublica } from "@/lib/sesion/rutas-publicas";
 import {
   corresponderOfrecerImportacion,
   descartarImportacion,
@@ -13,10 +15,17 @@ const BOTON =
 const BOTON_PRIMARIO = `${BOTON} bg-deep text-on-deep hover:bg-deep-2`;
 const BOTON_SECUNDARIO = `${BOTON} border border-faint hover:bg-surface-2`;
 
-/** Muestra el contenido solo con una sesión válida; en cualquier otro caso, la pantalla de entrada o el aviso que corresponda. */
+/**
+ * Muestra el contenido solo con una sesión válida; en cualquier otro caso, la pantalla de entrada o el aviso que corresponda.
+ * Excepción: las páginas públicas (`lib/sesion/rutas-publicas.ts`) se ven sin sesión; sus acciones con cuenta piden entrar.
+ */
 export function Puerta({ children }: { children: ReactNode }) {
   const { estado } = useSesion();
+  const ruta = usePathname();
   if (estado === "ok") return <ConSesion>{children}</ConSesion>;
+  // Mientras se verifica la sesión se espera ("Cargando…"): mostrar la página y rearmarla al confirmar la sesión
+  // haría perder lo que la persona ya estaba haciendo (foco, scroll, casillas).
+  if (estado === "sin-sesion" && esPublica(ruta)) return <>{children}</>;
   return <PantallaDeEntrada />;
 }
 
