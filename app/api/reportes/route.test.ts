@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { sesionDelPedido } from "@/lib/sesion/servidor";
 import { POST } from "./route";
+
+vi.mock("@/lib/sesion/servidor", () => ({ sesionDelPedido: vi.fn() }));
+const sesionSimulada = vi.mocked(sesionDelPedido);
 
 const TOKEN = "ghp_secreto_de_prueba";
 const cuerpo = { tipo: "bug", quePaso: "Se rompe", esperabas: "", contacto: "", contexto: { ruta: "/netx" } };
@@ -16,10 +20,29 @@ describe("POST /api/reportes", () => {
     fetchSimulado = vi.fn();
     globalThis.fetch = fetchSimulado as unknown as typeof fetch;
     vi.stubEnv("REPORTES_GITHUB_TOKEN", TOKEN);
+    sesionSimulada.mockResolvedValue({
+      estado: 200,
+      idPersona: "p1",
+      persona: { email: "persona@prueba.test", rol: "persona", perfil: "usuario", tribuAdmin: null } as never,
+    });
   });
   afterEach(() => {
     globalThis.fetch = fetchOriginal;
     vi.unstubAllEnvs();
+  });
+
+  it("sin sesión responde 401 y no crea nada", async () => {
+    sesionSimulada.mockResolvedValue({ estado: 401 });
+    const res = await POST(pedido(cuerpo));
+    expect(res.status).toBe(401);
+    expect(fetchSimulado).not.toHaveBeenCalled();
+  });
+
+  it("con un email fuera de la lista responde 403 y no crea nada", async () => {
+    sesionSimulada.mockResolvedValue({ estado: 403 });
+    const res = await POST(pedido(cuerpo));
+    expect(res.status).toBe(403);
+    expect(fetchSimulado).not.toHaveBeenCalled();
   });
 
   it("crea el issue con título, etiquetas y token, y no filtra el token", async () => {

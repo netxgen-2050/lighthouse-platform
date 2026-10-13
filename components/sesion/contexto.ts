@@ -34,6 +34,8 @@ export type ValorSesion = {
   entrar: () => void;
   entrarComo: (email: string) => void;
   salir: () => Promise<void>;
+  /** Cabeceras que acreditan la sesión (token de Privy o modo de prueba) para pedir a las rutas `/api`. */
+  cabeceras: () => Promise<Record<string, string>>;
 };
 
 export const ContextoSesion = createContext<ValorSesion | null>(null);

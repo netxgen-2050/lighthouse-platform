@@ -126,6 +126,13 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
     }
   }, [logout]);
 
+  const cabeceras = useCallback(async (): Promise<Record<string, string>> => {
+    if (prueba) return { "x-lh-prueba": prueba };
+    const pedirToken = obtenerToken.current;
+    const token = pedirToken ? await pedirToken() : null;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }, [prueba]);
+
   const login = privy?.login;
   const valor = useMemo<ValorSesion>(
     () => ({
@@ -138,8 +145,9 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       entrar: () => login?.(),
       entrarComo,
       salir,
+      cabeceras,
     }),
-    [resultado, prueba, privy, login, entrarComo, salir],
+    [resultado, prueba, privy, login, entrarComo, salir, cabeceras],
   );
 
   return (

@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
+import { sesionDelPedido } from "@/lib/sesion/servidor";
 import { armarCuerpo, armarEtiquetas, armarTitulo, esBot, REPO, validarReporte } from "@/lib/reportes/reporte";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
+  // Solo quien entró y está en la lista de acceso puede crear issues (producción ya no tiene la protección de Vercel).
+  const sesion = await sesionDelPedido(req);
+  if (sesion.estado !== 200) return NextResponse.json({ ok: false, sesion: false }, { status: sesion.estado });
+
   let entrada: unknown;
   try {
     entrada = await req.json();

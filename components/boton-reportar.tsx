@@ -2,6 +2,7 @@
 
 import { Bug } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useSesion } from "@/components/sesion/contexto";
 import { TAMANO_FLOTANTE } from "@/lib/ui/flotantes";
 import {
   armarContexto,
@@ -30,6 +31,7 @@ const boton =
   "rounded-full px-5 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
 export function BotonReportar({ version, entorno }: { version: string; entorno: string }) {
+  const { cabeceras } = useSesion();
   const dialogo = useRef<HTMLDialogElement | null>(null);
   const disparador = useRef<HTMLButtonElement | null>(null);
   const refs = useRef<Partial<Record<CampoReporte, HTMLElement | null>>>({});
@@ -114,7 +116,7 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
     try {
       const res = await fetch("/api/reportes", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await cabeceras()) },
         body: JSON.stringify(entrada),
       });
       if (res.ok) {
