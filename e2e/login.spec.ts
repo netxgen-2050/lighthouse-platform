@@ -150,6 +150,31 @@ test.describe("email fuera de la lista", () => {
   });
 });
 
+test.describe("cookie de prueba vencida", () => {
+  test.use({ rol: "ninguno" });
+
+  test("si el servidor responde 401 al modo de prueba, se borra la cookie y vuelve la pantalla de entrada", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await context.addCookies([{ name: COOKIE_PRUEBA, value: encodeURIComponent(EMAILS.persona), url: baseURL! }]);
+    // Simula un servidor que ya no acepta el modo de prueba: solo las pedidas con el header de prueba dan 401.
+    await page.route("**/api/sesion", async (ruta) => {
+      if (ruta.request().headers()["x-lh-prueba"]) {
+        await ruta.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ error: "sin-sesion" }) });
+      } else {
+        await ruta.continue();
+      }
+    });
+    await page.goto("/");
+    await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toBeVisible();
+    await expect(page.getByText("No pudimos verificar tu sesión")).toHaveCount(0);
+    const cookies = await context.cookies(baseURL!);
+    expect(cookies.find((c) => c.name === COOKIE_PRUEBA)).toBeUndefined();
+  });
+});
+
 test.describe("salir y cambiar de cuenta", () => {
   test.use({ rol: "persona" });
 

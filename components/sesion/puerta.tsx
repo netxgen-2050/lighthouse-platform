@@ -126,6 +126,7 @@ function PantallaDeEntrada() {
   if (estado === "cargando") {
     return (
       <div className="mx-auto max-w-xl p-6 sm:p-10">
+        <Aviso />
         <p role="status" className="text-muted">
           Cargando…
         </p>
