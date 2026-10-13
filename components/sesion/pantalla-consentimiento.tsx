@@ -7,7 +7,7 @@ import type { ClaveTermino } from "@/lib/legal/terminos";
 import { registrarConsentimiento } from "@/lib/privacidad/consentimiento";
 import { RESUMEN } from "@/lib/privacidad/politica";
 import { useConsentimiento } from "@/lib/privacidad/usar-consentimiento";
-import { renovarPendiente } from "@/lib/sesion/nivel";
+import { CLAVE_PENDIENTE_HORA, leerPendiente, renovarPendiente } from "@/lib/sesion/nivel";
 import { useSesion } from "./contexto";
 
 const BOTON =
@@ -31,6 +31,14 @@ export function PantallaConsentimiento() {
   const [terminos, setTerminos] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const primera = useRef<HTMLInputElement>(null);
+  // ¿Había un plan elegido en Sumarte todavía vigente cuando apareció esta pantalla? (se mira una sola vez, al montar)
+  const [pedidoVigenteAlLlegar] = useState(() => {
+    try {
+      return leerPendiente(window.sessionStorage).length > 0;
+    } catch {
+      return false;
+    }
+  });
 
   function aceptar() {
     if (!politica || !terminos) {
@@ -38,12 +46,18 @@ export function PantallaConsentimiento() {
       primera.current?.focus();
       return;
     }
-    // El plan elegido en Sumarte espera esta pantalla: se renueva su plazo (antes de registrar, que destraba Sumarte)
-    // para que no venza mientras la persona leía.
-    try {
-      renovarPendiente(window.sessionStorage);
-    } catch {
-      // Sin almacenamiento de la pestaña no hay pedido pendiente.
+    // El plan elegido en Sumarte espera esta pantalla: si estaba vigente al llegar, se renueva su plazo (antes de registrar,
+    // que destraba Sumarte) para que no venza mientras la persona leía. Un pedido que ya había vencido no se revive.
+    let horaPrevia: string | null = null;
+    let renovado = false;
+    if (pedidoVigenteAlLlegar) {
+      try {
+        horaPrevia = window.sessionStorage.getItem(CLAVE_PENDIENTE_HORA);
+        renovarPendiente(window.sessionStorage);
+        renovado = true;
+      } catch {
+        // Sin almacenamiento de la pestaña no hay pedido pendiente.
+      }
     }
     let guardado = false;
     try {
@@ -52,6 +66,15 @@ export function PantallaConsentimiento() {
       guardado = false;
     }
     if (!guardado) {
+      // No se registró nada: el pedido queda como estaba.
+      if (renovado) {
+        try {
+          if (horaPrevia === null) window.sessionStorage.removeItem(CLAVE_PENDIENTE_HORA);
+          else window.sessionStorage.setItem(CLAVE_PENDIENTE_HORA, horaPrevia);
+        } catch {
+          // Sin almacenamiento de la pestaña no hay nada que restaurar.
+        }
+      }
       setError("Error: tu navegador no permite guardar datos en este sitio, así que no podemos registrar tu consentimiento. Revisá la configuración de privacidad o probá en otro navegador.");
       return;
     }

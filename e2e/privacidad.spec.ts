@@ -150,6 +150,22 @@ test.describe("plazo del plan elegido en Sumarte", () => {
   });
 });
 
+test.describe("plan abandonado", () => {
+  test.use({ rol: "ninguno", consentimiento: "ninguno" });
+
+  test("un pedido que ya había vencido antes de la pantalla de consentimiento no se revive al aceptar", async ({ page }) => {
+    test.skip(CON_PRIVY, SIN_PRIVY);
+    await page.goto("/sumarte");
+    await page.getByRole("button", { name: "Hacerme miembro" }).click();
+    // La persona abandonó el registro y volvió 30 minutos después: el pedido ya venció.
+    await page.evaluate(() => window.sessionStorage.setItem("lh-sumarte-pendiente-hora", String(Date.now() - 30 * 60 * 1000)));
+    await page.getByRole("button", { name: EMAILS.persona }).click();
+    await expect(titulo(page)).toBeVisible();
+    await aceptar(page);
+    await expect(page.getByText("Tu plan actual:")).toContainText("Explorador");
+  });
+});
+
 test.describe("datos sensibles del KYC", () => {
   test.use({ rol: "persona", consentimiento: "basico" });
 
