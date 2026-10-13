@@ -8,7 +8,9 @@ import {
   descartarImportacion,
   importarDatosPrevios,
 } from "@/lib/demo/importar";
+import { rutaPideConsentimiento } from "@/lib/privacidad/consentimiento";
 import { useSesion } from "./contexto";
+import { PantallaConsentimiento } from "./pantalla-consentimiento";
 
 const BOTON =
   "w-fit rounded-lg px-4 py-1.5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
@@ -21,13 +23,19 @@ const BOTON_SECUNDARIO = `${BOTON} border border-faint hover:bg-surface-2`;
  * Lo que no es una sesión (verificando, sin acceso con `LH_ACCESO=lista`, error) sí muestra su aviso.
  */
 export function Puerta({ children }: { children: ReactNode }) {
-  const { estado, nivel, nivelListo } = useSesion();
+  const { estado, nivel, nivelListo, consentimiento } = useSesion();
   const ruta = usePathname();
   // Mientras se verifica la sesión se espera ("Cargando…"): mostrar la página y rearmarla al confirmar la sesión
   // haría perder lo que la persona ya estaba haciendo (foco, scroll, casillas).
   if (estado === "sin-sesion") return puedeRuta("sin-cuenta", ruta) ? <>{children}</> : <IrASumarte ruta={ruta} />;
   if (estado !== "ok") return <PantallaDeEntrada />;
   if (!nivelListo) return <PantallaDeEntrada />;
+  // Sin aceptar la política de privacidad vigente no se usa la app con sesión. Va antes de aplicar el plan elegido en
+  // Sumarte (el registro): Sumarte no se dibuja hasta aceptar. Las páginas públicas de Descubrir quedan abiertas.
+  if (rutaPideConsentimiento(ruta)) {
+    if (consentimiento === "cargando") return <PantallaDeEntrada />;
+    if (consentimiento === "pendiente") return <PantallaConsentimiento />;
+  }
   // NetX no redirige: su propia página explica que es solo del super admin.
   if (!puedeRuta(nivel, ruta) && nivelMinimoDeRuta(ruta) !== "superadmin") return <IrASumarte ruta={ruta} />;
   return <ConSesion>{children}</ConSesion>;
@@ -57,8 +65,9 @@ export function SoloConSesion({ children }: { children: ReactNode }) {
 
 /** Dibuja `children` solo si el nivel de la persona habilita la capacidad (por ejemplo Hifa o el botón de reportes). */
 export function SoloConCapacidad({ capacidad, children }: { capacidad: Capacidad; children: ReactNode }) {
-  const { estado, nivel } = useSesion();
-  return estado === "ok" && puedeCapacidad(nivel, capacidad) ? <>{children}</> : null;
+  const { estado, nivel, consentimiento } = useSesion();
+  // Hifa y Reportar guardan datos de la persona: no aparecen hasta que aceptó la política de privacidad.
+  return estado === "ok" && consentimiento === "vigente" && puedeCapacidad(nivel, capacidad) ? <>{children}</> : null;
 }
 
 function ConSesion({ children }: { children: ReactNode }) {

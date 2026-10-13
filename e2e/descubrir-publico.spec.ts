@@ -139,6 +139,9 @@ test.describe("navegación sin sesión", () => {
 });
 
 test.describe("sin datos guardados sin sesión", () => {
+  // La fixture siembra el consentimiento de los emails de prueba: acá nada debe quedar guardado.
+  test.use({ consentimiento: "ninguno" });
+
   test("recorrer las páginas públicas no crea claves en el navegador", async ({ page }) => {
     for (const ruta of ["/", "/territorios/lighthouse", "/tribus", "/tribus/valle", "/tribus/valle/manifiesto", "/sumarte"]) {
       await page.goto(ruta);

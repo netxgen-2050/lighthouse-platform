@@ -45,6 +45,14 @@ describe("POST /api/reportes", () => {
     expect(fetchSimulado).not.toHaveBeenCalled();
   });
 
+  it("un pedido de privacidad lleva la etiqueta `privacidad`", async () => {
+    fetchSimulado.mockResolvedValue(new Response(JSON.stringify({ number: 43 }), { status: 201 }));
+    const res = await POST(pedido({ ...cuerpo, tipo: "pregunta", privacidad: true }));
+    expect(res.status).toBe(200);
+    const enviado = JSON.parse(fetchSimulado.mock.calls[0][1].body);
+    expect(enviado.labels).toEqual(["reporte", "pregunta", "privacidad"]);
+  });
+
   it("crea el issue con título, etiquetas y token, y no filtra el token", async () => {
     fetchSimulado.mockResolvedValue(new Response(JSON.stringify({ number: 42 }), { status: 201 }));
     const res = await POST(pedido(cuerpo));

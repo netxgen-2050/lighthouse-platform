@@ -2,6 +2,7 @@
 
 import { createContext, useContext } from "react";
 import type { Nivel } from "@/lib/permisos/niveles";
+import type { EstadoConsentimiento } from "@/lib/privacidad/usar-consentimiento";
 import type { Persona } from "@/lib/sesion/personas";
 
 export type EstadoSesion = "cargando" | "sin-sesion" | "sin-acceso" | "error" | "ok";
@@ -39,6 +40,11 @@ export type ValorSesion = {
   nivel: Nivel;
   /** ¿Ya se leyó lo que la persona eligió en Sumarte? Hasta entonces `nivel` es provisorio y no se la debe redirigir. */
   nivelListo: boolean;
+  /**
+   * ¿Aceptó la persona la política de privacidad vigente? "cargando" hasta leer el registro (o sin sesión);
+   * "pendiente" si nunca aceptó o la política cambió. Ver `lib/privacidad/consentimiento.ts`.
+   */
+  consentimiento: EstadoConsentimiento;
   /** Tribu que lidera (Plan Tribu), o null. */
   tribuLider: string | null;
   salir: () => Promise<void>;

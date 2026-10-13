@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         title: armarTitulo(r.reporte),
         body: armarCuerpo(r.reporte),
-        labels: armarEtiquetas(r.reporte.tipo),
+        labels: armarEtiquetas(r.reporte.tipo, r.reporte.privacidad === true),
       }),
     });
     if (!res.ok) {

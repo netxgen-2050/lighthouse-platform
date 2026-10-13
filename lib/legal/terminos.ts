@@ -206,6 +206,20 @@ export const TERMINOS = {
       "Si entrara al fideicomiso una persona con residencia fiscal en el exterior, todo el fideicomiso pasaría a pagar Ganancias como sujeto, y eso afectaría a todos los aportantes. Por eso, por ahora, no se habilita. El equipo está estudiando una vía separada para aportantes del exterior.",
     borrador: true,
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  datos: {
+    titulo: "Tus datos personales",
+    texto:
+      "NetXGen (entidad registrada en Honduras) es la responsable de tus datos. Los usa solo para que la plataforma funcione, con tu consentimiento, y podés pedir verlos, corregirlos, borrarlos o retirar tu consentimiento cuando quieras (Ley 25.326, arts. 14 a 16, para personas en Argentina; RGPD para personas en Europa). En el prototipo la mayor parte queda solo en tu navegador.",
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  transferencia: {
+    titulo: "Transferencia internacional de datos",
+    texto:
+      "Los servicios que usamos para entrar, alojar la plataforma y guardar datos (Privy, Vercel, Neon y GitHub) tienen sus servidores en Estados Unidos. Eso es una transferencia internacional de datos: por eso te pedimos tu consentimiento antes de usar la plataforma con tu cuenta. Las cláusulas con cada proveedor todavía están por definirse.",
+    borrador: true,
+  },
 } as const;
 
 /** Claves de los textos que son borrador (no vienen del mock-up). */

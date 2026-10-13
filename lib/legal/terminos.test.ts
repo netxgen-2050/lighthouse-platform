@@ -25,6 +25,7 @@ describe("catálogo legal", () => {
         "circulo",
         "contacto",
         "creditos",
+        "datos",
         "espejo",
         "estatuto",
         "fidasamblea",
@@ -51,6 +52,7 @@ describe("catálogo legal", () => {
         "semillas",
         "sumarte",
         "ticket",
+        "transferencia",
       ].sort(),
     );
   });
@@ -72,6 +74,11 @@ describe("catálogo legal", () => {
   });
   it("inversorexterior es borrador", () => {
     expect(esBorrador("inversorexterior")).toBe(true);
+  });
+  it("datos y transferencia son borrador y explican en palabras simples", () => {
+    expect(esBorrador("datos")).toBe(true);
+    expect(esBorrador("transferencia")).toBe(true);
+    expect(TERMINOS.transferencia.texto).toContain("Estados Unidos");
   });
   for (const [clave, t] of Object.entries(TERMINOS)) {
     // Los borradores son textos nuevos que no vienen del mock-up.

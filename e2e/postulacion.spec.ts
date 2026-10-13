@@ -59,7 +59,10 @@ test("el selector de forma jurídica está en su grupo y se puede elegir", async
 
 test("/netx muestra sin dato (no 0) si el navegador no deja leer", async ({ page }) => {
   await page.addInitScript(() => {
-    Storage.prototype.getItem = () => {
+    // El consentimiento de privacidad ya está dado (lo siembra la fixture): lo demás no se puede leer.
+    const leer = Storage.prototype.getItem;
+    Storage.prototype.getItem = function (clave: string) {
+      if (String(clave).endsWith("lh-consentimiento")) return leer.call(this, clave);
       throw new Error("bloqueado");
     };
   });

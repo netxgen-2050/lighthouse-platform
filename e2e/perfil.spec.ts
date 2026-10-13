@@ -128,9 +128,18 @@ test("con el almacenamiento bloqueado: comunidades y resumen dicen 'sin dato' y 
   // y este caso no aplica. Se prueba en el e2e local, que corre sin Privy.
   test.skip(Boolean(process.env.BASE_URL || process.env.NEXT_PUBLIC_PRIVY_APP_ID), "Con Privy el login necesita el almacenamiento");
   await page.addInitScript(() => {
+    // El consentimiento de privacidad ya está dado (lo siembra la fixture, antes de esto): es lo único que se puede leer.
+    const real = window.localStorage;
+    const bloqueado = () => {
+      throw new DOMException("bloqueado", "SecurityError");
+    };
     Object.defineProperty(window, "localStorage", {
       get() {
-        throw new DOMException("bloqueado", "SecurityError");
+        return {
+          getItem: (clave: string) => (String(clave).endsWith("lh-consentimiento") ? real.getItem(clave) : bloqueado()),
+          setItem: bloqueado,
+          removeItem: bloqueado,
+        };
       },
     });
   });

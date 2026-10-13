@@ -31,6 +31,8 @@ export type Reporte = {
   esperabas: string;
   contacto: string;
   contexto: Contexto;
+  /** Pedido de privacidad (por ejemplo "borren mi cuenta"): suma la etiqueta `privacidad` al issue. */
+  privacidad?: true;
 };
 
 export type CampoReporte = "tipo" | "quePaso" | "esperabas" | "contacto";
@@ -136,7 +138,15 @@ export function validarReporte(entrada: unknown): ResultadoValidar {
   if (Object.keys(errores).length > 0) return { ok: false, errores };
   return {
     ok: true,
-    reporte: { tipo: tipo as TipoReporte, quePaso, esperabas, contacto, contexto: limpiarContexto(o.contexto) },
+    reporte: {
+      tipo: tipo as TipoReporte,
+      quePaso,
+      esperabas,
+      contacto,
+      contexto: limpiarContexto(o.contexto),
+      // Solo los pedidos de tipo "pregunta" pueden llevar la etiqueta de privacidad.
+      ...(o.privacidad === true && tipo === "pregunta" ? { privacidad: true as const } : {}),
+    },
   };
 }
 
@@ -192,8 +202,8 @@ export function armarCuerpo(r: Reporte): string {
   ].join("\n");
 }
 
-export function armarEtiquetas(tipo: TipoReporte): string[] {
-  return ["reporte", tipo];
+export function armarEtiquetas(tipo: TipoReporte, privacidad = false): string[] {
+  return privacidad ? ["reporte", tipo, "privacidad"] : ["reporte", tipo];
 }
 
 /** Texto completo para copiar cuando no se pudo registrar. */

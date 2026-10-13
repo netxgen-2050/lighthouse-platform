@@ -94,6 +94,18 @@ export function guardarPendiente(almacen: Pick<Storage, "setItem">, acciones: Ac
   }
 }
 
+/**
+ * Vuelve a empezar el plazo del pedido pendiente (si hay uno). Se usa al aceptar la política de privacidad, que queda
+ * entre el registro y la aplicación del plan: el tiempo que la persona tarda en leerla no tiene que vencer su elección.
+ */
+export function renovarPendiente(almacen: Pick<Storage, "getItem" | "setItem">, ahora: number = Date.now()): void {
+  try {
+    if (almacen.getItem(CLAVE_PENDIENTE) !== null) almacen.setItem(CLAVE_PENDIENTE_HORA, String(ahora));
+  } catch {
+    // Sin almacenamiento de la pestaña no hay pedido que renovar.
+  }
+}
+
 export function aplicarAcciones(estado: EstadoSumarte, acciones: Accion[]): EstadoSumarte {
   return acciones.reduce(reducir, estado);
 }
