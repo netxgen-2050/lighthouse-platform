@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } fr
 import { TerminoLegal } from "@/components/termino-legal";
 import { CANALES, crearPedido, MAX_MENSAJE, MOMENTOS, MOTIVOS, validar } from "@/lib/contactos/pedidos";
 import type { Canal, Errores, Momento, Motivo, Pedido } from "@/lib/contactos/tipos";
+import { origenDelNavegador } from "@/lib/origen/origen";
 
 type Props = {
   motivo: Motivo;
@@ -65,7 +66,7 @@ export function PedidoContacto({ motivo, referencia, estadoMostrado, aviso, idBo
       return;
     }
     const pedido = crearPedido(
-      { motivo, referencia, canal, momento, mensaje, estadoMostrado },
+      { motivo, referencia, canal, momento, mensaje, estadoMostrado, origen: origenDelNavegador() },
       new Date(),
       idPedido.current,
     );

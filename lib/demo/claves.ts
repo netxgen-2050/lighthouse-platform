@@ -11,6 +11,7 @@ export const CLAVES = {
   pasaporte: "lh-pasaporte",
   consultasLotes: "lh-consultas-lotes",
   contactos: "lh-contactos",
+  origen: "lh-origen",
   bitacora: "lh-bitacora",
   membresia: "lh-membresia",
   postulaciones: "lh-postulaciones",

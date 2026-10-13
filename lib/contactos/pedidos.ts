@@ -1,4 +1,5 @@
-import type { Borrador, Canal, Errores, Momento, Motivo, Pedido } from "./tipos";
+import { limpiar } from "@/lib/origen/origen";
+import type { Borrador, Canal, Errores, Momento, Motivo, OrigenPedido, Pedido } from "./tipos";
 
 export const MAX_MENSAJE = 500;
 
@@ -47,7 +48,28 @@ export function crearPedido(b: Borrador, ahora: Date, id: string): Pedido {
     ...(mensaje ? { mensaje } : {}),
     destino: MOTIVOS[b.motivo].destino,
     ...(b.estadoMostrado ? { estadoMostrado: b.estadoMostrado } : {}),
+    ...(b.origen && (b.origen.fuente || b.origen.medio || b.origen.campana)
+      ? { origen: { ...b.origen } }
+      : {}),
   };
+}
+
+/** Un origen mal formado (o vacío) se lee como "sin origen"; el pedido sigue valiendo. */
+function leerOrigenDePedido(x: unknown): OrigenPedido | undefined {
+  if (typeof x !== "object" || x === null || Array.isArray(x)) return undefined;
+  const o = x as Record<string, unknown>;
+  const partes = { fuente: o.fuente, medio: o.medio, campana: o.campana };
+  if (Object.values(partes).some((v) => v !== undefined && typeof v !== "string")) return undefined;
+  // Misma limpieza que al leer lh-origen: minúsculas, solo [a-z0-9._-] y hasta 60 caracteres.
+  const fuente = limpiar(partes.fuente as string | undefined);
+  const medio = limpiar(partes.medio as string | undefined);
+  const campana = limpiar(partes.campana as string | undefined);
+  const origen: OrigenPedido = {
+    ...(fuente ? { fuente } : {}),
+    ...(medio ? { medio } : {}),
+    ...(campana ? { campana } : {}),
+  };
+  return origen.fuente || origen.medio || origen.campana ? origen : undefined;
 }
 
 function esPedido(x: unknown): x is Pedido {
@@ -74,7 +96,11 @@ export function leerBandeja(texto: string | null): Pedido[] {
   try {
     const dato: unknown = JSON.parse(texto);
     if (!Array.isArray(dato)) return [];
-    return dato.filter(esPedido);
+    return dato.filter(esPedido).map((p) => {
+      const { origen: crudo, ...resto } = p as Pedido & { origen?: unknown };
+      const origen = leerOrigenDePedido(crudo);
+      return origen ? { ...resto, origen } : resto;
+    });
   } catch {
     return [];
   }
