@@ -18,7 +18,7 @@ export const RESUMEN: readonly string[] = [
   "Qué guardamos: tu email y tu billetera (por el login), y lo que cargues en la plataforma: perfil, comunidades, pactos, Semillas, votos, compromisos, contactos, verificación de identidad y reportes.",
   "Para qué: para que la plataforma funcione y para conectar tu presencia con tu perfil. Nada más.",
   "Dónde: los servicios que usamos (Privy, Vercel, Neon y GitHub) están en Estados Unidos. Es una transferencia internacional de datos.",
-  "Tus derechos: podés ver, descargar, corregir y borrar tus datos, y retirar tu consentimiento cuando quieras, desde Mis datos.",
+  "Tus derechos: podés ver y descargar tus datos, borrarlos y retirar tu consentimiento cuando quieras desde Mis datos, y corregirlos desde tu Perfil.",
 ];
 
 export type DatosDePantalla = { pantalla: string; datos: string; donde: string };

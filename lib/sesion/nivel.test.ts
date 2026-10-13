@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { INICIAL, reducir } from "@/lib/sumarte/estado";
-import { aplicarAcciones, calcularNivel, CLAVE_PENDIENTE, guardarPendiente, leerPendiente } from "./nivel";
+import {
+  aplicarAcciones,
+  calcularNivel,
+  CLAVE_PENDIENTE,
+  CLAVE_PENDIENTE_HORA,
+  guardarPendiente,
+  leerPendiente,
+  renovarPendiente,
+} from "./nivel";
 
 const persona = { rol: "persona", tribuAdmin: null } as const;
 
@@ -59,6 +67,19 @@ describe("pendiente", () => {
     guardarPendiente(a, [{ tipo: "plan", plan: "miembro" }]);
     expect(leerPendiente(a, Date.now() + 60_000)).toHaveLength(1);
     expect(leerPendiente(a, Date.now() + 60 * 60_000)).toEqual([]);
+  });
+  it("renovar el pedido (al aceptar la privacidad) vuelve a empezar el plazo", () => {
+    const a = almacenEnMemoria();
+    guardarPendiente(a, [{ tipo: "plan", plan: "miembro" }]);
+    const tarde = Date.now() + 10 * 60_000;
+    expect(leerPendiente(a, tarde)).toEqual([]);
+    renovarPendiente(a, tarde);
+    expect(leerPendiente(a, tarde + 60_000)).toHaveLength(1);
+  });
+  it("renovar sin pedido pendiente no crea nada", () => {
+    const a = almacenEnMemoria();
+    renovarPendiente(a);
+    expect(a.getItem(CLAVE_PENDIENTE_HORA)).toBeNull();
   });
   it("las acciones pendientes se aplican en orden", () => {
     const e = aplicarAcciones(INICIAL, [{ tipo: "nivel", nivel: "raiz" }, { tipo: "pase" }]);

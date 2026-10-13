@@ -134,6 +134,22 @@ test.describe("registro desde Sumarte", () => {
   });
 });
 
+test.describe("plazo del plan elegido en Sumarte", () => {
+  test.use({ rol: "ninguno", consentimiento: "ninguno" });
+
+  test("aceptar después de los 5 minutos del pedido conserva el plan", async ({ page }) => {
+    test.skip(CON_PRIVY, SIN_PRIVY);
+    await page.goto("/sumarte");
+    await page.getByRole("button", { name: "Hacerme miembro" }).click();
+    await page.getByRole("button", { name: EMAILS.persona }).click();
+    await expect(titulo(page)).toBeVisible();
+    // Pasaron 10 minutos leyendo la pantalla: el pedido pendiente ya estaría vencido.
+    await page.evaluate(() => window.sessionStorage.setItem("lh-sumarte-pendiente-hora", String(Date.now() - 10 * 60 * 1000)));
+    await aceptar(page);
+    await expect(page.getByText("Tu plan actual:")).toContainText("Miembro");
+  });
+});
+
 test.describe("datos sensibles del KYC", () => {
   test.use({ rol: "persona", consentimiento: "basico" });
 

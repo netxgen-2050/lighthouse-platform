@@ -59,7 +59,8 @@ export function MisDatosCliente() {
       document.body.appendChild(enlace);
       enlace.click();
       enlace.remove();
-      URL.revokeObjectURL(url);
+      // Revocar enseguida puede cancelar la descarga en Safari y Firefox: se espera un momento.
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
       setDescarga((d) => ({ n: d.n + 1, texto: `Listo: se descargó el archivo ${nombre}.`, error: false }));
     } catch {
       setDescarga((d) => ({

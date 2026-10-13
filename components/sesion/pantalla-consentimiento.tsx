@@ -7,6 +7,7 @@ import type { ClaveTermino } from "@/lib/legal/terminos";
 import { registrarConsentimiento } from "@/lib/privacidad/consentimiento";
 import { RESUMEN } from "@/lib/privacidad/politica";
 import { useConsentimiento } from "@/lib/privacidad/usar-consentimiento";
+import { renovarPendiente } from "@/lib/sesion/nivel";
 import { useSesion } from "./contexto";
 
 const BOTON =
@@ -36,6 +37,13 @@ export function PantallaConsentimiento() {
       setError("Error: para seguir tenés que marcar las dos casillas.");
       primera.current?.focus();
       return;
+    }
+    // El plan elegido en Sumarte espera esta pantalla: se renueva su plazo (antes de registrar, que destraba Sumarte)
+    // para que no venza mientras la persona leía.
+    try {
+      renovarPendiente(window.sessionStorage);
+    } catch {
+      // Sin almacenamiento de la pestaña no hay pedido pendiente.
     }
     let guardado = false;
     try {
