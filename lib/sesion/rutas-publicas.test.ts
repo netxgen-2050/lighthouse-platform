@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { esPublica } from "./rutas-publicas";
 
 describe("esPublica", () => {
-  it.each(["/", "/territorios/lighthouse", "/tribus", "/tribus/valle", "/tribus/valle/manifiesto", "/tribus/", "/tribus?x=1"])(
+  it.each(["/", "/territorios/lighthouse", "/tribus", "/tribus/valle", "/tribus/valle/manifiesto", "/tribus/", "/tribus?x=1", "/sumarte", "/sumarte?volver=/pactos"])(
     "%s es pública",
     (ruta) => expect(esPublica(ruta)).toBe(true),
   );
@@ -10,7 +10,7 @@ describe("esPublica", () => {
   it.each([
     "/pactos",
     "/semillas",
-    "/sumarte",
+    "/sumarte/otro",
     "/perfil",
     "/netx",
     "/tribus/valle/postular",
