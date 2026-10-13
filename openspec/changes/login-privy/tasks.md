@@ -10,6 +10,7 @@
 
 ## 3. Tests
 
+- [ ] 3.0 Los e2e locales no dependen de Vercel: `playwright.config.ts` levanta la app con `LH_AUTH_PRUEBA=1` y un `LH_PERSONAS` de prueba con **emails inventados** (por ejemplo `super@prueba.test=superadmin:usuario;admin@prueba.test=admin-tribu:usuario;persona@prueba.test=persona:inversor`). Los emails reales del equipo nunca van al repo. Si al probar el preview de Vercel no está `LH_AUTH_PRUEBA` en Preview, el tester lo reporta como bloqueo (Gus todavía no cargó las variables), no como falla del cambio.
 - [ ] 3.1 e2e: entrar con el modo de prueba como cada rol, email fuera de la lista, salir, cambiar de cuenta (datos separados), NetX visible solo al super admin; adaptar todos los e2e existentes para que entren con el modo de prueba antes de navegar (un `beforeEach` o un fixture). Verificar con `pnpm test:e2e`.
 
 ## 4. Integración
