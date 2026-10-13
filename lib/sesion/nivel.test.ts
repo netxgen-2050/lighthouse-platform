@@ -54,6 +54,12 @@ describe("pendiente", () => {
     a.setItem(CLAVE_PENDIENTE, "{no json");
     expect(leerPendiente(a)).toEqual([]);
   });
+  it("una elección abandonada vence y no se aplica al entrar más tarde", () => {
+    const a = almacenEnMemoria();
+    guardarPendiente(a, [{ tipo: "plan", plan: "miembro" }]);
+    expect(leerPendiente(a, Date.now() + 60_000)).toHaveLength(1);
+    expect(leerPendiente(a, Date.now() + 60 * 60_000)).toEqual([]);
+  });
   it("las acciones pendientes se aplican en orden", () => {
     const e = aplicarAcciones(INICIAL, [{ tipo: "nivel", nivel: "raiz" }, { tipo: "pase" }]);
     expect(e).toMatchObject({ plan: "miembro", pase: "raiz" });

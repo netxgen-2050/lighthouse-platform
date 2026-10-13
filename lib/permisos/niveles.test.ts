@@ -87,6 +87,10 @@ describe("esRutaInterna", () => {
     expect(esRutaInterna("//malo.com")).toBe(false);
     expect(esRutaInterna("https://malo.com")).toBe(false);
     expect(esRutaInterna("/\\malo.com")).toBe(false);
+    expect(esRutaInterna("/\t/malo.com")).toBe(false);
+    expect(esRutaInterna("/\n/malo.com")).toBe(false);
+    expect(esRutaInterna("/\r/malo.com")).toBe(false);
+    expect(esRutaInterna("/pactos?x=1")).toBe(true);
     expect(esRutaInterna(null)).toBe(false);
   });
 });

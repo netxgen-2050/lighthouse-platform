@@ -14,6 +14,9 @@ export const EVENTO_NIVEL = "lh-nivel";
 
 /** Pedido guardado cuando alguien elige un plan antes de registrarse; se aplica apenas entra (vive solo en la pestaña). */
 export const CLAVE_PENDIENTE = "lh-sumarte-pendiente";
+export const CLAVE_PENDIENTE_HORA = "lh-sumarte-pendiente-hora";
+/** Cuánto vale una elección hecha sin cuenta: alcanza para registrarse, no para aplicarse horas después. */
+export const VIGENCIA_PENDIENTE_MS = 5 * 60 * 1000;
 
 export type AjustesDePersona = { rol: RolSesion; tribuAdmin: string | null };
 
@@ -58,8 +61,11 @@ export function guardarEstado(almacen: Pick<Storage, "setItem">, estado: EstadoS
 }
 
 /** Acciones de Sumarte elegidas sin sesión, para aplicarlas al entrar. Solo se aceptan las que cambian de plan. */
-export function leerPendiente(almacen: Pick<Storage, "getItem">): Accion[] {
+export function leerPendiente(almacen: Pick<Storage, "getItem">, ahora: number = Date.now()): Accion[] {
   try {
+    // Una elección abandonada (cerró el registro sin entrar) vence: no se aplica al entrar mucho después.
+    const guardadoEn = Number(almacen.getItem(CLAVE_PENDIENTE_HORA));
+    if (Number.isFinite(guardadoEn) && guardadoEn > 0 && ahora - guardadoEn > VIGENCIA_PENDIENTE_MS) return [];
     const lista = JSON.parse(almacen.getItem(CLAVE_PENDIENTE) ?? "[]") as unknown;
     if (!Array.isArray(lista)) return [];
     return lista.filter((a): a is Accion => {
@@ -82,6 +88,7 @@ export function leerPendiente(almacen: Pick<Storage, "getItem">): Accion[] {
 export function guardarPendiente(almacen: Pick<Storage, "setItem">, acciones: Accion[]): void {
   try {
     almacen.setItem(CLAVE_PENDIENTE, JSON.stringify(acciones));
+    almacen.setItem(CLAVE_PENDIENTE_HORA, String(Date.now()));
   } catch {
     // Sin almacenamiento de la pestaña no se recuerda el pedido: la persona vuelve a elegir al entrar.
   }

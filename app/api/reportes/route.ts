@@ -5,7 +5,7 @@ import { armarCuerpo, armarEtiquetas, armarTitulo, esBot, REPO, validarReporte }
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  // Solo quien entró y está en la lista de acceso puede crear issues (producción ya no tiene la protección de Vercel).
+  // Solo quien entró (con una sesión válida) puede crear issues (producción ya no tiene la protección de Vercel).
   const sesion = await sesionDelPedido(req);
   if (sesion.estado !== 200) return NextResponse.json({ ok: false, sesion: false }, { status: sesion.estado });
 

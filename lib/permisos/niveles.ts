@@ -127,5 +127,6 @@ export function ayudaDeRuta(ruta: string): string {
 
 /** Solo rutas internas ("/algo"): evita volver a una dirección externa o con barras dobles. */
 export function esRutaInterna(ruta: string | null | undefined): ruta is string {
-  return typeof ruta === "string" && /^\/(?!\/)/.test(ruta) && !ruta.includes("\\");
+  // Sin caracteres de control (tab, CR, LF…): el navegador los borra y "/\t/sitio.com" pasaría a ser "//sitio.com".
+  return typeof ruta === "string" && /^\/(?![/\\])/.test(ruta) && !/[\\\u0000-\u001f\u007f]/.test(ruta);
 }

@@ -37,7 +37,8 @@ export function Puerta({ children }: { children: ReactNode }) {
 function IrASumarte({ ruta }: { ruta: string }) {
   const router = useRouter();
   useEffect(() => {
-    router.replace(`/sumarte?volver=${encodeURIComponent(ruta)}`);
+    // Se conserva la query (por ejemplo ?sel=) para volver exactamente a la misma vista.
+    router.replace(`/sumarte?volver=${encodeURIComponent(ruta + window.location.search)}`);
   }, [router, ruta]);
   return (
     <div className="mx-auto max-w-xl p-6 sm:p-10">
