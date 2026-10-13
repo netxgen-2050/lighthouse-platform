@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "./fixtura";
-import { conIdentidadVerificada } from "./ayudas";
+import { conIdentidadVerificada, ignorarEnSinRed } from "./ayudas";
 
 test("muestra título, aviso de prototipo, cuatro planes y la tabla", async ({ page }) => {
   const respuesta = await page.goto("/sumarte");
@@ -48,8 +48,8 @@ test("activar el pase no hace pedidos de red, sobrevive a la recarga y se deshac
   // Se ignoran los prefetch de enlaces del rail que hace Next (solo ?_rsc=, sin datos propios).
   page.on("request", (r) => {
     const u = new URL(r.url());
-    // vercel.live es la barra de comentarios que Vercel inyecta en los previews, no la app.
-    if (u.hostname === "vercel.live") return;
+    // Vercel, Privy y WalletConnect no son la app ni llevan datos de la persona.
+    if (ignorarEnSinRed(r)) return;
     // La verificación de la sesión (login) no es un dato de la pantalla.
     if (u.pathname === "/api/sesion") return;
     const claves = [...u.searchParams.keys()];

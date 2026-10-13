@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "./fixtura";
-import { conIdentidadVerificada } from "./ayudas";
+import { conIdentidadVerificada, ignorarEnSinRed } from "./ayudas";
 
 async function comoMiembro(page: Page, comunidades: string[] = ["lighthouse"]) {
   await page.addInitScript((ids) => {
@@ -233,8 +233,8 @@ test("no manda datos a un servidor", async ({ page }) => {
   await comoMiembro(page);
   const pedidos: string[] = [];
   page.on("request", (r) => {
-    // La barra de comentarios de Vercel (vercel.live) solo existe en los previews: no es la app.
-    if (r.method() !== "GET" && !new URL(r.url()).hostname.endsWith("vercel.live")) pedidos.push(r.url());
+    // Vercel, Privy y WalletConnect no son la app ni llevan datos de la persona.
+    if (r.method() !== "GET" && !ignorarEnSinRed(r)) pedidos.push(r.url());
   });
   await page.goto("/pactos");
   await llenarPacto(page);

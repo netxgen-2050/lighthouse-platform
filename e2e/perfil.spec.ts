@@ -123,6 +123,9 @@ test("comunidades y resumen salen de la membresía y los pactos guardados", asyn
 });
 
 test("con el almacenamiento bloqueado: comunidades y resumen dicen 'sin dato' y se avisa", async ({ page }) => {
+  // Con Privy activo (previews y producción) el login necesita el almacenamiento del navegador: sin él no hay sesión
+  // y este caso no aplica. Se prueba en el e2e local, que corre sin Privy.
+  test.skip(Boolean(process.env.BASE_URL || process.env.NEXT_PUBLIC_PRIVY_APP_ID), "Con Privy el login necesita el almacenamiento");
   await page.addInitScript(() => {
     Object.defineProperty(window, "localStorage", {
       get() {

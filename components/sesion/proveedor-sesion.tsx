@@ -45,6 +45,10 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
     obtenerToken.current = privy?.getAccessToken;
   });
 
+  // En modo de prueba la sesión no depende de Privy: que Privy termine de inicializarse no tiene que volver a verificar.
+  const privyListoEfectivo = prueba ? true : privyListo;
+  const privyAutenticadoEfectivo = prueba ? false : privyAutenticado;
+
   useEffect(() => {
     if (prueba === undefined) return;
     let vigente = true;
@@ -57,9 +61,9 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       if (prueba) {
         cabeceras["x-lh-prueba"] = prueba;
       } else {
-        if (!privyListo) return;
+        if (!privyListoEfectivo) return;
         const pedirToken = obtenerToken.current;
-        if (!privyAutenticado || !pedirToken) return poner({ estado: "sin-sesion", sesion: null });
+        if (!privyAutenticadoEfectivo || !pedirToken) return poner({ estado: "sin-sesion", sesion: null });
         const token = await pedirToken();
         if (!token) return poner({ estado: "sin-sesion", sesion: null });
         cabeceras.Authorization = `Bearer ${token}`;
@@ -83,13 +87,14 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       }
     }
 
-    // La verificación pasa por el servidor; mientras tanto la app no muestra nada personal.
-    setResultado((r) => (r.estado === "cargando" ? r : { estado: "cargando", sesion: null }));
+    // La verificación pasa por el servidor; mientras tanto la app no muestra nada personal. Si ya había una sesión
+    // válida, se revalida sin ocultar la app: ocultarla desmonta todo (se pierden el foco y lo que se estaba haciendo).
+    setResultado((r) => (r.estado === "cargando" || r.estado === "ok" ? r : { estado: "cargando", sesion: null }));
     void resolver();
     return () => {
       vigente = false;
     };
-  }, [prueba, privyListo, privyAutenticado]);
+  }, [prueba, privyListoEfectivo, privyAutenticadoEfectivo]);
 
   // Se fija antes de dibujar la app: todas las claves del navegador salen con el prefijo de esta persona.
   const idPersona = resultado.estado === "ok" ? (resultado.sesion?.idPersona ?? null) : null;

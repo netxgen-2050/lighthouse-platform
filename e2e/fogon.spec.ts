@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
+import { ignorarEnSinRed } from "./ayudas";
 
 test("lista las cinco decisiones con dónde, regla y ⚖, y el aviso de prototipo", async ({ page }) => {
   const respuesta = await page.goto("/fogon");
@@ -51,8 +52,8 @@ test("votar a favor en la huerta actualiza el conteo, sin red, y sobrevive a la 
   const pedidos: string[] = [];
   page.on("request", (r) => {
     const u = new URL(r.url());
-    // La barra de comentarios de Vercel (vercel.live) solo existe en los previews: no es la app.
-    if (u.hostname.endsWith("vercel.live")) return;
+    // Vercel, Privy y WalletConnect no son la app ni llevan datos de la persona.
+    if (ignorarEnSinRed(r)) return;
     // La verificación de la sesión (login) no es un dato de la pantalla.
     if (u.pathname === "/api/sesion") return;
     const claves = [...u.searchParams.keys()];
