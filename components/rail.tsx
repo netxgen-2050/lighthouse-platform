@@ -1,10 +1,17 @@
 import { destinosDeGrupo, GRUPOS_RAIL, type Destino } from "@/lib/navegacion";
+import { esPublica } from "@/lib/sesion/rutas-publicas";
 import { RailEnlaces, type GrupoRail } from "./rail-enlaces";
 
 // Server component: toma los destinos que existen y pasa íconos ya renderizados al cliente.
 // El rail es solo navegación; NetX, la campanita y el avatar viven en la barra superior.
 function item(d: Destino, extra: { destacado?: boolean } = {}) {
-  return { href: d.href, etiqueta: d.etiqueta, icono: <d.icono aria-hidden="true" size={20} />, ...extra };
+  return {
+    href: d.href,
+    etiqueta: d.etiqueta,
+    icono: <d.icono aria-hidden="true" size={20} />,
+    publico: esPublica(d.href),
+    ...extra,
+  };
 }
 
 export function Rail() {

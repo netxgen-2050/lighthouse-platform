@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { EntrarPara } from "@/components/sesion/entrar-para";
+import { useSesion } from "@/components/sesion/contexto";
 import { TerminoLegal } from "@/components/termino-legal";
 import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
 import { useMembresia } from "@/lib/membresia/usar-membresia";
@@ -27,7 +29,9 @@ type Props = {
  * no miembro (leer / adherir), pedido enviado (esperando) o miembro (proponer pacto / sala).
  */
 export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
-  const { estado, cargado, falloAlmacen, aceptar } = useMembresia(comunidad);
+  const { estado: estadoSesion } = useSesion();
+  const conSesion = estadoSesion === "ok";
+  const { estado, cargado, falloAlmacen, aceptar } = useMembresia(comunidad, conSesion);
   const [mensaje, setMensaje] = useState("");
   const aviso = useRef<HTMLParagraphElement>(null);
   const moverFoco = useRef(false);
@@ -42,6 +46,22 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
       aviso.current?.focus();
     }
   }, [estado]);
+
+  // Sin sesión se puede leer el manifiesto, pero adherir pide entrar. Mientras se verifica la sesión no se muestra ningún botón.
+  if (!conSesion && estadoSesion !== "cargando") {
+    return (
+      <div className="grid gap-2">
+        <div className="flex flex-wrap gap-3">
+          <Link className={SUAVE} href={manifiesto}>
+            Leer el manifiesto {de}
+          </Link>
+          <EntrarPara texto="Entrá para adherir" clase={DORADO} />
+          {extra}
+        </div>
+        <p className="text-sm text-muted">Podés leer el manifiesto sin cuenta. Para adherir, entrá primero.</p>
+      </div>
+    );
+  }
 
   // Hasta leer lo guardado no se muestra ningún botón, para no mostrar "Adherir" a quien ya es miembro.
   if (!cargado) return <div className="min-h-10" aria-hidden="true" />;

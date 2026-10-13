@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
+import { EnlaceConCuenta } from "@/components/sesion/entrar-para";
 import { SelloTribu } from "@/components/sello-tribu";
 import { agruparPorEstado, rutaProponerComunidad } from "@/lib/tribus/datos";
 import { TEXTO_ESTADO, type Tribu } from "@/lib/tribus/tipos";
@@ -55,6 +56,9 @@ export default function TribusPage() {
       <h1 className="text-3xl font-semibold">Tribus del Lighthouse</h1>
       <p className="mt-2 mb-4 text-muted">Doce barrios, una tribu en cada uno. Encontrá la tuya.</p>
       <AvisoEjemplo />
+      <p className="mt-2 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+        Prototipo interno · datos de ejemplo
+      </p>
 
       <Seccion
         id="sec-activas"
@@ -107,13 +111,14 @@ export default function TribusPage() {
               </span>
             </Tarjeta>
             <div>
-              <Link
+              <EnlaceConCuenta
                 href={rutaProponerComunidad(t.id)}
-                aria-label={`Proponer una comunidad para el Barrio ${t.barrio}`}
-                className="inline-block rounded-lg bg-deep px-4 py-2 text-sm font-semibold text-on-deep hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+                etiqueta={`Proponer una comunidad para el Barrio ${t.barrio}`}
+                textoEntrar="Entrá para proponer una comunidad"
+                clase="inline-block rounded-lg bg-deep px-4 py-2 text-sm font-semibold text-on-deep hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
               >
                 Proponer una comunidad
-              </Link>
+              </EnlaceConCuenta>
             </div>
           </li>
         ))}

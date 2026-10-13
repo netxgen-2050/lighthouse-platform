@@ -20,6 +20,7 @@ import {
 } from "@/lib/hifa/estado";
 import { armarContexto } from "@/lib/reportes/reporte";
 import { useSesion } from "@/components/sesion/contexto";
+import { EntrarPara } from "@/components/sesion/entrar-para";
 import { TAMANO_FLOTANTE } from "@/lib/ui/flotantes";
 import { AvatarHifa } from "./avatar-hifa";
 
@@ -29,7 +30,8 @@ const BOTON_PRINCIPAL =
   "rounded-full bg-deep px-4 py-1.5 text-sm font-medium text-on-deep hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep disabled:opacity-60";
 
 export function Hifa({ version, entorno }: { version: string; entorno: string }) {
-  const { cabeceras } = useSesion();
+  const { cabeceras, estado: estadoSesion } = useSesion();
+  const conSesion = estadoSesion === "ok";
   const { mostrarHifa } = usePreferencias();
   const [abierto, setAbierto] = useState(false);
   const [estado, despachar] = useReducer(reducir, ESTADO_INICIAL);
@@ -45,6 +47,13 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
   const fase = estado.pendiente?.fase;
 
   useEffect(() => {
+    // Sin sesión la conversación vive solo en la página: no se lee ni se guarda nada, y al salir se borra
+    // para que la próxima persona de este navegador no vea la conversación de la anterior.
+    if (!conSesion) {
+      setListo(false);
+      despachar({ tipo: "borrar" });
+      return;
+    }
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
     try {
       const guardado = leerGuardado(window.localStorage.getItem(CLAVES.hifa));
@@ -53,7 +62,7 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
       // Sin almacenamiento la conversación dura mientras la página siga abierta.
     }
     setListo(true);
-  }, []);
+  }, [conSesion]);
 
   useEffect(() => {
     if (!listo) return;
@@ -162,7 +171,8 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
   const ocupada = fase === "enviando";
 
   // Se apaga en Configuración. La conversación guardada se conserva para cuando vuelva a prenderse.
-  if (!mostrarHifa) return null;
+  // Hasta saber si hay sesión no se dibuja: así no hay destello con las preferencias de otra persona (el servidor no las conoce).
+  if (estadoSesion === "cargando" || !mostrarHifa) return null;
 
   return (
     <div>
@@ -226,9 +236,13 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
         <div className="grid gap-2 border-t border-line p-3">
           {fase === "ofrecido" && (
             <div className="flex flex-wrap gap-2">
-              <button type="button" className={BOTON_PRINCIPAL} onClick={() => decidir(true)}>
-                {ETIQUETA_SI}
-              </button>
+              {conSesion ? (
+                <button type="button" className={BOTON_PRINCIPAL} onClick={() => decidir(true)}>
+                  {ETIQUETA_SI}
+                </button>
+              ) : (
+                <EntrarPara texto="Entrá para pasárselo al equipo" clase={BOTON_PRINCIPAL} />
+              )}
               <button type="button" className={BOTON} onClick={() => decidir(false)}>
                 {ETIQUETA_NO}
               </button>
@@ -287,7 +301,10 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
           </form>
 
           <div className="flex items-center justify-between gap-2 text-xs text-muted">
-            <p>Hifa es un guion: no usa IA todavía. Se guarda en tu navegador.</p>
+            <p>
+              Hifa es un guion: no usa IA todavía.{" "}
+              {conSesion ? "Se guarda en tu navegador." : "Sin entrar, la conversación no se guarda."}
+            </p>
             <button
               type="button"
               onClick={borrar}

@@ -32,6 +32,10 @@ export type ValorSesion = {
   /** ¿Está configurado Privy en este despliegue? */
   privyDisponible: boolean;
   entrar: () => void;
+  /** Sin Privy: se pidió entrar en esta misma página y se muestra la pantalla de entrada sobre ella. */
+  pidiendoEntrar: boolean;
+  /** Vuelve a la página pública (cierra la pantalla de entrada pedida con `entrar`). */
+  cancelarEntrar: () => void;
   entrarComo: (email: string) => void;
   salir: () => Promise<void>;
   /** Cabeceras que acreditan la sesión (token de Privy o modo de prueba) para pedir a las rutas `/api`. */

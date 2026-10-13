@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
+import { EnlaceConCuenta } from "@/components/sesion/entrar-para";
 import { MarcaAdmin } from "@/components/sesion/marca-admin";
 import { SelloTribu } from "@/components/sello-tribu";
 import { TerminoLegal } from "@/components/termino-legal";
@@ -82,12 +83,13 @@ export default async function TribuPage({ params }: Props) {
               propio ritual de entrada
               <TerminoLegal clave="ritual" />.
             </p>
-            <Link
+            <EnlaceConCuenta
               href={rutaProponerComunidad(t.id)}
-              className="w-fit rounded-lg bg-gold px-4 py-1.5 font-medium text-ink hover:bg-gold-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+              textoEntrar="Entrá para proponer una comunidad"
+              clase="w-fit rounded-lg bg-gold px-4 py-1.5 font-medium text-ink hover:bg-gold-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
             >
               Proponer una comunidad
-            </Link>
+            </EnlaceConCuenta>
           </section>
         </div>
       </div>

@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Lock } from "lucide-react";
 import type { ReactNode } from "react";
 import { esActivo } from "@/lib/ruta-activa";
+import { useSesion } from "./sesion/contexto";
 
 export type ItemRail = {
   href: string;
@@ -13,6 +15,8 @@ export type ItemRail = {
   destacado?: boolean;
   /** Marca corta debajo de la etiqueta (NetX: "Interno"). */
   marca?: string;
+  /** ¿Se puede ver sin sesión? Sin sesión, los que no son públicos se muestran con candado y "Entrá para ver". */
+  publico: boolean;
 };
 
 export type GrupoRail = {
@@ -25,6 +29,9 @@ export type GrupoRail = {
 
 export function RailEnlaces({ grupos }: { grupos: GrupoRail[] }) {
   const ruta = usePathname();
+  const { estado } = useSesion();
+  // Mientras se verifica la sesión no se muestran candados (la mayoría de las veces hay sesión guardada).
+  const sinSesion = estado !== "ok" && estado !== "cargando";
   return (
     <div className="flex flex-col items-stretch">
       {grupos.map((g) => (
@@ -41,6 +48,7 @@ export function RailEnlaces({ grupos }: { grupos: GrupoRail[] }) {
           <ul aria-labelledby={`rail-grupo-${g.id}`} className="flex flex-col items-stretch gap-1">
             {g.items.map((e) => {
               const activo = esActivo(e.href, ruta);
+              const bloqueado = sinSesion && !e.publico;
               return (
                 <li key={e.href}>
                   <Link
@@ -57,11 +65,16 @@ export function RailEnlaces({ grupos }: { grupos: GrupoRail[] }) {
                             : "hover:bg-deep-2"
                       }`}
                     >
-                      {e.icono}
+                      {bloqueado ? <Lock aria-hidden="true" size={18} /> : e.icono}
                     </span>
                     <span className={`break-words ${activo ? "font-bold underline underline-offset-2" : ""} ${e.destacado ? "font-bold" : ""}`}>
                       {e.etiqueta}
                     </span>
+                    {bloqueado && (
+                      <span className="rounded-full border border-on-deep-muted px-1 text-[0.5625rem] leading-tight text-on-deep-muted">
+                        Entrá para ver
+                      </span>
+                    )}
                     {e.marca && (
                       <span className="rounded-full border border-on-deep-muted px-1 text-[0.5625rem] leading-tight text-on-deep-muted">
                         {e.marca}

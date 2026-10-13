@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSesion } from "@/components/sesion/contexto";
+import { EntrarPara } from "@/components/sesion/entrar-para";
 import { TerminoLegal } from "@/components/termino-legal";
 import { registrarEvento } from "@/lib/actividad/almacen";
 import { EVENTOS } from "@/lib/actividad/eventos";
@@ -17,7 +19,9 @@ const SUAVE = `${BOTON} border border-muted hover:bg-surface-2`;
 const HUELGA = 8; // píxeles de tolerancia para dar por llegado al final
 
 export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manifiesto; pactos: boolean }) {
-  const { estado, cargado, falloAlmacen, adherir, aceptar } = useMembresia(m.id);
+  const { estado: estadoSesion } = useSesion();
+  const conSesion = estadoSesion === "ok";
+  const { estado, cargado, falloAlmacen, adherir, aceptar } = useMembresia(m.id, conSesion);
   const esLighthouse = m.id === COMUNIDAD_LIGHTHOUSE;
   const texto = useRef<HTMLDivElement>(null);
   const aviso = useRef<HTMLParagraphElement>(null);
@@ -100,7 +104,14 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
       </p>
       {textoGuardado && <p className="mt-4 font-medium">{textoGuardado}</p>}
 
-      {!cargado ? null : estado === "no-miembro" ? (
+      {!conSesion ? (
+        estadoSesion === "cargando" ? null : (
+          <div className="mt-4 grid gap-3 rounded-xl border border-faint bg-surface-2 p-4">
+            <p className="text-sm">Podés leer el manifiesto sin cuenta. Para adherir, entrá primero.</p>
+            <EntrarPara texto="Entrá para adherir" />
+          </div>
+        )
+      ) : !cargado ? null : estado === "no-miembro" ? (
         <form
           className="mt-4 grid gap-3 rounded-xl border border-faint bg-surface-2 p-4"
           onSubmit={(e) => {
