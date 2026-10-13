@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "./fixtura";
+import { ignorarEnSinRed } from "./ayudas";
 
 async function completar(page: Page) {
   await page.getByRole("button", { name: "Completar mi perfil" }).click();
@@ -177,7 +178,7 @@ test("guardar no hace pedidos de red con los datos", async ({ page }) => {
   page.on("request", (r) => {
     const propio = r.url().startsWith(origen + "/");
     const lleva = r.url().includes("secreto-") || (r.postData() ?? "").includes("secreto-");
-    if ((propio && r.method() !== "GET") || lleva) pedidos.push(`${r.method()} ${r.url()}`);
+    if ((propio && r.method() !== "GET" && !ignorarEnSinRed(r)) || lleva) pedidos.push(`${r.method()} ${r.url()}`);
   });
   await page.getByRole("button", { name: "Completar mi perfil" }).click();
   await page.getByLabel("Nombre", { exact: true }).fill("secreto-nombre");

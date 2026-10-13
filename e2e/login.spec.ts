@@ -75,8 +75,9 @@ test.describe("super admin", () => {
     const panel = page.getByRole("region", { name: "Personas y roles" });
     await expect(panel).toBeVisible();
     await expect(panel).toContainText("Editar roles llega con la base de datos (Neon)");
+    // Encabezado + al menos las 3 personas de prueba (en los previews la lista también trae al equipo).
     const filas = panel.getByRole("row");
-    await expect(filas).toHaveCount(4);
+    await expect.poll(() => filas.count()).toBeGreaterThanOrEqual(4);
     await expect(panel.getByRole("row", { name: new RegExp(EMAILS.superadmin) })).toContainText("Super admin");
     await expect(panel.getByRole("row", { name: new RegExp(EMAILS["admin-tribu"]) })).toContainText("Admin de Valle Solar");
     await expect(panel.getByRole("row", { name: new RegExp(EMAILS.persona) })).toContainText("Inversor");
