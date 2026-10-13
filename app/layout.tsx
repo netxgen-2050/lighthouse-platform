@@ -4,7 +4,7 @@ import { AplicarPreferencias } from "@/components/aplicar-preferencias";
 import { BarraSuperior } from "@/components/barra-superior";
 import { Rail } from "@/components/rail";
 import { ProveedorSesion } from "@/components/sesion/proveedor-sesion";
-import { Puerta, SoloConSesion } from "@/components/sesion/puerta";
+import { Puerta, SoloConCapacidad, SoloConSesion } from "@/components/sesion/puerta";
 import { SCRIPT_APARIENCIA } from "@/lib/configuracion/script-apariencia";
 import { Pie } from "@/components/pie";
 import { BotonReportar } from "@/components/boton-reportar";
@@ -59,11 +59,13 @@ export default function RootLayout({
             {/* Espacio para que el botón fijo de Hifa no tape el final de la página. */}
             <div aria-hidden="true" className="h-16 shrink-0" />
           </div>
-          {/* Reportar necesita cuenta; Hifa es una conversación simulada y se ofrece también sin entrar. */}
-          <SoloConSesion>
+          {/* Reportar y Hifa se habilitan desde el nivel Explorador (sumándose gratis en Sumarte). */}
+          <SoloConCapacidad capacidad="reportar">
             <BotonReportar version={despliegue.version} entorno={despliegue.entorno} />
-          </SoloConSesion>
-          <Hifa version={despliegue.version} entorno={despliegue.entorno} />
+          </SoloConCapacidad>
+          <SoloConCapacidad capacidad="hifa">
+            <Hifa version={despliegue.version} entorno={despliegue.entorno} />
+          </SoloConCapacidad>
         </ProveedorSesion>
       </body>
     </html>

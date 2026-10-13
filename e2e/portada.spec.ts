@@ -1,6 +1,10 @@
 import { expect, test, type Page } from "./fixtura";
 import { tribusDeTerritorio } from "@/lib/territorios/datos";
 
+// La portada no depende del plan: sin sembrar Sumarte, "lh-origen" es el único dato de la persona y los tests que miran
+// cuándo se lee (la importación de datos previos revisa los nombres en orden) no se adelantan por otra clave.
+test.use({ plan: "ninguno" });
+
 const CAMINOS = [
   { titulo: "Ver las tribus", href: "/tribus" },
   { titulo: "Encontrar mi tribu", href: "/perfil" },

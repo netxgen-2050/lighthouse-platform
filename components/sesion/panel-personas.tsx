@@ -21,7 +21,7 @@ export function PanelPersonas() {
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <caption className="sr-only">Personas con acceso al prototipo</caption>
+            <caption className="sr-only">Ajustes por email de LH_PERSONAS (cualquier otra persona entra como Explorador)</caption>
             <thead>
               <tr className="border-b border-line">
                 <th scope="col" className="py-1 pr-4 font-medium">

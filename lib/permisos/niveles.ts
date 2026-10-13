@@ -107,6 +107,19 @@ export function avisoDeRuta(ruta: string): string {
   return `${nombre} se habilita al sumarte gratis como Explorador.`;
 }
 
+/** Aviso cuando una acción (no una página) pide un nivel, por ejemplo adherir a una tribu. */
+export function avisoDeNivel(minimo: Nivel): string {
+  if (minimo === "explorador") return "Esta acción se habilita al sumarte gratis como Explorador.";
+  if (minimo === "miembro") return "Esta acción se habilita con el plan Miembro.";
+  if (minimo === "lider") return "Esta acción se habilita con el Plan Tribu.";
+  return "Esta acción no se habilita desde Sumarte.";
+}
+
+/** Convierte lo que viene en la dirección (`?para=`) en un nivel que se puede elegir en Sumarte, o null. */
+export function nivelDeParametro(valor: string | null | undefined): Nivel | null {
+  return valor === "explorador" || valor === "miembro" || valor === "lider" ? valor : null;
+}
+
 /** Ayuda corta de un destino deshabilitado en el rail. */
 export function ayudaDeRuta(ruta: string): string {
   return nivelMinimoDeRuta(ruta) === "explorador" ? "Sumate gratis para usar esto" : "Sumate para participar";

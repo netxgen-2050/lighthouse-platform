@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
+import type { Nivel } from "@/lib/permisos/niveles";
 import type { Persona } from "@/lib/sesion/personas";
 
 export type EstadoSesion = "cargando" | "sin-sesion" | "sin-acceso" | "error" | "ok";
@@ -31,12 +32,15 @@ export type ValorSesion = {
   billetera: string | null;
   /** ¿Está configurado Privy en este despliegue? */
   privyDisponible: boolean;
+  /** Abre el login de Privy; sin Privy lleva a Sumarte, donde está "Entrar como…" del modo de prueba. */
   entrar: () => void;
-  /** Sin Privy: se pidió entrar en esta misma página y se muestra la pantalla de entrada sobre ella. */
-  pidiendoEntrar: boolean;
-  /** Vuelve a la página pública (cierra la pantalla de entrada pedida con `entrar`). */
-  cancelarEntrar: () => void;
   entrarComo: (email: string) => void;
+  /** Nivel de la persona según cómo se sumó (sin sesión: "sin-cuenta"). Ver `lib/permisos/niveles.ts`. */
+  nivel: Nivel;
+  /** ¿Ya se leyó lo que la persona eligió en Sumarte? Hasta entonces `nivel` es provisorio y no se la debe redirigir. */
+  nivelListo: boolean;
+  /** Tribu que lidera (Plan Tribu), o null. */
+  tribuLider: string | null;
   salir: () => Promise<void>;
   /** Cabeceras que acreditan la sesión (token de Privy o modo de prueba) para pedir a las rutas `/api`. */
   cabeceras: () => Promise<Record<string, string>>;

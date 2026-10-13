@@ -85,7 +85,7 @@ export default async function TribuPage({ params }: Props) {
             </p>
             <EnlaceConCuenta
               href={rutaProponerComunidad(t.id)}
-              textoEntrar="Entrá para proponer una comunidad"
+              textoEntrar="Sumate para proponer una comunidad"
               clase="w-fit rounded-lg bg-gold px-4 py-1.5 font-medium text-ink hover:bg-gold-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
             >
               Proponer una comunidad
@@ -109,7 +109,7 @@ export default async function TribuPage({ params }: Props) {
       </div>
       <AvisoEjemplo />
       <Prototipo />
-      {t.id === "valle" && <MarcaAdmin tribu="valle" />}
+      <MarcaAdmin tribu={t.id} nombre={t.nombre} />
       {t.estado === "formacion" && (
         <p
           role="note"

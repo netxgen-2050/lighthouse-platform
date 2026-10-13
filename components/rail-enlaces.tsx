@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Lock } from "lucide-react";
 import type { ReactNode } from "react";
+import { ayudaDeRuta, puedeRuta } from "@/lib/permisos/niveles";
 import { esActivo } from "@/lib/ruta-activa";
 import { useSesion } from "./sesion/contexto";
 
@@ -15,8 +16,6 @@ export type ItemRail = {
   destacado?: boolean;
   /** Marca corta debajo de la etiqueta (NetX: "Interno"). */
   marca?: string;
-  /** ¿Se puede ver sin sesión? Sin sesión, los que no son públicos se muestran con candado y "Entrá para ver". */
-  publico: boolean;
 };
 
 export type GrupoRail = {
@@ -27,11 +26,17 @@ export type GrupoRail = {
   items: ItemRail[];
 };
 
+const CLASE_ITEM =
+  "flex flex-col items-center gap-1 rounded-xl px-0.5 py-1.5 text-center text-[0.625rem] font-medium leading-tight focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold sm:text-xs";
+const CLASE_PASTILLA =
+  "rounded-full border border-on-deep-muted px-1 text-[0.5625rem] leading-tight text-on-deep-muted";
+
 export function RailEnlaces({ grupos }: { grupos: GrupoRail[] }) {
   const ruta = usePathname();
-  const { estado } = useSesion();
-  // Mientras se verifica la sesión no se muestran candados (la mayoría de las veces hay sesión guardada).
-  const sinSesion = estado !== "ok" && estado !== "cargando";
+  const { estado, nivel, nivelListo } = useSesion();
+  // Mientras se verifica la sesión (o se lee el nivel) no se muestran destinos deshabilitados: la mayoría de las veces hay sesión guardada.
+  const verificando = estado === "cargando" || (estado === "ok" && !nivelListo);
+  const nivelActual = estado === "ok" ? nivel : "sin-cuenta";
   return (
     <div className="flex flex-col items-stretch">
       {grupos.map((g) => (
@@ -48,14 +53,30 @@ export function RailEnlaces({ grupos }: { grupos: GrupoRail[] }) {
           <ul aria-labelledby={`rail-grupo-${g.id}`} className="flex flex-col items-stretch gap-1">
             {g.items.map((e) => {
               const activo = esActivo(e.href, ruta);
-              const bloqueado = sinSesion && !e.publico;
+              const deshabilitado = !verificando && !puedeRuta(nivelActual, e.href);
+              if (deshabilitado) {
+                // No es clicable: se anuncia como no disponible y, al lado, un enlace visible a Sumarte dice qué hacer.
+                return (
+                  <li key={e.href} className="flex flex-col items-stretch">
+                    <span role="link" aria-disabled="true" className={`${CLASE_ITEM} cursor-not-allowed`}>
+                      <span className="flex h-7 w-11 items-center justify-center rounded-full sm:w-12">
+                        <Lock aria-hidden="true" size={18} />
+                      </span>
+                      <span className="break-words">{e.etiqueta}</span>
+                    </span>
+                    <Link
+                      href={`/sumarte?volver=${encodeURIComponent(e.href)}`}
+                      className={`${CLASE_PASTILLA} mx-auto w-fit max-w-full text-center underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold`}
+                      aria-label={`${ayudaDeRuta(e.href)}: ${e.etiqueta}`}
+                    >
+                      {ayudaDeRuta(e.href)}
+                    </Link>
+                  </li>
+                );
+              }
               return (
                 <li key={e.href}>
-                  <Link
-                    href={e.href}
-                    aria-current={activo ? "page" : undefined}
-                    className="flex flex-col items-center gap-1 rounded-xl px-0.5 py-1.5 text-center text-[0.625rem] font-medium leading-tight focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold sm:text-xs"
-                  >
+                  <Link href={e.href} aria-current={activo ? "page" : undefined} className={CLASE_ITEM}>
                     <span
                       className={`flex h-7 w-11 items-center justify-center rounded-full sm:w-12 ${
                         activo
@@ -65,21 +86,12 @@ export function RailEnlaces({ grupos }: { grupos: GrupoRail[] }) {
                             : "hover:bg-deep-2"
                       }`}
                     >
-                      {bloqueado ? <Lock aria-hidden="true" size={18} /> : e.icono}
+                      {e.icono}
                     </span>
                     <span className={`break-words ${activo ? "font-bold underline underline-offset-2" : ""} ${e.destacado ? "font-bold" : ""}`}>
                       {e.etiqueta}
                     </span>
-                    {bloqueado && (
-                      <span className="rounded-full border border-on-deep-muted px-1 text-[0.5625rem] leading-tight text-on-deep-muted">
-                        Entrá para ver
-                      </span>
-                    )}
-                    {e.marca && (
-                      <span className="rounded-full border border-on-deep-muted px-1 text-[0.5625rem] leading-tight text-on-deep-muted">
-                        {e.marca}
-                      </span>
-                    )}
+                    {e.marca && <span className={CLASE_PASTILLA}>{e.marca}</span>}
                   </Link>
                 </li>
               );

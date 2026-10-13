@@ -241,7 +241,7 @@ export function Hifa({ version, entorno }: { version: string; entorno: string })
                   {ETIQUETA_SI}
                 </button>
               ) : (
-                <EntrarPara texto="Entrá para pasárselo al equipo" clase={BOTON_PRINCIPAL} />
+                <EntrarPara texto="Sumate para pasárselo al equipo" clase={BOTON_PRINCIPAL} />
               )}
               <button type="button" className={BOTON} onClick={() => decidir(false)}>
                 {ETIQUETA_NO}

@@ -3,7 +3,10 @@ import { personasDelEntorno, sesionDelPedido } from "@/lib/sesion/servidor";
 
 export const dynamic = "force-dynamic";
 
-/** Quién sos: verifica el token de Privy y busca el email en `LH_PERSONAS`. 401 sin sesión, 403 fuera de la lista. */
+/**
+ * Quién sos: verifica el token de Privy y busca los ajustes del email en `LH_PERSONAS` (acceso abierto: quien no está
+ * entra como persona común). 401 sin sesión; 403 sin email válido o, con `LH_ACCESO=lista`, fuera de la lista.
+ */
 export async function GET(req: Request) {
   const personas = personasDelEntorno();
   const r = await sesionDelPedido(req);

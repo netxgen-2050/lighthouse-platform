@@ -4,10 +4,10 @@ import { EMAILS, expect, test, type Page } from "./fixtura";
 // Sin el fixture de login: la persona no entró.
 test.use({ rol: "ninguno" });
 
-// Con Privy (previews y producción) "Entrar" abre el modal de Privy, no la pantalla "Entrar como…": estos casos
+// Con Privy (previews y producción) "Entrar" abre el modal de Privy, no el panel "Entrar como…" de Sumarte: estos casos
 // dependen del modo de prueba y se corren en el e2e local, que va sin Privy.
 const CON_PRIVY = Boolean(process.env.BASE_URL || process.env.NEXT_PUBLIC_PRIVY_APP_ID);
-const SIN_PRIVY = "Con Privy, Entrar abre el modal de Privy; este caso usa la pantalla Entrar como… del modo de prueba";
+const SIN_PRIVY = "Con Privy, Entrar abre el modal de Privy; este caso usa el panel Entrar como… del modo de prueba";
 
 const barra =(page: Page) => page.getByRole("banner");
 const rail = (page: Page) => page.getByRole("navigation", { name: "Principal" });
@@ -19,8 +19,8 @@ test.describe("páginas públicas sin sesión", () => {
     const ficha = page.getByRole("complementary", { name: "Ficha del territorio" });
     await expect(ficha).toBeVisible();
     await expect(ficha.getByRole("heading", { name: "Tribus del territorio" })).toBeVisible();
-    await expect(ficha.getByRole("button", { name: "Entrá para adherir" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toHaveCount(0);
+    await expect(ficha.getByRole("link", { name: "Sumate para adherir" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toHaveCount(0);
     await expect(page.getByText("Prototipo interno · datos de ejemplo").first()).toBeVisible();
   });
 
@@ -29,169 +29,127 @@ test.describe("páginas públicas sin sesión", () => {
     await expect(page.getByRole("heading", { level: 1, name: /Encontrá tu tribu/ })).toBeVisible();
     await page.goto("/tribus");
     await expect(page.getByRole("heading", { level: 1, name: "Tribus del Lighthouse" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Entrá para proponer una comunidad" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Sumate para proponer una comunidad" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /Proponer una comunidad para el Barrio/ })).toHaveCount(0);
   });
 
-  test("Pactos sigue mostrando la pantalla de entrada", async ({ page }) => {
+  test("Sumarte es público y las páginas internas llevan a Sumarte con el aviso del plan que las habilita", async ({ page }) => {
+    await page.goto("/sumarte");
+    await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
     await page.goto("/pactos");
-    await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
+    await expect(page.getByText("Pactos se habilita con el plan Miembro.")).toBeVisible();
     await page.goto("/tribus/valle/postular");
-    await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
+    await expect(page.getByText("se habilita al sumarte gratis como Explorador.")).toBeVisible();
   });
 
-  test("Adherir sin entrar: se lee el manifiesto y en lugar de Adherir hay un llamado a entrar", async ({ page }) => {
+  test("Adherir sin cuenta: se lee el manifiesto y en lugar de Adherir hay un llamado a sumarse", async ({ page }) => {
     await page.goto("/tribus/valle");
     await expect(page.getByRole("link", { name: "Leer el manifiesto de la tribu" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Entrá para adherir" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Sumate para adherir" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Adherir al manifiesto de la tribu" })).toHaveCount(0);
 
     await page.getByRole("link", { name: "Leer el manifiesto de la tribu" }).click();
     await expect(page).toHaveURL(/\/tribus\/valle\/manifiesto$/);
     await expect(page.getByRole("region", { name: "Texto del manifiesto" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Entrá para adherir" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Sumate para adherir" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Adherir", exact: true })).toHaveCount(0);
   });
 
-  test("Consultar por un lote sin entrar: aparece el llamado a entrar", async ({ page }) => {
+  test("Consultar por un lote sin cuenta: aparece el llamado a sumarse", async ({ page }) => {
     await page.goto("/territorios/lighthouse");
     await page.getByText(/Fincas disponibles de Soluna/).click();
     await page.getByRole("button", { name: /^Finca / }).first().click();
     const ficha = page.getByRole("complementary", { name: "Ficha del territorio" });
-    await expect(ficha.getByRole("button", { name: "Entrá para consultar por este lote" })).toBeVisible();
+    await expect(ficha.getByRole("link", { name: "Sumate para consultar por este lote" })).toBeVisible();
     await expect(ficha.getByRole("button", { name: "Consultar por este lote", exact: true })).toHaveCount(0);
   });
 
-  test("un barrio vacante pide entrar para proponer una comunidad", async ({ page }) => {
+  test("un barrio vacante pide sumarse para proponer una comunidad", async ({ page }) => {
     await page.goto("/territorios/lighthouse");
     await page.getByRole("button", { name: /^Barrio \d+$/ }).first().click();
     const ficha = page.getByRole("complementary", { name: "Ficha del territorio" });
     await expect(ficha).toBeVisible();
     // El botón "Barrio N" a secas es el de un barrio vacante (los que tienen tribu llevan su nombre).
-    await expect(ficha.getByRole("button", { name: "Entrá para proponer una comunidad" })).toBeVisible();
+    await expect(ficha.getByRole("link", { name: "Sumate para proponer una comunidad" })).toBeVisible();
     await expect(ficha.getByRole("link", { name: "Conocer la tribu" })).toHaveCount(0);
   });
 });
 
 test.describe("navegación sin sesión", () => {
-  test("el rail muestra Descubrir completo y el resto con candado y 'Entrá para ver'", async ({ page }) => {
+  test("el rail muestra Descubrir y Sumarte completos y el resto deshabilitado con 'Sumate…'", async ({ page }) => {
     await page.goto("/");
-    for (const nombre of ["Inicio", "Territorio", "Tribus"]) {
-      const enlace = rail(page).getByRole("link", { name: nombre, exact: true });
-      await expect(enlace).toBeVisible();
+    for (const nombre of ["Inicio", "Territorio", "Tribus", "Sumarte"]) {
+      await expect(rail(page).getByRole("link", { name: nombre, exact: true })).toBeVisible();
     }
-    const pactos = rail(page).getByRole("link", { name: /Pactos/ });
-    await expect(pactos).toContainText("Entrá para ver");
-    await expect(rail(page).getByRole("link", { name: /Sumarte/ })).toContainText("Entrá para ver");
-    await expect(rail(page).getByRole("link", { name: "Inicio", exact: true })).not.toContainText("Entrá para ver");
-    await pactos.click();
-    await expect(page.getByRole("heading", { level: 1, name: "Bienvenida al Lighthouse" })).toBeVisible();
+    for (const nombre of ["Pactos", "Semillas", "Fogón", "Compromisos"]) {
+      const bloqueado = rail(page).getByRole("link", { name: nombre, exact: true });
+      await expect(bloqueado).toHaveAttribute("aria-disabled", "true");
+      await expect(bloqueado).not.toHaveAttribute("href", /.*/);
+      await expect(rail(page).getByRole("link", { name: `Sumate para participar: ${nombre}` })).toBeVisible();
+    }
+    const congreso = rail(page).getByRole("link", { name: "Congreso", exact: true });
+    await expect(congreso).toHaveAttribute("aria-disabled", "true");
+    await expect(rail(page).getByRole("link", { name: "Sumate gratis para usar esto: Congreso" })).toBeVisible();
+    await expect(rail(page).getByRole("link", { name: "Inicio", exact: true })).not.toHaveAttribute("aria-disabled", "true");
+    // Un destino deshabilitado no navega: el enlace de ayuda lleva a Sumarte y vuelve a ese destino al sumarse.
+    await rail(page).getByRole("link", { name: "Sumate para participar: Pactos" }).click();
+    await expect(page).toHaveURL(/\/sumarte\?volver=%2Fpactos$/);
+    await expect(page.getByText("Pactos se habilita con el plan Miembro.")).toBeVisible();
   });
 
-  test("la barra superior solo muestra Entrar; Reportar no aparece y Hifa sí", async ({ page }) => {
+  test("la barra superior muestra Sumarte y Entrar; Reportar y Hifa no aparecen sin cuenta", async ({ page }) => {
     await page.goto("/");
+    await expect(barra(page).getByRole("link", { name: "Sumarte" })).toBeVisible();
     await expect(barra(page).getByRole("button", { name: "Entrar" })).toBeVisible();
     await expect(barra(page).getByRole("button", { name: "Menú de la persona" })).toHaveCount(0);
     await expect(barra(page).getByRole("link", { name: /NetX/ })).toHaveCount(0);
-    await expect(barra(page).getByRole("link")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Reportar un problema o una idea" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Hablar con Hifa" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Hablar con Hifa" })).toHaveCount(0);
   });
 
-  test("Entrar muestra la pantalla de entrada en la misma página y, al entrar, la persona sigue ahí", async ({ page }) => {
+  test("Entrar lleva a Sumarte con Entrar como… y, al entrar, la persona vuelve a donde estaba", async ({ page }) => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     await page.goto("/tribus/valle");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
+    await expect(page).toHaveURL(/\/sumarte\?volver=%2Ftribus%2Fvalle/);
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
-    await expect(page).toHaveURL(/\/tribus\/valle$/);
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(barra(page).getByRole("button", { name: "Menú de la persona" })).toBeVisible();
     await expect(page).toHaveURL(/\/tribus\/valle$/);
     await expect(page.getByRole("heading", { level: 1, name: "Valle Solar" })).toBeVisible();
   });
 
-  test("Entrar desde una página que pide sesión no cambia de página", async ({ page }) => {
-    test.skip(CON_PRIVY, SIN_PRIVY);
-    await page.goto("/pactos");
-    await barra(page).getByRole("button", { name: "Entrar" }).click();
-    await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
-    await expect(page).toHaveURL(/\/pactos$/);
-    await page.getByRole("button", { name: EMAILS.persona }).click();
-    await expect(barra(page).getByRole("button", { name: "Menú de la persona" })).toBeVisible();
-    await expect(page).toHaveURL(/\/pactos$/);
-  });
-
-  test("el pedido de entrar se descarta al navegar: al volver no reaparece la pantalla de entrada", async ({ page }) => {
-    test.skip(CON_PRIVY, SIN_PRIVY);
-    await page.goto("/tribus/valle");
-    await barra(page).getByRole("button", { name: "Entrar" }).click();
-    await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
-    await rail(page).getByRole("link", { name: "Tribus", exact: true }).click();
-    await expect(page.getByRole("heading", { level: 1, name: "Tribus del Lighthouse" })).toBeVisible();
-    await page.getByRole("link", { name: /Valle Solar/ }).first().click();
-    await expect(page.getByRole("heading", { level: 1, name: "Valle Solar" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Entrar como…" })).toHaveCount(0);
-  });
-
-  test("los botones Entrá para … y Seguir explorando dejan el foco en el contenido", async ({ page }) => {
-    test.skip(CON_PRIVY, SIN_PRIVY);
-    await page.goto("/tribus/valle");
-    await page.getByRole("button", { name: "Entrá para adherir" }).click();
-    await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
-    await expect(page.locator("#contenido")).toBeFocused();
-    await page.getByRole("button", { name: "Seguir explorando" }).focus();
-    await page.getByRole("button", { name: "Seguir explorando" }).click();
-    await expect(page.getByRole("heading", { level: 1, name: "Valle Solar" })).toBeVisible();
-    await expect(page.locator("#contenido")).toBeFocused();
-  });
-
-  test("Seguir explorando cierra la pantalla de entrada pedida en una página pública", async ({ page }) => {
-    test.skip(CON_PRIVY, SIN_PRIVY);
-    await page.goto("/tribus/valle");
-    await barra(page).getByRole("button", { name: "Entrar" }).click();
-    await page.getByRole("button", { name: "Seguir explorando" }).click();
-    await expect(page.getByRole("heading", { level: 1, name: "Valle Solar" })).toBeVisible();
-  });
-
-  test("Entrá para consultar por este lote: al entrar vuelve a la misma finca elegida", async ({ page }) => {
+  test("Sumate para consultar por este lote: al sumarse vuelve a la misma finca elegida", async ({ page }) => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     await page.goto("/territorios/lighthouse");
     await page.getByText(/Fincas disponibles de Soluna/).click();
     await page.getByRole("button", { name: /^Finca / }).first().click();
     const ficha = page.getByRole("complementary", { name: "Ficha del territorio" });
     const titulo = await ficha.getByRole("heading", { level: 2 }).first().innerText();
-    await ficha.getByRole("button", { name: "Entrá para consultar por este lote" }).click();
+    await ficha.getByRole("link", { name: "Sumate para consultar por este lote" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
+    await page.getByRole("button", { name: "Sumarme gratis" }).click();
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(page).toHaveURL(/\/territorios\/lighthouse\?sel=/);
     await expect(ficha.getByRole("heading", { level: 2, name: titulo })).toBeVisible();
     await expect(ficha.getByRole("button", { name: "Consultar por este lote", exact: true })).toBeVisible();
   });
-
-  test("Hifa funciona sin entrar, pero pasarlo al equipo pide entrar", async ({ page }) => {
-    await page.goto("/");
-    await page.getByRole("button", { name: "Hablar con Hifa" }).click();
-    const chat = page.getByRole("dialog", { name: "Chat con Hifa" });
-    await chat.getByLabel("Escribile a Hifa").fill("una idea");
-    await chat.getByRole("button", { name: "Enviar", exact: true }).click();
-    await expect(chat.getByRole("button", { name: "Sí, pasalo" })).toHaveCount(0);
-    await expect(chat.getByRole("button", { name: "Entrá para pasárselo al equipo" })).toBeVisible();
-    await expect(chat.getByRole("button", { name: "No, gracias" })).toBeVisible();
-  });
 });
 
 test.describe("sin datos guardados sin sesión", () => {
   test("recorrer las páginas públicas no crea claves en el navegador", async ({ page }) => {
-    for (const ruta of ["/", "/territorios/lighthouse", "/tribus", "/tribus/valle", "/tribus/valle/manifiesto"]) {
+    for (const ruta of ["/", "/territorios/lighthouse", "/tribus", "/tribus/valle", "/tribus/valle/manifiesto", "/sumarte"]) {
       await page.goto(ruta);
       await expect(page.getByRole("main")).toBeVisible();
       await expect(page.getByText("Prototipo interno · datos de ejemplo").first()).toBeVisible();
     }
-    // Se elige algo en el mapa y se abre Hifa: tampoco se guarda.
+    // Se elige algo en el mapa y se cambia la facturación de Sumarte: tampoco se guarda.
     await page.goto("/territorios/lighthouse");
     await page.getByRole("button", { name: /^Barrio \d+/ }).first().click();
-    await page.getByRole("button", { name: "Hablar con Hifa" }).click();
-    await page.getByLabel("Escribile a Hifa").fill("hola");
-    await page.getByRole("button", { name: "Enviar", exact: true }).click();
+    await page.goto("/sumarte");
+    await page.getByRole("button", { name: /^Mensual/ }).click();
     const claves = await page.evaluate(() => Object.keys(window.localStorage));
     // Con Privy el SDK guarda sus propias claves (privy:…, base-acc-sdk.store, etc.): no son de la app ni de una persona.
     const deLaApp = claves.filter((c) => !/^privy[:.]|^base-acc-sdk|^walletconnect|^wc@|^WCM_|^-walletlink/i.test(c));
