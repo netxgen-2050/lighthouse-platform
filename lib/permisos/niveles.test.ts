@@ -66,7 +66,8 @@ describe("rutas", () => {
     ["/semillas/", "participar"],
     ["/fogon", "participar"],
     ["/compromisos", "participar"],
-    ["/congreso", "congreso"],
+    ["/congreso", "descubrir"],
+    ["/congreso/otra", "congreso"],
     ["/perfil", "personal"],
     ["/pasaporte", "personal"],
     ["/panel/bitacora", "personal"],
@@ -85,12 +86,12 @@ describe("rutas", () => {
 
   it("el aviso dice qué plan habilita la página", () => {
     expect(avisoDeRuta("/pactos")).toBe("Pactos se habilita con el plan Miembro.");
-    expect(avisoDeRuta("/congreso")).toBe("Congreso se habilita al sumarte gratis como Explorador.");
+    expect(avisoDeRuta("/perfil")).toBe("Perfil se habilita al sumarte gratis como Explorador.");
     expect(avisoDeRuta("/netx")).toContain("super admin");
   });
 
   it("la ayuda del rail distingue lo gratis de lo de Miembro", () => {
-    expect(ayudaDeRuta("/congreso")).toBe("Sumate gratis para usar esto");
+    expect(ayudaDeRuta("/perfil")).toBe("Sumate gratis para usar esto");
     expect(ayudaDeRuta("/pactos")).toBe("Sumate para participar");
   });
 });

@@ -158,6 +158,40 @@ const PARES: [string, string, Tam][] = [
   ["texto-tenue", "noche-2", "borde"],
   ["blanco", "rio", "borde"],
   ["tinta-2", "blanco", "borde"],
+  // Vitrina (design §8): El encuentro. El texto queda sobre la parte oscura del amanecer; las paradas claras
+  // (amanecer-3 y corona-2) quedan bajo el último párrafo (padding-bottom) y solo son transición, sin texto encima.
+  ["blanco", "noche", "normal"],
+  ["blanco", "amanecer-1", "normal"],
+  ["blanco", "amanecer-2", "normal"],
+  // Tribus (sobre brote), ejes (sobre río), entradas (sobre noche-2) y cifras (sobre noche)
+  ["tinta", "brote", "normal"],
+  ["blanco", "rio", "normal"],
+  ["texto-claro", "noche-2", "normal"],
+  ["texto-tenue", "noche", "normal"],
+  ["texto-claro", "noche", "normal"],
+  ["corona", "noche", "normal"],
+  // Ticket y puente con NetX (degradado de noche a bosque)
+  ["blanco", "bosque", "normal"],
+  ["texto-bosque", "noche", "normal"],
+  ["texto-bosque", "bosque", "normal"],
+  ["texto-bosque", "noche-2", "normal"],
+  ["texto-claro-2", "noche-2", "normal"],
+  ["uh-claro", "noche", "normal"],
+  ["uh-claro", "bosque", "normal"],
+  ["brote", "noche", "normal"],
+  ["brote", "bosque", "normal"],
+  ["brote", "noche-2", "normal"],
+  ["error", "noche-2", "normal"],
+  ["noche", "brote", "normal"],
+  ["corona", "bosque", "borde"],
+  ["texto-tenue", "noche-2", "borde"],
+  // Mapa del territorio (rótulo con texto, sobre tierra) y modo de origen (contornos)
+  ["tinta", "tierra", "normal"],
+  ["blanco", "noche", "borde"],
+  ["netx", "noche", "borde"],
+  ["netx", "blanco", "borde"],
+  ["uh", "noche", "borde"],
+  ["uh", "blanco", "borde"],
 ];
 
 describe("contraste AA del tema del evento", () => {
@@ -189,6 +223,7 @@ describe("contraste AA del tema del evento", () => {
       ".ev-entradas-seccion": "noche",
       ".ev-cierre": "noche",
       ".ev-ejes-seccion": "rio",
+      ".ev-ticket-seccion": "bosque",
     };
     for (const [seccion, fondo] of Object.entries(fondos)) {
       const foco = colorDeFoco(seccion);
@@ -204,6 +239,7 @@ describe("contraste AA del tema del evento", () => {
       ".ev-entradas-seccion": "noche",
       ".ev-cierre": "noche",
       ".ev-ejes-seccion": "rio",
+      ".ev-ticket-seccion": "bosque",
     };
     for (const [seccion, fondo] of Object.entries(fondos)) {
       const r = REGLAS.find((x) => x.selectores.includes(`.tema-evento ${seccion} .ev-bajada`));

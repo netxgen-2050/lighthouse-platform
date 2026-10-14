@@ -13,8 +13,19 @@ const PERMITIDOS = [
 ];
 const PERMITIDOS_SOLO_FUENTES = /^next\/font\/google$/;
 
-const CARPETA = __dirname;
-const FUENTES = readdirSync(CARPETA).filter((n) => /\.(tsx?|css)$/.test(n) && !/\.test\./.test(n));
+// Las secciones (carpeta `secciones/`) pueden además usar las piezas de la carpeta de arriba.
+const PERMITIDOS_SECCIONES = [/^\.\.\/[a-z-]+$/];
+
+const CARPETA_PIEZAS = __dirname;
+const CARPETA_SECCIONES = path.join(__dirname, "secciones");
+const CARPETAS = [CARPETA_PIEZAS, CARPETA_SECCIONES];
+
+/** Rutas relativas a `evento/` ("boton.tsx", "secciones/heroe.tsx"). */
+const FUENTES = CARPETAS.flatMap((dir) =>
+  readdirSync(dir)
+    .filter((n) => /\.(tsx?|css)$/.test(n) && !/\.test\./.test(n))
+    .map((n) => path.relative(__dirname, path.join(dir, n))),
+);
 
 function importaciones(codigo: string): string[] {
   const salida: string[] = [];
@@ -29,10 +40,17 @@ describe("portabilidad de las piezas del evento", () => {
     expect(FUENTES.length).toBeGreaterThanOrEqual(7);
   });
 
+  it("incluye las diez piezas de la carpeta de secciones", () => {
+    const secciones = FUENTES.filter((f) => f.startsWith("secciones"));
+    expect(secciones.length).toBeGreaterThanOrEqual(10);
+  });
+
   it.each(FUENTES)("%s importa solo lo permitido", (archivo) => {
-    const codigo = readFileSync(path.join(CARPETA, archivo), "utf8");
+    const codigo = readFileSync(path.join(__dirname, archivo), "utf8");
+    const enSecciones = archivo.startsWith("secciones");
     const malos = importaciones(codigo).filter((ruta) => {
       if (PERMITIDOS.some((p) => p.test(ruta))) return false;
+      if (enSecciones && PERMITIDOS_SECCIONES.some((p) => p.test(ruta))) return false;
       if (archivo === "fuentes.ts" && PERMITIDOS_SOLO_FUENTES.test(ruta)) return false;
       return true;
     });
@@ -55,7 +73,7 @@ describe("portabilidad de las piezas del evento", () => {
 
   it("las piezas usan enlaces simples (sin next/link ni next/navigation)", () => {
     for (const archivo of FUENTES) {
-      const codigo = readFileSync(path.join(CARPETA, archivo), "utf8");
+      const codigo = readFileSync(path.join(__dirname, archivo), "utf8");
       expect(codigo).not.toMatch(/next\/(link|navigation)/);
     }
   });
