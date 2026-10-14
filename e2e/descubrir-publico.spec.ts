@@ -89,9 +89,11 @@ test.describe("navegación sin sesión", () => {
       await expect(bloqueado).not.toHaveAttribute("href", /.*/);
       await expect(rail(page).getByRole("link", { name: `Sumate para participar: ${nombre}` })).toBeVisible();
     }
+    // Congreso se abrió sin cuenta (decisión de Gus, 14-oct): la vitrina se ve; vincular el ticket sí pide cuenta.
     const congreso = rail(page).getByRole("link", { name: "Congreso", exact: true });
-    await expect(congreso).toHaveAttribute("aria-disabled", "true");
-    await expect(rail(page).getByRole("link", { name: "Sumate gratis para usar esto: Congreso" })).toBeVisible();
+    await expect(congreso).toHaveAttribute("href", "/congreso");
+    await expect(congreso).not.toHaveAttribute("aria-disabled", "true");
+    await expect(rail(page).getByRole("link", { name: "Sumate gratis para usar esto: Congreso" })).toHaveCount(0);
     await expect(rail(page).getByRole("link", { name: "Inicio", exact: true })).not.toHaveAttribute("aria-disabled", "true");
     // Un destino deshabilitado no navega: el enlace de ayuda lleva a Sumarte y vuelve a ese destino al sumarse.
     await rail(page).getByRole("link", { name: "Sumate para participar: Pactos" }).click();
@@ -135,6 +137,37 @@ test.describe("navegación sin sesión", () => {
     await expect(page).toHaveURL(/\/territorios\/lighthouse\?sel=/);
     await expect(ficha.getByRole("heading", { level: 2, name: titulo })).toBeVisible();
     await expect(ficha.getByRole("button", { name: "Consultar por este lote", exact: true })).toBeVisible();
+  });
+});
+
+test.describe("vincular el ticket del Congreso pide cuenta", () => {
+  test("sin cuenta: el llamado lleva a Sumarte y, al sumarse, vuelve a /congreso#ticket con el formulario", async ({ page }) => {
+    test.skip(CON_PRIVY, SIN_PRIVY);
+    await page.goto("/congreso#ticket");
+    await expect(page.getByLabel(/Código de tu ticket/)).toHaveCount(0);
+    await page.getByRole("link", { name: "Sumate gratis para vincular tu ticket" }).click();
+    await expect(page).toHaveURL(/\/sumarte\?volver=%2Fcongreso%23ticket&para=explorador$/);
+    await expect(page.getByText("Esta acción se habilita al sumarte gratis como Explorador.")).toBeVisible();
+    await page.getByRole("button", { name: "Sumarme gratis" }).click();
+    await page.getByRole("button", { name: EMAILS.persona }).click();
+    await expect(page).toHaveURL(/\/congreso#ticket$/);
+    await expect(page.getByLabel(/Código de tu ticket/)).toBeVisible();
+  });
+});
+
+test.describe("vincular el ticket con la política pendiente", () => {
+  // Una persona Explorador que todavía no aceptó la política de privacidad vigente.
+  test.use({ rol: "persona", plan: "explorador", consentimiento: "ninguno" });
+
+  test("acepta la política en Sumarte y vuelve a /congreso#ticket con el formulario", async ({ page }) => {
+    await page.goto("/congreso#ticket");
+    await expect(page.getByLabel(/Código de tu ticket/)).toHaveCount(0);
+    await page.getByRole("link", { name: "Aceptá la política de privacidad para vincular tu ticket" }).click();
+    await page.getByRole("checkbox", { name: /Leí y acepto la política de privacidad/ }).check();
+    await page.getByRole("checkbox", { name: /Acepto los términos de uso del prototipo/ }).check();
+    await page.getByRole("button", { name: "Aceptar y continuar" }).click();
+    await expect(page).toHaveURL(/\/congreso#ticket$/);
+    await expect(page.getByLabel(/Código de tu ticket/)).toBeVisible();
   });
 });
 

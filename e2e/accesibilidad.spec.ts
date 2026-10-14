@@ -21,6 +21,7 @@ const rutas = [
   "/panel/bitacora",
   ...listarTribus().map((t) => `/tribus/${t.id}`),
   "/territorios/lighthouse",
+  "/congreso",
   "/territorios/no-existe",
   "/ruta-que-no-existe",
 ];
@@ -34,8 +35,8 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 30 rutas auditadas", () => {
-  expect(rutas).toHaveLength(30);
+test("hay 31 rutas auditadas", () => {
+  expect(rutas).toHaveLength(31);
 });
 
 async function graves(page: Page) {
@@ -180,6 +181,26 @@ test("axe sin violaciones serias o críticas: /panel/bitacora con entradas", asy
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /congreso con el modo de origen activo y el diálogo de compra abierto", async ({ page }) => {
+  await page.goto("/congreso");
+  await page.getByRole("button", { name: /¿Qué viene de UnityHub\?/ }).click();
+  await expect(page.getByText("Viene de UnityHub · agenda")).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+  await page.getByRole("button", { name: "Comprar pase completo" }).click();
+  await expect(page.getByRole("dialog", { name: "Acá se abriría la compra del ticket" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
+test.describe("/congreso sin sesión", () => {
+  test.use({ rol: "ninguno" });
+
+  test("axe sin violaciones serias o críticas, con el llamado a sumarse en lugar del formulario", async ({ page }) => {
+    await page.goto("/congreso");
+    await expect(page.getByRole("link", { name: "Sumate gratis para vincular tu ticket" })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
 });
 
 for (const ruta of rutas) {

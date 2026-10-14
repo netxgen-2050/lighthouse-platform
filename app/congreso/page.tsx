@@ -18,6 +18,7 @@ import { TemaEvento } from "./evento/tema-evento";
 import { BloqueFuente } from "./netx/bloque-fuente";
 import { BotonDemo } from "./netx/boton-demo";
 import { DIALOGO_COMPRA, DIALOGO_PAGINA_OFICIAL } from "./netx/textos";
+import { IrAlAncla } from "./netx/ir-al-ancla";
 import { TicketNetx } from "./netx/ticket-netx";
 import { Territorio } from "./netx/territorio";
 import { Tribus } from "./netx/tribus";
@@ -65,6 +66,7 @@ export default async function CongresoPage({ searchParams }: Props) {
   return (
     <TemaEvento className="ev-en-netx">
       {hayCampana(origen) && <GuardarOrigen origen={origen} />}
+      <IrAlAncla />
       <VistaFuentes>
         <BarraEvento nombre={evento.nombre} anclas={ANCLAS} />
         <BloqueFuente fuente="unityhub" detalle="ficha del evento">

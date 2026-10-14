@@ -335,6 +335,7 @@ html:has(.tema-evento) {
   z-index: 2;
   display: grid;
   grid-template-rows: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
   min-height: inherit;
   padding: 30px 36px 32px;
 }
@@ -354,6 +355,7 @@ html:has(.tema-evento) {
   gap: 12px;
 }
 .tema-evento .ev-chip-fecha b {
+  white-space: nowrap;
   font: 800 22px/1 var(--evento-titulos);
 }
 .tema-evento .ev-chip-fecha span {
