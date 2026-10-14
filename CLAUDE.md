@@ -4,7 +4,7 @@ Plataforma de NetX para el Lighthouse (Soluna, BioPueblo): descubrir el territor
 
 ## Quién hace qué
 - **Gus (humano)** aprueba specs, prioriza, lee los reportes cada mañana y **es el único que mergea a `main`**.
-- **Agentes de Claude Code** (`.claude/agents/`): especificador, implementador, revisor, tester, documentador. La corrida nocturna la orquesta `scripts/noche.sh` (ver `docs/agentes.md`).
+- **Agentes de Claude Code** (`.claude/agents/`): especificador, arquitecto, implementador, revisor, tester, documentador. La corrida nocturna la orquesta `scripts/noche.sh` (ver `docs/agentes.md`).
 
 ## Cómo se trabaja
 - **Spec primero (OpenSpec).** Ningún código sin un cambio aprobado en `openspec/changes/<id>/`. Comandos: `/opsx:propose`, `/opsx:apply`, `/opsx:archive`. Si `openspec` no está en el PATH, usar `pnpm exec openspec …`.

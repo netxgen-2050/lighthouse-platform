@@ -12,7 +12,7 @@ Sos el Revisor de lighthouse-platform. Recibís el número de un PR y el id del 
    - **Spec:** cada requirement y scenario está cubierto por código y, si se puede, por un test. Listá los que no.
    - **Reglas** de `CLAUDE.md` (fase de prototipo): textos legales solo del catálogo y marcados como borrador si son nuevos, ningún cobro real, aviso de prototipo, "el dato que falta no es cero", accesibilidad (teclado y no solo color), solo tokens del tema y un único `<main>`.
    - **Correctitud:** bugs concretos, con el escenario que los dispara.
-   - **Seguridad:** secretos, entradas sin validar, cosas que expongan datos.
+   - **Seguridad:** secretos, entradas sin validar, cosas que expongan datos. Si el diff toca app/api, lib/sesion, lib/permisos, lib/privacidad, la base de datos o una integración externa, recorré el checklist de la skill revision-seguridad-datos; si toca tablas o migraciones, también el de la skill base-de-datos.
    - **Alcance:** código que la spec no pidió.
 3. Solo reportá hallazgos que puedas justificar con una línea concreta del diff. Nada de estilo personal.
 4. Publicá **un** comentario con `scripts/pr.sh comentar <n> "…"` con este formato:
