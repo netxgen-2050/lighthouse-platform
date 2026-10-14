@@ -6,7 +6,7 @@ Gus le va a mostrar al CEO y a un inversor cómo se vería el Congreso de febrer
 
 Los organizadores podrían tener su propia página del evento, fuera de NetX. Por eso la vitrina separa las **piezas del evento** (portables, todo por props desde `obtenerEvento()`) de las **piezas de NetX** (ticket vinculado, tribus, territorio, Genesis, cinta de prototipo), que se enchufan solo en nuestra versión, y modela un enlace opcional a la página oficial.
 
-Fuentes: brief `NS_platform/Documentation/integraciones/UnityHub/04 - Brief para el especificador · Congreso × UnityHub.md` (v3), mock-up v2 (copia en `docs/referencia/congreso-unityhub-mockup-v2.html`), guía `01 - Guía de arquitectura (cómo planear integraciones).md` §1–2 y ADR-001 (Propuesta).
+Fuentes: brief `NS_platform/Documentation/integraciones/UnityHub/04 - Brief para el especificador · Congreso × UnityHub.md` (v3), mock-up v2 (copia en `docs/referencia/congreso-unityhub-mockup-v2.html`), guía `01 - Guía de arquitectura (cómo planear integraciones).md` §1–2 y ADR-002 (Propuesta).
 
 ## What Changes
 
@@ -24,7 +24,7 @@ Fuentes: brief `NS_platform/Documentation/integraciones/UnityHub/04 - Brief para
 
 - **Integración con UnityHub** (puerto, adaptadores, variables de entorno, red, checkout real, lectura de tickets o check-ins). `obtenerEvento()` sigue devolviendo el contenido de ejemplo; la integración va en un cambio propio con la skill `integracion-externa`, su ADR y revisión del arquitecto.
 - Check-in, cálculo de presencia y otorgamiento real de Genesis (backlog P3 `congreso-checkin-genesis`; tablas `tickets`, `checkins`, `cuentas_vinculadas`).
-- **Servir la vitrina fuera de NetX** (ruta sin marco, dominio propio, export estático, iframe): opción futura anotada en ADR-001.
+- **Servir la vitrina fuera de NetX** (ruta sin marco, dominio propio, export estático, iframe): opción futura anotada en ADR-002.
 - Iframe de la página real de UnityHub.
 - Capturar UTM al entrar directo a `/congreso` (hoy solo se capturan en la portada) y abrir `/congreso` a visitantes sin cuenta: preguntas abiertas.
 - Fotos de las voces (no hay permisos), idiomas distintos del español, mapa interactivo dentro de la sección Territorio (se usa la ilustración).

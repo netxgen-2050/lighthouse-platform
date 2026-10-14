@@ -1,4 +1,4 @@
-# ADR-001 · El Congreso tiene un tema visual propio, encerrado en `/congreso` y en piezas portables
+# ADR-002 · El Congreso tiene un tema visual propio, encerrado en `/congreso` y en piezas portables
 
 - **Estado:** Propuesta
 - **Fecha:** 2026-10-14

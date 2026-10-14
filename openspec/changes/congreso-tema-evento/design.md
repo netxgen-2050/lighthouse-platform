@@ -66,7 +66,7 @@
 ## Risks / Trade-offs
 
 - [El CSS del Congreso queda cargado al salir de `/congreso`] → todo selector bajo `.tema-evento` y test que lo exige; fuera de esa clase no aplica nada.
-- [Dos sistemas de estilo en el repo] → excepción acotada por ADR-001 (Propuesta) y por tests; si Gus la rechaza, se borra una hoja y una carpeta.
+- [Dos sistemas de estilo en el repo] → excepción acotada por ADR-002 (Propuesta) y por tests; si Gus la rechaza, se borra una hoja y una carpeta.
 - [El degradado del amanecer pasa por tonos claros donde el texto blanco no llega a AA] → los pares del test lo detectan; la vitrina debe ubicar el texto sobre la parte oscura o con un velo. Axe no evalúa degradados, por eso el test propio.
 - [Fuentes de Google en el build] → ya ocurre con las fuentes de NetX; sin cambio de riesgo.
 - [`obtenerEvento()` async obliga a server components] → la página ya es server component; las piezas cliente reciben datos por props.
@@ -77,4 +77,4 @@ Sin migración: archivos nuevos y un test ajustado. Para volver atrás, se borra
 
 ## Open Questions
 
-- Si la vitrina se sirve algún día fuera de NetX (ruta sin marco, dominio propio, export estático o iframe): no cambia este diseño; las piezas ya son portables. Queda en el ADR-001 como opción futura.
+- Si la vitrina se sirve algún día fuera de NetX (ruta sin marco, dominio propio, export estático o iframe): no cambia este diseño; las piezas ya son portables. Queda en el ADR-002 como opción futura.

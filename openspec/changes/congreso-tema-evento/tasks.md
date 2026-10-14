@@ -22,4 +22,4 @@
 
 ## 4. Integración
 
-- [ ] 4.1 `pnpm verificar` y `pnpm build` en verde; `/congreso` sigue igual que antes (este cambio no la toca). PR desde `agente/congreso-tema-evento` con la lista de piezas, el enlace al ADR-001 y el aviso de que la página llega con `congreso-vitrina`.
+- [ ] 4.1 `pnpm verificar` y `pnpm build` en verde; `/congreso` sigue igual que antes (este cambio no la toca). PR desde `agente/congreso-tema-evento` con la lista de piezas, el enlace al ADR-002 y el aviso de que la página llega con `congreso-vitrina`.

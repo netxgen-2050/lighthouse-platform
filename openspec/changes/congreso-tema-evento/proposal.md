@@ -9,7 +9,7 @@ Fuentes: brief `NS_platform/Documentation/integraciones/UnityHub/04 - Brief para
 ## What Changes
 
 - **Contenido del evento tipado y de ejemplo.** Tipos del evento (`Evento`, `Parada`, `Voz`, `Eje`, `TipoEntrada`, `Pregunta`, enlace opcional a la página oficial) y un único archivo de contenido de ejemplo, marcado como ejemplo. Las pantallas lo leen **solo** con `obtenerEvento()`, que es la costura donde más adelante entra la integración con UnityHub.
-- **Tema del evento con alcance.** Tokens `--evento-*` definidos solo dentro del contenedor `.tema-evento`, en un único archivo de estilos del Congreso. El tema oscuro de NetX no cambia los colores del evento. Es una **excepción explícita** a "solo tokens del tema": se propone como **ADR-001 (Propuesta)**.
+- **Tema del evento con alcance.** Tokens `--evento-*` definidos solo dentro del contenedor `.tema-evento`, en un único archivo de estilos del Congreso. El tema oscuro de NetX no cambia los colores del evento. Es una **excepción explícita** a "solo tokens del tema": se propone como **ADR-002 (Propuesta)**.
 - **Tipografía del evento:** Unbounded (títulos) y Hanken Grotesk (texto), cargadas solo en la ruta del Congreso.
 - **Tests de guarda:** los colores literales y los tokens `--evento-*` solo pueden aparecer en `app/congreso/`; todo selector del tema está bajo `.tema-evento`; las combinaciones de texto y fondo del tema cumplen contraste AA; las piezas portables no importan nada del marco de NetX.
 - **Componentes base portables del evento:** contenedor del tema, botones (corona, línea, línea clara), barra flotante con anclas, chip de fechas, cuenta regresiva, tarjeta de tipo de entrada y la ilustración del eclipse (se anima una sola vez; quieta con "reducir animaciones"). Reciben todo por props.
@@ -20,7 +20,7 @@ Fuentes: brief `NS_platform/Documentation/integraciones/UnityHub/04 - Brief para
 - Rehacer la página `/congreso` (cambio `congreso-vitrina`).
 - **Integración con UnityHub:** nada de puertos, adaptadores, variables de entorno, rutas `app/api` ni pedidos de red. `obtenerEvento()` devuelve el contenido de ejemplo, y es donde después entra el puerto según la skill `integracion-externa` (requiere su propio ADR y revisión del arquitecto).
 - Datos reales del Congreso: todo es de ejemplo; se cambian en un solo archivo cuando el organizador los comparta (backlog L3).
-- Servir la vitrina fuera de NetX (ruta sin marco, dominio propio, export estático, iframe): queda anotado como opción futura en el ADR-001.
+- Servir la vitrina fuera de NetX (ruta sin marco, dominio propio, export estático, iframe): queda anotado como opción futura en el ADR-002.
 - Idiomas distintos del español.
 
 ## Capabilities
@@ -37,5 +37,5 @@ Fuentes: brief `NS_platform/Documentation/integraciones/UnityHub/04 - Brief para
 - Código nuevo: `lib/congreso/evento.ts`, `lib/congreso/evento-ejemplo.ts`, `lib/congreso/formatos.ts` (fechas, precios y cuenta regresiva, puros), `app/congreso/tema-evento.css`, `app/congreso/evento/*` (piezas portables) y sus tests.
 - Test existente ajustado: `lib/sin-colores-sueltos.test.ts` (excluye solo el archivo del tema del Congreso, que pasa a tener su propio test).
 - Dependencias: ninguna nueva (`next/font/google` ya se usa en el layout).
-- Documentación: `docs/decisiones/ADR-001-tema-propio-del-congreso.md` (Propuesta) y su línea en `docs/decisiones/README.md` (se entregan con este cambio de spec).
+- Documentación: `docs/decisiones/ADR-002-tema-propio-del-congreso.md` (Propuesta) y su línea en `docs/decisiones/README.md` (se entregan con este cambio de spec).
 - Sin cambios en base de datos, permisos, sesión, datos personales ni pagos.
