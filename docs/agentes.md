@@ -11,6 +11,7 @@ Diseño completo en `NS_platform/Documentation/Desarrollo/05 - Agentes IA en el 
 | Revisor | `.claude/agents/revisor.md` | Opus | PR vs. spec y reglas → comentario en el PR |
 | Tester | `.claude/agents/tester.md` | Sonnet | Playwright + guion sobre el preview de Vercel → comentario |
 | Documentador | `.claude/agents/documentador.md` | Sonnet | Reporte de la noche en `docs/noches/` |
+| Arquitecto | `.claude/agents/arquitecto.md` | Opus | Revisa specs que tocan base, integraciones, permisos, pagos o datos personales antes de que Gus las apruebe; escribe ADRs en estado Propuesta |
 
 Modelos pensados para Max 5x: Opus solo donde se piensa (spec y revisión). Con Max 20x se puede pasar el implementador a Opus.
 
@@ -18,6 +19,7 @@ Modelos pensados para Max 5x: Opus solo donde se piensa (spec y revisión). Con 
 
 ```
  día     Gus + especificador: cambio OpenSpec → Gus lo lee, ajusta y lo commitea en main (= aprobado)
+         especificador → arquitecto (si aplica) → Gus aprueba
  21:00   pnpm noche a,b,c d,e        (cada argumento es un carril; corren en paralelo)
  noche   por cada cambio: implementador → PR · revisor (hasta 2 vueltas de corrección) · tester · documentador
  cierre  integración de todas las ramas · el especificador propone 3 cambios · resumen
