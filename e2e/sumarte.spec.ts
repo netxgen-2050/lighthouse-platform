@@ -42,6 +42,26 @@ test("la tarjeta del Pase dice que da voz en el fideicomiso y el Fondo Común, c
   await expect(pase.getByRole("button", { name: /Voto en el Fideicomiso/ })).toBeVisible();
 });
 
+test.describe("comprar el Pase", () => {
+  // Persona común (no super admin, que tiene el nivel más alto de entrada); por defecto el plan es Miembro.
+  test.use({ rol: "persona" });
+
+test("una persona Miembro activa el Pase Brote y pasa a ser Fundadora", async ({ page }) => {
+  await page.goto("/sumarte");
+  await page.getByRole("button", { name: "Menú de la persona" }).click();
+  await expect(page.locator("#menu-persona")).toContainText("Nivel: Miembro");
+  await page.getByRole("button", { name: "Quiero el Pase Brote" }).click();
+  // El menú se cierra al hacer clic afuera: se vuelve a abrir.
+  await expect(page.getByRole("button", { name: "Menú de la persona" })).toHaveAttribute("aria-expanded", "false");
+  await page.getByRole("button", { name: "Menú de la persona" }).click();
+  await expect(page.locator("#menu-persona")).toContainText("Nivel: Fundador");
+  // El nivel queda al recargar.
+  await page.reload();
+  await page.getByRole("button", { name: "Menú de la persona" }).click();
+  await expect(page.locator("#menu-persona")).toContainText("Nivel: Fundador");
+});
+});
+
 test("medidores de la cohorte legibles en texto",async ({ page }) => {
   await page.goto("/sumarte");
   await expect(page.getByText("142 de 300")).toBeVisible();

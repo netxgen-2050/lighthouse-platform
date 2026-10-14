@@ -30,9 +30,10 @@ export function FogonCliente() {
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
-    const pase = puede(personaDesdeSumarte(leerEstadoGuardado(window.localStorage)), "voto-fideicomiso").abierta;
-    setCondicion({ residencia: leerPasaporteDelNavegador().residencia, pase });
     try {
+      // Si el navegador bloquea el almacenamiento, ni siquiera existe `window.localStorage`: queda sin Pase.
+      const pase = puede(personaDesdeSumarte(leerEstadoGuardado(window.localStorage)), "voto-fideicomiso").abierta;
+      setCondicion({ residencia: leerPasaporteDelNavegador().residencia, pase });
       setEstado(leer(window.localStorage.getItem(CLAVES.fogon)));
     } catch {
       setFalloAlmacen(true);
