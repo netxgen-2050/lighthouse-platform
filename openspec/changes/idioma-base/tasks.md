@@ -15,7 +15,7 @@ Requisito previo: `congreso-bilingue` mergeado en `main`. Rama `agente/idioma-ba
 
 - [ ] 2.1 `Preferencias.idioma: "es" | "en"` en `lib/configuracion/preferencias.ts` (`leerPreferencias` acepta los dos) con su test. Verificar con `pnpm test`.
 - [ ] 2.2 Crear `lib/idioma/servidor.ts` (`idiomaDelPedido`) y `lib/idioma/cliente.tsx` (`ProveedorIdioma`, `useIdioma`, `useTextos`, `cambiarIdioma`, `SincronizarIdioma` con las reglas de design §4). En `app/layout.tsx`: `<html lang={idioma}>` y `ProveedorIdioma`; `SincronizarIdioma` montado con sesión y consentimiento. Verificar con `pnpm build` y `pnpm test:e2e` (todo en español, en verde).
-- [ ] 2.3 Crear `middleware.ts` con la lógica en una función pura `resolverIdioma` (design §5) y su test: `?lang=en` con UTM, `?lang=fr`, `/congreso?lang=en`, `/congreso/en?lang=es`, `/congreso` con cookie `en`, `/congreso/en` con cookie `es` (no redirige). Verificar con `pnpm test`.
+- [ ] 2.3 Crear `middleware.ts` con la lógica en una función pura `resolverIdioma` (design §5) y su test: `?lang=en` con UTM, `?lang=fr`, `/congreso?lang=en`, `/congreso/en?lang=es`, `/congreso` con cookie `en`, `/congreso/en` con cookie `es` (no redirige). <!-- arquitecto --> Sumar: `?lang=en&next=https://otro.com` se queda en el mismo origen; la redirección por cookie lleva `Cache-Control: private, no-store`; una excepción deja pasar el pedido (design §5). Verificar con `pnpm test`.
 - [ ] 2.4 Congreso: `preferencia-idioma.tsx` lee el idioma de la plataforma y el selector del evento usa `cambiarIdioma`; migración única de `lh-congreso-idioma` (design §4). Verificar con `pnpm test:e2e e2e/congreso-en.spec.ts` en verde.
 
 ## 3. Selector y Configuración
@@ -26,7 +26,7 @@ Requisito previo: `congreso-bilingue` mergeado en `main`. Rama `agente/idioma-ba
 ## 4. Marco en inglés y caída marcada
 
 - [ ] 4.1 Crear `lib/idioma/textos/comunes.ts` (design §3, todavía sin usarlo fuera del marco) y `lib/idioma/textos/marco.ts`, y pasar a leer el marco: `lib/navegacion.ts` (etiquetas y títulos de grupo por clave, del glosario), rail, barra superior, menú de la persona, campanita, pie, aviso de prototipo, "Saltar al contenido", `app/not-found.tsx`, pantallas de `components/sesion/puerta.tsx`, marca "Interno" y `metadata` del layout (con `generateMetadata`). Verificar con `pnpm verificar` y `pnpm test:e2e e2e/marco.spec.ts` (español sin cambios).
-- [ ] 4.2 Crear `lib/idioma/rutas.ts` (`RUTAS_TRADUCIDAS` con `/congreso` y `/congreso/en`) y su test; `components/aviso-sin-traducir.tsx` y el envoltorio `lang="es"` en la puerta para las páginas fuera de la lista (design §7). Verificar con el e2e de 5.2.
+- [ ] 4.2 Crear `lib/idioma/rutas.ts` (`RUTAS_TRADUCIDAS` con `/congreso` y `/congreso/en`) y su test; `components/aviso-sin-traducir.tsx` y el envoltorio `lang="es"` en la puerta para las páginas fuera de la lista (design §7). <!-- arquitecto --> El envoltorio anida `ProveedorIdioma idioma="es"`; test: dentro, `useIdioma()` devuelve `"es"` con la plataforma en inglés. Verificar con `pnpm test` y con el e2e de 5.2.
 - [ ] 4.3 Crear `components/texto-bilingue.tsx` (design §7) con test de `renderToStaticMarkup`: con inglés, sin marca; sin inglés, `lang="es"`, "ES" y el texto `sr-only`. Verificar con `pnpm test`.
 
 ## 5. Pruebas y ADR

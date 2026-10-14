@@ -1,10 +1,10 @@
 # Tasks
 
-Requisito previo: `idioma-base` y `consentimiento-alta` mergeados. Rama `agente/idioma-legal`. Todo texto en inglés es borrador. Español idéntico al de hoy salvo la fila de la cookie y la versión nueva.
+Requisito previo: `idioma-base`, `consentimiento-alta` e `idioma-portada-sumarte` mergeados <!-- arquitecto: los escenarios de Sumarte en inglés y la tarea 2.2 suponen Sumarte ya traducida -->. Rama `agente/idioma-legal`. Todo texto en inglés es borrador. Español idéntico al de hoy salvo la fila de la cookie y la versión nueva.
 
 ## 1. ⚖ y Ord. 173
 
-- [ ] 1.1 Sumar `en` a todas las claves de `lib/legal/terminos.ts` y hacerlo obligatorio en el tipo (design §1); `TerminoLegal` usa el idioma de la plataforma por defecto. Test en `terminos.test.ts`: todas con `en` no vacío y distinto del español. Verificar con `pnpm test` y `pnpm test:e2e e2e/congreso-en.spec.ts` (sigue en verde).
+- [ ] 1.1 Sumar `en` a todas las claves de `lib/legal/terminos.ts` y hacerlo obligatorio en el tipo (design §1); `TerminoLegal` usa el idioma del contenido por defecto (`useIdioma()`). Test en `terminos.test.ts`: todas con `en` no vacío y distinto del español; <!-- arquitecto --> y test de `TerminoLegal` dentro del envoltorio de página sin traducir: se muestra en español y anota `idioma: "es"` (design §1). Verificar con `pnpm test` y `pnpm test:e2e e2e/congreso-en.spec.ts` (sigue en verde).
 - [ ] 1.2 `lib/legal/estado-administrativo.ts`, `components/estado-administrativo.tsx` y `components/anotar-exposicion.tsx` con idioma (entrada de bitácora con el idioma mostrado y `borrador: true` en inglés), con su test. Verificar con `pnpm test` y `pnpm test:e2e e2e/estado-administrativo.spec.ts`.
 
 ## 2. Política, consentimiento y Mis datos

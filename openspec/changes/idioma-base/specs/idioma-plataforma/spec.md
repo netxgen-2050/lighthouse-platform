@@ -18,19 +18,20 @@ The platform SHALL offer Spanish (default) and English. Choosing a language in t
 - **THEN** la plataforma pasa a inglés y "EN" queda marcado como actual con algo más que el color
 
 ### Requirement: Recordar el idioma
-The chosen language SHALL be remembered in the browser, with or without a session, and SHALL also be saved in the person's preferences when there is a session. When a person enters in a browser with no language chosen, their saved preference SHALL be used; when the browser already has a choice, that choice SHALL win and be saved as the person's preference.
+The chosen language SHALL be remembered in the browser, with or without a session, and SHALL also be saved in the person's preferences when there is a session and a consent in force. When a person enters and the browser has no language chosen, their saved preference SHALL be used; when the browser already has a choice, that choice SHALL win and be saved as the person's preference. While the person's preferences live in the browser, the saved preference is only available in that browser.
 
 #### Scenario: Recargar
 - **WHEN** la persona eligió inglés y recarga la página
 - **THEN** la página sigue en inglés
 
-#### Scenario: Otro navegador
-- **WHEN** una persona que eligió inglés con su cuenta entra desde un navegador sin idioma elegido
+#### Scenario: Navegador sin idioma elegido
+- **WHEN** una persona que eligió inglés con su cuenta borra la cookie de idioma del navegador y vuelve a entrar
 - **THEN** la plataforma pasa a inglés al terminar de entrar
 
 #### Scenario: Borrar todo
 - **WHEN** la persona usa "Borrar todo" en Configuración
 - **THEN** su preferencia de idioma guardada se borra junto con el resto de sus preferencias
+- **AND** la pantalla sigue en el idioma elegido en el navegador
 
 ### Requirement: Enlace directo a un idioma
 Any page address with the `lang` parameter set to `en` or `es` SHALL set that language and redirect to the same address without the parameter, keeping the other parameters and the anchor. Any other value MUST be dropped without changing the language.
@@ -82,6 +83,11 @@ When an English text of sample data is missing, the platform SHALL show the Span
 #### Scenario: Página sin traducir
 - **WHEN** la plataforma está en inglés y la persona abre una página que todavía no se tradujo
 - **THEN** ve arriba "This page is only available in Spanish for now." y el contenido en español con `lang="es"`
+
+#### Scenario: Término legal en una página sin traducir
+- **WHEN** la plataforma está en inglés y una página sin traducir muestra un ⚖
+- **THEN** el ⚖ se ve en español, como el resto del contenido de la página
+- **AND** la bitácora lo anota con idioma español
 
 ### Requirement: Fechas, números y montos según idioma
 Dates, numbers and amounts SHALL be formatted for the platform language (Spanish for Argentina, English for the United States), and a missing value SHALL read "sin dato" or "no data", never zero.

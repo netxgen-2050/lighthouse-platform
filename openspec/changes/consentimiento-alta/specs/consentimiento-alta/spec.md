@@ -28,7 +28,7 @@ Without a session, any action in Sumarte that leads to creating an account SHALL
 - **THEN** vuelve a Sumarte sin sesión, sin nada guardado, con el foco en el botón que había apretado
 
 ### Requirement: Aceptación previa con vencimiento
-An acceptance given in the "Crear tu cuenta" step SHALL be kept only in the current browser tab, for the same time limit as the plan chosen in Sumarte (5 minutes) and only for the policy version in force; an expired acceptance or one for another version MUST NOT be registered and the consent screen MUST be shown instead.
+An acceptance given in the "Crear tu cuenta" step SHALL be kept only in the current browser tab, for the same time limit as the plan chosen in Sumarte (5 minutes) and only for the policy version in force; an expired acceptance or one for another version MUST NOT be registered and the consent screen MUST be shown instead. The acceptance SHALL be discarded at the first login in that tab, whether or not it was used, and on logout.
 
 #### Scenario: Vence antes del login
 - **WHEN** la persona aceptó en el paso y termina el login 6 minutos después
@@ -37,6 +37,10 @@ An acceptance given in the "Crear tu cuenta" step SHALL be kept only in the curr
 #### Scenario: Otra pestaña
 - **WHEN** acepta en una pestaña y entra desde otra pestaña nueva
 - **THEN** en la pestaña nueva ve la pantalla de consentimiento
+
+#### Scenario: La aceptación no queda para otra persona
+- **WHEN** una persona que ya tenía su consentimiento vigente pasa por el paso "Crear tu cuenta", entra, sale y otra persona entra en la misma pestaña antes de 5 minutos
+- **THEN** la segunda persona ve la pantalla de consentimiento con las casillas sin marcar
 
 ### Requirement: Pantalla de consentimiento en cualquier página
 A person with a session and without a consent for the policy version in force SHALL see the consent screen on every page, public pages included, except the privacy policy page, until they accept or log out.

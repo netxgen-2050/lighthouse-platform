@@ -17,6 +17,9 @@
 ### 1. Catálogo ⚖
 - Cada clave de `TERMINOS` suma `en: { titulo, texto }` con el comentario "Traducción nueva: borrador a revisar antes de cualquier uso real". El tipo pasa a exigir `en` en todas (deja de ser opcional), así una clave nueva sin inglés no compila.
 - `TerminoLegal` sin `idioma` usa `useIdioma()`. La anotación en la bitácora no cambia (ya cubre `idioma` y `borrador`).
+<!-- arquitecto: la bitácora tiene que decir qué texto se mostró de verdad. -->
+- `useIdioma()` devuelve el idioma **del contenido**, no el de la plataforma: dentro de una página sin traducir es `"es"` (la puerta anida `ProveedorIdioma idioma="es"`, `idioma-base` design §7). Así el ⚖ de una página en español se muestra y se anota en español aunque la plataforma esté en inglés, y nunca queda una entrada `idioma: "en"` de un texto que la persona vio en español. Test: `TerminoLegal` dentro del envoltorio anota `idioma: "es"`.
+- La entrada sigue calculando `mostrado` y `huella` sobre el texto que se dibujó (regla de `congreso-bilingue`): la huella en inglés es distinta de la española, así que la bitácora distingue qué traducción se vio aunque el texto cambie después.
 
 ### 2. Política en dos idiomas
 - `lib/privacidad/politica.ts` exporta `politica(idioma)` con la misma forma que hoy (`RESUMEN`, `DATOS_POR_PANTALLA`, …) para cada idioma: `const ES = {...}` y `const EN: Textos<typeof ES>`. Las constantes de hoy se mantienen como alias del español para no romper importaciones.
@@ -30,6 +33,13 @@
 ### 4. Idioma en el registro
 - `Consentimiento` suma `idioma?: "es" | "en"`; `registrarConsentimiento` lo recibe del idioma de la plataforma en el momento de aceptar (en el alta, se guarda en la aceptación previa junto con la versión). `leerConsentimiento` acepta registros sin `idioma` (= `"es"`) y descarta valores fuera de `es`/`en`.
 - Con la base: columna `idioma text null` en `consentimientos`, junto con `canal`, en el cambio que mude el consentimiento a la base.
+<!-- arquitecto --> Mejor como enum `es` · `en` nulo (nulo = `es`), con la forma completa de la tabla en `consentimiento-alta` design §7.1 y ADR-005 (Propuesta).
+- **Versión e idioma juntos identifican el texto aceptado:** la versión de la política cubre los dos idiomas (se publican juntos). Si algún día se corrige solo la traducción, igual se sube la versión: no puede haber dos textos en inglés distintos con la misma versión.
+
+### 5. Coordinar la subida de versión
+<!-- arquitecto: dos re-consentimientos seguidos para el mismo equipo. -->
+- `consentimiento-alta` sube a `2026-10-15-borrador` y este cambio vuelve a subir. Si los dos llegan a `main` la misma semana, el equipo acepta dos veces seguidas. Alternativa (decide Gus): sumar la fila de la cookie `lh-idioma` y su cambio listado a la versión de `consentimiento-alta` cuando `idioma-base` ya esté mergeado, y que este cambio no suba la versión. Mientras tanto vale lo de §2: subir.
+- La cookie `lh-idioma` existe desde `idioma-base` y la política la informa recién acá. Es una cookie de interfaz exenta de consentimiento y sin identidad: riesgo bajo, pero conviene que no pasen muchas semanas entre los dos cambios.
 
 ## Risks / Trade-offs
 

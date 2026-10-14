@@ -53,6 +53,9 @@
 ### 4. Dónde se guarda y quién manda
 - **Cookie `lh-idioma`** (`es` | `en`, `path=/`, `SameSite=Lax`, un año, sin `HttpOnly` para que el cliente la pueda escribir). La lee el servidor (`lib/idioma/servidor.ts`, `idiomaDelPedido()` con `cookies()` de `next/headers`; valor inválido o ausente → `"es"`). Es una cookie de preferencia de interfaz pedida por la persona: no necesita consentimiento (exención de las cookies de personalización de la interfaz, Grupo del Art. 29, Dictamen 04/2012) y no lleva la identidad. Se suma a la política en `idioma-legal`.
 - **Por persona:** `Preferencias.idioma` pasa a `"es" | "en"` (en `lh-configuracion`, con su prefijo). `leerPreferencias` acepta los dos; lo guardado como `"es"` sigue valiendo. "Borrar todo" ya lo borra.
+<!-- arquitecto: la preferencia "por persona" vive hoy en el localStorage de este navegador, con el prefijo de la persona. -->
+- **Alcance real de "por persona" en el prototipo:** como `lh-configuracion` está en `localStorage`, la preferencia de la persona **no viaja a otro navegador ni a otro dispositivo** hasta que las preferencias se muden a la base (`datos-en-la-nube`). Lo que sí resuelve hoy: la misma persona en el mismo navegador cuando la cookie se borró o venció, y la computadora compartida (cada persona recupera la suya al entrar). El día que las preferencias estén en la base, `SincronizarIdioma` no cambia: solo cambia de dónde lee `leerPreferencias`. **Dueño del dato:** NetX (la persona); la cookie es una copia de trabajo del navegador, sin identidad.
+- **"Borrar todo"** borra la preferencia guardada de la persona pero **no la cookie** `lh-idioma` (es del navegador, no de la persona): la pantalla sigue en el idioma actual. Salir tampoco la borra (regla 4).
 - **Reglas** (en `lib/idioma/cliente.tsx`, `SincronizarIdioma`, montado con sesión y consentimiento vigente):
   1. La cookie manda: es la elección de este navegador.
   2. Al entrar: si no hay cookie y la persona tiene `idioma` guardado → se escribe la cookie y `router.refresh()`. Si hay cookie y difiere de la de la persona → se guarda la de la cookie en la persona.
@@ -65,6 +68,10 @@
 - Si la query trae `lang`: valor `es`/`en` → cookie y redirección 307 a la misma ruta sin `lang` (con el resto de la query; el navegador conserva el ancla). Otro valor → redirección sin `lang` y sin cookie. Caso Congreso: `/congreso?lang=en` va a `/congreso/en` y `/congreso/en?lang=es` va a `/congreso`.
 - Sin `lang`: si la ruta es exactamente `/congreso` y la cookie es `en` → 307 a `/congreso/en` con la query. Así se va el parpadeo de la redirección en el cliente.
 - No mira sesión ni permisos: solo idioma. `/congreso/en` no se redirige nunca hacia el español (la dirección explícita gana, ADR-003).
+<!-- arquitecto: redirecciones seguras y sin caché. -->
+- **Siempre al mismo sitio:** la dirección de destino se arma clonando `request.nextUrl` (mismo origen) y quitando `lang`; nunca se toma un destino de la query ni del encabezado `Host`. Así `?lang=` no se puede usar para mandar a la persona a otro dominio (redirección abierta). Test en `resolverIdioma`: `?lang=en&next=https://otro.com` termina en la misma ruta del mismo origen.
+- **Sin caché:** las redirecciones que dependen de la cookie (`/congreso` → `/congreso/en`) llevan `Cache-Control: private, no-store`, para que ninguna caché intermedia le sirva a otra persona la redirección de alguien que eligió inglés. Las 307 no se guardan por defecto, pero se deja explícito.
+- **Si el middleware falla** (excepción): deja pasar el pedido sin redirigir y sin cookie (la página sale en el idioma de la cookie que ya hubiera, o en español). Nunca una página de error por el idioma.
 
 ### 6. Selector
 - `components/selector-idioma.tsx` (cliente): igual que el del Congreso, un grupo con nombre "Idioma · Language" y dos enlaces "ES" y "EN" con `lang`, `hreflang`, nombre accesible "ES · Español" / "EN · English" (parte larga en `sr-only`) y `aria-current="true"` en el actual (con subrayado y peso, no solo color). `href` = la ruta actual con `?lang=xx` (funciona sin JavaScript y en otra pestaña). Con clic normal, hace §4.3 sin navegar; con Ctrl/Cmd/clic medio, deja el enlace.
@@ -74,6 +81,8 @@
 ### 7. Caída marcada
 - **Datos:** `components/texto-bilingue.tsx`: `<TextoBilingue valor={b} />` muestra `b.en` en inglés; si falta, `<span lang="es">{b.es}</span>` con la marca visible "ES" (`aria-hidden`) y un `sr-only` "(only available in Spanish)". Las zonas lo usan para los datos de ejemplo que pasan a `Bilingue`.
 - **Páginas:** `lib/idioma/rutas.ts` con `RUTAS_TRADUCIDAS` (expresiones como `rutas-publicas.ts`). En este cambio: ninguna página de contenido, más `/congreso` y `/congreso/en` (las maneja el Congreso). La puerta, en inglés y con una ruta fuera de la lista, envuelve la página en `<div lang="es">` y pone arriba `components/aviso-sin-traducir.tsx`: "This page is only available in Spanish for now." (en inglés, con `lang="en"`). Cada cambio de zona suma sus rutas.
+<!-- arquitecto: el idioma del contenido de una página sin traducir es "es" para todo lo que va adentro, también la bitácora. -->
+- **El envoltorio también fija el idioma del contenido:** además de `<div lang="es">`, la puerta anida `<ProveedorIdioma idioma="es">` alrededor de la página sin traducir (el marco sigue en inglés porque está afuera). Así todo lo que la página pida con `useTextos`, `formatearMonto` o `TerminoLegal` sale en español y coincide con su `lang="es"`. Es lo que mantiene la regla de la bitácora de `congreso-bilingue` (§4: `idioma` es el del texto **mostrado**): un ⚖ dentro de una página sin traducir se muestra y se anota en español, nunca como "en" dentro de un bloque en español. Test: un componente con `useIdioma()` dentro del envoltorio devuelve `"es"` con la plataforma en inglés.
 
 ### 8. Formatos
 - `lib/idioma/formatos.ts`: `LOCALES = { es: "es-AR", en: "en-US" }`; `formatearFecha(iso, idioma, estilo)` (con `timeZone: "UTC"` para fechas sin hora), `formatearNumero(n, idioma)`, `sinDato(idioma)` ("sin dato" / "no data").
@@ -119,5 +128,6 @@ Si Gus prefiere traducir también los manifiestos de ejemplo, se suman como `Bil
 
 ## Open Questions
 
-- Revisión del agente arquitecto pendiente (middleware y preferencia por persona).
+- ~~Revisión del agente arquitecto pendiente~~ <!-- arquitecto: revisado el 14-oct-2026; ajustes en §4, §5 y §7. -->
 - ADR-004 en estado Propuesta: lo acepta Gus.
+- ¿La preferencia de idioma tiene que seguir a la persona a otro dispositivo ya en el prototipo? Hoy no puede (vive en el navegador); llega con `datos-en-la-nube`.

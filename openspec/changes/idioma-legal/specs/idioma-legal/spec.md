@@ -7,12 +7,16 @@ Que todo lo que tiene peso legal (⚖, aviso de la Ord. 173, política de privac
 ## ADDED Requirements
 
 ### Requirement: Términos legales en inglés como borrador
-Every legal term in the catalog SHALL have an English title and text. With English as the platform language, every legal term SHALL be shown in English with the visible mark "Draft: text under review", and its log entry SHALL record the English language and the draft mark.
+Every legal term in the catalog SHALL have an English title and text. With English as the platform language, every legal term on a translated page SHALL be shown in English with the visible mark "Draft: text under review", and its log entry SHALL record the English language and the draft mark. On a page not yet translated, the legal term SHALL be shown and logged in Spanish, like the rest of the page content.
 
 #### Scenario: ⚖ en Sumarte
 - **WHEN** una persona con la plataforma en inglés abre el ⚖ de "Founder Pass"
 - **THEN** ve el título y el texto en inglés con "Draft: text under review"
 - **AND** la bitácora anota ese término con idioma inglés y como borrador
+
+#### Scenario: ⚖ en una página sin traducir
+- **WHEN** la plataforma está en inglés y una página que todavía no se tradujo muestra un ⚖
+- **THEN** el ⚖ se ve en español y la bitácora lo anota con idioma español
 
 #### Scenario: Catálogo completo
 - **WHEN** corre el test del catálogo legal

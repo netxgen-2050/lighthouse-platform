@@ -28,7 +28,7 @@ Opción D con diccionarios propios. Es la más chica que cumple el pedido, no mu
 - Revisar si: (1) hace falta que las páginas públicas aparezcan en buscadores en inglés (se suma un prefijo solo para ellas y `/congreso/en` pasa a redirección permanente); (2) se suma un tercer idioma o traductores externos con una herramienta (se pasa a next-intl; la migración es mecánica porque los textos ya están en diccionarios).
 
 ## En palabras simples
-La plataforma va a tener un botón "ES | EN" arriba. Lo que elijas queda guardado en tu navegador y en tu cuenta, así que la próxima vez arranca en tu idioma. Las direcciones no cambian: `/tribus` es `/tribus` en los dos idiomas. Para mandarle a un inversor algo en inglés, se agrega `?lang=en` al enlace (por ejemplo, `…/sumarte?lang=en`). La página del Congreso sigue teniendo su dirección propia en inglés, `/congreso/en`, que es la que usan los organizadores.
+La plataforma va a tener un botón "ES | EN" arriba. Lo que elijas queda guardado en tu navegador (y en tus preferencias, que por ahora también viven en ese navegador; cuando pasen a la base, te van a seguir a otro dispositivo), así que la próxima vez arranca en tu idioma. Las direcciones no cambian: `/tribus` es `/tribus` en los dos idiomas. Para mandarle a un inversor algo en inglés, se agrega `?lang=en` al enlace (por ejemplo, `…/sumarte?lang=en`). La página del Congreso sigue teniendo su dirección propia en inglés, `/congreso/en`, que es la que usan los organizadores.
 
 ## Fuentes
 - ADR-003 y `openspec/changes/congreso-bilingue/design.md` §4.

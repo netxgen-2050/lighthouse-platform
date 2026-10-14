@@ -14,6 +14,10 @@ Requisito previo: `idioma-base` y las demás zonas (`idioma-portada-sumarte`, `i
 ## 3. Login
 
 - [ ] 3.1 En `components/sesion/privy-puente.tsx`, `intl.textLocalization` con los textos principales en español cuando el idioma es `es` (revisar las claves disponibles en `PrivyI18nStrings` de `@privy-io/react-auth`). Verificar con `pnpm verificar` (tipos) y, en el preview, que "Entrar" muestra la ventana en español y en inglés según el idioma.
+  <!-- arquitecto: cambiar la configuración de Privy en caliente puede reiniciar su proveedor y cerrar o volver a verificar la sesión. -->
+  - El objeto `config` de `PrivyProvider` se arma con `useMemo` y depende **solo** del idioma (no se recrea en cada render). En el preview, con sesión abierta, cambiar de idioma **no** cierra la sesión ni vuelve a pedir el código; si la cierra o la revalida (ventana en blanco, "Cargando…" largo), frenar y reportar: la alternativa es leer el idioma una sola vez al montar y que la ventana cambie de idioma recién en la próxima carga.
+  - Si `textLocalization` no existe o no tipa en la versión instalada del SDK, frenar y reportar (no reemplazar con otra configuración de Privy). Anotar en el PR la versión de `@privy-io/react-auth` y la fecha de la verificación.
+  - No cambia qué datos van a Privy: solo textos de su ventana. Si Privy falla al cargar, el login sigue funcionando como hoy (el idioma no agrega un modo de falla).
 
 ## 4. Cierre
 

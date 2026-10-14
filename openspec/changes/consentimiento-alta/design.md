@@ -49,6 +49,8 @@ Fuentes citadas de memoria (esta corrida no tuvo acceso a internet): Gabriel las
 - `lib/privacidad/consentimiento.ts`: `CLAVE_ACEPTACION_PREVIA = "lh-consentimiento-previo"` en `sessionStorage` (por pestaña, sin prefijo: todavía no hay persona). Valor `{ version, aceptadoEn }`.
 - `guardarAceptacionPrevia(almacen, ahora)` y `tomarAceptacionPrevia(almacen, ahora) → { aceptadoEn } | null`: lee, **borra siempre** y devuelve solo si la versión es la vigente y no pasaron `VIGENCIA_PENDIENTE_MS` (5 min, el mismo plazo que el plan; importado de `lib/sesion/nivel.ts`). Si el login tarda más, aparece la pantalla y se acepta ahí (canal `al-entrar`).
 - El proveedor de sesión, cuando hay persona y el consentimiento está `pendiente`, llama una vez `tomarAceptacionPrevia` y, si hay, `registrarConsentimiento(..., { canal: "alta", aceptadoEn })`. La fecha registrada es la del momento en que marcó las casillas.
+<!-- arquitecto: que una aceptación previa no quede suelta en la pestaña para la persona siguiente. -->
+- **La aceptación previa se consume en cualquier inicio de sesión**, no solo cuando el consentimiento está pendiente: apenas `/api/sesion` responde 200 y se conoce el consentimiento (`vigente` o `pendiente`), se llama `tomarAceptacionPrevia` (que la borra siempre) y se registra solo si estaba `pendiente`. Si no, alguien con cuenta y consentimiento vigente que pasó por el paso dejaría la aceptación en la pestaña, y otra persona que entre en esa misma pestaña dentro de los 5 minutos quedaría registrada con canal `alta` sin haber visto las casillas. También se borra al **salir** (`salir()`).
 
 ### 3. Persona anónima hasta aceptar
 - La clave del consentimiento se arma con el id explícito: `claveConsentimientoDe(id)` = `u:<id>:lh-consentimiento`. `leerConsentimiento`, `registrarConsentimiento`, `registrarConsentimientoSensible` y `retirarConsentimiento` reciben `idPersona`. `useConsentimiento(idPersona)` ya lo recibe.
@@ -77,6 +79,39 @@ Fuentes citadas de memoria (esta corrida no tuvo acceso a internet): Gabriel las
 - Con la base, la fecha la pone el servidor; la del momento de las casillas viaja como dato informativo (`aceptado_en_cliente`). El historial de consentimientos debería ser de solo agregar (ADR-001): retirar suma una fila `retiro` en lugar de borrar.
 - Con la base, `/api/sesion` crea la fila de `personas` en el primer login, antes del consentimiento: guarda solo email e id de Privy para el control de acceso. Queda anotado para R29.
 
+<!-- arquitecto: §7.1 a §7.5 responden la pregunta abierta sobre `base-neon`. No cambian nada de este cambio (que no toca la base): son el contrato para el cambio que mude el consentimiento. Ver ADR-005 (Propuesta). -->
+#### 7.1 Forma de la tabla (recomendada)
+`base-neon` está aprobado pero **sin implementar**, y su spec solo pide "persona, tipo, versión y fecha". Conviene que su **primera migración** ya cree la tabla con esta forma, así no hace falta una segunda migración para `canal` ni para `idioma` (`idioma-legal`):
+
+| Columna | Tipo | Nota |
+|---|---|---|
+| `id` | `uuid` | clave |
+| `persona_id` | `uuid not null` → `personas.id` | |
+| `tipo` | enum `politica` · `terminos` · `sensibles` | una fila por cosa aceptada (granularidad) |
+| `evento` | enum `acepta` · `retira` | retirar suma una fila, no borra |
+| `version` | `text not null` | `VERSION_POLITICA` |
+| `canal` | enum `alta` · `al-entrar` · `nueva-version`, **nulo** | nulo = registro anterior a este cambio o un `retira` |
+| `idioma` | enum `es` · `en`, **nulo** | lo suma `idioma-legal`; nulo = `es` |
+| `registrado_at` | `timestamptz not null default now()` | **la fecha que vale**, la pone el servidor |
+| `aceptado_en_cliente` | `timestamptz` nulo | la hora en que marcó las casillas, informativa (el reloj del navegador puede mentir) |
+
+- **Libro de solo agregar** (ADR-001): nunca `update` ni `delete`; el estado vigente es la última fila por persona y tipo. Índice `(persona_id, tipo, registrado_at desc)`. Si Gus no quiere tocar `base-neon`, las columnas se suman después como nulas: es una migración que no rompe nada (dejan valer las filas viejas).
+- **Borrar la cuenta** = anonimizar `personas` (la fila de consentimientos queda, apuntando a una persona sin email): sigue siendo prueba de que hubo consentimiento.
+- Mis datos exporta todas las filas de la persona (también los retiros).
+
+#### 7.2 El servidor verifica el consentimiento
+Con la base, la regla "persona anónima hasta aceptar" no puede depender solo del navegador: **toda ruta del servidor que escriba algo a nombre de la persona** (perfil, membresías, pactos, bitácora, origen, reportes con identidad) verifica en `consentimientos` que haya un `acepta` vigente de `politica` y `terminos` y, si no, responde 403 con `{ consentimiento: false }`. Va en una función única (`exigirConsentimiento(sesion)`) junto a `sesionDelPedido`. `/api/sesion` y `POST /api/consentimientos` son las únicas excepciones. Hoy ninguna ruta escribe datos personales (`/api/reportes` no manda la identidad al issue), así que este cambio no lo necesita.
+
+#### 7.3 Identidad antes del consentimiento
+- **Privy** crea su usuario (email) al terminar el login, antes de las casillas si la persona usó "Entrar". Es el encargado del login (ya listado en la política). Si la persona aprieta "No acepto, salir", el usuario queda en Privy: borrarlo pide la API de servidor de Privy con su secreto, que hoy no tenemos. **Pregunta para Gus y Gabriel** (R29): ¿se acepta para el prototipo o se borra?
+- **`personas`**: recomendación para el cambio que mude el consentimiento: con acceso abierto (`sumarte-acceso`), la fila de una persona **nueva** se crea en la **misma transacción** que su primer `acepta` (`POST /api/consentimientos`), no en `/api/sesion`. Mientras tanto `/api/sesion` responde con lo que dice el token de Privy (id y email), sin guardarlo. Las personas cargadas por `LH_PERSONAS` ya existen (las cargó el equipo) y solo se les completa el `privy_id`. Así "nada con su identidad antes de aceptar" vale también en la base.
+
+#### 7.4 Falla
+Si `POST /api/consentimientos` falla o no responde: la pantalla muestra "No pudimos guardar tu aceptación. Probá de nuevo." con `role="alert"`, las casillas siguen marcadas y la persona sigue anónima (nunca se la da por aceptada sin confirmación del servidor). Si responde dos veces (doble clic, reintento): la ruta es idempotente por `(persona, tipo, version, evento)` dentro de los últimos segundos, o el cliente manda una `clave_idempotencia`; dos filas iguales no rompen el libro, pero se evitan.
+
+#### 7.5 Aceptación previa con la base
+La aceptación previa sigue en `sessionStorage` (todavía no hay persona); al entrar, el cliente la manda una sola vez a `POST /api/consentimientos` con `canal: "alta"` y `aceptado_en_cliente`. El servidor valida versión vigente y que `aceptado_en_cliente` no tenga más de 5 minutos ni esté en el futuro; si no, la descarta y la persona ve la pantalla.
+
 ### 8. Privy
 - `privy-puente.tsx` suma `legal: { privacyPolicyUrl: <origen>/privacidad, termsAndConditionsUrl: <origen>/privacidad#terminos }` (con `window.location.origin`). Es información: la aceptación sigue siendo la de las casillas.
 
@@ -95,4 +130,6 @@ Fuentes citadas de memoria (esta corrida no tuvo acceso a internet): Gabriel las
 
 ## Open Questions
 
-- Revisión del agente arquitecto pendiente (datos personales, permisos y la columna `canal` para `base-neon`).
+- ~~Revisión del agente arquitecto pendiente~~ <!-- arquitecto: revisado el 14-oct-2026; ajustes en §2 y §7.1 a §7.5; ADR-005 (Propuesta). -->
+- ¿Se suma la forma de §7.1 a la primera migración de `base-neon` (recomendado) o se agrega después?
+- ¿Qué pasa con el usuario de Privy de quien no acepta (§7.3)?
