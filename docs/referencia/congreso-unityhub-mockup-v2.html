@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solarpunk Patagonia · mock-up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--
+  Mock-up v2 · página del evento con identidad propia (estilo página de evento de UnityHub),
+  mostrada dentro del marco de la plataforma NetX (rail a la izquierda).
+  Todo es de ejemplo: textos, precios, voces y cifras son placeholders.
+  Brief: NS_platform/Documentation/integraciones/UnityHub/04 - Brief para el especificador · Congreso × UnityHub.md
+-->
+<style>
+:root{
+  --noche:#1A1433; --noche-2:#251C47; --noche-3:#3A2C66;
+  --corona:#FFB627; --corona-2:#FF8A1F;
+  --rio:#1E7F78; --brote:#9BD86F;
+  --dia:#E7F3EE; --blanco:#FFFFFF; --tinta:#141A2E; --tinta-2:#4A5068;
+  --uh:#8E63D8;
+  --display:"Unbounded",system-ui,sans-serif;
+  --sans:"Hanken Grotesk",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{margin:0;font-family:var(--sans);color:var(--tinta);background:var(--noche);display:flex;min-height:100vh;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--display);margin:0;font-weight:800;letter-spacing:-.02em}
+p{margin:0}
+a{color:inherit}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--corona);outline-offset:3px;border-radius:6px}
+
+/* ===== Marco NetX (la app) ===== */
+.netx-rail{position:sticky;top:0;height:100vh;width:64px;flex-shrink:0;background:#154626;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 0;z-index:60}
+.netx-rail .marca{font:700 11px/1 var(--sans);letter-spacing:.08em;color:#f6f3ea;margin-bottom:12px}
+.netx-rail a{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:#cfe3d4}
+.netx-rail a:hover{background:#1d5731}
+.netx-rail a[aria-current]{background:#f6f3ea;color:#154626}
+.netx-rail svg{width:20px;height:20px}
+.netx-rail .sep{flex:1}
+.vista{flex:1;min-width:0;position:relative;overflow-x:clip}
+.vincular>*,.tribus-grid>*,.terr>*{min-width:0}
+.cinta-netx{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:7px 18px;background:#154626;color:#dcebdf;font-size:13px}
+.cinta-netx b{color:#fff}
+.cinta-netx button{background:transparent;border:1px solid #4f7b5c;color:#dcebdf;border-radius:999px;padding:3px 12px;font-size:12.5px}
+.cinta-netx button[aria-pressed="true"]{background:var(--uh);border-color:var(--uh);color:#fff}
+
+/* ===== Navegación del evento ===== */
+.nav{position:sticky;top:0;z-index:50;padding:12px 18px}
+.nav-in{display:flex;align-items:center;gap:20px;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-radius:999px;padding:8px 8px 8px 18px;box-shadow:0 8px 30px rgba(26,20,51,.25)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font:800 14px/1 var(--display);letter-spacing:-.01em;color:var(--tinta)}
+.logo-anillo{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle,var(--noche) 0 54%,var(--corona) 56% 70%,transparent 72%)}
+.nav-links{display:flex;gap:18px;font-weight:500;font-size:14.5px}
+.nav-links a{text-decoration:none;color:var(--tinta-2)}
+.nav-links a:hover{color:var(--tinta)}
+.nav-acc{display:flex;gap:8px;align-items:center;margin-left:auto}
+.idioma{font-weight:700;font-size:12.5px;border:1px solid #d8d6e2;border-radius:999px;padding:7px 10px;background:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;padding:12px 22px;font-weight:700;font-size:15px;text-decoration:none;transition:transform .15s ease}
+.btn:active{transform:scale(.98)}
+.btn-corona{background:var(--corona);color:var(--noche)}
+.btn-corona:hover{background:#ffc552}
+.btn-linea{background:transparent;color:var(--tinta);box-shadow:inset 0 0 0 1.5px var(--tinta)}
+.btn-linea-claro{background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.6)}
+.btn-chico{padding:9px 16px;font-size:14px}
+
+/* ===== Hero ===== */
+.hero{position:relative;margin:0 18px;border-radius:32px;overflow:hidden;min-height:min(86vh,780px);color:#fff;
+  background:radial-gradient(90% 70% at 72% 30%, #3b2a73 0%, var(--noche) 60%)}
+.estrellas{position:absolute;inset:0;background-image:
+  radial-gradient(1px 1px at 12% 18%,#fff9 50%,transparent 51%),radial-gradient(1px 1px at 28% 42%,#fff7 50%,transparent 51%),
+  radial-gradient(1.5px 1.5px at 44% 12%,#fffa 50%,transparent 51%),radial-gradient(1px 1px at 58% 36%,#fff6 50%,transparent 51%),
+  radial-gradient(1px 1px at 88% 14%,#fff8 50%,transparent 51%),radial-gradient(1.5px 1.5px at 92% 52%,#fff7 50%,transparent 51%),
+  radial-gradient(1px 1px at 6% 60%,#fff6 50%,transparent 51%),radial-gradient(1px 1px at 36% 66%,#fff5 50%,transparent 51%)}
+.eclipse{position:absolute;right:7%;top:9%;width:min(42vw,440px);aspect-ratio:1}
+.eclipse svg{width:100%;height:100%;overflow:visible}
+.luna{animation:cubrir 3.2s cubic-bezier(.3,.6,.2,1) .4s both}
+.corona-halo{animation:encender 3.2s ease .4s both}
+@keyframes cubrir{from{transform:translate(-120px,40px)}to{transform:translate(0,0)}}
+@keyframes encender{from{opacity:.15}to{opacity:1}}
+.horizonte{position:absolute;left:0;right:0;bottom:0;width:100%;height:42%}
+.hero-cont{position:relative;z-index:2;display:grid;grid-template-rows:auto 1fr auto;min-height:inherit;padding:30px 36px 32px}
+.hero-top{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.chip-fecha{background:#fff;color:var(--tinta);border-radius:18px;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.chip-fecha b{font:800 22px/1 var(--display)}
+.chip-fecha span{font-size:13px;color:var(--tinta-2);line-height:1.2}
+.cuenta{display:flex;gap:8px}
+.cuenta div{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(6px);border-radius:16px;padding:9px 0;width:70px;text-align:center}
+.cuenta b{display:block;font:800 22px/1.1 var(--display)}
+.cuenta span{font-size:11.5px;color:#cfc8ea}
+.hero-titulo{align-self:end;max-width:900px}
+.hero-sobre{color:var(--corona);font-weight:600;font-size:16px;margin-bottom:14px}
+.hero h1{font-size:clamp(44px,8.4vw,112px);line-height:.92;letter-spacing:-.035em}
+.hero h1 .fina{display:block;font-weight:400;font-size:.42em;letter-spacing:-.01em;margin-top:.35em;color:#e8e2ff}
+.hero-pie{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-top:28px}
+.hero-pie p{max-width:440px;color:#ddd8f2;font-size:17px;line-height:1.5}
+.tarjeta-lugar{background:#fff;color:var(--tinta);border-radius:22px;padding:16px;min-width:min(330px,100%)}
+.tarjeta-lugar small{color:var(--tinta-2);font-size:13px}
+.tarjeta-lugar strong{display:block;font:800 18px/1.2 var(--display);margin:4px 0 14px}
+.tarjeta-lugar .fila{display:flex;gap:8px}
+.tarjeta-lugar .btn{flex:1;padding:11px 14px}
+
+/* ===== Franja de cifras ===== */
+.cifras{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:28px 18px 0;color:#fff}
+.cifras div{padding:18px 22px;border-left:1px solid rgba(255,255,255,.14)}
+.cifras div:first-child{border-left:0}
+.cifras b{display:block;font:800 clamp(30px,4vw,48px)/1 var(--display);color:var(--corona)}
+.cifras span{color:#cfc8ea;font-size:14.5px}
+
+/* ===== Secciones ===== */
+.seccion{padding:110px 36px}
+.cont{max-width:1140px;margin:0 auto}
+.seccion h2{font-size:clamp(32px,4.6vw,58px);line-height:1;letter-spacing:-.03em;max-width:820px}
+.bajada{font-size:19px;line-height:1.55;max-width:620px;margin-top:20px;color:var(--tinta-2)}
+.oscura{color:#fff}
+.oscura .bajada{color:#d6d0ee}
+
+/* Acerca: amanecer */
+#acerca{background:linear-gradient(180deg,var(--noche) 0%,#3d2a5e 32%,#b8566a 62%,var(--corona-2) 86%,#ffc77a 100%);color:#fff;padding-bottom:140px}
+.manifiesto{font:600 clamp(26px,3.4vw,44px)/1.18 var(--display);letter-spacing:-.02em;max-width:980px}
+.manifiesto em{font-style:normal;display:block;margin-top:.5em}
+.acerca-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:56px;font-size:18px;line-height:1.6;color:#fff3e8}
+
+/* Recorrido */
+#recorrido{background:var(--dia)}
+.ruta{position:relative;margin-top:64px}
+.ruta svg.linea{position:absolute;left:0;right:0;top:34px;width:100%;height:60px}
+.paradas{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;position:relative}
+.parada .punto{width:68px;height:68px;border-radius:50%;display:grid;place-items:center;font:800 15px/1 var(--display);background:#fff;box-shadow:0 0 0 6px var(--dia),0 0 0 7px #bfd8cf;margin-bottom:22px}
+.parada.eclipse-dia .punto{background:var(--noche);color:var(--corona);box-shadow:0 0 0 6px var(--dia),0 0 0 9px var(--corona)}
+.parada .cuando{font-weight:700;color:var(--rio);font-size:14.5px}
+.parada h3{font-size:22px;margin:6px 0 10px;letter-spacing:-.02em}
+.parada p{color:var(--tinta-2);line-height:1.55;font-size:16px}
+.parada .lugar{display:inline-block;margin-top:12px;font-size:13.5px;font-weight:600;background:#fff;border-radius:999px;padding:5px 12px}
+
+/* Voces */
+#voces{background:#fff}
+.voces{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:56px}
+.voz .retrato{aspect-ratio:4/5;border-radius:24px;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:16px}
+.voz .retrato .ini{position:absolute;inset:0;display:grid;place-items:center;font:800 64px/1 var(--display);color:rgba(255,255,255,.9);letter-spacing:-.04em}
+.voz .estado{position:relative;background:rgba(255,255,255,.9);color:var(--tinta);font-size:12.5px;font-weight:700;border-radius:999px;padding:4px 10px}
+.voz h3{font-size:18px;margin-top:14px;letter-spacing:-.01em}
+.voz p{color:var(--tinta-2);font-size:15px;margin-top:4px}
+.r1{background:linear-gradient(160deg,#3a2c66,#8e63d8)}
+.r2{background:linear-gradient(160deg,#1e7f78,#9bd86f)}
+.r3{background:linear-gradient(160deg,#ff8a1f,#ffb627)}
+.r4{background:linear-gradient(160deg,#1a1433,#1e7f78)}
+.voces-locales{margin-top:36px;display:flex;flex-wrap:wrap;gap:12px 28px;font-size:17px}
+.voces-locales span{color:var(--tinta-2)}
+.hibrido{margin-top:38px;display:flex;gap:16px;align-items:center;background:var(--dia);border-radius:24px;padding:20px 24px;max-width:760px}
+.hibrido .pantalla{width:64px;height:42px;border-radius:8px;background:var(--noche);flex-shrink:0;position:relative}
+.hibrido .pantalla::after{content:"";position:absolute;inset:9px 20px;border-radius:50%;background:var(--corona)}
+
+/* Ejes */
+#ejes{background:var(--rio);color:#fff}
+.ejes{display:grid;grid-template-columns:repeat(4,1fr);margin-top:56px;border-top:1px solid rgba(255,255,255,.25)}
+.eje{padding:26px 22px 30px 0;border-bottom:1px solid rgba(255,255,255,.25)}
+.eje:not(:nth-child(4n+1)){padding-left:22px;border-left:1px solid rgba(255,255,255,.25)}
+.eje h3{font-size:19px;letter-spacing:-.01em;line-height:1.15}
+.eje p{margin-top:10px;color:#d6efe9;font-size:15.5px;line-height:1.5}
+.eje .ic{width:34px;height:34px;margin-bottom:18px;color:var(--brote)}
+
+/* Territorio */
+#territorio{background:var(--dia);padding-top:0}
+.terr{display:grid;grid-template-columns:1.25fr 1fr;border-radius:32px;overflow:hidden;background:#fff}
+.terr-mapa{position:relative;min-height:440px;background:#d9c7a4}
+.terr-mapa svg{position:absolute;inset:0;width:100%;height:100%}
+.terr-info{padding:44px 40px;display:flex;flex-direction:column;gap:22px}
+.terr-info h2{font-size:clamp(28px,3.4vw,44px)}
+.dato-grande{display:flex;gap:28px}
+.dato-grande b{display:block;font:800 36px/1 var(--display);color:var(--rio)}
+.dato-grande span{font-size:14px;color:var(--tinta-2)}
+.terr-info p{color:var(--tinta-2);font-size:17px;line-height:1.6}
+
+/* Tribus */
+#tribus{background:var(--brote)}
+.tribus-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:56px;align-items:center}
+.tribus-lista{display:grid;gap:12px}
+.tribu{background:#fff;border-radius:22px;padding:18px 20px;display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center}
+.tribu b{font:800 17px/1.2 var(--display)}
+.tribu small{color:var(--tinta-2);font-size:14px}
+.tribu .barra{grid-column:1/-1;height:10px;background:#e4f2dd;border-radius:99px;overflow:hidden}
+.tribu .barra i{display:block;height:100%;background:var(--rio);border-radius:99px}
+.tribu .n{font-weight:700;font-size:14.5px}
+
+/* Entradas */
+#entradas{background:var(--noche);color:#fff}
+.entradas{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:56px}
+.ent{background:var(--noche-2);border:1px solid rgba(255,255,255,.1);border-radius:26px;padding:26px;display:flex;flex-direction:column;gap:8px;position:relative}
+.ent.estrella{background:linear-gradient(170deg,#3a2c66,var(--noche-2));border:2px solid var(--corona)}
+.ent .tag{align-self:flex-start;font-size:12.5px;font-weight:700;border-radius:999px;padding:4px 11px;background:rgba(255,255,255,.1);color:#e8e2ff}
+.ent.estrella .tag{background:var(--corona);color:var(--noche)}
+.ent h3{font-size:22px;margin-top:6px;letter-spacing:-.02em}
+.ent p{color:#cfc8ea;font-size:15.5px;line-height:1.5}
+.ent .precio{margin-top:auto;padding-top:18px;font:800 40px/1 var(--display)}
+.ent .precio small{font:500 14px var(--sans);color:#a9a0cf;margin-left:6px}
+.ent .btn{margin-top:14px}
+.nota-ent{margin-top:26px;color:#a9a0cf;font-size:14.5px}
+
+/* Puente NetX */
+#presencia{background:linear-gradient(180deg,var(--noche) 0%,#13201a 100%);color:#fff;padding-top:40px}
+.puente{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:52px;counter-reset:p}
+.paso{padding:0 18px 0 0;position:relative}
+.paso::before{counter-increment:p;content:counter(p);display:grid;place-items:center;width:44px;height:44px;border-radius:50%;font:800 16px/1 var(--display);margin-bottom:18px;background:var(--noche-3);color:#fff}
+.paso.netx::before{background:var(--brote);color:var(--noche)}
+.paso::after{content:"";position:absolute;top:22px;left:52px;right:8px;height:2px;background:rgba(255,255,255,.18)}
+.paso:last-child::after{display:none}
+.paso h3{font-size:17px;letter-spacing:-.01em;line-height:1.2}
+.paso p{color:#c9d6cd;font-size:15px;line-height:1.5;margin-top:8px}
+.paso .quien{margin-top:10px;font-size:13px;font-weight:700;color:#b9a7ea}
+.paso.netx .quien{color:var(--brote)}
+.vincular{margin-top:56px;display:grid;grid-template-columns:1.2fr 1fr;gap:20px}
+.caja{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:26px;padding:26px}
+.caja h3{font-size:22px;margin-bottom:8px}
+.caja p{color:#c9d6cd}
+.form{display:flex;gap:8px;margin-top:18px}
+.form input{flex:1;min-width:0;border-radius:999px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;padding:12px 18px;font:inherit}
+.form input::placeholder{color:#93a39a}
+.msg{margin-top:10px;font-size:14.5px;min-height:1.4em}
+.genesis{display:flex;gap:18px;align-items:center}
+.sello{width:86px;height:86px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;font:800 11px/1.1 var(--display);text-align:center;color:var(--noche);
+  background:conic-gradient(from 0deg,var(--brote),var(--corona),var(--brote));padding:6px}
+.sello span{background:#13201a;color:var(--brote);width:100%;height:100%;border-radius:50%;display:grid;place-items:center;border:2px dashed var(--brote)}
+
+/* FAQ */
+#faq{background:#fff}
+.faq{margin-top:44px;max-width:860px}
+.faq details{border-bottom:1px solid #e3e6ee}
+.faq summary{list-style:none;cursor:pointer;padding:24px 0;font:600 20px/1.3 var(--display);letter-spacing:-.01em;display:flex;justify-content:space-between;gap:20px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-weight:400;font-size:28px;line-height:.9;color:var(--rio);transition:transform .2s}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{padding:0 0 24px;color:var(--tinta-2);font-size:17px;line-height:1.6;max-width:700px}
+
+/* Cierre */
+.cierre{background:var(--noche);color:#fff;padding:120px 36px 50px;position:relative;overflow:hidden}
+.cierre h2{font-size:clamp(40px,7vw,96px);line-height:.95;letter-spacing:-.04em;max-width:900px}
+.cierre .acc{margin-top:36px;display:flex;gap:12px;flex-wrap:wrap}
+.pie{margin-top:100px;padding-top:24px;border-top:1px solid rgba(255,255,255,.12);display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;font-size:14px;color:#a9a0cf}
+.pie a{color:#e8e2ff}
+.uh-sello{display:inline-flex;align-items:center;gap:8px;color:#e8e2ff}
+.uh-sello i{width:16px;height:16px;border-radius:5px;background:var(--uh);display:inline-block}
+
+/* Barra fija móvil */
+.barra-compra{position:fixed;left:64px;right:0;bottom:0;z-index:55;padding:10px 16px;background:rgba(26,20,51,.94);backdrop-filter:blur(8px);display:none;justify-content:space-between;align-items:center;color:#fff;gap:10px}
+.barra-compra span{font-size:14px}
+
+/* ===== Modo "de dónde viene" ===== */
+.fuente-tag{display:none}
+.ver-fuentes [data-fuente]{position:relative}
+.ver-fuentes [data-fuente]::after{content:"";position:absolute;inset:6px;border-radius:24px;pointer-events:none;z-index:5}
+.ver-fuentes [data-fuente="unityhub"]::after{box-shadow:inset 0 0 0 3px var(--uh)}
+.ver-fuentes [data-fuente="netx"]::after{box-shadow:inset 0 0 0 3px #3c8c4b}
+.ver-fuentes .fuente-tag{display:inline-block;position:absolute;top:14px;right:16px;z-index:6;font-size:12.5px;font-weight:700;border-radius:999px;padding:5px 12px;color:#fff;background:var(--uh)}
+.ver-fuentes [data-fuente="netx"] > .fuente-tag{background:#3c8c4b}
+
+dialog{border:0;border-radius:26px;max-width:440px;padding:28px;color:var(--tinta)}
+dialog::backdrop{background:rgba(26,20,51,.6);backdrop-filter:blur(3px)}
+dialog h3{font-size:22px;margin-bottom:10px}
+dialog p{color:var(--tinta-2);line-height:1.55;margin-bottom:12px}
+
+/* ===== Responsive ===== */
+@media (max-width:980px){
+  .nav-links{display:none}
+  .cifras{grid-template-columns:repeat(2,1fr)}
+  .cifras div:nth-child(3){border-left:0}
+  .acerca-grid,.terr,.tribus-grid,.vincular{grid-template-columns:1fr}
+  .paradas{grid-template-columns:1fr 1fr;row-gap:40px}
+  .ruta svg.linea{display:none}
+  .voces{grid-template-columns:1fr 1fr}
+  .ejes{grid-template-columns:1fr 1fr}
+  .eje:not(:nth-child(4n+1)){padding-left:0;border-left:0}
+  .eje:nth-child(even){padding-left:22px;border-left:1px solid rgba(255,255,255,.25)}
+  .entradas{grid-template-columns:1fr 1fr}
+  .puente{grid-template-columns:1fr;gap:28px}
+  .paso::after{display:none}
+  .eclipse{width:min(60vw,360px);right:-8%;top:16%}
+}
+@media (max-width:640px){
+  .netx-rail{width:48px}.netx-rail a{width:38px;height:38px}.netx-rail .marca{font-size:9px}
+  .barra-compra{left:48px;display:flex}
+  .cinta-netx{font-size:12px;padding:6px 12px}
+  .cinta-netx .txt-largo{display:none}
+  .nav{padding:10px}
+  .nav-in{gap:10px;padding:6px 6px 6px 14px}
+  .logo span:last-child{font-size:12px}
+  .idioma{display:none}
+  .hero{margin:0 10px;border-radius:24px}
+  .hero-cont{padding:20px 18px 22px}
+  .hero-top{justify-content:flex-start}
+  .eclipse{width:52vw;right:-14%;top:2%;opacity:.95}
+  .hero-top{padding-right:30vw}
+  .cuenta div{width:58px}
+  .cifras{margin:20px 10px 0}
+  .cifras div{padding:14px}
+  .seccion{padding:80px 18px}
+  .paradas,.voces,.entradas{grid-template-columns:1fr}
+  .ejes{grid-template-columns:1fr}
+  .eje:nth-child(even){padding-left:0;border-left:0}
+  .terr-info{padding:28px 22px}
+  .terr-mapa{min-height:300px}
+  .cierre{padding:90px 18px 90px}
+  .tarjeta-lugar .fila{flex-direction:column}
+  .form{flex-direction:column}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .luna,.corona-halo{animation:none}
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Rail de NetX: la página del evento se ve dentro de la plataforma ===== -->
+<nav class="netx-rail" aria-label="Plataforma NetX">
+  <span class="marca">NETX</span>
+  <a href="#" aria-label="Inicio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg></a>
+  <a href="#" aria-label="Territorio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3zM9 3v15M15 6v15"/></svg></a>
+  <a href="#" aria-label="Tribus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5M16 5a3 3 0 0 1 0 6M21 20c0-2-1.5-4-4-4.6"/></svg></a>
+  <a href="#" aria-label="Pactos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/></svg></a>
+  <a href="#" aria-label="Semillas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 4 13c0-6 7-10 16-10-1 9-4 16-9 17zM4 21c4-4 7-7 10-11"/></svg></a>
+  <a href="#" aria-label="Congreso" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></a>
+  <span class="sep"></span>
+  <a href="#" aria-label="Tu perfil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></a>
+</nav>
+
+<div class="vista" id="vista">
+  <div class="cinta-netx">
+    <span><b>Prototipo interno</b><span class="txt-largo">: página del evento como la serviría UnityHub, vista dentro de NetX. Textos, precios y voces de ejemplo.</span></span>
+    <button type="button" id="ver-fuentes" aria-pressed="false">¿Qué viene de UnityHub?</button>
+  </div>
+
+  <!-- ===== Navegación del evento ===== -->
+  <div class="nav">
+    <div class="nav-in">
+      <a class="logo" href="#inicio"><span class="logo-anillo" aria-hidden="true"></span><span>Solarpunk Patagonia</span></a>
+      <nav class="nav-links" aria-label="Secciones del evento">
+        <a href="#acerca">El encuentro</a>
+        <a href="#recorrido">Recorrido</a>
+        <a href="#voces">Voces</a>
+        <a href="#territorio">El territorio</a>
+        <a href="#tribus">Tribus</a>
+        <a href="#faq">Preguntas</a>
+      </nav>
+      <div class="nav-acc">
+        <span class="idioma">ES</span>
+        <a class="btn btn-corona btn-chico" href="#entradas">Entradas</a>
+      </div>
+    </div>
+  </div>
+
+  <main>
+  <!-- ===== HERO ===== -->
+  <header class="hero" id="inicio" data-fuente="unityhub">
+    <span class="fuente-tag">UnityHub · ficha del evento</span>
+    <div class="estrellas" aria-hidden="true"></div>
+    <div class="eclipse" aria-hidden="true">
+      <svg viewBox="0 0 400 400">
+        <defs>
+          <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+            <stop offset="45%" stop-color="#FFB627" stop-opacity=".9"/>
+            <stop offset="62%" stop-color="#FF8A1F" stop-opacity=".45"/>
+            <stop offset="100%" stop-color="#FF8A1F" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="sol" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#FFF4C8"/>
+            <stop offset="70%" stop-color="#FFC94A"/>
+            <stop offset="100%" stop-color="#FF9A1F"/>
+          </radialGradient>
+        </defs>
+        <circle class="corona-halo" cx="200" cy="200" r="200" fill="url(#halo)"/>
+        <circle cx="200" cy="200" r="120" fill="url(#sol)"/>
+        <circle class="luna" cx="200" cy="200" r="106" fill="#1A1433"/>
+      </svg>
+    </div>
+    <svg class="horizonte" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 170 L120 150 L170 120 L260 118 L300 150 L420 160 L520 130 L600 128 L640 150 L780 158 L860 120 L980 116 L1020 146 L1200 140 L1200 300 L0 300Z" fill="#2a1f4f"/>
+      <path d="M0 220 L200 205 L340 214 L500 196 L700 210 L900 192 L1060 206 L1200 198 L1200 300 L0 300Z" fill="#211940"/>
+      <path d="M0 250 C200 236 420 262 640 246 C840 232 1000 258 1200 244 L1200 300 L0 300Z" fill="#1A1433"/>
+    </svg>
+
+    <div class="hero-cont">
+      <div class="hero-top">
+        <div class="chip-fecha"><b>5–9</b><span>febrero<br>2027</span></div>
+        <div class="cuenta" aria-label="Cuenta regresiva al eclipse">
+          <div><b id="c-d">—</b><span>días</span></div>
+          <div><b id="c-h">—</b><span>horas</span></div>
+          <div><b id="c-m">—</b><span>min</span></div>
+        </div>
+      </div>
+      <div class="hero-titulo">
+        <p class="hero-sobre">Primera edición, bajo el anillo de fuego</p>
+        <h1>Solarpunk Patagonia<span class="fina">Una civilización regenerativa, un pueblo a la vez.</span></h1>
+      </div>
+      <div class="hero-pie">
+        <p>Cinco días entre el eclipse anular en la costa atlántica y un valle donde el agua vuelve a la tierra. Para quienes diseñan, construyen y financian los pueblos que vienen.</p>
+        <div class="tarjeta-lugar">
+          <small>BioPueblo, valle del Río Negro</small>
+          <strong>Patagonia, Argentina</strong>
+          <div class="fila">
+            <a class="btn btn-corona" href="#entradas">Quiero ir</a>
+            <a class="btn btn-linea" href="#recorrido">Ver el recorrido</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="cifras" data-fuente="unityhub">
+    <div><b>5</b><span>días de la costa al valle</span></div>
+    <div><b>200</b><span>lugares en el territorio</span></div>
+    <div><b>7 min</b><span>de anillo de fuego</span></div>
+    <div><b>10.000</b><span>hectáreas para regenerar</span></div>
+  </div>
+
+  <!-- ===== EL ENCUENTRO (amanecer) ===== -->
+  <section class="seccion" id="acerca" data-fuente="unityhub" aria-labelledby="t-acerca">
+    <span class="fuente-tag">UnityHub · descripción</span>
+    <div class="cont">
+      <h2 id="t-acerca" class="manifiesto">Contra los futuros distópicos, uno que vale la pena construir: tecnología, diseño de sistemas y vida que se restaura. <em>Primero la cultura. Después, la tierra.</em></h2>
+      <div class="acerca-grid">
+        <p>El Gathering reúne a quienes ya están levantando asentamientos regenerativos, a quienes se mudan para empezar uno y a quienes los financian. En el lugar donde uno está naciendo.</p>
+        <p>Es un encuentro educativo: charlas, obra con las manos y caminatas por la tierra. Los proyectos que buscan socios se presentan aparte, y sumarse siempre es opcional.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== RECORRIDO ===== -->
+  <section class="seccion" id="recorrido" data-fuente="unityhub" aria-labelledby="t-rec">
+    <span class="fuente-tag">UnityHub · agenda</span>
+    <div class="cont">
+      <h2 id="t-rec">De la costa al valle, siguiendo la sombra de la luna</h2>
+      <p class="bajada">El programa es un viaje. Arranca frente al mar, cruza la estepa en caravana y termina con las manos en el suelo.</p>
+      <div class="ruta">
+        <svg class="linea" viewBox="0 0 1000 60" preserveAspectRatio="none" aria-hidden="true"><path d="M30 30 C220 0 300 60 500 30 S780 0 970 30" fill="none" stroke="#1E7F78" stroke-width="2.5" stroke-dasharray="2 9" stroke-linecap="round"/></svg>
+        <ol class="paradas" style="list-style:none;margin:0;padding:0">
+          <li class="parada"><div class="punto">Vie 5</div><div class="cuando">Viernes 5 de febrero</div><h3>Llegadas</h3><p>Bienvenida y una primera ronda para poner las visiones sobre la mesa.</p><span class="lugar">Puerto Madryn</span></li>
+          <li class="parada eclipse-dia"><div class="punto">Sáb 6</div><div class="cuando">Sábado 6 de febrero</div><h3>Anillo de fuego</h3><p>El eclipse anular desde la playa. Al atardecer, caravana al oeste y fogón bajo luna nueva.</p><span class="lugar">Playas Doradas</span></li>
+          <li class="parada"><div class="punto">Dom 7</div><div class="cuando">Domingo 7 de febrero</div><h3>El Gathering</h3><p>Un día al aire libre con charlas en persona y a distancia, paneles y casos reales. Cierra con el Manifiesto Solarpunk.</p><span class="lugar">BioPueblo</span></li>
+          <li class="parada"><div class="punto">8–9</div><div class="cuando">Lunes 8 y martes 9</div><h3>Manos en la tierra</h3><p>Keyline y cosecha de agua, bioconstrucción, diseño en el sitio y recorridas con quienes desarrollan el territorio.</p><span class="lugar">El territorio</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== VOCES ===== -->
+  <section class="seccion" id="voces" data-fuente="unityhub" aria-labelledby="t-voces">
+    <span class="fuente-tag">UnityHub · speakers</span>
+    <div class="cont">
+      <h2 id="t-voces">Voces que ya imaginaron el futuro, y lo construyeron</h2>
+      <div class="voces">
+        <article class="voz"><div class="retrato r1"><span class="ini" aria-hidden="true">RM</span><span class="estado">Por confirmar</span></div><h3>Roxanne Meadows</h3><p>The Venus Project</p></article>
+        <article class="voz"><div class="retrato r2"><span class="ini" aria-hidden="true">MB</span><span class="estado">Por confirmar</span></div><h3>Michel Bauwens</h3><p>P2P Foundation</p></article>
+        <article class="voz"><div class="retrato r3"><span class="ini" aria-hidden="true">MR</span><span class="estado">Por confirmar</span></div><h3>Michael Reynolds</h3><p>Earthship Biotecture</p></article>
+        <article class="voz"><div class="retrato r4"><span class="ini" aria-hidden="true">BR</span><span class="estado">Por confirmar</span></div><h3>Bill Reed</h3><p>Regen Dev Corp</p></article>
+      </div>
+      <div class="voces-locales"><b>Voces de la región</b> <span>Marcela Vega, agricultura biodinámica en Lawenmalal, Chile</span> <span>Lucas Omar Porro, permacultura y autosuficiencia</span></div>
+      <div class="hibrido"><span class="pantalla" aria-hidden="true"></span><p>Escenario híbrido: quien no puede viajar en febrero habla en vivo desde una pantalla gigante, en conversación con alguien en el escenario.</p></div>
+    </div>
+  </section>
+
+  <!-- ===== EJES ===== -->
+  <section class="seccion" id="ejes" data-fuente="unityhub" aria-labelledby="t-ejes">
+    <span class="fuente-tag">UnityHub · temas</span>
+    <div class="cont">
+      <h2 id="t-ejes">Ocho conversaciones, un mismo suelo</h2>
+      <div class="ejes">
+        <div class="eje"><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4c5 7 8 11 8 15a8 8 0 0 1-16 0c0-4 3-8 8-15z"/></svg><h3>Agua y cuencas</h3><p>Keyline y cosecha pasiva de agua en tierra seca.</p></div>
+        <div class="eje"><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 28V14M16 14c0-5 4-8 9-8 0 5-4 8-9 8zM16 18c0-4-3-7-8-7 0 4 3 7 8 7z"/></svg><h3>Suelo y alimento</h3><p>Permacultura, agricultura regenerativa, bosques comestibles.</p></div>
+        <div class="eje"><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><circle cx="16" cy="16" r="11"/><path d="M5 16h22M16 5c4 4 4 18 0 22M16 5c-4 4-4 18 0 22"/></svg><h3>Restauración</h3><p>Reparar sistemas vivos con la biomímesis como método.</p></div>
+        <div class="eje"><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 26h24M7 26V15l9-8 9 8v11M13 26v-7h6v7"/></svg><h3>Hábitat y bioconstrucción</h3><p>Casas autónomas de tierra que siguen al paisaje.</p></div>
+        <div class="eje"><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><circle cx="16" cy="16" r="5"/><path d="M16 3v4M16 25v4M3 16h4M25 16h4M7 7l3 3M22 22l3 3M7 25l3-3M22 10l3-3"/></svg><h3>Energía y materiales</h3><p>Renovables distribuidas y ciclos cerrados.</p></div>
+        <div class="eje"><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><path d="M25 12a9 9 0 0 0-16-3M7 20a9 9 0 0 0 16 3M9 4v5h5M23 28v-5h-5"/></svg><h3>Economía de recursos</h3><p>Economías circulares y producción de lo común.</p></div>
+        <div class="eje"><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><circle cx="16" cy="7" r="3"/><circle cx="7" cy="24" r="3"/><circle cx="25" cy="24" r="3"/><path d="M14 10l-5 11M18 10l5 11M10 24h12"/></svg><h3>Gobernanza y comunes</h3><p>Coordinación entre pares y redes de pueblos.</p></div>
+        <div class="eje"><svg class="ic" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 24c4-10 16-10 20 0M10 12a6 6 0 1 1 12 0"/></svg><h3>Cultura y sistemas</h3><p>Pensamiento sistémico e historias que hacen deseable el cambio.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TERRITORIO (NetX) ===== -->
+  <section class="seccion" id="territorio" data-fuente="netx" aria-labelledby="t-terr">
+    <span class="fuente-tag">NetX · mapa del territorio</span>
+    <div class="cont">
+      <div class="terr">
+        <div class="terr-mapa" role="img" aria-label="Ilustración del valle: el Río Negro atraviesa la estepa y el Lighthouse está en su orilla">
+          <svg viewBox="0 0 600 440" preserveAspectRatio="xMidYMid slice">
+            <rect width="600" height="440" fill="#d9c7a4"/>
+            <path d="M0 80 C120 60 200 120 300 100 S480 60 600 90" fill="none" stroke="#c9b48c" stroke-width="40" opacity=".6"/>
+            <path d="M0 330 C150 300 260 360 380 330 S520 300 600 320" fill="none" stroke="#c9b48c" stroke-width="50" opacity=".5"/>
+            <path d="M-20 250 C80 210 160 280 260 240 S420 170 520 210 S600 240 640 220" fill="none" stroke="#1E7F78" stroke-width="18" stroke-linecap="round"/>
+            <path d="M-20 250 C80 210 160 280 260 240 S420 170 520 210 S600 240 640 220" fill="none" stroke="#7cc4b8" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+            <ellipse cx="300" cy="215" rx="95" ry="60" fill="#9BD86F" opacity=".55"/>
+            <ellipse cx="300" cy="215" rx="95" ry="60" fill="none" stroke="#1E7F78" stroke-width="2" stroke-dasharray="6 6"/>
+            <circle cx="300" cy="215" r="9" fill="#1A1433"/>
+            <circle cx="300" cy="215" r="16" fill="none" stroke="#FFB627" stroke-width="3"/>
+            <g font-family="Hanken Grotesk, sans-serif" font-weight="700">
+              <rect x="318" y="150" width="104" height="28" rx="14" fill="#1A1433"/>
+              <text x="370" y="169" text-anchor="middle" font-size="14" fill="#fff">Lighthouse</text>
+              <text x="70" y="300" font-size="15" fill="#1E7F78">Río Negro</text>
+            </g>
+          </svg>
+        </div>
+        <div class="terr-info">
+          <h2 id="t-terr">Un valle que aprende a guardar el agua</h2>
+          <div class="dato-grande"><div><b>10.000</b><span>hectáreas</span></div><div><b>12 km</b><span>de costa de río</span></div></div>
+          <p>Estepa semiárida donde la lluvia de cada temporada todavía corre y se lleva el suelo. Devolverle el agua a la tierra es la primera tarea del pueblo, y la primera lección del Gathering.</p>
+          <a class="btn btn-linea" href="#">Explorar el mapa en NetX</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TRIBUS (NetX) ===== -->
+  <section class="seccion" id="tribus" data-fuente="netx" aria-labelledby="t-trib">
+    <span class="fuente-tag">NetX · tribus</span>
+    <div class="cont tribus-grid">
+      <div>
+        <h2 id="t-trib">No vengas solo. Llega con tu tribu.</h2>
+        <p class="bajada" style="color:#1d3a20">Las tribus son los grupos que se forman en NetX para vivir y construir juntos. Si llegan juntas, tienen precio especial y su primera minga en el territorio.</p>
+        <div style="margin-top:28px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn" style="background:var(--noche);color:#fff" href="#">Encontrar mi tribu</a><a class="btn btn-linea" href="#entradas">Precio de tribu</a></div>
+      </div>
+      <div class="tribus-lista" aria-label="Tribus con tickets vinculados (ejemplo)">
+        <div class="tribu"><b>Valle Solar</b><span class="n">9 de 15 van</span><div class="barra" aria-hidden="true"><i style="width:60%"></i></div><small>Tribu activa, ejemplo</small></div>
+        <div class="tribu"><b>Tribu del Agua</b><span class="n">4 de 8 van</span><div class="barra" aria-hidden="true"><i style="width:50%"></i></div><small>En formación, ejemplo</small></div>
+        <div class="tribu"><b>Constructores de Tierra</b><span class="n">2 de 10 van</span><div class="barra" aria-hidden="true"><i style="width:20%"></i></div><small>Buscando integrantes, ejemplo</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ENTRADAS (UnityHub) ===== -->
+  <section class="seccion" id="entradas" data-fuente="unityhub" aria-labelledby="t-ent">
+    <span class="fuente-tag">UnityHub · tickets y Stripe</span>
+    <div class="cont">
+      <h2 id="t-ent" class="oscura">Reserva tu lugar bajo el anillo</h2>
+      <p class="bajada" style="color:#cfc8ea">Doscientos lugares en el territorio. Las primeras entradas tienen el mejor precio.</p>
+      <div class="entradas">
+        <article class="ent estrella"><span class="tag">Preventa, hasta el 30 de noviembre</span><h3>Pase completo</h3><p>Los cinco días: llegada, eclipse, caravana, Gathering y manos en la tierra.</p><div class="precio">USD 290<small>ejemplo</small></div><button class="btn btn-corona comprar" type="button">Comprar pase completo</button></article>
+        <article class="ent"><span class="tag">Desde 4 personas</span><h3>Pase de tribu</h3><p>El pase completo para quienes llegan juntos desde una tribu de NetX.</p><div class="precio">USD 250<small>c/u, ejemplo</small></div><button class="btn btn-linea-claro comprar" type="button">Comprar pase de tribu</button></article>
+        <article class="ent"><span class="tag">Valle</span><h3>Gathering en BioPueblo</h3><p>Del domingo 7 al martes 9, sin la costa ni la caravana.</p><div class="precio">USD 190<small>ejemplo</small></div><button class="btn btn-linea-claro comprar" type="button">Comprar pase de valle</button></article>
+        <article class="ent"><span class="tag">Un día</span><h3>Domingo del Gathering</h3><p>El día de las charlas y el Manifiesto, en el territorio.</p><div class="precio">USD 90<small>ejemplo</small></div><button class="btn btn-linea-claro comprar" type="button">Comprar pase de un día</button></article>
+        <article class="ent"><span class="tag">Con DNI de Río Negro</span><h3>Vecinos del valle</h3><p>Para quienes ya viven en la región y quieren ser parte desde el inicio.</p><div class="precio">USD 30<small>ejemplo</small></div><button class="btn btn-linea-claro comprar" type="button">Comprar pase de vecino</button></article>
+        <article class="ent"><span class="tag">Desde cualquier lugar</span><h3>Escenario en línea</h3><p>Las charlas del domingo en vivo y la grabación completa.</p><div class="precio">USD 25<small>ejemplo</small></div><button class="btn btn-linea-claro comprar" type="button">Comprar pase en línea</button></article>
+      </div>
+      <p class="nota-ent">Pago seguro con Stripe en UnityHub. Recibes un email con tu entrada, el código QR y los próximos pasos.</p>
+    </div>
+  </section>
+
+  <!-- ===== TICKET Y PRESENCIA (NetX) ===== -->
+  <section class="seccion" id="presencia" data-fuente="netx" aria-labelledby="t-pres">
+    <span class="fuente-tag">NetX · ticket vinculado y presencia</span>
+    <div class="cont">
+      <h2 id="t-pres">Tu ticket también abre la puerta a NetX</h2>
+      <p class="bajada" style="color:#c9d6cd">Cada día que estés en el territorio queda registrado. La primera vez, recibes el sello Genesis: la prueba de que estuviste en el comienzo.</p>
+      <ol class="puente" style="list-style:none;padding:0">
+        <li class="paso"><h3>Compras tu entrada</h3><p>En esta página, con Stripe.</p><div class="quien">UnityHub</div></li>
+        <li class="paso"><h3>Llega el email con tu QR</h3><p>Con tu entrada, el badge y el calendario.</p><div class="quien">UnityHub</div></li>
+        <li class="paso netx"><h3>Vinculas tu ticket</h3><p>Automático si usas el mismo email; si no, con el código.</p><div class="quien">NetX</div></li>
+        <li class="paso"><h3>Te escanean al llegar</h3><p>Cada día, en la entrada del territorio.</p><div class="quien">UnityHub</div></li>
+        <li class="paso netx"><h3>Suma tu presencia</h3><p>Días en el territorio y sello Genesis en tu pasaporte.</p><div class="quien">NetX</div></li>
+      </ol>
+      <div class="vincular">
+        <div class="caja">
+          <h3>¿Ya tienes tu entrada?</h3>
+          <p>Escribe el código que te llegó por email para vincularla a tu perfil.</p>
+          <form class="form" id="form-ticket" novalidate>
+            <label for="codigo" class="visually-hidden" style="position:absolute;left:-9999px">Código del ticket</label>
+            <input id="codigo" placeholder="LH27-8F3K-2Q" autocomplete="off">
+            <button class="btn btn-corona" type="submit">Vincular ticket</button>
+          </form>
+          <p class="msg" id="msg" role="status"></p>
+        </div>
+        <div class="caja genesis">
+          <div class="sello" aria-hidden="true"><span>GENESIS<br>2027</span></div>
+          <div><h3>Sello Genesis</h3><p id="genesis-txt">Se activa con tu primer check-in en el territorio. La presencia da acceso y voz, no se compra ni se transfiere.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section class="seccion" id="faq" data-fuente="unityhub" aria-labelledby="t-faq">
+    <span class="fuente-tag">UnityHub · FAQ</span>
+    <div class="cont">
+      <h2 id="t-faq">Antes de armar la mochila</h2>
+      <div class="faq">
+        <details><summary>¿Qué incluye el pase completo?</summary><p>Ejemplo: traslados de la caravana, comidas del Gathering, acceso a todas las actividades y campamento en el territorio. El organizador lo confirma al publicar las entradas.</p></details>
+        <details><summary>¿Se ve el eclipse completo desde BioPueblo?</summary><p>No. En BioPueblo el eclipse es parcial. El anillo completo se ve desde la costa, en Playas Doradas, el sábado 6 cerca del mediodía. Por eso el viaje empieza ahí.</p></details>
+        <details><summary>¿Dónde duermo?</summary><p>Ejemplo: campamento en el territorio, con opciones de alojamiento cercanas. Se confirma más adelante.</p></details>
+        <details><summary>¿Necesito una cuenta en NetX para ir?</summary><p>No. La entrada se compra en UnityHub. Si quieres que tus días en el territorio queden registrados y sumar el sello Genesis, vinculas tu ticket en NetX.</p></details>
+        <details><summary>¿Hay oportunidades para invertir?</summary><p>El Gathering es educativo. Los proyectos que buscan socios se presentan por separado, y participar siempre es opcional.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CIERRE ===== -->
+  <section class="cierre" aria-labelledby="t-cierre">
+    <div class="cont">
+      <h2 id="t-cierre">El futuro no se espera. Se planta.</h2>
+      <div class="acc"><a class="btn btn-corona" href="#entradas">Reservar mi lugar</a><a class="btn btn-linea-claro" href="#tribus">Llegar con mi tribu</a></div>
+      <footer class="pie">
+        <span>Convocan NetX Gen, BioPueblo y Rubania</span>
+        <span class="uh-sello"><i aria-hidden="true"></i>Entradas y check-in con UnityHub</span>
+        <span><a href="#">Privacidad</a> &nbsp; <a href="#">Términos</a> &nbsp; <a href="#">Contacto</a></span>
+      </footer>
+    </div>
+  </section>
+  </main>
+
+  <div class="barra-compra"><span>Preventa desde USD 290</span><a class="btn btn-corona btn-chico" href="#entradas">Entradas</a></div>
+</div>
+
+<dialog id="dlg" aria-labelledby="dlg-t">
+  <h3 id="dlg-t">Acá se abriría el pago</h3>
+  <p>En la versión real, este botón abre el checkout de UnityHub con Stripe para el pase elegido. Al pagar, te llega el email con tu QR.</p>
+  <p style="font-size:14px">Prototipo: no se cobra nada ni se abre otra página.</p>
+  <button class="btn btn-corona" type="button" id="dlg-ok">Entendido</button>
+</dialog>
+
+<script>
+(function(){
+  var meta = new Date("2027-02-06T12:00:00-03:00").getTime();
+  function tic(){
+    var d = Math.max(0, meta - Date.now());
+    document.getElementById("c-d").textContent = Math.floor(d/864e5);
+    document.getElementById("c-h").textContent = Math.floor(d/36e5)%24;
+    document.getElementById("c-m").textContent = Math.floor(d/6e4)%60;
+  }
+  tic(); setInterval(tic, 30000);
+
+  var vista = document.getElementById("vista");
+  var bf = document.getElementById("ver-fuentes");
+  bf.addEventListener("click", function(){
+    var on = bf.getAttribute("aria-pressed") !== "true";
+    bf.setAttribute("aria-pressed", String(on));
+    vista.classList.toggle("ver-fuentes", on);
+  });
+
+  var dlg = document.getElementById("dlg");
+  document.querySelectorAll(".comprar").forEach(function(b){ b.addEventListener("click", function(){ dlg.showModal(); }); });
+  document.getElementById("dlg-ok").addEventListener("click", function(){ dlg.close(); });
+
+  var FORMATO = /^LH27-[A-Z0-9]{4}-[A-Z0-9]{2}$/;
+  document.getElementById("form-ticket").addEventListener("submit", function(e){
+    e.preventDefault();
+    var v = document.getElementById("codigo").value.trim().toUpperCase();
+    var msg = document.getElementById("msg");
+    if (!FORMATO.test(v)) { msg.style.color = "#ffb4a8"; msg.textContent = "Ese código no tiene el formato LH27-XXXX-XX. Revisa el email de tu entrada."; return; }
+    msg.style.color = "#9BD86F"; msg.textContent = "Ticket " + v + " vinculado a tu perfil.";
+    document.getElementById("genesis-txt").textContent = "Ticket vinculado. Tu sello se activa con el primer check-in en el territorio.";
+  });
+})();
+</script>
+</body>
+</html>
