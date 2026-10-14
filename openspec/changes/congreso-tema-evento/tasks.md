@@ -1,0 +1,25 @@
+# Tasks
+
+## 1. Contenido del evento
+
+- [ ] 1.1 Crear `lib/congreso/evento.ts` con los tipos (`Evento`, `Parada`, `Voz`, `Eje`, `TipoEntrada`, `Pregunta`, `Cifra`, `EnlaceExterno`) y `obtenerEvento(): Promise<Evento>` según design §1. Verificar con `pnpm verificar` (tipos en verde).
+- [ ] 1.2 Crear `lib/congreso/evento-ejemplo.ts` con todo el contenido del mock-up v2 (copia en `docs/referencia/congreso-unityhub-mockup-v2.html`), con un comentario arriba "Contenido de ejemplo: se reemplaza por el real del organizador", `esEjemplo: true`, 8 ejes (el octavo de ejemplo, design §1), 6 tipos de entrada con `esEjemplo: true`, voces `por-confirmar` y `paginaOficial` de ejemplo. Verificar con la tarea 1.3.
+- [ ] 1.3 Escribir `lib/congreso/evento.test.ts`: forma completa (4 paradas en orden, una destacada; 8 ejes; 6 tipos; al menos 4 preguntas; momento clave `2027-02-06T12:00:00-03:00`), ningún precio ≤ 0, todo tipo con `esEjemplo`, toda voz con estado válido, `paginaOficial` de ejemplo presente, y que ningún archivo de `app/` ni `components/` importe `evento-ejemplo`. Verificar con `pnpm test`.
+- [ ] 1.4 Crear `lib/congreso/formatos.ts` (`rangoFechas`, `tiempoRestante`, `textoPrecio`) y `lib/congreso/formatos.test.ts` con los escenarios de la spec: "5–9" / "febrero 2027", rango que cruza de mes, 10 d 3 h 5 min, momento pasado → `"paso"`, "USD 290", "USD 250 c/u", "Precio sin dato". Verificar con `pnpm test`.
+
+## 2. Tema con alcance y guardas
+
+- [ ] 2.1 Crear `app/congreso/tema-evento.css` con los tokens `--evento-*` dentro de `.tema-evento`, las clases `ev-*` portadas del mock-up v2 (todas bajo `.tema-evento`), `color-scheme` por sección, foco visible con `--evento-corona` y las reglas del eclipse con `animation: none` para `prefers-reduced-motion` y para `:root[data-movimiento="reducido"]` (design §3 y §4). Verificar con la tarea 2.3.
+- [ ] 2.2 Ajustar `lib/sin-colores-sueltos.test.ts`: excluir solo `app/congreso/tema-evento.css` y agregar el caso "`--evento-` no aparece fuera de `app/congreso/`". Verificar con `pnpm test` que pasa, y que falla si se agrega a mano un `#fff` en otro archivo de `app/` (probar y revertir).
+- [ ] 2.3 Escribir `app/congreso/tema-evento.test.ts`: todo selector contiene `.tema-evento`; colores literales solo en declaraciones `--evento-*`; tabla de pares de contraste AA (texto/fondo, con tamaño) calculada desde los valores de la hoja, incluidos los pares de las secciones oscuras, el texto claro sobre `--evento-noche`/`--evento-noche-2`, la tinta sobre `--evento-dia`/`--evento-brote`/blanco y el foco corona sobre noche y sobre blanco (como borde, 3:1). Verificar con `pnpm test`.
+
+## 3. Piezas portables del evento
+
+- [ ] 3.1 Crear `app/congreso/evento/fuentes.ts` (Unbounded y Hanken Grotesk con `next/font/google`) y `app/congreso/evento/tema-evento.tsx` (contenedor `.tema-evento` con las variables de fuente, importa la hoja del tema). Verificar con `pnpm build` en verde y, en `pnpm dev`, que `/tribus` no pide esas fuentes (pestaña Red).
+- [ ] 3.2 Crear `boton.tsx`, `barra-evento.tsx`, `chip-fecha.tsx`, `tarjeta-entrada.tsx` y `eclipse.tsx` en `app/congreso/evento/`, con props según design §6, sin colores en TSX (los SVG con clases). Escribir `app/congreso/evento/piezas.test.tsx` con `renderToStaticMarkup`: botón como enlace y como botón; barra con la navegación "Secciones del evento", sus anclas y "Entradas"; chip "5–9" y "febrero 2027"; tarjeta con "USD 290" + "ejemplo" y otra con "Precio sin dato" y sin "0"; eclipse con `aria-hidden="true"`. Verificar con `pnpm test`.
+- [ ] 3.3 Crear `app/congreso/evento/cuenta-regresiva.tsx` (cliente): "—" con texto accesible antes de calcular, días/horas/minutos con `tiempoRestante`, "Llegó el día" si ya pasó, refresco cada 30 s. Agregar a `piezas.test.tsx` que el render del servidor no contiene ningún "0" como valor. Verificar con `pnpm test`.
+- [ ] 3.4 Escribir `app/congreso/evento/portabilidad.test.ts`: cada archivo de `app/congreso/evento/` importa solo lo permitido (design §6); falla si alguno importa sesión, permisos, `lib/demo`, rail, barra superior o `next/navigation`. Verificar con `pnpm test`.
+
+## 4. Integración
+
+- [ ] 4.1 `pnpm verificar` y `pnpm build` en verde; `/congreso` sigue igual que antes (este cambio no la toca). PR desde `agente/congreso-tema-evento` con la lista de piezas, el enlace al ADR-001 y el aviso de que la página llega con `congreso-vitrina`.
