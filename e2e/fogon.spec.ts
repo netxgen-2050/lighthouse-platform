@@ -23,7 +23,7 @@ function cargarResidencia(page: Page, residencia: "argentina" | "exterior") {
 
 test("sin residencia cargada no se asume nada: dice que falta el dato y no hay personas de ejemplo", async ({ page }) => {
   await page.goto("/fogon");
-  await expect(page.getByText("Sin dato de tu residencia", { exact: true })).toHaveCount(3);
+  await expect(page.getByText("Sin dato de tu residencia", { exact: true })).toHaveCount(2);
   await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(2);
   await expect(page.getByRole("link", { name: "Cargala en Tus datos" })).toBeVisible();
   await expect(page.getByLabel("Persona de ejemplo")).toHaveCount(0);
@@ -34,7 +34,7 @@ test("con residencia en el exterior ve el motivo de cada decisión", async ({ pa
   await cargarResidencia(page, "exterior");
   await page.goto("/fogon");
   await expect(page.getByText("Solo residentes")).toHaveCount(2);
-  await expect(page.getByText("No sos beneficiaria/o")).toBeVisible();
+  await expect(page.getByText("Votan quienes tienen el Pase Fundador")).toBeVisible();
   await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(2);
 });
 
@@ -72,10 +72,10 @@ test("votar a favor en la huerta actualiza el conteo, sin red, y sobrevive a la 
   await expect(huerta).toContainText("A favor 15");
 });
 
-test("con residencia en Argentina se puede votar en la asamblea y en el fideicomiso", async ({ page }) => {
+test("con residencia en Argentina se puede votar en la asamblea; el fideicomiso pide el Pase", async ({ page }) => {
   await cargarResidencia(page, "argentina");
   await page.goto("/fogon");
-  await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(5);
+  await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(4);
   await expect(page.getByText("Solo residentes")).toHaveCount(0);
   const bomba = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: /bomba solar/ }) });
   await bomba.getByRole("button", { name: "Votar" }).click();
@@ -166,4 +166,46 @@ test("axe sin violaciones serias o críticas en /fogon", async ({ page }) => {
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+});
+
+test.describe("Fideicomiso y Pase Fundador", () => {
+  const presupuesto = (page: Page) =>
+    page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: /Presupuesto de obra 2027/ }) });
+
+  test.describe("Miembro sin Pase", () => {
+    test.use({ plan: "miembro" });
+
+    test("ve el presupuesto con su conteo y la nota con enlace a Sumarte, sin botón de votar", async ({ page }) => {
+      await cargarResidencia(page, "argentina");
+      await page.goto("/fogon");
+      await page.getByRole("button", { name: "Fideicomiso" }).click();
+      const p = presupuesto(page);
+      await expect(p).toContainText("A favor 17");
+      await expect(p).toContainText("Votan quienes tienen el Pase Fundador");
+      await expect(p.getByRole("button", { name: "Votar" })).toHaveCount(0);
+      await expect(p.getByRole("link", { name: "Ver el Pase Fundador en Sumarte" })).toHaveAttribute("href", "/sumarte");
+    });
+  });
+
+  test.describe("Fundador", () => {
+    test.use({ plan: "fundador" });
+
+    test("vota a favor y el conteo se actualiza, aunque no haya cargado su residencia", async ({ page }) => {
+      await page.goto("/fogon");
+      await page.getByRole("button", { name: "Fideicomiso" }).click();
+      const p = presupuesto(page);
+      await p.getByRole("button", { name: "Votar" }).click();
+      await p.getByRole("button", { name: "A favor" }).click();
+      await expect(p).toContainText("Tu voto: A favor (simulado)");
+      await expect(p).toContainText("A favor 18");
+      await expect(p.getByText("Votan quienes tienen el Pase Fundador")).toHaveCount(0);
+    });
+
+    test("axe sin violaciones serias o críticas en la pestaña Fideicomiso", async ({ page }) => {
+      await page.goto("/fogon");
+      await page.getByRole("button", { name: "Fideicomiso" }).click();
+      const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+      expect(r.violations.filter((v) => v.impact === "serious" || v.impact === "critical")).toEqual([]);
+    });
+  });
 });

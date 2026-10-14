@@ -2,15 +2,18 @@ import { esPublica } from "@/lib/sesion/rutas-publicas";
 
 /**
  * Niveles de acceso según cómo se suma la persona (Sumarte). Cada uno incluye todo lo del anterior.
+ * `fundador` es quien tiene el Pase Fundador (sin Plan Tribu). Votar en el Fideicomiso no sale de este orden sino de la
+ * puerta `voto-fideicomiso` (`lib/permisos/tabla.ts`): un líder de tribu sin pase no vota ahí.
  * `sin-cuenta` no es un plan: es quien todavía no se registró. `superadmin` no se elige: viene de `LH_PERSONAS`.
  */
-export const NIVELES = ["sin-cuenta", "explorador", "miembro", "lider", "superadmin"] as const;
+export const NIVELES = ["sin-cuenta", "explorador", "miembro", "fundador", "lider", "superadmin"] as const;
 export type Nivel = (typeof NIVELES)[number];
 
 export const ETIQUETA_NIVEL: Record<Nivel, string> = {
   "sin-cuenta": "Sin cuenta",
   explorador: "Explorador",
   miembro: "Miembro",
+  fundador: "Fundador",
   lider: "Líder de tribu",
   superadmin: "Super admin",
 };
@@ -102,6 +105,7 @@ export function avisoDeRuta(ruta: string): string {
   const nombre = NOMBRE_DE_RUTA.find(([base]) => dentroDe(r, base))?.[1] ?? "Esta página";
   const minimo = nivelMinimoDeRuta(r);
   if (minimo === "superadmin") return `${nombre} es solo para el super admin del prototipo.`;
+  if (minimo === "fundador") return `${nombre} se habilita con el Pase Fundador.`;
   if (minimo === "lider") return `${nombre} se habilita con el Plan Tribu.`;
   if (minimo === "miembro") return `${nombre} se habilita con el plan Miembro.`;
   return `${nombre} se habilita al sumarte gratis como Explorador.`;
@@ -111,6 +115,7 @@ export function avisoDeRuta(ruta: string): string {
 export function avisoDeNivel(minimo: Nivel): string {
   if (minimo === "explorador") return "Esta acción se habilita al sumarte gratis como Explorador.";
   if (minimo === "miembro") return "Esta acción se habilita con el plan Miembro.";
+  if (minimo === "fundador") return "Esta acción se habilita con el Pase Fundador.";
   if (minimo === "lider") return "Esta acción se habilita con el Plan Tribu.";
   return "Esta acción no se habilita desde Sumarte.";
 }

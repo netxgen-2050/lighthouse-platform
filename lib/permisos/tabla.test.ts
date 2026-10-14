@@ -42,12 +42,13 @@ const ESPERADO: Record<Puerta, Array<string | null>> = {
   "voz-tribu": [N, N, N, "segun estatuto", N, N],
   "voz-fondo-comun": [N, N, "1 voz", N, N, N],
   "voto-asamblea-residentes": [N, N, N, N, N, "1 persona = 1 voto"],
+  "voto-fideicomiso": [N, N, "abierta", N, N, N],
   creditos: [N, N, "abierta", N, N, N],
 };
 
 describe("tabla de la nota 18 §3", () => {
-  it("tiene 9 puertas y 6 columnas", () => {
-    expect(PUERTAS).toHaveLength(9);
+  it("tiene 10 puertas y 6 columnas", () => {
+    expect(PUERTAS).toHaveLength(10);
     expect(COLUMNAS).toHaveLength(6);
   });
 

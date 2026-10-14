@@ -3,7 +3,7 @@
 import type { ClaveTermino } from "@/lib/legal/terminos";
 
 export type Ambito = "tribu" | "asamblea" | "fideicomiso";
-export type Requisito = "ninguno" | "residente" | "beneficiario";
+export type Requisito = "ninguno" | "residente" | "pase";
 export type Opcion = "favor" | "contra" | "abstencion";
 
 export type Decision = {
@@ -57,7 +57,7 @@ export const DECISIONES: readonly Decision[] = [
     regla: "Mayoría según el contrato",
     base: "fidasamblea",
     ambito: "fideicomiso",
-    requisito: "beneficiario",
+    requisito: "pase",
     votos: { favor: 17, contra: 6, abstencion: 1 },
   },
   {

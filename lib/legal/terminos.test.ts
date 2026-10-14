@@ -29,6 +29,7 @@ describe("catálogo legal", () => {
         "espejo",
         "estatuto",
         "fidasamblea",
+        "gobernanzafideicomiso",
         "guardian",
         "hacienda",
         "inversorexterior",
@@ -74,6 +75,10 @@ describe("catálogo legal", () => {
   });
   it("inversorexterior es borrador", () => {
     expect(esBorrador("inversorexterior")).toBe(true);
+  });
+  it("gobernanzafideicomiso es borrador y dice que en la versión real lo define el contrato", () => {
+    expect(esBorrador("gobernanzafideicomiso")).toBe(true);
+    expect(TERMINOS.gobernanzafideicomiso.texto).toContain("contrato del fideicomiso");
   });
   it("datos y transferencia son borrador y explican en palabras simples", () => {
     expect(esBorrador("datos")).toBe(true);

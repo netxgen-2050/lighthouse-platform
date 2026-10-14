@@ -11,10 +11,16 @@ export type EstadoFogon = {
 export const INICIAL: EstadoFogon = { votos: {} };
 
 /**
- * Residencia fiscal que la persona cargó en "Tus datos"; `undefined` si no la cargó (sin dato).
- * Por ahora, en el prototipo, residir fiscalmente en Argentina habilita la asamblea y el fideicomiso (simulado).
+ * Lo que habilita votar. `residencia` es la que la persona cargó en "Tus datos" (`undefined` si no la cargó: sin dato);
+ * por ahora, en el prototipo, residir fiscalmente en Argentina habilita la Asamblea de residentes (simulado).
+ * `pase` es si tiene el Pase Fundador (cualquier nivel): es lo que habilita el Fideicomiso.
  */
-export type Condicion = Residencia | undefined;
+export type Condicion = { residencia: Residencia | undefined; pase: boolean };
+
+export const SIN_CONDICION: Condicion = { residencia: undefined, pase: false };
+
+/** Texto de quien ve el Fideicomiso sin el Pase. */
+export const MOTIVO_SIN_PASE = "Votan quienes tienen el Pase Fundador";
 
 /** Voto propio en una decisión; nada si todavía no puede votar ahí. */
 export function votoPropio(e: EstadoFogon, d: Decision, condicion: Condicion): Opcion | undefined {
@@ -27,9 +33,10 @@ const OPCIONES: readonly string[] = ["favor", "contra", "abstencion"];
 /** null si puede votar; si no, el motivo que se muestra. Sin dato de residencia no se asume nada. */
 export function motivoSinVoto(d: Decision, condicion: Condicion): string | null {
   if (d.requisito === "ninguno") return null;
-  if (condicion === "argentina") return null;
-  if (condicion === undefined) return "Sin dato de tu residencia";
-  return d.requisito === "residente" ? "Solo residentes" : "No sos beneficiaria/o";
+  if (d.requisito === "pase") return condicion.pase ? null : MOTIVO_SIN_PASE;
+  if (condicion.residencia === "argentina") return null;
+  if (condicion.residencia === undefined) return "Sin dato de tu residencia";
+  return "Solo residentes";
 }
 
 export function filtrar(ambito: Ambito | null): readonly Decision[] {

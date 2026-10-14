@@ -24,9 +24,9 @@ describe("personaDesdeSumarte", () => {
 });
 
 describe("filasDePuertas", () => {
-  it("persona mínima: nueve filas y solo dos abiertas", () => {
+  it("persona mínima: diez filas y solo dos abiertas", () => {
     const filas = filasDePuertas(base);
-    expect(filas).toHaveLength(9);
+    expect(filas).toHaveLength(10);
     expect(filas.filter((f) => f.abierta).map((f) => f.nombre)).toEqual([
       "Mapa, tribus y eventos abiertos",
       "Registrar tu ticket del Congreso",
@@ -38,6 +38,18 @@ describe("filasDePuertas", () => {
     const f = buscar(filasDePuertas(con({ plan: "miembro", pase: "brote" })), "Canal de fundadores");
     expect(f.estado).toBe("Abierta");
     expect(f.motivos).toEqual(["por tu pase"]);
+  });
+
+  it("voto en el Fideicomiso: solo con el Pase, igual en los tres niveles, y con su ⚖", () => {
+    for (const pase of ["semilla", "brote", "raiz"] as const) {
+      const f = buscar(filasDePuertas(con({ plan: "miembro", pase })), "Voto en el Fideicomiso");
+      expect(f.estado).toBe("Abierta");
+      expect(f.motivos).toEqual(["por tu pase"]);
+      expect(f.termino).toBe("gobernanzafideicomiso");
+    }
+    const sin = buscar(filasDePuertas(con({ plan: "miembro" })), "Voto en el Fideicomiso");
+    expect(sin.estado).toBe("Cerrada");
+    expect(sin.abreCon).toBe("Pase Fundador");
   });
 
   it("dos motivos: foros por plan y por pase", () => {
@@ -74,7 +86,7 @@ describe("filasDePuertas", () => {
     expect(buscar(filas, "Salas de otras tribus").estado).toBe("Cerrada");
     expect(buscar(filas, "Voz en Valle Solar").estado).toBe("Abierta · según estatuto");
     expect(buscar(filas, "Voz en otras tribus").estado).toBe("Cerrada");
-    expect(filas).toHaveLength(11);
+    expect(filas).toHaveLength(12);
   });
 
   it("las filas de otras tribus hablan de otra tribu, no de esa", () => {
@@ -87,7 +99,7 @@ describe("filasDePuertas", () => {
   });
 
   it("una tribu que no es de la persona no aparece", () => {
-    expect(filasDePuertas(base, [VALLE])).toHaveLength(9);
+    expect(filasDePuertas(base, [VALLE])).toHaveLength(10);
   });
 
   it("pase con presencia: refuerzo a decidir, sin número", () => {

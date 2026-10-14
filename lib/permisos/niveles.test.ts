@@ -20,6 +20,20 @@ describe("alcanza", () => {
   });
 });
 
+describe("nivel Fundador", () => {
+  it("está entre Miembro y Líder: tiene todo lo de Miembro y no la administración de tribu", () => {
+    expect(alcanza("fundador", "miembro")).toBe(true);
+    expect(alcanza("lider", "fundador")).toBe(true);
+    expect(alcanza("miembro", "fundador")).toBe(false);
+    expect(puedeCapacidad("fundador", "participar")).toBe(true);
+    expect(puedeCapacidad("fundador", "adherir")).toBe(true);
+    expect(puedeCapacidad("fundador", "admin-tribu")).toBe(false);
+  });
+  it("puede abrir lo que abre un Miembro", () => {
+    for (const ruta of ["/fogon", "/pactos", "/semillas", "/compromisos"]) expect(puedeRuta("fundador", ruta)).toBe(true);
+  });
+});
+
 describe("capacidades por nivel", () => {
   it("sin cuenta solo descubre y se suma", () => {
     expect(puedeCapacidad("sin-cuenta", "descubrir")).toBe(true);

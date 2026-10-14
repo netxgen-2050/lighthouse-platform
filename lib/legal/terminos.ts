@@ -220,6 +220,13 @@ export const TERMINOS = {
       "Los servicios que usamos para entrar, alojar la plataforma y guardar datos (Privy, Vercel, Neon y GitHub) tienen sus servidores en Estados Unidos. Eso es una transferencia internacional de datos: por eso te pedimos tu consentimiento antes de usar la plataforma con tu cuenta. Las cláusulas con cada proveedor todavía están por definirse.",
     borrador: true,
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  gobernanzafideicomiso: {
+    titulo: "Voto en el Fideicomiso",
+    texto:
+      "El fideicomiso decide cosas como el presupuesto de obra del macrolote. En el prototipo, quien tiene el Pase Fundador vota esas decisiones, con el mismo voto en los tres niveles del pase, y el voto es simulado. En la versión real, quién vota y con qué alcance lo define el contrato del fideicomiso, que todavía hay que confirmar con el equipo legal.",
+    borrador: true,
+  },
 } as const;
 
 /** Claves de los textos que son borrador (no vienen del mock-up). */

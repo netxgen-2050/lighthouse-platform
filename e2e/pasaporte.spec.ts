@@ -53,6 +53,7 @@ test("cada sello dice qué abre: el Pase Fundador abre canal de fundadores, voz 
   await expect(f).toContainText("Obtenido");
   await expect(f).toContainText("Canal de fundadores · Abierta");
   await expect(f).toContainText("Voz en el Fondo Común · Abierta · 1 voz");
+  await expect(f).toContainText("Voto en el Fideicomiso · Abierta");
   await expect(f).toContainText("Créditos comunes y de estadía · Abierta");
 });
 

@@ -5,8 +5,11 @@ import { TerminoLegal } from "@/components/termino-legal";
 import Link from "next/link";
 import { CLAVES } from "@/lib/demo/claves";
 import { AMBITOS, DECISIONES, OPCIONES, type Ambito, type Opcion } from "@/lib/fogon/datos";
-import { contar, filtrar, INICIAL, leer, motivoSinVoto, votar, votoPropio, type Condicion, type EstadoFogon } from "@/lib/fogon/estado";
+import { contar, filtrar, INICIAL, leer, MOTIVO_SIN_PASE, motivoSinVoto, SIN_CONDICION, votar, votoPropio, type Condicion, type EstadoFogon } from "@/lib/fogon/estado";
+import { personaDesdeSumarte } from "@/lib/canales/puertas";
+import { puede } from "@/lib/permisos/calcular";
 import { leerPasaporteDelNavegador } from "@/lib/pasaporte/del-navegador";
+import { leerEstadoGuardado } from "@/lib/sesion/nivel";
 
 // Todo queda solo en este navegador: no hay pedidos de red.
 
@@ -23,11 +26,12 @@ export function FogonCliente() {
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [listo, setListo] = useState(false);
   const [anuncio, setAnuncio] = useState("");
-  const [condicion, setCondicion] = useState<Condicion>(undefined);
+  const [condicion, setCondicion] = useState<Condicion>(SIN_CONDICION);
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
-    setCondicion(leerPasaporteDelNavegador().residencia);
+    const pase = puede(personaDesdeSumarte(leerEstadoGuardado(window.localStorage)), "voto-fideicomiso").abierta;
+    setCondicion({ residencia: leerPasaporteDelNavegador().residencia, pase });
     try {
       setEstado(leer(window.localStorage.getItem(CLAVES.fogon)));
     } catch {
@@ -115,7 +119,15 @@ export function FogonCliente() {
                 </div>
                 <div className="text-right">
                   {!listo ? null : motivo ? (
-                    <span className={`${CHIP} text-muted`}>{motivo}</span>
+                    <span className={`${CHIP} text-muted`}>
+                      {motivo}
+                      {motivo === MOTIVO_SIN_PASE && (
+                        <>
+                          {" · "}
+                          <Link className="underline" href="/sumarte">Ver el Pase Fundador en Sumarte</Link>
+                        </>
+                      )}
+                    </span>
                   ) : (
                     <button
                       type="button"
@@ -165,16 +177,23 @@ export function FogonCliente() {
 
       {listo && (
         <p className="text-sm text-muted">
-          {condicion === "argentina"
-            ? "Con tu residencia fiscal en Argentina (simulado) votás en la Asamblea y en la asamblea del fideicomiso."
-            : condicion === "exterior"
-              ? "Con tu residencia fiscal en el exterior participás en tu tribu y ves las actas de la Asamblea; no votás en la asamblea del fideicomiso."
+          {condicion.residencia === "argentina"
+            ? "Con tu residencia fiscal en Argentina (simulado) votás en la Asamblea de residentes."
+            : condicion.residencia === "exterior"
+              ? "Con tu residencia fiscal en el exterior participás en tu tribu y ves las actas de la Asamblea; no votás en la Asamblea de residentes."
               : (
                 <>
-                  Todavía no cargaste tu residencia fiscal, así que no sabemos en qué asambleas podés votar.{" "}
+                  Todavía no cargaste tu residencia fiscal, así que no sabemos si podés votar en la Asamblea de residentes.{" "}
                   <Link className="underline" href="/pasaporte">Cargala en Tus datos</Link>.
                 </>
               )}
+        </p>
+      )}
+      {listo && (
+        <p className="text-sm text-muted">
+          {condicion.pase
+            ? "Con tu Pase Fundador (simulado) votás en las decisiones del Fideicomiso."
+            : "Para votar en el Fideicomiso hace falta el Pase Fundador."}
         </p>
       )}
     </div>

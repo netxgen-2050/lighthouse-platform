@@ -22,7 +22,7 @@ export type AjustesDePersona = { rol: RolSesion; tribuAdmin: string | null };
 
 export type NivelCalculado = { nivel: Nivel; tribuLider: string | null };
 
-const ORDEN: Nivel[] = ["sin-cuenta", "explorador", "miembro", "lider", "superadmin"];
+const ORDEN: Nivel[] = ["sin-cuenta", "explorador", "miembro", "fundador", "lider", "superadmin"];
 
 /**
  * Nivel y tribu que lidera. Sin persona no hay cuenta. El super admin y el nivel asignado de antemano (`admin-tribu` en
@@ -30,7 +30,13 @@ const ORDEN: Nivel[] = ["sin-cuenta", "explorador", "miembro", "lider", "superad
  */
 export function calcularNivel(estado: EstadoSumarte, persona: AjustesDePersona | null): NivelCalculado {
   if (!persona) return { nivel: "sin-cuenta", tribuLider: null };
-  let nivel: Nivel = estado.tribu ? "lider" : estado.plan === "miembro" || estado.pase ? "miembro" : "explorador";
+  let nivel: Nivel = estado.tribu
+    ? "lider"
+    : estado.pase
+      ? "fundador"
+      : estado.plan === "miembro"
+        ? "miembro"
+        : "explorador";
   let tribuLider = estado.tribu ? estado.tribuId : null;
   if (persona.rol === "admin-tribu") {
     if (ORDEN.indexOf("lider") > ORDEN.indexOf(nivel)) nivel = "lider";

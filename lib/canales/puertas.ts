@@ -25,7 +25,7 @@ export type FilaPuerta = {
   termino?: ClaveTermino;
 };
 
-/** Nombres en lenguaje simple de las 9 puertas del servicio de permisos. */
+/** Nombres en lenguaje simple de las 10 puertas del servicio de permisos. */
 export const NOMBRES: Record<Puerta, string> = {
   "mapa-tribus-eventos": "Mapa, tribus y eventos abiertos",
   "registrar-ticket": "Registrar tu ticket del Congreso",
@@ -35,12 +35,14 @@ export const NOMBRES: Record<Puerta, string> = {
   "voz-tribu": "Voz en tu tribu",
   "voz-fondo-comun": "Voz en el Fondo Común",
   "voto-asamblea-residentes": "Voto en la Asamblea de residentes",
+  "voto-fideicomiso": "Voto en el Fideicomiso",
   creditos: "Créditos comunes y de estadía",
 };
 
 const TERMINO_DE_PUERTA: Partial<Record<Puerta, ClaveTermino>> = {
   "canal-fundadores": "pasefundador",
   "voz-fondo-comun": "guardian",
+  "voto-fideicomiso": "gobernanzafideicomiso",
   creditos: "creditos",
 };
 

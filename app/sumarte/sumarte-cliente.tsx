@@ -343,6 +343,10 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
               {formatearMonto(nivel.creditos, moneda)} en créditos comunes y de estadía
               <TerminoLegal clave="creditos" />, en 3 años
             </li>
+            <li>
+              Voz en las decisiones del fideicomiso y del Fondo Común
+              <TerminoLegal clave="gobernanzafideicomiso" />
+            </li>
             <li>Canal de fundadores</li>
             <li>Registro Genesis si venís al Congreso</li>
           </ul>

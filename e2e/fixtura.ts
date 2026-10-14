@@ -31,7 +31,7 @@ export function prefijoDe(email: string): string {
 }
 
 /** Plan de Sumarte con el que arranca la persona de prueba (el nivel sale de lo elegido en Sumarte). */
-export type PlanPrueba = "explorador" | "miembro" | "ninguno";
+export type PlanPrueba = "explorador" | "miembro" | "fundador" | "ninguno";
 
 /**
  * Consentimiento de privacidad con el que arranca la persona: "completo" (política y datos sensibles del KYC, el valor por
@@ -50,7 +50,8 @@ const EMAILS_CONOCIDOS = [...Object.values(EMAILS), EMAIL_FUERA_DE_LISTA, "nueva
  * del navegador traduce las claves `lh-*` de los tests (sembrar y leer datos) a las claves con el prefijo de esa persona.
  * Con `test.use({ rol: "ninguno" })` no hay sesión (para probar Sumarte como puerta de entrada).
  * Con `test.use({ plan: "explorador" })` la persona arranca como Explorador; por defecto es Miembro, para que los e2e
- * que participan (Pactos, Semillas, Fogón, Compromisos) sigan pasando. `plan: "ninguno"` no siembra nada (queda Explorador).
+ * que participan (Pactos, Semillas, Fogón, Compromisos) sigan pasando. `plan: "fundador"` siembra un Pase Fundador Brote (simulado).
+ * `plan: "ninguno"` no siembra nada (queda Explorador).
  */
 export const test = base.extend<Opciones>({
   rol: ["superadmin", { option: true }],
@@ -111,7 +112,10 @@ export const test = base.extend<Opciones>({
         if (planInicial !== "ninguno") {
           try {
             if (window.localStorage.getItem("lh-sumarte") === null) {
-              window.localStorage.setItem("lh-sumarte", JSON.stringify({ plan: planInicial }));
+              window.localStorage.setItem(
+                "lh-sumarte",
+                JSON.stringify(planInicial === "fundador" ? { plan: "miembro", pase: "brote", nivelPase: "brote" } : { plan: planInicial }),
+              );
             }
           } catch {
             // Páginas sin almacenamiento (about:blank): no hay nada que sembrar.

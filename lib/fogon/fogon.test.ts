@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { TERMINOS } from "@/lib/legal/terminos";
 import { DECISIONES } from "./datos";
-import { contar, filtrar, INICIAL, leer, motivoSinVoto, votar, votoPropio } from "./estado";
+import { contar, filtrar, INICIAL, leer, motivoSinVoto, SIN_CONDICION, votar, votoPropio, type Condicion } from "./estado";
 
 const mock = readFileSync(path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"), "utf8");
 const huerta = DECISIONES[0];
@@ -23,19 +23,30 @@ describe("datos", () => {
   });
 });
 
-describe("quién puede votar (según la residencia que cargó la persona)", () => {
-  it("con residencia en el exterior vota en tribu; no en la asamblea ni en el fideicomiso", () => {
-    expect(motivoSinVoto(huerta, "exterior")).toBeNull();
-    expect(motivoSinVoto(bomba, "exterior")).toBe("Solo residentes");
-    expect(motivoSinVoto(presupuesto, "exterior")).toBe("No sos beneficiaria/o");
+const exterior: Condicion = { residencia: "exterior", pase: false };
+const argentina: Condicion = { residencia: "argentina", pase: false };
+const conPase: Condicion = { residencia: undefined, pase: true };
+
+describe("quién puede votar (residencia cargada y Pase Fundador)", () => {
+  it("con residencia en el exterior y sin Pase vota en tribu; no en la asamblea ni en el fideicomiso", () => {
+    expect(motivoSinVoto(huerta, exterior)).toBeNull();
+    expect(motivoSinVoto(bomba, exterior)).toBe("Solo residentes");
+    expect(motivoSinVoto(presupuesto, exterior)).toBe("Votan quienes tienen el Pase Fundador");
   });
-  it("con residencia en Argentina vota en todas", () => {
-    for (const d of DECISIONES) expect(motivoSinVoto(d, "argentina")).toBeNull();
+  it("con residencia en Argentina vota en tribu y asamblea; el fideicomiso pide el Pase", () => {
+    for (const d of DECISIONES) {
+      expect(motivoSinVoto(d, argentina)).toBe(d.id === "presupuesto" ? "Votan quienes tienen el Pase Fundador" : null);
+    }
   });
-  it("sin dato de residencia vota en tribu y en las otras dice que falta el dato (no asume)", () => {
-    expect(motivoSinVoto(huerta, undefined)).toBeNull();
-    expect(motivoSinVoto(bomba, undefined)).toBe("Sin dato de tu residencia");
-    expect(motivoSinVoto(presupuesto, undefined)).toBe("Sin dato de tu residencia");
+  it("sin dato de residencia vota en tribu y en la asamblea dice que falta el dato (no asume)", () => {
+    expect(motivoSinVoto(huerta, SIN_CONDICION)).toBeNull();
+    expect(motivoSinVoto(bomba, SIN_CONDICION)).toBe("Sin dato de tu residencia");
+    expect(motivoSinVoto(presupuesto, SIN_CONDICION)).toBe("Votan quienes tienen el Pase Fundador");
+  });
+  it("con el Pase vota en el fideicomiso sin importar la residencia; la asamblea sigue pidiendo residencia", () => {
+    expect(motivoSinVoto(presupuesto, conPase)).toBeNull();
+    expect(motivoSinVoto(presupuesto, { residencia: "exterior", pase: true })).toBeNull();
+    expect(motivoSinVoto(bomba, conPase)).toBe("Sin dato de tu residencia");
   });
 });
 
@@ -50,25 +61,31 @@ describe("filtro", () => {
 
 describe("votar", () => {
   it("suma el voto propio al conteo de ejemplo", () => {
-    const e = votar(INICIAL, "huerta", "favor", undefined);
-    expect(contar(huerta, votoPropio(e, huerta, undefined)).favor).toBe(huerta.votos.favor + 1);
+    const e = votar(INICIAL, "huerta", "favor", SIN_CONDICION);
+    expect(contar(huerta, votoPropio(e, huerta, SIN_CONDICION)).favor).toBe(huerta.votos.favor + 1);
     expect(contar(huerta, undefined)).toEqual(huerta.votos);
   });
   it("cambiar el voto no suma dos", () => {
-    const e = votar(votar(INICIAL, "huerta", "favor", undefined), "huerta", "contra", undefined);
-    const c = contar(huerta, votoPropio(e, huerta, undefined));
+    const e = votar(votar(INICIAL, "huerta", "favor", SIN_CONDICION), "huerta", "contra", SIN_CONDICION);
+    const c = contar(huerta, votoPropio(e, huerta, SIN_CONDICION));
     expect(c.favor).toBe(huerta.votos.favor);
     expect(c.contra).toBe(huerta.votos.contra + 1);
   });
   it("sin derecho a voto no registra nada", () => {
-    expect(votar(INICIAL, "bomba", "favor", undefined)).toBe(INICIAL);
-    expect(votar(INICIAL, "bomba", "favor", "exterior")).toBe(INICIAL);
-    expect(votar(INICIAL, "bomba", "favor", "argentina").votos.bomba).toBe("favor");
+    expect(votar(INICIAL, "bomba", "favor", SIN_CONDICION)).toBe(INICIAL);
+    expect(votar(INICIAL, "bomba", "favor", exterior)).toBe(INICIAL);
+    expect(votar(INICIAL, "bomba", "favor", argentina).votos.bomba).toBe("favor");
+  });
+  it("el fideicomiso solo registra el voto de quien tiene el Pase", () => {
+    expect(votar(INICIAL, "presupuesto", "favor", argentina)).toBe(INICIAL);
+    expect(votar(INICIAL, "presupuesto", "favor", conPase).votos.presupuesto).toBe("favor");
   });
   it("el voto guardado en un ámbito donde ya no puede votar no se muestra", () => {
-    const e = { votos: { bomba: "favor" as const } };
-    expect(votoPropio(e, bomba, "exterior")).toBeUndefined();
-    expect(votoPropio(e, bomba, "argentina")).toBe("favor");
+    const e = { votos: { bomba: "favor" as const, presupuesto: "contra" as const } };
+    expect(votoPropio(e, bomba, exterior)).toBeUndefined();
+    expect(votoPropio(e, bomba, argentina)).toBe("favor");
+    expect(votoPropio(e, presupuesto, argentina)).toBeUndefined();
+    expect(votoPropio(e, presupuesto, conPase)).toBe("contra");
   });
 });
 

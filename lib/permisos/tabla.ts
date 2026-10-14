@@ -6,7 +6,8 @@ import type { Celda, Columna, Motivo, Puerta } from "./tipos";
  * Cada celda "—" es null. No hay `if` sueltos: toda regla sale de acá.
  *
  * Fuera de esta tabla queda la fila "Descuentos y prioridad en estadías y
- * eventos" de la nota: la spec servicio-permisos lista solo 9 puertas.
+ * eventos" de la nota: la spec servicio-permisos lista 9 puertas, más `voto-fideicomiso`
+ * (pase-fundador-gobernanza), que la nota 18 todavía no tiene.
  */
 export const COLUMNAS: Columna[] = [
   "explorador",
@@ -72,6 +73,11 @@ export const TABLA: Record<Puerta, Record<Columna, Celda | null>> = {
   "voto-asamblea-residentes": {
     explorador: null, miembro: null, pase: null, tribu: null, presencia: null,
     residente: { grado: "1 persona = 1 voto" },
+  },
+  // Decisión de Gus (14-oct-2026, cambio pase-fundador-gobernanza): el Pase Fundador da gobernanza; vota en el Fideicomiso.
+  // Los tres niveles del pase votan igual. En la versión real el alcance lo define el contrato del fideicomiso (R14).
+  "voto-fideicomiso": {
+    explorador: null, miembro: null, pase: A, tribu: null, presencia: null, residente: null,
   },
   creditos: {
     explorador: null, miembro: null, pase: A, tribu: null, presencia: null, residente: null,
