@@ -9,9 +9,9 @@
 
 ## 2. Tema con alcance y guardas
 
-- [ ] 2.1 Crear `app/congreso/tema-evento.css` con los tokens `--evento-*` dentro de `.tema-evento`, las clases `ev-*` portadas del mock-up v2 (todas bajo `.tema-evento`), `color-scheme` por sección, foco visible con `--evento-corona` y las reglas del eclipse con `animation: none` para `prefers-reduced-motion` y para `:root[data-movimiento="reducido"]` (design §3 y §4). Verificar con la tarea 2.3.
-- [ ] 2.2 Ajustar `lib/sin-colores-sueltos.test.ts`: excluir solo `app/congreso/tema-evento.css` y agregar el caso "`--evento-` no aparece fuera de `app/congreso/`". Verificar con `pnpm test` que pasa, y que falla si se agrega a mano un `#fff` en otro archivo de `app/` (probar y revertir).
-- [ ] 2.3 Escribir `app/congreso/tema-evento.test.ts`: todo selector contiene `.tema-evento`; colores literales solo en declaraciones `--evento-*`; tabla de pares de contraste AA (texto/fondo, con tamaño) calculada desde los valores de la hoja, incluidos los pares de las secciones oscuras, el texto claro sobre `--evento-noche`/`--evento-noche-2`, la tinta sobre `--evento-dia`/`--evento-brote`/blanco y el foco corona sobre noche y sobre blanco (como borde, 3:1). Verificar con `pnpm test`.
+- [x] 2.1 Crear `app/congreso/tema-evento.css` con los tokens `--evento-*` dentro de `.tema-evento`, las clases `ev-*` portadas del mock-up v2 (todas bajo `.tema-evento`), `color-scheme` por sección, foco visible con `--evento-corona` y las reglas del eclipse con `animation: none` para `prefers-reduced-motion` y para `:root[data-movimiento="reducido"]` (design §3 y §4). Verificar con la tarea 2.3.
+- [x] 2.2 Ajustar `lib/sin-colores-sueltos.test.ts`: excluir solo `app/congreso/tema-evento.css` y agregar el caso "`--evento-` no aparece fuera de `app/congreso/`". Verificar con `pnpm test` que pasa, y que falla si se agrega a mano un `#fff` en otro archivo de `app/` (probar y revertir).
+- [x] 2.3 Escribir `app/congreso/tema-evento.test.ts`: todo selector contiene `.tema-evento`; colores literales solo en declaraciones `--evento-*`; tabla de pares de contraste AA (texto/fondo, con tamaño) calculada desde los valores de la hoja, incluidos los pares de las secciones oscuras, el texto claro sobre `--evento-noche`/`--evento-noche-2`, la tinta sobre `--evento-dia`/`--evento-brote`/blanco y el foco corona sobre noche y sobre blanco (como borde, 3:1). Verificar con `pnpm test`.
 
 ## 3. Piezas portables del evento
 
