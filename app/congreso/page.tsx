@@ -48,9 +48,8 @@ export default async function CongresoPage({ searchParams }: Props) {
   const evento = await obtenerEvento();
   const origen = leerParametros(await searchParams);
 
-  // El ⚖ de "encuentro educativo" va en la frase que lo dice; si no hay una, en el último párrafo.
+  // El ⚖ de "encuentro educativo" va solo en la frase que lo dice; si ninguna lo dice, no se dibuja.
   const indiceEducativo = evento.encuentro.parrafos.findIndex((p) => /educativ/i.test(p));
-  const indiceMarca = indiceEducativo >= 0 ? indiceEducativo : evento.encuentro.parrafos.length - 1;
 
   const oficial = evento.paginaOficial;
   const botonOficial = oficial ? (
@@ -78,7 +77,11 @@ export default async function CongresoPage({ searchParams }: Props) {
         <BloqueFuente fuente="unityhub" detalle="descripción">
           <Encuentro
             encuentro={evento.encuentro}
-            marcasParrafo={{ [indiceMarca]: <TerminoLegal clave="encuentroeducativo" claseBoton={LEGAL_OSCURO} /> }}
+            marcasParrafo={
+              indiceEducativo >= 0
+                ? { [indiceEducativo]: <TerminoLegal clave="encuentroeducativo" claseBoton={LEGAL_OSCURO} /> }
+                : undefined
+            }
           />
         </BloqueFuente>
         <BloqueFuente fuente="unityhub" detalle="agenda">

@@ -88,6 +88,11 @@ describe("contenido del evento", () => {
     expect(p?.respuesta).toContain("vinculás tu ticket");
   });
 
+  it("algún párrafo de El encuentro dice que es educativo (ahí va el ⚖ encuentroeducativo)", async () => {
+    const e = await obtenerEvento();
+    expect(e.encuentro.parrafos.some((p) => /educativ/i.test(p))).toBe(true);
+  });
+
   it("trae la página oficial de ejemplo con URL segura", async () => {
     const e = await obtenerEvento();
     expect(e.paginaOficial?.esEjemplo).toBe(true);

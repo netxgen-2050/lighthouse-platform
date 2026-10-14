@@ -289,6 +289,20 @@ test.describe("celular (390 px)", () => {
   });
 });
 
+test.describe("celular con sesión: la barra de entradas no tapa a Hifa", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("Hifa sigue visible y se puede apretar con la barra a la vista", async ({ page }) => {
+    await page.goto("/congreso");
+    await expect(page.locator(".ev-barra-compra")).toBeVisible();
+    const hifa = page.getByRole("button", { name: "Hablar con Hifa" });
+    await expect(hifa).toBeVisible();
+    // Playwright comprueba que ningún otro elemento reciba el clic en su lugar.
+    await hifa.click();
+    await expect(page.getByRole("button", { name: "Hablar con Hifa" })).toBeVisible();
+  });
+});
+
 test.describe("con la política de privacidad pendiente", () => {
   test.use({ rol: "persona", plan: "explorador", consentimiento: "ninguno" });
 
@@ -367,5 +381,13 @@ test.describe("visitante sin cuenta", () => {
     await page.goto("/congreso#ticket");
     const titulo = page.getByRole("heading", { name: "Tu ticket también abre la puerta a NetX" });
     await expect(titulo).toBeInViewport();
+    await expect
+      .poll(async () => {
+        const t = await titulo.boundingBox();
+        const barra = await page.locator(".ev-barra").boundingBox();
+        if (!t || !barra) return false;
+        return t.y >= barra.y + barra.height;
+      })
+      .toBe(true);
   });
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { idDeAncla } from "@/lib/congreso/ancla";
 
 /**
  * La página se dibuja después de verificar la sesión, así que el navegador ya intentó (y no pudo) ir al ancla de la
@@ -9,7 +10,7 @@ import { useEffect } from "react";
  */
 export function IrAlAncla() {
   useEffect(() => {
-    const id = decodeURIComponent(window.location.hash.slice(1));
+    const id = idDeAncla(window.location.hash);
     if (id) document.getElementById(id)?.scrollIntoView({ block: "start" });
   }, []);
   return null;
