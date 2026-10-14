@@ -80,6 +80,18 @@ describe("tema del evento", () => {
 
   it("no usa rgba() ni nombres de color sueltos en declaraciones de color", () => {
     expect(CSS).not.toMatch(/\brgba?\(/);
+    const NOMBRES = /\b(?:white|black|red|green|blue|yellow|orange|purple|pink|brown|gray|grey|silver|gold|navy|teal|aqua|cyan|magenta|lime|maroon|olive|fuchsia|indigo|violet|crimson|coral|salmon|tan|ivory|beige|khaki|lavender|plum|orchid|turquoise|azure|snow)\b/i;
+    const malas: string[] = [];
+    for (const r of REGLAS) {
+      for (const decl of r.cuerpo.split(";")) {
+        const [prop, ...resto] = decl.split(":");
+        const valor = resto.join(":");
+        if (!/(color|background|border|outline|fill|stroke|shadow)/i.test(prop)) continue;
+        // Los nombres dentro de var(--evento-…) son tokens, no colores sueltos.
+        if (NOMBRES.test(valor.replace(/var\(--evento-[a-z0-9-]+\)/g, ""))) malas.push(`${r.selectores.join(", ")} → ${decl.trim()}`);
+      }
+    }
+    expect(malas).toEqual([]);
   });
 
   it("respeta reducir animaciones: preferencia del sistema y ajuste de NetX", () => {
@@ -110,11 +122,13 @@ const PARES: [string, string, Tam][] = [
   ["texto-claro-2", "resplandor", "normal"],
   ["texto-tenue", "noche", "normal"],
   ["texto-tenue", "noche-2", "normal"],
+  ["texto-tenue", "noche-3", "normal"],
   ["lila-claro", "noche", "normal"],
   ["lila-claro", "noche-2", "normal"],
   ["lila-claro", "resplandor", "normal"],
   ["corona", "noche", "normal"],
   ["corona", "noche-2", "normal"],
+  ["corona", "resplandor", "normal"],
   // Tinta sobre claro
   ["tinta", "dia", "normal"],
   ["tinta", "brote", "normal"],
@@ -137,6 +151,7 @@ const PARES: [string, string, Tam][] = [
   ["corona", "noche", "borde"],
   ["corona", "noche-2", "borde"],
   ["corona", "noche-3", "borde"],
+  ["corona", "resplandor", "borde"],
   ["tinta", "blanco", "borde"],
   ["tinta", "dia", "borde"],
   ["tinta", "brote", "borde"],
@@ -161,5 +176,28 @@ describe("contraste AA del tema del evento", () => {
     expect(contraste(t["corona"], t["blanco"])).toBeLessThan(3);
     const foco = REGLAS.find((r) => r.selectores.includes(".tema-evento :focus-visible"));
     expect(foco?.cuerpo).toContain("var(--evento-tinta)");
+  });
+
+  it("el foco de cada sección oscura lo fija la propia sección, con un color que llega a 3:1", () => {
+    const colorDeFoco = (seccion: string) => {
+      const r = REGLAS.find((x) => x.selectores.includes(`.tema-evento ${seccion} :focus-visible`));
+      return /outline-color:\s*var\(--evento-([a-z0-9-]+)\)/.exec(r?.cuerpo ?? "")?.[1];
+    };
+    const fondos: Record<string, string> = {
+      ".ev-hero": "noche",
+      ".ev-acerca": "amanecer-1",
+      ".ev-entradas-seccion": "noche",
+      ".ev-cierre": "noche",
+      ".ev-ejes-seccion": "rio",
+    };
+    for (const [seccion, fondo] of Object.entries(fondos)) {
+      const foco = colorDeFoco(seccion);
+      expect(foco, seccion).toBeDefined();
+      expect(contraste(t[foco!], t[fondo]), seccion).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it("la corona sobre río NO alcanza para foco: por eso ahí el foco es blanco", () => {
+    expect(contraste(t["corona"], t["rio"])).toBeLessThan(3);
   });
 });

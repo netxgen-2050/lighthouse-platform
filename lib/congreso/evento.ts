@@ -92,7 +92,8 @@ export type Evento = {
     titulo: string;
     principales: Voz[];
     regionalesTitulo: string;
-    regionales: string[];
+    /** Personas reales: llevan estado como las principales (por-confirmar hasta que haya confirmación). */
+    regionales: Voz[];
     notaHibrido: string;
   };
   ejes: { titulo: string; items: Eje[] };

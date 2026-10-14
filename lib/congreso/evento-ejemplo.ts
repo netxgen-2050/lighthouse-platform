@@ -82,8 +82,8 @@ export const EVENTO_EJEMPLO: Evento = {
     ],
     regionalesTitulo: "Voces de la región",
     regionales: [
-      "Marcela Vega, agricultura biodinámica en Lawenmalal, Chile",
-      "Lucas Omar Porro, permacultura y autosuficiencia",
+      { id: "marcela-vega", nombre: "Marcela Vega", afiliacion: "Agricultura biodinámica en Lawenmalal, Chile", iniciales: "MV", estado: "por-confirmar", tono: 2 },
+      { id: "lucas-omar-porro", nombre: "Lucas Omar Porro", afiliacion: "Permacultura y autosuficiencia", iniciales: "LP", estado: "por-confirmar", tono: 3 },
     ],
     notaHibrido:
       "Escenario híbrido: quien no puede viajar en febrero habla en vivo desde una pantalla gigante, en conversación con alguien en el escenario.",

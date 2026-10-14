@@ -83,20 +83,37 @@
   border: 0;
 }
 
-.tema-evento .ev-oscura {
+.tema-evento .ev-oscura,
+.tema-evento .ev-hero,
+.tema-evento .ev-acerca,
+.tema-evento .ev-entradas-seccion,
+.tema-evento .ev-cierre {
   color-scheme: dark;
   color: var(--evento-blanco);
 }
 
-/* Foco: tinta sobre claro; corona sobre noche (la corona sobre blanco no llega a 3:1). */
+/* Foco: tinta por defecto (sobre claro); corona sobre las secciones de noche, blanco sobre río
+   (la corona sobre blanco da menos de 3:1, y sobre río 2,75:1). Las secciones oscuras lo fijan
+   por sí mismas: no dependen de que quien las monte agregue ev-oscura. */
 .tema-evento :focus-visible {
   outline: 3px solid var(--evento-tinta);
   outline-offset: 3px;
 }
-.tema-evento .ev-oscura :focus-visible {
+.tema-evento .ev-oscura :focus-visible,
+.tema-evento .ev-hero :focus-visible,
+.tema-evento .ev-acerca :focus-visible,
+.tema-evento .ev-entradas-seccion :focus-visible,
+.tema-evento .ev-cierre :focus-visible {
   outline-color: var(--evento-corona);
 }
-.tema-evento .ev-sobre-claro :focus-visible {
+.tema-evento .ev-ejes-seccion :focus-visible {
+  outline-color: var(--evento-blanco);
+}
+/* Superficies claras dentro de las oscuras (tarjeta del lugar, barra flotante): vuelve la tinta. */
+.tema-evento .ev-sobre-claro :focus-visible,
+.tema-evento .ev-barra :focus-visible,
+.tema-evento .ev-tarjeta-lugar :focus-visible,
+.tema-evento .ev-chip-fecha :focus-visible {
   outline-color: var(--evento-tinta);
 }
 

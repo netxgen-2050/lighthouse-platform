@@ -23,8 +23,10 @@ test("app/ y components/ no usan colores sueltos fuera de globals.css y del tema
   expect(malos).toEqual([]);
 });
 
-test("--evento- no aparece fuera de app/congreso/", () => {
-  const malos = TODOS.filter(
+test("--evento- no aparece fuera de app/congreso/ (ni en lib/)", () => {
+  const YO = path.join(RAIZ, "lib", "sin-colores-sueltos.test.ts");
+  const candidatos = [...TODOS, ...archivos(path.join(RAIZ, "lib"))].filter((f) => f !== YO);
+  const malos = candidatos.filter(
     (f) => !f.startsWith(path.join(RAIZ, "app", "congreso") + path.sep) && readFileSync(f, "utf8").includes("--evento-"),
   );
   expect(malos).toEqual([]);

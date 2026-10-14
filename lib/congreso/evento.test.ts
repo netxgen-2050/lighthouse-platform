@@ -45,11 +45,18 @@ describe("contenido del evento", () => {
     }
   });
 
-  it("toda voz tiene estado válido y las principales son las cuatro reales, por confirmar", async () => {
+  it("toda voz (principales y regionales) tiene estado válido, iniciales y está por confirmar", async () => {
     const e = await obtenerEvento();
-    const todas = [...e.voces.principales];
+    expect(e.voces.regionales).toHaveLength(2);
+    const todas = [...e.voces.principales, ...e.voces.regionales];
+    for (const v of todas) expect(v.iniciales).toMatch(/^\p{Lu}{2}$/u);
     for (const v of todas) expect(["confirmada", "por-confirmar"]).toContain(v.estado);
     expect(todas.every((v) => v.estado === "por-confirmar")).toBe(true);
+  });
+
+  it("las principales son las cuatro reales, sin fotos ni citas", async () => {
+    const e = await obtenerEvento();
+    const todas = [...e.voces.principales, ...e.voces.regionales];
     expect(e.voces.principales.map((v) => [v.nombre, v.afiliacion])).toEqual([
       ["Roxanne Meadows", "The Venus Project"],
       ["Michel Bauwens", "P2P Foundation"],
@@ -57,7 +64,7 @@ describe("contenido del evento", () => {
       ["Bill Reed", "Regen Dev Corp"],
     ]);
     // Sin fotos ni citas: la voz solo trae estos campos.
-    for (const v of e.voces.principales) {
+    for (const v of todas) {
       expect(Object.keys(v).sort()).toEqual(["afiliacion", "estado", "id", "iniciales", "nombre", "tono"]);
     }
   });
