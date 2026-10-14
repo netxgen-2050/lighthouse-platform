@@ -197,6 +197,23 @@ describe("contraste AA del tema del evento", () => {
     }
   });
 
+  it("la bajada de cada sección oscura se aclara por la propia sección y llega a 4,5:1", () => {
+    const fondos: Record<string, string> = {
+      ".ev-hero": "noche",
+      ".ev-acerca": "amanecer-1",
+      ".ev-entradas-seccion": "noche",
+      ".ev-cierre": "noche",
+      ".ev-ejes-seccion": "rio",
+    };
+    for (const [seccion, fondo] of Object.entries(fondos)) {
+      const r = REGLAS.find((x) => x.selectores.includes(`.tema-evento ${seccion} .ev-bajada`));
+      const token = /color:\s*var\(--evento-([a-z0-9-]+)\)/.exec(r?.cuerpo ?? "")?.[1];
+      expect(token, seccion).toBeDefined();
+      expect(contraste(t[token!], t[fondo]), seccion).toBeGreaterThanOrEqual(4.5);
+      if (seccion === ".ev-acerca") expect(contraste(t[token!], t["amanecer-2"]), seccion).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
   it("la corona sobre río NO alcanza para foco: por eso ahí el foco es blanco", () => {
     expect(contraste(t["corona"], t["rio"])).toBeLessThan(3);
   });

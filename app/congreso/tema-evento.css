@@ -487,8 +487,17 @@ html:has(.tema-evento) {
   margin: 20px 0 0;
   color: var(--evento-tinta-2);
 }
-.tema-evento .ev-oscura .ev-bajada {
+/* La bajada se aclara por la propia sección oscura, sin depender de ev-oscura. */
+.tema-evento .ev-oscura .ev-bajada,
+.tema-evento .ev-hero .ev-bajada,
+.tema-evento .ev-entradas-seccion .ev-bajada,
+.tema-evento .ev-cierre .ev-bajada {
   color: var(--evento-texto-claro-2);
+}
+/* Acerca (degradado a amanecer) y ejes (río): blanco, que llega a 4,5:1 sobre ambos. */
+.tema-evento .ev-acerca .ev-bajada,
+.tema-evento .ev-ejes-seccion .ev-bajada {
+  color: var(--evento-blanco);
 }
 
 /* Acerca: amanecer. El texto queda sobre la parte oscura; el resplandor va en un ::after decorativo. */
