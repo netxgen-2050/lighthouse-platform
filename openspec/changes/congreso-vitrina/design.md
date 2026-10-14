@@ -31,7 +31,7 @@ app/congreso/
                               //   dialogo-demo, boton-demo
   registro-ticket.tsx         // el de hoy, con apariencia del evento
 ```
-- Las secciones del evento son server components sin estado. Reciben el trozo de `Evento` que usan y **huecos** para lo que pone NetX: `Entradas` recibe `accion: (tipo) => ReactNode` (NetX pasa el botón de demo; una página externa pasaría un enlace al checkout); `Cierre` recibe `accionSecundaria?: ReactNode` (la página oficial); `Recorrido` y `Encuentro` reciben las marcas ⚖ como `ReactNode` opcionales por id de parada o por párrafo. Así el ⚖ no queda atado a la pieza, aunque `TerminoLegal` sigue permitido por el test de portabilidad.
+- Las secciones del evento son server components sin estado. Reciben el trozo de `Evento` que usan y **huecos** para lo que pone NetX: `Entradas` recibe `accion: (tipo) => ReactNode` (NetX pasa el botón de demo; una página externa pasaría un enlace al checkout); `Cierre` recibe `accionSecundaria?: ReactNode` (la página oficial); `Recorrido` y `Encuentro` reciben las marcas ⚖ como `ReactNode` opcionales por id de parada o por párrafo. Así el ⚖ no queda atado a la pieza. `Entradas` recibe además `marcaLegal?: ReactNode` para el ⚖ `ticket`. <!-- arquitecto: `TerminoLegal` ya no está permitido en las piezas portables (arrastra la bitácora del navegador y el catálogo legal de NetX); el ⚖ siempre entra por hueco. Ver congreso-tema-evento design §6. -->
 - Las piezas de NetX pueden usar sesión, almacenamiento, `next/link` y tokens de NetX. Se dibujan **dentro** de `.tema-evento` para heredar tipografía y fondo de sección, y usan clases `ev-*` para verse como el resto.
 - El test de portabilidad de `congreso-tema-evento` se amplía para cubrir `app/congreso/evento/secciones/`.
 - **Alternativa descartada:** una sola carpeta con props `enNetx`. Mezcla las dos cosas y hace imposible llevar las secciones afuera sin arrastrar NetX.
@@ -45,7 +45,9 @@ app/congreso/
 ### 3. Compra y página oficial: un único diálogo de demo
 - `netx/dialogo-demo.tsx` (cliente) usa `<dialog>` nativo con `showModal()`: el navegador vuelve inerte el resto (el foco no sale) y Escape lo cierra. Al cerrar, devuelve el foco al disparador guardado. Título y texto por props.
 - `netx/boton-demo.tsx`: `<button type="button">` que abre el diálogo con el texto que corresponde. Los botones "Comprar …" son siempre `<button>`, nunca `<a>`.
-- Página oficial: si `evento.paginaOficial` existe y `esEjemplo`, botón de demo "Página oficial del evento" → diálogo "Acá se abriría la página oficial del evento". Si existe y no es ejemplo, `<a href={url} rel="noopener">` con variante "línea clara". Si no existe, nada.
+- Página oficial: si `evento.paginaOficial` existe y `esEjemplo`, botón de demo "Página oficial del evento" → diálogo "Acá se abriría la página oficial del evento". Si existe y no es ejemplo, `<a href={url} rel="noopener noreferrer">` con variante "línea clara" (la URL ya viene validada como `https://`, spec `congreso-contenido-evento`). Si no existe, nada.
+<!-- arquitecto: rel con noreferrer (skill revision-seguridad-datos) y garantía explícita de que no hay camino de cobro. -->
+- **Ningún camino de cobro:** el diálogo y el botón de demo no hacen `fetch`, no tienen `<form>` que envíe, no usan server actions ni rutas `app/api`, y no guardan nada en el navegador. "Comprar …" no depende de `esEjemplo`: aunque algún día los precios sean reales, en este cambio siempre abre el diálogo. Conectar un checkout real es otro cambio, con su ADR y revisión del arquitecto.
 
 ### 4. Ticket, Genesis y estado compartido
 - `RegistroTicket` suma dos props opcionales, sin cambiar su lógica: `apariencia?: "netx" | "evento"` (cambia clases y baja su título a `h3`) y `alCambiar?: (ticket: string | null) => void` (se llama al leer el almacenamiento al cargar, al registrar y al quitar). Con `apariencia="netx"` (por defecto) se ve como hoy.
@@ -76,14 +78,14 @@ Para cuando los organizadores o UnityHub tengan su propia página. Los enlaces r
 |---|---|---|
 | "Conocé NetX" / "Sumate a la plataforma" | `/?camino=congreso&utm_source=pagina-oficial&utm_medium=enlace&utm_campaign=congreso-2027` | La portada guarda el origen y recomienda el camino del Congreso |
 | "Vinculá tu ticket" | `/congreso#ticket` | Con sesión, va directo al formulario. Sin sesión, la puerta lleva a Sumarte con `volver=/congreso` y el ancla se pierde |
-| "Llegá con tu tribu" | `/congreso#tribus` o `/tribus` | Igual que arriba (`/tribus` hoy también pide nivel) |
+| "Llegá con tu tribu" | `/tribus` (recomendado) o `/congreso#tribus` | `/tribus` es pública (`lib/sesion/rutas-publicas.ts`): se ve sin cuenta. `/congreso#tribus` sin sesión pierde el ancla, igual que arriba <!-- arquitecto: corregido; /tribus no pide nivel --> |
 | "Crear cuenta" | `/sumarte?volver=%2Fcongreso` | Al sumarse vuelve a `/congreso` |
 
 - Limitaciones conocidas (no se arreglan acá): los UTM solo se guardan en la portada, y sin sesión se pierde el ancla. Ver preguntas abiertas.
 - En sentido inverso (de NetX a la página oficial): el botón secundario del cierre (decisión 3).
 
 ### 10. Tests
-- `e2e/congreso.spec.ts`: se borran "agenda de 5 días…" y "sin montos ni USD" (reemplazados por esta spec); se mantienen los cuatro de registro y almacenamiento; se agregan los escenarios de esta spec (héroe y un solo `h1`, orden, modo de origen, precios "ejemplo", diálogo con Escape y foco de vuelta sin cambio de URL ni pedidos a otros dominios, página oficial de ejemplo, Genesis pendiente, preguntas con teclado, móvil 390 px con barra y sin scroll horizontal, `#ticket` visible bajo las barras, reducir animaciones).
+- `e2e/congreso.spec.ts`: se borran "agenda de 5 días…" y "sin montos ni USD" (reemplazados por esta spec); se mantienen los cuatro de registro y almacenamiento; se agregan los escenarios de esta spec (héroe y un solo `h1`, orden, modo de origen, precios "ejemplo", diálogo con Escape y foco de vuelta sin cambio de URL ni pedidos a otros dominios (el registro de pedidos arranca **justo antes** del clic en "Comprar …" y termina al cerrar el diálogo, para no contar lo que la sesión pide al cargar la página <!-- arquitecto: evita un e2e frágil por los pedidos de Privy al cargar -->), página oficial de ejemplo, Genesis pendiente, preguntas con teclado, móvil 390 px con barra y sin scroll horizontal, `#ticket` visible bajo las barras, reducir animaciones).
 - `e2e/accesibilidad.spec.ts`: `/congreso` en la lista (31 rutas) y una prueba extra con el modo de origen activo y el diálogo abierto.
 
 ## Risks / Trade-offs
@@ -99,3 +101,13 @@ Para cuando los organizadores o UnityHub tengan su propia página. Los enlaces r
 - Se implementa en `agente/congreso-vitrina`, apilada sobre `agente/congreso-tema-evento`.
 - Nota para el archivo: al archivar `congreso-registro`, su requisito "Página del Congreso" (agenda de 5 días, sin precios) queda reemplazado por `congreso-vitrina`; conviene archivarlo con ese requisito removido o archivar `congreso-vitrina` con un delta `REMOVED` sobre `congreso`. Lo decide Gus al archivar.
 - Volver atrás: revertir el PR; `/congreso` vuelve a la versión anterior y la base de `congreso-tema-evento` queda sin uso.
+
+## Open Questions
+<!-- arquitecto: se agrega qué implica abrir /congreso sin cuenta, para que Gus decida con los datos técnicos a mano. -->
+
+### ¿`/congreso` se puede ver sin cuenta?
+Decisión de producto de Gus; **este cambio no la toma** (`/congreso` sigue pidiendo Explorador). Lo técnico, para cuando decida:
+- Técnicamente es chico: una línea en `lib/sesion/rutas-publicas.ts` (`/^\/congreso$/`) y sus tests. Gracias a la separación evento/NetX, todo lo del evento ya es público por naturaleza.
+- Lo que **no** puede quedar abierto así como está: el registro del ticket. Sin sesión, `RegistroTicket` guardaría el código sin prefijo de persona y sin política de privacidad aceptada (`rutaPideConsentimiento`). Si se abre, `ticket-netx` tiene que mostrar a quien no tiene sesión "Sumate gratis para vincular tu ticket" (enlace a `/sumarte?volver=%2Fcongreso`) en lugar del formulario. Los pasos y el sello Genesis se pueden mostrar como explicación.
+- Hoy la puerta (`components/sesion/puerta.tsx`) es del lado del navegador: el contenido que la página arma en el servidor viaja igual al navegador aunque no se dibuje. Con datos de ejemplo del evento no importa; **no** sirve como protección para datos de personas (la vinculación real del ticket va a necesitar verificación en el servidor).
+- Ganancia: los enlaces de vuelta (§9) funcionan sin perder el ancla y se podría capturar el UTM al entrar directo. Costo: Hifa y "Reportar" no aparecen sin sesión (ya es así hoy en las páginas públicas).

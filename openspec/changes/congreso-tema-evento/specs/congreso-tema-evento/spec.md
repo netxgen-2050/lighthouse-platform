@@ -54,11 +54,15 @@ The system SHALL load the Unbounded (headings) and Hanken Grotesk (text) fonts o
 - **THEN** la página no pide las fuentes Unbounded ni Hanken Grotesk
 
 ### Requirement: Piezas del evento portables
-The event pieces SHALL receive all their content through props (from the event access function) and MUST NOT depend on the NetX frame: no session, permissions, rail, top bar, browser storage or NetX routing. Links in event pieces MUST be plain anchors whose destinations come from props.
+The event pieces SHALL receive all their content through props (from the event access function) and MUST NOT depend on the NetX frame: no session, permissions, rail, top bar, browser storage, NetX legal catalog or NetX routing, not even indirectly through a NetX component. Links in event pieces MUST be plain anchors whose destinations come from props. Legal marks (⚖) and actions MUST enter as optional props (`ReactNode`) supplied by the page that composes the pieces.
 
 #### Scenario: Importaciones permitidas
 - **WHEN** corren los tests unitarios
-- **THEN** ningún archivo de las piezas del evento importa módulos de sesión, permisos, almacenamiento de demo, el rail, la barra superior ni `next/navigation`
+- **THEN** ningún archivo de las piezas del evento importa módulos de sesión, permisos, almacenamiento de demo, el catálogo legal, componentes de `components/` (incluido el ⚖), el rail, la barra superior ni `next/navigation`
+
+#### Scenario: El ⚖ entra por props
+- **WHEN** se dibuja una pieza del evento sin pasarle marca legal
+- **THEN** la pieza se dibuja completa y sin ⚖
 
 ### Requirement: Botones del evento
 The system SHALL provide event buttons in three variants: "corona" (primary), "línea" (outline on light background) and "línea clara" (outline on dark background). They MUST render as a link when given a destination and as a button otherwise, and show a visible focus outline.

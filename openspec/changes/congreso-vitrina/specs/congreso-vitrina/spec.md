@@ -94,6 +94,7 @@ The "Entradas" section SHALL show the six ticket types with tag, name, descripti
 - **WHEN** una persona aprieta "Comprar pase completo"
 - **THEN** se abre un diálogo con el título "Acá se abriría el pago" y el texto de que es un prototipo y no se cobra nada
 - **AND** la dirección de la página no cambia y no hay pedidos de red a otros dominios
+- **AND** no se envía ningún pedido que escriba datos (POST) desde el clic hasta que se cierra el diálogo
 
 ### Requirement: Diálogo de demostración accesible
 The demo dialog SHALL be modal, keep keyboard focus inside while open, close with Escape and with its "Entendido" button, and return focus to the button that opened it.

@@ -45,11 +45,15 @@ Each voice SHALL have a state `confirmada` or `por-confirmar`, a name, an affili
 - **AND** todas las voces del contenido de ejemplo están `por-confirmar`
 
 ### Requirement: Enlace opcional a la página oficial del evento
-The event content SHALL support an optional link to the official event page (URL, label and `esEjemplo` flag). The example content MUST include it as a placeholder with `esEjemplo: true`.
+The event content SHALL support an optional link to the official event page (URL, label and `esEjemplo` flag). The example content MUST include it as a placeholder with `esEjemplo: true`. A link that is not an example MUST use an `https://` URL; an example link MAY be an in-page anchor (`#…`).
 
 #### Scenario: Enlace de ejemplo
 - **WHEN** un test pide el evento de ejemplo
 - **THEN** trae el enlace a la página oficial con `esEjemplo: true`
+
+#### Scenario: URL segura
+- **WHEN** un test recorre el enlace a la página oficial del contenido
+- **THEN** su URL empieza con `https://`, o con `#` si el enlace es de ejemplo
 
 #### Scenario: Sin enlace
 - **WHEN** un evento no trae el enlace a la página oficial

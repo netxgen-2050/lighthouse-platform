@@ -20,6 +20,7 @@ Gus necesita mostrarle al CEO y a un inversor el Congreso de febrero 2027 como u
 
 ## Consecuencias
 - Ganamos: una vitrina convincente, sin tocar el resto de la plataforma, y piezas listas para llevarse a otra página.
+- Las piezas portables no importan el ⚖ (`TerminoLegal` usa la bitácora del navegador y el catálogo legal de NetX): reciben las marcas legales y las acciones ("Comprar", página oficial) por props, y las pone la página que las compone.
 - Aceptamos: un segundo sistema de estilo (acotado) y una tabla de contraste más que mantener. `next/font` ata las fuentes a Next; fuera de Next habría que cambiar un archivo.
 - **Opciones futuras, fuera de alcance hoy:** servir la vitrina fuera de NetX con (1) una ruta sin marco dentro de este mismo proyecto (por ejemplo un grupo de rutas con su propio layout), (2) un dominio propio apuntando a esa ruta, (3) un export estático de las piezas para que lo hospede el organizador, o (4) un iframe de nuestra vitrina en la página de UnityHub. Cada una requiere su propio cambio y una decisión de Gus.
 - Revisar esta decisión: cuando el organizador o UnityHub publiquen la página oficial del evento (si la vitrina pasa a ser solo un resumen que enlaza a ella), o antes de mostrar la plataforma fuera del equipo (pendiente R14).

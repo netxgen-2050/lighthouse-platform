@@ -29,6 +29,20 @@
 - `Evento` lleva: `esEjemplo`, `nombre`, `sobreTitulo`, `lema`, `bajada`, `fechas: { inicio, fin }` (fechas ISO sin hora), `momentoClave: { etiqueta, iso }` (con desfase, `2027-02-06T12:00:00-03:00`), `lugar: { detalle, region }`, `cifras`, `encuentro`, `recorrido`, `voces: { principales, regionales, notaHibrido }`, `ejes`, `entradas: { titulo, bajada, tipos, nota }`, `preguntas`, `cierre: { frase, convocan, entradasCon }` y `paginaOficial?: EnlaceExterno`.
 - Los textos se copian del mock-up v2. El mock-up muestra 7 ejes bajo el título "Ocho conversaciones": el contenido de ejemplo agrega un octavo eje de ejemplo ("Aprendizaje y oficios") para que el título sea cierto.
 - `paginaOficial` de ejemplo: `{ url: "#pagina-oficial", etiqueta: "Página oficial del evento", esEjemplo: true }`. Con `esEjemplo`, la vitrina no navega: abre el diálogo de demo (ver `congreso-vitrina`).
+- **Contrato de la costura** (para que la vitrina no tenga que cambiar cuando entre UnityHub):
+  <!-- arquitecto: se agrega el contrato de obtenerEvento() y el dueño de cada dato; sin código nuevo hoy. -->
+  - `obtenerEvento()` corre **solo en el servidor** (server components) y es la única que puede llamar a un servicio externo. Las piezas cliente reciben datos por props, nunca la llaman.
+  - Nunca devuelve un evento a medias inventado: lo que el origen no trae queda ausente en los campos opcionales (`precio`, `paginaOficial`) y la pantalla dice "sin dato". Hoy esos son los únicos opcionales; si UnityHub no garantiza otro campo, el cambio de integración lo vuelve opcional y la vitrina se ajusta en ese mismo cambio.
+  - Las marcas `esEjemplo` (evento, tipo de entrada, página oficial) las decide el origen del dato, no la pantalla: la vitrina muestra "ejemplo" **solo** leyendo la marca, nunca con texto fijo.
+  - Modos de falla (cuando haya red, no hoy): sin respuesta o respuesta con otra forma → última copia válida con su fecha de sincronización, o el contenido de ejemplo con `esEjemplo: true`; nunca un error que tire la página. Eso, el puerto (`lib/integraciones/eventos/`) y la fecha de sincronización se diseñan en el cambio de integración, con su ADR.
+- **Dueño de cada dato:**
+
+  | Dato | Manda | ¿Lo copiamos? | Hoy |
+  |---|---|---|---|
+  | Ficha, fechas, lugar, recorrido, voces, ejes, preguntas, cierre | Organizador (vía UnityHub) | Sí, cuando haya integración (copia con fecha de sincronización) | Ejemplo en el repo |
+  | Tipos de entrada y precios | Organizador (UnityHub + Stripe) | Solo nombre, descripción y precio para mostrar; **nunca** datos de pago | Ejemplo en el repo |
+  | Página oficial del evento | Organizador | Solo la URL | Ejemplo (`#pagina-oficial`) |
+  | Ticket vinculado, presencia, Genesis, tribus con ticket | NetX | — | Navegador / ejemplo (`congreso-vitrina`) |
 - **Alternativa descartada:** construir ya `lib/integraciones/eventos/{puerto,mock}.ts`. La skill dice no construir el puerto sin integración en el horizonte cercano; la llamada técnica con UnityHub todavía no pasó.
 
 ### 2. Funciones puras de formato en `lib/congreso/formatos.ts`
@@ -53,7 +67,9 @@
 
 ### 6. Piezas portables en `app/congreso/evento/`
 - `tema-evento.tsx` (contenedor `.tema-evento` + fuentes), `boton.tsx` (`variante: "corona" | "linea" | "linea-clara"`, `href?` → `<a>`, si no `<button type="button">`), `barra-evento.tsx`, `chip-fecha.tsx`, `cuenta-regresiva.tsx` (cliente; arranca en "—" con texto accesible "Calculando la cuenta regresiva", calcula en `useEffect` y refresca cada 30 s), `tarjeta-entrada.tsx` (recibe `alComprar?: () => void` o un `accion?: ReactNode`), `eclipse.tsx` (SVG decorativo con `aria-hidden`).
-- Importaciones permitidas en `app/congreso/evento/`: `react`, `next/font/google` (solo en `fuentes.ts`), `@/lib/congreso/evento` y `@/lib/congreso/formatos`, `@/components/termino-legal` (el ⚖ viaja con la pieza porque es una regla de la plataforma) y archivos de la misma carpeta. Un test lo verifica leyendo los `import` de cada archivo.
+- Importaciones permitidas en `app/congreso/evento/`: `react`, `next/font/google` (solo en `fuentes.ts`), `@/lib/congreso/evento` y `@/lib/congreso/formatos`, y archivos de la misma carpeta. Un test lo verifica leyendo los `import` de cada archivo.
+<!-- arquitecto: se saca `@/components/termino-legal` de la lista. Importa `@/lib/demo/bitacora` y `@/lib/demo/anotar-en-bitacora` (almacenamiento del navegador de NetX) y `@/lib/legal/terminos` (catálogo de NetX): permitirlo rompía la portabilidad por la puerta de atrás. El ⚖ entra como `ReactNode` por props (huecos), igual que en `congreso-vitrina` §1. -->
+- El ⚖ **no** se importa en las piezas: la pieza expone un hueco (`ReactNode` opcional, por ejemplo `marcaLegal` en la tarjeta o en la sección) y quien compone la página (NetX) pasa `<TerminoLegal clave="…" />`. Una página externa pasa su propio aviso o nada.
 - Lo que es de NetX (ticket vinculado, tribus, Genesis, sesión, cinta de prototipo) **no** va acá: lo agrega `congreso-vitrina` en `app/congreso/netx/`.
 
 ### 7. Tests de guarda
