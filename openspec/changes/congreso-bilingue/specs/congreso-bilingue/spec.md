@@ -95,7 +95,7 @@ Inside the showcase, the NetX pieces (prototype strip and origin mode, territory
 - **THEN** ve un enlace en inglés que avisa que el registro está en español y lleva a `/sumarte?volver=%2Fcongreso%2Fen%23ticket&para=explorador`
 
 ### Requirement: Términos legales en inglés como borrador
-The legal marks (⚖) shown in the English page SHALL show their English title and text from the single legal catalog, always marked as draft ("Draft: text under review"). A legal term without an English version MUST show its Spanish text inside an element with `lang="es"` and a visible note that it is only available in Spanish. The legal exposure log MUST record the language in which the term was shown.
+The legal marks (⚖) shown in the English page SHALL show their English title and text from the single legal catalog, always marked as draft ("Draft: text under review"). A legal term without an English version MUST show its Spanish text inside an element with `lang="es"` and a visible note that it is only available in Spanish. The legal exposure log MUST record the language of the text actually shown, and every entry for a text shown in English MUST be marked as draft.
 
 #### Scenario: ⚖ del ticket en inglés
 - **WHEN** una persona abre el ⚖ de entradas en `/congreso/en`
@@ -104,6 +104,12 @@ The legal marks (⚖) shown in the English page SHALL show their English title a
 #### Scenario: Bitácora con idioma
 - **WHEN** una persona abre un ⚖ en `/congreso/en`
 - **THEN** la entrada de la bitácora guarda el título mostrado en inglés y el idioma `en`
+- **AND** la entrada está marcada como borrador, aunque la versión en español de ese término no lo sea
+
+#### Scenario: ⚖ sin inglés
+- **WHEN** una persona con sesión abre en `/congreso/en` un ⚖ que no tiene versión en inglés
+- **THEN** ve el texto en español con el aviso de que solo está en español
+- **AND** la entrada de la bitácora guarda el idioma `es` y la ruta `/congreso/en`
 
 ### Requirement: Aviso de prototipo en los dos idiomas
 The English page SHALL show "Internal prototype · sample data" together with the original "Prototipo interno · datos de ejemplo" marked as Spanish.

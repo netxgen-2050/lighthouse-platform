@@ -56,6 +56,7 @@
 - `lib/sesion/rutas-publicas.ts`: `/^\/congreso(\/en)?$/` (reemplaza la de `congreso-vitrina`). `/congreso/fr` sigue sin existir (404 de Next) y no es pública.
 - Las anclas son las mismas en los dos idiomas (`#entradas`, no `#tickets`): las ids no se ven y así un enlace sirve cambiando solo el `/en`.
 - La tabla de enlaces de vuelta de `congreso-vitrina` (design §9) suma la variante en inglés de cada fila.
+- <!-- arquitecto --> **`/congreso/en` es una promesa pública:** una vez que los organizadores la publiquen, no se puede cambiar sin romper enlaces. Si más adelante la plataforma entera pasa a i18n con prefijo de idioma (`/en/...`), `/congreso/en` se mantiene como redirección permanente a la dirección nueva. Ver `docs/decisiones/ADR-003-idioma-del-congreso.md` (Propuesta).
 
 ### 5. Selector de idioma
 - La barra del evento (portable) suma el hueco `selectorIdioma?: ReactNode`. Sin hueco, muestra el indicador fijo del idioma actual (como hoy "ES"). El selector queda visible en todos los anchos (como el logo y "Entradas").
@@ -80,10 +81,16 @@
 - `lib/legal/terminos.ts`: las claves `ticket`, `presencia`, `obra` y `encuentroeducativo` suman `en: { titulo, texto }` con el comentario "Traducción nueva: borrador a revisar antes de cualquier uso real". Toda versión `en` es borrador por definición.
 - `TerminoLegal` suma `idioma?: Idioma`. Con `"en"`: si hay `en`, muestra título y texto en inglés con "Draft: text under review" y etiqueta "What it means legally: …"; si no hay, muestra el español dentro de `lang="es"` con "Only available in Spanish". `TooltipTermino` recibe esos dos textos fijos por props (con los valores en español por defecto, así el resto de la plataforma no cambia).
 - Bitácora: la entrada de `termino-legal` suma `idioma?: "es" | "en"` (ausente = `"es"`, compatible con lo guardado). `mostrado` y `huella` se calculan sobre lo que se mostró de verdad (el inglés si se mostró en inglés). La validación de `lib/demo/bitacora.ts` acepta el campo opcional.
+<!-- arquitecto: tres precisiones para que la bitácora diga la verdad sobre lo que se mostró. -->
+- `idioma` es el idioma **del texto que se mostró**, no el de la página: un ⚖ sin inglés en `/congreso/en` se anota con `idioma: "es"` (la `ruta` ya dice que fue en `/congreso/en`).
+- Con `idioma: "en"`, la entrada va **siempre con `borrador: true`**, aunque la versión en español de esa clave no sea borrador (`ticket`, `presencia` y `obra` no lo son). Si no, la bitácora registraría como texto revisado una traducción que nadie revisó.
+- `esEntrada` descarta la entrada si `idioma` está presente y no es `"es"` ni `"en"` (se rechaza lo que sobra, no solo lo que falta).
+- La bitácora no se anota sin sesión (`anotarEnBitacora` ya lo impide); no cambia.
 
 ### 9. Lo demás de la vitrina en inglés
 - Origen: `Vitrina` hace `leerParametros` y `GuardarOrigen` en los dos idiomas.
 - Ticket: el llamado usa `hrefSumarte("/congreso/en#ticket", "explorador")` en inglés. Texto: "Join for free to link your ticket (sign-up is in Spanish for now)". Al volver de Sumarte llega a `/congreso/en#ticket`.
+- <!-- arquitecto --> La decisión de qué mostrar en el bloque del ticket es **la misma función** `queMostrarEnTicket` de `congreso-vitrina` (design §11), sin copia por idioma: el idioma solo cambia los textos. La fila de política pendiente en inglés: "Accept the privacy policy to link your ticket (in Spanish)", con el mismo `href`. La pantalla de consentimiento y la política siguen solo en español: la persona acepta un texto en español (ver pregunta para Gus).
 - Diálogo de demo: "Here you would buy your ticket" / "In the real version, this button would open the purchase of the selected pass…" / "Prototype: nothing is charged and no other page opens." Tampoco dice quién cobra.
 - Enlaces a `/territorios/lighthouse` y `/tribus` desde el inglés: "Explore the map in NetX (in Spanish)", con `hreflang="es"`.
 
@@ -108,4 +115,5 @@
 
 ## Open Questions
 
-- **Revisión del arquitecto pendiente** (no había agente disponible): ruta pública nueva, preferencia por persona en el navegador y campo nuevo en la bitácora de términos legales.
+- **Revisado por el arquitecto (14-oct):** ruta pública nueva, preferencia por persona en el navegador y campo nuevo en la bitácora. Ajustes integrados en §4 (dirección como promesa pública, ADR-003), §8 (bitácora: idioma del texto mostrado, borrador siempre en inglés, validación) y §9 (misma decisión del ticket en los dos idiomas). <!-- arquitecto -->
+- La preferencia de idioma (`"es"`/`"en"`) es una preferencia de interfaz pedida por la persona: se guarda sin sesión igual que el origen, entra en "Mis datos" y en "borrar mis datos" por estar en `NOMBRES_BASE`. La elegida sin sesión pasa a la cuenta solo con "Importar a mi cuenta"; si no, con sesión arranca en español. Aceptado en el prototipo. <!-- arquitecto -->

@@ -26,7 +26,7 @@ Requisito previo: `congreso-vitrina` implementado. La rama `agente/congreso-bili
 ## 4. ⚖ y aviso
 
 - [ ] 4.1 Sumar `en: { titulo, texto }` (borrador, con su comentario) a `ticket`, `presencia`, `obra` y `encuentroeducativo` en `lib/legal/terminos.ts`, y el caso en `terminos.test.ts`. Sumar `idioma?` a `TerminoLegal` y los textos fijos por props a `TooltipTermino` con los valores en español por defecto (design §8). Verificar con `pnpm test` y que el ⚖ de cualquier otra página se ve igual que antes.
-- [ ] 4.2 Sumar `idioma?: "es" | "en"` a la entrada `termino-legal` de `lib/demo/bitacora.ts` (opcional, compatible con lo guardado) y anotarla desde `TerminoLegal`. Ampliar `bitacora.test.ts` (acepta la entrada con idioma y la vieja sin él). Verificar con `pnpm test`.
+- [ ] 4.2 Sumar `idioma?: "es" | "en"` a la entrada `termino-legal` de `lib/demo/bitacora.ts` (opcional, compatible con lo guardado) y anotarla desde `TerminoLegal`. Ampliar `bitacora.test.ts` (acepta la entrada con idioma y la vieja sin él; descarta `idioma: "fr"`). En `TerminoLegal`, `idioma` es el del texto mostrado (un ⚖ sin inglés en `/congreso/en` se anota `"es"`) y toda entrada `"en"` va con `borrador: true` (design §8); cubrirlo con un test de la función que arma la entrada. Verificar con `pnpm test`. <!-- arquitecto -->
 - [ ] 4.3 En la cinta de prototipo en inglés, mostrar "Internal prototype · sample data" junto a "Prototipo interno · datos de ejemplo" en `lang="es"`; en los enlaces a páginas de NetX en español, el aviso "(in Spanish)" con `hreflang="es"` (design §9). Verificar con el e2e de 5.1.
 
 ## 5. Pruebas de punta a punta y accesibilidad

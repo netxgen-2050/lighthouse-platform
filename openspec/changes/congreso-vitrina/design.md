@@ -108,11 +108,17 @@ Para cuando los organizadores o UnityHub tengan su propia página. Los enlaces r
   | Sin sesión, o con sesión sin nivel Explorador | Enlace "Sumate gratis para vincular tu ticket" |
   | Con sesión y nivel, política de privacidad pendiente | Enlace "Aceptá la política de privacidad para vincular tu ticket" (Sumarte pide el consentimiento antes de seguir) |
   | Con sesión, nivel y política vigente | `RegistroTicket` como hoy |
+  | Con sesión pero nivel todavía sin leer (`nivelListo` falso) o consentimiento `"cargando"` | Nada (igual que "verificando") |
+  | `sin-acceso` o `error` | Nada (la puerta ya muestra su pantalla; la función igual tiene que devolver algo) |
+
+  <!-- arquitecto: la tabla tenía cuatro filas y los estados reales son más (`EstadoSesion` tiene 5 valores y `EstadoConsentimiento` 3). Sin estas dos filas, una persona Explorador con la política aceptada vería un instante "Aceptá la política…" mientras se lee el consentimiento, o el formulario antes de saber si aceptó. Regla: el formulario aparece **solo** con `estado === "ok" && nivelListo && alcanza(nivel, "explorador") && consentimiento === "vigente"`; cualquier estado desconocido o en carga es "nada". -->
 
 - El enlace de los dos llamados es `hrefSumarte("/congreso#ticket", "explorador")` → `/sumarte?volver=%2Fcongreso%23ticket&para=explorador`. `esRutaInterna` acepta el `#`; Sumarte muestra "Esta acción se habilita al sumarte gratis como Explorador." y, cuando el nivel alcanza, hace `router.replace("/congreso#ticket")`. No se usa `EntrarPara` tal cual porque arma la vuelta con `pathname + search` y pierde el ancla, y porque no mira el consentimiento.
 - Sin sesión, `RegistroTicket` no se monta: no lee ni escribe `CLAVES.congreso`, así que no queda un ticket sin prefijo de persona.
 - Lo del evento es de ejemplo y viaja igual al navegador: abrir la ruta no expone datos de personas. La puerta del navegador no es protección para datos personales: la vinculación real del ticket va a necesitar verificación en el servidor (cambio de integración).
-- **Pendiente de revisión del arquitecto:** esta decisión cambia permisos y el punto donde se pide el consentimiento. Sigue la nota que él dejó antes, pero la tabla de estados es nueva.
+- **Revisada por el arquitecto (14-oct):** el camino de vuelta funciona con el código de hoy: `esRutaInterna` acepta `/congreso#ticket`, `/sumarte` pide el consentimiento antes de dibujarse (`rutaPideConsentimiento`), y con `para=explorador` Sumarte hace `router.replace(volver)` en cuanto el nivel alcanza. La persona con la política pendiente acepta en Sumarte y vuelve sola. Se completaron los estados de carga de la tabla.
+- Fuera del ticket, con sesión y política pendiente la página pública igual anota el ⚖ en la bitácora y `GuardarOrigen` guarda el origen (mismo comportamiento que hoy en la portada y en Tribus). No cambia con este cambio; queda como pregunta general para Gus. <!-- arquitecto -->
+
 
 ### 12. Origen de la visita en `/congreso` (decisión de Gus, 14-oct)
 - `page.tsx` recibe `searchParams`, hace `leerParametros(await searchParams)` y dibuja `<GuardarOrigen origen={…} />`, igual que la portada. Misma lógica: valores crudos (solo `trim`), hasta 200 caracteres, se guarda solo si hay fuente, medio o campaña, y se conserva el primero (`guardarSiNoHay`). Funciona con y sin sesión.

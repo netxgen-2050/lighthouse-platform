@@ -39,6 +39,12 @@ The ticket registration form SHALL be shown only to a person with a session, at 
 - **WHEN** esa persona se suma como Explorador desde ese enlace
 - **THEN** vuelve a `/congreso#ticket` y ve el formulario del ticket
 
+#### Scenario: Con la política pendiente
+- **WHEN** una persona Explorador que todavía no aceptó la política de privacidad vigente llega a `/congreso#ticket`
+- **THEN** no ve el campo "Código de tu ticket"
+- **AND** ve el enlace "Aceptá la política de privacidad para vincular tu ticket"
+- **AND** al aceptar la política en Sumarte vuelve a `/congreso#ticket` y ve el formulario
+
 #### Scenario: Sin sesión no se guarda nada
 - **WHEN** una persona sin sesión abre `/congreso`
 - **THEN** el navegador no tiene la clave del ticket del Congreso guardada por esta página
