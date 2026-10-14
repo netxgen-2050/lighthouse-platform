@@ -37,12 +37,28 @@ Each ticket type SHALL have an optional price (amount and currency, optional uni
 - **THEN** su texto de precio es "Precio sin dato"
 
 ### Requirement: Toda voz tiene estado
-Each voice SHALL have a state `confirmada` or `por-confirmar`, a name, an affiliation and initials. Voices are split into main voices and regional voices. No voice MUST carry a photo.
+Each voice SHALL have a state `confirmada` or `por-confirmar`, a name, an affiliation and initials. Voices are split into main voices and regional voices. No voice MUST carry a photo or a quote attributed to the person. The example content MUST list as main voices the real people Roxanne Meadows (The Venus Project), Michel Bauwens (P2P Foundation), Michael Reynolds (Earthship Biotecture) and Bill Reed (Regen Dev Corp), all in state `por-confirmar`.
 
 #### Scenario: Estado presente
 - **WHEN** un test recorre las voces del contenido de ejemplo
 - **THEN** cada voz tiene estado `confirmada` o `por-confirmar`
 - **AND** todas las voces del contenido de ejemplo están `por-confirmar`
+
+#### Scenario: Voces principales reales, por confirmar
+- **WHEN** un test pide las voces principales del contenido de ejemplo
+- **THEN** son Roxanne Meadows, Michel Bauwens, Michael Reynolds y Bill Reed, en ese orden y con su afiliación
+- **AND** ninguna tiene foto ni cita
+
+### Requirement: Textos en voseo
+All Spanish texts of the event content and of the event pieces SHALL be written in Argentine voseo, even where the reference mock-up uses tuteo. A unit test MUST fail if the content contains any form from a closed list of tuteo-only forms.
+
+#### Scenario: Sin tuteo en el contenido
+- **WHEN** un test recorre todos los textos del contenido de ejemplo
+- **THEN** ninguno contiene `tú`, `tienes`, `puedes`, `quieres`, `recibes`, `vinculas`, `necesitas`, `eres`, `vienes`, `sabes` ni `llega con tu` como palabra suelta
+
+#### Scenario: Ejemplo de voseo
+- **WHEN** un test busca la respuesta a "¿Necesito una cuenta en NetX para ir?"
+- **THEN** la respuesta usa voseo (por ejemplo "vinculás tu ticket")
 
 ### Requirement: Enlace opcional a la página oficial del evento
 The event content SHALL support an optional link to the official event page (URL, label and `esEjemplo` flag). The example content MUST include it as a placeholder with `esEjemplo: true`. A link that is not an example MUST use an `https://` URL; an example link MAY be an in-page anchor (`#…`).

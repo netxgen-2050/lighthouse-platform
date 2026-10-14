@@ -14,6 +14,46 @@ The system SHALL show at `/congreso`, inside the NetX frame (rail and top bar un
 - **THEN** los títulos de sección aparecen en el orden indicado
 - **AND** el rail sigue mostrando "Congreso" como página actual
 
+### Requirement: Vitrina abierta sin cuenta
+The system SHALL list `/congreso` as a public route, so visitors without an account see the whole showcase (every section, the origin mode and the demo dialog) without being sent to Sumarte. The NetX rail MUST show "Congreso" enabled for visitors without an account.
+
+#### Scenario: Visitante sin cuenta
+- **WHEN** una persona sin sesión abre `/congreso`
+- **THEN** la dirección sigue siendo `/congreso`
+- **AND** ve el héroe, las entradas, las tribus, la sección del ticket y las preguntas
+
+#### Scenario: Rail sin sesión
+- **WHEN** una persona sin sesión mira el rail
+- **THEN** "Congreso" es un enlace habilitado a `/congreso`
+
+### Requirement: Vincular el ticket pide cuenta
+The ticket registration form SHALL be shown only to a person with a session, at least the Explorador level and the current privacy policy accepted. Otherwise, the ticket block MUST show, instead of the form, a link "Sumate gratis para vincular tu ticket" (or "Aceptá la política de privacidad para vincular tu ticket" when only the policy is missing) to Sumarte that returns to `/congreso#ticket` afterwards. While the session is being checked, neither the form nor the link is shown. Without a session the system MUST NOT read or write the ticket in the browser.
+
+#### Scenario: Sin sesión ve el llamado
+- **WHEN** una persona sin sesión llega a `/congreso#ticket`
+- **THEN** ve los cinco pasos y el sello Genesis
+- **AND** no ve el campo "Código de tu ticket"
+- **AND** ve el enlace "Sumate gratis para vincular tu ticket" a `/sumarte?volver=%2Fcongreso%23ticket&para=explorador`
+
+#### Scenario: Vuelve al ticket después de sumarse
+- **WHEN** esa persona se suma como Explorador desde ese enlace
+- **THEN** vuelve a `/congreso#ticket` y ve el formulario del ticket
+
+#### Scenario: Sin sesión no se guarda nada
+- **WHEN** una persona sin sesión abre `/congreso`
+- **THEN** el navegador no tiene la clave del ticket del Congreso guardada por esta página
+
+### Requirement: Origen de la visita al entrar directo
+The `/congreso` page SHALL store the visit origin (`utm_source`, `utm_medium`, `utm_campaign`) with the same logic as the home page: raw values trimmed and cut to 200 characters, saved only when at least one is present, and keeping the first origin already stored. It MUST work with and without a session.
+
+#### Scenario: Entrar con UTM
+- **WHEN** una persona sin origen guardado abre `/congreso?utm_source=pagina-oficial&utm_campaign=congreso-2027`
+- **THEN** el origen guardado tiene fuente "pagina-oficial" y campaña "congreso-2027"
+
+#### Scenario: Se conserva el primero
+- **WHEN** ya hay un origen guardado y la persona abre `/congreso?utm_source=otra`
+- **THEN** el origen guardado no cambia
+
 ### Requirement: Héroe con un solo h1
 The hero SHALL show the decorative eclipse, the date chip, the countdown to the key moment, the event name as the page's only `h1` (with the tagline), the intro text and a place card with "Quiero ir" (to `#entradas`) and "Ver el recorrido" (to `#recorrido`).
 
@@ -26,12 +66,16 @@ The hero SHALL show the decorative eclipse, the date chip, the countdown to the 
 - **THEN** el eclipse aparece ya formado, sin movimiento
 
 ### Requirement: Aviso de prototipo y modo "de dónde viene"
-The page SHALL show a strip with "Prototipo interno · datos de ejemplo" and a toggle button "¿Qué viene de UnityHub?" (`aria-pressed`). When on, every marked block MUST show a visible origin text (for example "Viene de UnityHub · agenda" or "Viene de NetX · tribus") besides its outline color. When off, the origin texts are hidden. The state lives only in memory.
+The page SHALL show a strip with "Prototipo interno · datos de ejemplo" and a toggle button "¿Qué viene de UnityHub?" (`aria-pressed`), available to every visitor, with or without an account. When on, every marked block MUST show a visible origin text (for example "Viene de UnityHub · agenda" or "Viene de NetX · tribus") besides its outline color. When off, the origin texts are hidden. The state lives only in memory.
 
 #### Scenario: Activar el modo
 - **WHEN** una persona aprieta "¿Qué viene de UnityHub?"
 - **THEN** el botón queda con `aria-pressed="true"`
 - **AND** cada bloque marcado muestra su texto de origen
+
+#### Scenario: Sin cuenta también
+- **WHEN** una persona sin sesión aprieta "¿Qué viene de UnityHub?"
+- **THEN** cada bloque marcado muestra su texto de origen
 
 #### Scenario: Al recargar
 - **WHEN** la persona recarga la página
@@ -59,7 +103,15 @@ The "Voces" section SHALL show each main voice as a portrait with gradient and i
 
 #### Scenario: Estado visible
 - **WHEN** una persona ve las voces con el contenido de ejemplo
-- **THEN** cada voz principal muestra "Por confirmar"
+- **THEN** ve a Roxanne Meadows, Michel Bauwens, Michael Reynolds y Bill Reed como voces principales
+- **AND** cada voz principal muestra "Por confirmar"
+
+### Requirement: Textos en voseo
+Every Spanish text of the page, including NetX pieces and the demo dialog, SHALL be written in Argentine voseo.
+
+#### Scenario: Título de tribus en voseo
+- **WHEN** una persona ve "Tribus"
+- **THEN** el título dice "No vengas solo. Llegá con tu tribu."
 
 ### Requirement: Ejes del encuentro
 The "Ejes" section SHALL show the eight themes from the content, each with a decorative line icon, title and text.
@@ -76,7 +128,7 @@ The "El territorio" section SHALL show the valley illustration (with a text alte
 - **THEN** llega a `/territorios/lighthouse`
 
 ### Requirement: Tribus con ticket, de ejemplo
-The "Tribus" section SHALL show "No vengas solo. Llega con tu tribu.", a link to `/tribus` and, for up to three tribes from the NetX catalog, how many members already have a ticket as visible text ("N de M van") with a decorative bar, each marked as example.
+The "Tribus" section SHALL show "No vengas solo. Llegá con tu tribu.", a link to `/tribus` and, for up to three tribes from the NetX catalog, how many members already have a ticket as visible text ("N de M van") with a decorative bar, each marked as example.
 
 #### Scenario: Cifras en texto
 - **WHEN** una persona ve "Tribus"
@@ -84,7 +136,7 @@ The "Tribus" section SHALL show "No vengas solo. Llega con tu tribu.", a link to
 - **AND** hay un enlace a `/tribus`
 
 ### Requirement: Entradas con compra de demostración
-The "Entradas" section SHALL show the six ticket types with tag, name, description, price with the mark "ejemplo" and a button "Comprar …", plus the ⚖ `ticket`. The featured type MUST be distinguished by its tag text and a thicker border. Every "Comprar …" button MUST open a demo dialog and MUST NOT navigate, charge or open an external link.
+The "Entradas" section SHALL show the six ticket types with tag, name, description, price with the mark "ejemplo" and a button "Comprar …", plus the ⚖ `ticket`. The featured type MUST be distinguished by its tag text and a thicker border. Every "Comprar …" button MUST open a demo dialog and MUST NOT navigate, charge or open an external link. The demo dialog MUST NOT state who charges for the ticket (organizer, UnityHub, Stripe or NetX).
 
 #### Scenario: Cada precio dice "ejemplo"
 - **WHEN** una persona ve "Entradas" con el contenido de ejemplo
@@ -92,7 +144,8 @@ The "Entradas" section SHALL show the six ticket types with tag, name, descripti
 
 #### Scenario: Comprar abre el diálogo
 - **WHEN** una persona aprieta "Comprar pase completo"
-- **THEN** se abre un diálogo con el título "Acá se abriría el pago" y el texto de que es un prototipo y no se cobra nada
+- **THEN** se abre un diálogo con el título "Acá se abriría la compra del ticket" y el texto de que es un prototipo y no se cobra nada
+- **AND** el diálogo no nombra a UnityHub, Stripe ni NetX
 - **AND** la dirección de la página no cambia y no hay pedidos de red a otros dominios
 - **AND** no se envía ningún pedido que escriba datos (POST) desde el clic hasta que se cierra el diálogo
 
@@ -115,14 +168,14 @@ When the content includes the official event page link, the closing section SHAL
 - **THEN** el cierre no muestra ese botón
 
 ### Requirement: El ticket abre la puerta a NetX
-The section "Tu ticket también abre la puerta a NetX" SHALL show five ordered steps, each with who does it as visible text ("UnityHub" or "NetX"), the existing ticket registration (same behavior, texts and browser-only storage as today) styled for the event, and the Genesis seal with the ⚖ `presencia`.
+The section "Tu ticket también abre la puerta a NetX" SHALL show five ordered steps, each with who does it as visible text ("UnityHub" or "NetX"), the existing ticket registration (same behavior, texts and browser-only storage as today, subject to the requirement "Vincular el ticket pide cuenta") styled for the event, and the Genesis seal with the ⚖ `presencia`.
 
 #### Scenario: Pasos con responsable
 - **WHEN** una persona ve la sección del ticket
 - **THEN** hay 5 pasos en orden y cada uno dice quién lo hace
 
 #### Scenario: Genesis pendiente con ticket
-- **WHEN** una persona registra el código `LH27-8F3K-2Q`
+- **WHEN** una persona con sesión registra el código `LH27-8F3K-2Q`
 - **THEN** ve "Ticket LH27-8F3K-2Q registrado"
 - **AND** el sello Genesis muestra el estado "Pendiente del primer check-in", sin cálculo de presencia
 
@@ -155,14 +208,14 @@ On screens narrower than 640px the page SHALL show a fixed bottom bar with the f
 The page SHALL keep the anchors `#inicio`, `#acerca`, `#recorrido`, `#voces`, `#ejes`, `#territorio`, `#tribus`, `#entradas`, `#ticket` and `#faq` stable, so an external event page can link into NetX. Landing on an anchor MUST leave its heading visible below the NetX top bar and the event bar.
 
 #### Scenario: Entrar al ticket
-- **WHEN** una persona con sesión abre `/congreso#ticket`
+- **WHEN** una persona, con o sin sesión, abre `/congreso#ticket`
 - **THEN** la página muestra la sección del ticket con su título visible, no tapado por las barras
 
 ### Requirement: Accesibilidad de la vitrina
 The page SHALL be fully usable with the keyboard, pass the axe audit (no serious or critical violations) with the origin mode on and with the dialog open, meet AA contrast in every section (including the dawn gradient) and have no horizontal scroll at 390px.
 
 #### Scenario: Auditoría
-- **WHEN** corre la auditoría de axe en `/congreso`
+- **WHEN** corre la auditoría de axe en `/congreso`, con sesión y sin sesión
 - **THEN** no hay violaciones serias ni críticas
 
 #### Scenario: Sin scroll horizontal

@@ -9,6 +9,8 @@ Fuentes: brief `NS_platform/Documentation/integraciones/UnityHub/04 - Brief para
 ## What Changes
 
 - **Contenido del evento tipado y de ejemplo.** Tipos del evento (`Evento`, `Parada`, `Voz`, `Eje`, `TipoEntrada`, `Pregunta`, enlace opcional a la página oficial) y un único archivo de contenido de ejemplo, marcado como ejemplo. Las pantallas lo leen **solo** con `obtenerEvento()`, que es la costura donde más adelante entra la integración con UnityHub.
+- **Voseo en todos los textos** (decisión de Gus, 14-oct: el público es argentino). El contenido de ejemplo y los textos fijos de las piezas se escriben en voseo, aunque el mock-up v2 esté en tuteo. Un test atrapa las formas de tuteo más comunes.
+- **Voces reales marcadas "Por confirmar"** (decisión de Gus, 14-oct): las cuatro voces principales son Roxanne Meadows, Michel Bauwens, Michael Reynolds y Bill Reed, con su afiliación del mock-up, todas en estado `por-confirmar`, sin fotos ni citas atribuidas.
 - **Tema del evento con alcance.** Tokens `--evento-*` definidos solo dentro del contenedor `.tema-evento`, en un único archivo de estilos del Congreso. El tema oscuro de NetX no cambia los colores del evento. Es una **excepción explícita** a "solo tokens del tema": se propone como **ADR-002 (Propuesta)**.
 - **Tipografía del evento:** Unbounded (títulos) y Hanken Grotesk (texto), cargadas solo en la ruta del Congreso.
 - **Tests de guarda:** los colores literales y los tokens `--evento-*` solo pueden aparecer en `app/congreso/`; todo selector del tema está bajo `.tema-evento`; las combinaciones de texto y fondo del tema cumplen contraste AA; las piezas portables no importan nada del marco de NetX.
@@ -20,8 +22,8 @@ Fuentes: brief `NS_platform/Documentation/integraciones/UnityHub/04 - Brief para
 - Rehacer la página `/congreso` (cambio `congreso-vitrina`).
 - **Integración con UnityHub:** nada de puertos, adaptadores, variables de entorno, rutas `app/api` ni pedidos de red. `obtenerEvento()` devuelve el contenido de ejemplo, y es donde después entra el puerto según la skill `integracion-externa` (requiere su propio ADR y revisión del arquitecto).
 - Datos reales del Congreso: todo es de ejemplo; se cambian en un solo archivo cuando el organizador los comparta (backlog L3).
-- Servir la vitrina fuera de NetX (ruta sin marco, dominio propio, export estático, iframe): queda anotado como opción futura en el ADR-002.
-- Idiomas distintos del español.
+- Servir la vitrina fuera de NetX (ruta sin marco, dominio propio, export estático, iframe): queda anotado como opción futura en el ADR-002 y sigue como pregunta abierta (Gus todavía lo está evaluando).
+- Inglés: lo agrega el cambio `congreso-bilingue` (apilado sobre `congreso-vitrina`). Este cambio deja el contenido solo en español (voseo).
 
 ## Capabilities
 
