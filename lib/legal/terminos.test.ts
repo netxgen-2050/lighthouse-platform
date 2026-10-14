@@ -26,6 +26,7 @@ describe("catálogo legal", () => {
         "contacto",
         "creditos",
         "datos",
+        "encuentroeducativo",
         "espejo",
         "estatuto",
         "fidasamblea",
@@ -56,6 +57,9 @@ describe("catálogo legal", () => {
         "transferencia",
       ].sort(),
     );
+  });
+  it("encuentroeducativo es borrador", () => {
+    expect(esBorrador("encuentroeducativo")).toBe(true);
   });
   it("agencia es borrador", () => {
     expect(esBorrador("agencia")).toBe(true);
