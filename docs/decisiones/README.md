@@ -7,3 +7,4 @@ Acá viven los ADR (registros de decisiones de arquitectura) de lighthouse-platf
 | [ADR-001](ADR-001-modelo-de-datos-hibrido.md) | La base es Postgres híbrida (tablas + JSON) con libros de solo agregar para lo que tiene valor | Propuesta | 2026-10-14 |
 | [ADR-002](ADR-002-tema-propio-del-congreso.md) | El Congreso tiene un tema visual propio, encerrado en `/congreso` y en piezas portables | Propuesta | 2026-10-14 |
 | [ADR-003](ADR-003-idioma-del-congreso.md) | El Congreso es bilingüe en `/congreso/en`, con diccionarios propios y sin librería de traducciones | Propuesta | 2026-10-14 |
+| [ADR-004](ADR-004-plataforma-bilingue.md) | Toda la plataforma es bilingüe por preferencia (cookie y por persona), con `?lang=` para enlazar y diccionarios propios | Propuesta | 2026-10-14 |

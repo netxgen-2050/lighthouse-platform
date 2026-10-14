@@ -1,0 +1,27 @@
+# Tasks
+
+Rama `agente/consentimiento-alta` desde `main`. Textos en español con voseo. Los e2e existentes arrancan con el consentimiento sembrado (`e2e/fixtura.ts`), así que solo cambian los que prueban la pantalla.
+
+## 1. Registro
+
+- [ ] 1.1 En `lib/privacidad/consentimiento.ts`: clave con id explícito (`claveConsentimientoDe(id)`) y `idPersona` en `leerConsentimiento`, `registrarConsentimiento`, `registrarConsentimientoSensible` y `retirarConsentimiento`; campo `canal?` con su validación (design §3 y §4). Ajustar los llamados (`usar-consentimiento.ts`, `pantalla-consentimiento.tsx`, `mis-datos-cliente.tsx`, el KYC). Tests en `consentimiento.test.ts`: registro con cada canal, registro viejo sin canal válido, `canal: "otro"` descartado, la clave no depende de la persona activa. Verificar con `pnpm test`.
+- [ ] 1.2 Sumar `guardarAceptacionPrevia` y `tomarAceptacionPrevia` (design §2) con tests: dentro del plazo devuelve la fecha y borra; a los 6 minutos devuelve null y borra; otra versión devuelve null; sin almacenamiento no rompe. Verificar con `pnpm test`.
+- [ ] 1.3 En `lib/privacidad/politica.ts`: `VERSIONES_POLITICA` con la versión nueva `2026-10-15-borrador` y su cambio listado, y el texto nuevo de `BASE_LEGAL` (design §5); `VERSION_POLITICA` sale de la última. Test: la última es la vigente y toda versión después de la primera tiene cambios. Verificar con `pnpm test`.
+
+## 2. Persona anónima hasta aceptar
+
+- [ ] 2.1 En `components/sesion/proveedor-sesion.tsx`: persona activa y `lh-ultima-persona` solo con consentimiento vigente; tomar la aceptación previa cuando el consentimiento está pendiente y registrarla con canal `alta`; releer el nivel cuando la persona pasa a activa (design §2 y §3). Verificar con `pnpm verificar` y con el e2e de 4.1.
+- [ ] 2.2 `rutaPideConsentimiento` devuelve true en todas las rutas menos `/privacidad` (con su test en `lib/privacidad/`); la campanita y `AplicarPreferencias` piden consentimiento vigente; `MenuPersona` sin consentimiento muestra solo "Salir". Verificar con `pnpm test` y con el e2e de 4.1.
+
+## 3. Pantallas
+
+- [ ] 3.1 Extraer `components/sesion/bloque-consentimiento.tsx` de `PantallaConsentimiento` sin cambiar sus textos, y sumar a la pantalla el re-consentimiento: "Aceptaste la versión X el <fecha>." y la lista "Qué cambió" (design §5). Verificar con `pnpm test:e2e e2e/privacidad.spec.ts` (sigue en verde) y con el e2e de 4.1.
+- [ ] 3.2 Crear `components/sesion/paso-alta.tsx` (design §1) y usarlo en `app/sumarte/sumarte-cliente.tsx` en todo lo que sin sesión llamaba `entrar()`: al aceptar guarda el plan pendiente y la aceptación previa y abre el login; al cancelar no guarda nada y el foco vuelve al botón. Verificar con el e2e de 4.1.
+- [ ] 3.3 En `app/mis-datos/mis-datos-cliente.tsx`, sección "Tu consentimiento" con versión, fecha y camino en palabras (design §6), "sin dato" sin camino. Verificar con el e2e de 4.1.
+- [ ] 3.4 En `components/sesion/privy-puente.tsx`, `legal` con los enlaces a `/privacidad` y `/privacidad#terminos` (design §8). Verificar con `pnpm verificar` (tipos de Privy) y, en el preview, que la ventana de Privy muestra los dos enlaces.
+
+## 4. Pruebas
+
+- [ ] 4.1 `e2e/consentimiento-alta.spec.ts` (con `consentimiento: "ninguno"` y modo de prueba): (a) sin sesión, "Sumarme gratis" abre "Crear tu cuenta" con las dos casillas sin marcar; con una sola, error y foco; con las dos, "Entrar como…", sin pantalla de consentimiento después, plan aplicado y registro con canal `alta`; (b) Cancelar y Escape no guardan nada; (c) entrar desde `/tribus` muestra la pantalla; `/privacidad` se ve sin pantalla; (d) con `?utm_source=newsletter` y sesión sin aceptar, ninguna clave `u:<id>:` en `localStorage` y la bitácora vacía; (e) re-consentimiento sembrando un registro de `2026-10-14-borrador`: se ven la versión, la fecha y "Qué cambió", y el registro nuevo tiene canal `nueva-version`; (f) Mis datos muestra la constancia. Verificar con `pnpm test:e2e e2e/consentimiento-alta.spec.ts`.
+- [ ] 4.2 Sumar el paso "Crear tu cuenta" abierto (y con el error a la vista) a `e2e/accesibilidad.spec.ts`. Verificar con `pnpm test:e2e e2e/accesibilidad.spec.ts`.
+- [ ] 4.3 Ajustar `e2e/privacidad.spec.ts` donde suponga que una página pública con sesión sin consentimiento se ve, y donde siembre la versión vieja. Verificar con `pnpm verificar`, `pnpm build` y `pnpm test:e2e`.

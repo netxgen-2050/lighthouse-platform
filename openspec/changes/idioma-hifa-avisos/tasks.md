@@ -1,0 +1,21 @@
+# Tasks
+
+Requisito previo: `idioma-base` y las demás zonas (`idioma-portada-sumarte`, `idioma-tribus-territorio`, `idioma-pasaporte-semillas-pactos`, `idioma-fogon-mercado`, `idioma-perfil-recorrido`, `idioma-legal`) mergeadas; si falta alguna, hacer los grupos 1 a 3 y dejar el 4.1 para cuando estén. Rama `agente/idioma-hifa-avisos`. Español idéntico al de hoy.
+
+## 1. Hifa
+
+- [ ] 1.1 Crear `lib/idioma/textos/hifa.ts`; `lib/hifa/guion.ts` y las etiquetas de `lib/hifa/estado.ts` por idioma; `Mensaje` suma `idioma?` (ausente = `"es"`) y `reducir` recibe el idioma actual. Tests en `estado.test.ts`: mensajes nuevos con idioma, estado guardado sin idioma válido. Verificar con `pnpm test`.
+- [ ] 1.2 `components/hifa/hifa.tsx` y `avatar-hifa.tsx` en inglés, cada mensaje con su `lang`. Verificar con `pnpm test:e2e e2e/hifa.spec.ts` (español en verde).
+
+## 2. Reportar
+
+- [ ] 2.1 Crear `lib/idioma/textos/reportar.ts` y pasar `components/boton-reportar.tsx`; `lib/reportes/reporte.ts` suma "Idioma de la persona: es|en" al cuerpo (plantilla en español). Test en `reporte.test.ts`. Verificar con `pnpm test` y `pnpm test:e2e e2e/reportes.spec.ts`.
+
+## 3. Login
+
+- [ ] 3.1 En `components/sesion/privy-puente.tsx`, `intl.textLocalization` con los textos principales en español cuando el idioma es `es` (revisar las claves disponibles en `PrivyI18nStrings` de `@privy-io/react-auth`). Verificar con `pnpm verificar` (tipos) y, en el preview, que "Entrar" muestra la ventana en español y en inglés según el idioma.
+
+## 4. Cierre
+
+- [ ] 4.1 Test en `lib/idioma/rutas.test.ts`: toda ruta de `DESTINOS` y de `RUTAS_PUBLICAS` (con un id de ejemplo para las dinámicas) está en `RUTAS_TRADUCIDAS`, salvo `/netx` y `/panel/bitacora`. Verificar con `pnpm test`.
+- [ ] 4.2 Crear `e2e/idioma-hifa-avisos.spec.ts` con los escenarios de la spec (Hifa nueva y con conversación previa, reporte con la línea de idioma usando la ruta simulada de los e2e de reportes, `/netx` con el aviso) y sumar Hifa abierta en inglés a `e2e/accesibilidad.spec.ts`. Verificar con `pnpm verificar`, `pnpm build` y `pnpm test:e2e`.
