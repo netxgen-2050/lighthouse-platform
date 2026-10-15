@@ -28,7 +28,7 @@
 - `VERSIONES_POLITICA` **no suma versión**: `VERSION_POLITICA` sigue siendo `2026-10-15-borrador`.
 
 ### 3. Aviso de traducción
-- En `/privacidad` en inglés, arriba: "Draft translation, not reviewed by the legal team. The Spanish version is the reference." con enlace "Read it in Spanish" a `/privacidad?lang=es` (`hreflang="es"`). En la pantalla de consentimiento y el paso del alta, en inglés, la línea de borrador dice además "(draft translation)".
+- En `/privacidad` en inglés, arriba: "Draft translation, not reviewed by the legal team. The Spanish version is the reference." con enlace "Read it in Spanish" a `/privacidad?lang=es` (`hreflang="es"`). En la pantalla de consentimiento y en los dos pasos antes del login ("Create your account" y "Sign in"), en inglés, la línea de borrador dice además "(draft translation)".
 
 ### 4. Idioma en el registro
 - `Consentimiento` suma `idioma?: "es" | "en"`; `registrarConsentimiento` lo recibe del idioma de la plataforma en el momento de aceptar (en el alta, se guarda en la aceptación previa junto con la versión). `leerConsentimiento` acepta registros sin `idioma` (= `"es"`) y descarta valores fuera de `es`/`en`. El registro de novedades (`lib/privacidad/novedades.ts`) suma `idioma` con la misma regla.

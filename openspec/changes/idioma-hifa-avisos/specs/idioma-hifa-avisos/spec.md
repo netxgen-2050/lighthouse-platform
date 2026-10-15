@@ -28,7 +28,7 @@ With English as the platform language, the report form SHALL be in English; the 
 The login window SHALL show its main texts in Spanish when the platform is in Spanish and in English when it is in English, as far as the login provider allows.
 
 #### Scenario: Español
-- **WHEN** una persona con la plataforma en español abre "Entrar"
+- **WHEN** una persona con la plataforma en español aprieta "Entrar" y acepta en el paso de consentimiento (ver `consentimiento-alta`)
 - **THEN** el título y la indicación principal de la ventana de login están en español
 
 ### Requirement: Toda la plataforma traducida salvo lo interno
