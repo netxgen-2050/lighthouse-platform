@@ -250,6 +250,21 @@ test("con la sesión vencida en el servidor, el diálogo pasa al modo sin cuenta
   expect(pedidos).toBe(1);
 });
 
+test("si el servidor responde 400 con un error de contacto, lo muestra en texto, lleva el foco al campo y conserva lo escrito", async ({ page }) => {
+  await page.route("**/api/reportes", (ruta) =>
+    ruta.fulfill({ status: 400, json: { ok: false, errores: { contacto: "Puede tener hasta 200 caracteres." } } }),
+  );
+  await page.goto("/");
+  const dialogo = await abrir(page);
+  await dialogo.getByLabel(/¿Qué pasó\?/).fill("Texto a conservar");
+  await dialogo.getByLabel(/Tu nombre o email/).fill("Juan");
+  await dialogo.getByRole("button", { name: "Enviar reporte" }).click();
+  await expect(dialogo.getByText("Error: Puede tener hasta 200 caracteres.")).toBeVisible();
+  await expect(dialogo.getByLabel(/Tu nombre o email/)).toBeFocused();
+  await expect(dialogo.getByLabel(/¿Qué pasó\?/)).toHaveValue("Texto a conservar");
+  await expect(dialogo.getByText("No se pudo registrar el reporte")).toHaveCount(0);
+});
+
 test.describe("sin cuenta", () => {
   test.use({ rol: "ninguno" });
 
