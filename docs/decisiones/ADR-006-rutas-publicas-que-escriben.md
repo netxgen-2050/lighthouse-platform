@@ -1,4 +1,4 @@
-# ADR-004 · Las rutas públicas que escriben se protegen sin base de datos hasta Neon, y los reportes sin cuenta viven solo en issues de un repo privado
+# ADR-006 · Las rutas públicas que escriben se protegen sin base de datos hasta Neon, y los reportes sin cuenta viven solo en issues de un repo privado
 
 - **Estado:** Propuesta
 - **Fecha:** 2026-10-15
