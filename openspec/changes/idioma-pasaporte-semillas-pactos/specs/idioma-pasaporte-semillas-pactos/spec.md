@@ -21,11 +21,15 @@ The identity verification dialog SHALL show its steps, fields, validation errors
 - **THEN** ve el error en inglés asociado al campo y el foco va a ese campo
 
 ### Requirement: Semillas en inglés
-With English as the platform language, `/semillas` SHALL show the ledger, the recognition round, the explained calculation and the economic term in English, with numbers and dates in the English format; the English economic term MUST be marked as draft.
+With English as the platform language, `/semillas` SHALL show the ledger, the recognition round, the explained calculation and the economic term in English, with numbers and dates in the English format; the English economic term MUST be marked as draft. The word "Semillas" MUST NOT be translated: the first mention in the page content SHALL read "Semillas (seeds)" and the rest "Semillas".
 
 #### Scenario: Término económico
-- **WHEN** abre el 🌱 de "Seeds" en inglés
-- **THEN** ve el texto en inglés con "Draft: text under review"
+- **WHEN** abre el 🌱 de "Semillas" en inglés
+- **THEN** ve el título "Semillas" y el texto en inglés con "Draft: text under review"
+
+#### Scenario: Nombre sin traducir
+- **WHEN** una persona con la plataforma en inglés abre `/semillas`
+- **THEN** el título dice "Semillas", la primera explicación dice "Semillas (seeds)" y la página no dice "Seeds" como nombre
 
 ### Requirement: Pactos en inglés
 With English as the platform language, `/pactos` SHALL show how to propose and accept time and money pacts, the reference hour value, contributions with the sample exchange rate, states and errors in English, and MUST keep any text typed by the person exactly as typed.

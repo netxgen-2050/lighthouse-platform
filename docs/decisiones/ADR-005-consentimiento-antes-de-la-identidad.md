@@ -18,15 +18,21 @@ Hoy la política se acepta después de entrar, y mientras tanto las páginas pú
 ## Decisión
 **C.** `consentimiento-alta` implementa la parte del navegador (B) y deja escrito en su design (§7) el contrato para la base. Lo central: **el consentimiento es un dato de NetX, no de Privy**, y **nada se escribe con la identidad de una persona hasta que hay una fila `acepta` vigente**.
 
+**Respuestas de Gus (15-oct-2026)**, que completan la decisión sin cambiarla (el estado sigue en Propuesta hasta que Gus mergee):
+- La tabla `consentimientos` completa (forma de `consentimiento-alta` design §7.1) va en la **primera migración de `base-neon`**.
+- Se suma un consentimiento **opcional** de novedades por email: tipo `novedades`, sin marcar, nunca obligatorio, que se da o se retira desde Mis datos (camino `mis-datos`).
+- Una sola versión nueva de la política para `consentimiento-alta` e `idioma-legal`.
+- Borrar en Privy al usuario que no acepta: pendiente, fuera de alcance (R29).
+
 ## Consecuencias
 - Ganamos: una regla de identidad simple de revisar ("¿esta ruta llama a `exigirConsentimiento`?") y una constancia que sobrevive al retiro y al borrado de la cuenta (que es anonimizar, ADR-001).
-- Aceptamos: Privy sí guarda el email antes de las casillas cuando la persona usa "Entrar"; si no acepta, ese usuario queda en Privy hasta que se decida borrarlo con su API de servidor (pregunta abierta para Gus y Gabriel, R29).
+- Aceptamos: Privy sí guarda el email antes de las casillas cuando la persona usa "Entrar"; si no acepta, ese usuario queda en Privy. Borrarlo con su API de servidor queda pendiente (decisión de Gus, 15-oct-2026); se responde en R29 con Gabriel.
 - Aceptamos: la hora del navegador se guarda solo como informativa; la que vale es la del servidor.
 - `consentimientos` se suma a la lista de libros de solo agregar de ADR-001.
-- Revisar: cuando se implemente `base-neon` (sumar la forma de la tabla a su primera migración o no), y si se agrega un consentimiento opcional (novedades por email), que va como `tipo` nuevo, sin marcar y nunca obligatorio.
+- Revisar: cuando se mande el primer email de novedades de verdad (lista de correo, enlace de baja en el email, doble opt-in), y cuando se responda R29.
 
 ## En palabras simples
-Antes de que la plataforma guarde algo a tu nombre, tenés que haber aceptado la política, y eso se pide al crear la cuenta, no después. Si entraste y todavía no aceptaste, la plataforma te trata como a un visitante sin cuenta. Cada aceptación queda anotada como un renglón en un libro que no se borra: qué versión, cuándo, desde dónde y en qué idioma. Si un día retirás el consentimiento, se agrega otro renglón que lo dice, en vez de borrar el anterior.
+Antes de que la plataforma guarde algo a tu nombre, tenés que haber aceptado la política, y eso se pide al crear la cuenta, no después. Si entraste y todavía no aceptaste, la plataforma te trata como a un visitante sin cuenta. Cada aceptación queda anotada como un renglón en un libro que no se borra: qué versión, cuándo, desde dónde y en qué idioma. Si un día retirás el consentimiento, se agrega otro renglón que lo dice, en vez de borrar el anterior. Recibir novedades por email es aparte y opcional: no hace falta para tener cuenta y lo podés sacar desde Mis datos.
 
 ## Fuentes
 - `openspec/changes/consentimiento-alta/design.md` (tabla de buenas prácticas y §7).

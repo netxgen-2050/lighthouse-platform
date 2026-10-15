@@ -1,6 +1,6 @@
 # Tasks
 
-Requisito previo: `idioma-base` mergeado. Rama `agente/idioma-portada-sumarte`. El cómo (diccionarios, `Bilingue`, `TextoBilingue`, formatos, glosario, `translate="no"`) está en `openspec/changes/idioma-base/design.md` (o en `openspec/specs/idioma-plataforma/` si ya se archivó). Español idéntico al de hoy.
+Requisito previo: `idioma-base` mergeado. Rama `agente/idioma-portada-sumarte`. El cómo (diccionarios, `Bilingue`, `TextoBilingue`, formatos, glosario, `translate="no"`) está en `openspec/changes/idioma-base/design.md` (o en `openspec/specs/idioma-plataforma/` si ya se archivó). Español idéntico al de hoy. Cada diccionario y archivo de datos con inglés se anota como `pendiente` en `lib/idioma/revision-nativa.ts` y se regenera la lista con `pnpm idioma:pendientes` (`idioma-base` design §12). Si Sumarte nombra las Semillas, en inglés dice "Semillas" (primera mención "Semillas (seeds)").
 
 ## 1. Portada
 

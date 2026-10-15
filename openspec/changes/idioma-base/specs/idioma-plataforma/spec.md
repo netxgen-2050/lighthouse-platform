@@ -7,7 +7,7 @@ Base para que toda la plataforma funcione en español (voseo) e inglés: cómo s
 ## ADDED Requirements
 
 ### Requirement: Elegir el idioma
-The platform SHALL offer Spanish (default) and English. Choosing a language in the top bar selector or in Configuración SHALL change every page to that language without changing the page address, with or without a session.
+The platform SHALL offer Spanish and English. Choosing a language in the top bar selector or in Configuración SHALL change every page to that language without changing the page address, with or without a session.
 
 #### Scenario: Cambiar a inglés sin cuenta
 - **WHEN** una persona sin sesión está en `/tribus` y elige "EN" en la barra superior
@@ -17,15 +17,34 @@ The platform SHALL offer Spanish (default) and English. Choosing a language in t
 - **WHEN** la persona llega con Tab al selector y aprieta Enter sobre "EN"
 - **THEN** la plataforma pasa a inglés y "EN" queda marcado como actual con algo más que el color
 
+### Requirement: Idioma inicial según el navegador
+When neither the browser nor the person has chosen a language, the platform SHALL use the browser's preferred language (the one with the highest weight in `Accept-Language`): Spanish for any Spanish variant, English for any English variant, and English for any other language or a missing header. A chosen language (link parameter, browser cookie or the person's saved preference) MUST always win over the detected one, and the detected language MUST NOT be saved as a choice.
+
+#### Scenario: Navegador en inglés
+- **WHEN** una persona sin idioma elegido abre la portada con el navegador en `en-US`
+- **THEN** la plataforma se ve en inglés y no queda ninguna cookie de idioma guardada
+
+#### Scenario: Navegador en otro idioma
+- **WHEN** una persona sin idioma elegido abre la portada con el navegador en `pt-BR`
+- **THEN** la plataforma se ve en inglés
+
+#### Scenario: Navegador en español de España
+- **WHEN** una persona sin idioma elegido abre la portada con el navegador en `es-ES`
+- **THEN** la plataforma se ve en español
+
+#### Scenario: Lo elegido gana
+- **WHEN** una persona con el navegador en `en-US` eligió "ES" y vuelve a abrir la plataforma
+- **THEN** la plataforma se ve en español
+
 ### Requirement: Recordar el idioma
-The chosen language SHALL be remembered in the browser, with or without a session, and SHALL also be saved in the person's preferences when there is a session and a consent in force. When a person enters and the browser has no language chosen, their saved preference SHALL be used; when the browser already has a choice, that choice SHALL win and be saved as the person's preference. While the person's preferences live in the browser, the saved preference is only available in that browser.
+The chosen language SHALL be remembered in the browser, with or without a session, and SHALL also be saved in the person's preferences when there is a session and a consent in force. When a person enters and the browser has no language chosen, their saved preference SHALL be used; when the browser already has a choice, that choice SHALL win and be saved as the person's preference. While the person's preferences live in the browser, the saved preference is only available in that browser; this is enough for the prototype until the preferences move to the database.
 
 #### Scenario: Recargar
 - **WHEN** la persona eligió inglés y recarga la página
 - **THEN** la página sigue en inglés
 
 #### Scenario: Navegador sin idioma elegido
-- **WHEN** una persona que eligió inglés con su cuenta borra la cookie de idioma del navegador y vuelve a entrar
+- **WHEN** una persona que eligió inglés con su cuenta borra la cookie de idioma del navegador, que está en español, y vuelve a entrar
 - **THEN** la plataforma pasa a inglés al terminar de entrar
 
 #### Scenario: Borrar todo
@@ -110,6 +129,35 @@ In English, the rail and its group titles, the top bar, the avatar menu, the bel
 #### Scenario: Rail en inglés
 - **WHEN** la plataforma está en inglés
 - **THEN** el rail muestra "Discover", "Home", "Territory" y "Tribes"
+
+### Requirement: Glosario de la plataforma
+Platform terms SHALL have a single English rendering taken from one glossary. "Semillas" MUST NOT be translated: in English it SHALL read "Semillas", and the first mention in the content of an English page SHALL read "Semillas (seeds)".
+
+#### Scenario: Semillas en el rail
+- **WHEN** la plataforma está en inglés
+- **THEN** el rail muestra "Semillas" y no "Seeds"
+
+### Requirement: Textos de ejemplo traducidos con su idioma original
+Sample texts written for or by communities (manifestos, tribe declarations, Fogón decisions, sample market offers) SHALL be translated like other sample data and, when shown in a language other than the original, SHALL show a visible note with the original language ("Translated from Spanish" / "Traducido del inglés"). Text typed by a person MUST NOT be automatically translated.
+
+#### Scenario: Texto traducido del español
+- **WHEN** la plataforma está en inglés y se muestra un texto de ejemplo escrito originalmente en español que tiene traducción
+- **THEN** se lee en inglés con la nota visible "Translated from Spanish"
+
+#### Scenario: Texto de la persona
+- **WHEN** la plataforma está en inglés y se muestra un texto que escribió una persona en español
+- **THEN** se ve tal cual lo escribió, marcado como español, sin traducir
+
+### Requirement: Revisión nativa pendiente
+Every English dictionary and every source of sample data or legal text with English SHALL be listed with its native-speaker review status (pending or reviewed); a test MUST fail when a dictionary is not listed, and a command SHALL generate the list of pending sources in a versioned file.
+
+#### Scenario: Diccionario sin anotar
+- **WHEN** alguien suma un diccionario de una zona y no lo anota en la lista de revisión nativa
+- **THEN** `pnpm test` falla nombrando el diccionario
+
+#### Scenario: Lista de pendientes
+- **WHEN** Gus corre `pnpm idioma:pendientes`
+- **THEN** `docs/idioma/revisar-nativo.md` lista todas las fuentes en inglés que todavía no revisó un hablante nativo
 
 ### Requirement: Nombres propios sin traducir
 Proper names (people, tribes, neighborhoods, territories, places, organizations, the event and the assistant) MUST NOT be translated and SHALL be marked so that the untranslated-text check ignores them.

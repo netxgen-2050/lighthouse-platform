@@ -1,14 +1,14 @@
 # Tasks
 
-Requisito previo: `idioma-base` mergeado. Rama `agente/idioma-fogon-mercado`. El cómo está en el design de `idioma-base` (§3, §7, §8 y §10). Español idéntico al de hoy.
+Requisito previo: `idioma-base` mergeado. Rama `agente/idioma-fogon-mercado`. El cómo está en el design de `idioma-base` (§3, §7, §8 y §10). Español idéntico al de hoy. Cada diccionario y archivo de datos con inglés se anota como `pendiente` en `lib/idioma/revision-nativa.ts` y se regenera la lista con `pnpm idioma:pendientes` (`idioma-base` design §12).
 
 ## 1. Fogón
 
-- [ ] 1.1 Crear `lib/idioma/textos/fogon.ts`; `AMBITOS` y `OPCIONES` de `lib/fogon/datos.ts` por idioma; pasar `app/fogon/**` a leerlo; título y descripción de cada decisión con `lang="es"` y "Written in Spanish" en inglés. Verificar con `pnpm test:e2e e2e/fogon.spec.ts` (español en verde).
+- [ ] 1.1 Crear `lib/idioma/textos/fogon.ts`; `AMBITOS` y `OPCIONES` de `lib/fogon/datos.ts` por idioma; título y descripción de cada decisión de ejemplo como `Bilingue` con `original: "es"` y su inglés; pasar `app/fogon/**` a leerlo, con `TextoBilingue` (en inglés, nota "Translated from Spanish"). Verificar con `pnpm test:e2e e2e/fogon.spec.ts` (español en verde).
 
 ## 2. Compromisos y Mercado
 
-- [ ] 2.1 Crear `lib/idioma/textos/compromisos.ts`; pasar `app/compromisos/**`, `lib/compromisos/validar.ts` (mensajes por idioma), `formato.ts`, `tipos.ts` (etiquetas) y `mercado.ts` (estados); ofertas con `lang="es"` y "Written in Spanish". Tests de `validar.test.ts` y `formato.test.ts` en inglés. Verificar con `pnpm test` y `pnpm test:e2e e2e/compromisos.spec.ts`.
+- [ ] 2.1 Crear `lib/idioma/textos/compromisos.ts`; pasar `app/compromisos/**`, `lib/compromisos/validar.ts` (mensajes por idioma), `formato.ts`, `tipos.ts` (etiquetas) y `mercado.ts` (estados y ofertas de ejemplo como `Bilingue` con `original: "es"`, mostradas con `TextoBilingue`); las ofertas que publica la persona, tal cual, con `lang="es"` en inglés. Tests de `validar.test.ts` y `formato.test.ts` en inglés. Verificar con `pnpm test` y `pnpm test:e2e e2e/compromisos.spec.ts`.
 
 ## 3. Canales
 

@@ -1,6 +1,6 @@
 # Tasks
 
-Requisito previo: `idioma-base` mergeado. Rama `agente/idioma-perfil-recorrido`. El cómo está en el design de `idioma-base` (§3, §7, §8 y §10). Español idéntico al de hoy.
+Requisito previo: `idioma-base` mergeado. Rama `agente/idioma-perfil-recorrido`. El cómo está en el design de `idioma-base` (§3, §7, §8 y §10). Español idéntico al de hoy. Cada diccionario y archivo de datos con inglés se anota como `pendiente` en `lib/idioma/revision-nativa.ts` y se regenera la lista con `pnpm idioma:pendientes` (§12). "Semillas" no se traduce (§9).
 
 ## 1. Perfil y Mi recorrido
 

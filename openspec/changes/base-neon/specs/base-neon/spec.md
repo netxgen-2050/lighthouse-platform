@@ -38,8 +38,16 @@ The system SHALL use Postgres through Drizzle with versioned migrations in `driz
 - **THEN** la API lo rechaza con un mensaje claro
 
 ### Requirement: Consentimientos
-The database SHALL have a `consentimientos` table (person, type, version, date) ready for `privacidad-consentimiento`.
+The first migration SHALL create the complete `consentimientos` table: person, type (policy, terms, sensitive data, email updates), event (accept, withdraw), version, path (nullable), language (nullable, null meaning Spanish), server time and informative browser time, with an index by person, type and time. The table MUST be append-only: the database SHALL reject any update or delete on it, and a person row referenced by a consent MUST NOT be deletable.
 
 #### Scenario: Tabla lista
 - **WHEN** se aplican las migraciones
-- **THEN** existe la tabla `consentimientos` con sus columnas
+- **THEN** existe la tabla `consentimientos` con todas esas columnas y los valores permitidos de tipo, evento, camino e idioma
+
+#### Scenario: Solo agregar
+- **WHEN** alguien intenta modificar o borrar una fila de `consentimientos`
+- **THEN** la base lo rechaza con un error y la fila queda igual
+
+#### Scenario: Valor fuera de lista
+- **WHEN** alguien inserta una fila con tipo `marketing` o idioma `fr`
+- **THEN** la base la rechaza

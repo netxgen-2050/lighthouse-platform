@@ -7,10 +7,10 @@ Tercera zona de la plataforma bilingüe (ver `idioma-base` y ADR-004): lo que ha
 ## What Changes
 
 - **Pasaporte (`/pasaporte`) en inglés:** caminos, sellos (`lib/pasaporte/sellos.ts`: nombre descriptivo, qué abre, cómo se obtiene, estados "No disponible todavía" incluido), sello de la billetera, horas de trabajo y el **diálogo de verificación de identidad** (`components/kyc-dialogo.tsx` y los mensajes de validación de `lib/pasaporte/kyc.ts`), que también usa Sumarte. "Genesis" no se traduce.
-- **Semillas (`/semillas`) en inglés:** libro, ronda de reconocimiento, cálculo explicado, lo que te abre, con números y fechas según idioma. El término económico 🌱 "Semillas" (`lib/economia/terminos.ts`) suma su inglés como **borrador** (el catálogo ya lo marca así).
+- **Semillas (`/semillas`) en inglés:** libro, ronda de reconocimiento, cálculo explicado, lo que te abre, con números y fechas según idioma. **"Semillas" no se traduce** (decisión de Gus, 15-oct-2026, glosario de `idioma-base`): en inglés se dice "Semillas", y la primera mención del contenido de cada página se explica como "Semillas (seeds)". El término económico 🌱 "Semillas" (`lib/economia/terminos.ts`) suma su texto en inglés como **borrador** (el catálogo ya lo marca así), con el título "Semillas".
 - **Pactos (`/pactos`) en inglés:** proponer y aceptar pactos de tiempo y de plata, valor de la hora de referencia, aportes con el tipo de cambio de ejemplo, estados y errores.
 - **Datos de ejemplo:** los textos que escribe la plataforma (descripción de sellos, tipos de pacto, ejemplos de la ronda) pasan a `Bilingue`. Lo que escribe la persona (descripción de su pacto, horas en texto libre) nunca se traduce.
-- Las tres rutas se suman a `RUTAS_TRADUCIDAS`.
+- Las tres rutas se suman a `RUTAS_TRADUCIDAS`; diccionarios y datos con inglés quedan `pendiente` en la lista de revisión nativa (`lib/idioma/revision-nativa.ts`).
 
 ### Fuera de alcance
 

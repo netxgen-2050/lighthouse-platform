@@ -19,7 +19,7 @@ Primera zona de la plataforma bilingüe (ver `idioma-base` y ADR-004). La portad
 - Los ⚖ y los textos con peso legal de Sumarte ("No es una inversión: no da tierra…", R16): van como borrador en `idioma-legal`.
 - Cambiar precios, planes o lógica de Sumarte; montos en otras monedas.
 - Traducir las páginas a las que llevan los enlaces (tribus, territorio, perfil): cada una tiene su cambio.
-- Revisión de la traducción por alguien nativo (pregunta para Gus).
+- Revisión de la traducción por alguien nativo: más adelante (decisión de Gus, 15-oct-2026). Los diccionarios y datos de esta zona quedan `pendiente` en `lib/idioma/revision-nativa.ts`.
 
 ## Capabilities
 

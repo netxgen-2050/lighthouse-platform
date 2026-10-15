@@ -40,19 +40,27 @@ With English as the platform language, `/privacidad` SHALL show the full policy 
 - **WHEN** corre el test de la política
 - **THEN** falla si el inglés no tiene las mismas secciones y la misma cantidad de filas que el español
 
-### Requirement: La política informa la cookie de idioma
-The policy SHALL list the language cookie in the data it processes; because this changes the information given, the policy version SHALL change with that change listed, so every person accepts again.
+### Requirement: Traducción sin nueva versión
+The English policy SHALL be published as the translation of the policy version in force, without changing the policy version, so nobody is asked to accept again because of this change. Correcting an English translation already published SHALL change the version.
 
-#### Scenario: Re-consentimiento por la cookie
-- **WHEN** una persona que aceptó la versión anterior entra después de este cambio
-- **THEN** ve la pantalla de consentimiento con "Qué cambió" mencionando el idioma guardado en el navegador
+#### Scenario: Sin re-consentimiento
+- **WHEN** una persona que aceptó la versión vigente en español entra después de este cambio y pasa la plataforma a inglés
+- **THEN** no ve la pantalla de consentimiento y Mis datos dice que aceptó en español
+
+#### Scenario: Qué cambió en inglés
+- **WHEN** una persona que aceptó una versión anterior ve la pantalla de consentimiento con la plataforma en inglés
+- **THEN** la lista "What changed" está en inglés y menciona aceptar al crear la cuenta, el idioma guardado en el navegador y las novedades opcionales por email
 
 ### Requirement: Consentimiento y Mis datos en inglés
-With English as the platform language, the consent screen, the account creation step and `/mis-datos` SHALL be fully in English, keeping two separate unchecked checkboxes and the same behavior as in Spanish.
+With English as the platform language, the consent screen, the account creation step and `/mis-datos` SHALL be fully in English, keeping two separate unchecked required checkboxes, the separate unchecked optional checkbox for email updates and the same behavior as in Spanish.
 
 #### Scenario: Alta en inglés
 - **WHEN** una persona sin sesión y con la plataforma en inglés elige "Join for free" en Sumarte
-- **THEN** ve "Create your account" con el resumen en inglés, la marca de borrador y las dos casillas sin marcar
+- **THEN** ve "Create your account" con el resumen en inglés, la marca de borrador, las dos casillas obligatorias sin marcar y, aparte, la casilla opcional de novedades sin marcar
+
+#### Scenario: Novedades en Mis datos en inglés
+- **WHEN** una persona con la plataforma en inglés retira las novedades por email desde Mis datos
+- **THEN** el estado y el aviso del cambio están en inglés y queda la constancia con el idioma inglés
 
 ### Requirement: Constancia del idioma aceptado
 The consent record SHALL store the language of the text the person had in front of them when accepting. Records without a language MUST count as Spanish. "Mis datos" SHALL show that language and, for English, that it was a draft translation.
@@ -66,8 +74,8 @@ The consent record SHALL store the language of the text the person had in front 
 - **THEN** sigue valiendo y Mis datos dice que se aceptó en español
 
 ### Requirement: Español sin cambios
-With Spanish as the platform language, legal terms, the policy, the consent screens and Mis datos SHALL show the same texts as before this change, except the new line about the language cookie and the new version.
+With Spanish as the platform language, legal terms, the policy, the consent screens and Mis datos SHALL show the same texts as before this change, and the policy version MUST stay the same.
 
 #### Scenario: Pruebas existentes
-- **WHEN** corren `e2e/privacidad.spec.ts` y `e2e/estado-administrativo.spec.ts`
-- **THEN** pasan, con el único ajuste de la versión nueva de la política
+- **WHEN** corren `e2e/privacidad.spec.ts`, `e2e/consentimiento-alta.spec.ts` y `e2e/estado-administrativo.spec.ts`
+- **THEN** pasan sin cambios

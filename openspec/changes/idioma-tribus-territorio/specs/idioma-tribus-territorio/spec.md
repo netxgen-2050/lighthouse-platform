@@ -28,12 +28,16 @@ The descriptive fields of each sample tribe and the territory texts (common land
 - **WHEN** abre en el mapa el lugar de servicios compartidos
 - **THEN** su nombre y su descripción están en inglés, y "Temazcal" sigue igual
 
-### Requirement: Voz de la comunidad en el original
-Manifestos and tribe declarations SHALL be shown in their original language, marked as Spanish, with a visible "Written in Spanish" note in English pages.
+### Requirement: Voz de la comunidad traducida con su idioma original
+Manifestos and tribe declarations SHALL have an English translation and, in English pages, SHALL show a visible note saying they were translated from Spanish.
 
 #### Scenario: Manifiesto
 - **WHEN** una persona con la plataforma en inglés abre el manifiesto de Valle Solar
-- **THEN** los botones y ayudas están en inglés y el texto del manifiesto está en español con `lang="es"` y la nota "Written in Spanish"
+- **THEN** los botones, las ayudas y el texto del manifiesto están en inglés, con la nota visible "Translated from Spanish"
+
+#### Scenario: Manifiesto en español
+- **WHEN** la plataforma está en español y abre el mismo manifiesto
+- **THEN** ve el texto original sin ninguna nota de traducción
 
 ### Requirement: Páginas revisadas automáticamente
 The tribes, manifesto, application and territory pages SHALL be in the list of translated pages, so the untranslated-text check covers them in English.

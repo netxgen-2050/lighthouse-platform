@@ -12,12 +12,12 @@ Para que lo que hace una persona lo vea otra (aprobaciones de admins, roles, not
 - **Primeras tablas**:
   - `personas`: id, `privy_id` (único, se completa al primer login), email (único, en minúsculas), nombre, rol (`superadmin`, `admin-tribu`, `persona`), perfil de prueba (`usuario`, `inversor`, `comunidad`), tribu que administra (nula o `valle`), si tiene acceso, fechas de alta y de cambio.
   - `cambios_de_rol`: quién cambió qué rol o acceso de quién y cuándo (auditoría).
-  - `consentimientos`: persona, tipo (política, términos, datos sensibles), versión y fecha (para `privacidad-consentimiento`).
+  - `consentimientos`, **con su forma completa desde la primera migración** (decisión de Gus, 15-oct-2026; forma en `openspec/changes/consentimiento-alta/design.md` §7.1 y ADR-005): persona, tipo (`politica`, `terminos`, `sensibles`, `novedades`), evento (`acepta`, `retira`), versión, camino (`alta`, `al-entrar`, `nueva-version`, `mis-datos`; nulo), idioma (`es`, `en`; nulo = `es`), hora del servidor y hora informativa del navegador. Es un **libro de solo agregar**: la base rechaza `UPDATE` y `DELETE` sobre la tabla. Así `consentimiento-alta` e `idioma-legal` no necesitan una segunda migración.
 - **La lista de acceso pasa a la base**: `/api/sesion` busca a la persona en `personas` (por `privy_id` o, la primera vez, por email). `LH_PERSONAS` queda solo como **carga inicial**: si la tabla está vacía, se cargan esas personas; después manda la base.
 - **Panel "Personas y roles" editable** en `/netx` (solo super admin): cambiar rol, perfil de prueba, tribu que administra y acceso; sumar una persona por email; cada cambio queda en `cambios_de_rol`. API `GET/POST/PATCH /api/personas`, que verifica en el servidor que quien pide es super admin. Un super admin no puede quitarse su propio rol (siempre queda al menos uno).
 - **Los datos que hoy viven en el navegador no cambian en esta spec** (perfil, membresías, pactos, etc.): se mudan en las dos specs siguientes.
 
-**Fuera de alcance:** aprobaciones (siguiente spec), mudar los datos del navegador, backups automáticos más allá de lo que da Neon, datos de ejemplo (tribus, territorio, Sumarte), que siguen en el código.
+**Fuera de alcance:** aprobaciones (siguiente spec), mudar los datos del navegador (incluido el consentimiento: la tabla queda creada y vacía; la llena `datos-en-la-nube` con `POST /api/consentimientos` y `exigirConsentimiento`), borrar en Privy al usuario que no acepta (pendiente, R29), backups automáticos más allá de lo que da Neon, datos de ejemplo (tribus, territorio, Sumarte), que siguen en el código.
 
 ## Capabilities
 

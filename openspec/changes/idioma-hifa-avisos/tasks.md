@@ -1,6 +1,6 @@
 # Tasks
 
-Requisito previo: `idioma-base` y las demás zonas (`idioma-portada-sumarte`, `idioma-tribus-territorio`, `idioma-pasaporte-semillas-pactos`, `idioma-fogon-mercado`, `idioma-perfil-recorrido`, `idioma-legal`) mergeadas; si falta alguna, hacer los grupos 1 a 3 y dejar el 4.1 para cuando estén. Rama `agente/idioma-hifa-avisos`. Español idéntico al de hoy.
+Requisito previo: `idioma-base` y las demás zonas (`idioma-portada-sumarte`, `idioma-tribus-territorio`, `idioma-pasaporte-semillas-pactos`, `idioma-fogon-mercado`, `idioma-perfil-recorrido`, `idioma-legal`) mergeadas; si falta alguna, hacer los grupos 1 a 3 y dejar el 4.1 para cuando estén. Rama `agente/idioma-hifa-avisos`. Español idéntico al de hoy. Cada diccionario y archivo de datos con inglés se anota como `pendiente` en `lib/idioma/revision-nativa.ts` y se regenera la lista con `pnpm idioma:pendientes` (`idioma-base` design §12). "Semillas" no se traduce (§9).
 
 ## 1. Hifa
 

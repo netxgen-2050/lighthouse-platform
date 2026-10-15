@@ -9,7 +9,7 @@ Requisito previo: `idioma-base` mergeado. Rama `agente/idioma-pasaporte-semillas
 
 ## 2. Semillas y Pactos
 
-- [ ] 2.1 Crear `lib/idioma/textos/semillas.ts`; pasar `app/semillas/**` y `lib/semillas/datos.ts` (textos de ejemplo como `Bilingue`); sumar `en` borrador a `TERMINOS_ECONOMICOS.semillas` y que `components/termino-economico.tsx` lo muestre con "Draft: text under review". Verificar con `pnpm test:e2e e2e/semillas.spec.ts`.
+- [ ] 2.1 Crear `lib/idioma/textos/semillas.ts` ("Semillas" y "Semillas (seeds)" tomados del glosario, con `translate="no"`); pasar `app/semillas/**` y `lib/semillas/datos.ts` (textos de ejemplo como `Bilingue`); sumar `en` borrador a `TERMINOS_ECONOMICOS.semillas` (título "Semillas") y que `components/termino-economico.tsx` lo muestre con "Draft: text under review". Anotar los diccionarios y datos nuevos de la zona como `pendiente` en `lib/idioma/revision-nativa.ts` y regenerar con `pnpm idioma:pendientes`. Verificar con `pnpm test:e2e e2e/semillas.spec.ts`.
 - [ ] 2.2 Crear `lib/idioma/textos/pactos.ts`; pasar `app/pactos/**` y `lib/pactos/datos.ts`, con montos y tipo de cambio según idioma; lo que escribe la persona con `lang` del idioma en que se escribió (por ahora siempre `"es"` si la interfaz está en inglés y el texto no tiene idioma guardado). Verificar con `pnpm test:e2e e2e/pactos.spec.ts`.
 
 ## 3. Pruebas
