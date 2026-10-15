@@ -99,7 +99,7 @@ export function porcentajes(agregado: Agregado): Record<string, number> | null {
 }
 
 /** Reparte `cantidad` (entero) en proporción a pesos enteros, por resto mayor (empata el orden original). */
-function repartoProporcional(ids: readonly string[], pesos: readonly number[], cantidad: number): Record<string, number> {
+export function repartoProporcional(ids: readonly string[], pesos: readonly number[], cantidad: number): Record<string, number> {
   const total = pesos.reduce((a, b) => a + b, 0);
   const resultado: Record<string, number> = {};
   const restos: { id: string; resto: number; orden: number }[] = [];
