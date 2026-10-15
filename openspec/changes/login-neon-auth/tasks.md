@@ -1,0 +1,32 @@
+# Tasks
+
+Rama `agente/login-neon-auth` desde `main`, **después** de que `base-neon` y `consentimiento-alta` estén en `main`. Si alguno falta, frenar y reportar. No depende de `consentimiento-en-la-base` ni del Fogón. Si la noche no alcanza, cortar después de la sección 2 con su PR (design, Riesgos).
+
+## 1. Dependencia
+
+- [ ] 1.1 Instalar `@neondatabase/auth` con versión fija `0.6.0-beta` y comprobar si funciona con Next 15.5 (design §1): `pnpm install`, `pnpm verificar` y `pnpm build`. Si la dependencia par de Next 16 lo impide, usar el kit `@neondatabase/auth/server`; si tampoco, frenar y reportar. Anotar en el PR qué camino se usó y los avisos de `pnpm`. Verificar con los tres comandos.
+
+## 2. Servidor
+
+- [ ] 2.1 `lib/sesion/proveedores/` (puerto `ClienteIdentidad`, `privy.ts` con lo de hoy, `neon-auth.ts`, `index.ts` según las variables) y `sesionDelPedido` con el orden de design §1; 403 con email sin verificar de Neon Auth. Tests con clientes simulados: los cuatro casos de orden; sesión de Neon Auth válida, ausente, con email sin verificar y con otra forma (401); sin ningún proveedor ni modo de prueba, 503; con PGlite, una persona con cuenta `privy` entra con `neon-auth` y el mismo email verificado y queda con las dos cuentas y el mismo `personaId`; persona nueva con Neon Auth no deja filas. Verificar con `pnpm test lib/sesion`.
+- [ ] 2.2 `app/api/auth/[...path]/route.ts` (manejador del SDK; 503 y aviso en el log sin valores cuando faltan `NEON_AUTH_BASE_URL` o `NEON_AUTH_COOKIE_SECRET`), `drizzle.config.ts` con `schemaFilter: ["public"]`, `.env.example` con las tres variables nuevas comentadas. Tests de la ruta sin variables (503, el log espiado no tiene valores). Verificar con `pnpm test app/api/auth` y `pnpm build`.
+- [ ] 2.3 `/api/sesion` devuelve `idPersona = personas.id` cuando la persona existe y `clavesAnteriores` (design §4). Test de fuente: ninguna ruta de `app/api` importa un adaptador de `lib/sesion/proveedores/` salvo a través de `sesionDelPedido`. Test de las rutas que hoy escriben con sesión: con la cookie de Neon Auth simulada y `Origin` ajeno, 403 (design §2). Verificar con `pnpm test app/api`.
+
+## 3. Formulario y paso
+
+- [ ] 3.1 `components/sesion/formulario-login.tsx` (design §3): email → código, Google, "Mandar otro código", "Usar otro email", los tres mensajes de error con `role="alert"`, foco y teclado, solo tokens del tema. `abrirLogin()` del proveedor elige según `NEXT_PUBLIC_LH_LOGIN` (`neon-auth` → formulario dentro del diálogo del paso; si falta o es otro valor → Privy; modo de prueba → "Entrar como…"). `contexto.ts` (`loginDisponible`, `IdentidadMinima`), `cabeceras()` sin `Authorization` con Neon Auth, "Salir" del proveedor en uso, el sello de billetera no aparece con Neon Auth. Test de fuente de design §3. Verificar con `pnpm verificar`.
+- [ ] 3.2 Copia única de claves del navegador (design §4) como función pura junto a `lib/demo/importar.ts`, llamada por el proveedor al recibir la sesión. Tests: copia lo que falta, no pisa lo que ya está en la clave nueva, no repite en la segunda carga, no borra las viejas. Verificar con `pnpm test lib/demo`.
+
+## 4. Textos
+
+- [ ] 4.1 `lib/privacidad/politica.ts` y revisión de `lib/legal/terminos.ts` (design §5): Neon como encargado del login, Privy "hasta que se retire", fila del login, textos nuevos con `borrador: true`, y la versión nueva de la política con su cambio listado (salvo que Gus haya dicho que no; anotarlo en el PR). Tests de `politica` (la vigente es la última y lista su cambio). Verificar con `pnpm test lib/privacidad`.
+
+## 5. Pruebas de punta a punta
+
+- [ ] 5.1 `e2e/login-neon-auth.spec.ts` local (design §7), con `NEXT_PUBLIC_LH_LOGIN=neon-auth` solo para este archivo: sin aceptar no sale ningún pedido a `/api/auth/` (paso "Entrar" desde la barra y "Crear tu cuenta" desde Sumarte); al aceptar aparece el formulario con el foco en el email; con `/api/auth/**` interceptado, código → paso 2, código equivocado → su error, 500 → error general, 503 → "no disponible"; todo con teclado; axe del paso con el formulario abierto en `e2e/accesibilidad.spec.ts`. Los e2e de hoy (Privy o modo de prueba) siguen en verde sin la variable. Verificar con `pnpm test:e2e e2e/login-neon-auth.spec.ts e2e/accesibilidad.spec.ts` y `pnpm test:e2e`.
+- [ ] 5.2 `e2e/login-neon-auth-preview.spec.ts` (design §6): se salta sin `BASE_URL`, `NEON_AUTH_PRUEBA_EMAIL` o `NEON_AUTH_PRUEBA_CLAVE`; entra con la persona de prueba por `/api/auth/sign-in/email` y verifica `/api/sesion`. Sumar `login@prueba.test` (rol `persona`) a `scripts/datos-previews.sql` y su test (siete personas). Verificar con `pnpm test:e2e e2e/login-neon-auth-preview.spec.ts` (sin variables, se salta en verde), con `pnpm test scripts` y, si Gus creó la persona, con `BASE_URL=<preview> pnpm test:e2e e2e/login-neon-auth-preview.spec.ts` (URL con `scripts/preview-url.sh agente/login-neon-auth`); anotar en el PR si corrió o se saltó y por qué.
+
+## 6. Guion y PR
+
+- [ ] 6.1 `docs/guiones/login-neon-auth.md`, pasos para Gus: (1) que ADR-008 B ya esté hecho (`docs/guiones/neon-previews.md` de `base-neon`); (2) activar Neon Auth en el proyecto de Neon (y en la rama `previews` si no se activa sola); (3) métodos: código por email y Google; contraseña solo en `previews`, si se puede por rama; (4) dominios permitidos: el de Production, el patrón más angosto para los previews del proyecto y `http://localhost:3000`; (5) en Vercel: `NEON_AUTH_BASE_URL` (ver si la inyecta la integración y en qué alcances), `NEON_AUTH_COOKIE_SECRET` distinto para Production y Preview (32 caracteres o más, generado por Gus), `NEXT_PUBLIC_LH_LOGIN=neon-auth` **primero solo en Preview**; (6) crear `login@prueba.test` en la rama `previews`; (7) probar en un preview con su email real: aceptar, pedir el código, entrar, ver su rol, salir, entrar con Google; (8) recién con todo eso, `neon-auth` en Production; (9) cómo volver atrás. Verificar leyéndolo contra design §1, §3, §6 y el Migration Plan (cada paso está) y con `pnpm verificar`.
+- [ ] 6.2 `pnpm verificar`, `pnpm build` y los e2e locales en verde; PR con el camino del SDK (1.1), los atributos de la cookie vistos en el preview (design §2), el resultado de 5.2, el guion de 6.1 y lo que queda para `retiro-privy` y para los emails propios. Verificar con los comandos y con `scripts/pr.sh`.
