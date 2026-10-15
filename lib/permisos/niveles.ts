@@ -38,7 +38,7 @@ export const NIVEL_MINIMO: Record<Capacidad, Nivel> = {
   hifa: "explorador",
   congreso: "explorador",
   personal: "explorador",
-  reportar: "explorador",
+  reportar: "sin-cuenta",
   participar: "miembro",
   adherir: "miembro",
   "admin-tribu": "lider",

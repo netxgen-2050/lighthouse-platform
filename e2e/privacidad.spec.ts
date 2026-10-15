@@ -59,11 +59,15 @@ test.describe("consentimiento al entrar", () => {
     await expect(titulo(page)).toHaveCount(0);
   });
 
-  test("sin aceptar, Hifa y Reportar no aparecen y las páginas públicas siguen abiertas", async ({ page }) => {
+  test("sin aceptar, Hifa no aparece, Reportar abre el formulario sin cuenta y las páginas públicas siguen abiertas", async ({ page }) => {
     await page.goto("/pactos");
     await expect(titulo(page)).toBeVisible();
     await expect(page.getByRole("button", { name: "Hablar con Hifa" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Reportar un problema o una idea" })).toHaveCount(0);
+    await page.getByRole("button", { name: "Reportar un problema o una idea" }).click();
+    const dialogo = page.getByRole("dialog", { name: "Reportar un problema o una idea" });
+    await expect(dialogo.getByText(/Estás reportando sin cuenta/)).toBeVisible();
+    await expect(dialogo.getByLabel(/Tu email/)).toBeVisible();
+    await page.keyboard.press("Escape");
     await page.goto("/tribus");
     await expect(page.getByRole("heading", { level: 1, name: "Tribus del Lighthouse" })).toBeVisible();
     await page.goto("/privacidad");

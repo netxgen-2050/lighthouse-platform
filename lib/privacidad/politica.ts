@@ -70,7 +70,8 @@ export const DATOS_POR_PANTALLA: readonly DatosDePantalla[] = [
   {
     pantalla: "Reportar un problema o idea",
     datos: "Lo que escribas, el contacto que dejes y datos técnicos de tu pantalla y navegador.",
-    donde: "GitHub: el reporte lo ve el equipo de NetX.",
+    donde:
+      "GitHub: el reporte se publica como un issue que ve el equipo de NetX. Si reportás sin cuenta, tu IP se usa un rato solo para limitar los envíos y no se guarda ni va al issue.",
   },
 ];
 

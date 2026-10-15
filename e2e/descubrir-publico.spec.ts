@@ -101,13 +101,13 @@ test.describe("navegación sin sesión", () => {
     await expect(page.getByText("Pactos se habilita con el plan Miembro.")).toBeVisible();
   });
 
-  test("la barra superior muestra Sumarte y Entrar; Reportar y Hifa no aparecen sin cuenta", async ({ page }) => {
+  test("la barra superior muestra Sumarte y Entrar; Reportar aparece y Hifa no, sin cuenta", async ({ page }) => {
     await page.goto("/");
     await expect(barra(page).getByRole("link", { name: "Sumarte" })).toBeVisible();
     await expect(barra(page).getByRole("button", { name: "Entrar" })).toBeVisible();
     await expect(barra(page).getByRole("button", { name: "Menú de la persona" })).toHaveCount(0);
     await expect(barra(page).getByRole("link", { name: /NetX/ })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Reportar un problema o una idea" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Reportar un problema o una idea" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Hablar con Hifa" })).toHaveCount(0);
   });
 
