@@ -3,7 +3,6 @@
 - **Estado:** Propuesta
 - **Fecha:** 2026-10-15 (reescrito el mismo día con las respuestas de Gus al PR #76)
 - **Cambio OpenSpec relacionado:** fogon-cuadratico (la regla en las pantallas), fogon-cuadratico-en-la-base (la regla en la base y la API) y fogon-consultas-panel (elegir la regla y cargar el padrón)
-- **Nota:** el archivo conserva el nombre `voto-secreto-y-padron` para no romper enlaces; la decisión ahora es "voto abierto o secreto, por consulta".
 
 ## Contexto
 Con `fogon-cuadratico-en-la-base` el equipo vota de verdad con voto cuadrático, con su identidad de Privy. Son los primeros votos reales en la base. Hay que decidir tres cosas que cuestan revertir con votos adentro: quién puede ver cómo votó cada persona, cómo se guarda un cambio de voto y quién puede votar en cada consulta. Las membresías de tribu todavía no están en la base y el acceso a la plataforma es abierto (`sumarte-acceso`), así que "todas las personas con cuenta" no es "el equipo". La primera versión de este ADR proponía el voto secreto ante la plataforma; Gus pidió (PR #76) que el padrón vea cómo repartió cada quien y quién falta votar.
@@ -40,7 +39,8 @@ Con `fogon-cuadratico-en-la-base` el equipo vota de verdad con voto cuadrático,
 Detalle de la regla:
 - **Voto abierto** (por defecto en las consultas de Equipo): cada persona del padrón ve, cuando el resultado es visible, una tabla con el último reparto de cada persona con su nombre, y en todo momento mientras la consulta está abierta, la lista de quiénes del padrón faltan votar. Antes de votar, la pantalla avisa "Tu reparto lo va a ver todo el padrón".
 - **Voto secreto**: ninguna respuesta trae el reparto de otra persona ni quién falta; cada quien ve el suyo, el agregado y cuántas personas repartieron (la regla A de la primera versión).
-- La regla no cambia una vez que hay votos (la base lo impide), así nadie vota creyendo una cosa y se encuentra con otra.
+- La regla no cambia nunca después de crear la consulta, ni siquiera antes del primer voto (la base lo impide), así nadie vota creyendo una cosa y se encuentra con otra.
+- En voto abierto, el nombre visible es `personas.nombre` (sin nombre: "Persona sin nombre", nunca una parte del email), y "Faltan votar" solo nombra a quien ya aceptó la política (ADR-005); el resto se cuenta sin nombre.
 - Sin mínimo de personas para mostrar el resultado (decisión de Gus).
 - Si una persona retira su consentimiento con la consulta abierta, su último reparto sigue contando (decisión de Gus); con voto abierto, su nombre sigue en la tabla de esa consulta.
 
