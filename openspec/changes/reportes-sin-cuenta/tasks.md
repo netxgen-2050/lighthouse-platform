@@ -1,0 +1,26 @@
+# Tasks
+
+## 1. Lógica pura en `lib/reportes/`
+
+- [ ] 1.1 En `lib/reportes/reporte.ts`: `validarReporte(entrada, { sinCuenta })` con la regla de email ("Escribí un email válido o dejalo vacío.") y descartando `privacidad` sin cuenta; `sinQuery(url)` y su uso en `armarContexto` cuando se pide modo sin cuenta; `armarEtiquetas(tipo, { privacidad, sinCuenta })` con `sin-cuenta`; `armarCuerpo` con "**Enviado sin cuenta**". Verificar con tests nuevos en `lib/reportes/reporte.test.ts` (email vacío ok, "juan" falla, `privacidad` ignorada, `/sumarte?volver=%2Fpactos#x` → `/sumarte`, etiquetas y cuerpo) y que los tests existentes siguen verdes con `pnpm verificar`.
+- [ ] 1.2 Crear `lib/reportes/limite.ts`: ventana deslizante en memoria (5 por clave cada 10 min, 30 en total cada hora, constantes exportadas), recibe `ahora`, limpia lo vencido, devuelve `reintentarEnSegundos`; `claveDeIp(headers)` con SHA-256 de la primera IP de `x-forwarded-for`, luego `x-real-ip`, luego `"desconocida"`. Verificar con `lib/reportes/limite.test.ts`: el 6.º en 10 min se rechaza con los segundos correctos, a los 10 min vuelve a pasar, IP distintas no se pisan, el tope total corta en 31, la clave no contiene la IP en claro.
+
+## 2. Ruta `POST /api/reportes`
+
+- [ ] 2.1 Reordenar la ruta según el diseño: tamaño 64 KB (413, por `Content-Length` y por bytes leídos) → JSON → trampa (200 `{ ok: true, numero: 0 }` sin contar) → sesión (200 = con cuenta, otro estado = sin cuenta) → validación por modo → límite solo sin cuenta (429 con `Retry-After` y `reintentarEnSegundos`) → token → GitHub con etiquetas y cuerpo por modo y URL/ruta sin query sin cuenta. El límite se exporta con un `reiniciar` solo para tests. Verificar en `app/api/reportes/route.test.ts`: reemplazar los tests de 401/403 por "sin sesión crea el issue con `sin-cuenta`" y "con 403 se trata como sin cuenta"; sumar 413 (con y sin `Content-Length`), trampa sin sesión sin llamar a GitHub, 6.º pedido sin sesión → 429 sin llamar a GitHub, 6 pedidos con sesión → 6 issues, `privacidad` sin cuenta sin etiqueta, el cuerpo enviado a GitHub no contiene la IP de `x-forwarded-for` ni `?volver=`, y el log del 429 no contiene la IP. `pnpm verificar` en verde.
+
+## 3. Botón y diálogo
+
+- [ ] 3.1 `lib/permisos/niveles.ts`: `reportar` pasa a `sin-cuenta`; `app/layout.tsx`: montar `BotonReportar` sin `SoloConCapacidad` (y actualizar el comentario). Verificar con el test de niveles existente ajustado (`puedeCapacidad("sin-cuenta", "reportar")` es `true`) y en `pnpm dev` sin sesión: el botón aparece en `/`.
+- [ ] 3.2 `components/boton-reportar.tsx`: modo `conCuenta = estado === "ok" && consentimiento === "vigente"`; sin cuenta, aviso de publicación (texto exacto de la spec) arriba de los campos, campo "Tu email" (`type="email"`, `autoComplete="email"`) con su ayuda como descripción accesible, contexto sin query, envío sin cabeceras de sesión; con cuenta, todo como hoy. Motivo de fallo `"limite"` con "Llegaste al límite de reportes por ahora. Probá de nuevo en N minutos." (o "en un rato") y "Copiar el reporte". Tokens del tema, nada solo con color. Verificar con los e2e de 4.1.
+- [ ] 3.3 `lib/privacidad/politica.ts` (ya es borrador): la fila "Reportar un problema o idea" suma que sin cuenta el reporte se publica como issue en GitHub y la IP se usa un rato solo para limitar envíos, sin guardarse. Verificar que `e2e/privacidad.spec.ts` sigue verde y el texto se ve en `/privacidad`.
+
+## 4. E2E
+
+- [ ] 4.1 En `e2e/reportes.spec.ts`, un `describe` con `test.use({ rol: "ninguno" })`: el botón aparece en `/`, `/tribus/valle`, `/territorios/lighthouse`, `/sumarte` y `/privacidad`; teclado (Tab/Enter/Escape y foco de vuelta); se ven el aviso completo, "Tu email" y no "Tu nombre o email"; en `/sumarte?volver=%2Fpactos` el contexto muestra `/sumarte` sin `?volver=`; email "juan" muestra el error y no envía; envío correcto con `page.route` simulado (200, número 51) muestra "¡Gracias! Quedó registrado (#51)" y el pedido no lleva `Authorization`; 429 simulado con 300 s muestra el mensaje de 5 minutos, conserva el texto y ofrece copiar; con el campo trampa completado por script el diálogo agradece sin número y la ruta simulada recibe `sitioWeb`; axe sin violaciones serias o críticas con el diálogo abierto y con el error a la vista. Verificar con `pnpm test:e2e e2e/reportes.spec.ts`.
+- [ ] 4.2 En el mismo archivo, contra la ruta real y sin sesión (con el fixture `request`, sin crear issues): trampa → 200 `{ ok: true, numero: 0 }`; cuerpo de 100 KB → 413; `quePaso` vacío → 400. Verificar con `pnpm test:e2e e2e/reportes.spec.ts` en local y, si hay preview, con `BASE_URL=<url> pnpm test:e2e e2e/reportes.spec.ts`.
+- [ ] 4.3 Actualizar los e2e que afirmaban lo contrario: `e2e/descubrir-publico.spec.ts` ("Reportar y Hifa no aparecen sin cuenta" → Reportar sí aparece, Hifa sigue como esté) y `e2e/privacidad.spec.ts` ("sin aceptar, Hifa y Reportar no aparecen" → Reportar aparece y abre el modo sin cuenta). Verificar con `pnpm test:e2e e2e/descubrir-publico.spec.ts e2e/privacidad.spec.ts`.
+
+## 5. Cierre
+
+- [ ] 5.1 `pnpm verificar`, `pnpm build` y `pnpm test:e2e` completos en verde; revisar a mano en `pnpm dev`, sin sesión, que el botón se usa solo con teclado en `/` y en `/sumarte`, y que el token no aparece en lo que recibe el navegador (el e2e existente lo cubre).
