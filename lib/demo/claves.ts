@@ -27,6 +27,8 @@ export const NOMBRES_BASE = {
   hifa: "lh-hifa",
   configuracion: "lh-configuracion",
   fogon: "lh-fogon",
+  /** Repartos propios y cierres simulados de las consultas del Fogón. */
+  fogonConsultas: "lh-fogon-consultas",
 } as const;
 
 /** Guarda, sin prefijo, cuál fue la última persona: lo necesita el script que aplica el tema antes de hidratar. */
