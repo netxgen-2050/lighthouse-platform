@@ -227,6 +227,13 @@ export const TERMINOS = {
       "El fideicomiso decide cosas como el presupuesto de obra del macrolote. En el prototipo, quien tiene el Pase Fundador vota esas decisiones, con el mismo voto en los tres niveles del pase, y el voto es simulado. En la versión real, quién vota y con qué alcance lo define el contrato del fideicomiso, que todavía hay que confirmar con el equipo legal.",
     borrador: true,
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  encuentroeducativo: {
+    titulo: "Encuentro educativo",
+    texto:
+      "El Congreso es un encuentro educativo, no una oferta de inversión. Los proyectos que buscan socios se presentan por separado, solo a quien lo pida, y sumarse es siempre opcional. Cualquier aporte pasa por los documentos propios de cada proyecto.",
+    borrador: true,
+  },
 } as const;
 
 /** Claves de los textos que son borrador (no vienen del mock-up). */

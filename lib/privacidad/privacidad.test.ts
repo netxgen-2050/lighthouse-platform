@@ -124,7 +124,7 @@ describe("qué rutas piden el consentimiento", () => {
     "%s lo pide",
     (ruta) => expect(rutaPideConsentimiento(ruta)).toBe(true),
   );
-  it.each(["/", "/tribus", "/tribus/valle", "/territorios/lighthouse", "/privacidad"])("%s sigue abierta", (ruta) =>
+  it.each(["/", "/tribus", "/tribus/valle", "/territorios/lighthouse", "/privacidad", "/congreso"])("%s sigue abierta", (ruta) =>
     expect(rutaPideConsentimiento(ruta)).toBe(false),
   );
 });

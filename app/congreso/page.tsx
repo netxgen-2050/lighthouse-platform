@@ -1,59 +1,125 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { AvisoEjemplo } from "@/components/aviso-ejemplo";
+import { GuardarOrigen } from "@/components/guardar-origen";
 import { TerminoLegal } from "@/components/termino-legal";
-import { RegistroTicket } from "./registro-ticket";
+import { obtenerEvento } from "@/lib/congreso/evento";
+import { hayCampana, leerParametros } from "@/lib/origen/origen";
+import { BarraEvento } from "./evento/barra-evento";
+import { BarraCompraMovil } from "./evento/secciones/barra-compra-movil";
+import { Cierre } from "./evento/secciones/cierre";
+import { Cifras } from "./evento/secciones/cifras";
+import { Ejes } from "./evento/secciones/ejes";
+import { Encuentro } from "./evento/secciones/encuentro";
+import { Entradas } from "./evento/secciones/entradas";
+import { Heroe } from "./evento/secciones/heroe";
+import { Preguntas } from "./evento/secciones/preguntas";
+import { Recorrido } from "./evento/secciones/recorrido";
+import { Voces } from "./evento/secciones/voces";
+import { TemaEvento } from "./evento/tema-evento";
+import { BloqueFuente } from "./netx/bloque-fuente";
+import { BotonDemo } from "./netx/boton-demo";
+import { DIALOGO_COMPRA, DIALOGO_PAGINA_OFICIAL } from "./netx/textos";
+import { IrAlAncla } from "./netx/ir-al-ancla";
+import { TicketNetx } from "./netx/ticket-netx";
+import { Territorio } from "./netx/territorio";
+import { Tribus } from "./netx/tribus";
+import { VistaFuentes } from "./netx/vista-fuentes";
 
-export const metadata: Metadata = { title: "Congreso · Febrero 2027" };
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-const DIAS = [
-  "Llegada y visita al Lighthouse",
-  "Encuentros de tribus",
-  "Minga: primera jornada de obra",
-  "Masterplan y Ronda 0",
-  "Fogón de cierre",
+export async function generateMetadata(): Promise<Metadata> {
+  const evento = await obtenerEvento();
+  return { title: `${evento.nombre} · Congreso` };
+}
+
+const ANCLAS = [
+  { href: "#acerca", etiqueta: "El encuentro" },
+  { href: "#recorrido", etiqueta: "Recorrido" },
+  { href: "#voces", etiqueta: "Voces" },
+  { href: "#territorio", etiqueta: "El territorio" },
+  { href: "#tribus", etiqueta: "Tribus" },
+  { href: "#faq", etiqueta: "Preguntas" },
 ];
 
-export default function CongresoPage() {
+// El ⚖ va en una variante clara (sobre secciones oscuras) o con tinta (sobre secciones claras): ver tema-evento.css.
+const LEGAL_OSCURO = "ev-legal";
+const LEGAL_CLARO = "ev-legal-claro";
+
+export default async function CongresoPage({ searchParams }: Props) {
+  const evento = await obtenerEvento();
+  const origen = leerParametros(await searchParams);
+
+  // El ⚖ de "encuentro educativo" va solo en la frase que lo dice; si ninguna lo dice, no se dibuja.
+  const indiceEducativo = evento.encuentro.parrafos.findIndex((p) => /educativ/i.test(p));
+
+  const oficial = evento.paginaOficial;
+  const botonOficial = oficial ? (
+    oficial.esEjemplo ? (
+      <BotonDemo texto={oficial.etiqueta} variante="linea-clara" dialogo={DIALOGO_PAGINA_OFICIAL} />
+    ) : (
+      <a className="ev-boton ev-boton-linea-clara" href={oficial.url} rel="noopener noreferrer">
+        {oficial.etiqueta}
+      </a>
+    )
+  ) : undefined;
+
   return (
-    <div className="mx-auto max-w-5xl p-6 sm:p-10">
-      <p className="mb-2 text-sm">
-        <Link className="underline" href="/">← Inicio</Link>
-      </p>
-      <p className="text-sm font-medium text-muted">Encontrarse en persona</p>
-      <h1 className="text-3xl font-semibold">Congreso · Febrero 2027</h1>
-      <p className="mt-2 mb-4 max-w-2xl text-muted">
-        El Congreso lo vende su organizador por separado
-        <TerminoLegal clave="ticket" />. Acá registrás tu ticket y, cada día que hagas check-in en
-        el territorio, tu presencia suma. El primer check-in te da el registro <b>Genesis</b>.
-      </p>
-      <AvisoEjemplo />
-      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <RegistroTicket />
-        <section aria-labelledby="agenda" className="rounded-xl border border-faint bg-surface p-4">
-          <h2 id="agenda" className="mb-3 text-xl font-semibold">Agenda</h2>
-          <ol className="grid gap-3">
-            {DIAS.map((d, i) => (
-              <li key={d} className="flex gap-3">
-                <span className="w-14 shrink-0 font-medium">Día {i + 1}</span>
-                <div>
-                  <b>{d}</b>
-                  {i === 2 && (
-                    <p className="text-sm text-muted">
-                      Con seguro y modalidad definida
-                      <TerminoLegal clave="obra" />.
-                    </p>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
-      </div>
-      <p className="mt-4 text-sm text-muted">
-        La presencia da acceso y voz, no valor: no se compra ni se transfiere
-        <TerminoLegal clave="presencia" />.
-      </p>
-    </div>
+    <TemaEvento className="ev-en-netx">
+      {hayCampana(origen) && <GuardarOrigen origen={origen} />}
+      <IrAlAncla />
+      <VistaFuentes>
+        <BarraEvento nombre={evento.nombre} anclas={ANCLAS} />
+        <BloqueFuente fuente="unityhub" detalle="ficha del evento">
+          <Heroe evento={evento} />
+        </BloqueFuente>
+        <BloqueFuente fuente="unityhub" detalle="ficha del evento">
+          <Cifras cifras={evento.cifras} />
+        </BloqueFuente>
+        <BloqueFuente fuente="unityhub" detalle="descripción">
+          <Encuentro
+            encuentro={evento.encuentro}
+            marcasParrafo={
+              indiceEducativo >= 0
+                ? { [indiceEducativo]: <TerminoLegal clave="encuentroeducativo" claseBoton={LEGAL_OSCURO} /> }
+                : undefined
+            }
+          />
+        </BloqueFuente>
+        <BloqueFuente fuente="unityhub" detalle="agenda">
+          <Recorrido
+            recorrido={evento.recorrido}
+            marcasParada={{ "manos-en-la-tierra": <TerminoLegal clave="obra" claseBoton={LEGAL_CLARO} /> }}
+          />
+        </BloqueFuente>
+        <BloqueFuente fuente="unityhub" detalle="speakers">
+          <Voces voces={evento.voces} />
+        </BloqueFuente>
+        <BloqueFuente fuente="unityhub" detalle="temas">
+          <Ejes ejes={evento.ejes} />
+        </BloqueFuente>
+        <BloqueFuente fuente="netx" detalle="mapa del territorio">
+          <Territorio />
+        </BloqueFuente>
+        <BloqueFuente fuente="netx" detalle="tribus">
+          <Tribus />
+        </BloqueFuente>
+        <BloqueFuente fuente="unityhub" detalle="tickets y Stripe">
+          <Entradas
+            entradas={evento.entradas}
+            marcaLegal={<TerminoLegal clave="ticket" claseBoton={LEGAL_OSCURO} />}
+            accion={(t) => (
+              <BotonDemo texto={t.textoBoton} variante={t.destacado ? "corona" : "linea-clara"} dialogo={DIALOGO_COMPRA} />
+            )}
+          />
+        </BloqueFuente>
+        <BloqueFuente fuente="netx" detalle="ticket vinculado y presencia">
+          <TicketNetx />
+        </BloqueFuente>
+        <BloqueFuente fuente="unityhub" detalle="FAQ">
+          <Preguntas preguntas={evento.preguntas} />
+        </BloqueFuente>
+        <Cierre cierre={evento.cierre} accionSecundaria={botonOficial} />
+        <BarraCompraMovil tipos={evento.entradas.tipos} />
+      </VistaFuentes>
+    </TemaEvento>
   );
 }

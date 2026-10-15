@@ -62,7 +62,7 @@ if command -v caffeinate >/dev/null; then
 fi
 
 toco_el_limite() {
-  tail -n 5 "$1" | grep -qiE "usage limit|rate limit|hit your limit|limit reached"
+  tail -n 5 "$1" | grep -qiE "usage limit|rate limit|hit your limit|hit your session limit|session limit|limit reached"
 }
 
 # Corre una sesión headless; si se toca el límite de uso, espera y reintenta (hasta 12 veces, ~6 h).
