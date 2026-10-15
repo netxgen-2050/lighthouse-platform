@@ -41,7 +41,7 @@ if [[ -n "$(git status --porcelain)" ]]; then
   echo "Hay cambios sin commitear. Dejá el repo limpio antes de la noche." >&2
   exit 1
 fi
-git switch -q main
+git switch -q dev
 git pull -q --ff-only
 
 # Secretos locales (por ejemplo VERCEL_AUTOMATION_BYPASS_SECRET), nunca en git.
@@ -91,11 +91,11 @@ plantilla() {
 }
 
 correr_carril() {
-  local n="$1" lista="$2" dir=".carriles/$1" base="main"
+  local n="$1" lista="$2" dir=".carriles/$1" base="dev"
   export PORT=$((3000 + n))   # cada carril levanta su servidor local en su propio puerto
 
   git worktree remove --force "$dir" 2>/dev/null || true
-  git worktree add -q --detach "$dir" origin/main
+  git worktree add -q --detach "$dir" origin/dev
   [[ -f .env.local ]] && cp .env.local "$dir/"
   (cd "$dir" && pnpm install --frozen-lockfile --prefer-offline > /dev/null 2>&1)
 
@@ -131,6 +131,6 @@ wait "${CARRILES[@]}"
 echo "[$(date +%T)] Cierre: integración, propuestas y resumen."
 correr_claude "$RAIZ" "$(plantilla .claude/cierre.md "" "" "${TODOS[*]}")" "$RAIZ/.noches/$FECHA-cierre.jsonl" \
   || echo "El cierre terminó con error; mirá .noches/$FECHA-cierre.jsonl"
-git switch -q main 2>/dev/null || true
+git switch -q dev 2>/dev/null || true
 
 echo "☀️  Listo. Resumen: docs/noches/$FECHA-resumen.md en la rama agente/propuestas-$FECHA"

@@ -18,11 +18,12 @@ const ramaActual = () => {
 
 // 1. Solo Gus mergea, y nadie reescribe historia.
 if (/\bgh\s+pr\s+merge\b|\/merge\b.*-X\s*PUT|-X\s*PUT.*\/merge\b/.test(cmd)) bloquear("solo Gus mergea PRs.");
-if (/\bgit\s+merge\b[^;&|]*\b(main|master)\b/.test(cmd) && ramaActual() === "main") bloquear("no se mergea en main.");
+const protegida = (r) => ["main", "master", "dev"].includes(r);
+if (/\bgit\s+merge\b/.test(cmd) && protegida(ramaActual())) bloquear(`no se mergea en ${ramaActual()}.`);
 if (/\bgit\s+push\b[^;&|]*(--force|--force-with-lease|\s-f\b|\s\+)/.test(cmd)) bloquear("push forzado prohibido.");
-if (/\bgit\s+push\b[^;&|]*\b(main|master)\b/.test(cmd)) bloquear("no se pushea a main; usá la rama agente/<cambio>.");
-if (/\bgit\s+push\b/.test(cmd) && ramaActual() === "main") bloquear("estás en main; cambiá a agente/<cambio> antes de pushear.");
-if (/\bgit\s+commit\b/.test(cmd) && ramaActual() === "main") bloquear("no se commitea en main; usá la rama agente/<cambio>.");
+if (/\bgit\s+push\b[^;&|]*(\s|:|\/)(main|master|dev)(\s|$|;|&|\|)/.test(cmd)) bloquear("no se pushea a dev ni a main; usá la rama agente/<cambio>.");
+if (/\bgit\s+push\b/.test(cmd) && protegida(ramaActual())) bloquear(`estás en ${ramaActual()}; cambiá a agente/<cambio> antes de pushear.`);
+if (/\bgit\s+commit\b/.test(cmd) && protegida(ramaActual())) bloquear(`no se commitea en ${ramaActual()}; usá la rama agente/<cambio>.`);
 
 // 2. Nada de leer ni mostrar secretos.
 if (/(cat|less|head|tail|source|\.)\s+[^;&|]*\.env(?!\.example)\b/.test(cmd)) bloquear("los archivos .env no se leen.");

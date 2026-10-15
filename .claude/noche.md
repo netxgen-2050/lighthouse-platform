@@ -9,7 +9,7 @@ Sos el orquestador de la noche {{FECHA}} en lighthouse-platform, para el cambio 
 5. **documentador**: pasale la fecha `{{FECHA}}`, el id, el PR, la rama y los resúmenes textuales de todos los pasos anteriores. El reporte va en `docs/noches/{{FECHA}}-{{CAMBIO}}.md`.
 
 Reglas:
-- Nadie mergea. Nadie toca `main`.
+- Nadie mergea. Nadie toca `dev` ni `main`.
 - Si algo bloquea (falta un permiso, Vercel no responde, la spec es ambigua), no lo esquives: que quede escrito en el reporte.
 
 Terminá con 3 líneas: PR, veredicto final del revisor, resultado final del tester.
