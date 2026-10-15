@@ -7,14 +7,14 @@ Con `fogon-cuadratico-en-la-base` las consultas viven en la base, pero crearlas 
 ## What Changes
 
 - **Sección "Consultas del Fogón" en `/netx`**, visible solo para el super admin (verificado en el servidor por la API):
-  - Lista de consultas con estado, cierre y participación ("votaron 4 de 7"), sin votos ni nombres de quién votó (ADR-007).
-  - **"Nueva consulta"**: formulario con plantilla (U1, U2, U3, U4 o en blanco) que completa título, modo, opciones y textos; Gus ajusta la fecha de cierre, la regla del resultado (al votar / al cierre, por defecto al cierre), los votos en contra (apagados por defecto), en presupuesto el monto y la moneda (vacío = "sin dato") y topes o pisos por opción.
-  - **Padrón**: lista de las personas de la base con casillas (y sumar un email existente); al menos una persona.
+  - Lista de consultas con estado, cierre, tipo de voto ("Voto abierto" / "Voto secreto") y participación ("votaron 4 de 7"). La lista no trae votos ni nombres: quién repartió cómo y quién falta se ven en el detalle de la consulta, con la misma regla que para el resto del padrón (ADR-007).
+  - **"Nueva consulta"**: formulario con plantilla (U1, U2, U3, U4 o en blanco) que completa título, modo, opciones y textos; Gus ajusta la fecha de cierre, la regla del resultado (al votar / al cierre, por defecto al cierre), el **tipo de voto** (abierto / secreto, por defecto abierto, con la explicación de cada uno), los votos en contra (apagados por defecto), en presupuesto el monto, la moneda y la nota del monto (vacío = "sin dato") y topes o pisos por opción. La plantilla U4 trae **USD 20.000** con la nota "Sugerencia del equipo: lo decide Franz".
+  - **Padrón**: lista de las personas de la base con casillas (y sumar un email existente); al menos una persona. La plantilla U2 avisa "Sumá a Martín (invitado) si ya tiene cuenta"; si no tiene cuenta, no se lo puede sumar (el padrón solo acepta personas que existen).
   - **"Cerrar ahora"** con confirmación ("No se puede volver a abrir").
   - Una vez creada, la consulta no se edita (la base lo impide si ya tiene votos; la pantalla no ofrece editar).
 - Usa la API de creación y cierre de `fogon-cuadratico-en-la-base` y la lista de personas de `base-neon` (`GET /api/personas`).
 
-**Fuera de alcance:** editar, duplicar o borrar consultas; consultas de tribu o asamblea y líderes que crean consultas; ver quién votó o quién falta (ADR-007); recordatorios por email; importar el backlog (U7) como opciones; la Ronda 0.
+**Fuera de alcance:** editar, duplicar o borrar consultas; consultas de tribu o asamblea y líderes que crean consultas; ver en el panel quién votó o quién falta (eso está en el detalle de cada consulta con voto abierto, igual para todo el padrón); crear la cuenta de Martín o invitarlo desde el panel; recordatorios por email; importar el backlog (U7) como opciones; la Ronda 0.
 
 ## Capabilities
 

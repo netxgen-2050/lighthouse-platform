@@ -28,7 +28,7 @@ Con `fogon-cuadratico-en-la-base` producción va a tener los primeros datos real
 - Revisar cuando: se muestre la plataforma fuera del equipo (R14), o si Neon cambia cómo crea las ramas de previews.
 
 ## En palabras simples
-Cada versión de prueba de la plataforma (un "preview") tiene su propia copia de la base. Hoy esa copia saldría de la base real, con los emails y los votos del equipo, y en los previews hay un atajo para "entrar como" cualquier email sin contraseña. Decidimos tres cosas: las copias de prueba salen de una base con datos de ejemplo, nunca de la real; el atajo solo sirve con emails inventados que terminan en `.test`; y el login de los previews usa otra cuenta de Privy. Así, aunque alguien abra un preview, no puede ver cómo votó Martín.
+Cada versión de prueba de la plataforma (un "preview") tiene su propia copia de la base. Hoy esa copia saldría de la base real, con los emails y los votos del equipo, y en los previews hay un atajo para "entrar como" cualquier email sin contraseña. Decidimos tres cosas: las copias de prueba salen de una base con datos de ejemplo, nunca de la real; el atajo solo sirve con emails inventados que terminan en `.test`; y el login de los previews usa otra cuenta de Privy. Así, aunque alguien abra un preview, no puede entrar como Martín, ver los datos del equipo ni votar en su nombre.
 
 ## Fuentes
 - `.claude/skills/base-de-datos/SKILL.md` (Ambientes: "nunca una copia de producción").

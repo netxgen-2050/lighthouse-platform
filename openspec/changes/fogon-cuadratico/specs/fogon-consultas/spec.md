@@ -7,22 +7,26 @@ Consultas de prioridades y de presupuesto dentro del Fogón, con voto cuadrátic
 ## ADDED Requirements
 
 ### Requirement: Lista de consultas
-`/fogon/consultas` SHALL list the consultations, each with its title, a "Prioridades" or "Presupuesto" label, its scope (Equipo, Tribu, Asamblea), its closing date, its state (Abierta, Cerrada) and whether the person already saved a reparto. `/fogon` SHALL link to this list.
+`/fogon/consultas` SHALL list the consultations, each with its title, a "Prioridades" or "Presupuesto" label, its scope (Equipo, Tribu, Asamblea), its voting rule ("Voto abierto" or "Voto secreto"), its closing date, its state (Abierta, Cerrada) and whether the person already saved a reparto. `/fogon` SHALL link to this list.
 
 #### Scenario: Ver la lista
 - **WHEN** una persona abre `/fogon/consultas`
-- **THEN** ve "¿Para qué optimiza el Lighthouse?" con "Prioridades", "Equipo", su fecha de cierre y "Abierta"
+- **THEN** ve "¿Para qué optimiza el Lighthouse?" con "Prioridades", "Equipo", "Voto abierto", su fecha de cierre y "Abierta"
 
 #### Scenario: Desde el Fogón
 - **WHEN** una persona abre `/fogon`
 - **THEN** ve un enlace a las consultas de prioridades y presupuesto
 
 ### Requirement: Consultas de ejemplo
-The prototype SHALL include consultations U1 to U4 from the 15-oct-2026 note with their options: U1 "¿Para qué optimiza el Lighthouse?", U2 "¿Cuánta tierra silvestre en la fase 1?", U3 "Usos del cono de 120 ha (fase 1)" (priorities) and U4 "Primer presupuesto de regeneración" (budget), with example votes from fictitious people, labeled as example data.
+The prototype SHALL include consultations U1 to U4 from the 15-oct-2026 note with their options: U1 "¿Para qué optimiza el Lighthouse?", U2 "¿Cuánta tierra silvestre en la fase 1?", U3 "Usos del cono de 120 ha (fase 1)" (priorities) and U4 "Primer presupuesto de regeneración" (budget), with an example roll of fictitious people (some of whom have not voted) and their example votes, labeled as example data. U4 SHALL carry the suggested amount USD 20.000 with the note "Sugerencia del equipo: lo decide Franz".
 
 #### Scenario: Presupuesto de regeneración
 - **WHEN** una persona abre U4
 - **THEN** ve las opciones Estudio hidrológico, Obras de piedra a mano en el cauce, Vivero de nativas, Línea de base y monitoreo y Diseño de permacultura profesional, con la etiqueta "Presupuesto"
+
+#### Scenario: Monto sugerido
+- **WHEN** una persona abre U4
+- **THEN** ve el monto "USD 20.000" junto a "Sugerencia del equipo: lo decide Franz"
 
 ### Requirement: Repartir votos
 On an open consultation, "Mi reparto" SHALL show for each option buttons to remove and add one vote, the current votes and their cost in credits. Adding a vote the remaining credits cannot pay MUST be blocked with a text that says the cost of the next vote and the credits left.
@@ -50,8 +54,8 @@ On an open consultation, "Mi reparto" SHALL show for each option buttons to remo
 In budget mode, each option in "Mi reparto" SHALL show "Con tu reparto irían $X", computed with the same budget rules applied only to the person's votes; if the amount is unknown it SHALL show "sin dato".
 
 #### Scenario: Con monto
-- **WHEN** en U4 (monto de ejemplo USD 50.000, sin topes) la persona pone 3 votos en Vivero de nativas y 1 en Estudio hidrológico
-- **THEN** junto a Vivero de nativas ve "Con tu reparto irían USD 37.500", junto a Estudio hidrológico "USD 12.500" y las demás opciones "USD 0"
+- **WHEN** en U4 (monto sugerido USD 20.000, sin topes) la persona pone 3 votos en Vivero de nativas y 1 en Estudio hidrológico
+- **THEN** junto a Vivero de nativas ve "Con tu reparto irían USD 15.000", junto a Estudio hidrológico "USD 5.000" y las demás opciones "USD 0"
 
 #### Scenario: Sin votos propios
 - **WHEN** la persona todavía no puso ningún voto en U4
@@ -96,6 +100,35 @@ The group result SHALL show a donut of votes per option and, below it, bars orde
 #### Scenario: Presupuesto
 - **WHEN** U4 está cerrada
 - **THEN** cada fila muestra además el monto que le toca, y los fondos sin asignar si los hay
+
+### Requirement: Voto abierto o voto secreto
+Each consultation SHALL define whether its vote is open ("Voto abierto") or secret ("Voto secreto"); consultations with scope Equipo SHALL default to open. The rule SHALL be the same for everyone on the roll. On an open consultation, "Mi reparto" SHALL warn before voting "Tu reparto lo va a ver todo el padrón", with text and not only color. On a secret consultation it SHALL say that nobody sees another person's reparto, and the screen MUST NOT show anyone else's reparto or who is missing.
+
+#### Scenario: Aviso antes de votar
+- **WHEN** una persona abre una consulta abierta con voto abierto
+- **THEN** ve "Tu reparto lo va a ver todo el padrón" antes de los botones "+" y "−", y el botón "Guardar mi reparto" está asociado a ese aviso
+
+#### Scenario: Voto secreto
+- **WHEN** una persona abre U3 (voto secreto) cerrada
+- **THEN** ve el resultado del grupo y su propio reparto, pero ninguna tabla de repartos ni lista de quién falta
+
+### Requirement: Quién repartió cómo
+On an open-vote consultation, when the group result is visible, the screen SHALL show a table "Cómo repartió cada persona" with one row per person on the roll who saved a reparto (name, votes per option and credits used), marking the person's own row "Vos". Before the result is visible it MUST NOT show other people's repartos.
+
+#### Scenario: Tabla al cierre
+- **WHEN** U1 (voto abierto, resultado al cierre) se cierra
+- **THEN** la persona ve una fila por cada persona que repartió, con sus votos por opción, y su propia fila marcada "Vos"
+
+#### Scenario: Antes del cierre
+- **WHEN** U1 está abierta y la persona ya guardó su reparto
+- **THEN** no ve los repartos de las demás personas
+
+### Requirement: Quién falta votar
+On an open-vote consultation the screen SHALL list, at any time, the people on the roll who have not saved a reparto with at least one vote ("Faltan votar"), titled "No repartieron" once closed; when everyone voted it SHALL say "Ya repartió todo el padrón".
+
+#### Scenario: Falta una persona
+- **WHEN** una persona abre U1 abierta y la "Persona de ejemplo 6" no repartió
+- **THEN** ve "Faltan votar" con "Persona de ejemplo 6" y, si todavía no guardó su reparto, también "Vos"
 
 ### Requirement: Acta
 A closed consultation SHALL show an example record ("Acta, ejemplo") with the title, closing date, rule (quadratic voting, 100 credits per person), number of participants, the ordered result and the statement that the result is consultative and does not replace decisions reserved by the contract or the statute.

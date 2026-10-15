@@ -86,25 +86,48 @@ The server SHALL validate every reparto with the same rules as the screen (100 c
 - **THEN** recibe 422 con "te pasás de los créditos" y no se escribe nada
 
 ### Requirement: Reglas fijas una vez que hay votos
-Once a consultation has at least one entry, its options, mode, credits, votes-against setting, amount and currency MUST NOT change; the database SHALL reject it.
+Once a consultation has at least one entry, its options, mode, credits, votes-against setting, result-visibility rule, open or secret vote, amount, currency and amount note MUST NOT change; the database SHALL reject it.
 
 #### Scenario: Cambiar opciones con votos
 - **WHEN** alguien intenta agregar o cambiar una opción de una consulta que ya tiene envíos
 - **THEN** la base lo rechaza
 
+#### Scenario: Cambiar de abierto a secreto con votos
+- **WHEN** alguien intenta pasar a voto secreto una consulta con voto abierto que ya tiene envíos
+- **THEN** la base lo rechaza
+
 ### Requirement: Voto secreto ante la plataforma
-No API response SHALL include another person's reparto or say who voted what; each person SHALL see only their own reparto and, when visible, the aggregated result and the number of participants. This applies to the super admin too.
+On a consultation with secret vote, no API response SHALL include another person's reparto or say who voted what or who is missing; each person SHALL see only their own reparto and, when visible, the aggregated result and the number of participants. This applies to the super admin too.
 
 #### Scenario: Otra persona
-- **WHEN** la persona B abre una consulta donde la persona A ya repartió
+- **WHEN** la persona B abre una consulta con voto secreto donde la persona A ya repartió
 - **THEN** la respuesta de la API trae el reparto de B (o ninguno) y, si corresponde, el agregado, pero nunca el reparto de A ni su identidad
 
 #### Scenario: Super admin
-- **WHEN** el super admin abre una consulta abierta con resultado al cierre
+- **WHEN** el super admin abre una consulta con voto secreto, abierta y con resultado al cierre
 - **THEN** ve cuántas personas repartieron de cuántas del padrón, sin votos ni nombres
 
+### Requirement: Voto abierto ante el padrón
+On a consultation with open vote (the default for scope Equipo), the API SHALL give every person on the roll, and the super admin, the same view: at any time the names of the people on the roll who have not voted yet, and, once the result is visible, the last reparto of each person with their visible name. It MUST NOT include anyone's email, internal id or the time of each entry, and MUST NOT include other people's repartos before the result is visible.
+
+#### Scenario: Quién falta
+- **WHEN** A y B votaron en una consulta abierta con voto abierto y C, del padrón, no
+- **THEN** la respuesta de la API para B incluye a C en "Faltan votar" y no incluye el reparto de A (el resultado se ve al cierre)
+
+#### Scenario: Tabla al cierre
+- **WHEN** esa consulta cierra
+- **THEN** la respuesta de la API para B trae el último reparto de A y el de B con sus nombres, y en ningún lugar el email de A
+
+#### Scenario: Consentimiento retirado
+- **WHEN** A retira su consentimiento con la consulta abierta, después de haber repartido
+- **THEN** el último reparto de A sigue contando en el resultado y, con voto abierto, sigue en la tabla al cierre
+
 ### Requirement: Crear consultas
-Only the super admin SHALL create consultations (title, mode, scope "Equipo", closing date, options with optional cap and floor, amount and currency in budget mode, votes-against and result-visibility rules, and the roll by email of existing people); the API MUST verify the role on the server.
+Only the super admin SHALL create consultations (title, mode, scope "Equipo", closing date, options with optional cap and floor, amount, currency and amount note in budget mode, votes-against and result-visibility rules, open or secret vote with open as the default, and the roll by email of existing people); the API MUST verify the role on the server.
+
+#### Scenario: Sin elegir el tipo de voto
+- **WHEN** el super admin crea una consulta de Equipo sin decir si el voto es abierto o secreto
+- **THEN** la consulta queda con voto abierto
 
 #### Scenario: No es super admin
 - **WHEN** una persona con rol `persona` llama a la API de creación
