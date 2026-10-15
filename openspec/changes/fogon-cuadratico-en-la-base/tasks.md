@@ -27,7 +27,7 @@ Rama `agente/fogon-cuadratico-en-la-base` desde `main`, **después** de que `fog
 ## 5. Documentación
 
 - [ ] 5.1 `docs/guiones/fogon-privy-real.md`: guion manual para Gus, paso a paso en el preview (entrar con su email real, aceptar, crear una consulta de prueba con voto abierto con su email y el de otra persona del equipo, votar desde un dispositivo y ver al otro en "Faltan votar", votar desde el segundo, cerrar, ver la tabla de repartos y el acta; repetir con voto secreto y comprobar que ninguno ve el reparto del otro) y qué anotar si algo falla. Verificar leyéndolo contra la pantalla del preview (cada paso nombra un botón que existe).
-- [ ] 5.2 Revisar que `docs/decisiones/ADR-007-voto-secreto-y-padron.md` coincide con lo implementado (si cambió algo, anotarlo en el PR, sin cambiar el estado). Verificar leyendo el ADR contra design §1 y §5.
+- [ ] 5.2 Revisar que `docs/decisiones/ADR-007-voto-abierto-o-secreto-y-padron.md` coincide con lo implementado (si cambió algo, anotarlo en el PR, sin cambiar el estado). Verificar leyendo el ADR contra design §1 y §5.
 
 ## 6. Integración
 
