@@ -4,9 +4,9 @@ Rama `agente/fogon-cuadratico` desde `main`. Textos en español con voseo. Sin d
 
 ## 1. Motor
 
-- [ ] 1.1 Crear `lib/cuadratico/motor.ts` con `costo`, `costoReparto`, `validarReparto`, `agregar`, `porcentajes` y `ordenar` (design §1), sin importar nada de `lib/fogon` ni de React, y `lib/cuadratico/motor.test.ts` con los escenarios de costo, reparto válido, votos en contra, opción ajena, agregado (6/3/1 con 2, 2 y 1 personas), porcentajes (60/30/10, resto mayor que suma 100, "sin dato" = `null` sin votos) y orden con empate. Verificar con `pnpm test lib/cuadratico`.
-- [ ] 1.2 Sumar `repartirPresupuesto` (design §1) con tests de cada escenario de `specs/voto-cuadratico`: proporcional 6.000/3.000/1.000, tope (5.000/3.750/1.250), piso (5.333,33/2.666,67/2.000, en centavos 533333/266667/200000), todos topados con 7.000 sin asignar, pisos imposibles con aviso, monto `null` y sin votos → todas las partes `null`; y una propiedad: la suma de las partes más lo sin asignar es exactamente el monto. Verificar con `pnpm test lib/cuadratico`.
-- [ ] 1.3 Test de fuente: `lib/cuadratico/` no importa de `@/lib/fogon`, `react` ni `next`. Verificar con `pnpm test lib/cuadratico`.
+- [x] 1.1 Crear `lib/cuadratico/motor.ts` con `costo`, `costoReparto`, `validarReparto`, `agregar`, `porcentajes` y `ordenar` (design §1), sin importar nada de `lib/fogon` ni de React, y `lib/cuadratico/motor.test.ts` con los escenarios de costo, reparto válido, votos en contra, opción ajena, agregado (6/3/1 con 2, 2 y 1 personas), porcentajes (60/30/10, resto mayor que suma 100, "sin dato" = `null` sin votos) y orden con empate. Verificar con `pnpm test lib/cuadratico`.
+- [x] 1.2 Sumar `repartirPresupuesto` (design §1) con tests de cada escenario de `specs/voto-cuadratico`: proporcional 6.000/3.000/1.000, tope (5.000/3.750/1.250), piso (5.333,33/2.666,67/2.000, en centavos 533333/266667/200000), todos topados con 7.000 sin asignar, pisos imposibles con aviso, monto `null` y sin votos → todas las partes `null`; y una propiedad: la suma de las partes más lo sin asignar es exactamente el monto. Verificar con `pnpm test lib/cuadratico`.
+- [x] 1.3 Test de fuente: `lib/cuadratico/` no importa de `@/lib/fogon`, `react` ni `next`. Verificar con `pnpm test lib/cuadratico`.
 
 ## 2. Datos y costura
 
