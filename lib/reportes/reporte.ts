@@ -33,6 +33,8 @@ export type Reporte = {
   contexto: Contexto;
   /** Pedido de privacidad (por ejemplo "borren mi cuenta"): suma la etiqueta `privacidad` al issue. */
   privacidad?: true;
+  /** Enviado sin sesión: suma la etiqueta `sin-cuenta` y una línea en el cuerpo. */
+  sinCuenta?: true;
 };
 
 export type CampoReporte = "tipo" | "quePaso" | "esperabas" | "contacto";
@@ -74,6 +76,12 @@ export function versionDesplegada(env: {
   };
 }
 
+/** Saca la query y el fragmento de una URL o ruta (pueden llevar códigos de login). */
+export function sinQuery(url: string): string {
+  const corte = url.search(/[?#]/);
+  return corte === -1 ? url : url.slice(0, corte);
+}
+
 export function armarContexto(entrada: {
   url: string;
   titulo: string;
@@ -83,11 +91,13 @@ export function armarContexto(entrada: {
   version: string;
   entorno: string;
   ahora?: Date;
+  /** Sin cuenta: URL y ruta van sin query ni fragmento. */
+  sinCuenta?: boolean;
 }): Contexto {
   let ruta = "sin dato";
   try {
     const u = new URL(entrada.url);
-    ruta = u.pathname + u.search;
+    ruta = entrada.sinCuenta ? u.pathname : u.pathname + u.search;
   } catch {
     ruta = "sin dato";
   }
@@ -96,7 +106,7 @@ export function armarContexto(entrada: {
       ? `${Math.round(entrada.ancho)} × ${Math.round(entrada.alto)} px`
       : "sin dato";
   return {
-    url: recortar(entrada.url),
+    url: recortar(entrada.sinCuenta ? sinQuery(entrada.url) : entrada.url),
     ruta,
     titulo: recortar(entrada.titulo),
     pantalla,
@@ -107,11 +117,12 @@ export function armarContexto(entrada: {
   };
 }
 
-function limpiarContexto(c: unknown): Contexto {
+function limpiarContexto(c: unknown, sinCuenta: boolean): Contexto {
   const o = (c && typeof c === "object" ? c : {}) as Record<string, unknown>;
+  const unico = (v: unknown) => recortar(sinCuenta ? sinQuery(texto(v)) : v);
   return {
-    url: recortar(o.url),
-    ruta: recortar(o.ruta),
+    url: unico(o.url),
+    ruta: unico(o.ruta),
     titulo: recortar(o.titulo),
     pantalla: recortar(o.pantalla),
     navegador: recortar(o.navegador),
@@ -121,7 +132,10 @@ function limpiarContexto(c: unknown): Contexto {
   };
 }
 
-export function validarReporte(entrada: unknown): ResultadoValidar {
+const FORMA_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function validarReporte(entrada: unknown, opciones: { sinCuenta?: boolean } = {}): ResultadoValidar {
+  const sinCuenta = opciones.sinCuenta === true;
   const o = (entrada && typeof entrada === "object" ? entrada : {}) as Record<string, unknown>;
   const errores: Partial<Record<CampoReporte, string>> = {};
   const tipo = o.tipo;
@@ -135,6 +149,9 @@ export function validarReporte(entrada: unknown): ResultadoValidar {
   if (esperabas.length > MAX_ESPERABAS) errores.esperabas = `Puede tener hasta ${MAX_ESPERABAS} caracteres.`;
   const contacto = texto(o.contacto);
   if (contacto.length > MAX_CONTACTO) errores.contacto = `Puede tener hasta ${MAX_CONTACTO} caracteres.`;
+  else if (sinCuenta && contacto.length > 0 && !FORMA_EMAIL.test(contacto)) {
+    errores.contacto = "Escribí un email válido o dejalo vacío.";
+  }
   if (Object.keys(errores).length > 0) return { ok: false, errores };
   return {
     ok: true,
@@ -143,9 +160,10 @@ export function validarReporte(entrada: unknown): ResultadoValidar {
       quePaso,
       esperabas,
       contacto,
-      contexto: limpiarContexto(o.contexto),
-      // Solo los pedidos de tipo "pregunta" pueden llevar la etiqueta de privacidad.
-      ...(o.privacidad === true && tipo === "pregunta" ? { privacidad: true as const } : {}),
+      contexto: limpiarContexto(o.contexto, sinCuenta),
+      // Solo los pedidos de tipo "pregunta" con cuenta pueden llevar la etiqueta de privacidad.
+      ...(!sinCuenta && o.privacidad === true && tipo === "pregunta" ? { privacidad: true as const } : {}),
+      ...(sinCuenta ? { sinCuenta: true as const } : {}),
     },
   };
 }
@@ -180,6 +198,7 @@ export function armarCuerpo(r: Reporte): string {
   const c = r.contexto;
   const n = neutralizar;
   return [
+    ...(r.sinCuenta ? ["**Enviado sin cuenta**", ""] : []),
     `**Tipo:** ${TEXTO_TIPO[r.tipo]}`,
     "",
     "**¿Qué pasó?**",
@@ -202,8 +221,16 @@ export function armarCuerpo(r: Reporte): string {
   ].join("\n");
 }
 
-export function armarEtiquetas(tipo: TipoReporte, privacidad = false): string[] {
-  return privacidad ? ["reporte", tipo, "privacidad"] : ["reporte", tipo];
+export function armarEtiquetas(
+  tipo: TipoReporte,
+  opciones: { privacidad?: boolean; sinCuenta?: boolean } = {},
+): string[] {
+  return [
+    "reporte",
+    tipo,
+    ...(opciones.privacidad ? ["privacidad"] : []),
+    ...(opciones.sinCuenta ? ["sin-cuenta"] : []),
+  ];
 }
 
 /** Texto completo para copiar cuando no se pudo registrar. */
