@@ -1,6 +1,7 @@
 ## 1. Base
 
 - [ ] 1.1 Dependencias, `lib/db/` (cliente Neon o PGlite, esquema con `personas`, `cambios_de_rol` y `consentimientos`), `drizzle.config.ts`, primera migración en `drizzle/`, scripts `db:generate` y `db:migrate`, migración en el build. Tests con PGlite. Verificar con `pnpm test` y `pnpm build`.
+- [ ] 1.2 `consentimientos` con la forma completa (design; fuente: `consentimiento-alta` design §7.1), sus enums, el índice y el trigger de solo agregar (va en la misma primera migración, como SQL propio si Drizzle no lo genera). Tests con PGlite: insertar una fila `acepta` de `politica` con canal `alta` e idioma `en`; una fila de `novedades` con canal `mis-datos`; `UPDATE` y `DELETE` fallan; <!-- arquitecto --> `TRUNCATE consentimientos` y `TRUNCATE personas CASCADE` fallan y las filas siguen (design: trigger por sentencia, SQL propio con `drizzle-kit generate --custom`); tipo `marketing` e idioma `fr` fallan; borrar una persona con consentimientos falla. Verificar con `pnpm test`.
 
 ## 2. Sesión y roles
 
