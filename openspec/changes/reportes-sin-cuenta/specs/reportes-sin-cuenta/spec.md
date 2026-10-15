@@ -76,6 +76,22 @@ Without an account, the context shown and sent SHALL include the URL and route w
 - **WHEN** llega un pedido sin sesión con tipo "pregunta" y `privacidad: true`
 - **THEN** el issue no lleva la etiqueta `privacidad`
 
+<!-- arquitecto: requisito agregado en la revisión de arquitectura, a pedido de Gus (pedidos desde sitios ajenos). -->
+### Requirement: Solo pedidos desde nuestras páginas
+The server route SHALL reject, before reading the body and without creating anything, any request whose `Content-Type` is not `application/json` (status 415) and any request with an `Origin` header whose host differs from the request host (status 403). Requests without an `Origin` header are not rejected by this rule. This applies with or without session.
+
+#### Scenario: Formulario de otro sitio
+- **WHEN** llega un pedido sin sesión con `Content-Type: text/plain`
+- **THEN** responde 415 y no llama a GitHub
+
+#### Scenario: Origen ajeno
+- **WHEN** llega un pedido sin sesión con `Content-Type: application/json` y `Origin: https://otro.example`
+- **THEN** responde 403 y no llama a GitHub
+
+#### Scenario: Desde la propia plataforma
+- **WHEN** llega un pedido válido sin sesión cuyo `Origin` tiene el mismo host que el pedido
+- **THEN** se procesa como cualquier reporte sin cuenta
+
 ### Requirement: Tamaño máximo del pedido
 The server route SHALL reject with 413, without creating anything, any request whose body is larger than 64 KB, checking the declared length first and the bytes actually read after.
 
@@ -91,7 +107,8 @@ The server route SHALL answer `{ ok: true, numero: 0 }` with status 200 to any r
 - **THEN** responde 200 `{ ok: true, numero: 0 }` y no llama a GitHub
 
 ### Requirement: Límite por IP sin cuenta
-The server route SHALL limit valid without-account reports to 5 per IP every 10 minutes and to 30 in total per server instance every hour, kept only in memory. Over the limit it MUST answer 429 with a `Retry-After` header and the seconds to wait, without calling GitHub. The IP MUST NOT be logged nor stored in clear text. Reports with a session are not limited by this rule.
+The server route SHALL limit valid without-account reports to 5 per IP every 10 minutes and to 30 in total per server instance every hour, kept only in memory. IPv6 addresses SHALL be grouped by their /64 block. Over the limit it MUST answer 429 with a `Retry-After` header and the seconds to wait, without calling GitHub. The IP MUST NOT be logged nor stored in clear text, and the in-memory key MUST be a salted hash. A report that could not be created (GitHub failed or no token) MUST NOT count toward the limit. Reports with a session are not limited by this rule.
+<!-- arquitecto: /64, hash con sal y "lo que falla no cuenta" agregados en la revisión de arquitectura, a pedido de Gus. -->
 
 #### Scenario: Sexto reporte en 10 minutos
 - **WHEN** la misma IP manda sin sesión un sexto reporte válido dentro de 10 minutos
@@ -100,6 +117,14 @@ The server route SHALL limit valid without-account reports to 5 per IP every 10 
 #### Scenario: Pasada la ventana
 - **WHEN** pasan 10 minutos desde el primero de esos reportes
 - **THEN** esa IP puede volver a reportar
+
+#### Scenario: Misma red IPv6
+- **WHEN** ya se mandaron sin sesión 5 reportes válidos en 10 minutos desde `2001:db8:1:2::a` y llega un sexto desde `2001:db8:1:2::b`
+- **THEN** responde 429 y no llama a GitHub
+
+#### Scenario: Falla de GitHub no consume cupo
+- **WHEN** la misma IP manda sin sesión 5 reportes válidos que fallan porque GitHub no responde, y después un sexto
+- **THEN** el sexto no recibe 429
 
 #### Scenario: Con sesión no cuenta
 - **WHEN** una persona con sesión válida manda 6 reportes en 10 minutos desde la misma IP
