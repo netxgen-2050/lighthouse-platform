@@ -46,6 +46,13 @@ export async function POST(req: Request) {
   const sesion = await sesionDelPedido(req);
   const sinCuenta = sesion.estado !== 200;
 
+  // Si el pedido trae credenciales de sesión pero el servidor no las acepta (token vencido, error al leerlas),
+  // la persona cree estar con cuenta y no vio el aviso de publicación: no se crea nada y el diálogo pasa al
+  // modo sin cuenta para que lo lea y reenvíe. Sin credenciales, es un reporte sin cuenta como cualquier otro.
+  if (sinCuenta && (req.headers.get("authorization") || req.headers.get("x-lh-prueba"))) {
+    return NextResponse.json({ ok: false, sesion: false }, { status: 401 });
+  }
+
   const r = validarReporte(entrada, { sinCuenta });
   if (!r.ok) return NextResponse.json({ ok: false, errores: r.errores }, { status: 400 });
 

@@ -57,6 +57,17 @@ describe("POST /api/reportes", () => {
     expect(JSON.parse(fetchSimulado.mock.calls[0][1].body).labels).toContain("sin-cuenta");
   });
 
+  it("con credenciales que el servidor no acepta responde 401 sin crear nada ni contar", async () => {
+    sesionSimulada.mockResolvedValue({ estado: 401 });
+    const credenciales: Record<string, string>[] = [{ Authorization: "Bearer vencido" }, { "x-lh-prueba": "x@prueba.test" }];
+    for (const h of credenciales) {
+      const res = await POST(pedido(cuerpo, h));
+      expect(res.status).toBe(401);
+      expect(await res.json()).toEqual({ ok: false, sesion: false });
+    }
+    expect(fetchSimulado).not.toHaveBeenCalled();
+  });
+
   it("con sesión no lleva `sin-cuenta`", async () => {
     fetchSimulado.mockResolvedValue(creado());
     await POST(pedido(cuerpo));

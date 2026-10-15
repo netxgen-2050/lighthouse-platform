@@ -43,7 +43,11 @@ const boton =
 export function BotonReportar({ version, entorno }: { version: string; entorno: string }) {
   const { cabeceras, estado: estadoSesion, consentimiento } = useSesion();
   // Con sesión y la política aceptada, el formulario de siempre; en cualquier otro caso, el modo sin cuenta.
-  const conCuenta = estadoSesion === "ok" && consentimiento === "vigente";
+  // Si el servidor dice que la sesión ya no vale, se pasa al modo sin cuenta (con su aviso) sin perder lo escrito.
+  const [sesionVencida, setSesionVencida] = useState(false);
+  // (el aviso de arriba se muestra una vez por intento; la sesión vencida dura hasta recargar la página)
+  const [avisoVencida, setAvisoVencida] = useState(false);
+  const conCuenta = estadoSesion === "ok" && consentimiento === "vigente" && !sesionVencida;
   const dialogo = useRef<HTMLDialogElement | null>(null);
   const disparador = useRef<HTMLButtonElement | null>(null);
   const refs = useRef<Partial<Record<CampoReporte, HTMLElement | null>>>({});
@@ -74,7 +78,7 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
     return () => document.removeEventListener("keydown", alTeclear);
   }, [sugerencia]);
 
-  function leerContexto(): Contexto {
+  function leerContexto(sinCuenta = !conCuenta): Contexto {
     return armarContexto({
       url: window.location.href,
       titulo: document.title,
@@ -83,7 +87,7 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
       navegador: navigator.userAgent,
       version,
       entorno,
-      sinCuenta: !conCuenta,
+      sinCuenta,
     });
   }
 
@@ -106,6 +110,7 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
     }
     if (estado.fase !== "editando") setEstado({ fase: "editando" });
     setErrores({});
+    setAvisoVencida(false);
     dialogo.current?.showModal();
   }
 
@@ -124,6 +129,7 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
       return;
     }
     setErrores({});
+    setAvisoVencida(false);
     setContexto(entrada.contexto);
     setEstado({ fase: "enviando" });
     try {
@@ -145,6 +151,29 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
               ? cabecera
               : null;
         setEstado({ fase: "fallo", motivo: "limite", segundos });
+      } else if (res.status === 401 && conCuenta) {
+        // La sesión ya no vale en el servidor: no se creó nada. Se pasa al modo sin cuenta (con su aviso de
+        // publicación), se conserva lo escrito y, si el contacto no es un email, se señala el campo.
+        const sin = validarReporte({ ...entrada, contexto: leerContexto(true) }, { sinCuenta: true });
+        setSesionVencida(true);
+        setAvisoVencida(true);
+        setContexto(leerContexto(true));
+        setEstado({ fase: "editando" });
+        if (!sin.ok) {
+          setErrores(sin.errores);
+          refs.current.contacto?.focus();
+        }
+      } else if (res.status === 400) {
+        const datos = (await res.json().catch(() => ({}))) as { errores?: Partial<Record<CampoReporte, string>> };
+        const errs = datos.errores ?? {};
+        setEstado({ fase: "editando" });
+        if (Object.keys(errs).length > 0) {
+          setErrores(errs);
+          const primero = (["tipo", "quePaso", "esperabas", "contacto"] as CampoReporte[]).find((k) => errs[k]);
+          if (primero) refs.current[primero]?.focus();
+        } else {
+          setEstado({ fase: "fallo", motivo: "error" });
+        }
       } else {
         setEstado({ fase: "fallo", motivo: res.status === 503 ? "sin-configurar" : "error" });
       }
@@ -243,6 +272,12 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
           </div>
         ) : (
           <form onSubmit={enviar} noValidate className="mt-4 grid gap-4">
+            {avisoVencida && (
+              <p role="alert" className="rounded-lg border border-warn-ink bg-warn-bg p-3 text-sm font-medium text-warn-ink">
+                Tu sesión ya no es válida, así que este reporte se enviaría sin cuenta. Leé el aviso, revisá tu email y
+                enviá de nuevo.
+              </p>
+            )}
             {!conCuenta && (
               <p id="aviso-rep-sin-cuenta" className="rounded-lg bg-surface-2 p-3 text-sm">
                 {AVISO_SIN_CUENTA}

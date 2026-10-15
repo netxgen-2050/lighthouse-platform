@@ -231,6 +231,25 @@ async function axeSinGraves(page: Page) {
   return graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }));
 }
 
+test("con la sesión vencida en el servidor, el diálogo pasa al modo sin cuenta, señala el email y no pierde lo escrito", async ({ page }) => {
+  let pedidos = 0;
+  await page.route("**/api/reportes", (ruta) => {
+    pedidos += 1;
+    return ruta.fulfill({ status: 401, json: { ok: false, sesion: false } });
+  });
+  await page.goto("/");
+  const dialogo = await abrir(page);
+  await dialogo.getByLabel(/¿Qué pasó\?/).fill("Texto a conservar");
+  await dialogo.getByLabel(/Tu nombre o email/).fill("Juan");
+  await dialogo.getByRole("button", { name: "Enviar reporte" }).click();
+  await expect(dialogo.getByText(/Estás reportando sin cuenta/)).toBeVisible();
+  await expect(dialogo.getByText(/Tu sesión ya no es válida/)).toBeVisible();
+  await expect(dialogo.getByText("Error: Escribí un email válido o dejalo vacío.")).toBeVisible();
+  await expect(dialogo.getByLabel(/Tu email/)).toBeFocused();
+  await expect(dialogo.getByLabel(/¿Qué pasó\?/)).toHaveValue("Texto a conservar");
+  expect(pedidos).toBe(1);
+});
+
 test.describe("sin cuenta", () => {
   test.use({ rol: "ninguno" });
 
@@ -244,7 +263,11 @@ test.describe("sin cuenta", () => {
   test("teclado: Enter abre, Escape cierra y el foco vuelve al botón", async ({ page }) => {
     await page.goto("/");
     const boton = page.getByRole("button", { name: NOMBRE_BOTON });
-    await boton.focus();
+    // Se llega con Tab, como una persona que usa solo el teclado.
+    for (let i = 0; i < 100 && !(await boton.evaluate((el) => el === document.activeElement)); i++) {
+      await page.keyboard.press("Tab");
+    }
+    await expect(boton).toBeFocused();
     await page.keyboard.press("Enter");
     const dialogo = page.getByRole("dialog");
     await expect(dialogo).toBeVisible();

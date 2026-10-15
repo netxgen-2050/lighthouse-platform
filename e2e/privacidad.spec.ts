@@ -74,6 +74,23 @@ test.describe("consentimiento al entrar", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Política de privacidad" })).toBeVisible();
   });
 
+  test("con sesión y la política pendiente, el reporte sale sin cabeceras de sesión", async ({ page }) => {
+    let cabeceras: Record<string, string> = {};
+    await page.route("**/api/reportes", (ruta) => {
+      cabeceras = ruta.request().headers();
+      return ruta.fulfill({ status: 200, json: { ok: true, numero: 9 } });
+    });
+    await page.goto("/pactos");
+    await expect(titulo(page)).toBeVisible();
+    await page.getByRole("button", { name: "Reportar un problema o una idea" }).click();
+    const dialogo = page.getByRole("dialog", { name: "Reportar un problema o una idea" });
+    await dialogo.getByLabel(/¿Qué pasó\?/).fill("Algo");
+    await dialogo.getByRole("button", { name: "Enviar reporte" }).click();
+    await expect(dialogo.getByText("¡Gracias! Quedó registrado (#9)")).toBeVisible();
+    expect(cabeceras.authorization).toBeUndefined();
+    expect(Object.keys(cabeceras).filter((k) => k.startsWith("x-lh"))).toEqual([]);
+  });
+
   test("la persona puede salir sin aceptar", async ({ page }) => {
     await page.goto("/pactos");
     await page.getByRole("button", { name: "No acepto, salir" }).click();
