@@ -40,6 +40,9 @@ Con `fogon-cuadratico-en-la-base` el equipo vota de verdad con voto cuadrático,
 - Aceptamos: el secreto es **ante la aplicación**, no ante quien administra Neon (Gus, como responsable de los datos), que puede leer las tablas. Se dice así en el PR y en la pantalla no se promete "voto anónimo".
 - Aceptamos: en grupos muy chicos el agregado deja adivinar votos (si votan 2, cada una deduce el reparto de la otra).
 - Aceptamos: el super admin no sabe quién falta votar; solo cuántas personas votaron.
+- Aceptamos (revisión del arquitecto, 15-oct-2026): con la regla "resultado al votar", quien ya votó puede comparar el agregado antes y después de que otra persona guarde y deducir ese reparto (sin el nombre, pero con la hora). La regla por defecto, "al cierre", no tiene este problema; "al votar" conviene solo cuando el reparto no es delicado.
+- La regla "nadie toca un voto" incluye **agregar**: los votos de un envío solo entran en la misma transacción que el envío (trigger), así nadie suma un voto a un envío viejo ni después del cierre.
+- Este secreto ante la aplicación vale también en los previews solo si no tienen datos reales: ver ADR-008.
 - Revisar cuando: una consulta tenga efecto vinculante o plata real (puede pedir C o un acta congelada), haya consultas por tribu con membresías en la base (el padrón podría salir de ahí), o el equipo pida ver quién falta.
 
 ## En palabras simples

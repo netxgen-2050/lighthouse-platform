@@ -32,16 +32,19 @@ El Fogón (`fogon-decisiones`) ya existe en `/fogon` con decisiones de sí/no gu
 
 ### 3. La costura: `RepositorioConsultas`
 ```ts
+type Lectura<T> = { ok: true; valor: T } | { ok: false; error: "no-encontrada" | "sin-sesion" | "falla" };
 interface RepositorioConsultas {
-  listar(): Promise<ResumenConsulta[]>;              // con estado y yaReparti
-  abrir(id: string): Promise<VistaConsulta | null>;  // consulta, miReparto, estado, puedeCerrar,
+  listar(): Promise<Lectura<ResumenConsulta[]>>;     // con estado, yaReparti y participantes (ver abajo)
+  abrir(id: string): Promise<Lectura<VistaConsulta>>; // consulta, miReparto, estado, puedeCerrar,
                                                      // resultado: { visible: true, agregado, participantes } | { visible: false, participantes }
-  guardarReparto(id: string, reparto: Reparto): Promise<{ ok: true } | { ok: false; error: "invalido" | "cerrada" | "sin-permiso" | "falla"; motivos?: string[] }>;
+  guardarReparto(id: string, reparto: Reparto): Promise<{ ok: true } | { ok: false; error: "invalido" | "cerrada" | "sin-permiso" | "sin-sesion" | "falla"; motivos?: string[] }>;
   cerrar(id: string): Promise<{ ok: boolean }>;      // solo si puedeCerrar
   reabrir?(id: string): Promise<{ ok: boolean }>;    // solo la versión del navegador
 }
 ```
 - Asíncrona desde ahora, aunque el navegador responda al instante, para que la versión con API no cambie las pantallas.
+<!-- arquitecto: con `abrir() → null` una caída de la red se vería como "No encontramos esta consulta", y la pantalla no tendría cómo saber que falta la sesión; la versión con API (`fogon-cuadratico-en-la-base`) cambiaría las pantallas. Se fija ahora la forma completa. -->
+- **Las lecturas distinguen "no hay" de "no pude saber"** desde este cambio, para que el siguiente no toque las pantallas: `listar()` y `abrir(id)` devuelven `Lectura<T>` (en `listar` no aparece `"no-encontrada"`). `"sin-sesion"` cubre también "sin consentimiento vigente" (las dos llevan a "Entrar"). La versión del navegador solo usa `ok: true` y `"no-encontrada"`, pero las pantallas ya muestran los tres casos: "No encontramos esta consulta", la invitación a entrar y "No pudimos cargar las consultas. Probá de nuevo." con `role="alert"` (nunca una lista vacía ni ceros cuando la lectura falló). `guardarReparto` suma `"sin-sesion"` a sus errores. `ResumenConsulta` trae `participantes: { repartieron, padron } | null` (en el navegador, `null` = "sin dato") para que el panel de `fogon-consultas-panel` no necesite otra ruta.
 - **El agregado lo calcula el repositorio**, no la pantalla: con la base, el servidor no manda los repartos ajenos (solo el agregado), y la pantalla no tiene que saber la diferencia.
 - `lib/fogon/consultas/fuente.ts` exporta `repositorioConsultas()`: hoy devuelve `RepositorioNavegador`; el cambio siguiente cambia solo esa línea (y suma su implementación).
 - **Navegador**: clave nueva `lh-fogon-consultas` en `NOMBRES_BASE` (por persona con el prefijo `u:<id>:`), valor `{ repartos: Record<idConsulta, Reparto>, cierres: Record<idConsulta, ISO> }`. `leer()` descarta campo por campo lo raro (como `lib/fogon/estado.ts`), incluido un reparto inválido. El agregado = repartos de ejemplo + el propio guardado. `puedeCerrar` es `true` para toda consulta abierta, con el botón "Simular el cierre" y, en una cerrada a mano, "Volver a abrir (simulado)" para repetir la demo.

@@ -8,7 +8,7 @@ Rama `agente/fogon-consultas-panel` desde `main`, **después** de `fogon-cuadrat
 
 ## 2. Pantalla
 
-- [ ] 2.1 Sección "Consultas del Fogón" en `/netx` solo para el super admin: lista con estado, cierre y "votaron X de N"; "Nueva consulta" (plantilla, campos, padrón con casillas desde `GET /api/personas` y campo de email, errores junto a cada campo con `aria-describedby` y un resumen con `role="alert"`); "Cerrar ahora" con un `<dialog>` de confirmación (el foco vuelve al botón). Montos con el formato de `fogon-cuadratico`; vacío = "sin dato". Verificar con `pnpm verificar` y con el e2e de 3.1.
+- [ ] 2.1 <!-- arquitecto: "votaron X de N" sale de `participantes` de cada `ResumenConsulta` de `GET /api/fogon/consultas` (`fogon-cuadratico-en-la-base` design §2), sin ruta nueva; la sección se oculta en el cliente pero el permiso lo decide la API (403 para quien no es super admin). Las personas del padrón que todavía no aceptaron la política cuentan en N pero no pueden votar hasta aceptar: la casilla del padrón lo dice ("todavía no aceptó") si `GET /api/personas` ya trae ese dato; si no lo trae, no se agrega (no es ruta nueva) y se anota en el PR. --> Sección "Consultas del Fogón" en `/netx` solo para el super admin: lista con estado, cierre y "votaron X de N" (desde `participantes` de la lista, nunca con nombres); "Nueva consulta" (plantilla, campos, padrón con casillas desde `GET /api/personas` y campo de email, errores junto a cada campo con `aria-describedby` y un resumen con `role="alert"`); "Cerrar ahora" con un `<dialog>` de confirmación (el foco vuelve al botón). Montos con el formato de `fogon-cuadratico`; vacío = "sin dato". Verificar con `pnpm verificar` y con el e2e de 3.1.
 
 ## 3. Pruebas
 
