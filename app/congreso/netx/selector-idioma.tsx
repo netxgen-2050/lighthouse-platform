@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
+import { useSesion } from "@/components/sesion/contexto";
 import type { Idioma } from "@/lib/congreso/idioma";
 import { guardarPreferenciaIdioma } from "@/lib/congreso/preferencia-idioma";
 
@@ -17,12 +18,14 @@ const OPCIONES: { idioma: Idioma; href: string; corto: string; largo: string }[]
  */
 export function SelectorIdioma({ idioma }: { idioma: Idioma }) {
   const router = useRouter();
+  const { estado } = useSesion();
 
   function elegir(e: MouseEvent<HTMLAnchorElement>, destino: Idioma, href: string) {
     // Con Ctrl, Cmd, Shift o clic medio queda el comportamiento normal del enlace (otra pestaña, sin guardar).
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     e.preventDefault();
-    guardarPreferenciaIdioma(destino);
+    // Mientras carga la sesión no se sabe con qué prefijo guardar: se navega igual y no se guarda aún.
+    if (estado !== "cargando") guardarPreferenciaIdioma(destino);
     if (destino === idioma) return;
     router.push(`${href}${window.location.search}${window.location.hash}`);
   }

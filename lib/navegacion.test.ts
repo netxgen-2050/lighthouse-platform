@@ -82,3 +82,8 @@ test("las subrutas marcan su sección y Inicio solo la raíz", () => {
   expect(esActivo("/fogon", "/fogon/consultas/u1")).toBe(true);
   expect(esActivo("/", "/tribus")).toBe(false);
 });
+
+test("el rail marca Congreso también en la versión en inglés", () => {
+  expect(esActivo("/congreso", "/congreso/en")).toBe(true);
+  expect(esActivo("/congreso", "/congreso")).toBe(true);
+});

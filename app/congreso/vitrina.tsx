@@ -37,7 +37,6 @@ export async function metadataVitrina(idioma: Idioma): Promise<Metadata> {
     title: `${evento.nombre} · ${t.sufijoTitulo}`,
     description: t.descripcion,
     alternates: {
-      canonical: idioma === "en" ? "/congreso/en" : "/congreso",
       languages: { es: "/congreso", en: "/congreso/en" },
     },
   };
@@ -146,7 +145,9 @@ export async function Vitrina({ idioma, parametros }: { idioma: Idioma; parametr
         <BloqueFuente fuente="unityhub" detalle={d.faq} campos={["preguntas"]} {...bloque}>
           <Preguntas preguntas={evento.preguntas} />
         </BloqueFuente>
-        <Cierre cierre={evento.cierre} accionSecundaria={botonOficial} idioma={idioma} />
+        <BloqueFuente fuente="unityhub" detalle={d.fichaEvento} campos={["cierre", "paginaOficial"]} {...bloque}>
+          <Cierre cierre={evento.cierre} accionSecundaria={botonOficial} idioma={idioma} />
+        </BloqueFuente>
         <BarraCompraMovil tipos={evento.entradas.tipos} idioma={idioma} />
       </VistaFuentes>
     </TemaEvento>

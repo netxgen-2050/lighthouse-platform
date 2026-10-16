@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {} }) }));
+vi.mock("@/components/sesion/contexto", () => ({ useSesion: () => ({ estado: "anonimo" }) }));
 
 import { SelectorIdioma } from "./selector-idioma";
 

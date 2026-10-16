@@ -63,6 +63,17 @@ describe("BloqueFuente en inglés", () => {
     expect(prefijoParcial).not.toContain("only available in Spanish");
   });
 
+  it("avisa en el cierre si su frase o la etiqueta de la página oficial llegan solo en español", () => {
+    for (const ruta of ["cierre.frase", "paginaOficial.etiqueta"]) {
+      const html = renderToStaticMarkup(
+        <BloqueFuente fuente="unityhub" detalle="event card" idioma="en" sinTraducir={[ruta]} campos={["cierre", "paginaOficial"]}>
+          <p>cierre</p>
+        </BloqueFuente>,
+      );
+      expect(html).toContain("only available in Spanish");
+    }
+  });
+
   it("en español no muestra la nota aunque falte algo", () => {
     const html = renderToStaticMarkup(
       <BloqueFuente fuente="netx" detalle="tribus" sinTraducir={["voces.titulo"]} campos={["voces"]}>
