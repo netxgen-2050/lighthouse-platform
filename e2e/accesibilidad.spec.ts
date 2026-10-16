@@ -22,6 +22,7 @@ const rutas = [
   ...listarTribus().map((t) => `/tribus/${t.id}`),
   "/territorios/lighthouse",
   "/congreso",
+  "/congreso/en",
   "/territorios/no-existe",
   "/ruta-que-no-existe",
 ];
@@ -35,8 +36,8 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 31 rutas auditadas", () => {
-  expect(rutas).toHaveLength(31);
+test("hay 32 rutas auditadas", () => {
+  expect(rutas).toHaveLength(32);
 });
 
 async function graves(page: Page) {
@@ -191,6 +192,29 @@ test("axe sin violaciones serias o críticas: /congreso con el modo de origen ac
   await page.getByRole("button", { name: "Comprar pase completo" }).click();
   await expect(page.getByRole("dialog", { name: "Acá se abriría la compra del ticket" })).toBeVisible();
   expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /congreso/en con el modo de origen activo, un ⚖ abierto y el diálogo de compra abierto", async ({ page }) => {
+  await page.goto("/congreso/en");
+  await page.getByRole("button", { name: /What comes from UnityHub\?/ }).click();
+  await expect(page.getByText("From UnityHub · schedule")).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+  await page.locator("#entradas").getByRole("button", { name: "What it means legally: Congress ticket" }).hover();
+  await expect(page.getByRole("tooltip")).toContainText("Draft: text under review");
+  expect(await graves(page)).toEqual([]);
+  await page.getByRole("button", { name: "Buy full pass" }).click();
+  await expect(page.getByRole("dialog", { name: "Here you would buy your ticket" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
+test.describe("/congreso/en sin sesión", () => {
+  test.use({ rol: "ninguno" });
+
+  test("axe sin violaciones serias o críticas, con el llamado a sumarse en inglés", async ({ page }) => {
+    await page.goto("/congreso/en");
+    await expect(page.getByRole("link", { name: /Join for free to link your ticket/ })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
 });
 
 test.describe("/congreso sin sesión", () => {

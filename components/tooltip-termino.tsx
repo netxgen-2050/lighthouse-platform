@@ -18,12 +18,30 @@ type Props = {
   borrador: boolean;
   /** Se llama cada vez que el tooltip pasa a mostrarse. */
   alMostrar?: () => void;
+  /** Texto fijo de la marca de borrador (por defecto en español; el ⚖ en inglés pasa el suyo). */
+  textoBorrador?: string;
+  /** Idioma del título y el texto, cuando no es el de la página (por ejemplo un ⚖ sin inglés dentro de la página en inglés). */
+  lang?: string;
+  /** Aviso extra al pie, con su idioma (por ejemplo "Only available in Spanish"). */
+  aviso?: { texto: string; lang: string };
 };
 
 // La explicación de un término se muestra como tooltip flotante:
 // mouse (entrar/salir), teclado (foco/blur, Escape) y toque (dispositivos sin hover).
 // Lo comparten el ⚖ legal y el 🌱 económico.
-export function TooltipTermino({ titulo, texto, simbolo, etiqueta, claseBoton, claseBorde, borrador, alMostrar }: Props) {
+export function TooltipTermino({
+  titulo,
+  texto,
+  simbolo,
+  etiqueta,
+  claseBoton,
+  claseBorde,
+  borrador,
+  alMostrar,
+  textoBorrador = "Borrador: texto a revisar",
+  lang,
+  aviso,
+}: Props) {
   const [conMouse, setConMouse] = useState(false);
   const [conFoco, setConFoco] = useState(false);
   const [conToque, setConToque] = useState(false);
@@ -134,9 +152,20 @@ export function TooltipTermino({ titulo, texto, simbolo, etiqueta, claseBoton, c
           className={`absolute left-0 z-10 block w-72 max-w-[calc(100vw-1rem)] text-sm font-normal text-ink ${abajo ? "top-full pt-1" : "bottom-full pb-1"}`}
         >
           <span className={`block rounded-lg border bg-surface p-3 shadow-lg ${claseBorde}`}>
-            <strong className="block">{titulo}</strong>
-            {texto}
-            {borrador && <em className="mt-1 block text-muted">Borrador: texto a revisar</em>}
+            <strong className="block" lang={lang}>
+              {titulo}
+            </strong>
+            {lang ? <span lang={lang}>{texto}</span> : texto}
+            {borrador && (
+              <em className="mt-1 block text-muted" lang={lang}>
+                {textoBorrador}
+              </em>
+            )}
+            {aviso && (
+              <em className="mt-1 block text-muted" lang={aviso.lang}>
+                {aviso.texto}
+              </em>
+            )}
           </span>
         </span>
       )}

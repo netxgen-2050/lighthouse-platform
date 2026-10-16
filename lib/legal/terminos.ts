@@ -15,11 +15,23 @@ export const TERMINOS = {
     titulo: "Ticket del Congreso",
     texto:
       "El organizador vende el Congreso por su cuenta. La plataforma solo registra tu ticket para conectar tu presencia con tu perfil.",
+    // Traducción nueva: borrador a revisar antes de cualquier uso real.
+    en: {
+      titulo: "Congress ticket",
+      texto:
+        "The organizer sells the Congress on its own. The platform only records your ticket to connect your presence with your profile.",
+    },
   },
   presencia: {
     titulo: "Presencia",
     texto:
       "Un registro que confirma el anfitrión con el check-in. Da acceso y voz (con un tope), nunca valor económico. No se compra ni se transfiere.",
+    // Traducción nueva: borrador a revisar antes de cualquier uso real.
+    en: {
+      titulo: "Presence",
+      texto:
+        "A record the host confirms at check-in. It gives access and a voice (with a cap), never economic value. It cannot be bought or transferred.",
+    },
   },
   ribera: {
     titulo: "Tierra ribereña",
@@ -30,6 +42,12 @@ export const TERMINOS = {
     titulo: "Horas de obra",
     texto:
       "Trabajo presencial en obra: hay que definir la modalidad (voluntariado, Ley 25.855, o locación de servicios) y contratar un seguro de accidentes. Si se presume relación laboral, aplica la LCT (art. 23).",
+    // Traducción nueva: borrador a revisar antes de cualquier uso real.
+    en: {
+      titulo: "Construction hours",
+      texto:
+        "On-site construction work: the arrangement has to be defined (volunteering under Law 25.855, or a service contract) and accident insurance has to be taken out. If an employment relationship is presumed, the Employment Contract Law (LCT, art. 23) applies.",
+    },
   },
   sumarte: {
     titulo: "Sumarte al proyecto",
@@ -233,6 +251,12 @@ export const TERMINOS = {
     texto:
       "El Congreso es un encuentro educativo, no una oferta de inversión. Los proyectos que buscan socios se presentan por separado, solo a quien lo pida, y sumarse es siempre opcional. Cualquier aporte pasa por los documentos propios de cada proyecto.",
     borrador: true,
+    // Traducción nueva: borrador a revisar antes de cualquier uso real.
+    en: {
+      titulo: "Educational gathering",
+      texto:
+        "The Congress is an educational gathering, not an investment offer. Projects looking for partners are presented separately, only to those who ask, and joining is always optional. Any contribution goes through each project's own documents.",
+    },
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
   consultivo: {
@@ -248,3 +272,12 @@ export function esBorrador(clave: ClaveTermino): boolean {
 }
 
 export type ClaveTermino = keyof typeof TERMINOS;
+
+/**
+ * Versión en inglés de un término, si la tiene. Toda versión en inglés es borrador por definición, aunque el español
+ * de esa clave no lo sea: nadie la revisó todavía.
+ */
+export function terminoEn(clave: ClaveTermino): { titulo: string; texto: string } | undefined {
+  const t: Readonly<{ titulo: string; texto: string; en?: { titulo: string; texto: string } }> = TERMINOS[clave];
+  return t.en;
+}
