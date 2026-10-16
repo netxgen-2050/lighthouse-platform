@@ -23,7 +23,7 @@ import {
   textoSuperficieM2,
   tribuDeBarrio,
 } from "@/lib/territorios/biopueblo";
-import { TEXTO_COMUN, descripcionDeLugar, nombreDeLugar } from "@/lib/territorios/textos";
+import { TEXTO_COMUN, descripcionDeLugar, esNombrePropioDeLugar, nombreDeLugar } from "@/lib/territorios/textos";
 import { listarTribus, rutaProponerComunidad } from "@/lib/tribus/datos";
 import { textoDeEstado } from "@/lib/tribus/tipos";
 import { EnEspanol } from "@/components/en-espanol";
@@ -141,7 +141,7 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
   if (el?.tipo === "comun") {
     return (
       <div className="grid gap-3">
-        <h2 className="text-xl font-semibold">{idioma === "en" ? tx.elegir.comun : el.nombre}</h2>
+        <h2 className="text-xl font-semibold">{idioma === "en" ? tx.marcador.comun : el.nombre}</h2>
         <p className="text-sm">
           <strong>{t.superficie}</strong> {textoHectareas(el.areaHa, idioma)}
         </p>
@@ -198,7 +198,9 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
       <div className="grid gap-3">
         <p className="text-sm text-muted">{tx.leyenda.lugar}</p>
         <h2 className="text-xl font-semibold">
-          <span translate="no">{nombreDeLugar(el.id, el.nombre, idioma)}</span>
+          <span translate={esNombrePropioDeLugar(el.id) ? "no" : undefined}>
+            {nombreDeLugar(el.id, el.nombre, idioma)}
+          </span>
         </h2>
         <p className="text-sm">{descripcionDeLugar(el.id, idioma)}</p>
       </div>

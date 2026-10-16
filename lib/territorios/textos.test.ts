@@ -6,6 +6,7 @@ import { buscarTerritorio } from "./datos";
 import {
   TEXTOS_BILINGUES,
   descripcionDeLugar,
+  esNombrePropioDeLugar,
   nombreDeLugar,
   territorioEn,
 } from "./textos";
@@ -53,6 +54,23 @@ describe("textos del territorio", () => {
   it("sin dato: 'sin dato' en español y 'no data' en inglés, nunca vacío", () => {
     expect(descripcionDeLugar("lugar-que-no-existe")).toBe("sin dato");
     expect(descripcionDeLugar("lugar-que-no-existe", "en")).toBe("no data");
+  });
+
+  it("el español de los textos coincide con lib/territorios/datos.ts (si cambia el dato, hay que actualizar el inglés)", () => {
+    for (const [id, textos] of Object.entries(TEXTOS_BILINGUES.TERRITORIOS)) {
+      const t = buscarTerritorio(id)!;
+      expect(t, id).toBeDefined();
+      expect(textos.ubicacion.es).toBe(t.ubicacion);
+      expect(textos.descripcion.es).toBe(t.descripcion);
+      expect(textos.bienesComunes.map((b) => b.es)).toEqual(t.bienesComunes);
+    }
+  });
+
+  it("solo los nombres propios van sin traducir", () => {
+    expect(esNombrePropioDeLugar("lugar-olivos")).toBe(false);
+    expect(esNombrePropioDeLugar("lugar-restaurant-coliving-cowork-sala-de-practicas-banos")).toBe(false);
+    expect(esNombrePropioDeLugar("lugar-temazcal")).toBe(true);
+    expect(esNombrePropioDeLugar("lugar-gaia-sapiens-institute")).toBe(true);
   });
 
   it("el territorio en inglés traduce la descripción y deja el nombre", () => {

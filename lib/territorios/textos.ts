@@ -54,6 +54,13 @@ export function nombreDeLugar(id: string, nombre: string, idioma: Idioma = "es")
   return Object.hasOwn(NOMBRES, id) ? textoEn(NOMBRES[id], idioma) : nombre;
 }
 
+/** Si el nombre es propio (sin traducción distinta, como Temazcal): va con translate="no". */
+export function esNombrePropioDeLugar(id: string): boolean {
+  if (!Object.hasOwn(NOMBRES, id)) return true;
+  const n = NOMBRES[id];
+  return n.en === n.es;
+}
+
 /** Una línea de descripción; si falta, "sin dato" / "no data". */
 export function descripcionDeLugar(id: string, idioma: Idioma = "es"): string {
   return Object.hasOwn(LUGARES, id) ? textoEn(LUGARES[id], idioma) : sinDato(idioma);
