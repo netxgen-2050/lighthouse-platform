@@ -30,4 +30,4 @@ Rama `agente/fogon-cuadratico` desde `main`. Textos en español con voseo. Sin d
 
 ## 6. Integración
 
-- [ ] 6.1 `pnpm verificar` y `pnpm build` en verde; PR con capturas de Mi reparto, Resultado y Acta, y el guion de prueba de 5.1 en palabras para Gus. Verificar con los dos comandos y con `scripts/pr.sh`.
+- [x] 6.1 `pnpm verificar` y `pnpm build` en verde; PR con capturas de Mi reparto, Resultado y Acta, y el guion de prueba de 5.1 en palabras para Gus. Verificar con los dos comandos y con `scripts/pr.sh`.
