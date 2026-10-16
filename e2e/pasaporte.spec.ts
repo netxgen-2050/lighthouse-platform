@@ -182,6 +182,24 @@ test("/pasaporte#identidad deja el foco en el encabezado de la tarjeta", async (
   await expect(page.getByRole("heading", { level: 2, name: /Verificá tu identidad \(KYC\)/ })).toBeFocused();
 });
 
+test("con /pasaporte#identidad ya puesto, 'Ver la verificación' vuelve a llevar el foco al encabezado", async ({ page }) => {
+  await page.goto("/pasaporte#identidad");
+  const enlace = sello(page, "identidad").getByRole("link", { name: "Ver la verificación" });
+  await enlace.focus();
+  await enlace.click();
+  await expect(page.getByRole("heading", { level: 2, name: /Verificá tu identidad \(KYC\)/ })).toBeFocused();
+});
+
+test("al cerrar el diálogo tras enviar, el foco queda en la tarjeta y no en el body", async ({ page }) => {
+  await page.goto("/pasaporte");
+  await page.getByRole("button", { name: "Completar mi verificación (KYC)" }).click();
+  const dialogo = page.getByRole("dialog", { name: /Verificar mi identidad/ });
+  await llenarPasos(dialogo);
+  await dialogo.getByRole("button", { name: "Enviar verificación (simulado)" }).click();
+  await dialogo.getByRole("button", { name: "Cerrar" }).click();
+  await expect(page.locator("#identidad").getByRole("button", { name: "Simular: verificación aprobada" })).toBeFocused();
+});
+
 test("residente en Argentina: la tarjeta se achica y dice que quedó habilitada", async ({ page }) => {
   await page.goto("/pasaporte");
   await page.getByRole("button", { name: "Completar mi verificación (KYC)" }).click();

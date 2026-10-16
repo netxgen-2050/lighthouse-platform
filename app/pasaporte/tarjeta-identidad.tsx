@@ -106,7 +106,7 @@ export function TarjetaIdentidad({
           {kyc.estado === "en-tramite" ? (
             <div className="grid gap-3">
               <p className="font-medium">Enviaste tus datos el {fechaLarga(kyc.enviado)}</p>
-              <button type="button" className={BOTON_PRIMARIO} onClick={alAprobar}>
+              <button type="button" data-foco-kyc className={BOTON_PRIMARIO} onClick={alAprobar}>
                 Simular: verificación aprobada
               </button>
             </div>

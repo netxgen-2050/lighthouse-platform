@@ -29,7 +29,6 @@ import { INICIAL, leer as leerSumarte, type EstadoSumarte } from "@/lib/sumarte/
 
 const FOCO = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 const BOTON = `w-fit rounded-lg px-4 py-1.5 font-medium ${FOCO}`;
-const BOTON_PRIMARIO = `${BOTON} bg-deep text-on-deep hover:bg-deep-2`;
 const BOTON_SUAVE = `${BOTON} border border-muted hover:bg-surface-2`;
 const CAMPO = `mt-1 block w-full rounded-lg border border-faint bg-surface px-3 py-2 text-ink ${FOCO}`;
 const TARJETA = "grid content-start gap-4 rounded-xl border border-faint bg-surface p-5";
@@ -100,7 +99,21 @@ function TarjetaSello({ s }: { s: Sello }) {
       {s.accion &&
         (s.accion.href.includes("#") ? (
           // Ancla en la misma página: un enlace común mueve el foco y avisa con `hashchange`.
-          <a className={BOTON_SUAVE} href={s.accion.href}>
+          // Si el hash ya es el mismo no hay `hashchange`: se enfoca el encabezado a mano.
+          <a
+            className={BOTON_SUAVE}
+            href={s.accion.href}
+            onClick={() => {
+              const destino = document.getElementById("titulo-identidad");
+              if (window.location.hash === `#${s.accion?.href.split("#")[1]}` && destino) {
+                // Un tick después, para no competir con el foco que mueve el navegador al clicar el enlace.
+                setTimeout(() => {
+                  destino.scrollIntoView();
+                  destino.focus();
+                }, 0);
+              }
+            }}
+          >
             {s.accion.texto}
           </a>
         ) : (
@@ -286,7 +299,15 @@ export function PasaporteCliente() {
         kyc={kyc.kyc}
         alCerrar={() => {
           setDialogo(false);
-          botonKyc.current?.focus();
+          // Tras enviar, el botón de KYC desaparece: el foco va al botón de aprobar o, si no, al encabezado.
+          // Se difiere un tick: al cerrarse, el <dialog> devuelve el foco a su origen y pisaría este.
+          setTimeout(() => {
+            const destino =
+              botonKyc.current ??
+              document.querySelector<HTMLElement>("#identidad [data-foco-kyc]") ??
+              document.getElementById("titulo-identidad");
+            destino?.focus();
+          }, 0);
         }}
         alEnviar={kyc.enviar}
         alAprobar={kyc.aprobar}
