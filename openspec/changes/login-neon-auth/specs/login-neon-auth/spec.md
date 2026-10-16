@@ -1,19 +1,42 @@
 ## ADDED Requirements
 
 ### Requirement: Entrar con Neon Auth desde el formulario propio
-When the login selected for the environment is `neon-auth`, the platform SHALL offer its own login form with two ways in: a one-time code sent by email, and Google. The form SHALL be shown only from the consent step, after both required checkboxes are checked and accepted; no request with the person's email or an OAuth start MUST reach Neon Auth before that. The form MUST be usable with the keyboard, label every field, and announce errors with `role="alert"`.
+When the login selected for the environment is `neon-auth`, the platform SHALL offer, after the email step of the platform's entry form, two ways in: a one-time code sent by email, and Google. For an email with an account they SHALL be offered directly, without the consent checkboxes; for a new email, only after both required checkboxes are checked and accepted. No request with a new person's email or an OAuth start MUST reach Neon Auth before that. The form MUST be usable with the keyboard, label every field, and announce errors with `role="alert"`.
 
-#### Scenario: Código por email
-- **WHEN** una persona marca las dos casillas en el paso "Entrar", acepta, escribe su email, recibe el código y lo escribe
-- **THEN** queda con la sesión de Neon Auth y no ve la pantalla de consentimiento después
+#### Scenario: Código por email con cuenta
+- **WHEN** una persona con consentimiento vigente escribe su email en "Entrar", recibe el código y lo escribe
+- **THEN** queda con la sesión de Neon Auth sin haber visto las casillas ni la pantalla de consentimiento
+
+#### Scenario: Código por email, email nuevo
+- **WHEN** una persona escribe un email sin cuenta, marca las dos casillas, acepta, recibe el código y lo escribe
+- **THEN** queda con la sesión de Neon Auth, su aceptación se registra con el camino `alta` y no ve la pantalla de consentimiento después
 
 #### Scenario: Google
-- **WHEN** una persona acepta en el paso y aprieta "Entrar con Google"
+- **WHEN** una persona con un email nuevo acepta en el bloque y aprieta "Entrar con Google" con la cuenta de ese mismo email
 - **THEN** vuelve a la plataforma con la sesión de Neon Auth y su aceptación previa se registra como en el camino del código
 
 #### Scenario: Nada antes de las casillas
-- **WHEN** una persona abre el paso y lo cierra sin marcar las dos casillas
-- **THEN** no salió ningún pedido a `/api/auth/` y no se vio el formulario de login
+- **WHEN** una persona escribe un email sin cuenta, ve el bloque y cierra el diálogo sin marcar las dos casillas
+- **THEN** no salió ningún pedido a `/api/auth/` y no se vio el paso del código
+
+### Requirement: Neon Auth no recibe un email nuevo sin aceptación
+The server SHALL refuse, without contacting Neon Auth, any request to send or verify a login code or to start Google unless the same browser went through the platform's account lookup for that email within the last 10 minutes and either the email has an account or the person accepted the consent block. Only the Neon Auth routes the platform uses SHALL be reachable; any other MUST answer 404. Sending codes SHALL share the request limit of the account lookup.
+
+#### Scenario: Pedir el código a mano para un email nuevo
+- **WHEN** alguien llama directo a la ruta que manda el código con un email sin cuenta y sin haber aceptado
+- **THEN** recibe 403, Neon Auth no recibe el pedido y no se crea ningún usuario
+
+#### Scenario: Otro email que el consultado
+- **WHEN** el navegador consultó `ana@ejemplo.com` y pide el código para `beto@ejemplo.com`
+- **THEN** recibe 403 sin contactar a Neon Auth
+
+#### Scenario: Ruta que no usamos
+- **WHEN** alguien llama la ruta de alta con contraseña de Neon Auth a través de la plataforma
+- **THEN** recibe 404
+
+#### Scenario: Muchos códigos desde la misma IP
+- **WHEN** desde una IP se piden más códigos que el límite
+- **THEN** el siguiente pedido responde 429 sin contactar a Neon Auth
 
 #### Scenario: Código equivocado
 - **WHEN** la persona escribe un código que no es el que recibió
@@ -35,15 +58,15 @@ The server SHALL translate a Neon Auth session into the login identity of `base-
 - **THEN** la sesión responde con rol `persona` y no queda ninguna fila nueva en `personas` ni en `cuentas` hasta que acepte
 
 ### Requirement: Convivencia con Privy
-Until Privy is retired, the server SHALL accept both a Privy token and a Neon Auth session, and the public variable `NEXT_PUBLIC_LH_LOGIN` SHALL choose which login the consent step opens (`privy` when it is missing or invalid). A person with a Privy session SHALL keep working when the environment switches to `neon-auth`, until they log out. Logging out SHALL close the session of the provider in use.
+Until Privy is retired, the server SHALL accept both a Privy token and a Neon Auth session, and the public variable `NEXT_PUBLIC_LH_LOGIN` SHALL choose which login the entry form opens after the email step (`privy` when it is missing or invalid). A person with a Privy session SHALL keep working when the environment switches to `neon-auth`, until they log out. Logging out SHALL close the session of the provider in use.
 
 #### Scenario: Entorno con Neon Auth
-- **WHEN** `NEXT_PUBLIC_LH_LOGIN` es `neon-auth` y alguien acepta en el paso
-- **THEN** ve el formulario propio y no la ventana de Privy
+- **WHEN** `NEXT_PUBLIC_LH_LOGIN` es `neon-auth` y alguien escribe un email con cuenta y aprieta "Seguir"
+- **THEN** ve el paso del código propio y no la ventana de Privy
 
 #### Scenario: Entorno sin la variable
 - **WHEN** `NEXT_PUBLIC_LH_LOGIN` no está
-- **THEN** el paso abre el login de Privy como hasta hoy
+- **THEN** después del paso del email se abre el login de Privy
 
 #### Scenario: Sesión de Privy abierta
 - **WHEN** el entorno pasa a `neon-auth` y una persona tenía la sesión de Privy abierta

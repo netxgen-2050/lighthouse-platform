@@ -2,12 +2,12 @@
 
 ## Purpose
 
-Que la persona acepte la política de privacidad y los términos del prototipo antes de cualquier login (al darse de alta y también al entrar), con información en capas y casillas separadas, que la plataforma no guarde nada con su identidad hasta que acepte, y que quede constancia demostrable de qué aceptó, cuándo y por qué camino.
+Que la persona acepte la política de privacidad y los términos del prototipo antes de que el login cree su cuenta, con información en capas y casillas separadas, que la plataforma no guarde nada con su identidad hasta que acepte, y que quede constancia demostrable de qué aceptó, cuándo y por qué camino.
 
 ## ADDED Requirements
 
 ### Requirement: Aceptar antes de cualquier login
-Every entry point that opens the login (the Sumarte actions that create an account, "Entrar" in the top bar, any other link or button that calls `entrar()`, and the "Entrar como…" panel of the test mode) SHALL first show a step with the consent block: the plain-language summary, links to the full policy and terms, two separate unchecked required checkboxes (policy, terms) and the separate optional group for email updates. The login (Privy's window, or the session of the test mode) MUST NOT open until both required checkboxes are checked and the person confirms; closing the step or leaving a required checkbox unchecked MUST leave the person without a session. In Sumarte the step SHALL be titled "Crear tu cuenta"; from "Entrar" it SHALL be titled "Entrar", with the same block and the same checkbox texts. A person who already has an account SHALL also check the boxes when entering, because before the login the platform does not know who they are. Only an acceptance given in this step and still valid (see "Aceptación previa con vencimiento") SHALL let the login open.
+Every entry point that opens the login (the Sumarte actions that create an account, "Entrar" in the top bar, any other link or button that calls `entrar()`, and the "Entrar como…" panel of the test mode) SHALL first show a step with the consent block: the plain-language summary, links to the full policy and terms, two separate unchecked required checkboxes (policy, terms) and the separate optional group for email updates. The login (Privy's window, or the session of the test mode) MUST NOT open until both required checkboxes are checked and the person confirms; closing the step or leaving a required checkbox unchecked MUST leave the person without a session. In Sumarte the step SHALL be titled "Crear tu cuenta"; from "Entrar" it SHALL be titled "Entrar", with the same block and the same checkbox texts. This applies while the server cannot tell, before the login, whether the email already has an account; once it can (change `entrar-por-email`), a person whose email already has an account MAY skip the step, and this change MUST NOT depend on the step being shown to people who already have an account. Only an acceptance given in this step and still valid (see "Aceptación previa con vencimiento") SHALL let the login open when the step is shown.
 
 #### Scenario: Entrar desde una página pública
 - **WHEN** una persona sin sesión aprieta "Entrar" en la barra superior estando en `/tribus`
@@ -25,7 +25,7 @@ Every entry point that opens the login (the Sumarte actions that create an accou
 - **AND** al terminar el login no ve la pantalla de consentimiento
 
 #### Scenario: Privy no recibe el email antes de las casillas
-- **WHEN** una persona sin sesión aprieta cualquier "Entrar", cualquier acción de Sumarte que crea la cuenta o un email de "Entrar como…", y todavía no marcó las dos casillas
+- **WHEN** una persona sin sesión aprieta cualquier "Entrar", cualquier acción de Sumarte que crea la cuenta o un email de "Entrar como…", ve el paso y todavía no marcó las dos casillas
 - **THEN** la plataforma no llamó al login de Privy (ni a la sesión del modo de prueba), así que no hay ventana de Privy donde escribir el email y no salió ningún pedido a Privy para iniciar el login
 
 #### Scenario: Entrar como… en modo de prueba
@@ -33,10 +33,9 @@ Every entry point that opens the login (the Sumarte actions that create an accou
 - **THEN** primero ve el paso "Entrar" con las casillas sin marcar y la sesión no se abre hasta que marque las dos y acepte
 - **AND** al aceptar entra con el email que había elegido
 
-#### Scenario: Quien ya tiene cuenta también marca
-- **WHEN** una persona con consentimiento vigente de la versión actual aprieta "Entrar"
-- **THEN** ve el paso "Entrar" con las casillas sin marcar como cualquier otra persona
-- **AND** después del login su constancia anterior sigue igual (no se registra otra aceptación) y su elección de novedades solo cambia si marcó la casilla de novedades
+#### Scenario: Quien ya aceptó pasa por el paso
+- **WHEN** una persona con consentimiento vigente de la versión actual pasa por el paso "Entrar" (porque el servidor todavía no puede saber que ya tiene cuenta) y termina el login
+- **THEN** su constancia anterior sigue igual (no se registra otra aceptación) y su elección de novedades solo cambia si marcó la casilla de novedades
 
 #### Scenario: Elegir un plan sin cuenta
 - **WHEN** una persona sin sesión aprieta "Sumarme gratis" en Sumarte
@@ -114,7 +113,7 @@ The consent record SHALL store the accepted policy version, the date and time of
 - **THEN** sigue valiendo y Mis datos muestra el camino como "sin dato"
 
 ### Requirement: Re-consentimiento con lo que cambió
-When the policy version changes, the consent screen SHALL say which version the person had accepted and when, list in plain words what changed in the new version, link to the full text, and show both checkboxes unchecked. The "Entrar" step, which does not know who the person is, SHALL show the version in force and, when it is not the first, its "Qué cambió" list. An acceptance taken from the "Entrar" step by a person whose record was of another version SHALL be registered with the path `nueva-version`. Every policy version after the first MUST have at least one listed change.
+When the policy version changes, the consent screen SHALL say which version the person had accepted and when, list in plain words what changed in the new version, link to the full text, and show both checkboxes unchecked. Whenever the "Entrar" step is shown, it SHALL show the version in force and, when it is not the first, its "Qué cambió" list. An acceptance taken from the "Entrar" step by a person whose record was of another version SHALL be registered with the path `nueva-version`. Every policy version after the first MUST have at least one listed change.
 
 #### Scenario: Cambia la versión
 - **WHEN** una persona que había aceptado la versión anterior entra con "Entrar" después de que cambió `VERSION_POLITICA`
@@ -171,4 +170,4 @@ This change SHALL raise the policy version once, and the new version SHALL alrea
 
 #### Scenario: Qué cambió
 - **WHEN** una persona que aceptó `2026-10-14-borrador` entra después de este cambio
-- **THEN** la lista "Qué cambió" menciona aceptar antes de entrar o de crear la cuenta, el idioma guardado en el navegador y las novedades opcionales por email
+- **THEN** la lista "Qué cambió" menciona aceptar antes de crear la cuenta, el idioma guardado en el navegador y las novedades opcionales por email
