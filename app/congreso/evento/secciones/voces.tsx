@@ -1,12 +1,11 @@
 import type { EstadoVoz, Evento } from "@/lib/congreso/evento";
-
-const TEXTO_ESTADO: Record<EstadoVoz, string> = {
-  confirmada: "Confirmada",
-  "por-confirmar": "Por confirmar",
-};
+import type { Idioma } from "@/lib/congreso/idioma";
+import { textosEvento } from "@/lib/congreso/interfaz";
 
 /** "Voces": retratos con degradado e iniciales (sin fotos), estado visible, voces de la región y nota del escenario híbrido. */
-export function Voces({ voces }: { voces: Evento["voces"] }) {
+export function Voces({ voces, idioma = "es" }: { voces: Evento["voces"]; idioma?: Idioma }) {
+  const t = textosEvento(idioma);
+  const TEXTO_ESTADO: Record<EstadoVoz, string> = { confirmada: t.confirmada, "por-confirmar": t.porConfirmar };
   return (
     <section className="ev-seccion ev-voces-seccion" id="voces" aria-labelledby="t-voces">
       <div className="ev-cont">

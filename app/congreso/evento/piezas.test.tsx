@@ -83,6 +83,33 @@ describe("TarjetaEntrada", () => {
   });
 });
 
+describe("piezas en inglés", () => {
+  it("la barra, el chip y la tarjeta hablan inglés", () => {
+    const barra = renderToStaticMarkup(
+      <BarraEvento nombre="Solarpunk Patagonia" anclas={[{ href: "#faq", etiqueta: "Questions" }]} idioma="en" />,
+    );
+    expect(barra).toContain('aria-label="Event sections"');
+    expect(barra).toContain(">EN<");
+    expect(barra).toContain("Tickets</a>");
+    expect(renderToStaticMarkup(<ChipFecha inicio="2027-02-05" fin="2027-02-09" idioma="en" />)).toContain("February 2027");
+    const tarjeta = renderToStaticMarkup(<TarjetaEntrada tipo={TIPO} idioma="en" />);
+    expect(tarjeta).toContain("USD 290");
+    expect(tarjeta).toContain("sample");
+    expect(tarjeta).not.toContain("ejemplo");
+    expect(renderToStaticMarkup(<TarjetaEntrada tipo={{ ...TIPO, precio: undefined }} idioma="en" />)).toContain("Price not available");
+  });
+  it("el selector de idioma entra por el hueco de la barra", () => {
+    const html = renderToStaticMarkup(<BarraEvento nombre="X" anclas={[]} selectorIdioma={<i data-selector>sel</i>} />);
+    expect(html).toContain("<i data-selector");
+    expect(html).not.toContain("ev-idioma");
+  });
+  it("la cuenta regresiva en inglés dice Calculating", () => {
+    const html = renderToStaticMarkup(<CuentaRegresiva momentoIso="2027-02-06T12:00:00-03:00" idioma="en" />);
+    expect(html).toContain("Calculating the countdown");
+    expect(html).toContain("days");
+  });
+});
+
 describe("Eclipse", () => {
   it("es decorativo", () => {
     const html = renderToStaticMarkup(<Eclipse />);

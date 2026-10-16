@@ -2,29 +2,34 @@
 
 import { useEffect, useState } from "react";
 import { tiempoRestante } from "@/lib/congreso/formatos";
+import type { Idioma } from "@/lib/congreso/idioma";
+import { textosEvento } from "@/lib/congreso/interfaz";
 
 type Props = {
   /** Momento clave con desfase horario, p. ej. 2027-02-06T12:00:00-03:00. */
   momentoIso: string;
   etiqueta?: string;
+  idioma?: Idioma;
 };
 
 /** Cuenta regresiva en días, horas y minutos. Antes de calcular en el navegador muestra "—", nunca 0. */
-export function CuentaRegresiva({ momentoIso, etiqueta = "Cuenta regresiva al eclipse" }: Props) {
+export function CuentaRegresiva({ momentoIso, etiqueta, idioma = "es" }: Props) {
+  const t = textosEvento(idioma);
+  const nombre = etiqueta ?? t.cuentaEtiqueta;
   const [ahora, setAhora] = useState<number | null>(null);
 
   useEffect(() => {
     const tic = () => setAhora(Date.now());
     tic();
-    const t = setInterval(tic, 30000);
-    return () => clearInterval(t);
+    const intervalo = setInterval(tic, 30000);
+    return () => clearInterval(intervalo);
   }, []);
 
   if (ahora === null) {
     return (
-      <div className="ev-cuenta" role="group" aria-label={etiqueta}>
-        <span className="ev-solo-lectores">Calculando la cuenta regresiva</span>
-        {["días", "horas", "min"].map((u) => (
+      <div className="ev-cuenta" role="group" aria-label={nombre}>
+        <span className="ev-solo-lectores">{t.cuentaCalculando}</span>
+        {[t.dias, t.horas, t.minutos].map((u) => (
           <div className="ev-cuenta-caja" key={u} aria-hidden="true">
             <b>—</b>
             <span>{u}</span>
@@ -37,25 +42,25 @@ export function CuentaRegresiva({ momentoIso, etiqueta = "Cuenta regresiva al ec
   const resto = tiempoRestante(momentoIso, ahora);
   if (resto === "paso") {
     return (
-      <div className="ev-cuenta" role="group" aria-label={etiqueta}>
-        <div className="ev-cuenta-llego">Llegó el día</div>
+      <div className="ev-cuenta" role="group" aria-label={nombre}>
+        <div className="ev-cuenta-llego">{t.llegoElDia}</div>
       </div>
     );
   }
 
   return (
-    <div className="ev-cuenta" role="group" aria-label={etiqueta}>
+    <div className="ev-cuenta" role="group" aria-label={nombre}>
       <div className="ev-cuenta-caja">
         <b>{resto.dias}</b>
-        <span>días</span>
+        <span>{t.dias}</span>
       </div>
       <div className="ev-cuenta-caja">
         <b>{resto.horas}</b>
-        <span>horas</span>
+        <span>{t.horas}</span>
       </div>
       <div className="ev-cuenta-caja">
         <b>{resto.minutos}</b>
-        <span>min</span>
+        <span>{t.minutos}</span>
       </div>
     </div>
   );

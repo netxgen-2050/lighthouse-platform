@@ -199,7 +199,7 @@ test("axe sin violaciones serias o críticas: /configuracion en claro y en oscur
   expect(await graves(page)).toEqual([]);
 });
 
-for (const ruta of ["/", "/tribus", "/sumarte", "/pactos", "/bandeja", "/panel", "/perfil", "/pasaporte", "/semillas", "/compromisos", "/tribus/valle", "/territorios/lighthouse", "/congreso", "/netx", "/fogon"]) {
+for (const ruta of ["/", "/tribus", "/sumarte", "/pactos", "/bandeja", "/panel", "/perfil", "/pasaporte", "/semillas", "/compromisos", "/tribus/valle", "/territorios/lighthouse", "/congreso", "/congreso/en", "/netx", "/fogon"]) {
   test(`axe sin violaciones serias o críticas en tema oscuro: ${ruta}`, async ({ page }) => {
     await page.addInitScript(() => window.localStorage.setItem("lh-configuracion", JSON.stringify({ tema: "oscuro" })));
     await page.goto(ruta);
