@@ -45,8 +45,10 @@ export type ValorSesion = {
    * "pendiente" si nunca aceptó o la política cambió. Ver `lib/privacidad/consentimiento.ts`.
    */
   consentimiento: EstadoConsentimiento;
-  /** Tribu que lidera (Plan Tribu), o null. */
-  tribuLider: string | null;
+  /** Tribus que lidera (Plan Tribu o nivel asignado), o lista vacía. */
+  tribusLider: string[];
+  /** La tribu asignada de antemano en `LH_PERSONAS` (no se puede dejar desde Sumarte), o null. */
+  tribuFija: string | null;
   salir: () => Promise<void>;
   /** Cabeceras que acreditan la sesión (token de Privy o modo de prueba) para pedir a las rutas `/api`. */
   cabeceras: () => Promise<Record<string, string>>;

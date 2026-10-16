@@ -52,7 +52,8 @@ export function MenuPersona({ items }: { items: ItemMenu[] }) {
 
 /** Avatar de la persona (iniciales del perfil, del nombre de la cuenta o del email) con el menú Perfil / Pasaporte / Mi recorrido / Configuración / Salir. */
 function MenuConSesion({ items }: { items: ItemMenu[] }) {
-  const { sesion, nombre, salir, nivel, tribuLider } = useSesion();
+  const { sesion, nombre, salir, nivel, tribusLider } = useSesion();
+  const nombresLiderados = tribusLider.flatMap((id) => buscarTribu(id)?.nombre ?? []);
   const ruta = usePathname();
   const [abierto, setAbierto] = useState(false);
   const [rutaAbierta, setRutaAbierta] = useState(ruta);
@@ -125,8 +126,8 @@ function MenuConSesion({ items }: { items: ItemMenu[] }) {
             <li className="px-2 pb-1">
               <p className="break-all text-xs text-muted">{sesion?.email}</p>
               <p className="mt-1 text-xs text-muted">Nivel: {ETIQUETA_NIVEL[nivel]}</p>
-              {tribuLider && buscarTribu(tribuLider) && (
-                <p className="mt-1 text-xs font-bold">Admin de {buscarTribu(tribuLider)?.nombre}</p>
+              {nombresLiderados.length > 0 && (
+                <p className="mt-1 text-xs font-bold">Admin de {nombresLiderados.join(" y ")}</p>
               )}
             </li>
             {items.map((i) => {

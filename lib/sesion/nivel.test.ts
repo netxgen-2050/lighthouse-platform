@@ -22,7 +22,7 @@ function almacenEnMemoria() {
 
 describe("calcularNivel", () => {
   it("sin persona no hay cuenta", () => {
-    expect(calcularNivel(INICIAL, null)).toEqual({ nivel: "sin-cuenta", tribuLider: null });
+    expect(calcularNivel(INICIAL, null)).toEqual({ nivel: "sin-cuenta", tribusLider: [], tribuFija: null });
   });
   it("quien se registra entra como Explorador como mínimo", () => {
     expect(calcularNivel(INICIAL, persona).nivel).toBe("explorador");
@@ -40,27 +40,37 @@ describe("calcularNivel", () => {
   });
   it("con Pase y Plan Tribu el nivel es Líder, y conserva el Pase", () => {
     const e = reducir(reducir(INICIAL, { tipo: "pase" }), { tipo: "tribu", tribuId: "valle" });
-    expect(calcularNivel(e, persona)).toEqual({ nivel: "lider", tribuLider: "valle" });
+    expect(calcularNivel(e, persona)).toEqual({ nivel: "lider", tribusLider: ["valle"], tribuFija: null });
     expect(e.pase).toBe("brote");
   });
   it("el Plan Tribu hace líder de la tribu elegida", () => {
-    expect(calcularNivel(reducir(INICIAL, { tipo: "tribu", tribuId: "valle" }), persona)).toEqual({ nivel: "lider", tribuLider: "valle" });
+    expect(calcularNivel(reducir(INICIAL, { tipo: "tribu", tribuId: "valle" }), persona)).toEqual({ nivel: "lider", tribusLider: ["valle"], tribuFija: null });
+  });
+  it("puede liderar varias tribus", () => {
+    const dos = reducir(reducir(INICIAL, { tipo: "tribu", tribuId: "valle" }), { tipo: "tribu", tribuId: "taller" });
+    expect(calcularNivel(dos, persona)).toEqual({ nivel: "lider", tribusLider: ["valle", "taller"], tribuFija: null });
+  });
+  it("dejar la última tribu vuelve a Miembro", () => {
+    const e = reducir(reducir(INICIAL, { tipo: "tribu", tribuId: "valle" }), { tipo: "dejarTribu", tribuId: "valle" });
+    expect(calcularNivel(e, persona)).toEqual({ nivel: "miembro", tribusLider: [], tribuFija: null });
   });
   it("proponer una tribu nueva es líder sin tribu todavía", () => {
-    expect(calcularNivel(reducir(INICIAL, { tipo: "tribu" }), persona)).toEqual({ nivel: "lider", tribuLider: null });
+    expect(calcularNivel(reducir(INICIAL, { tipo: "tribu" }), persona)).toEqual({ nivel: "lider", tribusLider: [], tribuFija: null });
   });
-  it("bajar de plan quita Participar y la tribu", () => {
+  it("bajar de plan quita Participar y las tribus", () => {
     const lider = reducir(INICIAL, { tipo: "tribu", tribuId: "valle" });
-    expect(calcularNivel(reducir(lider, { tipo: "plan", plan: "explorador" }), persona)).toEqual({ nivel: "explorador", tribuLider: null });
+    expect(calcularNivel(reducir(lider, { tipo: "plan", plan: "explorador" }), persona)).toEqual({ nivel: "explorador", tribusLider: [], tribuFija: null });
     expect(calcularNivel(reducir(lider, { tipo: "plan", plan: "miembro" }), persona).nivel).toBe("miembro");
   });
   it("el super admin lo es solo por LH_PERSONAS y no baja", () => {
     expect(calcularNivel(INICIAL, { rol: "superadmin", tribuAdmin: null }).nivel).toBe("superadmin");
   });
   it("un nivel asignado de antemano es el piso", () => {
-    expect(calcularNivel(INICIAL, { rol: "admin-tribu", tribuAdmin: "valle" })).toEqual({ nivel: "lider", tribuLider: "valle" });
+    expect(calcularNivel(INICIAL, { rol: "admin-tribu", tribuAdmin: "valle" })).toEqual({ nivel: "lider", tribusLider: ["valle"], tribuFija: "valle" });
     const otra = reducir(INICIAL, { tipo: "tribu", tribuId: "agua" });
-    expect(calcularNivel(otra, { rol: "admin-tribu", tribuAdmin: "valle" }).tribuLider).toBe("agua");
+    expect(calcularNivel(otra, { rol: "admin-tribu", tribuAdmin: "valle" })).toMatchObject({ tribusLider: ["valle", "agua"], tribuFija: "valle" });
+    const misma = reducir(INICIAL, { tipo: "tribu", tribuId: "valle" });
+    expect(calcularNivel(misma, { rol: "admin-tribu", tribuAdmin: "valle" }).tribusLider).toEqual(["valle"]);
   });
 });
 
