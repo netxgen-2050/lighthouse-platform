@@ -107,6 +107,27 @@ test("axe sin violaciones serias o críticas: /pactos siendo miembro, con las do
   }
 });
 
+test("axe sin violaciones serias o críticas: /pactos con un cambio enviado y el historial abierto", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("lh-membresia", JSON.stringify({ lighthouse: "miembro" }));
+    const v = { rol: "facilitacion", rolOtro: "", descripcion: "Facilito", horas: 10 };
+    const tiempo = {
+      ...v,
+      paso: 2,
+      version: 1,
+      historial: [{ ...v, version: 1, aceptado: "2026-10-16T10:00:00.000Z" }],
+      cambio: { ...v, horas: 20, paso: 1 },
+    };
+    window.localStorage.setItem("lh-pactos", JSON.stringify({ comunidades: { lighthouse: { tiempo, aportes: [] } } }));
+  });
+  await page.goto("/pactos");
+  await page.getByText(/Historial de versiones/).click();
+  await expect(page.getByRole("button", { name: "Simular: la comunidad acepta el cambio" })).toBeVisible();
+  const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+});
+
 test("axe sin violaciones serias o críticas: /semillas con la ronda y sus errores a la vista", async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem("lh-membresia", JSON.stringify({ lighthouse: "miembro", valle: "miembro" }));

@@ -29,6 +29,24 @@ export const EVENTOS = {
     notificacion: true,
     clave: `pacto-aceptado:${idComunidad}`,
   }),
+  propusisteCambioDePacto: (comunidad: string, idComunidad: string): NuevoEvento => ({
+    tipo: "pacto",
+    texto: `Propusiste un cambio a tu pacto en ${comunidad}`,
+    enlace: `/pactos?comunidad=${idComunidad}`,
+  }),
+  cambioDePactoAceptado: (comunidad: string, idComunidad: string, version: number): NuevoEvento => ({
+    tipo: "pacto-aceptado",
+    texto: `${comunidad} aceptó el cambio a tu pacto`,
+    enlace: `/pactos?comunidad=${idComunidad}`,
+    notificacion: true,
+    clave: `cambio-pacto-aceptado:${idComunidad}:${version}`,
+  }),
+  cambioDePactoRechazado: (comunidad: string, idComunidad: string): NuevoEvento => ({
+    tipo: "pacto",
+    texto: `${comunidad} no aceptó el cambio a tu pacto`,
+    enlace: `/pactos?comunidad=${idComunidad}`,
+    notificacion: true,
+  }),
   rondaAbierta: (comunidad: string, idComunidad: string): NuevoEvento => ({
     tipo: "ronda-abierta",
     texto: `Se abrió una ronda de reconocimiento en ${comunidad}`,

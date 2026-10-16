@@ -54,6 +54,8 @@ export function PactosCliente() {
   const [listo, setListo] = useState(false);
   const foco = useRef(false);
   const [anuncio, setAnuncio] = useState("");
+  // Aviso visible (y anunciado) cuando la comunidad no aceptó un cambio.
+  const [avisoRechazo, setAvisoRechazo] = useState("");
   // Lo que la persona cargó en "Tus datos"; lo que no cargó queda sin dato.
   const [datos, setDatos] = useState<DatosPersona>(DATOS_VACIOS);
   // Comunidades donde la persona es miembro: solo ahí puede proponer un pacto.
@@ -80,15 +82,50 @@ export function PactosCliente() {
   }, []);
 
   // El botón de paso desaparece al apretarlo: el foco pasa al estado nuevo.
-  const pasoActual = elegida ? deComunidad(estado, elegida).tiempo.paso : 0;
+  const tiempoActual = elegida ? deComunidad(estado, elegida).tiempo : null;
+  const pasoActual = tiempoActual ? tiempoActual.paso * 10 + (tiempoActual.cambio ? tiempoActual.cambio.paso + 1 : 0) : 0;
   useEffect(() => {
     if (!foco.current) return;
     document.querySelector<HTMLElement>("[data-foco-paso]")?.focus();
     foco.current = false;
   }, [pasoActual]);
 
-  function dispatch(accion: Accion) {
+  function dispatch(original: Accion) {
+    // Las fechas las pone la pantalla: el reductor es puro.
+    const accion: Accion =
+      original.tipo === "avanzar" || original.tipo === "aceptarCambio" ? { ...original, ahora: new Date().toISOString() } : original;
     const siguiente = reducir(estado, accion);
+    const comunidadId = "comunidad" in accion ? accion.comunidad : null;
+    setAvisoRechazo("");
+    if (comunidadId !== null && siguiente !== estado) {
+      const despuesT = deComunidad(siguiente, comunidadId).tiempo;
+      const donde = nombreComunidad(comunidadId);
+      if (accion.tipo === "retirar") {
+        foco.current = true;
+        setAnuncio(`Retiraste el pacto de ${donde}: volvió a borrador.`);
+      } else if (accion.tipo === "proponerCambio") {
+        foco.current = true;
+        setAnuncio("Se abrió un borrador del cambio, con los datos de la versión vigente.");
+      } else if (accion.tipo === "enviarCambio") {
+        foco.current = true;
+        setAnuncio(`Cambio enviado a ${donde}.`);
+        registrarEvento(EVENTOS.propusisteCambioDePacto(donde, comunidadId));
+      } else if (accion.tipo === "aceptarCambio") {
+        foco.current = true;
+        setAnuncio(`Quien administra ${donde} aceptó el cambio. Ahora rige la versión ${despuesT.version}.`);
+        registrarEvento(EVENTOS.cambioDePactoAceptado(donde, comunidadId, despuesT.version));
+      } else if (accion.tipo === "rechazarCambio") {
+        foco.current = true;
+        // El texto va a la región viva siempre montada (se anuncia) y también al aviso visible.
+        const aviso = `Quien administra ${donde} no aceptó el cambio. Sigue vigente la versión ${despuesT.version}.`;
+        setAnuncio(aviso);
+        setAvisoRechazo(aviso);
+        registrarEvento(EVENTOS.cambioDePactoRechazado(donde, comunidadId));
+      } else if (accion.tipo === "descartarCambio") {
+        foco.current = true;
+        setAnuncio("Descartaste el cambio. Sigue vigente la versión " + despuesT.version + ".");
+      }
+    }
     try {
       window.localStorage.setItem(CLAVES.pactos, JSON.stringify(siguiente));
       setFalloAlmacen(false);
@@ -141,6 +178,8 @@ export function PactosCliente() {
   const t = mias.tiempo;
   const rol = buscarRol(t.rol);
   const editable = t.paso === 0;
+  const pasoCambio = t.cambio?.paso ?? 0;
+  const cambioCompleto = t.cambio ? pactoCompleto(t.cambio) : false;
   const semillas = semillasPorMes(t.horas);
   const montoNumero = Number(monto);
   const montoValido = monto.trim() !== "" && Number.isInteger(montoNumero) && montoNumero >= MONTO_USD.min && montoNumero <= MONTO_USD.max;
@@ -161,6 +200,7 @@ export function PactosCliente() {
             value={comunidad}
             onChange={(e) => {
               setAnuncio("");
+              setAvisoRechazo("");
               setElegida(e.target.value);
             }}
             className={`${CAMPO} w-fit`}
@@ -194,7 +234,7 @@ export function PactosCliente() {
                 </li>
               ))}
             </ol>
-            <span className="text-sm text-muted">Versión {t.paso + 1}</span>
+            {t.version > 0 && <span className="text-sm text-muted" data-testid="version-pacto">Versión {t.version}</span>}
           </div>
         )}
 
@@ -426,23 +466,195 @@ export function PactosCliente() {
               </>
             )}
             {t.paso === 1 && (
-              <button type="button" data-foco-paso className={BOTON_DORADO} onClick={() => dispatch({ tipo: "avanzar", comunidad })}>
-                Simular: la comunidad acepta
-              </button>
+              <>
+                <button type="button" data-foco-paso className={BOTON_DORADO} onClick={() => dispatch({ tipo: "avanzar", comunidad })}>
+                  Simular: la comunidad acepta
+                </button>
+                <button
+                  type="button"
+                  className={`${BOTON} border border-muted hover:bg-surface-2`}
+                  onClick={() => dispatch({ tipo: "retirar", comunidad })}
+                >
+                  Retirar y editar
+                </button>
+              </>
             )}
             {t.paso === 2 && (
               <>
                 <span
                   tabIndex={-1}
-                  data-foco-paso
+                  data-foco-paso={t.cambio ? undefined : true}
                   className="rounded-full border border-deep bg-green-soft px-3 py-1 text-sm font-medium text-deep"
                 >
                   ✓ Pacto aceptado
                 </span>
                 <span className="text-sm text-muted">Tus Semillas de {nombre} se ven en el libro de semillas.</span>
+                {!t.cambio && (
+                  <button
+                    type="button"
+                    className={`${BOTON} border border-muted hover:bg-surface-2`}
+                    onClick={() => dispatch({ tipo: "proponerCambio", comunidad })}
+                  >
+                    Proponer un cambio
+                  </button>
+                )}
               </>
             )}
           </div>
+        )}
+
+        {estado.pestana === "tiempo" && t.paso === 2 && t.cambio && (
+          <section aria-labelledby="titulo-cambio" className="grid gap-4 rounded-xl border border-dashed border-deep p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 id="titulo-cambio" className="text-lg font-semibold">
+                Cambio propuesto
+              </h2>
+              <ol className="flex flex-wrap gap-2" aria-label="Pasos del cambio">
+                {PASOS.slice(0, 2).map((p, i) => (
+                  <li
+                    key={p}
+                    aria-current={i === pasoCambio ? "step" : undefined}
+                    className={`rounded-full border px-3 py-1 text-sm ${
+                      i <= pasoCambio ? "border-deep bg-green-soft font-medium text-deep" : "border-faint text-muted"
+                    }`}
+                  >
+                    {i < pasoCambio ? "✓ " : ""}
+                    {p}
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <p className="text-sm text-muted">
+              Mientras tanto sigue vigente la versión {t.version}: {t.horas} h/mes, {miles(semillas)} semillas por mes.
+            </p>
+            <fieldset disabled={t.cambio.paso !== 0} className="grid content-start gap-4 border-0 p-0">
+              <legend className="sr-only">Cambio al pacto de tiempo en {nombre}</legend>
+              <label className="grid gap-1 text-sm">
+                <span className="font-medium">Rol propuesto</span>
+                <select
+                  value={t.cambio.rol}
+                  onChange={(e) =>
+                    dispatch({ tipo: "editarCambio", comunidad, cambios: { rol: e.target.value as ClaveRol | "" } })
+                  }
+                  className={`${CAMPO} w-fit`}
+                >
+                  <option value="">Elegí un rol</option>
+                  {ROLES.map((r) => (
+                    <option key={r.clave} value={r.clave}>
+                      {r.nombre}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {t.cambio.rol === "otro" && (
+                <label className="grid gap-1 text-sm">
+                  <span className="font-medium">¿Qué rol es el propuesto?</span>
+                  <input
+                    type="text"
+                    maxLength={MAX_ROL_OTRO}
+                    value={t.cambio.rolOtro}
+                    onChange={(e) => dispatch({ tipo: "editarCambio", comunidad, cambios: { rolOtro: e.target.value } })}
+                    className={CAMPO}
+                  />
+                </label>
+              )}
+              <label className="grid gap-1 text-sm">
+                <span className="font-medium">Descripción propuesta: qué vas a hacer</span>
+                <textarea
+                  rows={3}
+                  maxLength={MAX_DESCRIPCION}
+                  value={t.cambio.descripcion}
+                  onChange={(e) => dispatch({ tipo: "editarCambio", comunidad, cambios: { descripcion: e.target.value } })}
+                  className={CAMPO}
+                />
+              </label>
+              <label className="grid gap-1 text-sm">
+                <span className="font-medium">Compromiso mensual propuesto: {t.cambio.horas} h/mes</span>
+                <input
+                  type="range"
+                  min={HORAS.min}
+                  max={HORAS.max}
+                  step={HORAS.paso}
+                  value={t.cambio.horas}
+                  onChange={(e) => dispatch({ tipo: "editarCambio", comunidad, cambios: { horas: Number(e.target.value) } })}
+                  className="accent-deep"
+                />
+              </label>
+            </fieldset>
+            <p className="text-sm" data-testid="semillas-cambio">
+              Con el cambio serían {miles(semillasPorMes(t.cambio.horas))} semillas por mes.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              {t.cambio.paso === 0 ? (
+                <>
+                  <button
+                    type="button"
+                    data-foco-paso
+                    className={BOTON_PRIMARIO}
+                    aria-disabled={!pactoCompleto(t.cambio)}
+                    aria-describedby={!pactoCompleto(t.cambio) ? "ayuda-enviar-cambio" : undefined}
+                    onClick={() => {
+                      if (cambioCompleto) dispatch({ tipo: "enviarCambio", comunidad });
+                    }}
+                  >
+                    Enviar cambio a la comunidad
+                  </button>
+                  <button
+                    type="button"
+                    className={`${BOTON} border border-muted hover:bg-surface-2`}
+                    onClick={() => dispatch({ tipo: "descartarCambio", comunidad })}
+                  >
+                    Descartar cambio
+                  </button>
+                  {!pactoCompleto(t.cambio) && (
+                    <span id="ayuda-enviar-cambio" className="text-sm text-muted">
+                      {t.cambio.rol === "otro" && !t.cambio.rolOtro.trim() && t.cambio.descripcion.trim()
+                        ? "Para enviarlo nombrá el rol."
+                        : "Para enviarlo elegí un rol y contá qué vas a hacer."}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  <button type="button" data-foco-paso className={BOTON_DORADO} onClick={() => dispatch({ tipo: "aceptarCambio", comunidad })}>
+                    Simular: la comunidad acepta el cambio
+                  </button>
+                  <button
+                    type="button"
+                    className={`${BOTON} border border-muted hover:bg-surface-2`}
+                    onClick={() => dispatch({ tipo: "rechazarCambio", comunidad })}
+                  >
+                    Simular: la comunidad no lo acepta
+                  </button>
+                </>
+              )}
+            </div>
+          </section>
+        )}
+
+        {estado.pestana === "tiempo" && avisoRechazo && (
+          <p className={AVISO}>
+            {avisoRechazo}
+          </p>
+        )}
+
+        {estado.pestana === "tiempo" && t.paso === 2 && t.historial.length > 0 && (
+          <details className="rounded-lg border border-faint px-3 py-2">
+            <summary className="cursor-pointer font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
+              Historial de versiones ({t.historial.length})
+            </summary>
+            <ul className="mt-2 grid gap-2 text-sm" aria-label="Versiones aceptadas">
+              {[...t.historial].reverse().map((v) => (
+                <li key={v.version} className="grid gap-0.5">
+                  <span>
+                    <b>Versión {v.version}</b> · {v.rol === "otro" ? v.rolOtro : (buscarRol(v.rol)?.nombre ?? "sin dato")} · {v.horas} h/mes ·{" "}
+                    {v.aceptado ? new Date(v.aceptado).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" }) : "fecha sin dato"}
+                  </span>
+                  <span className="text-muted">{v.descripcion}</span>
+                </li>
+              ))}
+            </ul>
+          </details>
         )}
         <p role="status" className="sr-only">
           {anuncio}
