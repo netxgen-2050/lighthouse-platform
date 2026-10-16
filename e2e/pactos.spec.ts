@@ -105,6 +105,122 @@ test("enviar, aceptar y seguir aceptado al recargar", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Enviar a la comunidad" })).toHaveCount(0);
 });
 
+test("retirar un pacto enviado lo devuelve a borrador con su contenido, y no muestra versión", async ({ page }) => {
+  await comoMiembro(page);
+  await page.goto("/pactos");
+  await llenarPacto(page);
+  await page.getByRole("button", { name: "Enviar a la comunidad" }).click();
+  await expect(page.getByText(/Versión \d/)).toHaveCount(0);
+  await page.getByRole("button", { name: "Retirar y editar" }).click();
+  await expect(page.getByRole("listitem").filter({ hasText: "Borrador" })).toHaveAttribute("aria-current", "step");
+  await expect(page.getByLabel(/Rol que asumís/)).toHaveValue("facilitacion");
+  await expect(page.getByLabel("Tu descripción: qué vas a hacer")).toHaveValue("Facilito las asambleas");
+  await expect(page.getByLabel(/Compromiso mensual/)).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Enviar a la comunidad" })).toBeFocused();
+});
+
+async function pactoAceptado(page: Page) {
+  await page.goto("/pactos");
+  await llenarPacto(page);
+  await page.getByRole("button", { name: "Enviar a la comunidad" }).click();
+  await page.getByRole("button", { name: "Simular: la comunidad acepta" }).click();
+  await expect(page.getByText("Pacto aceptado")).toBeVisible();
+}
+
+test("proponer un cambio: la versión vigente sigue en Semillas hasta que se acepta, y queda el historial", async ({ page }) => {
+  await comoMiembro(page);
+  await pactoAceptado(page);
+  await expect(page.getByTestId("version-pacto")).toHaveText("Versión 1");
+  await page.getByRole("button", { name: "Proponer un cambio" }).click();
+  const cambio = page.getByRole("region", { name: "Cambio propuesto" });
+  await expect(cambio).toBeVisible();
+  await expect(cambio.getByLabel("Rol propuesto")).toHaveValue("facilitacion");
+  await expect(cambio.getByLabel("Descripción propuesta: qué vas a hacer")).toHaveValue("Facilito las asambleas");
+  // Un cambio incompleto no se envía.
+  await cambio.getByLabel("Descripción propuesta: qué vas a hacer").fill("");
+  const enviar = cambio.getByRole("button", { name: "Enviar cambio a la comunidad" });
+  await expect(enviar).toBeDisabled();
+  await expect(enviar).toHaveAccessibleDescription("Para enviarlo elegí un rol y contá qué vas a hacer.");
+  await cambio.getByLabel("Descripción propuesta: qué vas a hacer").fill("Facilito más asambleas");
+  await cambio.getByLabel(/Compromiso mensual propuesto/).fill("20");
+  await enviar.click();
+  await expect(page.getByRole("list", { name: "Pasos del cambio" }).getByRole("listitem").filter({ hasText: "Enviado a la comunidad" })).toHaveAttribute(
+    "aria-current",
+    "step",
+  );
+  await expect(cambio.getByRole("button", { name: "Simular: la comunidad acepta el cambio" })).toBeFocused();
+  // Mientras tanto, Semillas sigue con 10 h/mes.
+  await expect(page.getByText("Compromiso mensual: 10 h/mes")).toBeVisible();
+  await expect(page.getByTestId("semillas-mes")).toHaveText("50 semillas");
+  await page.goto("/semillas");
+  await expect(page.getByTestId("total-lighthouse")).toHaveText("150 semillas");
+  await page.goto("/pactos");
+  await page.getByRole("button", { name: "Simular: la comunidad acepta el cambio" }).click();
+  await expect(page.getByTestId("version-pacto")).toHaveText("Versión 2");
+  await expect(page.getByRole("region", { name: "Cambio propuesto" })).toHaveCount(0);
+  await expect(page.getByTestId("semillas-mes")).toHaveText("101 semillas");
+  await page.goto("/semillas");
+  await expect(page.getByTestId("total-lighthouse")).toHaveText("303 semillas");
+  await page.goto("/pactos");
+  await page.getByText(/Historial de versiones/).click();
+  const versiones = page.getByRole("list", { name: "Versiones aceptadas" }).getByRole("listitem");
+  await expect(versiones).toHaveCount(2);
+  await expect(versiones.nth(0)).toContainText("Versión 2");
+  await expect(versiones.nth(0)).toContainText("20 h/mes");
+  await expect(versiones.nth(1)).toContainText("Versión 1");
+  await expect(versiones.nth(1)).toContainText("10 h/mes");
+  await expect(versiones.nth(1)).not.toContainText("fecha sin dato");
+  // El evento queda en Mi recorrido.
+  await page.goto("/panel");
+  await expect(page.getByText("aceptó el cambio a tu pacto")).toBeVisible();
+  await expect(page.getByText("Propusiste un cambio a tu pacto en")).toBeVisible();
+});
+
+test("si la comunidad no acepta el cambio, sigue la versión vigente y se avisa", async ({ page }) => {
+  await comoMiembro(page);
+  await pactoAceptado(page);
+  await page.getByRole("button", { name: "Proponer un cambio" }).click();
+  await page.getByLabel(/Compromiso mensual propuesto/).fill("30");
+  await page.getByRole("button", { name: "Enviar cambio a la comunidad" }).click();
+  await page.getByRole("button", { name: "Simular: la comunidad no lo acepta" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "no aceptó el cambio. Sigue vigente la versión 1." })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Cambio propuesto" })).toHaveCount(0);
+  await expect(page.getByTestId("version-pacto")).toHaveText("Versión 1");
+  await expect(page.getByText("Compromiso mensual: 10 h/mes")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Proponer un cambio" })).toBeVisible();
+  await page.goto("/panel");
+  await expect(page.getByText("no aceptó el cambio a tu pacto")).toBeVisible();
+});
+
+test("descartar un cambio en borrador deja solo la versión vigente", async ({ page }) => {
+  await comoMiembro(page);
+  await pactoAceptado(page);
+  await page.getByRole("button", { name: "Proponer un cambio" }).click();
+  await page.getByRole("button", { name: "Descartar cambio" }).click();
+  await expect(page.getByRole("region", { name: "Cambio propuesto" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Proponer un cambio" })).toBeVisible();
+  await expect(page.getByTestId("version-pacto")).toHaveText("Versión 1");
+});
+
+test("un pacto aceptado guardado antes de las versiones se ve como versión 1 y admite un cambio", async ({ page }) => {
+  await comoMiembro(page);
+  await page.addInitScript(() => {
+    if (window.localStorage.getItem("lh-pactos")) return;
+    window.localStorage.setItem(
+      "lh-pactos",
+      JSON.stringify({
+        pestana: "tiempo",
+        comunidades: { lighthouse: { tiempo: { rol: "facilitacion", rolOtro: "", descripcion: "Facilito", horas: 10, paso: 2 }, aportes: [] } },
+      }),
+    );
+  });
+  await page.goto("/pactos");
+  await expect(page.getByTestId("version-pacto")).toHaveText("Versión 1");
+  await page.getByText(/Historial de versiones/).click();
+  await expect(page.getByText("fecha sin dato")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Proponer un cambio" })).toBeVisible();
+});
+
 test("con rol Otro sin nombre, el motivo pide nombrar el rol", async ({ page }) => {
   await comoMiembro(page);
   await page.goto("/pactos");
@@ -134,8 +250,9 @@ test("la pestaña de plata no muestra los pasos ni la versión del pacto de tiem
   await page.goto("/pactos");
   await llenarPacto(page);
   await page.getByRole("button", { name: "Enviar a la comunidad" }).click();
+  await page.getByRole("button", { name: "Simular: la comunidad acepta" }).click();
   await expect(page.getByRole("list", { name: "Pasos del pacto" })).toBeVisible();
-  await expect(page.getByText(/Versión \d/)).toBeVisible();
+  await expect(page.getByTestId("version-pacto")).toHaveText("Versión 1");
   await page.getByRole("tab", { name: "Sumarte con plata" }).click();
   await expect(page.getByRole("list", { name: "Pasos del pacto" })).toHaveCount(0);
   await expect(page.getByText(/Versión \d/)).toHaveCount(0);
