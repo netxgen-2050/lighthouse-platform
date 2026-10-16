@@ -203,6 +203,32 @@ test.describe("/congreso sin sesión", () => {
   });
 });
 
+test("axe sin violaciones serias o críticas: /fogon/consultas", async ({ page }) => {
+  await page.goto("/fogon/consultas");
+  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(4);
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /fogon/consultas/u1 abierta, con el reparto a medias y el bloqueo a la vista", async ({ page }) => {
+  await page.goto("/fogon/consultas/u1");
+  await expect(page.getByRole("region", { name: "Mi reparto" })).toBeVisible();
+  const mas = page.getByRole("button", { name: "Sumar un voto a Regeneración ecológica" });
+  for (let i = 0; i < 10; i++) await mas.click();
+  await expect(page.getByText("Te quedan 0 de 100 créditos")).toBeVisible();
+  await expect(page.getByText(/No te alcanzan los créditos/).first()).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /fogon/consultas/u4 cerrada, con resultado, tabla de repartos y acta", async ({ page }) => {
+  await page.goto("/fogon/consultas/u4");
+  await page.getByRole("button", { name: "Sumar un voto a Vivero de nativas" }).click();
+  await page.getByRole("button", { name: "Guardar mi reparto" }).click();
+  await page.getByRole("button", { name: "Simular el cierre" }).click();
+  await expect(page.getByRole("region", { name: "Acta (ejemplo)" })).toBeVisible();
+  await expect(page.getByRole("table", { name: "Cómo repartió cada persona" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
 for (const ruta of rutas) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);
