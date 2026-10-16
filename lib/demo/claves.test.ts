@@ -9,6 +9,7 @@ describe("CLAVES", () => {
     expect(CLAVES.perfilDatos).toBe("lh-perfil");
     expect(CLAVES.compromisos).toBe("lighthouse.compromisos.v1");
     expect(CLAVES.congreso).toBe("lh-congreso-ticket");
+    expect(CLAVES.idiomaCongreso).toBe("lh-congreso-idioma");
     expect(CLAVES.pactos).toBe("lh-pactos");
     expect(CLAVES.semillasRonda).toBe("lh-semillas-ronda");
     expect(CLAVES.sumarte).toBe("lh-sumarte");

@@ -1,4 +1,6 @@
 import type { Evento } from "@/lib/congreso/evento";
+import type { Idioma } from "@/lib/congreso/idioma";
+import { textosEvento } from "@/lib/congreso/interfaz";
 import { Boton } from "../boton";
 import { ChipFecha } from "../chip-fecha";
 import { CuentaRegresiva } from "../cuenta-regresiva";
@@ -6,10 +8,12 @@ import { Eclipse } from "../eclipse";
 
 type Props = {
   evento: Pick<Evento, "nombre" | "sobreTitulo" | "lema" | "bajada" | "fechas" | "momentoClave" | "lugar">;
+  idioma?: Idioma;
 };
 
 /** Héroe del evento: eclipse decorativo, fechas, cuenta regresiva, el único h1 de la página y la tarjeta del lugar. */
-export function Heroe({ evento }: Props) {
+export function Heroe({ evento, idioma = "es" }: Props) {
+  const t = textosEvento(idioma);
   return (
     <header className="ev-hero" id="inicio">
       <div className="ev-estrellas" aria-hidden="true" />
@@ -27,8 +31,8 @@ export function Heroe({ evento }: Props) {
       </svg>
       <div className="ev-hero-cont">
         <div className="ev-hero-top">
-          <ChipFecha inicio={evento.fechas.inicio} fin={evento.fechas.fin} />
-          <CuentaRegresiva momentoIso={evento.momentoClave.iso} etiqueta={evento.momentoClave.etiqueta} />
+          <ChipFecha inicio={evento.fechas.inicio} fin={evento.fechas.fin} idioma={idioma} />
+          <CuentaRegresiva momentoIso={evento.momentoClave.iso} etiqueta={evento.momentoClave.etiqueta} idioma={idioma} />
         </div>
         <div className="ev-hero-titulo">
           <p className="ev-hero-sobre">{evento.sobreTitulo}</p>
@@ -44,10 +48,10 @@ export function Heroe({ evento }: Props) {
             <strong>{evento.lugar.region}</strong>
             <div className="ev-fila">
               <Boton variante="corona" href="#entradas">
-                Quiero ir
+                {t.quieroIr}
               </Boton>
               <Boton variante="linea" href="#recorrido">
-                Ver el recorrido
+                {t.verElRecorrido}
               </Boton>
             </div>
           </div>

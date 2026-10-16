@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { TERMINOS, esBorrador, type ClaveTermino } from "./terminos";
+import { TERMINOS, esBorrador, terminoEn, type ClaveTermino } from "./terminos";
 
 const mock = readFileSync(
   path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"),
@@ -92,6 +92,15 @@ describe("catálogo legal", () => {
     expect(esBorrador("datos")).toBe(true);
     expect(esBorrador("transferencia")).toBe(true);
     expect(TERMINOS.transferencia.texto).toContain("Estados Unidos");
+  });
+  it("ticket, presencia, obra y encuentroeducativo tienen versión en inglés, y las demás no", () => {
+    for (const clave of ["ticket", "presencia", "obra", "encuentroeducativo"] as const) {
+      const en = terminoEn(clave);
+      expect(en?.titulo.trim()).toBeTruthy();
+      expect(en?.texto.trim()).toBeTruthy();
+      expect(en?.texto).not.toBe(TERMINOS[clave].texto);
+    }
+    expect(terminoEn("ritual")).toBeUndefined();
   });
   for (const [clave, t] of Object.entries(TERMINOS)) {
     // Los borradores son textos nuevos que no vienen del mock-up.

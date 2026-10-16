@@ -5,6 +5,10 @@ describe("rangoFechas", () => {
   it("5 al 9 de febrero", () => {
     expect(rangoFechas("2027-02-05", "2027-02-09")).toEqual({ dias: "5–9", mesAnio: "febrero 2027" });
   });
+  it("en inglés", () => {
+    expect(rangoFechas("2027-02-05", "2027-02-09", "en")).toEqual({ dias: "5–9", mesAnio: "February 2027" });
+    expect(rangoFechas("2027-01-28", "2027-02-02", "en")).toEqual({ dias: "28 Jan – 2 Feb", mesAnio: "2027" });
+  });
   it("cruza de mes", () => {
     expect(rangoFechas("2027-01-28", "2027-02-02")).toEqual({ dias: "28 ene – 2 feb", mesAnio: "2027" });
   });
@@ -33,5 +37,10 @@ describe("textoPrecio", () => {
   });
   it("separador de miles es-AR", () => {
     expect(textoPrecio({ precio: { monto: 12500, moneda: "USD" } })).toBe("USD 12.500");
+  });
+  it("en inglés: separador en-US, unidad del contenido y sin precio", () => {
+    expect(textoPrecio({ precio: { monto: 1200, moneda: "USD" } }, "en")).toBe("USD 1,200");
+    expect(textoPrecio({ precio: { monto: 250, moneda: "USD", unidad: "each" } }, "en")).toBe("USD 250 each");
+    expect(textoPrecio({}, "en")).toBe("Price not available");
   });
 });

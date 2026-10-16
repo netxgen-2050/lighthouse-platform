@@ -9,6 +9,8 @@ export const NOMBRES_BASE = {
   perfilDatos: "lh-perfil",
   compromisos: "lighthouse.compromisos.v1",
   congreso: "lh-congreso-ticket",
+  /** Idioma elegido para la vitrina del Congreso ("es" o "en"). Preferencia de interfaz; cualquier otro valor se ignora. */
+  idiomaCongreso: "lh-congreso-idioma",
   pactos: "lh-pactos",
   semillasRonda: "lh-semillas-ronda",
   sumarte: "lh-sumarte",
