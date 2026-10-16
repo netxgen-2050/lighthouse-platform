@@ -65,6 +65,10 @@ toco_el_limite() {
   tail -n 5 "$1" | grep -qiE "usage limit|rate limit|hit your limit|hit your session limit|session limit|limit reached"
 }
 
+se_corto_la_red() {
+  tail -n 5 "$1" | grep -qiE "can't reach the api server|ENOTFOUND|ECONNRESET|ETIMEDOUT|network error|overloaded"
+}
+
 # Corre una sesión headless; si se toca el límite de uso, espera y reintenta (hasta 12 veces, ~6 h).
 correr_claude() {
   local dir="$1" prompt="$2" log="$3"
@@ -73,12 +77,15 @@ correr_claude() {
           --permission-mode acceptEdits \
           --model sonnet \
           --output-format stream-json --verbose) >> "$log" 2>&1 \
-       && ! toco_el_limite "$log"; then
+       && ! toco_el_limite "$log" && ! se_corto_la_red "$log"; then
       return 0
     fi
     if toco_el_limite "$log"; then
       echo "[$(date +%T)] Límite de uso alcanzado; espero 30 minutos y retomo." | tee -a "$log"
       sleep 1800
+    elif se_corto_la_red "$log"; then
+      echo "[$(date +%T)] Se cortó la red o la API no responde; espero 5 minutos y retomo." | tee -a "$log"
+      sleep 300
     else
       return 1
     fi
