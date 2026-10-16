@@ -8,7 +8,7 @@ import { useSesion } from "@/components/sesion/contexto";
 import { guardarPreferencias, leerPreferenciasDelNavegador } from "@/lib/configuracion/almacen";
 import { leerPreferenciaIdioma } from "@/lib/congreso/preferencia-idioma";
 import { idiomaDeCookies, textoDeCookie } from "./cookie";
-import { decidirSincronizacion } from "./sincronizar";
+import { debeRecargar, decidirSincronizacion } from "./sincronizar";
 import { textos, type Zona } from "./textos";
 import type { Idioma } from "./tipos";
 
@@ -116,9 +116,7 @@ export function SincronizarIdioma() {
     if (decision.guardarEnPersona) guardarEnPersona(decision.guardarEnPersona);
     // Se vuelve a cargar la página (no `router.refresh()`): esto corre al hidratar y un refresco tan temprano se puede perder.
     // Solo si la cookie quedó escrita: con las cookies bloqueadas el servidor no la vería y la página se recargaría sin fin.
-    if (decision.refrescar && decision.escribirCookie && idiomaDeCookies(document.cookie) === decision.escribirCookie) {
-      window.location.reload();
-    }
+    if (debeRecargar(decision, idiomaDeCookies(document.cookie))) window.location.reload();
     // Se corre al saber quién es la persona y su consentimiento; el idioma mostrado cambia como consecuencia.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [estado, consentimiento, idPersona]);

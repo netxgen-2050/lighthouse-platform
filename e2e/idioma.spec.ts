@@ -74,6 +74,31 @@ test.describe("sin cuenta", () => {
     expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
 
+  test("(d) una dirección que no existe, en inglés, no muestra el aviso de sin traducir", async ({ page }) => {
+    await page.goto("/tribus/no-existe?lang=en");
+    await expect(html(page)).toHaveAttribute("lang", "en");
+    // El aviso queda en el DOM pero oculto por CSS cuando la página es un 404 (ya traducido).
+    await expect(page.getByText("This page is only available in Spanish for now.")).not.toBeVisible();
+    await expect(page.locator("[data-no-encontrada]")).toBeVisible();
+  });
+
+  test("(a) el enlace del selector sigue la query cambiada sin navegar, al acercar el puntero y al enfocar", async ({ page }) => {
+    await page.goto("/tribus");
+    const en = selector(page).getByRole("link", { name: "EN · English" });
+    await page.evaluate(() => window.history.replaceState(null, "", "/tribus?sel=valle"));
+    await selector(page).hover();
+    await expect(en).toHaveAttribute("href", "/tribus?sel=valle&lang=en");
+    await page.evaluate(() => window.history.replaceState(null, "", "/tribus?sel=otro"));
+    await selector(page).getByRole("link", { name: "ES · Español" }).focus();
+    await expect(en).toHaveAttribute("href", "/tribus?sel=otro&lang=en");
+    // Una query con lang propio no lo duplica.
+    await page.evaluate(() => window.history.replaceState(null, "", "/tribus?lang=fr&sel=x"));
+    // El puntero ya estaba dentro: se saca y se vuelve a meter para que dispare la entrada.
+    await page.mouse.move(0, 400);
+    await selector(page).hover();
+    await expect(en).toHaveAttribute("href", "/tribus?sel=x&lang=en");
+  });
+
   test("(d) una página traducida no lleva el aviso", async ({ page }) => {
     await page.goto("/congreso/en");
     await expect(page.getByRole("heading", { level: 1, name: /Solarpunk Patagonia/ })).toBeVisible();

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { decidirSincronizacion } from "./sincronizar";
+import { debeRecargar, decidirSincronizacion } from "./sincronizar";
 
 const base = { cookie: null, persona: null, viejo: null, mostrado: "es", conPersona: true } as const;
 
@@ -50,5 +50,26 @@ describe("decidirSincronizacion", () => {
 
   test("la elección de la persona gana sobre la vieja del Congreso", () => {
     expect(decidirSincronizacion({ ...base, persona: "es", viejo: "en" }).escribirCookie).toBe("es");
+  });
+});
+
+describe("debeRecargar", () => {
+  const pide = { escribirCookie: "en", refrescar: true } as const;
+
+  test("recarga cuando la cookie quedó escrita con el idioma pedido", () => {
+    expect(debeRecargar(pide, "en")).toBe(true);
+  });
+
+  test("no recarga con las cookies bloqueadas (no se lee nada) para no entrar en un bucle", () => {
+    expect(debeRecargar(pide, null)).toBe(false);
+  });
+
+  test("no recarga si la cookie leída es otra", () => {
+    expect(debeRecargar(pide, "es")).toBe(false);
+  });
+
+  test("no recarga si la decisión no lo pide o no escribe cookie", () => {
+    expect(debeRecargar({ escribirCookie: "en", refrescar: false }, "en")).toBe(false);
+    expect(debeRecargar({ refrescar: true }, "en")).toBe(false);
   });
 });

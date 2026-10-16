@@ -23,6 +23,14 @@ export type DecisionSincronizacion = {
 };
 
 /**
+ * ¿Hay que recargar la página? Solo si la decisión lo pide y la cookie quedó escrita de verdad (`cookieLeida` es lo que
+ * el navegador devuelve tras escribirla): con las cookies bloqueadas el servidor no la vería y la página se recargaría sin fin.
+ */
+export function debeRecargar(decision: DecisionSincronizacion, cookieLeida: Idioma | null): boolean {
+  return decision.refrescar && !!decision.escribirCookie && cookieLeida === decision.escribirCookie;
+}
+
+/**
  * Reglas de design §4 al entrar:
  * 1. La cookie manda (es lo elegido en este navegador): si la persona tiene otra cosa guardada, se guarda la de la cookie.
  * 2. Sin cookie y con una elección guardada de la persona: se escribe la cookie y se refresca.
