@@ -35,6 +35,10 @@ Sugerencia: primero `reportar-circulo` (es chico, sirve de prueba de la nube) y 
 
 Podés pedir directamente, por ejemplo: "Leé el issue #N (`gh api repos/netxgen-2050/lighthouse-platform/issues/N`) y escribí una spec OpenSpec para arreglarlo, en la rama `agente/spec-issue-N`, con un PR". Las specs las aprueba Gus antes de implementarlas.
 
+## Para pedir una spec en un solo paso
+
+En una sesión nueva (rama `dev`), pedí: "Corré `scripts/spec.sh <nombre> \"<lo que querés>\"`". Deja un PR de specs revisado por el arquitecto y anota las preguntas en el issue **🧭 Decisiones de Gus**, que podés contestar desde la app de GitHub.
+
 ## Lo que no hacen las sesiones
 
 - No mergean a `dev` ni a `main`: eso lo hace Gus (o Claude con su OK, desde la Mac).

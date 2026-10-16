@@ -20,6 +20,7 @@ const ramaActual = () => {
 if (/\bgh\s+pr\s+merge\b|\/merge\b.*-X\s*PUT|-X\s*PUT.*\/merge\b/.test(cmd)) bloquear("solo Gus mergea PRs.");
 const protegida = (r) => ["main", "master", "dev"].includes(r);
 if (/\bgit\s+merge\b/.test(cmd) && protegida(ramaActual())) bloquear(`no se mergea en ${ramaActual()}.`);
+if (/\bscripts\/integrar\.sh\b/.test(cmd)) bloquear("integrar a dev o a main lo hacen Gus o Claude con su OK, no los agentes.");
 if (/\bgit\s+push\b[^;&|]*(--force|--force-with-lease|\s-f\b|\s\+)/.test(cmd)) bloquear("push forzado prohibido.");
 if (/\bgit\s+push\b[^;&|]*(\s|:|\/)(main|master|dev)(\s|$|;|&|\|)/.test(cmd)) bloquear("no se pushea a dev ni a main; usá la rama agente/<cambio>.");
 if (/\bgit\s+push\b/.test(cmd) && protegida(ramaActual())) bloquear(`estás en ${ramaActual()}; cambiá a agente/<cambio> antes de pushear.`);
