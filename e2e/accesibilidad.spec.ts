@@ -232,7 +232,7 @@ test("axe sin violaciones serias o críticas: /congreso/en con el modo de origen
 test.describe("la plataforma en inglés", () => {
   test.use({ locale: "en-US" });
 
-  for (const ruta of ["/", "/tribus", "/configuracion"]) {
+  for (const ruta of ["/", "/sumarte", "/tribus", "/configuracion"]) {
     test(`axe sin violaciones serias o críticas en inglés: ${ruta}`, async ({ page }) => {
       await page.goto(ruta);
       await expect(page.locator("html")).toHaveAttribute("lang", "en");
