@@ -29,6 +29,14 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Glosario de términos de la plataforma (Pase Fundador, Fogón…); confirmado por Gus el 15-oct-2026, falta el nativo",
   },
+  "lib/legal/terminos.ts": {
+    estado: "pendiente",
+    que: "Catálogo de términos legales (⚖) con su explicación en inglés; borradores sin revisión legal",
+  },
+  "lib/congreso/evento-ejemplo.ts": {
+    estado: "pendiente",
+    que: "Página del Congreso en inglés (/congreso/en): datos de ejemplo del evento",
+  },
 };
 
 /** Cantidad de textos en inglés de una fuente, si se puede contar sin leer el archivo. */
@@ -41,7 +49,13 @@ export function cantidadEnIngles(fuente: string): number | null {
 
 /** Fuentes que un diccionario o el glosario exigen anotar. */
 export function fuentesObligatorias(): string[] {
-  return [...Object.keys(DICCIONARIOS).map((z) => `textos/${z}`), "glosario"];
+  return [
+    ...Object.keys(DICCIONARIOS).map((z) => `textos/${z}`),
+    "glosario",
+    // Archivos con inglés propio fuera de los diccionarios.
+    "lib/legal/terminos.ts",
+    "lib/congreso/evento-ejemplo.ts",
+  ];
 }
 
 /** La lista de pendientes en Markdown (la versiona `docs/idioma/revisar-nativo.md`). */

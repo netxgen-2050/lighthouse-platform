@@ -30,6 +30,13 @@ describe("resolverIdioma · ?lang=", () => {
     expect(destino(r)).toBe("/tribus");
   });
 
+  test("el nombre codificado (%6Cang) también se quita, sin redirigir en bucle", () => {
+    const r = resolverIdioma(u("/tribus?%6Cang=en&a=1"), undefined, null);
+    expect(r.cookie).toBe("en");
+    expect(destino(r)).toBe("/tribus?a=1");
+    expect(resolverIdioma(u("/tribus?%6Cang=fr"), undefined, null).redirigir?.search).toBe("");
+  });
+
   test("/congreso?lang=en va a /congreso/en", () => {
     const r = resolverIdioma(u("/congreso?lang=en&utm_source=x"), undefined, "es-AR");
     expect(r.cookie).toBe("en");

@@ -6,7 +6,8 @@ export function AvisoSinTraducir() {
   return (
     <p
       lang="en"
-      className="mx-6 mt-4 w-fit rounded-lg sm:mx-10 border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink"
+      // La pantalla de "no encontrado" sí está traducida (lleva `data-no-encontrada`): ahí el aviso sobra.
+      className="has-[+div_[data-no-encontrada]]:hidden mx-6 mt-4 w-fit rounded-lg sm:mx-10 border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink"
     >
       This page is only available in Spanish for now.
     </p>

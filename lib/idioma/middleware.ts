@@ -14,12 +14,22 @@ export type ResultadoIdioma = {
 
 const CABECERAS_PRIVADAS = { "Cache-Control": "private, no-store", Vary: "Cookie, Accept-Language" };
 
+/** El nombre del parámetro como lo ve `searchParams` (decodificado: `%6Cang` es `lang`, `+` es espacio). */
+function nombreDecodificado(parte: string): string {
+  const nombre = parte.split("=")[0].replace(/\+/g, " ");
+  try {
+    return decodeURIComponent(nombre);
+  } catch {
+    return nombre;
+  }
+}
+
 /** La query sin el parámetro `lang`, conservando el resto tal como llegó (sin re-codificar). */
 function sinLang(search: string): string {
   const partes = search
     .replace(/^\?/, "")
     .split("&")
-    .filter((p) => p !== "" && p.split("=")[0] !== "lang");
+    .filter((p) => p !== "" && nombreDecodificado(p) !== "lang");
   return partes.length ? `?${partes.join("&")}` : "";
 }
 

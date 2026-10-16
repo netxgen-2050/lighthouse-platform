@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import type { MouseEvent } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { useCambiarIdioma, useIdiomaDePlataforma } from "@/lib/idioma/cliente";
 import { rutaParaIdioma } from "@/lib/idioma/rutas";
 import type { Idioma } from "@/lib/idioma/tipos";
@@ -10,6 +10,13 @@ const OPCIONES: { idioma: Idioma; corto: string; largo: string }[] = [
   { idioma: "es", corto: "ES", largo: "Español" },
   { idioma: "en", corto: "EN", largo: "English" },
 ];
+
+/** La query de la dirección sin `lang` (que el enlace pone de nuevo). */
+function restoDeLaQuery(search: string): string {
+  const params = new URLSearchParams(search);
+  params.delete("lang");
+  return params.toString();
+}
 
 const FOCO = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
@@ -23,6 +30,19 @@ export function SelectorIdioma() {
   const idioma = useIdiomaDePlataforma();
   const ruta = usePathname();
   const cambiar = useCambiarIdioma();
+  // Los demás parámetros de la dirección (`?sel=`…) se conservan en el enlace. Se leen tras hidratar: el servidor no los
+  // conoce aquí y `useSearchParams` obligaría a toda página del marco a esperar al navegador.
+  const [resto, setResto] = useState("");
+  useEffect(() => {
+    // Lectura de la dirección del navegador tras hidratar.
+    setResto(restoDeLaQuery(window.location.search));
+  }, [ruta]);
+
+  function enlace(destino: Idioma): string {
+    const params = new URLSearchParams(resto);
+    params.set("lang", destino);
+    return `${ruta}?${params.toString()}`;
+  }
 
   function elegir(e: MouseEvent<HTMLAnchorElement>, destino: Idioma) {
     // Con Ctrl, Cmd, Shift, Alt o clic medio queda el comportamiento normal del enlace.
@@ -41,7 +61,7 @@ export function SelectorIdioma() {
         return (
           <a
             key={o.idioma}
-            href={`${ruta}?lang=${o.idioma}`}
+            href={enlace(o.idioma)}
             lang={o.idioma}
             hrefLang={o.idioma}
             aria-current={actual ? "true" : undefined}

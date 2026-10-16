@@ -8,7 +8,7 @@ export default async function NoEncontrada() {
   const t = textos("marco", idioma);
   return (
     // El lang propio evita que la página quede marcada como español si la puerta la envuelve como "sin traducir".
-    <div lang={idioma} className="mx-auto max-w-3xl p-6 sm:p-10">
+    <div lang={idioma} data-no-encontrada className="mx-auto max-w-3xl p-6 sm:p-10">
       <h1 className="text-3xl font-semibold">{t.noEncontrada.titulo}</h1>
       <p className="mt-2">
         <Link className="underline" href="/tribus">{t.noEncontrada.volver}</Link>
