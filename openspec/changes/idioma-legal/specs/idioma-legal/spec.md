@@ -52,14 +52,14 @@ The English policy SHALL be published as the translation of the policy version i
 - **THEN** la lista "What changed" está en inglés y menciona aceptar al crear la cuenta, el idioma guardado en el navegador y las novedades opcionales por email
 
 ### Requirement: Consentimiento y Mis datos en inglés
-With English as the platform language, the consent screen, both consent steps before the login (account creation, "Create your account", and sign-in, "Sign in", including its "What changed" list) and `/mis-datos` SHALL be fully in English, keeping two separate unchecked required checkboxes, the separate unchecked optional checkbox for email updates and the same behavior as in Spanish.
+With English as the platform language, the consent screen, the entry dialog before the login (titled "Create your account" or "Sign in", with its email step when it exists and its consent block, including the "What changed" list when the dialog shows it) and `/mis-datos` SHALL be fully in English, keeping two separate unchecked required checkboxes, the separate unchecked optional checkbox for email updates and the same behavior as in Spanish.
 
 #### Scenario: Alta en inglés
 - **WHEN** una persona sin sesión y con la plataforma en inglés elige "Join for free" en Sumarte
 - **THEN** ve "Create your account" con el resumen en inglés, la marca de borrador, las dos casillas obligatorias sin marcar y, aparte, la casilla opcional de novedades sin marcar
 
 #### Scenario: Entrar en inglés
-- **WHEN** una persona sin sesión y con la plataforma en inglés aprieta "Sign in" en la barra superior
+- **WHEN** una persona sin sesión y con la plataforma en inglés aprieta "Sign in" en la barra superior (y, si el diálogo pide el email, escribe uno sin cuenta)
 - **THEN** ve el paso "Sign in" con el resumen en inglés, la marca de borrador, las dos casillas obligatorias sin marcar y, aparte, la casilla opcional de novedades sin marcar
 - **AND** el login no se abre hasta que marque las dos obligatorias
 
