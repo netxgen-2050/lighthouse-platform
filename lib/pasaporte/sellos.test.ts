@@ -30,7 +30,7 @@ describe("sellos", () => {
     }
     expect(s["miembro-red"].estado).toBe("disponible");
     expect(s["miembro-red"].accion).toMatchObject({ tipo: "enlace", href: "/sumarte" });
-    expect(s.identidad.accion).toEqual({ tipo: "kyc", texto: "Verificar mi identidad" });
+    expect(s.identidad.accion).toEqual({ tipo: "enlace", texto: "Ver la verificación", href: "/pasaporte#identidad" });
     expect(s.residente.estado).toBe("no-disponible");
   });
 
