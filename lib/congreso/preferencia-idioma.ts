@@ -17,6 +17,26 @@ export function leerPreferenciaIdioma(): Idioma | null {
   }
 }
 
+/**
+ * Guardado que espera a la sesión: si se elige mientras carga, la elección queda pendiente y se escribe cuando
+ * la sesión termina de cargar (así no se guarda en la clave equivocada ni se pierde).
+ */
+export function crearGuardadoDiferido(guardar: (idioma: Idioma) => void) {
+  let pendiente: Idioma | null = null;
+  return {
+    elegir(idioma: Idioma, cargando: boolean) {
+      if (cargando) pendiente = idioma;
+      else guardar(idioma);
+    },
+    sesionLista() {
+      if (!pendiente) return;
+      const idioma = pendiente;
+      pendiente = null;
+      guardar(idioma);
+    },
+  };
+}
+
 /** Guarda la preferencia. Si el navegador no deja guardar, no rompe: la elección vale solo para esta visita. */
 export function guardarPreferenciaIdioma(idioma: Idioma): void {
   try {

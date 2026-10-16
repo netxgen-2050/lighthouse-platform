@@ -1,12 +1,39 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { establecerPersona } from "@/lib/demo/claves";
-import { guardarPreferenciaIdioma, idiomaGuardado, leerPreferenciaIdioma } from "./preferencia-idioma";
+import { crearGuardadoDiferido, guardarPreferenciaIdioma, idiomaGuardado, leerPreferenciaIdioma } from "./preferencia-idioma";
 
 describe("idiomaGuardado", () => {
   it("acepta es y en, y ignora todo lo demás", () => {
     expect(idiomaGuardado("es")).toBe("es");
     expect(idiomaGuardado("en")).toBe("en");
     for (const x of ["fr", "EN", "", " en", null, undefined]) expect(idiomaGuardado(x)).toBeNull();
+  });
+});
+
+describe("crearGuardadoDiferido", () => {
+  it("con la sesión lista guarda al instante", () => {
+    const guardar = vi.fn();
+    const g = crearGuardadoDiferido(guardar);
+    g.elegir("es", false);
+    expect(guardar).toHaveBeenCalledWith("es");
+  });
+
+  it("mientras carga no guarda y escribe la elección cuando la sesión termina", () => {
+    const guardar = vi.fn();
+    const g = crearGuardadoDiferido(guardar);
+    g.elegir("es", true);
+    expect(guardar).not.toHaveBeenCalled();
+    g.sesionLista();
+    expect(guardar).toHaveBeenCalledTimes(1);
+    expect(guardar).toHaveBeenCalledWith("es");
+    g.sesionLista();
+    expect(guardar).toHaveBeenCalledTimes(1);
+  });
+
+  it("si no hubo elección pendiente, sesionLista no guarda nada", () => {
+    const guardar = vi.fn();
+    crearGuardadoDiferido(guardar).sesionLista();
+    expect(guardar).not.toHaveBeenCalled();
   });
 });
 
