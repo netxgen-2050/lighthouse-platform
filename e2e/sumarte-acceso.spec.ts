@@ -178,6 +178,110 @@ test.describe("Líder de tribu", () => {
     await expect(page.getByText("Admin de Valle Solar")).toHaveCount(0);
   });
 
+  async function liderarValle(page: Page) {
+    await page.goto("/sumarte");
+    await page.getByRole("button", { name: "Sumar mi tribu" }).click();
+    await page.getByRole("radio", { name: /Valle Solar/ }).check();
+    await page.getByRole("button", { name: "Ser líder de esta tribu" }).click();
+    await expect(page.getByText("Sos líder de Valle Solar (simulado)")).toBeFocused();
+  }
+
+  test("sumar Taller Común siendo líder de Valle Solar pide confirmar y deja las dos marcas y el total", async ({ page }) => {
+    await liderarValle(page);
+    await page.getByRole("button", { name: "Sumar otra tribu" }).click();
+    const grupo = page.getByRole("group", { name: "¿Qué otra tribu vas a liderar?" });
+    await expect(grupo.getByRole("radio", { name: /Valle Solar/ })).toHaveCount(0);
+    await grupo.getByRole("radio", { name: /Taller Común/ }).check();
+    await page.getByRole("button", { name: "Ser líder de esta tribu" }).click();
+    const dialogo = page.getByRole("dialog", { name: "Sumar otra tribu" });
+    await expect(dialogo).toContainText("Ya sos líder de Valle Solar. ¿Querés sumar también Taller Común? Vas a administrar las dos.");
+    await expect(dialogo).toContainText("Simulado: en la versión real lo aprueba el super admin");
+    const axe = await new AxeBuilder({ page }).analyze();
+    expect(axe.violations).toEqual([]);
+    await dialogo.getByRole("button", { name: "Sí, sumar Taller Común" }).click();
+    await expect(page.getByText("Sos líder de Valle Solar y Taller Común (simulado)")).toBeFocused();
+    await expect(page.getByText("Total: USD 120/mes")).toBeVisible();
+    await expect(page.getByText("USD 60/mes por tribu")).toBeVisible();
+    await page.goto("/tribus/valle");
+    await expect(page.getByRole("main").getByText("Admin de Valle Solar")).toBeVisible();
+    await page.goto("/tribus/taller");
+    await expect(page.getByRole("main").getByText("Admin de Taller Común")).toBeVisible();
+    await page.goto("/tribus/semilla");
+    await expect(page.getByText(/Admin de /)).toHaveCount(0);
+  });
+
+  test("cancelar el diálogo con Escape no suma y devuelve el foco a Sumar otra tribu", async ({ page }) => {
+    await liderarValle(page);
+    await page.getByRole("button", { name: "Sumar otra tribu" }).click();
+    await page.getByRole("radio", { name: /Taller Común/ }).check();
+    await page.getByRole("button", { name: "Ser líder de esta tribu" }).click();
+    await expect(page.getByRole("dialog", { name: "Sumar otra tribu" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Sumar otra tribu" })).toBeFocused();
+    await expect(page.getByText("Sos líder de Valle Solar (simulado)")).toBeVisible();
+  });
+
+  test("cancelar el diálogo con el botón Cancelar no suma y devuelve el foco a Sumar otra tribu", async ({ page }) => {
+    await liderarValle(page);
+    await page.getByRole("button", { name: "Sumar otra tribu" }).click();
+    await page.getByRole("radio", { name: /Taller Común/ }).check();
+    await page.getByRole("button", { name: "Ser líder de esta tribu" }).click();
+    await page.getByRole("dialog", { name: "Sumar otra tribu" }).getByRole("button", { name: "Cancelar" }).click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Sumar otra tribu" })).toBeFocused();
+    await expect(page.getByText("Sos líder de Valle Solar (simulado)")).toBeVisible();
+  });
+
+  test("el menú del avatar nombra las dos tribus que lidera", async ({ page }) => {
+    await liderarValle(page);
+    await page.getByRole("button", { name: "Sumar otra tribu" }).click();
+    await page.getByRole("radio", { name: /Taller Común/ }).check();
+    await page.getByRole("button", { name: "Ser líder de esta tribu" }).click();
+    await page.getByRole("button", { name: "Sí, sumar Taller Común" }).click();
+    await page.getByRole("button", { name: "Menú de la persona" }).click();
+    await expect(page.getByText("Admin de Valle Solar y Taller Común")).toBeVisible();
+  });
+
+  test("dejar de liderar una tribu deja la otra, y la última deja como Miembro", async ({ page }) => {
+    await liderarValle(page);
+    await page.getByRole("button", { name: "Sumar otra tribu" }).click();
+    await page.getByRole("radio", { name: /Taller Común/ }).check();
+    await page.getByRole("button", { name: "Ser líder de esta tribu" }).click();
+    await page.getByRole("button", { name: "Sí, sumar Taller Común" }).click();
+    await page.getByRole("button", { name: "Dejar de liderar Taller Común" }).click();
+    await expect(page.getByText("Sos líder de Valle Solar (simulado)")).toBeFocused();
+    await page.getByRole("button", { name: "Dejar de liderar Valle Solar" }).click();
+    await expect(page.getByText("Tu plan actual:")).toContainText("Miembro");
+    await expect(page.getByRole("button", { name: "Sumar mi tribu" })).toBeVisible();
+    await habilitados(page, PARTICIPAR);
+  });
+
+  test("volver a Explorador deja todas las tribus", async ({ page }) => {
+    await liderarValle(page);
+    await page.getByRole("button", { name: "Sumar otra tribu" }).click();
+    await page.getByRole("radio", { name: /Taller Común/ }).check();
+    await page.getByRole("button", { name: "Ser líder de esta tribu" }).click();
+    await page.getByRole("button", { name: "Sí, sumar Taller Común" }).click();
+    await page.getByRole("button", { name: "Volver a Explorador" }).click();
+    await page.goto("/tribus/valle");
+    await expect(page.getByText(/Admin de /)).toHaveCount(0);
+    await page.goto("/tribus/taller");
+    await expect(page.getByText(/Admin de /)).toHaveCount(0);
+  });
+
+  test("con una tribu nueva pendiente no se ofrece proponer otra", async ({ page }) => {
+    await liderarValle(page);
+    await page.getByRole("button", { name: "Sumar otra tribu" }).click();
+    await page.getByRole("radio", { name: "Proponer una tribu nueva" }).check();
+    await page.getByRole("button", { name: "Ser líder de esta tribu" }).click();
+    await page.getByRole("button", { name: "Sí, sumar una tribu nueva" }).click();
+    await expect(page).toHaveURL(/\/tribus#sec-vacantes$/);
+    await page.goto("/sumarte");
+    await page.getByRole("button", { name: "Sumar otra tribu" }).click();
+    await expect(page.getByRole("radio", { name: "Proponer una tribu nueva" })).toHaveCount(0);
+  });
+
   test("proponer una tribu nueva lleva a los barrios vacantes", async ({ page }) => {
     await page.goto("/sumarte");
     await page.getByRole("button", { name: "Sumar mi tribu" }).click();

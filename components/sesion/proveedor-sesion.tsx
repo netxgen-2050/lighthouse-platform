@@ -139,10 +139,15 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
   }, [idPersona]);
 
   const nivelListo = resultado.estado !== "ok" || (guardado !== null && guardado.id === idPersona);
-  const { nivel, tribuLider } = calcularNivel(
+  const { nivel, tribusLider: tribusCalculadas, tribuFija } = calcularNivel(
     guardado && guardado.id === idPersona ? guardado.estado : INICIAL,
     resultado.estado === "ok" && resultado.sesion ? resultado.sesion : null,
   );
+
+  // La lista se recalcula en cada vuelta: se estabiliza por contenido para no rehacer el valor del contexto sin motivo.
+  const clavTribus = tribusCalculadas.join(",");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const tribusLider = useMemo(() => tribusCalculadas, [clavTribus]);
 
   // Qué aceptó la persona de la política de privacidad: sin eso no usa la app con sesión (lo aplica la puerta).
   const { estado: consentimiento } = useConsentimiento(idPersona);
@@ -204,11 +209,12 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       nivel,
       nivelListo,
       consentimiento,
-      tribuLider,
+      tribusLider,
+      tribuFija,
       salir,
       cabeceras,
     }),
-    [resultado, prueba, privy, login, ruta, router, entrarComo, nivel, nivelListo, consentimiento, tribuLider, salir, cabeceras],
+    [resultado, prueba, privy, login, ruta, router, entrarComo, nivel, nivelListo, consentimiento, tribusLider, tribuFija, salir, cabeceras],
   );
 
   return (
