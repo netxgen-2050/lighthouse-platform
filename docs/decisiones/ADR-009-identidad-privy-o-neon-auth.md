@@ -2,7 +2,7 @@
 
 - **Estado:** Aceptada (Gus eligió la opción C el 2026-10-15: Neon Auth ahora para el login; billeteras en noviembre con una prueba de una noche)
 - **Fecha:** 2026-10-15
-- **Cambio OpenSpec relacionado:** ninguno todavía (lo abre la recomendación: `identidad-neon-auth`). Toca las specs aprobadas sin implementar `base-neon`, `consentimiento-alta`, `idioma-hifa-avisos` y, en el PR #76, `consentimiento-en-la-base` y `fogon-cuadratico-en-la-base`. Se apoya en ADR-001, ADR-005, ADR-006 y ADR-008 (PR #76).
+- **Cambio OpenSpec relacionado:** `login-neon-auth` (el que en la recomendación se llamaba `identidad-neon-auth`) y `base-neon` (tabla `cuentas`, sin `privy_id`), ambos escritos el 15-oct-2026. Toca las specs aprobadas sin implementar `base-neon`, `consentimiento-alta`, `idioma-hifa-avisos` y, en el PR #76, `consentimiento-en-la-base` y `fogon-cuadratico-en-la-base`. Se apoya en ADR-001, ADR-005, ADR-006 y ADR-008 (PR #76).
 
 ## Contexto
 Hoy el login es Privy en modo desarrollo: su ventana (email con código y Google) crea además una billetera embebida para todos (`createOnLogin`). Tres cosas obligan a decidir ahora:

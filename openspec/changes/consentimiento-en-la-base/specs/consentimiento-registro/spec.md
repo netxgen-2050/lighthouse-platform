@@ -22,15 +22,19 @@ Guardar en el servidor, como libro de solo agregar, qué aceptó o retiró cada 
 - **THEN** la API responde 422 y no escribe nada
 
 ### Requirement: Persona nueva con su primer consentimiento
-A person who is not yet in `personas` SHALL get their row in the same transaction as their first `acepta`; `/api/sesion` MUST NOT create it. A person already loaded by the team SHALL only get their Privy id completed.
+A person who is not yet in `personas` SHALL get their row, and the `cuentas` row of the login account in session, in the same transaction as their first `acepta`; `/api/sesion` MUST NOT create them. A person already loaded by the team SHALL only get the account of the session linked if they do not have one from that provider. The person in session SHALL be resolved through `cuentas`, the same way for any login provider.
 
 #### Scenario: Persona nueva
 - **WHEN** una persona que nunca entró acepta por primera vez
-- **THEN** su fila en `personas` y sus dos filas `acepta` aparecen juntas, o no aparece ninguna si algo falla
+- **THEN** su fila en `personas`, su fila en `cuentas` y sus dos filas `acepta` aparecen juntas, o no aparece ninguna si algo falla
 
 #### Scenario: Sin aceptar
-- **WHEN** una persona nueva entra con Privy y no acepta
-- **THEN** no hay ninguna fila suya en `personas` ni en `consentimientos`
+- **WHEN** una persona nueva entra con su proveedor de login y no acepta
+- **THEN** no hay ninguna fila suya en `personas`, `cuentas` ni `consentimientos`
+
+#### Scenario: Otro proveedor, misma persona
+- **WHEN** una persona que aceptó entrando con Privy entra después con otro proveedor y el mismo email verificado
+- **THEN** su consentimiento sigue vigente y no ve la pantalla de consentimiento
 
 ### Requirement: Retirar sin borrar
 Withdrawing SHALL append `retira` rows (first email updates if they were accepted, then policy and terms, in one transaction); no row MUST ever be updated or deleted.

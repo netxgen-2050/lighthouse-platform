@@ -3,14 +3,14 @@
 ## Context
 
 - `fogon-cuadratico` deja: el motor puro en `lib/cuadratico/`, los tipos y reglas en `lib/fogon/consultas/`, la interfaz `RepositorioConsultas` con su implementación del navegador y `fuente.ts`, y las pantallas que solo hablan con el repositorio.
-- `base-neon` deja: Drizzle con migraciones en `drizzle/`, `db()` (Neon con `DATABASE_URL`; PGlite sin ella, fuera de producción), `personas` con `privy_id`, email y rol, el panel de roles y el patrón de triggers de solo agregar escritos a mano (`drizzle-kit generate --custom`).
+- `base-neon` deja: Drizzle con migraciones en `drizzle/`, `db()` (Neon con `DATABASE_URL`; PGlite sin ella, fuera de producción), `personas` con id propio, email y rol, `cuentas` (proveedor + id externo, ADR-009) para resolver la persona en sesión con Privy o Neon Auth, la regla `.test` del modo de prueba (ADR-008), el panel de roles y el patrón de triggers de solo agregar escritos a mano (`drizzle-kit generate --custom`).
 - `consentimiento-en-la-base` deja: `exigirConsentimiento(sesion)` → `personaId` o 403.
-- El cliente ya sabe mandar las cabeceras de sesión a `/api` (token de Privy o modo de prueba, `components/sesion/contexto.ts`).
+- El cliente ya sabe acreditar la sesión ante `/api` (`cabeceras()` de `components/sesion/contexto.ts`: token de Privy o modo de prueba; con Neon Auth, la cookie de sesión). Las rutas de este cambio no miran el proveedor: usan `sesionDelPedido` → `exigirConsentimiento`, que resuelven la persona en sesión por `cuentas`.
 - ADR-001: votos en columnas reales, libros de solo agregar, garantías en la base. ADR-005: nada con la identidad de la persona sin consentimiento vigente.
 
 ## Goals / Non-Goals
 
-**Goals:** que el equipo vote de verdad con garantías en la base; que el servidor entregue votos ajenos solo según la regla de la consulta (abierto: con nombre y sin email; secreto: nunca); probar Neon y Privy reales de punta a punta.
+**Goals:** que el equipo vote de verdad con garantías en la base; que el servidor entregue votos ajenos solo según la regla de la consulta (abierto: con nombre y sin email; secreto: nunca); probar Neon y el login real (Privy o Neon Auth, el que esté en uso) de punta a punta.
 
 **Non-Goals:** pantalla de administración (`fogon-consultas-panel`), consultas por tribu, Ronda 0, notificaciones.
 
@@ -99,16 +99,18 @@
 <!-- arquitecto: ver ADR-008 (Propuesta). La integración de Neon con Vercel crea, por defecto, la rama de cada preview a partir de la rama principal: una copia de producción, con sus personas, emails y votos. Sumado al modo de prueba, cualquiera que abra el preview con la cabecera `x-lh-prueba: <email de una persona real>` sería esa persona y vería su reparto. -->
 - **Condiciones para que esta prueba corra (ADR-008):**
   1. La rama de Neon del preview **no sale de producción**: sale de una rama madre sin datos reales (por ejemplo `previews`, con las migraciones y los datos de ejemplo de `scripts/`). Gus lo configura en la integración de Neon con Vercel (a verificar en su panel que se pueda elegir la rama madre; si no se puede, la integración no se usa para previews y esta prueba queda como guion manual).
-  2. **El modo de prueba solo acepta emails de dominios `.test`** (reservado, nunca es de una persona real): `resolverSesion` responde 403 con la cabecera de prueba y un email que no termine en `.test`, también en local. Es una línea en `lib/sesion/` con su test; la fixtura de los e2e ya usa `@prueba.test` por defecto. Así, aunque una rama tuviera datos reales, el modo de prueba no puede hacerse pasar por nadie real.
-  3. La prueba verifica antes de escribir que el super admin de prueba (`super@prueba.test`) existe en esa base; si no existe (rama sin datos de ejemplo), se salta y lo anota.
-- **Privy real**, dos caminos:
+  2. **El modo de prueba solo acepta emails de dominios `.test`** (reservado, nunca es de una persona real): `resolverSesion` responde 403 con la cabecera de prueba y un email que no termine en `.test`, también en local. **Lo implementa `base-neon`** (tarea 2.3, ADR-008 aceptada); este cambio solo comprueba que sigue así. Así, aunque una rama tuviera datos reales, el modo de prueba no puede hacerse pasar por nadie real.
+  3. La prueba verifica antes de escribir que el super admin de prueba (`super@prueba.test`) existe en esa base; si no existe (rama sin datos de ejemplo), se salta y lo anota. Las personas de prueba (`a@`, `b@`, `c@prueba.test`) las carga `scripts/datos-previews.sql` de `base-neon`.
+<!-- ADR-009: si `login-neon-auth` ya está mergeado cuando se implementa este cambio, el login real se prueba con la persona de prueba de Neon Auth de la rama `previews` (e2e de `login-neon-auth`) y los caminos de Privy de abajo no se implementan. ADR-008 D (app de Privy aparte) quedó descartada. -->
+- **Login real con Neon Auth** (si `login-neon-auth` ya está en `main`): `e2e/fogon-login-real.spec.ts` usa la persona de prueba de Neon Auth de la rama `previews` (variables y salto como en `login-neon-auth`), acepta, abre la consulta de prueba y guarda un reparto. En ese caso no se hacen los caminos A y B de Privy.
+- **Privy real** (si el login todavía es Privy), dos caminos:
   - **A · Cuenta de prueba de Privy por la pantalla** (recomendado): Privy permite habilitar en su panel una cuenta de prueba con un email y un código de un solo uso fijos (a verificar en el panel; no figura en el SDK). `e2e/fogon-privy.spec.ts`, que se salta si faltan `PRIVY_PRUEBA_EMAIL` y `PRIVY_PRUEBA_CODIGO` (solo en el `.env.local` de quien corre, nunca en el repo): pasa por el paso de consentimiento, completa el login de Privy con el código, abre la consulta de prueba y guarda un reparto.
-  - **B · Token de prueba desde el servidor**: `@privy-io/server-auth` 1.32.5 trae `getTestAccessToken({ email })`, que da un token de la cuenta de prueba sin pasar por la pantalla. Su documentación dice que **falla si la app tiene orígenes permitidos o dominio base configurados**, que es lo normal en una app con previews; sirve solo con una app de Privy aparte para pruebas. Queda descartado salvo que Gus cree esa app.
-  - **Siempre:** `docs/guiones/fogon-privy-real.md`, guion manual para Gus (entrar con su email en el preview, aceptar, votar, entrar con otra cuenta, comparar, cerrar).
+  - **B · Token de prueba desde el servidor**: `@privy-io/server-auth` 1.32.5 trae `getTestAccessToken({ email })`, que da un token de la cuenta de prueba sin pasar por la pantalla. Su documentación dice que **falla si la app tiene orígenes permitidos o dominio base configurados**, que es lo normal en una app con previews; sirve solo con una app de Privy aparte para pruebas. Queda descartado (ADR-008 D descartada por ADR-009: no se crea una app de Privy aparte).
+  - **Siempre:** `docs/guiones/fogon-login-real.md`, guion manual para Gus (entrar con su email en el preview con el login que esté en uso, aceptar, votar, entrar con otra cuenta, comparar, cerrar).
 
 ## Risks / Trade-offs
 
-- [La cuenta de prueba de Privy habilitada en la app de producción deja entrar a cualquiera que sepa el código, como esa cuenta] → la cuenta no tiene rol ni está en ningún padrón de producción; o mejor, habilitarla solo si previews y producción usan apps de Privy distintas. Decide Gus. <!-- arquitecto --> Recomendación (ADR-008): una app de Privy aparte para los previews (`NEXT_PUBLIC_PRIVY_APP_ID` y `PRIVY_APP_SECRET` con alcance "Preview" en Vercel). Con eso la cuenta de prueba nunca existe en producción y, si esa app no tiene orígenes permitidos, también sirve el camino B (`getTestAccessToken`).
+- [La cuenta de prueba de Privy habilitada en la app de producción deja entrar a cualquiera que sepa el código, como esa cuenta] → la cuenta no tiene rol ni está en ningún padrón de producción. Decide Gus. <!-- arquitecto --> La app de Privy aparte para previews (ADR-008 D) quedó **descartada** (ADR-009: el login pasa a Neon Auth, que se separa por rama de la base); mientras siga Privy, la cuenta de prueba es opcional y, si Gus no la habilita, alcanza con el guion manual.
 - [Una persona retira su consentimiento con la consulta abierta] → sus envíos quedan en el libro (no se borran), su último reparto sigue contando (decisión de Gus) y la persona deja de poder abrir la consulta (403) hasta volver a aceptar.
 - [Con voto abierto el equipo reparte "para la foto"] → riesgo aceptado por Gus (ADR-007); ver §5.
 - [La migración del preview corre contra la base equivocada si `DATABASE_URL` de producción queda con alcance "Preview" por error] → al configurar, revisar en Vercel que `DATABASE_URL` de producción tenga solo alcance "Production"; es parte de los pasos para Gus del PR.
@@ -126,6 +128,6 @@
 
 ## Open Questions
 
-- Si el preview tiene `LH_AUTH_PRUEBA=1` (para la prueba contra Neon con modo de prueba) y si previews y producción comparten la app de Privy (para la cuenta de prueba). No cambian el diseño: definen qué pruebas corren y cuáles quedan como guion.
-- <!-- arquitecto --> De dónde sale la rama de Neon de cada preview (ADR-008): con una copia de producción, la prueba del preview no corre y el modo de prueba queda limitado a `.test`.
+- Si el preview tiene `LH_AUTH_PRUEBA=1` (para la prueba contra Neon con modo de prueba) y, mientras siga Privy, si Gus habilita la cuenta de prueba de Privy. No cambian el diseño: definen qué pruebas corren y cuáles quedan como guion.
+- <!-- arquitecto --> De dónde sale la rama de Neon de cada preview (ADR-008, aceptada B + C): de la rama `previews` si la integración lo permite (pasos de `base-neon`); si no, el plan B de ADR-008. Con una copia de producción, la prueba del preview no corre y el modo de prueba queda limitado a `.test`.
 - Respondidas por Gus en el PR #76 (ya integradas): voto abierto por defecto en Equipo, sin mínimo de personas, el reparto de quien retira el consentimiento sigue contando, descarga de Mis datos pendiente.

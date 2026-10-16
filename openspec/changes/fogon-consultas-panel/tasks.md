@@ -1,6 +1,6 @@
 # Tasks
 
-Rama `agente/fogon-consultas-panel` desde `main`, **después** de `fogon-cuadratico-en-la-base`. Si no está en `main`, frenar y reportar. Sin migraciones ni rutas nuevas: si hace falta una ruta, frenar y reportar.
+Rama `agente/fogon-consultas-panel` desde `main`, **después** de `fogon-cuadratico-en-la-base` (orden de la serie: `base-neon` → `consentimiento-en-la-base` → `fogon-cuadratico-en-la-base` → **`fogon-consultas-panel`**). Si no está en `main`, frenar y reportar. Sin migraciones ni rutas nuevas: si hace falta una ruta, frenar y reportar.
 
 ## 1. Formulario
 

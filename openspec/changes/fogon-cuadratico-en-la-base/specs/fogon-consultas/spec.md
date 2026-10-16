@@ -61,7 +61,7 @@ Each consultation SHALL have an explicit roll of people who can vote, set by the
 - **THEN** recibe 404 y no se escribe nada
 
 ### Requirement: Sesión y consentimiento para votar
-Every consultation route SHALL verify the Privy session on the server and require a current consent (policy and terms); without a session it MUST respond 401, and without consent 403 with `{ consentimiento: false }`, writing nothing.
+Every consultation route SHALL verify on the server the person in session (resolved through `cuentas`, with any login provider) and require a current consent (policy and terms); without a session it MUST respond 401, and without consent 403 with `{ consentimiento: false }`, writing nothing.
 
 #### Scenario: Sin consentimiento
 - **WHEN** una persona del padrón con sesión pero sin consentimiento vigente intenta guardar su reparto
