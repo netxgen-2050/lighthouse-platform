@@ -42,7 +42,8 @@ test("muestra los requisitos y las preguntas, con un solo main", async ({ page }
   await expect(req).toContainText("al menos 3 hogares");
   await expect(page.getByText("Prototipo interno · datos de ejemplo").first()).toBeVisible();
   await expect(page.locator("main")).toHaveCount(1);
-  await expect(page.getByRole("group")).toHaveCount(8);
+  // Los grupos del formulario (el selector de idioma de la barra superior es otro grupo, afuera del contenido).
+  await expect(page.getByRole("main").getByRole("group")).toHaveCount(8);
 });
 
 test("el requisito del Pacto de convivencia lleva el ⚖", async ({ page }) => {
@@ -72,8 +73,9 @@ test("/netx muestra sin dato (no 0) si el navegador no deja leer", async ({ page
 
 test("no existe el formulario para barrios que no están vacantes", async ({ page }) => {
   for (const id of ["valle", "monte", "no-existe"]) {
-    const r = await page.goto(`/tribus/${id}/postular`);
-    expect(r?.status(), id).toBe(404);
+    // Desde `idioma-base` el estado HTTP ya no es 404 (ver ADR-004): se comprueba la pantalla de "no encontrado".
+    await page.goto(`/tribus/${id}/postular`);
+    await expect(page.getByRole("heading", { level: 1, name: "No encontramos esa página" }), id).toBeVisible();
   }
 });
 

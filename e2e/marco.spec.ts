@@ -42,10 +42,12 @@ test("la barra superior está arriba a la derecha con NetX (interno), la campani
   await expect(netx).toContainText("Interno");
   const campanita = barra.locator('a[href="/bandeja"]');
   const avatar = barra.getByRole("button", { name: "Menú de la persona" });
-  const [a, b, c] = await Promise.all([netx.boundingBox(), campanita.boundingBox(), avatar.boundingBox()]);
-  // De izquierda a derecha: NetX, campanita, avatar; el avatar queda contra el borde derecho.
+  const idioma = barra.getByRole("group", { name: "Idioma · Language" });
+  const [a, b, i, c] = await Promise.all([netx.boundingBox(), campanita.boundingBox(), idioma.boundingBox(), avatar.boundingBox()]);
+  // De izquierda a derecha: NetX, campanita, selector de idioma, avatar; el avatar queda contra el borde derecho.
   expect(a!.x).toBeLessThan(b!.x);
-  expect(b!.x).toBeLessThan(c!.x);
+  expect(b!.x).toBeLessThan(i!.x);
+  expect(i!.x).toBeLessThan(c!.x);
   expect(c!.x + c!.width).toBeGreaterThan(1280 - 40);
   await expect(page.locator("main")).toHaveCount(1);
 });
@@ -58,13 +60,14 @@ test("la barra superior queda fija al bajar la página", async ({ page }) => {
   expect(caja.y).toBe(0);
 });
 
-test("celular 390 x 844: la barra superior muestra NetX, la campanita y el avatar sin desbordar", async ({ page }) => {
+test("celular 390 x 844: la barra superior muestra NetX, la campanita, el selector de idioma y el avatar sin desbordar", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const ruta of ["/", "/configuracion", "/sumarte"]) {
     await page.goto(ruta);
     const barra = page.getByRole("banner");
     await expect(barra.getByRole("link", { name: /NetX/ })).toBeVisible();
     await expect(barra.locator('a[href="/bandeja"]')).toBeVisible();
+    await expect(barra.getByRole("group", { name: "Idioma · Language" })).toBeVisible();
     await expect(barra.getByRole("button", { name: "Menú de la persona" })).toBeVisible();
     const caja = (await barra.boundingBox())!;
     expect(caja.height).toBeLessThanOrEqual(56);
@@ -160,7 +163,7 @@ test("celular 390 x 844: rail a la izquierda, 72 px o menos, sin scroll horizont
   }
 });
 
-test("Tab: primero Saltar al contenido y después Inicio en el rail; justo después del rail van NetX, la campanita y el avatar", async ({ page }) => {
+test("Tab: primero Saltar al contenido y después Inicio en el rail; justo después del rail van NetX, la campanita, el selector de idioma y el avatar",async ({ page }) => {
   await page.goto("/");
   // La barra superior aparece cuando termina de verificarse la sesión: se espera antes de recorrer con Tab.
   await expect(page.getByRole("button", { name: "Menú de la persona" })).toBeVisible();
@@ -179,6 +182,12 @@ test("Tab: primero Saltar al contenido y después Inicio en el rail; justo despu
   await expect(page.getByRole("banner").getByRole("link", { name: /NetX/ })).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(page.locator('a[href="/bandeja"]')).toBeFocused();
+  // Después de la campanita va el selector de idioma (ES, EN) y recién después el avatar.
+  const selector = page.getByRole("group", { name: "Idioma · Language" });
+  await page.keyboard.press("Tab");
+  await expect(selector.getByRole("link", { name: "ES · Español" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(selector.getByRole("link", { name: "EN · English" })).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("button", { name: "Menú de la persona" })).toBeFocused();
 });

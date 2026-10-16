@@ -7,6 +7,7 @@ import { contarNoLeidas, nombreCampanita } from "@/lib/actividad/actividad";
 import { EVENTO_CAMBIO, leerActividadDelNavegador } from "@/lib/actividad/almacen";
 import { usePreferencias } from "@/lib/configuracion/almacen";
 import { tiposOcultos } from "@/lib/configuracion/preferencias";
+import { useIdioma } from "@/lib/idioma/cliente";
 
 /** Cada cuánto se revisa si llegó un aviso simulado que estaba esperando. */
 const REVISION_MS = 5000;
@@ -14,6 +15,7 @@ const REVISION_MS = 5000;
 /** Campanita con la cantidad de notificaciones sin leer. Lleva a /bandeja. */
 export function Campanita() {
   const [noLeidas, setNoLeidas] = useState(0);
+  const idioma = useIdioma();
   const preferencias = usePreferencias();
   const ocultos = useMemo(() => tiposOcultos(preferencias), [preferencias]);
 
@@ -34,7 +36,7 @@ export function Campanita() {
   return (
     <Link
       href="/bandeja"
-      aria-label={nombreCampanita(noLeidas)}
+      aria-label={nombreCampanita(noLeidas, idioma)}
       className="flex h-9 min-w-9 items-center justify-center gap-0.5 rounded-full px-2 hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
     >
       <Bell aria-hidden="true" size={20} />
