@@ -13,6 +13,7 @@
     "test": "vitest run",
     "verificar": "eslint && next typegen && tsc --noEmit && vitest run --passWithNoTests",
     "test:e2e": "playwright test",
+    "idioma:pendientes": "vitest run lib/idioma/revision-nativa.test.ts -u",
     "noche": "scripts/noche.sh"
   },
   "dependencies": {

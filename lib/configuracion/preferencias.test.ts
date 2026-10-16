@@ -3,6 +3,8 @@ import {
   atributosDeApariencia,
   formatearMonto,
   leerPreferencias,
+  NOTA_TIPO_DE_CAMBIO,
+  notaTipoDeCambio,
   PREFERENCIAS_INICIALES,
   TIPO_DE_CAMBIO,
   tiposOcultos,
@@ -26,7 +28,16 @@ describe("leerPreferencias", () => {
     expect(p.mostrarHifa).toBe(false);
     expect(p.avisos.rondas).toBe(false);
     expect(p.avisos.pactos).toBe(true);
-    expect(p.idioma).toBe("es");
+    // El campo viejo `idioma` nunca fue una elección: se ignora.
+    expect(p.idiomaElegido).toBeNull();
+  });
+
+  it("idiomaElegido: es y en valen; otro valor o ausente es null (no eligió)", () => {
+    expect(leerPreferencias(JSON.stringify({ idiomaElegido: "en" })).idiomaElegido).toBe("en");
+    expect(leerPreferencias(JSON.stringify({ idiomaElegido: "es" })).idiomaElegido).toBe("es");
+    expect(leerPreferencias(JSON.stringify({ idiomaElegido: "fr" })).idiomaElegido).toBeNull();
+    expect(leerPreferencias(JSON.stringify({ idioma: "es" })).idiomaElegido).toBeNull();
+    expect(PREFERENCIAS_INICIALES.idiomaElegido).toBeNull();
   });
 
   it("por defecto todo está prendido, el tema es el del sistema y la moneda es USD", () => {
@@ -62,6 +73,28 @@ describe("formatearMonto", () => {
     expect(formatearMonto(null, "USD")).toBe("sin dato");
     expect(formatearMonto(undefined, "ARS")).toBe("sin dato");
     expect(formatearMonto(Number.NaN, "USD")).toBe("sin dato");
+  });
+
+  it("en inglés usa coma de miles y 'no data'", () => {
+    expect(formatearMonto(1200, "USD", "en")).toBe("USD 1,200");
+    expect(formatearMonto(300, "ARS", "en")).toBe("ARS 420,000");
+    expect(formatearMonto(null, "USD", "en")).toBe("no data");
+  });
+
+  it("en español es idéntico a antes", () => {
+    expect(formatearMonto(1200, "USD", "es")).toBe("USD 1.200");
+    expect(formatearMonto(2100000 / 1400, "ARS")).toBe("ARS 2.100.000");
+  });
+});
+
+describe("notaTipoDeCambio", () => {
+  it("en español es la nota de siempre", () => {
+    expect(NOTA_TIPO_DE_CAMBIO).toBe("Tipo de cambio de ejemplo: 1 USD = 1.400 ARS. No es una cotización real.");
+    expect(notaTipoDeCambio("es")).toBe(NOTA_TIPO_DE_CAMBIO);
+  });
+
+  it("en inglés está traducida y con formato inglés", () => {
+    expect(notaTipoDeCambio("en")).toBe("Sample exchange rate: 1 USD = 1,400 ARS. This is not a real quote.");
   });
 });
 
