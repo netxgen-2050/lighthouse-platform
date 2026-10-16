@@ -1,4 +1,5 @@
 import { marco } from "@/lib/idioma/textos/marco";
+import { sumarte } from "@/lib/idioma/textos/sumarte";
 import type { Idioma } from "@/lib/idioma/tipos";
 import { esPublica } from "@/lib/sesion/rutas-publicas";
 
@@ -101,39 +102,41 @@ export function puedeRuta(nivel: Nivel, ruta: string): boolean {
   return alcanza(nivel, nivelMinimoDeRuta(ruta));
 }
 
-const NOMBRE_DE_RUTA: readonly [string, string][] = [
-  ["/pactos", "Pactos"],
-  ["/semillas", "Semillas"],
-  ["/fogon", "Fogón"],
-  ["/compromisos", "Compromisos"],
-  ["/congreso", "Congreso"],
-  ["/perfil", "Perfil"],
-  ["/pasaporte", "Pasaporte"],
-  ["/panel", "Mi recorrido"],
-  ["/bandeja", "Bandeja"],
-  ["/configuracion", "Configuración"],
-  ["/netx", "NetX"],
+const NOMBRE_DE_RUTA: readonly [string, keyof (typeof sumarte)["es"]["avisos"]["rutas"]][] = [
+  ["/pactos", "pactos"],
+  ["/semillas", "semillas"],
+  ["/fogon", "fogon"],
+  ["/compromisos", "compromisos"],
+  ["/congreso", "congreso"],
+  ["/perfil", "perfil"],
+  ["/pasaporte", "pasaporte"],
+  ["/panel", "panel"],
+  ["/bandeja", "bandeja"],
+  ["/configuracion", "configuracion"],
+  ["/netx", "netx"],
 ];
 
 /** Aviso de Sumarte cuando alguien abre por dirección una página que su nivel no habilita. */
-export function avisoDeRuta(ruta: string): string {
+export function avisoDeRuta(ruta: string, idioma: Idioma = "es"): string {
+  const t = sumarte[idioma].avisos;
   const r = limpiar(ruta);
-  const nombre = NOMBRE_DE_RUTA.find(([base]) => dentroDe(r, base))?.[1] ?? "Esta página";
+  const nombre = t.rutas[NOMBRE_DE_RUTA.find(([base]) => dentroDe(r, base))?.[1] ?? "otra"];
   const minimo = nivelMinimoDeRuta(r);
-  if (minimo === "superadmin") return `${nombre} es solo para el super admin del prototipo.`;
-  if (minimo === "fundador") return `${nombre} se habilita con el Pase Fundador.`;
-  if (minimo === "lider") return `${nombre} se habilita con el Plan Tribu.`;
-  if (minimo === "miembro") return `${nombre} se habilita con el plan Miembro.`;
-  return `${nombre} se habilita al sumarte gratis como Explorador.`;
+  if (minimo === "superadmin") return t.rutaSuperadmin(nombre);
+  if (minimo === "fundador") return t.rutaFundador(nombre);
+  if (minimo === "lider") return t.rutaLider(nombre);
+  if (minimo === "miembro") return t.rutaMiembro(nombre);
+  return t.rutaExplorador(nombre);
 }
 
 /** Aviso cuando una acción (no una página) pide un nivel, por ejemplo adherir a una tribu. */
-export function avisoDeNivel(minimo: Nivel): string {
-  if (minimo === "explorador") return "Esta acción se habilita al sumarte gratis como Explorador.";
-  if (minimo === "miembro") return "Esta acción se habilita con el plan Miembro.";
-  if (minimo === "fundador") return "Esta acción se habilita con el Pase Fundador.";
-  if (minimo === "lider") return "Esta acción se habilita con el Plan Tribu.";
-  return "Esta acción no se habilita desde Sumarte.";
+export function avisoDeNivel(minimo: Nivel, idioma: Idioma = "es"): string {
+  const t = sumarte[idioma].avisos;
+  if (minimo === "explorador") return t.accionExplorador;
+  if (minimo === "miembro") return t.accionMiembro;
+  if (minimo === "fundador") return t.accionFundador;
+  if (minimo === "lider") return t.accionLider;
+  return t.accionNinguna;
 }
 
 /** Convierte lo que viene en la dirección (`?para=`) en un nivel que se puede elegir en Sumarte, o null. */

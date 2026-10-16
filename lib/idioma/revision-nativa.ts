@@ -25,6 +25,18 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Textos que se repiten en todas las zonas (cargando, cancelar, sin dato, notas de traducción…)",
   },
+  "textos/portada": {
+    estado: "pendiente",
+    que: "Portada: título, bajada, los tres caminos y la cantidad de barrios",
+  },
+  "textos/sumarte": {
+    estado: "pendiente",
+    que: "Sumarte: planes, niveles del pase (Seed, Sprout, Root, a confirmar), inversores, avisos de nivel, formulario de pedido de contacto y panel Entrar como…",
+  },
+  "lib/sumarte/datos.ts": {
+    estado: "pendiente",
+    que: "Comparativa de planes de Sumarte (filas de ejemplo con su inglés)",
+  },
   glosario: {
     estado: "pendiente",
     que: "Glosario de términos de la plataforma (Pase Fundador, Fogón…); confirmado por Gus el 15-oct-2026, falta el nativo",
@@ -55,6 +67,7 @@ export function fuentesObligatorias(): string[] {
     // Archivos con inglés propio fuera de los diccionarios.
     "lib/legal/terminos.ts",
     "lib/congreso/evento-ejemplo.ts",
+    "lib/sumarte/datos.ts",
   ];
 }
 

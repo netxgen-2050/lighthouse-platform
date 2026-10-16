@@ -1,3 +1,6 @@
+import { comunes } from "@/lib/idioma/textos/comunes";
+import type { Idioma } from "@/lib/idioma/tipos";
+
 export type EstadoTribu = "activa" | "formacion" | "vacante";
 
 export type Tribu = {
@@ -29,8 +32,15 @@ export type Tribu = {
   avales: number;
 };
 
-export const TEXTO_ESTADO: Record<EstadoTribu, string> = {
-  activa: "Activa",
-  formacion: "En formación",
-  vacante: "Busca tribu",
+/** Texto del estado de una tribu en cada idioma (vive en el diccionario `comunes`, una sola fuente). */
+export const TEXTO_ESTADO_POR_IDIOMA: Record<Idioma, Record<EstadoTribu, string>> = {
+  es: comunes.es.estadoTribu,
+  en: comunes.en.estadoTribu,
 };
+
+/** El estado en español: las páginas que todavía no están traducidas siguen usando este. */
+export const TEXTO_ESTADO: Record<EstadoTribu, string> = TEXTO_ESTADO_POR_IDIOMA.es;
+
+export function textoDeEstado(estado: EstadoTribu, idioma: Idioma = "es"): string {
+  return TEXTO_ESTADO_POR_IDIOMA[idioma][estado];
+}

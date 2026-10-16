@@ -58,6 +58,16 @@ describe("TextoBilingue", () => {
     expect(html).toContain('<span lang="es">Hola</span>');
   });
 
+  it("sinNota: un dato de la plataforma no lleva la nota de traducción", () => {
+    const html = renderToStaticMarkup(
+      <ProveedorIdioma idioma="en">
+        <TextoBilingue valor={{ es: "Hola", en: "Hello" }} sinNota />
+      </ProveedorIdioma>,
+    );
+    expect(html).toContain("Hello");
+    expect(html).not.toContain("Translated");
+  });
+
   it("en español no hace falta el inglés", () => {
     const html = dibujar("es", { es: "Hola" });
     expect(html).toContain("Hola");

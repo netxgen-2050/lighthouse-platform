@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   alcanza,
+  avisoDeNivel,
   avisoDeRuta,
   ayudaDeRuta,
   capacidadDeRuta,
@@ -89,6 +90,21 @@ describe("rutas", () => {
     expect(avisoDeRuta("/pactos")).toBe("Pactos se habilita con el plan Miembro.");
     expect(avisoDeRuta("/perfil")).toBe("Perfil se habilita al sumarte gratis como Explorador.");
     expect(avisoDeRuta("/netx")).toContain("super admin");
+  });
+
+  it("el aviso dice en inglés qué plan habilita la página", () => {
+    expect(avisoDeRuta("/pactos", "en")).toBe("Pacts is unlocked with the Member plan.");
+    expect(avisoDeRuta("/perfil", "en")).toBe("Profile is unlocked by joining for free as an Explorer.");
+    expect(avisoDeRuta("/panel", "en")).toContain("My journey");
+    expect(avisoDeRuta("/netx", "en")).toContain("super admin");
+    expect(avisoDeRuta("/otra-cosa", "en")).toMatch(/^This page /);
+  });
+
+  it("el aviso de una acción en inglés", () => {
+    expect(avisoDeNivel("miembro", "en")).toBe("This action is unlocked with the Member plan.");
+    expect(avisoDeNivel("lider", "en")).toBe("This action is unlocked with the Tribe Plan.");
+    expect(avisoDeNivel("superadmin", "en")).toBe("This action can't be unlocked from here.");
+    expect(avisoDeNivel("miembro")).toBe("Esta acción se habilita con el plan Miembro.");
   });
 
   it("la ayuda del rail distingue lo gratis de lo de Miembro", () => {

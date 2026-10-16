@@ -8,10 +8,11 @@ import type { BilingueConOriginal } from "@/lib/idioma/tipos";
  * - En el idioma de la página: el texto.
  * - Si ese idioma no es el original, debajo va una nota visible ("Translated from Spanish" / "Traducido del inglés"),
  *   en texto, no solo con un ícono o un color.
+ * - `sinNota` la omite: para los datos de ejemplo que escribe la plataforma (no son textos de una comunidad).
  * - Si falta la traducción al inglés: nunca vacío; se muestra el español con `lang="es"`, la marca visible "ES" y un
  *   texto solo para lectores de pantalla que dice que solo está en español.
  */
-export function TextoBilingue({ valor }: { valor: BilingueConOriginal }) {
+export function TextoBilingue({ valor, sinNota = false }: { valor: BilingueConOriginal; sinNota?: boolean }) {
   const idioma = useIdioma();
   const comunes = useTextos("comunes");
   const original = valor.original ?? "es";
@@ -37,7 +38,7 @@ export function TextoBilingue({ valor }: { valor: BilingueConOriginal }) {
   return (
     <>
       {texto}
-      {original !== idioma && <span className="block text-xs text-muted">{comunes.traducidoDelOriginal}</span>}
+      {!sinNota && original !== idioma && <span className="block text-xs text-muted">{comunes.traducidoDelOriginal}</span>}
     </>
   );
 }

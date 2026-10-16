@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTextos } from "@/lib/idioma/cliente";
 import { useSesion } from "./contexto";
 
 /**
@@ -9,6 +10,7 @@ import { useSesion } from "./contexto";
  */
 export function EntrarComo() {
   const { estado, privyDisponible, entrarComo } = useSesion();
+  const t = useTextos("sumarte").entrarComo;
   const [emails, setEmails] = useState<string[] | null>(null);
 
   useEffect(() => {
@@ -38,11 +40,11 @@ export function EntrarComo() {
       className="rounded-xl border border-dashed border-faint p-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
     >
       <h2 id="entrar-como-titulo" className="text-base font-semibold">
-        Entrar como…
+        {t.titulo}
       </h2>
       {emails.length > 0 ? (
         <>
-          <p className="mt-1 text-sm text-muted">Modo de prueba: no usa Privy y no existe en producción.</p>
+          <p className="mt-1 text-sm text-muted">{t.modoPrueba}</p>
           <ul className="mt-3 flex flex-wrap gap-2">
             {emails.map((e) => (
               <li key={e}>
@@ -58,7 +60,7 @@ export function EntrarComo() {
           </ul>
         </>
       ) : (
-        <p className="mt-1 text-sm text-muted">El registro no está configurado en este entorno, así que todavía no se puede entrar.</p>
+        <p className="mt-1 text-sm text-muted">{t.sinConfigurar}</p>
       )}
     </section>
   );
