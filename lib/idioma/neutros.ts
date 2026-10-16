@@ -13,6 +13,10 @@ export const NEUTROS: readonly string[] = [
   "Privy",
   "Soluna",
   "Macrolote 7",
+  // Palabras que se escriben igual en los dos idiomas.
+  "Compost",
+  "Marketing",
+  "Temazcal",
   "Valle Solar",
   "UnityHub",
   "Lighthouse",

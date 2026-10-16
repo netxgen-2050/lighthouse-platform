@@ -4,42 +4,57 @@ import { useEffect, useRef, useState } from "react";
 import { useSesion } from "@/components/sesion/contexto";
 import { guardarPedido, leerBandejaDelNavegador } from "@/lib/contactos/almacen";
 import type { Pedido } from "@/lib/contactos/tipos";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
+import type { territorio } from "@/lib/idioma/textos/territorio";
+import type { Textos } from "@/lib/idioma/tipos";
 import { buscarElemento, listarBarrios,listarFincas, terrenoComun, tribuDeBarrio } from "@/lib/territorios/biopueblo";
+import { listarTribus } from "@/lib/tribus/datos";
 import { FichaLateral } from "./ficha-lateral";
 import MapaCliente from "./mapa-cliente";
 
-const LEYENDA = [
-  {
-    id: "leyenda-lighthouse",
-    titulo: "Lighthouse · Macrolote 7",
-    items: [
-      { clase: "mapa-leyenda-activa", texto: "Barrio con tribu activa" },
-      { clase: "mapa-leyenda-formacion", texto: "Barrio con tribu en formación" },
-      { clase: "mapa-leyenda-vacante", texto: "Barrio que busca tribu" },
-      { clase: "mapa-leyenda-nucleo", texto: "Terreno común" },
-    ],
-  },
-  {
-    id: "leyenda-soluna",
-    titulo: "Chacras de Soluna · venta privada",
-    items: [
-      { clase: "mapa-leyenda-finca-disponible", texto: "Finca disponible" },
-      { clase: "mapa-leyenda-finca-reservada", texto: "Finca reservada" },
-      { clase: "mapa-leyenda-finca-cantera", texto: "Finca cantera" },
-      { clase: "mapa-leyenda-soluna", texto: "Contorno de Chacras de Soluna" },
-    ],
-  },
-  {
-    id: "leyenda-lugares",
-    titulo: "Lugares de interés",
-    items: [{ clase: "mapa-leyenda-lugar", texto: "Lugar de interés" }],
-  },
-];
+type Leyenda = Textos<typeof territorio.es>["leyenda"];
+
+// Los títulos de los dos primeros grupos son nombres propios (Lighthouse · Macrolote 7, Chacras de Soluna): no se traducen.
+function grupos(l: Leyenda) {
+  return [
+    {
+      id: "leyenda-lighthouse",
+      titulo: <span translate="no">Lighthouse · Macrolote 7</span>,
+      items: [
+        { clase: "mapa-leyenda-activa", texto: l.activa },
+        { clase: "mapa-leyenda-formacion", texto: l.formacion },
+        { clase: "mapa-leyenda-vacante", texto: l.vacante },
+        { clase: "mapa-leyenda-nucleo", texto: l.comun },
+      ],
+    },
+    {
+      id: "leyenda-soluna",
+      titulo: (
+        <>
+          <span translate="no">Chacras de Soluna</span> · {l.ventaPrivada}
+        </>
+      ),
+      items: [
+        { clase: "mapa-leyenda-finca-disponible", texto: l.fincaDisponible },
+        { clase: "mapa-leyenda-finca-reservada", texto: l.fincaReservada },
+        { clase: "mapa-leyenda-finca-cantera", texto: l.fincaCantera },
+        { clase: "mapa-leyenda-soluna", texto: l.contornoSoluna },
+      ],
+    },
+    {
+      id: "leyenda-lugares",
+      titulo: <>{l.lugares}</>,
+      items: [{ clase: "mapa-leyenda-lugar", texto: l.lugar }],
+    },
+  ];
+}
 
 const botonLista =
   "rounded-lg border border-faint bg-surface px-3 py-1 text-sm hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep aria-pressed:border-ink aria-pressed:bg-surface-2 aria-pressed:font-semibold";
 
 export function VitrinaTerritorio() {
+  const idioma = useIdioma();
+  const tx = useTextos("territorio");
   const [seleccion, setSeleccion] = useState<string | null>(null);
   const [consultas, setConsultas] = useState<string[]>([]);
 
@@ -84,16 +99,17 @@ export function VitrinaTerritorio() {
   const barrios = listarBarrios();
   const disponibles = listarFincas().filter((f) => f.estado === "disponible");
   const comun = terrenoComun();
+  const tribus = listarTribus(idioma);
 
   return (
     <div className="mt-6 grid gap-6 md:grid-cols-3">
       <section aria-labelledby="mapa-titulo" className="grid min-w-0 content-start gap-3 md:col-span-2">
         <h2 id="mapa-titulo" className="text-xl font-semibold">
-          Mapa del Macrolote 7
+          {tx.mapaDe} <span translate="no">Macrolote 7</span>
         </h2>
         <MapaCliente seleccion={seleccion} alElegir={setSeleccion} />
-        <div role="group" aria-label="Leyenda del mapa" className="grid gap-3 text-sm">
-          {LEYENDA.map((g) => (
+        <div role="group" aria-label={tx.leyenda.grupo} className="grid gap-3 text-sm">
+          {grupos(tx.leyenda).map((g) => (
             <div key={g.id} className="grid gap-1">
               <p id={g.id} className="font-semibold">
                 {g.titulo}
@@ -109,11 +125,9 @@ export function VitrinaTerritorio() {
             </div>
           ))}
         </div>
+        <p className="text-sm text-muted">{tx.notaDistribucion}</p>
         <p className="text-sm text-muted">
-          Los barrios y el terreno común están distribuidos al azar, solo de forma ilustrativa, hasta el masterplan.
-        </p>
-        <p className="text-sm text-muted">
-          Imagen satelital: Esri, Maxar, Earthstar Geographics.{" "}
+          {tx.notaImagen}{" "}
           <a className="underline" href="https://www.esri.com" target="_blank" rel="noreferrer">
             Esri
           </a>
@@ -121,32 +135,40 @@ export function VitrinaTerritorio() {
 
         <section aria-labelledby="elegir-titulo" className="grid gap-2 rounded-xl border border-faint bg-surface p-4">
           <h3 id="elegir-titulo" className="font-semibold">
-            Elegir en el mapa
+            {tx.elegir.titulo}
           </h3>
           <ul className="flex flex-wrap gap-2">
-            {barrios.map((b) => (
-              <li key={b.id}>
-                <button type="button" className={botonLista} aria-pressed={seleccion === b.id} onClick={() => setSeleccion(b.id)}>
-                  Barrio {b.barrio}
-                  {tribuDeBarrio(b)?.estado !== "vacante" && ` · ${tribuDeBarrio(b)?.nombre}`}
-                </button>
-              </li>
-            ))}
+            {barrios.map((b) => {
+              const t = tribuDeBarrio(b, tribus);
+              return (
+                <li key={b.id}>
+                  <button type="button" className={botonLista} aria-pressed={seleccion === b.id} onClick={() => setSeleccion(b.id)}>
+                    {tx.elegir.barrio(b.barrio)}
+                    {t?.estado !== "vacante" && (
+                      <>
+                        {" · "}
+                        <span translate="no">{t?.nombre}</span>
+                      </>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
             <li>
               <button type="button" className={botonLista} aria-pressed={seleccion === comun.id} onClick={() => setSeleccion(comun.id)}>
-                Terreno común
+                {tx.elegir.comun}
               </button>
             </li>
           </ul>
           <details>
             <summary className="w-fit cursor-pointer rounded text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
-              Fincas disponibles de Soluna ({disponibles.length})
+              {tx.elegir.fincasDisponibles(disponibles.length)}
             </summary>
             <ul className="mt-2 flex flex-wrap gap-2">
               {disponibles.map((f) => (
                 <li key={f.id}>
                   <button type="button" className={botonLista} aria-pressed={seleccion === f.id} onClick={() => setSeleccion(f.id)}>
-                    Finca {f.numero ?? "sin número"}
+                    {tx.elegir.finca(f.numero === undefined ? tx.elegir.sinNumero : String(f.numero))}
                   </button>
                 </li>
               ))}
@@ -156,7 +178,7 @@ export function VitrinaTerritorio() {
       </section>
 
       <aside
-        aria-label="Ficha del territorio"
+        aria-label={tx.ficha.aria}
         aria-live="polite"
         className="grid min-w-0 content-start gap-3 rounded-xl border border-faint bg-surface p-4 md:self-start"
       >
@@ -167,7 +189,7 @@ export function VitrinaTerritorio() {
             onClick={() => setSeleccion(null)}
             className="w-fit rounded text-sm underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
           >
-            Volver al resumen
+            {tx.ficha.volverAlResumen}
           </button>
         )}
       </aside>

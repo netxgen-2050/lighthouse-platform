@@ -64,5 +64,10 @@ describe("biopueblo", () => {
     expect(textoSuperficieM2(null)).toBe("sin dato");
     expect(textoHectareas(118.8)).toBe("118,8 ha");
     expect(textoHectareas(undefined)).toBe("sin dato");
+    // En inglés: coma de miles, punto decimal y "no data".
+    expect(textoSuperficieM2(9130, "en")).toBe("9,130 m²");
+    expect(textoSuperficieM2(null, "en")).toBe("no data");
+    expect(textoHectareas(118.8, "en")).toBe("118.8 ha");
+    expect(textoHectareas(undefined, "en")).toBe("no data");
   });
 });

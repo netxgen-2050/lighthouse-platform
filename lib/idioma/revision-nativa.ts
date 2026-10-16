@@ -37,6 +37,26 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Comparativa de planes de Sumarte (filas de ejemplo con su inglés)",
   },
+  "textos/tribus": {
+    estado: "pendiente",
+    que: "Tribus: listado, ficha, botones de membresía, interfaz del manifiesto y postulación de una comunidad (formulario, requisitos y errores)",
+  },
+  "textos/territorio": {
+    estado: "pendiente",
+    que: "Territorio: vitrina, leyenda y controles del mapa, ficha lateral y marcadores",
+  },
+  "lib/tribus/datos.ts": {
+    estado: "pendiente",
+    que: "Datos de ejemplo de las 12 tribus con su inglés (foco, qué tiene, qué busca, ritual, forma jurídica…) y la declaración de cada tribu, traducida del español",
+  },
+  "lib/manifiestos/datos.ts": {
+    estado: "pendiente",
+    que: "Manifiestos de ejemplo (el del Lighthouse y siete de tribus) traducidos del español: voz de la comunidad, a revisar también con quien los escriba de verdad",
+  },
+  "lib/territorios/textos.ts": {
+    estado: "pendiente",
+    que: "Textos del territorio con su inglés: terreno común, descripción y nombres descriptivos de los lugares, bienes comunes",
+  },
   glosario: {
     estado: "pendiente",
     que: "Glosario de términos de la plataforma (Pase Fundador, Fogón…); confirmado por Gus el 15-oct-2026, falta el nativo",
@@ -68,6 +88,9 @@ export function fuentesObligatorias(): string[] {
     "lib/legal/terminos.ts",
     "lib/congreso/evento-ejemplo.ts",
     "lib/sumarte/datos.ts",
+    "lib/tribus/datos.ts",
+    "lib/manifiestos/datos.ts",
+    "lib/territorios/textos.ts",
   ];
 }
 

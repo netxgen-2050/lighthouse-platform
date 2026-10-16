@@ -1,3 +1,6 @@
+import { formatearNumero, sinDato } from "../idioma/formatos";
+import { territorio } from "../idioma/textos/territorio";
+import type { Idioma } from "../idioma/tipos";
 import { listarTribus } from "../tribus/datos";
 import type { EstadoTribu, Tribu } from "../tribus/tipos";
 import datos from "./biopueblo-territorios.json";
@@ -134,18 +137,22 @@ export function tribuDeBarrio(b: Barrio, tribus: Tribu[] = listarTribus()): Trib
   return tribus.find((t) => t.id === b.tribuId);
 }
 
-export const TEXTO_ESTADO_FINCA: Record<EstadoFinca, string> = {
-  disponible: "Disponible",
-  reservada: "Reservada",
-  cantera: "Cantera",
-};
-
-/** Superficie en m² con separador de miles; sin dato nunca es 0. */
-export function textoSuperficieM2(m2?: number | null): string {
-  // A mano: Intl no agrupa los miles de 4 cifras en español.
-  return m2 == null ? "sin dato" : `${String(Math.round(m2)).replace(/\B(?=(\d{3})+(?!\d))/g, ".")} m²`;
+/** El estado de una finca en cada idioma (vive en el diccionario `territorio`, una sola fuente). */
+export function textoDeEstadoFinca(estado: EstadoFinca, idioma: Idioma = "es"): string {
+  return territorio[idioma].estadoFinca[estado];
 }
 
-export function textoHectareas(ha?: number): string {
-  return ha === undefined ? "sin dato" : `${ha.toFixed(1).replace(".", ",")} ha`;
+export const TEXTO_ESTADO_FINCA: Record<EstadoFinca, string> = territorio.es.estadoFinca;
+
+/** Superficie en m² con separador de miles (punto en español, coma en inglés); sin dato nunca es 0. */
+export function textoSuperficieM2(m2?: number | null, idioma: Idioma = "es"): string {
+  // formatearNumero agrupa a mano en español: Intl no agrupa los miles de 4 cifras en es-AR.
+  return m2 == null ? sinDato(idioma) : `${formatearNumero(m2, idioma)} m²`;
+}
+
+/** Hectáreas con un decimal (coma en español, punto en inglés). */
+export function textoHectareas(ha?: number, idioma: Idioma = "es"): string {
+  if (ha === undefined) return sinDato(idioma);
+  const texto = ha.toFixed(1);
+  return `${idioma === "es" ? texto.replace(".", ",") : texto} ha`;
 }

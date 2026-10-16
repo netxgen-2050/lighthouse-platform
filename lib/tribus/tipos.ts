@@ -1,5 +1,5 @@
 import { comunes } from "@/lib/idioma/textos/comunes";
-import type { Idioma } from "@/lib/idioma/tipos";
+import type { BilingueConOriginal, Idioma } from "@/lib/idioma/tipos";
 
 export type EstadoTribu = "activa" | "formacion" | "vacante";
 
@@ -30,6 +30,41 @@ export type Tribu = {
   etapa?: string;
   /** Cantidad de avales de la red (ejemplo). */
   avales: number;
+};
+
+/** Campos descriptivos de una tribu: en los datos viven como `BilingueConOriginal` y se resuelven con el idioma. */
+export type CamposDescriptivos =
+  | "foco"
+  | "hogares"
+  | "subtitulo"
+  | "declaracion"
+  | "tiene"
+  | "busca"
+  | "areas"
+  | "areasAbiertas"
+  | "ritual"
+  | "formaJuridica"
+  | "pozo"
+  | "etapa";
+
+/**
+ * La tribu como se guarda: cada campo descriptivo con su español y su inglés. La `declaracion` es la voz de la
+ * comunidad: lleva `original: "es"` y en inglés se muestra con la nota "Translated from Spanish".
+ * Los nombres (de la tribu, del barrio) son propios y no se traducen.
+ */
+export type TribuBilingue = Omit<Tribu, CamposDescriptivos> & {
+  foco: BilingueConOriginal;
+  hogares: BilingueConOriginal;
+  subtitulo?: BilingueConOriginal;
+  declaracion?: BilingueConOriginal;
+  tiene: BilingueConOriginal[];
+  busca: BilingueConOriginal[];
+  areas?: BilingueConOriginal[];
+  areasAbiertas?: BilingueConOriginal[];
+  ritual: BilingueConOriginal;
+  formaJuridica: BilingueConOriginal;
+  pozo?: BilingueConOriginal[];
+  etapa?: BilingueConOriginal;
 };
 
 /** Texto del estado de una tribu en cada idioma (vive en el diccionario `comunes`, una sola fuente). */

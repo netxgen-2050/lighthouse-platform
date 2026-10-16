@@ -15,17 +15,21 @@ import type { Pedido } from "@/lib/contactos/tipos";
 import { ESTADOS_ADMINISTRATIVOS, accionesDeLote } from "@/lib/legal/estado-administrativo";
 import { TerminoLegal } from "@/components/termino-legal";
 import {
-  TEXTO_ESTADO_FINCA,
   buscarElemento,
   contarTribusPorEstado,
   macrolote7,
+  textoDeEstadoFinca,
   textoHectareas,
   textoSuperficieM2,
   tribuDeBarrio,
 } from "@/lib/territorios/biopueblo";
 import { TEXTO_COMUN, descripcionDeLugar, nombreDeLugar } from "@/lib/territorios/textos";
-import { rutaProponerComunidad } from "@/lib/tribus/datos";
-import { TEXTO_ESTADO } from "@/lib/tribus/tipos";
+import { listarTribus, rutaProponerComunidad } from "@/lib/tribus/datos";
+import { textoDeEstado } from "@/lib/tribus/tipos";
+import { EnEspanol } from "@/components/en-espanol";
+import { TextoBilingue } from "@/components/texto-bilingue";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
+import { sinDato } from "@/lib/idioma/formatos";
 
 type Props = {
   seleccion: string | null;
@@ -52,16 +56,17 @@ function ConsultaFinca({
   const idBoton = `consultar-${useId()}`;
   const estado = ESTADOS_ADMINISTRATIVOS.soluna;
   const { estado: estadoSesion } = useSesion();
-  if (estadoSesion !== "ok") return <EntrarPara texto="Sumate para consultar por este lote" clase={boton} />;
+  const t = useTextos("territorio").ficha;
+  if (estadoSesion !== "ok") return <EntrarPara texto={t.consultarEntrar} clase={boton} />;
   return (
     <div className="grid gap-3">
       {enviada ? (
         <p role="status" className="font-medium">
-          Consulta enviada (simulado)
+          {t.consultaEnviada}
         </p>
       ) : (
         <button id={idBoton} type="button" aria-expanded={abierto} onClick={() => setAbierto(true)} className={boton}>
-          Consultar por este lote
+          {t.consultar}
         </button>
       )}
       {abierto && (
@@ -69,7 +74,11 @@ function ConsultaFinca({
           motivo="consulta-lote"
           referencia={referencia}
           estadoMostrado={`${estado.estado} · ${estado.normaCorta}`}
-          aviso={<EstadoAdministrativo proyecto="soluna" compacto />}
+          aviso={
+            <EnEspanol>
+              <EstadoAdministrativo proyecto="soluna" compacto />
+            </EnEspanol>
+          }
           idBoton={idBoton}
           alEnviar={alConsultar}
           alCancelar={() => setAbierto(false)}
@@ -80,43 +89,49 @@ function ConsultaFinca({
 }
 
 export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
+  const idioma = useIdioma();
+  const tx = useTextos("territorio");
+  const t = tx.ficha;
+  const nd = sinDato(idioma);
   const el = seleccion ? buscarElemento(seleccion) : undefined;
 
   if (el?.tipo === "barrio") {
-    const t = tribuDeBarrio(el);
-    if (!t) return <p>Barrio {el.barrio}: sin dato</p>;
-    const vacante = t.estado === "vacante";
+    const tribu = tribuDeBarrio(el, listarTribus(idioma));
+    if (!tribu) return <p>{t.barrioSinDato(el.barrio, nd)}</p>;
+    const vacante = tribu.estado === "vacante";
     return (
       <div className="grid gap-3">
         <div className="flex items-center gap-3">
-          <SelloTribu iniciales={t.iniciales} estado={t.estado} />
+          <SelloTribu iniciales={tribu.iniciales} estado={tribu.estado} />
           <div>
-            <p className="text-sm text-muted">Barrio {el.barrio}</p>
-            <h2 className="text-xl font-semibold">{vacante ? `Barrio ${el.barrio} busca tribu` : t.nombre}</h2>
+            <p className="text-sm text-muted">{tx.elegir.barrio(el.barrio)}</p>
+            <h2 className="text-xl font-semibold">
+              {vacante ? t.barrioBuscaTribu(el.barrio) : <span translate="no">{tribu.nombre}</span>}
+            </h2>
           </div>
         </div>
-        <p>{t.foco}</p>
-        <p className="text-sm font-medium">Estado: {TEXTO_ESTADO[t.estado]}</p>
+        <p>{tribu.foco}</p>
+        <p className="text-sm font-medium">{t.estado} {textoDeEstado(tribu.estado, idioma)}</p>
         <p className="text-sm">
-          <strong>Hogares:</strong> {t.hogares}
+          <strong>{t.hogares}</strong> {tribu.hogares}
         </p>
-        {t.busca.length > 0 && (
+        {tribu.busca.length > 0 && (
           <div className="text-sm">
-            <strong>{vacante ? "Qué necesita:" : "Qué busca:"}</strong>
+            <strong>{vacante ? t.queNecesita : t.queBusca}</strong>
             <ul className="list-disc pl-5">
-              {t.busca.map((b) => (
+              {tribu.busca.map((b) => (
                 <li key={b}>{b}</li>
               ))}
             </ul>
           </div>
         )}
         {vacante ? (
-          <EnlaceConCuenta href={rutaProponerComunidad(t.id)} textoEntrar="Sumate para proponer una comunidad" clase={boton}>
-            Proponer una comunidad
+          <EnlaceConCuenta href={rutaProponerComunidad(tribu.id)} textoEntrar={t.proponerEntrar} clase={boton}>
+            {t.proponer}
           </EnlaceConCuenta>
         ) : (
-          <Link href={`/tribus/${t.id}`} className={boton}>
-            Conocer la tribu
+          <Link href={`/tribus/${tribu.id}`} className={boton}>
+            {t.conocerTribu}
           </Link>
         )}
       </div>
@@ -126,17 +141,17 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
   if (el?.tipo === "comun") {
     return (
       <div className="grid gap-3">
-        <h2 className="text-xl font-semibold">{el.nombre}</h2>
+        <h2 className="text-xl font-semibold">{idioma === "en" ? tx.elegir.comun : el.nombre}</h2>
         <p className="text-sm">
-          <strong>Superficie:</strong> {textoHectareas(el.areaHa)}
+          <strong>{t.superficie}</strong> {textoHectareas(el.areaHa, idioma)}
         </p>
         <p className="text-sm">
-          <strong>Para qué se usa:</strong> {TEXTO_COMUN.para}
+          <strong>{t.paraQueSeUsa}</strong> <TextoBilingue valor={TEXTO_COMUN.para} sinNota />
         </p>
         <p className="text-sm">
-          <strong>Quién lo cuida:</strong> {TEXTO_COMUN.cuida}
+          <strong>{t.quienLoCuida}</strong> <TextoBilingue valor={TEXTO_COMUN.cuida} sinNota />
         </p>
-        <p className="text-sm text-muted">Ubicación ilustrativa hasta el masterplan.</p>
+        <p className="text-sm text-muted">{t.ubicacionIlustrativa}</p>
       </div>
     );
   }
@@ -147,13 +162,17 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
     const acciones = accionesDeLote("soluna");
     return (
       <div className="grid gap-3">
-        <p className="text-sm text-muted">Chacras de Soluna</p>
-        <h2 className="text-xl font-semibold">Finca {el.numero ?? "sin número"}</h2>
+        <p className="text-sm text-muted" translate="no">Chacras de Soluna</p>
+        <h2 className="text-xl font-semibold">
+          {tx.elegir.finca(el.numero === undefined ? tx.elegir.sinNumero : String(el.numero))}
+        </h2>
         <p className="text-sm">
-          <strong>Superficie:</strong> {textoSuperficieM2(el.superficieM2)}
+          <strong>{t.superficie}</strong> {textoSuperficieM2(el.superficieM2, idioma)}
         </p>
-        <p className="text-sm font-medium">Estado: {el.estado ? TEXTO_ESTADO_FINCA[el.estado] : "sin dato"}</p>
-        <EstadoAdministrativo proyecto="soluna" compacto />
+        <p className="text-sm font-medium">{t.estado} {el.estado ? textoDeEstadoFinca(el.estado, idioma) : nd}</p>
+        <EnEspanol>
+          <EstadoAdministrativo proyecto="soluna" compacto />
+        </EnEspanol>
         {disponible && (
           <>
             {acciones.includes("consultar") && (
@@ -165,7 +184,7 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
               />
             )}
             <p className="text-sm text-muted">
-              NetX actúa como agencia: la compra es privada entre las partes.
+              {t.agencia}
               <TerminoLegal clave="agencia" />
             </p>
           </>
@@ -177,28 +196,27 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
   if (el?.tipo === "lugar") {
     return (
       <div className="grid gap-3">
-        <p className="text-sm text-muted">Lugar de interés</p>
-        <h2 className="text-xl font-semibold">{nombreDeLugar(el.id, el.nombre)}</h2>
-        <p className="text-sm">{descripcionDeLugar(el.id)}</p>
+        <p className="text-sm text-muted">{tx.leyenda.lugar}</p>
+        <h2 className="text-xl font-semibold">
+          <span translate="no">{nombreDeLugar(el.id, el.nombre, idioma)}</span>
+        </h2>
+        <p className="text-sm">{descripcionDeLugar(el.id, idioma)}</p>
       </div>
     );
   }
 
-  const conteo = contarTribusPorEstado();
+  const conteo = contarTribusPorEstado(listarTribus(idioma));
   const cifras = [
-    { etiqueta: "Activas", valor: conteo.activa },
-    { etiqueta: "En formación", valor: conteo.formacion },
-    { etiqueta: "Vacantes", valor: conteo.vacante },
+    { etiqueta: t.activas, valor: conteo.activa },
+    { etiqueta: t.formacion, valor: conteo.formacion },
+    { etiqueta: t.vacantes, valor: conteo.vacante },
   ];
   return (
     <div className="grid gap-3">
-      <h2 className="text-xl font-semibold">{macrolote7().nombre}</h2>
-      <p className="text-sm">
-        Unas {textoHectareas(macrolote7().areaHa)} donde viven las 12 comunidades del Lighthouse. Al lado, las Chacras de Soluna,
-        con lotes que se ofrecen a privados.
-      </p>
-      <p className="text-sm text-muted">Elegí un barrio, el terreno común o una finca en el mapa o en la lista.</p>
-      <h3 className="font-semibold">Tribus del territorio</h3>
+      <h2 className="text-xl font-semibold" translate="no">{macrolote7().nombre}</h2>
+      <p className="text-sm">{t.resumen(textoHectareas(macrolote7().areaHa, idioma))}</p>
+      <p className="text-sm text-muted">{t.elegiUno}</p>
+      <h3 className="font-semibold">{t.tribusDelTerritorio}</h3>
       <dl className="grid grid-cols-3 gap-2">
         {cifras.map((c) => (
           <div key={c.etiqueta} className="grid gap-1 rounded-lg border border-faint bg-surface-2 p-2">
@@ -207,7 +225,7 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
           </div>
         ))}
       </dl>
-      <h3 className="font-semibold">Pertenecer al Lighthouse</h3>
+      <h3 className="font-semibold">{t.pertenecer}</h3>
       <MembresiaAcciones
         comunidad={COMUNIDAD_LIGHTHOUSE}
         nombre="Lighthouse"
