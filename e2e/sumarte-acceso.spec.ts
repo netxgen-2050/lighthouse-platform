@@ -222,6 +222,27 @@ test.describe("Líder de tribu", () => {
     await expect(page.getByText("Sos líder de Valle Solar (simulado)")).toBeVisible();
   });
 
+  test("cancelar el diálogo con el botón Cancelar no suma y devuelve el foco a Sumar otra tribu", async ({ page }) => {
+    await liderarValle(page);
+    await page.getByRole("button", { name: "Sumar otra tribu" }).click();
+    await page.getByRole("radio", { name: /Taller Común/ }).check();
+    await page.getByRole("button", { name: "Ser líder de esta tribu" }).click();
+    await page.getByRole("dialog", { name: "Sumar otra tribu" }).getByRole("button", { name: "Cancelar" }).click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Sumar otra tribu" })).toBeFocused();
+    await expect(page.getByText("Sos líder de Valle Solar (simulado)")).toBeVisible();
+  });
+
+  test("el menú del avatar nombra las dos tribus que lidera", async ({ page }) => {
+    await liderarValle(page);
+    await page.getByRole("button", { name: "Sumar otra tribu" }).click();
+    await page.getByRole("radio", { name: /Taller Común/ }).check();
+    await page.getByRole("button", { name: "Ser líder de esta tribu" }).click();
+    await page.getByRole("button", { name: "Sí, sumar Taller Común" }).click();
+    await page.getByRole("button", { name: "Menú de la persona" }).click();
+    await expect(page.getByText("Admin de Valle Solar y Taller Común")).toBeVisible();
+  });
+
   test("dejar de liderar una tribu deja la otra, y la última deja como Miembro", async ({ page }) => {
     await liderarValle(page);
     await page.getByRole("button", { name: "Sumar otra tribu" }).click();

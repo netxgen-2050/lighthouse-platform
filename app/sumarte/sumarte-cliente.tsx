@@ -42,6 +42,7 @@ import {
 } from "@/lib/sumarte/datos";
 import { useKyc } from "@/lib/pasaporte/usar-kyc";
 import { INICIAL, reducir, type Accion, type EstadoSumarte } from "@/lib/sumarte/estado";
+import { unirConY } from "@/lib/unir-con-y";
 
 // Todo queda solo en este navegador: no hay pedidos de red ni cobros.
 
@@ -56,11 +57,6 @@ const BORDE_ACTUAL = "border-2 border-deep";
 const ETIQUETA_ACTUAL = "w-fit rounded-full border border-deep bg-green-soft px-3 py-1 text-sm font-medium text-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
 const ACCIONES_DE_PLAN: readonly Accion["tipo"][] = ["plan", "pase", "tribu"];
-
-/** "A", "A y B", "A, B y C". */
-function unirConY(nombres: string[]): string {
-  return nombres.length <= 1 ? (nombres[0] ?? "") : `${nombres.slice(0, -1).join(", ")} y ${nombres[nombres.length - 1]}`;
-}
 
 export function SumarteCliente({ volver, para }: { volver: string | null; para: string | null }) {
   const router = useRouter();
