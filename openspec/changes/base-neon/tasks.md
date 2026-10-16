@@ -20,4 +20,4 @@ Rama `agente/base-neon` desde `dev`. Orden de la serie: **`base-neon`** → `con
 
 ## 4. Integración
 
-- [ ] 4.1 `pnpm verificar` y `pnpm build` en verde; e2e locales con PGlite; PR con guion de prueba y con los pasos para Gus de 3.2 (la base ya existe: no hay que crearla). <!-- arquitecto --> El PR dice arriba, en negrita, que los pasos 1 a 5 del guion van **antes de la entrega a `main`** (design, "Cuándo") y qué driver y manejo del `Pool` se usó. Verificar con los comandos y con `scripts/pr.sh`.
+- [x] 4.1 `pnpm verificar` y `pnpm build` en verde; e2e locales con PGlite; PR con guion de prueba y con los pasos para Gus de 3.2 (la base ya existe: no hay que crearla). <!-- arquitecto --> El PR dice arriba, en negrita, que los pasos 1 a 5 del guion van **antes de la entrega a `main`** (design, "Cuándo") y qué driver y manejo del `Pool` se usó. Verificar con los comandos y con `scripts/pr.sh`.
