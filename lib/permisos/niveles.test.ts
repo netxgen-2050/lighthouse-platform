@@ -35,10 +35,11 @@ describe("nivel Fundador", () => {
 });
 
 describe("capacidades por nivel", () => {
-  it("sin cuenta solo descubre y se suma", () => {
+  it("sin cuenta descubre, se suma y reporta", () => {
     expect(puedeCapacidad("sin-cuenta", "descubrir")).toBe(true);
     expect(puedeCapacidad("sin-cuenta", "sumarte")).toBe(true);
-    for (const c of ["hifa", "congreso", "personal", "reportar", "participar", "adherir", "admin-tribu", "netx"] as const) {
+    expect(puedeCapacidad("sin-cuenta", "reportar")).toBe(true);
+    for (const c of ["hifa", "congreso", "personal", "participar", "adherir", "admin-tribu", "netx"] as const) {
       expect(puedeCapacidad("sin-cuenta", c)).toBe(false);
     }
   });

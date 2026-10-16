@@ -59,10 +59,8 @@ export default function RootLayout({
             {/* Espacio para que el botón fijo de Hifa no tape el final de la página. */}
             <div aria-hidden="true" className="h-16 shrink-0" />
           </div>
-          {/* Reportar y Hifa se habilitan desde el nivel Explorador (sumándose gratis en Sumarte). */}
-          <SoloConCapacidad capacidad="reportar">
-            <BotonReportar version={despliegue.version} entorno={despliegue.entorno} />
-          </SoloConCapacidad>
+          {/* Reportar es para toda persona, con o sin sesión; Hifa se habilita desde el nivel Explorador. */}
+          <BotonReportar version={despliegue.version} entorno={despliegue.entorno} />
           <SoloConCapacidad capacidad="hifa">
             <Hifa version={despliegue.version} entorno={despliegue.entorno} />
           </SoloConCapacidad>

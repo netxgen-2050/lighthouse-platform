@@ -10,12 +10,12 @@ La app de Claude (Android o iOS) tiene una pestaña **Code**: lanza sesiones que
 ## Para construir un cambio
 
 1. En la app, pestaña **Code** → nueva sesión.
-2. Repo **`netxgen-2050/lighthouse-platform`**, rama **`main`**, entorno **`lighthouse-noche`**.
+2. Repo **`netxgen-2050/lighthouse-platform`**, rama **`dev`**, entorno **`lighthouse-noche`**.
 3. Modo de permisos: **Auto** (o "Accept edits"; si algo pide permiso, lo aprobás desde el celular).
 4. Pegá este mensaje, cambiando `<ID>` por el id de la spec (las carpetas de `openspec/changes/`):
 
 ```
-Sos el orquestador de lighthouse-platform. Leé CLAUDE.md y seguí exactamente .claude/noche.md con {{CAMBIO}} = <ID>, {{BASE}} = main y {{FECHA}} = la fecha de hoy (date +%F). Lanzá cada subagente en primer plano y esperá su resultado. Para los PRs usá siempre scripts/pr.sh (en la nube gh pr no funciona). Al final decime: el número del PR, el veredicto del revisor y el resultado del tester.
+Sos el orquestador de lighthouse-platform. Leé CLAUDE.md y seguí exactamente .claude/noche.md con {{CAMBIO}} = <ID>, {{BASE}} = dev y {{FECHA}} = la fecha de hoy (date +%F). Lanzá cada subagente en primer plano y esperá su resultado. Para los PRs usá siempre scripts/pr.sh (en la nube gh pr no funciona). Al final decime: el número del PR, el veredicto del revisor y el resultado del tester.
 ```
 
 5. Seguí la sesión desde la app: podés responder preguntas o corregir el rumbo. Al terminar queda un PR y un reporte en `docs/noches/`.
@@ -35,7 +35,11 @@ Sugerencia: primero `reportar-circulo` (es chico, sirve de prueba de la nube) y 
 
 Podés pedir directamente, por ejemplo: "Leé el issue #N (`gh api repos/netxgen-2050/lighthouse-platform/issues/N`) y escribí una spec OpenSpec para arreglarlo, en la rama `agente/spec-issue-N`, con un PR". Las specs las aprueba Gus antes de implementarlas.
 
+## Para pedir una spec en un solo paso
+
+En una sesión nueva (rama `dev`), pedí: "Corré `scripts/spec.sh <nombre> \"<lo que querés>\"`". Deja un PR de specs revisado por el arquitecto y anota las preguntas en el issue **🧭 Decisiones de Gus**, que podés contestar desde la app de GitHub.
+
 ## Lo que no hacen las sesiones
 
-- No mergean a `main`: eso lo hace Gus (o Claude con su OK, desde la Mac).
+- No mergean a `dev` ni a `main`: eso lo hace Gus (o Claude con su OK, desde la Mac).
 - No leen el secreto de Vercel ni lo muestran.

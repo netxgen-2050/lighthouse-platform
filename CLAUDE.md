@@ -3,12 +3,17 @@
 Plataforma de NetX para el Lighthouse (Soluna, BioPueblo): descubrir el territorio, encontrar tribu, pactos, semillas y el Congreso de febrero 2027. La documentación de producto, legal y de negocio vive en el repo `NS_platform` (carpeta `Documentation/`). Este repo es **solo código**.
 
 ## Quién hace qué
-- **Gus (humano)** aprueba specs, prioriza, lee los reportes cada mañana y **es el único que mergea a `main`**.
+- **Gus (humano)** aprueba specs, prioriza, lee los reportes cada mañana y decide qué entra a `dev` y cuándo `dev` pasa a `main` (ver "Ramas").
 - **Agentes de Claude Code** (`.claude/agents/`): especificador, arquitecto, implementador, revisor, tester, documentador. La corrida nocturna la orquesta `scripts/noche.sh` (ver `docs/agentes.md`).
+
+## Ramas
+- **`dev`**: donde se integra el trabajo de todos los días. Las noches parten de `dev` y sus PRs apuntan a `dev`. Su preview de Vercel es el entorno de desarrollo.
+- **`main`**: producción estable, la que prueban las personas del equipo. Solo recibe a `dev` en una **entrega** (PR `dev` → `main`), cuando Gus lo decide.
+- Ningún agente commitea, pushea ni mergea en `dev` ni en `main`.
 
 ## Cómo se trabaja
 - **Spec primero (OpenSpec).** Ningún código sin un cambio aprobado en `openspec/changes/<id>/`. Comandos: `/opsx:propose`, `/opsx:apply`, `/opsx:archive`. Si `openspec` no está en el PATH, usar `pnpm exec openspec …`.
-- **Una rama por cambio:** `agente/<id-del-cambio>`. PRs chicos. Nunca commitear ni pushear a `main`.
+- **Una rama por cambio:** `agente/<id-del-cambio>`. PRs chicos. Nunca commitear ni pushear a `dev` ni a `main`.
 - **Si no podés cumplir la spec, frená y reportá.** No improvises alcance ni inventes datos fuera de lo que pide la spec.
 - Antes de abrir un PR: `pnpm verificar` (lint + tipos + tests unitarios) y `pnpm build` en verde.
 - Commits en español, en imperativo, explicando el porqué.

@@ -78,5 +78,7 @@ test("solo destinos que existen: sin la ruta /panel no se muestra Mi recorrido",
 test("las subrutas marcan su sección y Inicio solo la raíz", () => {
   expect(esActivo("/tribus", "/tribus/valle")).toBe(true);
   expect(esActivo("/tribus", "/tribusx")).toBe(false);
+  expect(esActivo("/fogon", "/fogon/consultas")).toBe(true);
+  expect(esActivo("/fogon", "/fogon/consultas/u1")).toBe(true);
   expect(esActivo("/", "/tribus")).toBe(false);
 });

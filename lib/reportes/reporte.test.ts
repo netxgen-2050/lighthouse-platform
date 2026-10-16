@@ -5,6 +5,7 @@ import {
   armarEtiquetas,
   armarTitulo,
   esBot,
+  sinQuery,
   validarReporte,
   versionDesplegada,
 } from "./reporte";
@@ -85,7 +86,7 @@ describe("issue", () => {
   it("un pedido de privacidad suma la etiqueta `privacidad`, pero solo siendo una pregunta", () => {
     const pregunta = validarReporte({ ...valido, tipo: "pregunta", privacidad: true });
     expect(pregunta.ok && pregunta.reporte.privacidad).toBe(true);
-    expect(armarEtiquetas("pregunta", true)).toEqual(["reporte", "pregunta", "privacidad"]);
+    expect(armarEtiquetas("pregunta", { privacidad: true })).toEqual(["reporte", "pregunta", "privacidad"]);
     const bug = validarReporte({ ...valido, privacidad: true });
     expect(bug.ok && bug.reporte.privacidad).toBeUndefined();
     const sin = validarReporte({ ...valido, tipo: "pregunta" });
@@ -136,5 +137,62 @@ describe("issue", () => {
   it("acorta títulos largos", () => {
     const t = armarTitulo({ tipo: "idea", quePaso: "palabra ".repeat(50) });
     expect(t.length).toBeLessThanOrEqual(90);
+  });
+});
+
+describe("modo sin cuenta", () => {
+  const sin = { sinCuenta: true };
+  it("el email vacío es válido y 'juan' no", () => {
+    expect(validarReporte(valido, sin).ok).toBe(true);
+    const r = validarReporte({ ...valido, contacto: "juan" }, sin);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errores.contacto).toBe("Escribí un email válido o dejalo vacío.");
+    expect(validarReporte({ ...valido, contacto: "juan@ejemplo.org" }, sin).ok).toBe(true);
+  });
+  it("con cuenta el contacto sigue siendo texto libre", () => {
+    expect(validarReporte({ ...valido, contacto: "Juan" }).ok).toBe(true);
+  });
+  it("ignora `privacidad` sin cuenta", () => {
+    const r = validarReporte({ ...valido, tipo: "pregunta", privacidad: true }, sin);
+    if (!r.ok) throw new Error("debía ser válido");
+    expect(r.reporte.privacidad).toBeUndefined();
+    expect(armarEtiquetas(r.reporte.tipo, { privacidad: r.reporte.privacidad === true, sinCuenta: true })).toEqual([
+      "reporte",
+      "pregunta",
+      "sin-cuenta",
+    ]);
+  });
+  it("sinQuery saca query y fragmento", () => {
+    expect(sinQuery("/sumarte?volver=%2Fpactos#x")).toBe("/sumarte");
+    expect(sinQuery("/a#b")).toBe("/a");
+    expect(sinQuery("/a")).toBe("/a");
+  });
+  it("armarContexto sin cuenta no deja query en URL ni ruta", () => {
+    const c = armarContexto({
+      url: "http://x.test/sumarte?volver=%2Fpactos#x",
+      titulo: "T",
+      ancho: 1,
+      alto: 1,
+      navegador: "UA",
+      version: "v",
+      entorno: "local",
+      sinCuenta: true,
+    });
+    expect(c.url).toBe("http://x.test/sumarte");
+    expect(c.ruta).toBe("/sumarte");
+  });
+  it("el servidor vuelve a sacar la query del contexto", () => {
+    const r = validarReporte({ ...valido, contexto: { url: "http://x.test/a?code=1", ruta: "/a?code=1#z" } }, sin);
+    if (!r.ok) throw new Error("debía ser válido");
+    expect(r.reporte.contexto.url).toBe("http://x.test/a");
+    expect(r.reporte.contexto.ruta).toBe("/a");
+  });
+  it("el cuerpo marca 'Enviado sin cuenta' y con cuenta no", () => {
+    const r = validarReporte(valido, sin);
+    if (!r.ok) throw new Error("debía ser válido");
+    expect(armarCuerpo(r.reporte).startsWith("**Enviado sin cuenta**")).toBe(true);
+    const c = validarReporte(valido);
+    if (!c.ok) throw new Error("debía ser válido");
+    expect(armarCuerpo(c.reporte)).not.toContain("sin cuenta");
   });
 });

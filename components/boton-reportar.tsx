@@ -23,7 +23,17 @@ type Estado =
   | { fase: "editando" }
   | { fase: "enviando" }
   | { fase: "listo"; numero: number }
-  | { fase: "fallo"; motivo: "sin-configurar" | "error" };
+  | { fase: "fallo"; motivo: "sin-configurar" | "error" }
+  | { fase: "fallo"; motivo: "limite"; segundos: number | null };
+
+const AVISO_SIN_CUENTA =
+  "Estás reportando sin cuenta. Tu reporte se publica como un issue en GitHub, donde lo ve el equipo de NetX y quien tenga acceso a ese repositorio. Si dejás tu email, queda escrito en el issue. También se envía lo que ves en «Esto se adjunta al reporte». Tu IP solo se usa un rato para limitar los envíos y no va al issue.";
+
+function textoLimite(segundos: number | null): string {
+  if (segundos === null) return "Llegaste al límite de reportes por ahora. Probá de nuevo en un rato.";
+  const minutos = Math.max(1, Math.ceil(segundos / 60));
+  return `Llegaste al límite de reportes por ahora. Probá de nuevo en ${minutos} ${minutos === 1 ? "minuto" : "minutos"}.`;
+}
 
 const campo =
   "mt-1 block w-full rounded-lg border border-faint bg-surface px-3 py-2 text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep aria-[invalid=true]:border-warn-ink";
@@ -31,7 +41,13 @@ const boton =
   "rounded-full px-5 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
 export function BotonReportar({ version, entorno }: { version: string; entorno: string }) {
-  const { cabeceras } = useSesion();
+  const { cabeceras, estado: estadoSesion, consentimiento } = useSesion();
+  // Con sesión y la política aceptada, el formulario de siempre; en cualquier otro caso, el modo sin cuenta.
+  // Si el servidor dice que la sesión ya no vale, se pasa al modo sin cuenta (con su aviso) sin perder lo escrito.
+  const [sesionVencida, setSesionVencida] = useState(false);
+  // (el aviso de arriba se muestra una vez por intento; la sesión vencida dura hasta recargar la página)
+  const [avisoVencida, setAvisoVencida] = useState(false);
+  const conCuenta = estadoSesion === "ok" && consentimiento === "vigente" && !sesionVencida;
   const dialogo = useRef<HTMLDialogElement | null>(null);
   const disparador = useRef<HTMLButtonElement | null>(null);
   const refs = useRef<Partial<Record<CampoReporte, HTMLElement | null>>>({});
@@ -62,7 +78,7 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
     return () => document.removeEventListener("keydown", alTeclear);
   }, [sugerencia]);
 
-  function leerContexto(): Contexto {
+  function leerContexto(sinCuenta = !conCuenta): Contexto {
     return armarContexto({
       url: window.location.href,
       titulo: document.title,
@@ -71,6 +87,7 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
       navegador: navigator.userAgent,
       version,
       entorno,
+      sinCuenta,
     });
   }
 
@@ -93,6 +110,7 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
     }
     if (estado.fase !== "editando") setEstado({ fase: "editando" });
     setErrores({});
+    setAvisoVencida(false);
     dialogo.current?.showModal();
   }
 
@@ -103,7 +121,7 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
   async function enviar(ev: React.FormEvent) {
     ev.preventDefault();
     const entrada = { tipo, quePaso, esperabas, contacto, contexto: leerContexto(), sitioWeb: trampa };
-    const r = validarReporte(entrada);
+    const r = validarReporte(entrada, { sinCuenta: !conCuenta });
     if (!r.ok) {
       setErrores(r.errores);
       const primero = (["tipo", "quePaso", "esperabas", "contacto"] as CampoReporte[]).find((k) => r.errores[k]);
@@ -111,17 +129,51 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
       return;
     }
     setErrores({});
+    setAvisoVencida(false);
     setContexto(entrada.contexto);
     setEstado({ fase: "enviando" });
     try {
       const res = await fetch("/api/reportes", {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...(await cabeceras()) },
+        headers: { "Content-Type": "application/json", ...(conCuenta ? await cabeceras() : {}) },
         body: JSON.stringify(entrada),
       });
       if (res.ok) {
         const datos = (await res.json()) as { numero?: number };
         setEstado({ fase: "listo", numero: typeof datos.numero === "number" ? datos.numero : 0 });
+      } else if (res.status === 429) {
+        const datos = (await res.json().catch(() => ({}))) as { reintentarEnSegundos?: unknown };
+        const cabecera = Number(res.headers.get("Retry-After"));
+        const segundos =
+          typeof datos.reintentarEnSegundos === "number"
+            ? datos.reintentarEnSegundos
+            : Number.isFinite(cabecera) && cabecera > 0
+              ? cabecera
+              : null;
+        setEstado({ fase: "fallo", motivo: "limite", segundos });
+      } else if (res.status === 401 && conCuenta) {
+        // La sesión ya no vale en el servidor: no se creó nada. Se pasa al modo sin cuenta (con su aviso de
+        // publicación), se conserva lo escrito y, si el contacto no es un email, se señala el campo.
+        const sin = validarReporte({ ...entrada, contexto: leerContexto(true) }, { sinCuenta: true });
+        setSesionVencida(true);
+        setAvisoVencida(true);
+        setContexto(leerContexto(true));
+        setEstado({ fase: "editando" });
+        if (!sin.ok) {
+          setErrores(sin.errores);
+          refs.current.contacto?.focus();
+        }
+      } else if (res.status === 400) {
+        const datos = (await res.json().catch(() => ({}))) as { errores?: Partial<Record<CampoReporte, string>> };
+        const errs = datos.errores ?? {};
+        setEstado({ fase: "editando" });
+        if (Object.keys(errs).length > 0) {
+          setErrores(errs);
+          const primero = (["tipo", "quePaso", "esperabas", "contacto"] as CampoReporte[]).find((k) => errs[k]);
+          if (primero) refs.current[primero]?.focus();
+        } else {
+          setEstado({ fase: "fallo", motivo: "error" });
+        }
       } else {
         setEstado({ fase: "fallo", motivo: res.status === 503 ? "sin-configurar" : "error" });
       }
@@ -131,7 +183,7 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
   }
 
   async function copiar() {
-    const r = validarReporte({ tipo, quePaso, esperabas, contacto, contexto });
+    const r = validarReporte({ tipo, quePaso, esperabas, contacto, contexto }, { sinCuenta: !conCuenta });
     if (!r.ok) return;
     try {
       await navigator.clipboard.writeText(textoParaCopiar(r.reporte));
@@ -220,6 +272,17 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
           </div>
         ) : (
           <form onSubmit={enviar} noValidate className="mt-4 grid gap-4">
+            {avisoVencida && (
+              <p role="alert" className="rounded-lg border border-warn-ink bg-warn-bg p-3 text-sm font-medium text-warn-ink">
+                Tu sesión ya no es válida, así que este reporte se enviaría sin cuenta. Leé el aviso, revisá tu email y
+                enviá de nuevo.
+              </p>
+            )}
+            {!conCuenta && (
+              <p id="aviso-rep-sin-cuenta" className="rounded-lg bg-surface-2 p-3 text-sm">
+                {AVISO_SIN_CUENTA}
+              </p>
+            )}
             <fieldset className="grid gap-2">
               <legend className="font-medium">Tipo</legend>
               <div className="flex flex-wrap gap-4">
@@ -285,12 +348,16 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
 
             <div>
               <label htmlFor="rep-contacto" className="font-medium">
-                Tu nombre o email <span className="font-normal text-muted">(opcional, para responderte)</span>
+                {conCuenta ? "Tu nombre o email" : "Tu email"}{" "}
+                <span className="font-normal text-muted">
+                  {conCuenta ? "(opcional, para responderte)" : "(opcional)"}
+                </span>
               </label>
               <input
                 id="rep-contacto"
                 ref={(el) => { refs.current.contacto = el; }}
-                type="text"
+                type={conCuenta ? "text" : "email"}
+                autoComplete={conCuenta ? undefined : "email"}
                 maxLength={MAX_CONTACTO + 1}
                 value={contacto}
                 onChange={(e) => setContacto(e.target.value)}
@@ -299,7 +366,9 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
                 className={campo}
               />
               <p id="aviso-rep-contacto" className="mt-1 text-sm text-muted">
-                Tu reporte, y tu contacto si lo dejás, lo ve el equipo de NetX.
+                {conCuenta
+                  ? "Tu reporte, y tu contacto si lo dejás, lo ve el equipo de NetX."
+                  : "Solo si querés que te respondamos. Queda escrito en el issue."}
               </p>
               {errores.contacto && (
                 <p id="err-rep-contacto" role="alert" className="mt-1 text-sm font-medium text-warn-ink">
@@ -340,7 +409,9 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
                 <p className="font-medium">
                   {estado.motivo === "sin-configurar"
                     ? "No se pudo registrar: el envío todavía no está configurado en este entorno."
-                    : "No se pudo registrar el reporte. Probá de nuevo en un rato."}{" "}
+                    : estado.motivo === "limite"
+                      ? textoLimite(estado.segundos)
+                      : "No se pudo registrar el reporte. Probá de nuevo en un rato."}{" "}
                   Lo que escribiste sigue acá; copialo para no perderlo.
                 </p>
                 <div>

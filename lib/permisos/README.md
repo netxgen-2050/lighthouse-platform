@@ -38,8 +38,8 @@ Otra mirada, la de la navegación: cómo se suma la persona en Sumarte define qu
 
 | Nivel | Cómo se llega | Suma |
 |---|---|---|
-| Sin cuenta | no se registró | Descubrir (Inicio, Territorio, Tribus) y Sumarte |
-| Explorador | se suma gratis | Hifa, Congreso, espacio personal (Perfil, Pasaporte, Mi recorrido, Bandeja, Configuración) y Reportar |
+| Sin cuenta | no se registró | Descubrir (Inicio, Territorio, Tribus), Sumarte y Reportar |
+| Explorador | se suma gratis | Hifa, Congreso y espacio personal (Perfil, Pasaporte, Mi recorrido, Bandeja, Configuración) |
 | Miembro | plan Miembro o Pase Fundador | Participar (Pactos, Semillas, Fogón, Compromisos) y adherir a tribus |
 | Líder de tribu | Plan Tribu y la tribu elegida | admin de su tribu |
 | Super admin | solo `LH_PERSONAS` | NetX y todo lo demás |

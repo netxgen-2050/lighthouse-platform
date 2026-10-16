@@ -59,15 +59,36 @@ test.describe("consentimiento al entrar", () => {
     await expect(titulo(page)).toHaveCount(0);
   });
 
-  test("sin aceptar, Hifa y Reportar no aparecen y las páginas públicas siguen abiertas", async ({ page }) => {
+  test("sin aceptar, Hifa no aparece, Reportar abre el formulario sin cuenta y las páginas públicas siguen abiertas", async ({ page }) => {
     await page.goto("/pactos");
     await expect(titulo(page)).toBeVisible();
     await expect(page.getByRole("button", { name: "Hablar con Hifa" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Reportar un problema o una idea" })).toHaveCount(0);
+    await page.getByRole("button", { name: "Reportar un problema o una idea" }).click();
+    const dialogo = page.getByRole("dialog", { name: "Reportar un problema o una idea" });
+    await expect(dialogo.getByText(/Estás reportando sin cuenta/)).toBeVisible();
+    await expect(dialogo.getByLabel(/Tu email/)).toBeVisible();
+    await page.keyboard.press("Escape");
     await page.goto("/tribus");
     await expect(page.getByRole("heading", { level: 1, name: "Tribus del Lighthouse" })).toBeVisible();
     await page.goto("/privacidad");
     await expect(page.getByRole("heading", { level: 1, name: "Política de privacidad" })).toBeVisible();
+  });
+
+  test("con sesión y la política pendiente, el reporte sale sin cabeceras de sesión", async ({ page }) => {
+    let cabeceras: Record<string, string> = {};
+    await page.route("**/api/reportes", (ruta) => {
+      cabeceras = ruta.request().headers();
+      return ruta.fulfill({ status: 200, json: { ok: true, numero: 9 } });
+    });
+    await page.goto("/pactos");
+    await expect(titulo(page)).toBeVisible();
+    await page.getByRole("button", { name: "Reportar un problema o una idea" }).click();
+    const dialogo = page.getByRole("dialog", { name: "Reportar un problema o una idea" });
+    await dialogo.getByLabel(/¿Qué pasó\?/).fill("Algo");
+    await dialogo.getByRole("button", { name: "Enviar reporte" }).click();
+    await expect(dialogo.getByText("¡Gracias! Quedó registrado (#9)")).toBeVisible();
+    expect(cabeceras.authorization).toBeUndefined();
+    expect(Object.keys(cabeceras).filter((k) => k.startsWith("x-lh"))).toEqual([]);
   });
 
   test("la persona puede salir sin aceptar", async ({ page }) => {

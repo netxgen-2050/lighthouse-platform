@@ -23,6 +23,7 @@ describe("catálogo legal", () => {
         "calificado",
         "chacra",
         "circulo",
+        "consultivo",
         "contacto",
         "creditos",
         "datos",
@@ -60,6 +61,9 @@ describe("catálogo legal", () => {
   });
   it("encuentroeducativo es borrador", () => {
     expect(esBorrador("encuentroeducativo")).toBe(true);
+  });
+  it("consultivo es borrador", () => {
+    expect(esBorrador("consultivo")).toBe(true);
   });
   it("agencia es borrador", () => {
     expect(esBorrador("agencia")).toBe(true);

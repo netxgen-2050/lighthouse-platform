@@ -224,3 +224,177 @@ test("el token no aparece en el HTML ni en el código que recibe el navegador", 
     expect(t).not.toMatch(/ghp_|github_pat_/);
   }
 });
+
+async function axeSinGraves(page: Page) {
+  const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  return graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }));
+}
+
+test("con la sesión vencida en el servidor, el diálogo pasa al modo sin cuenta, señala el email y no pierde lo escrito", async ({ page }) => {
+  let pedidos = 0;
+  await page.route("**/api/reportes", (ruta) => {
+    pedidos += 1;
+    return ruta.fulfill({ status: 401, json: { ok: false, sesion: false } });
+  });
+  await page.goto("/");
+  const dialogo = await abrir(page);
+  await dialogo.getByLabel(/¿Qué pasó\?/).fill("Texto a conservar");
+  await dialogo.getByLabel(/Tu nombre o email/).fill("Juan");
+  await dialogo.getByRole("button", { name: "Enviar reporte" }).click();
+  await expect(dialogo.getByText(/Estás reportando sin cuenta/)).toBeVisible();
+  await expect(dialogo.getByText(/Tu sesión ya no es válida/)).toBeVisible();
+  await expect(dialogo.getByText("Error: Escribí un email válido o dejalo vacío.")).toBeVisible();
+  await expect(dialogo.getByLabel(/Tu email/)).toBeFocused();
+  await expect(dialogo.getByLabel(/¿Qué pasó\?/)).toHaveValue("Texto a conservar");
+  expect(pedidos).toBe(1);
+});
+
+test("si el servidor responde 400 con un error de contacto, lo muestra en texto, lleva el foco al campo y conserva lo escrito", async ({ page }) => {
+  await page.route("**/api/reportes", (ruta) =>
+    ruta.fulfill({ status: 400, json: { ok: false, errores: { contacto: "Puede tener hasta 200 caracteres." } } }),
+  );
+  await page.goto("/");
+  const dialogo = await abrir(page);
+  await dialogo.getByLabel(/¿Qué pasó\?/).fill("Texto a conservar");
+  await dialogo.getByLabel(/Tu nombre o email/).fill("Juan");
+  await dialogo.getByRole("button", { name: "Enviar reporte" }).click();
+  await expect(dialogo.getByText("Error: Puede tener hasta 200 caracteres.")).toBeVisible();
+  await expect(dialogo.getByLabel(/Tu nombre o email/)).toBeFocused();
+  await expect(dialogo.getByLabel(/¿Qué pasó\?/)).toHaveValue("Texto a conservar");
+  await expect(dialogo.getByText("No se pudo registrar el reporte")).toHaveCount(0);
+});
+
+test.describe("sin cuenta", () => {
+  test.use({ rol: "ninguno" });
+
+  for (const ruta of ["/", "/tribus/valle", "/territorios/lighthouse", "/sumarte", "/privacidad"]) {
+    test(`el botón Reportar aparece en ${ruta}`, async ({ page }) => {
+      await page.goto(ruta);
+      await expect(page.getByRole("button", { name: NOMBRE_BOTON })).toBeVisible();
+    });
+  }
+
+  test("teclado: Enter abre, Escape cierra y el foco vuelve al botón", async ({ page }) => {
+    await page.goto("/");
+    const boton = page.getByRole("button", { name: NOMBRE_BOTON });
+    // Se llega con Tab, como una persona que usa solo el teclado.
+    for (let i = 0; i < 100 && !(await boton.evaluate((el) => el === document.activeElement)); i++) {
+      await page.keyboard.press("Tab");
+    }
+    await expect(boton).toBeFocused();
+    await page.keyboard.press("Enter");
+    const dialogo = page.getByRole("dialog");
+    await expect(dialogo).toBeVisible();
+    expect(await page.evaluate(() => document.activeElement?.closest("dialog") !== null)).toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(dialogo).toBeHidden();
+    await expect(boton).toBeFocused();
+  });
+
+  test("muestra el aviso de publicación y el campo Tu email, no Tu nombre o email", async ({ page }) => {
+    await page.goto("/");
+    const dialogo = await abrir(page);
+    await expect(
+      dialogo.getByText(
+        "Estás reportando sin cuenta. Tu reporte se publica como un issue en GitHub, donde lo ve el equipo de NetX y quien tenga acceso a ese repositorio. Si dejás tu email, queda escrito en el issue. También se envía lo que ves en «Esto se adjunta al reporte». Tu IP solo se usa un rato para limitar los envíos y no va al issue.",
+      ),
+    ).toBeVisible();
+    await expect(dialogo.getByRole("heading", { name: "Esto se adjunta al reporte" })).toBeVisible();
+    const email = dialogo.getByLabel(/Tu email/);
+    await expect(email).toHaveAttribute("type", "email");
+    await expect(email).toHaveAccessibleDescription(/Solo si querés que te respondamos\. Queda escrito en el issue\./);
+    await expect(dialogo.getByLabel(/Tu nombre o email/)).toHaveCount(0);
+  });
+
+  test("el contexto va sin query ni fragmento", async ({ page }) => {
+    await page.goto("/sumarte?volver=%2Fpactos");
+    const dialogo = await abrir(page);
+    await expect(dialogo).toContainText("/sumarte");
+    await expect(dialogo).not.toContainText("volver=");
+  });
+
+  test("un email mal escrito muestra el error, lleva el foco al campo y no envía", async ({ page }) => {
+    let pedidos = 0;
+    await page.route("**/api/reportes", (ruta) => {
+      pedidos += 1;
+      return ruta.fulfill({ status: 200, json: { ok: true, numero: 1 } });
+    });
+    await page.goto("/");
+    const dialogo = await abrir(page);
+    await dialogo.getByLabel(/¿Qué pasó\?/).fill("Algo");
+    await dialogo.getByLabel(/Tu email/).fill("juan");
+    await dialogo.getByRole("button", { name: "Enviar reporte" }).click();
+    await expect(dialogo.getByRole("alert")).toContainText("Error: Escribí un email válido o dejalo vacío.");
+    await expect(dialogo.getByLabel(/Tu email/)).toBeFocused();
+    expect(pedidos).toBe(0);
+    expect(await axeSinGraves(page)).toEqual([]);
+  });
+
+  test("envío correcto sin cuenta: número del issue y sin cabecera de sesión", async ({ page }) => {
+    let cabeceras: Record<string, string> = {};
+    await page.route("**/api/reportes", (ruta) => {
+      cabeceras = ruta.request().headers();
+      return ruta.fulfill({ status: 200, json: { ok: true, numero: 51 } });
+    });
+    await page.goto("/");
+    const dialogo = await abrir(page);
+    await dialogo.getByLabel(/¿Qué pasó\?/).fill("Se rompe");
+    await dialogo.getByRole("button", { name: "Enviar reporte" }).click();
+    await expect(dialogo.getByText("¡Gracias! Quedó registrado (#51)")).toBeVisible();
+    expect(cabeceras.authorization).toBeUndefined();
+    expect(Object.keys(cabeceras).filter((k) => k.startsWith("x-lh"))).toEqual([]);
+  });
+
+  test("límite alcanzado: avisa en minutos, conserva el texto y ofrece copiar; axe sin violaciones", async ({ page }) => {
+    await page.route("**/api/reportes", (ruta) =>
+      ruta.fulfill({ status: 429, headers: { "Retry-After": "300" }, json: { ok: false, reintentarEnSegundos: 300 } }),
+    );
+    await page.goto("/");
+    const dialogo = await abrir(page);
+    await dialogo.getByLabel(/¿Qué pasó\?/).fill("Texto a conservar");
+    await dialogo.getByRole("button", { name: "Enviar reporte" }).click();
+    await expect(dialogo.getByRole("alert")).toContainText(
+      "Llegaste al límite de reportes por ahora. Probá de nuevo en 5 minutos.",
+    );
+    await expect(dialogo.getByLabel(/¿Qué pasó\?/)).toHaveValue("Texto a conservar");
+    await expect(dialogo.getByRole("button", { name: "Copiar el reporte" })).toBeVisible();
+    expect(await axeSinGraves(page)).toEqual([]);
+  });
+
+  test("el campo trampa completado por script llega a la ruta y el diálogo agradece sin número", async ({ page }) => {
+    let enviado: Record<string, unknown> = {};
+    await page.route("**/api/reportes", (ruta) => {
+      enviado = ruta.request().postDataJSON();
+      return ruta.fulfill({ status: 200, json: { ok: true, numero: 0 } });
+    });
+    await page.goto("/");
+    const dialogo = await abrir(page);
+    await dialogo.getByLabel(/¿Qué pasó\?/).fill("Algo");
+    await page.locator("#rep-sitio-web").evaluate((el: HTMLInputElement) => {
+      const poner = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+      poner.call(el, "spam");
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await dialogo.getByRole("button", { name: "Enviar reporte" }).click();
+    await expect(dialogo.getByText("¡Gracias! Quedó registrado")).toBeVisible();
+    await expect(dialogo.getByText(/\(#/)).toHaveCount(0);
+    expect(enviado.sitioWeb).toBe("spam");
+  });
+
+  test("la ruta real, sin sesión, rechaza lo que corresponde sin crear issues", async ({ request }) => {
+    const base = { tipo: "bug", quePaso: "x", esperabas: "", contacto: "", contexto: {} };
+    const trampa = await request.post("/api/reportes", { data: { ...base, sitioWeb: "spam" } });
+    expect(trampa.status()).toBe(200);
+    expect(await trampa.json()).toEqual({ ok: true, numero: 0 });
+    const grande = await request.post("/api/reportes", { data: { ...base, quePaso: "a".repeat(100 * 1024) } });
+    expect(grande.status()).toBe(413);
+    const vacio = await request.post("/api/reportes", { data: { ...base, quePaso: "" } });
+    expect(vacio.status()).toBe(400);
+    const plano = await request.post("/api/reportes", {
+      headers: { "Content-Type": "text/plain" },
+      data: JSON.stringify(base),
+    });
+    expect(plano.status()).toBe(415);
+  });
+});
