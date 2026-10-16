@@ -95,6 +95,11 @@ describe("contenido del evento", () => {
     expect(e.encuentro.parrafos.some((p) => /educativ/i.test(p))).toBe(true);
   });
 
+  it("en inglés, algún párrafo de El encuentro dice educational (ahí va el ⚖ en inglés)", async () => {
+    const e = await obtenerEvento("en");
+    expect(e.encuentro.parrafos.some((p) => /educational/i.test(p))).toBe(true);
+  });
+
   it("trae la página oficial de ejemplo con URL segura", async () => {
     const e = await obtenerEvento();
     expect(e.paginaOficial?.esEjemplo).toBe(true);

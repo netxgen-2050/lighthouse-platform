@@ -194,6 +194,43 @@ html:has(.tema-evento) {
   background: var(--evento-blanco);
   color: var(--evento-tinta);
 }
+/* Selector ES / EN: dos enlaces; el actual se distingue con subrayado y peso, no solo con color. Visible en todos los anchos. */
+.tema-evento .ev-selector-idioma {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+  border: 1px solid var(--evento-tinta-2);
+  border-radius: 999px;
+  padding: 2px;
+  background: var(--evento-blanco);
+}
+.tema-evento .ev-selector-idioma a {
+  font-weight: 500;
+  font-size: 12.5px;
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: var(--evento-tinta);
+  text-decoration: none;
+}
+.tema-evento .ev-selector-idioma a[aria-current="true"] {
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
+}
+.tema-evento .ev-selector-idioma a:focus-visible {
+  outline: 2px solid var(--evento-tinta);
+  outline-offset: 1px;
+}
+/* Nota visible cuando una sección en inglés muestra algún texto en español. */
+.tema-evento .ev-nota-idioma {
+  margin: 0;
+  padding: 8px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+  background: var(--evento-blanco);
+  color: var(--evento-tinta);
+}
 
 /* ===== Botones ===== */
 .tema-evento .ev-boton {
