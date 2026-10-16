@@ -48,7 +48,8 @@ export async function POST(req: Request) {
   if ("rechazo" in a) return a.rechazo;
   try {
     const c = await cuerpo(req);
-    const persona = await agregarPersona(await db(), a.actorId, c.email, validarCambios({ ...c, email: undefined }));
+    const { email, ...resto } = c;
+    const persona = await agregarPersona(await db(), a.actorId, email, validarCambios(resto));
     return NextResponse.json({ ok: true, persona }, { status: 201, headers: SIN_CACHE });
   } catch (e) {
     return respuestaDeError(e);
@@ -60,7 +61,8 @@ export async function PATCH(req: Request) {
   if ("rechazo" in a) return a.rechazo;
   try {
     const c = await cuerpo(req);
-    const persona = await cambiarPersona(await db(), a.actorId, c.id, validarCambios({ ...c, id: undefined }));
+    const { id, ...resto } = c;
+    const persona = await cambiarPersona(await db(), a.actorId, id, validarCambios(resto));
     return NextResponse.json({ ok: true, persona }, { headers: SIN_CACHE });
   } catch (e) {
     return respuestaDeError(e);

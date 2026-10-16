@@ -43,12 +43,34 @@ describe("GET /api/sesion (modo de prueba, con la base)", () => {
   });
 });
 
+vi.mock("@privy-io/server-auth", () => ({
+  PrivyClient: class {
+    verifyAuthToken = async () => ({ userId: "did:privy:prod" });
+    getUser = async () => ({ id: "did:privy:prod", email: { address: "ana@real.com" } });
+  },
+}));
+
 describe("la base en producción", () => {
-  afterEach(() => vi.unstubAllEnvs());
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
 
   it("sin DATABASE_URL y con VERCEL_ENV=production la base falla de forma explícita", async () => {
     vi.stubEnv("VERCEL_ENV", "production");
     vi.stubEnv("DATABASE_URL", "");
     await expect(db()).rejects.toThrow(/DATABASE_URL/);
+  });
+
+  it("/api/sesion responde 503 y deja el error de configuración en el log, sin el email", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("DATABASE_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_PRIVY_APP_ID", "app");
+    vi.stubEnv("PRIVY_APP_SECRET", "secreto");
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const r = await GET(new Request("http://x/api/sesion", { headers: { authorization: "Bearer ok" } }));
+    expect(r.status).toBe(503);
+    expect(log).toHaveBeenCalledWith(expect.stringContaining("DATABASE_URL"));
+    expect(JSON.stringify(log.mock.calls)).not.toContain("ana@real.com");
   });
 });

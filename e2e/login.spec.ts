@@ -80,27 +80,42 @@ test.describe("super admin", () => {
     await expect.poll(() => filas.count()).toBeGreaterThanOrEqual(4);
     await expect(panel.getByLabel(`Rol de ${EMAILS.superadmin}`)).toHaveValue("superadmin");
     await expect(panel.getByLabel(`Rol de ${EMAILS["admin-tribu"]}`)).toHaveValue("admin-tribu");
-    await expect(panel.getByLabel(`Tribu que administra ${EMAILS["admin-tribu"]}`)).toHaveValue("valle");
+    await expect(panel.getByRole("row", { name: new RegExp(EMAILS["admin-tribu"]) })).toContainText("Valle Solar");
     await expect(panel.getByLabel(`Perfil de prueba de ${EMAILS.persona}`)).toHaveValue("inversor");
   });
 
-  test("suma una persona, le cambia el rol y el cambio se ve en su sesión; no puede quitarse el rol si es la única", async ({ page, request }) => {
-    // Un email nuevo en cada corrida: la base de los e2e locales vive mientras corre el servidor y no hay forma de borrar personas.
-    const nueva = `nueva-${Date.now()}@prueba.test`;
+  test("suma una persona, le cambia el rol y el cambio se ve en su sesión", async ({ page, request }) => {
+    // Idempotente: siempre la misma persona de prueba (no hay forma de borrar personas). Si ya existe de una corrida anterior
+    // (por ejemplo contra un preview), se la deja como persona común antes de empezar y se la restaura al terminar.
+    const nueva = "panel-e2e@prueba.test";
+    const cabecera = { "x-lh-prueba": EMAILS.superadmin };
+    const lista = async () =>
+      ((await (await request.get("/api/personas", { headers: cabecera })).json()) as { personas: { id: string; email: string }[] }).personas;
+    const previa = (await lista()).find((p) => p.email === nueva);
+    if (previa) await request.patch("/api/personas", { headers: cabecera, data: { id: previa.id, rol: "persona", tribuAdmin: null } });
+
     await page.goto("/netx");
     const panel = page.getByRole("region", { name: "Personas y roles" });
     await expect(panel.getByLabel(`Rol de ${EMAILS.superadmin}`)).toBeVisible();
-    await panel.getByLabel("Email de la persona").fill(nueva);
-    await panel.getByRole("button", { name: "Sumar persona" }).click();
-    await expect(panel.getByRole("status")).toContainText(`Sumada: ${nueva}`);
+    if (!previa) {
+      await panel.getByLabel("Email de la persona").fill(nueva);
+      await panel.getByRole("button", { name: "Sumar persona" }).click();
+      await expect(panel.getByRole("status")).toContainText(`Sumada: ${nueva}`);
+    }
+    // Elegir otro rol no guarda: se guarda solo al confirmar.
     await panel.getByLabel(`Rol de ${nueva}`).selectOption("admin-tribu");
+    expect((await lista()).length).toBeGreaterThan(0);
+    expect((await (await request.get("/api/sesion", { headers: { "x-lh-prueba": nueva } })).json()).rol).toBe("persona");
+    await panel.getByRole("button", { name: `Guardar cambios de ${nueva}` }).click();
     await expect(panel.getByRole("status")).toContainText(`Guardado: ${nueva}`);
-    await expect(panel.getByLabel(`Tribu que administra ${nueva}`)).toHaveValue("valle");
-    const r = await request.get("/api/sesion", { headers: { "x-lh-prueba": nueva } });
-    expect(await r.json()).toMatchObject({ rol: "admin-tribu", tribuAdmin: "valle" });
+    await expect(panel.getByRole("row", { name: new RegExp(nueva) })).toContainText("Valle Solar");
+    expect(await (await request.get("/api/sesion", { headers: { "x-lh-prueba": nueva } })).json()).toMatchObject({ rol: "admin-tribu", tribuAdmin: "valle" });
     // Se recuerda tras recargar (viene de la base).
     await page.reload();
     await expect(page.getByRole("region", { name: "Personas y roles" }).getByLabel(`Rol de ${nueva}`)).toHaveValue("admin-tribu");
+    // Restaura el estado inicial.
+    const yo = (await lista()).find((p) => p.email === nueva)!;
+    await request.patch("/api/personas", { headers: cabecera, data: { id: yo.id, rol: "persona", tribuAdmin: null } });
   });
 
   test("la API del panel es solo para el super admin", async ({ request }) => {

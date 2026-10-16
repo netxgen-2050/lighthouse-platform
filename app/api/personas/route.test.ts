@@ -94,6 +94,26 @@ describe("/api/personas", () => {
     expect((await pedir("PATCH", "super@prueba.test", { id: "00000000-0000-0000-0000-000000000000", rol: "persona" })).status).toBe(404);
   });
 
+  it("rechaza campos desconocidos y una tribu que no corresponde al rol (no la corrige en silencio)", async () => {
+    await pedir("GET", "super@prueba.test");
+    const id = await idDe("ana@prueba.test");
+    expect((await pedir("PATCH", "super@prueba.test", { id, nombre: "X" })).status).toBe(400);
+    expect((await pedir("PATCH", "super@prueba.test", { id, rol: "admin-tribu", tribuAdmin: null })).status).toBe(400);
+    expect((await pedir("PATCH", "super@prueba.test", { id, rol: "persona", tribuAdmin: "valle" })).status).toBe(400);
+    expect((await pedir("POST", "super@prueba.test", { email: "q@prueba.test", id: "x" })).status).toBe(400);
+    const [f] = await base.select().from(personas).where(eq(personas.id, id));
+    expect(f).toMatchObject({ rol: "persona", tribuAdmin: null });
+  });
+
+  it("dos pedidos a la vez para sumar el mismo email: uno 201 y el otro 409", async () => {
+    await pedir("GET", "super@prueba.test");
+    const rs = await Promise.all([
+      pedir("POST", "super@prueba.test", { email: "carrera@prueba.test" }),
+      pedir("POST", "super@prueba.test", { email: "Carrera@prueba.test" }),
+    ]);
+    expect(rs.map((r) => r.status).sort()).toEqual([201, 409]);
+  });
+
   it("nunca deja la plataforma sin un super admin con acceso", async () => {
     await pedir("GET", "super@prueba.test");
     const superId = await idDe("super@prueba.test");

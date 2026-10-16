@@ -8,9 +8,9 @@ const ROL: Record<string, string> = { superadmin: "Super admin", "admin-tribu": 
 const PERFIL: Record<string, string> = { usuario: "Usuario", inversor: "Inversor", comunidad: "Comunidad" };
 
 const CAMPO =
-  "rounded-lg border border-faint bg-surface px-2 py-1 text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep disabled:opacity-60";
+  "rounded-lg border border-faint bg-surface px-2 py-1 text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep disabled:opacity-60 aria-disabled:opacity-60";
 const BOTON =
-  "w-fit rounded-lg bg-deep px-4 py-1.5 font-medium text-on-deep hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep disabled:opacity-60";
+  "w-fit rounded-lg bg-deep px-4 py-1.5 font-medium text-on-deep hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep disabled:opacity-60 aria-disabled:opacity-60";
 
 type Cambios = Partial<Pick<PersonaGestionada, "rol" | "perfil" | "tribuAdmin" | "acceso">>;
 
@@ -60,6 +60,8 @@ export function PanelPersonas() {
   if (!esSuper) return null;
 
   async function cambiar(p: PersonaGestionada, cambios: Cambios) {
+    // Sin deshabilitar los controles: quien navega con teclado no pierde su lugar. Mientras se guarda, no se acepta otro pedido.
+    if (ocupado) return;
     setOcupado(true);
     setAviso(null);
     try {
@@ -78,6 +80,7 @@ export function PanelPersonas() {
 
   async function sumar(e: FormEvent) {
     e.preventDefault();
+    if (ocupado) return;
     setOcupado(true);
     setAviso(null);
     try {
@@ -124,64 +127,13 @@ export function PanelPersonas() {
                     <th scope="col" className="py-1 pr-4 font-medium">Rol</th>
                     <th scope="col" className="py-1 pr-4 font-medium">Perfil de prueba</th>
                     <th scope="col" className="py-1 pr-4 font-medium">Tribu que administra</th>
-                    <th scope="col" className="py-1 font-medium">Acceso</th>
+                    <th scope="col" className="py-1 pr-4 font-medium">Acceso</th>
+                    <th scope="col" className="py-1 font-medium">Guardar</th>
                   </tr>
                 </thead>
                 <tbody>
                   {personas.map((p) => (
-                    <tr key={p.id} className="border-b border-line last:border-0">
-                      <th scope="row" className="py-1 pr-4 font-normal break-all">{p.email}</th>
-                      <td className="py-1 pr-4">
-                        <select
-                          aria-label={`Rol de ${p.email}`}
-                          className={CAMPO}
-                          disabled={ocupado}
-                          value={p.rol}
-                          onChange={(e) => void cambiar(p, { rol: e.target.value as PersonaGestionada["rol"] })}
-                        >
-                          {Object.entries(ROL).map(([v, t]) => (
-                            <option key={v} value={v}>{t}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="py-1 pr-4">
-                        <select
-                          aria-label={`Perfil de prueba de ${p.email}`}
-                          className={CAMPO}
-                          disabled={ocupado}
-                          value={p.perfil}
-                          onChange={(e) => void cambiar(p, { perfil: e.target.value as PersonaGestionada["perfil"] })}
-                        >
-                          {Object.entries(PERFIL).map(([v, t]) => (
-                            <option key={v} value={v}>{t}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="py-1 pr-4">
-                        <select
-                          aria-label={`Tribu que administra ${p.email}`}
-                          className={CAMPO}
-                          disabled={ocupado || p.rol !== "admin-tribu"}
-                          value={p.tribuAdmin ?? ""}
-                          onChange={(e) => void cambiar(p, { tribuAdmin: e.target.value === "valle" ? "valle" : null })}
-                        >
-                          <option value="">Ninguna</option>
-                          <option value="valle">Valle Solar</option>
-                        </select>
-                      </td>
-                      <td className="py-1">
-                        <label className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            disabled={ocupado}
-                            checked={p.acceso}
-                            onChange={(e) => void cambiar(p, { acceso: e.target.checked })}
-                          />
-                          <span>{p.acceso ? "Con acceso" : "Sin acceso"}</span>
-                          <span className="sr-only"> de {p.email}</span>
-                        </label>
-                      </td>
-                    </tr>
+                    <FilaPersona key={p.id} p={p} guardar={cambiar} />
                   ))}
                 </tbody>
               </table>
@@ -209,12 +161,82 @@ export function PanelPersonas() {
                 ))}
               </select>
             </div>
-            <button type="submit" className={BOTON} disabled={ocupado}>
+            <button type="submit" className={BOTON} aria-disabled={ocupado}>
               Sumar persona
             </button>
           </form>
         </>
       )}
     </section>
+  );
+}
+
+/**
+ * Una fila: los cambios se arman en la fila y se guardan solo al confirmar con "Guardar" (no al mover una flecha en un
+ * select, que guardaría y auditaría cada valor intermedio). Ningún control se deshabilita mientras tiene el foco.
+ */
+function FilaPersona({ p, guardar }: { p: PersonaGestionada; guardar: (p: PersonaGestionada, cambios: Cambios) => Promise<void> }) {
+  const [rol, setRol] = useState(p.rol);
+  const [perfil, setPerfil] = useState(p.perfil);
+  const [acceso, setAcceso] = useState(p.acceso);
+  // El rol decide la tribu: un admin de tribu administra Valle Solar y los otros roles ninguna.
+  const tribuAdmin = rol === "admin-tribu" ? "valle" : null;
+
+  const cambios: Cambios = {};
+  if (rol !== p.rol) {
+    cambios.rol = rol;
+    cambios.tribuAdmin = tribuAdmin;
+  }
+  if (perfil !== p.perfil) cambios.perfil = perfil;
+  if (acceso !== p.acceso) cambios.acceso = acceso;
+  const hayCambios = Object.keys(cambios).length > 0;
+
+  return (
+    <tr className="border-b border-line last:border-0">
+      <th scope="row" className="py-1 pr-4 font-normal break-all">{p.email}</th>
+      <td className="py-1 pr-4">
+        <select aria-label={`Rol de ${p.email}`} className={CAMPO} value={rol} onChange={(e) => setRol(e.target.value as PersonaGestionada["rol"])}>
+          {Object.entries(ROL).map(([v, t]) => (
+            <option key={v} value={v}>{t}</option>
+          ))}
+        </select>
+      </td>
+      <td className="py-1 pr-4">
+        <select
+          aria-label={`Perfil de prueba de ${p.email}`}
+          className={CAMPO}
+          value={perfil}
+          onChange={(e) => setPerfil(e.target.value as PersonaGestionada["perfil"])}
+        >
+          {Object.entries(PERFIL).map(([v, t]) => (
+            <option key={v} value={v}>{t}</option>
+          ))}
+        </select>
+      </td>
+      <td className="py-1 pr-4">
+        <span className="sr-only">Tribu que administra {p.email}: </span>
+        {tribuAdmin === "valle" ? "Valle Solar" : "Ninguna"}
+      </td>
+      <td className="py-1 pr-4">
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={acceso} onChange={(e) => setAcceso(e.target.checked)} />
+          <span>{acceso ? "Con acceso" : "Sin acceso"}</span>
+          <span className="sr-only"> de {p.email}</span>
+        </label>
+      </td>
+      <td className="py-1">
+        <button
+          type="button"
+          className={BOTON}
+          aria-disabled={!hayCambios}
+          aria-label={`Guardar cambios de ${p.email}`}
+          onClick={() => {
+            if (hayCambios) void guardar(p, cambios);
+          }}
+        >
+          Guardar
+        </button>
+      </td>
+    </tr>
   );
 }

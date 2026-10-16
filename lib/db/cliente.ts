@@ -18,7 +18,14 @@ function conNeon(url: string): Db {
   // Node 22+ y Vercel traen WebSocket global; si no, el driver lo pide a `ws` (no lo usamos en producción).
   if (typeof WebSocket === "undefined") throw new ErrorDeConfiguracionDeBase("Falta WebSocket en este Node (se necesita Node 22 o más)");
   // Un Pool por proceso, reutilizado entre pedidos (guía de Neon para funciones con Fluid compute).
-  g.__lhPool ??= new Pool({ connectionString: url });
+  if (!g.__lhPool) {
+    g.__lhPool = new Pool({ connectionString: url });
+    // Sin este manejador, un error de una conexión ociosa (la base reinicia o corta) tumba el proceso. Se loguea sin el mensaje
+    // (puede traer datos de la conexión o de la consulta).
+    g.__lhPool.on("error", (e: unknown) => {
+      console.error(`[db] error en una conexión ociosa del Pool${e instanceof Error && "code" in e ? ` (código ${String(e.code)})` : ""}`);
+    });
+  }
   return drizzleNeon(g.__lhPool, { schema });
 }
 

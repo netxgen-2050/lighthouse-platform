@@ -42,9 +42,19 @@ function tribuSegunRol(rol: RolSesion, pedida: "valle" | null | undefined): "val
   return rol === "admin-tribu" ? (pedida ?? "valle") : null;
 }
 
+/** Rechaza (en vez de corregir en silencio) una tribu que no corresponde al rol resultante. */
+function exigirTribuCoherente(rol: RolSesion, pedida: "valle" | null | undefined) {
+  if (pedida === undefined) return;
+  if (rol === "admin-tribu" && pedida === null) throw new ErrorDeGestion(400, "Un admin de tribu administra Valle Solar: no puede quedar sin tribu.");
+  if (rol !== "admin-tribu" && pedida !== null) throw new ErrorDeGestion(400, "Solo un admin de tribu administra una tribu.");
+}
+
+const CAMPOS_CAMBIABLES = ["rol", "perfil", "tribuAdmin", "acceso"];
+
 export function validarCambios(entrada: unknown): Cambios {
   if (typeof entrada !== "object" || entrada === null) throw new ErrorDeGestion(400, "Pedido inválido.");
   const e = entrada as Record<string, unknown>;
+  if (Object.keys(e).some((k) => !CAMPOS_CAMBIABLES.includes(k))) throw new ErrorDeGestion(400, "El pedido trae campos que no se pueden cambiar.");
   const c: Cambios = {};
   if (e.rol !== undefined) {
     if (!(ROLES_SESION as readonly unknown[]).includes(e.rol)) throw new ErrorDeGestion(400, "Rol inválido.");
@@ -73,9 +83,11 @@ export async function agregarPersona(db: Db, actorId: string, email: unknown, ca
   const limpio = typeof email === "string" ? normalizarEmail(email) : "";
   if (!EMAIL_VALIDO.test(limpio)) throw new ErrorDeGestion(400, "Email inválido.");
   const rol = cambios.rol ?? "persona";
+  exigirTribuCoherente(rol, cambios.tribuAdmin);
+  const repetida = new ErrorDeGestion(409, "Esa persona ya está en la lista.");
   return db.transaction(async (tx) => {
     const [ya] = await tx.select({ id: personas.id }).from(personas).where(sql`lower(${personas.email}) = ${limpio}`).limit(1);
-    if (ya) throw new ErrorDeGestion(409, "Esa persona ya está en la lista.");
+    if (ya) throw repetida;
     const [fila] = await tx
       .insert(personas)
       .values({
@@ -85,8 +97,11 @@ export async function agregarPersona(db: Db, actorId: string, email: unknown, ca
         tribuAdmin: tribuSegunRol(rol, cambios.tribuAdmin),
         acceso: cambios.acceso ?? true,
       })
+      // Dos pedidos a la vez con el mismo email: el que pierde la carrera recibe 409, no un error de la base.
+      .onConflictDoNothing()
       .returning();
-    await tx.insert(cambiosDeRol).values({ personaId: fila!.id, cambiadoPor: actorId, campo: "alta", valorAnterior: null, valorNuevo: rol });
+    if (!fila) throw repetida;
+    await tx.insert(cambiosDeRol).values({ personaId: fila.id, cambiadoPor: actorId, campo: "alta", valorAnterior: null, valorNuevo: rol });
     return aGestionada(fila!);
   });
 }
@@ -108,6 +123,7 @@ export async function cambiarPersona(db: Db, actorId: string, id: unknown, cambi
     if (!actual) throw new ErrorDeGestion(404, "No encontramos a esa persona.");
 
     const rol = cambios.rol ?? actual.rol;
+    exigirTribuCoherente(rol, cambios.tribuAdmin);
     const acceso = cambios.acceso ?? actual.acceso;
     const siguiente = {
       rol,
