@@ -192,7 +192,7 @@ test.describe("datos sensibles del KYC", () => {
 
   test("antes del primer paso pide aceptar el tratamiento de los datos sensibles", async ({ page }) => {
     await page.goto("/pasaporte");
-    await page.locator('[data-sello="identidad"]').getByRole("button", { name: "Verificar mi identidad" }).click();
+    await page.getByRole("button", { name: "Completar mi verificación (KYC)" }).click();
     const dialogo = page.getByRole("dialog", { name: /Verificar mi identidad/ });
     await expect(dialogo.getByRole("heading", { name: /Antes de empezar: tus datos sensibles/ })).toBeVisible();
     await expect(dialogo.getByText("los verifica un tercero")).toBeVisible();
@@ -221,7 +221,7 @@ test.describe("datos sensibles del KYC", () => {
       [CLAVE_CONSENTIMIENTO, VERSION_PRUEBA],
     );
     await page.goto("/pasaporte");
-    await page.locator('[data-sello="identidad"]').getByRole("button", { name: "Verificar mi identidad" }).click();
+    await page.getByRole("button", { name: "Completar mi verificación (KYC)" }).click();
     const dialogo = page.getByRole("dialog", { name: /Verificar mi identidad/ });
     await expect(dialogo.getByRole("heading", { name: /Paso 1 de 5/ })).toBeVisible();
   });

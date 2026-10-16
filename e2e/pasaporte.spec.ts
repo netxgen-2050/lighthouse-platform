@@ -33,7 +33,8 @@ test("una persona nueva: Explorador/a obtenido con fecha y los demás con su bot
   await expect(sello(page, "miembro-red")).toContainText("Disponible");
   await expect(sello(page, "miembro-red").getByRole("link", { name: "Hacerme Miembro en Sumarte" })).toHaveAttribute("href", "/sumarte");
   await expect(sello(page, "identidad")).toContainText("Disponible");
-  await expect(sello(page, "identidad").getByRole("button", { name: "Verificar mi identidad" })).toBeVisible();
+  await expect(sello(page, "identidad").getByRole("button", { name: "Verificar mi identidad" })).toHaveCount(0);
+  await expect(sello(page, "identidad").getByRole("link", { name: "Ver la verificación" })).toHaveAttribute("href", "/pasaporte#identidad");
   await expect(sello(page, "fundador")).toContainText("Disponible");
   await expect(sello(page, "genesis")).toContainText("Disponible");
   await expect(sello(page, "residente")).toContainText("No disponible todavía");
@@ -76,7 +77,7 @@ test("membresías: un pedido es en trámite y una aceptación es obtenido", asyn
 
 test("KYC por pasos: valida cada paso, queda en trámite y se aprueba con la simulación", async ({ page }) => {
   await page.goto("/pasaporte");
-  await sello(page, "identidad").getByRole("button", { name: "Verificar mi identidad" }).click();
+  await page.getByRole("button", { name: "Completar mi verificación (KYC)" }).click();
   const dialogo = page.getByRole("dialog", { name: /Verificar mi identidad/ });
   await expect(dialogo).toBeVisible();
   await expect(dialogo).toContainText("Paso 1 de 5");
@@ -127,14 +128,19 @@ test("KYC por pasos: valida cada paso, queda en trámite y se aprueba con la sim
   await dialogo.getByRole("button", { name: "Cerrar" }).click();
   await expect(dialogo).toBeHidden();
   await expect(sello(page, "identidad")).toContainText("En trámite");
-  await expect(sello(page, "identidad").getByRole("button", { name: "Verificar mi identidad" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Completar mi verificación (KYC)" })).toHaveCount(0);
+  await expect(page.locator("#identidad")).toContainText("Enviaste tus datos el");
+  await expect(page.locator("#identidad").getByRole("listitem").filter({ hasText: "En trámite" })).toHaveAttribute("aria-current", "step");
   // Los datos personales no se guardan; lo de Tus datos sí.
   const guardado = await page.evaluate(() => `${window.localStorage.getItem("lh-kyc")}${window.localStorage.getItem("lh-pasaporte")}`);
   expect(guardado).not.toContain("30123456");
   expect(guardado).not.toContain("Ana Pérez");
   expect(guardado).toContain("Noruega");
   // Residente del exterior: el sello de inversor explica por qué no.
-  await sello(page, "identidad").getByRole("button", { name: "Simular: verificación aprobada" }).click();
+  await page.locator("#identidad").getByRole("button", { name: "Simular: verificación aprobada" }).click();
+  await expect(page.locator("#identidad")).toContainText("Identidad verificada el");
+  await expect(page.locator("#identidad")).toContainText("residencia fiscal es del exterior");
+  await expect(page.locator("#identidad").getByRole("button", { name: /Aportantes con residencia fiscal en el exterior/ })).toBeVisible();
   await expect(sello(page, "identidad")).toContainText("Obtenido");
   await expect(sello(page, "inversor")).toContainText("No disponible todavía");
   await expect(sello(page, "inversor")).toContainText("residencia fiscal es del exterior");
@@ -144,7 +150,7 @@ test("KYC por pasos: valida cada paso, queda en trámite y se aprueba con la sim
 
 test("residente en Argentina: la identidad aprobada habilita el sello de inversor", async ({ page }) => {
   await page.goto("/pasaporte");
-  await sello(page, "identidad").getByRole("button", { name: "Verificar mi identidad" }).click();
+  await page.getByRole("button", { name: "Completar mi verificación (KYC)" }).click();
   const dialogo = page.getByRole("dialog", { name: /Verificar mi identidad/ });
   await llenarPasos(dialogo);
   await dialogo.getByRole("button", { name: "Enviar verificación (simulado)" }).click();
@@ -155,9 +161,44 @@ test("residente en Argentina: la identidad aprobada habilita el sello de inverso
   await expect(sello(page, "inversor")).toContainText("Obtenido");
 });
 
+test("la tarjeta de identidad va antes de los sellos y explica para qué sirve, qué no requiere y qué se pide", async ({ page }) => {
+  await page.goto("/pasaporte");
+  await expect(page.locator("#identidad")).toBeVisible();
+  const titulos = await page.locator("main h2").allTextContents();
+  expect(titulos[0]).toContain("Verificá tu identidad (KYC)");
+  expect(titulos[1]).toContain("Tus sellos");
+  const tarjeta = page.locator("#identidad");
+  await expect(tarjeta).toContainText("Lote 7");
+  await expect(tarjeta).toContainText("aporte en plata en Pactos");
+  await expect(tarjeta).toContainText("No hace falta para recorrer, sumarte a una tribu ni proponer pactos de tiempo");
+  await expect(tarjeta.getByRole("listitem").filter({ hasText: "Sin empezar" })).toHaveAttribute("aria-current", "step");
+  for (const paso of ["Datos personales", "Residencia fiscal y nacionalidad", "Origen de los fondos", "Tipo de inversor", "Revisión y envío"]) {
+    await expect(tarjeta.getByRole("listitem").filter({ hasText: paso })).toBeVisible();
+  }
+});
+
+test("/pasaporte#identidad deja el foco en el encabezado de la tarjeta", async ({ page }) => {
+  await page.goto("/pasaporte#identidad");
+  await expect(page.getByRole("heading", { level: 2, name: /Verificá tu identidad \(KYC\)/ })).toBeFocused();
+});
+
+test("residente en Argentina: la tarjeta se achica y dice que quedó habilitada", async ({ page }) => {
+  await page.goto("/pasaporte");
+  await page.getByRole("button", { name: "Completar mi verificación (KYC)" }).click();
+  const dialogo = page.getByRole("dialog", { name: /Verificar mi identidad/ });
+  await llenarPasos(dialogo);
+  await dialogo.getByRole("button", { name: "Enviar verificación (simulado)" }).click();
+  await dialogo.getByRole("button", { name: "Cerrar" }).click();
+  await page.locator("#identidad").getByRole("button", { name: "Simular: verificación aprobada" }).click();
+  await expect(page.locator("#identidad")).toContainText(/Identidad verificada el \d{1,2} de \w+ de 20\d\d \(simulado\)/);
+  await expect(page.locator("#identidad")).toContainText("habilitado/a como inversor/a");
+  await expect(page.locator("#identidad").getByRole("listitem").filter({ hasText: "Verificada" })).toHaveAttribute("aria-current", "step");
+  await expect(sello(page, "identidad")).toContainText("Obtenido");
+});
+
 test("el diálogo se cierra con Escape y devuelve el foco al botón", async ({ page }) => {
   await page.goto("/pasaporte");
-  const boton = sello(page, "identidad").getByRole("button", { name: "Verificar mi identidad" });
+  const boton = page.getByRole("button", { name: "Completar mi verificación (KYC)" });
   await boton.focus();
   await page.keyboard.press("Enter");
   const dialogo = page.getByRole("dialog", { name: /Verificar mi identidad/ });
@@ -235,7 +276,7 @@ test("almacenamiento bloqueado: el envío del KYC avisa y no queda en trámite",
       throw new DOMException("bloqueado", "SecurityError");
     };
   });
-  await sello(page, "identidad").getByRole("button", { name: "Verificar mi identidad" }).click();
+  await page.getByRole("button", { name: "Completar mi verificación (KYC)" }).click();
   const dialogo = page.getByRole("dialog", { name: /Verificar mi identidad/ });
   await llenarPasos(dialogo);
   await dialogo.getByRole("button", { name: "Enviar verificación (simulado)" }).click();

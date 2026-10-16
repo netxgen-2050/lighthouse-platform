@@ -19,7 +19,10 @@ export const TEXTO_ESTADO_SELLO: Record<EstadoSello, string> = {
   "no-disponible": "No disponible todavía",
 };
 
-export type AccionSello = { tipo: "enlace"; texto: string; href: string } | { tipo: "kyc"; texto: string };
+export type AccionSello = { tipo: "enlace"; texto: string; href: string };
+
+/** La verificación se completa en la tarjeta de identidad del Pasaporte; los sellos solo llevan hasta ella. */
+const ACCION_VER_VERIFICACION: AccionSello = { tipo: "enlace", texto: "Ver la verificación", href: "/pasaporte#identidad" };
 
 export type Sello = {
   id: string;
@@ -130,7 +133,7 @@ export function sellos(e: EntradaSellos, ahora: Date): Sello[] {
         : e.kyc.estado === "en-tramite"
           ? "Enviaste tus datos. En el prototipo la aprobación se simula."
           : "Se pide solo cuando querés aportar plata. En la versión real lo hace el fiduciario.",
-    accion: e.kyc.estado === "sin-tramite" ? { tipo: "kyc", texto: "Verificar mi identidad" } : undefined,
+    accion: e.kyc.estado === "sin-tramite" ? ACCION_VER_VERIFICACION : undefined,
     abre: ["Pedir invitación para invertir en Sumarte", "Registrar un aporte en plata en Pactos"],
     legal: ["kyc"],
   });
@@ -166,7 +169,7 @@ export function sellos(e: EntradaSellos, ahora: Date): Sello[] {
         e.kyc.estado === "en-tramite"
           ? "Se obtiene cuando se apruebe tu identidad, si tu residencia fiscal es en Argentina."
           : "Se obtiene con la identidad verificada, si tu residencia fiscal es en Argentina.",
-      accion: e.kyc.estado === "sin-tramite" ? { tipo: "kyc", texto: "Verificar mi identidad" } : undefined,
+      accion: e.kyc.estado === "sin-tramite" ? ACCION_VER_VERIFICACION : undefined,
       abre: ["Sumarte al proyecto del Lote 7, por invitación"],
       legal: ["sumarte"],
     };

@@ -80,7 +80,7 @@ test("axe sin violaciones serias o críticas: /perfil con datos, comunidades y e
 
 test("axe sin violaciones serias o críticas: el diálogo de verificación en cada paso, con errores a la vista", async ({ page }) => {
   await page.goto("/pasaporte");
-  await page.locator('[data-sello="identidad"]').getByRole("button", { name: "Verificar mi identidad" }).click();
+  await page.getByRole("button", { name: "Completar mi verificación (KYC)" }).click();
   const dialogo = page.getByRole("dialog", { name: /Verificar mi identidad/ });
   await dialogo.getByRole("button", { name: "Siguiente" }).click();
   await expect(dialogo.getByText("Error: Escribí tu nombre completo.")).toBeVisible();

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { TarjetaIdentidad } from "./tarjeta-identidad";
 import { KycDialogo } from "@/components/kyc-dialogo";
 import { useSesion } from "@/components/sesion/contexto";
 import { SelloBilletera } from "./sello-billetera";
@@ -69,7 +70,7 @@ function Opcion<T extends string>({
   );
 }
 
-function TarjetaSello({ s, alVerificar, alAprobar }: { s: Sello; alVerificar: () => void; alAprobar: () => void }) {
+function TarjetaSello({ s }: { s: Sello }) {
   return (
     <li data-sello={s.id} className="grid content-start gap-3 rounded-xl border border-faint bg-surface p-4">
       <div className="flex items-start gap-4">
@@ -96,21 +97,17 @@ function TarjetaSello({ s, alVerificar, alAprobar }: { s: Sello; alVerificar: ()
         {s.detalle}
         {s.legalDetalle && <TerminoLegal clave={s.legalDetalle} />}
       </p>
-      {s.id === "identidad" && s.estado === "en-tramite" && (
-        <button type="button" className={BOTON_PRIMARIO} onClick={alAprobar}>
-          Simular: verificación aprobada
-        </button>
-      )}
-      {s.accion?.tipo === "kyc" && (
-        <button type="button" className={BOTON_PRIMARIO} onClick={alVerificar}>
-          {s.accion.texto}
-        </button>
-      )}
-      {s.accion?.tipo === "enlace" && (
-        <Link className={BOTON_SUAVE} href={s.accion.href}>
-          {s.accion.texto}
-        </Link>
-      )}
+      {s.accion &&
+        (s.accion.href.includes("#") ? (
+          // Ancla en la misma página: un enlace común mueve el foco y avisa con `hashchange`.
+          <a className={BOTON_SUAVE} href={s.accion.href}>
+            {s.accion.texto}
+          </a>
+        ) : (
+          <Link className={BOTON_SUAVE} href={s.accion.href}>
+            {s.accion.texto}
+          </Link>
+        ))}
       {s.abre.length > 0 && (
         <div>
           <p className="text-sm font-medium">{s.estado === "obtenido" ? "Qué abre" : "Qué abriría"}</p>
@@ -135,6 +132,7 @@ export function PasaporteCliente() {
   const [ticket, setTicket] = useState(false);
   const [fechas, setFechas] = useState<FechasSellos>({});
   const [dialogo, setDialogo] = useState(false);
+  const botonKyc = useRef<HTMLButtonElement>(null);
   const [datosAporte, setDatosAporte] = useState<DatosPersona>(DATOS_VACIOS);
   const [horasTexto, setHorasTexto] = useState("");
   const [falloAlmacen, setFalloAlmacen] = useState(false);
@@ -215,16 +213,19 @@ export function PasaporteCliente() {
         </p>
       )}
 
+      <TarjetaIdentidad
+        kyc={kyc.kyc}
+        datos={kyc.datos}
+        alCompletar={() => setDialogo(true)}
+        alAprobar={kyc.aprobar}
+        botonRef={botonKyc}
+      />
+
       <section aria-labelledby="titulo-sellos" className="grid gap-4">
         <h2 id="titulo-sellos" className="text-xl font-semibold">Tus sellos</h2>
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {lista.map((s) => (
-            <TarjetaSello
-              key={s.id}
-              s={s}
-              alVerificar={() => setDialogo(true)}
-              alAprobar={kyc.aprobar}
-            />
+            <TarjetaSello key={s.id} s={s} />
           ))}
           <SelloBilletera billetera={billetera} />
         </ul>
@@ -283,7 +284,10 @@ export function PasaporteCliente() {
       <KycDialogo
         abierto={dialogo}
         kyc={kyc.kyc}
-        alCerrar={() => setDialogo(false)}
+        alCerrar={() => {
+          setDialogo(false);
+          botonKyc.current?.focus();
+        }}
         alEnviar={kyc.enviar}
         alAprobar={kyc.aprobar}
       />
