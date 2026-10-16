@@ -31,6 +31,7 @@ describe("POST /api/reportes", () => {
     sesionSimulada.mockResolvedValue({
       estado: 200,
       idPersona: "p1",
+      personaId: null,
       persona: { email: "persona@prueba.test", rol: "persona", perfil: "usuario", tribuAdmin: null } as never,
     });
   });

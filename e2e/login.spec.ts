@@ -75,13 +75,51 @@ test.describe("super admin", () => {
     await page.goto("/netx");
     const panel = page.getByRole("region", { name: "Personas y roles" });
     await expect(panel).toBeVisible();
-    await expect(panel).toContainText("Editar roles llega con la base de datos (Neon)");
     // Encabezado + al menos las 3 personas de prueba (en los previews la lista también trae al equipo).
     const filas = panel.getByRole("row");
     await expect.poll(() => filas.count()).toBeGreaterThanOrEqual(4);
-    await expect(panel.getByRole("row", { name: new RegExp(EMAILS.superadmin) })).toContainText("Super admin");
-    await expect(panel.getByRole("row", { name: new RegExp(EMAILS["admin-tribu"]) })).toContainText("Admin de Valle Solar");
-    await expect(panel.getByRole("row", { name: new RegExp(EMAILS.persona) })).toContainText("Inversor");
+    await expect(panel.getByLabel(`Rol de ${EMAILS.superadmin}`)).toHaveValue("superadmin");
+    await expect(panel.getByLabel(`Rol de ${EMAILS["admin-tribu"]}`)).toHaveValue("admin-tribu");
+    await expect(panel.getByLabel(`Tribu que administra ${EMAILS["admin-tribu"]}`)).toHaveValue("valle");
+    await expect(panel.getByLabel(`Perfil de prueba de ${EMAILS.persona}`)).toHaveValue("inversor");
+  });
+
+  test("suma una persona, le cambia el rol y el cambio se ve en su sesión; no puede quitarse el rol si es la única", async ({ page, request }) => {
+    // Un email nuevo en cada corrida: la base de los e2e locales vive mientras corre el servidor y no hay forma de borrar personas.
+    const nueva = `nueva-${Date.now()}@prueba.test`;
+    await page.goto("/netx");
+    const panel = page.getByRole("region", { name: "Personas y roles" });
+    await expect(panel.getByLabel(`Rol de ${EMAILS.superadmin}`)).toBeVisible();
+    await panel.getByLabel("Email de la persona").fill(nueva);
+    await panel.getByRole("button", { name: "Sumar persona" }).click();
+    await expect(panel.getByRole("status")).toContainText(`Sumada: ${nueva}`);
+    await panel.getByLabel(`Rol de ${nueva}`).selectOption("admin-tribu");
+    await expect(panel.getByRole("status")).toContainText(`Guardado: ${nueva}`);
+    await expect(panel.getByLabel(`Tribu que administra ${nueva}`)).toHaveValue("valle");
+    const r = await request.get("/api/sesion", { headers: { "x-lh-prueba": nueva } });
+    expect(await r.json()).toMatchObject({ rol: "admin-tribu", tribuAdmin: "valle" });
+    // Se recuerda tras recargar (viene de la base).
+    await page.reload();
+    await expect(page.getByRole("region", { name: "Personas y roles" }).getByLabel(`Rol de ${nueva}`)).toHaveValue("admin-tribu");
+  });
+
+  test("la API del panel es solo para el super admin", async ({ request }) => {
+    expect((await request.get("/api/personas")).status()).toBe(401);
+    expect((await request.get("/api/personas", { headers: { "x-lh-prueba": EMAILS.persona } })).status()).toBe(403);
+    expect((await request.get("/api/personas", { headers: { "x-lh-prueba": EMAILS["admin-tribu"] } })).status()).toBe(403);
+    const lista = await request.get("/api/personas", { headers: { "x-lh-prueba": EMAILS.superadmin } });
+    expect(lista.status()).toBe(200);
+    // El único super admin no puede quitarse el rol (en los e2e locales hay uno solo).
+    const { personas } = (await lista.json()) as { personas: { id: string; email: string; rol: string }[] };
+    if (personas.filter((p) => p.rol === "superadmin").length === 1) {
+      const yo = personas.find((p) => p.email === EMAILS.superadmin)!;
+      const r = await request.patch("/api/personas", { headers: { "x-lh-prueba": EMAILS.superadmin }, data: { id: yo.id, rol: "persona" } });
+      expect(r.status()).toBe(409);
+    }
+  });
+
+  test("el modo de prueba rechaza un email que no es de prueba", async ({ request }) => {
+    expect((await request.get("/api/sesion", { headers: { "x-lh-prueba": "gus@gmail.com" } })).status()).toBe(403);
   });
 
   test("el avatar usa las iniciales del email y el perfil muestra la cuenta", async ({ page }) => {

@@ -8,7 +8,7 @@ import type { Persona } from "@/lib/sesion/personas";
 export type EstadoSesion = "cargando" | "sin-sesion" | "sin-acceso" | "error" | "ok";
 
 /** Lo que devuelve `/api/sesion`. */
-export type SesionCliente = Persona & { idPersona: string; personas?: Persona[] };
+export type SesionCliente = Persona & { idPersona: string; personaId?: string | null };
 
 /** Lo que usamos de Privy (el SDK solo se importa en `privy-puente.tsx`). */
 export type PrivyMinimo = {
