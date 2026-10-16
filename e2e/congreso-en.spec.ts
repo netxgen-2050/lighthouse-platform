@@ -254,7 +254,9 @@ test.describe("visitante sin cuenta", () => {
   });
 
   test("la preferencia vieja del Congreso (lh-congreso-idioma) se usa una vez si no hay cookie", async ({ page }) => {
-    await page.goto("/congreso/en");
+    // Se guarda desde un archivo estático del mismo origen (sin la app): en una página de la plataforma, la sincronización
+    // de idioma puede recargarla justo cuando se guarda la preferencia y abortar la navegación siguiente.
+    await page.goto("/file.svg");
     await page.evaluate(() => window.localStorage.setItem("lh-congreso-idioma", "en"));
     await page.goto("/tribus");
     await expect.poll(() => cookieIdioma(page)).toBe("en");

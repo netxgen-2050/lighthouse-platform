@@ -163,8 +163,12 @@ test.describe("el Congreso", () => {
 
   test("(c) el selector de la barra en el Congreso lleva a la dirección del idioma", async ({ page }) => {
     await page.goto("/congreso?utm_source=x#tribus");
+    // El enlace toma la query de la dirección al hidratar: con ella lista, el clic ya lo maneja el script (sin hidratar,
+    // el enlace sigue su href y pierde query y ancla, como sin JavaScript).
+    await expect(selector(page).getByRole("link", { name: "EN · English" })).toHaveAttribute("href", /utm_source=x/);
     await selector(page).getByRole("link", { name: "EN · English" }).click();
     await expect(page).toHaveURL(/\/congreso\/en\?utm_source=x#tribus$/);
+    await expect(selector(page).getByRole("link", { name: "ES · Español" })).toHaveAttribute("href", /utm_source=x/);
     await selector(page).getByRole("link", { name: "ES · Español" }).click();
     await expect(page).toHaveURL(/\/congreso\?utm_source=x#tribus$/);
   });
