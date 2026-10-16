@@ -20,6 +20,15 @@ export default function FogonPage() {
         validez la da el reglamento, el contrato o el estatuto. Los votos son simulados y quedan solo en este
         navegador.
       </p>
+      <div className="mb-5 rounded-xl border border-deep bg-green-soft p-4 text-sm">
+        <p className="font-semibold">Consultas de prioridades y presupuesto</p>
+        <p className="mt-1">
+          Repartí 100 créditos de voz con voto cuadrático para priorizar y repartir presupuesto.
+        </p>
+        <p className="mt-2">
+          <Link className="underline" href="/fogon/consultas">Ver las consultas</Link>
+        </p>
+      </div>
       <FogonCliente />
     </div>
   );
