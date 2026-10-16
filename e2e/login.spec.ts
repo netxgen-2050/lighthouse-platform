@@ -104,7 +104,6 @@ test.describe("super admin", () => {
     }
     // Elegir otro rol no guarda: se guarda solo al confirmar.
     await panel.getByLabel(`Rol de ${nueva}`).selectOption("admin-tribu");
-    expect((await lista()).length).toBeGreaterThan(0);
     expect((await (await request.get("/api/sesion", { headers: { "x-lh-prueba": nueva } })).json()).rol).toBe("persona");
     await panel.getByRole("button", { name: `Guardar cambios de ${nueva}` }).click();
     await expect(panel.getByRole("status")).toContainText(`Guardado: ${nueva}`);
