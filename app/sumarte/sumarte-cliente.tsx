@@ -42,6 +42,7 @@ import {
 } from "@/lib/sumarte/datos";
 import { useKyc } from "@/lib/pasaporte/usar-kyc";
 import { INICIAL, reducir, type Accion, type EstadoSumarte } from "@/lib/sumarte/estado";
+import { unirConY } from "@/lib/unir-con-y";
 
 // Todo queda solo en este navegador: no hay pedidos de red ni cobros.
 
@@ -59,7 +60,7 @@ const ACCIONES_DE_PLAN: readonly Accion["tipo"][] = ["plan", "pase", "tribu"];
 
 export function SumarteCliente({ volver, para }: { volver: string | null; para: string | null }) {
   const router = useRouter();
-  const { estado: estadoSesion, nivel: nivelCuenta, nivelListo, tribuLider, entrar } = useSesion();
+  const { estado: estadoSesion, nivel: nivelCuenta, nivelListo, tribuFija, entrar } = useSesion();
   const conSesion = estadoSesion === "ok";
   const [estado, setEstado] = useState<EstadoSumarte>(INICIAL);
   const [listo, setListo] = useState(false);
@@ -69,6 +70,9 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
   // Elección de la tribu que se va a liderar con el Plan Tribu ("" = todavía no eligió; "nueva" = proponer una tribu nueva).
   const [eligiendoTribu, setEligiendoTribu] = useState(false);
   const [tribuElegida, setTribuElegida] = useState("");
+  // Elección pendiente de confirmar en el diálogo (id de tribu o "nueva"), o null.
+  const [confirmando, setConfirmando] = useState<string | null>(null);
+  const volverASumar = useRef(false);
   const kyc = useKyc();
   const { moneda } = usePreferencias();
   const foco = useRef<string | null>(null);
@@ -119,6 +123,13 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
     if (conSesion && nivelListo && listo && volverAlLugar && requerido && alcanza(nivelCuenta, requerido)) router.replace(volverAlLugar);
   }, [conSesion, nivelListo, listo, volverAlLugar, requerido, nivelCuenta, router]);
 
+  // Al cancelar el diálogo el foco vuelve al botón "Sumar otra tribu" (el selector se cierra y el botón reaparece).
+  useEffect(() => {
+    if (!volverASumar.current || confirmando !== null || eligiendoTribu) return;
+    volverASumar.current = false;
+    document.querySelector<HTMLElement>('[data-foco="sumar-otra"]')?.focus();
+  }, [confirmando, eligiendoTribu]);
+
   // Tras un cambio, el botón que se apretó puede desaparecer: el foco pasa al estado nuevo.
   useEffect(() => {
     if (!foco.current) return;
@@ -156,16 +167,44 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
     return true;
   }
 
-  const tribusParaLiderar = listarTribus().filter((t) => t.estado === "activa" || t.estado === "formacion");
+  // Tribus que lidera: la asignada de antemano (si hay) más las elegidas en Sumarte.
+  const liderados: string[] =
+    conSesion && tribuFija && !estado.tribus.includes(tribuFija) ? [tribuFija, ...estado.tribus] : conSesion ? estado.tribus : [];
+  const nombresLiderados = liderados.flatMap((id) => buscarTribu(id)?.nombre ?? []);
+  const yaLidera = nombresLiderados.length > 0 || (conSesion && estado.tribuNueva);
+  const tribusParaLiderar = listarTribus().filter(
+    (t) => (t.estado === "activa" || t.estado === "formacion") && !liderados.includes(t.id),
+  );
 
-  function confirmarTribu() {
-    if (tribuElegida === "") return;
-    const nueva = tribuElegida === "nueva";
-    const ok = dispatch({ tipo: "tribu", tribuId: nueva ? null : tribuElegida }, "tribu");
-    if (!ok) return;
+  function aplicarTribu(elegida: string) {
+    const nueva = elegida === "nueva";
+    const ok = dispatch({ tipo: "tribu", tribuId: nueva ? null : elegida }, "tribu");
+    if (!ok) return false;
     setEligiendoTribu(false);
     // Una tribu nueva se arma desde la postulación de un barrio vacante (con sesión; sin sesión se sigue al registrarse).
     if (nueva && conSesion) router.push("/tribus#sec-vacantes");
+    return true;
+  }
+
+  function confirmarTribu() {
+    if (tribuElegida === "") return;
+    // Quien ya lidera una tribu confirma antes de sumar otra; la primera tribu se elige sin diálogo.
+    if (yaLidera) setConfirmando(tribuElegida);
+    else aplicarTribu(tribuElegida);
+  }
+
+  function sumarConfirmada() {
+    if (confirmando === null) return;
+    const elegida = confirmando;
+    setConfirmando(null);
+    aplicarTribu(elegida);
+  }
+
+  function cerrarConfirmacion() {
+    // Cancelar o Escape: vuelve a "Sumar otra tribu" sin cambiar nada.
+    setConfirmando(null);
+    setEligiendoTribu(false);
+    volverASumar.current = true;
   }
 
   // El pedido se guarda primero; recién ahí se hace lo que el botón hacía antes.
@@ -180,10 +219,14 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
   // Con un pase activo, la tarjeta muestra siempre el nivel activado (no se puede cambiar sin deshacerlo).
   const nivel = paseActivo ?? PASSES.find((p) => p.id === estado.nivelPase)!;
   // Sin cuenta ningún plan está elegido: las tarjetas no marcan "tu plan".
-  const esLider = conSesion && estado.tribu;
-  const esExplorador = conSesion && estado.plan === "explorador";
-  const esMiembro = conSesion && estado.plan === "miembro" && !estado.tribu;
-  const tribuLiderada = esLider && estado.tribuId ? buscarTribu(estado.tribuId) : undefined;
+  const esLider = yaLidera;
+  const esExplorador = conSesion && estado.plan === "explorador" && !esLider;
+  const esMiembro = conSesion && estado.plan === "miembro" && !esLider;
+  const textoLiderazgo =
+    nombresLiderados.length > 0
+      ? `Sos líder de ${unirConY(nombresLiderados)}${estado.tribuNueva ? " y de una tribu nueva por proponer" : ""} (simulado)`
+      : "Tu tribu nueva está por proponerse (simulado)";
+  const totalMensual = PLAN_TRIBU_MENSUAL * nombresLiderados.length;
   const nombrePlan = esLider
     ? "Líder de tribu"
     : paseActivo
@@ -376,7 +419,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
           </h2>
           <p className="text-2xl font-bold">
             {formatearMonto(PLAN_TRIBU_MENSUAL, moneda)}
-            <span className="text-base font-normal text-muted">/mes</span>
+            <span className="text-base font-normal text-muted">/mes por tribu</span>
           </p>
           <p className="text-muted">Para tribus con personería que quieren organizarse acá.</p>
           <ul className="list-disc pl-5 text-sm">
@@ -392,22 +435,70 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
           {esLider && !eligiendoTribu ? (
             <>
               <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="tribu">
-                {tribuLiderada
-                  ? `Sos líder de ${tribuLiderada.nombre} (simulado)`
-                  : "Tu tribu nueva está por proponerse (simulado)"}
+                {textoLiderazgo}
               </p>
-              <button type="button" className={BOTON_SUAVE} onClick={() => setEligiendoTribu(true)}>
-                Cambiar de tribu
-              </button>
-              {!tribuLiderada && (
+              <ul className="grid gap-2 text-sm" aria-label="Tribus que liderás">
+                {liderados.flatMap((id) => {
+                  const t = buscarTribu(id);
+                  return t ? [{ id, nombre: t.nombre }] : [];
+                }).map((t) => (
+                  <li key={t.id} className="flex flex-wrap items-center justify-between gap-2">
+                    <span>{t.nombre}</span>
+                    {t.id === tribuFija ? (
+                      <span className="text-muted">Asignada por el equipo</span>
+                    ) : (
+                      <button
+                        type="button"
+                        className={BOTON_SUAVE}
+                        aria-label={`Dejar de liderar ${t.nombre}`}
+                        onClick={() => dispatch({ tipo: "dejarTribu", tribuId: t.id }, "tribu")}
+                      >
+                        Dejar de liderar
+                      </button>
+                    )}
+                  </li>
+                ))}
+                {estado.tribuNueva && (
+                  <li className="flex flex-wrap items-center justify-between gap-2">
+                    <span>Una tribu nueva por proponer</span>
+                    <button
+                      type="button"
+                      className={BOTON_SUAVE}
+                      aria-label="Dejar de liderar la tribu nueva por proponer"
+                      onClick={() => dispatch({ tipo: "dejarTribu", tribuId: "nueva" }, "tribu")}
+                    >
+                      Dejar de liderar
+                    </button>
+                  </li>
+                )}
+              </ul>
+              {(tribusParaLiderar.length > 0 || !estado.tribuNueva) && (
+                <button
+                  type="button"
+                  className={BOTON_SUAVE}
+                  data-foco="sumar-otra"
+                  onClick={() => {
+                    setTribuElegida("");
+                    setEligiendoTribu(true);
+                  }}
+                >
+                  Sumar otra tribu
+                </button>
+              )}
+              {estado.tribuNueva && (
                 <Link className="w-fit text-sm underline" href="/tribus#sec-vacantes">
                   Elegir un barrio vacante para proponerla
                 </Link>
               )}
+              <p className="text-sm">
+                Total: <b>{formatearMonto(totalMensual, moneda)}/mes</b> ({nombresLiderados.length}{" "}
+                {nombresLiderados.length === 1 ? "tribu" : "tribus"} × {formatearMonto(PLAN_TRIBU_MENSUAL, moneda)}). Cobro simulado,
+                no se cobra nada.
+              </p>
             </>
           ) : eligiendoTribu ? (
             <fieldset className="grid gap-2">
-              <legend className="mb-1 text-sm font-medium">¿Qué tribu vas a liderar?</legend>
+              <legend className="mb-1 text-sm font-medium">{esLider ? "¿Qué otra tribu vas a liderar?" : "¿Qué tribu vas a liderar?"}</legend>
               {tribusParaLiderar.map((t) => (
                 <label key={t.id} className="flex cursor-pointer items-center gap-2 text-sm has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-deep">
                   <input
@@ -420,21 +511,30 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
                   {t.nombre} <span className="text-muted">({TEXTO_ESTADO[t.estado]})</span>
                 </label>
               ))}
-              <label className="flex cursor-pointer items-center gap-2 text-sm has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-deep">
-                <input
-                  type="radio"
-                  name="tribu-a-liderar"
-                  value="nueva"
-                  checked={tribuElegida === "nueva"}
-                  onChange={() => setTribuElegida("nueva")}
-                />
-                Proponer una tribu nueva
-              </label>
+              {!estado.tribuNueva && (
+                <label className="flex cursor-pointer items-center gap-2 text-sm has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-deep">
+                  <input
+                    type="radio"
+                    name="tribu-a-liderar"
+                    value="nueva"
+                    checked={tribuElegida === "nueva"}
+                    onChange={() => setTribuElegida("nueva")}
+                  />
+                  Proponer una tribu nueva
+                </label>
+              )}
               <div className="flex flex-wrap gap-2">
                 <button type="button" className={BOTON_PRIMARIO} disabled={tribuElegida === ""} onClick={confirmarTribu}>
                   Ser líder de esta tribu
                 </button>
-                <button type="button" className={BOTON_SUAVE} onClick={() => setEligiendoTribu(false)}>
+                <button
+                  type="button"
+                  className={BOTON_SUAVE}
+                  onClick={() => {
+                    setEligiendoTribu(false);
+                    volverASumar.current = true;
+                  }}
+                >
                   Cancelar
                 </button>
               </div>
@@ -443,8 +543,9 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
             <button
               type="button"
               className={BOTON_SUAVE}
+              data-foco="tribu"
               onClick={() => {
-                setTribuElegida(tribuLider ?? "");
+                setTribuElegida("");
                 setEligiendoTribu(true);
               }}
             >
@@ -574,6 +675,14 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
         </div>
       </section>
 
+      <ConfirmarSumarTribu
+        abierto={confirmando !== null}
+        actuales={[...nombresLiderados, ...(estado.tribuNueva ? ["tu tribu nueva por proponer"] : [])]}
+        nueva={confirmando === "nueva" ? "una tribu nueva" : (buscarTribu(confirmando ?? "")?.nombre ?? "")}
+        alConfirmar={sumarConfirmada}
+        alCerrar={cerrarConfirmacion}
+      />
+
       <KycDialogo
         abierto={dialogoKyc}
         kyc={kyc.kyc}
@@ -587,5 +696,65 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
         alAprobar={kyc.aprobar}
       />
     </div>
+  );
+}
+
+/**
+ * Confirmación al sumar otra tribu. Diálogo modal nativo (como `KycDialogo`): el foco empieza en el título,
+ * Escape lo cierra y quien lo abrió recupera el foco.
+ */
+function ConfirmarSumarTribu({
+  abierto,
+  actuales,
+  nueva,
+  alConfirmar,
+  alCerrar,
+}: {
+  abierto: boolean;
+  actuales: string[];
+  nueva: string;
+  alConfirmar: () => void;
+  alCerrar: () => void;
+}) {
+  const dialogo = useRef<HTMLDialogElement | null>(null);
+  const titulo = useRef<HTMLHeadingElement | null>(null);
+
+  useEffect(() => {
+    const d = dialogo.current;
+    if (!d) return;
+    if (abierto && !d.open) {
+      d.showModal();
+      titulo.current?.focus();
+    }
+    if (!abierto && d.open) d.close();
+  }, [abierto]);
+
+  const total = actuales.length + 1;
+  return (
+    <dialog
+      ref={dialogo}
+      aria-labelledby="sumar-tribu-titulo"
+      // Solo el cierre que hace la persona (Escape): el que sigue a `abierto = false` ya lo avisó quien cerró.
+      onClose={() => {
+        if (abierto) alCerrar();
+      }}
+      className="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-xl border border-line bg-surface p-5 text-ink backdrop:bg-ink/50"
+    >
+      <h2 id="sumar-tribu-titulo" ref={titulo} tabIndex={-1} className="text-xl font-semibold">
+        Sumar otra tribu
+      </h2>
+      <p className="mt-3">
+        Ya sos líder de {unirConY(actuales)}. ¿Querés sumar también {nueva}? Vas a administrar {total === 2 ? "las dos" : "todas"}.
+      </p>
+      <p className="mt-2 text-sm text-muted">Simulado: en la versión real lo aprueba el super admin.</p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button type="button" className={BOTON_PRIMARIO} onClick={alConfirmar}>
+          Sí, sumar {nueva}
+        </button>
+        <button type="button" className={BOTON_SUAVE} onClick={alCerrar}>
+          Cancelar
+        </button>
+      </div>
+    </dialog>
   );
 }

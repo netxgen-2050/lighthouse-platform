@@ -1,6 +1,6 @@
 import type { Nivel } from "@/lib/permisos/niveles";
 import { CLAVES } from "@/lib/demo/claves";
-import { INICIAL, leer, reducir, type Accion, type EstadoSumarte } from "@/lib/sumarte/estado";
+import { esLiderDeTribu, INICIAL, leer, reducir, type Accion, type EstadoSumarte } from "@/lib/sumarte/estado";
 import type { RolSesion } from "./personas";
 
 /**
@@ -20,7 +20,8 @@ export const VIGENCIA_PENDIENTE_MS = 5 * 60 * 1000;
 
 export type AjustesDePersona = { rol: RolSesion; tribuAdmin: string | null };
 
-export type NivelCalculado = { nivel: Nivel; tribuLider: string | null };
+/** `tribusLider`: ids de las tribus que lidera; `tribuFija`: la asignada por `LH_PERSONAS`, que Sumarte no puede quitar. */
+export type NivelCalculado = { nivel: Nivel; tribusLider: string[]; tribuFija: string | null };
 
 const ORDEN: Nivel[] = ["sin-cuenta", "explorador", "miembro", "fundador", "lider", "superadmin"];
 
@@ -29,21 +30,25 @@ const ORDEN: Nivel[] = ["sin-cuenta", "explorador", "miembro", "fundador", "lide
  * `LH_PERSONAS`) son un piso: lo elegido en Sumarte nunca los baja, pero sí puede subir de plan.
  */
 export function calcularNivel(estado: EstadoSumarte, persona: AjustesDePersona | null): NivelCalculado {
-  if (!persona) return { nivel: "sin-cuenta", tribuLider: null };
-  let nivel: Nivel = estado.tribu
+  if (!persona) return { nivel: "sin-cuenta", tribusLider: [], tribuFija: null };
+  let nivel: Nivel = esLiderDeTribu(estado)
     ? "lider"
     : estado.pase
       ? "fundador"
       : estado.plan === "miembro"
         ? "miembro"
         : "explorador";
-  let tribuLider = estado.tribu ? estado.tribuId : null;
+  const tribusLider = [...estado.tribus];
+  let tribuFija: string | null = null;
   if (persona.rol === "admin-tribu") {
     if (ORDEN.indexOf("lider") > ORDEN.indexOf(nivel)) nivel = "lider";
-    tribuLider = tribuLider ?? persona.tribuAdmin;
+    if (persona.tribuAdmin) {
+      tribuFija = persona.tribuAdmin;
+      if (!tribusLider.includes(tribuFija)) tribusLider.unshift(tribuFija);
+    }
   }
   if (persona.rol === "superadmin") nivel = "superadmin";
-  return { nivel, tribuLider };
+  return { nivel, tribusLider, tribuFija };
 }
 
 /** Lo elegido en Sumarte por la persona en sesión (INICIAL si no eligió nada o no se puede leer). */
