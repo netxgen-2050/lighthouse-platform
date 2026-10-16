@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx scripts/migrar.ts",
+    "build": "tsx scripts/migrar.ts && next build --turbopack",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
@@ -14,8 +16,11 @@
     "noche": "scripts/noche.sh"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.5.10",
+    "@neondatabase/serverless": "^1.2.0",
     "@privy-io/react-auth": "^3.48.1",
     "@privy-io/server-auth": "^1.32.5",
+    "drizzle-orm": "^0.45.4",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.52.0",
     "next": "15.5.27",
@@ -32,9 +37,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "15.5.27",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.3"
   },

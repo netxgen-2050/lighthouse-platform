@@ -1,0 +1,455 @@
+{
+  "id": "e976efd9-cad5-4156-9e99-515b487385a6",
+  "prevId": "009b4b5f-046f-4dc3-8282-9d6e729d7b42",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.cambios_de_rol": {
+      "name": "cambios_de_rol",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "persona_id": {
+          "name": "persona_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cambiado_por": {
+          "name": "cambiado_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "campo": {
+          "name": "campo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "valor_anterior": {
+          "name": "valor_anterior",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "valor_nuevo": {
+          "name": "valor_nuevo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cambiado_at": {
+          "name": "cambiado_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "cambios_de_rol_persona_id_personas_id_fk": {
+          "name": "cambios_de_rol_persona_id_personas_id_fk",
+          "tableFrom": "cambios_de_rol",
+          "columnsFrom": [
+            "persona_id"
+          ],
+          "tableTo": "personas",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "restrict"
+        },
+        "cambios_de_rol_cambiado_por_personas_id_fk": {
+          "name": "cambios_de_rol_cambiado_por_personas_id_fk",
+          "tableFrom": "cambios_de_rol",
+          "columnsFrom": [
+            "cambiado_por"
+          ],
+          "tableTo": "personas",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.consentimientos": {
+      "name": "consentimientos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "persona_id": {
+          "name": "persona_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "tipo_consentimiento",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "evento": {
+          "name": "evento",
+          "type": "evento_consentimiento",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "canal": {
+          "name": "canal",
+          "type": "canal_consentimiento",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "idioma": {
+          "name": "idioma",
+          "type": "idioma_consentimiento",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "registrado_at": {
+          "name": "registrado_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "aceptado_en_cliente": {
+          "name": "aceptado_en_cliente",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "consentimientos_persona_tipo_hora": {
+          "name": "consentimientos_persona_tipo_hora",
+          "columns": [
+            {
+              "expression": "persona_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "tipo",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "registrado_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "consentimientos_persona_id_personas_id_fk": {
+          "name": "consentimientos_persona_id_personas_id_fk",
+          "tableFrom": "consentimientos",
+          "columnsFrom": [
+            "persona_id"
+          ],
+          "tableTo": "personas",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.cuentas": {
+      "name": "cuentas",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "persona_id": {
+          "name": "persona_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "proveedor": {
+          "name": "proveedor",
+          "type": "proveedor_login",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id_externo": {
+          "name": "id_externo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email_verificado": {
+          "name": "email_verificado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vinculada_at": {
+          "name": "vinculada_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "cuentas_persona_id_personas_id_fk": {
+          "name": "cuentas_persona_id_personas_id_fk",
+          "tableFrom": "cuentas",
+          "columnsFrom": [
+            "persona_id"
+          ],
+          "tableTo": "personas",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "restrict"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "cuentas_proveedor_id_externo": {
+          "name": "cuentas_proveedor_id_externo",
+          "columns": [
+            "proveedor",
+            "id_externo"
+          ],
+          "nullsNotDistinct": false
+        },
+        "cuentas_persona_proveedor": {
+          "name": "cuentas_persona_proveedor",
+          "columns": [
+            "persona_id",
+            "proveedor"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.personas": {
+      "name": "personas",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rol": {
+          "name": "rol",
+          "type": "rol_persona",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'persona'"
+        },
+        "perfil": {
+          "name": "perfil",
+          "type": "perfil_prueba",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'usuario'"
+        },
+        "tribu_admin": {
+          "name": "tribu_admin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "acceso": {
+          "name": "acceso",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "creada_at": {
+          "name": "creada_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "cambiada_at": {
+          "name": "cambiada_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "personas_email_minusculas": {
+          "name": "personas_email_minusculas",
+          "columns": [
+            {
+              "expression": "lower(\"email\")",
+              "isExpression": true,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.canal_consentimiento": {
+      "name": "canal_consentimiento",
+      "schema": "public",
+      "values": [
+        "alta",
+        "al-entrar",
+        "nueva-version",
+        "mis-datos"
+      ]
+    },
+    "public.evento_consentimiento": {
+      "name": "evento_consentimiento",
+      "schema": "public",
+      "values": [
+        "acepta",
+        "retira"
+      ]
+    },
+    "public.idioma_consentimiento": {
+      "name": "idioma_consentimiento",
+      "schema": "public",
+      "values": [
+        "es",
+        "en"
+      ]
+    },
+    "public.perfil_prueba": {
+      "name": "perfil_prueba",
+      "schema": "public",
+      "values": [
+        "usuario",
+        "inversor",
+        "comunidad"
+      ]
+    },
+    "public.proveedor_login": {
+      "name": "proveedor_login",
+      "schema": "public",
+      "values": [
+        "privy",
+        "neon-auth"
+      ]
+    },
+    "public.rol_persona": {
+      "name": "rol_persona",
+      "schema": "public",
+      "values": [
+        "superadmin",
+        "admin-tribu",
+        "persona"
+      ]
+    },
+    "public.tipo_consentimiento": {
+      "name": "tipo_consentimiento",
+      "schema": "public",
+      "values": [
+        "politica",
+        "terminos",
+        "sensibles",
+        "novedades"
+      ]
+    }
+  },
+  "schemas": {},
+  "views": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
