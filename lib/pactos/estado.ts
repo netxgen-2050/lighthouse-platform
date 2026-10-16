@@ -229,7 +229,7 @@ function leerContenido(o: Record<string, unknown>): ContenidoPacto {
   };
 }
 
-function leerHistorial(x: unknown): VersionAceptada[] {
+function leerHistorial(x: unknown, vigente: number): VersionAceptada[] {
   if (!Array.isArray(x)) return [];
   const salida: VersionAceptada[] = [];
   for (const v of x) {
@@ -237,6 +237,7 @@ function leerHistorial(x: unknown): VersionAceptada[] {
     const o = v as Record<string, unknown>;
     const c = leerContenido(o);
     if (typeof o.version !== "number" || !Number.isInteger(o.version) || o.version < 1 || !pactoCompleto(c)) continue;
+    if (o.version > vigente || salida.some((s) => s.version === o.version)) continue;
     const fecha = typeof o.aceptado === "string" && !Number.isNaN(Date.parse(o.aceptado)) ? o.aceptado : null;
     salida.push({ version: o.version, ...c, aceptado: fecha });
   }
@@ -253,7 +254,7 @@ function leerTiempo(x: unknown): PactoTiempo {
   if (paso === 1) return { ...base, paso };
   // Aceptado. Lo guardado antes de las versiones se lee como versión 1, con fecha sin dato.
   const version = typeof o.version === "number" && Number.isInteger(o.version) && o.version >= 1 ? o.version : 1;
-  const historial = leerHistorial(o.historial);
+  const historial = leerHistorial(o.historial, version);
   if (!historial.some((h) => h.version === version)) historial.push({ version, ...contenido(base), aceptado: null });
   historial.sort((a, b) => a.version - b.version);
   const aceptado: PactoTiempo = { ...base, paso, version, historial };

@@ -173,6 +173,7 @@ test("proponer un cambio: la versión vigente sigue en Semillas hasta que se ace
   // El evento queda en Mi recorrido.
   await page.goto("/panel");
   await expect(page.getByText("aceptó el cambio a tu pacto")).toBeVisible();
+  await expect(page.getByRole("link", { name: /aceptó el cambio a tu pacto/ }).first()).toHaveAttribute("href", "/pactos?comunidad=lighthouse");
   await expect(page.getByText("Propusiste un cambio a tu pacto en")).toBeVisible();
 });
 
@@ -183,7 +184,15 @@ test("si la comunidad no acepta el cambio, sigue la versión vigente y se avisa"
   await page.getByLabel(/Compromiso mensual propuesto/).fill("30");
   await page.getByRole("button", { name: "Enviar cambio a la comunidad" }).click();
   await page.getByRole("button", { name: "Simular: la comunidad no lo acepta" }).click();
-  await expect(page.getByRole("status").filter({ hasText: "no aceptó el cambio. Sigue vigente la versión 1." })).toBeVisible();
+  const aviso = page.getByText("no aceptó el cambio. Sigue vigente la versión 1.");
+  // Una copia es visible y otra va a la región viva siempre montada (que se anuncia).
+  await expect(aviso).toHaveCount(2);
+  await expect(page.getByRole("status").filter({ hasText: "no aceptó el cambio. Sigue vigente la versión 1." })).toHaveCount(1);
+  // El aviso visible es de la pestaña de tiempo: no queda en la de plata.
+  await page.getByRole("tab", { name: "Sumarte con plata" }).click();
+  await expect(aviso).toHaveCount(1);
+  await page.getByRole("tab", { name: "Pacto de tiempo" }).click();
+  await expect(aviso).toHaveCount(1);
   await expect(page.getByRole("region", { name: "Cambio propuesto" })).toHaveCount(0);
   await expect(page.getByTestId("version-pacto")).toHaveText("Versión 1");
   await expect(page.getByText("Compromiso mensual: 10 h/mes")).toBeVisible();

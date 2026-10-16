@@ -96,7 +96,7 @@ export function PactosCliente() {
       original.tipo === "avanzar" || original.tipo === "aceptarCambio" ? { ...original, ahora: new Date().toISOString() } : original;
     const siguiente = reducir(estado, accion);
     const comunidadId = "comunidad" in accion ? accion.comunidad : null;
-    if (accion.tipo !== "pestana" && accion.tipo !== "aporte") setAvisoRechazo("");
+    setAvisoRechazo("");
     if (comunidadId !== null && siguiente !== estado) {
       const despuesT = deComunidad(siguiente, comunidadId).tiempo;
       const donde = nombreComunidad(comunidadId);
@@ -116,8 +116,10 @@ export function PactosCliente() {
         registrarEvento(EVENTOS.cambioDePactoAceptado(donde, comunidadId, despuesT.version));
       } else if (accion.tipo === "rechazarCambio") {
         foco.current = true;
-        setAnuncio("");
-        setAvisoRechazo(`Quien administra ${donde} no aceptó el cambio. Sigue vigente la versión ${despuesT.version}.`);
+        // El texto va a la región viva siempre montada (se anuncia) y también al aviso visible.
+        const aviso = `Quien administra ${donde} no aceptó el cambio. Sigue vigente la versión ${despuesT.version}.`;
+        setAnuncio(aviso);
+        setAvisoRechazo(aviso);
         registrarEvento(EVENTOS.cambioDePactoRechazado(donde, comunidadId));
       } else if (accion.tipo === "descartarCambio") {
         foco.current = true;
@@ -630,8 +632,8 @@ export function PactosCliente() {
           </section>
         )}
 
-        {avisoRechazo && (
-          <p role="status" className={AVISO}>
+        {estado.pestana === "tiempo" && avisoRechazo && (
+          <p className={AVISO}>
             {avisoRechazo}
           </p>
         )}

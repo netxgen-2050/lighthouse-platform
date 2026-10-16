@@ -191,6 +191,11 @@ describe("proponer cambios a un pacto", () => {
     const crudo = JSON.stringify({ comunidades: { [C]: { tiempo: { rol: "facilitacion", descripcion: "x", horas: 10, paso: 1, cambio: { rol: "facilitacion", descripcion: "y", horas: 20, paso: 0 } }, aportes: [] } } });
     expect(deComunidad(leer(crudo), C).tiempo.cambio).toBeUndefined();
   });
+  it("el historial no repite versiones ni guarda las mayores que la vigente", () => {
+    const v = (version: number) => ({ version, rol: "facilitacion", rolOtro: "", descripcion: "x", horas: 10, aceptado: FECHA_1 });
+    const crudo = JSON.stringify({ comunidades: { [C]: { tiempo: { ...v(2), paso: 2, version: 2, historial: [v(1), v(1), v(2), v(3)] }, aportes: [] } } });
+    expect(deComunidad(leer(crudo), C).tiempo.historial.map((h) => h.version)).toEqual([1, 2]);
+  });
   it("un pacto aceptado con el formato anterior se lee como versión 1 con fecha sin dato", () => {
     const crudo = JSON.stringify({ comunidades: { [C]: { tiempo: { rol: "facilitacion", rolOtro: "", descripcion: "x", horas: 10, paso: 2 }, aportes: [] } } });
     const t = deComunidad(leer(crudo), C).tiempo;
