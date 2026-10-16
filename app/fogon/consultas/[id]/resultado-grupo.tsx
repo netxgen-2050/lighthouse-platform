@@ -1,6 +1,8 @@
 import { Donut } from "@/components/donut";
 import { costoReparto, ordenar, porcentajes, repartirPresupuesto, TEXTO_AVISO } from "@/lib/cuadratico/motor";
-import { fechaCierre, formatoPlata, textoCuandoSeVe } from "@/lib/fogon/consultas/reglas";
+import { TerminoLegal } from "@/components/termino-legal";
+import { fechaCierre, fechaDe, formatoPlata, textoCuandoSeVe } from "@/lib/fogon/consultas/reglas";
+import { TERMINOS } from "@/lib/legal/terminos";
 import { textoVotos, votosDe } from "@/lib/fogon/consultas/reparto";
 import type { PadronVista, VistaConsulta } from "@/lib/fogon/consultas/tipos";
 
@@ -21,7 +23,10 @@ function filasDelResultado(vista: VistaConsulta) {
   const { consulta, resultado } = vista;
   if (!resultado.visible) return null;
   const etiqueta = Object.fromEntries(consulta.opciones.map((o) => [o.id, o.etiqueta]));
-  const pct = porcentajes(resultado.agregado);
+  // Los porcentajes se calculan sobre las filas ya ordenadas, igual que la leyenda del donut (que recibe ese orden),
+  // para que con empates en el redondeo cada opción muestre un solo porcentaje.
+  const ordenadas = ordenar(resultado.agregado);
+  const pct = porcentajes(ordenadas);
   const plata =
     consulta.modo === "presupuesto" && consulta.presupuesto
       ? repartirPresupuesto({
@@ -37,7 +42,7 @@ function filasDelResultado(vista: VistaConsulta) {
   return {
     pct,
     plata,
-    filas: ordenar(resultado.agregado).map((f) => ({
+    filas: ordenadas.map((f) => ({
       ...f,
       etiqueta: etiqueta[f.opcion],
       pct: pct ? pct[f.opcion] : null,
@@ -97,11 +102,11 @@ export function ResultadoDelGrupo({ vista }: { vista: VistaConsulta }) {
               </li>
             ))}
           </ol>
-          {calculo.plata && consulta.presupuesto && (
+          {calculo.plata && consulta.presupuesto && (calculo.plata.sinAsignar !== 0 || calculo.plata.avisos.length > 0) && (
             <div className="grid gap-1 text-sm">
-              <p>
-                Sin asignar: {formatoPlata(calculo.plata.sinAsignar, consulta.presupuesto.moneda)}
-              </p>
+              {calculo.plata.sinAsignar !== 0 && (
+                <p>Sin asignar: {formatoPlata(calculo.plata.sinAsignar, consulta.presupuesto.moneda)}</p>
+              )}
               {calculo.plata.avisos.map((a) => (
                 <p key={a} role="note">{TEXTO_AVISO[a]}</p>
               ))}
@@ -189,6 +194,7 @@ export function QuienFalta({ padron, cerrada }: { padron: PadronVista; cerrada: 
 export function Acta({ vista }: { vista: VistaConsulta }) {
   const { consulta, resultado, cierreManual } = vista;
   const calculo = filasDelResultado(vista);
+  const textoConsultivo = TERMINOS.consultivo.texto;
   return (
     <section aria-labelledby="h-acta" className={CAJA}>
       <h2 id="h-acta" className="font-semibold">Acta (ejemplo)</h2>
@@ -196,7 +202,7 @@ export function Acta({ vista }: { vista: VistaConsulta }) {
         <dt className="font-medium">Consulta</dt>
         <dd>{consulta.titulo}</dd>
         <dt className="font-medium">Cierre</dt>
-        <dd>{cierreManual ? "Cerrada a mano (simulado)" : fechaCierre(consulta)}</dd>
+        <dd>{cierreManual ? `Cerrada a mano el ${fechaDe(cierreManual)} (simulado)` : fechaCierre(consulta)}</dd>
         <dt className="font-medium">Regla</dt>
         <dd>Voto cuadrático, 100 créditos por persona</dd>
         <dt className="font-medium">Participantes</dt>
@@ -222,7 +228,7 @@ export function Acta({ vista }: { vista: VistaConsulta }) {
         </dd>
       </dl>
       <p className="text-sm">
-        El resultado es consultivo: no reemplaza las decisiones que reservan el contrato o el estatuto.
+        {textoConsultivo} <TerminoLegal clave="consultivo" />
       </p>
     </section>
   );

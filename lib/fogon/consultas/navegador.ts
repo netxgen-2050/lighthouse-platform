@@ -145,8 +145,9 @@ export class RepositorioNavegador implements RepositorioConsultas {
         consulta,
         estado: est,
         puedeCerrar: est === "abierta",
-        cierreManual: !!guardado.cierres[id],
-        miReparto: guardado.repartos[id] ?? null,
+        cierreManual: guardado.cierres[id] ?? null,
+        // Un reparto sin ningún voto cuenta como "no repartió", igual que en la lista y en "Faltan votar".
+        miReparto: repartio(guardado.repartos[id]) ? guardado.repartos[id] : null,
         resultado,
         padron,
       },

@@ -72,8 +72,8 @@ export type VistaConsulta = {
   estado: Estado;
   /** Si la persona puede cerrar la consulta (en el navegador, toda consulta abierta: es una simulación). */
   puedeCerrar: boolean;
-  /** Cerrada a mano (no por fecha): se puede volver a abrir en la demo. */
-  cierreManual: boolean;
+  /** Cerrada a mano (no por fecha): momento del cierre (ISO); se puede volver a abrir en la demo. `null` si no. */
+  cierreManual: string | null;
   miReparto: Reparto | null;
   resultado: ResultadoVista;
   /** `null` con voto secreto: nadie ve repartos ajenos ni quién falta. */

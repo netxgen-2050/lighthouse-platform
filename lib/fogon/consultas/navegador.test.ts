@@ -49,6 +49,18 @@ describe("RepositorioNavegador", () => {
     expect((await vista(otra, "u1")).miReparto).toEqual(mio);
   });
 
+  test("un reparto guardado sin ningún voto cuenta como no repartido en todas las vistas", async () => {
+    const { r } = repo();
+    expect(await r.guardarReparto("u1", { regeneracion: 0 })).toEqual({ ok: true });
+    const v = await vista(r, "u1");
+    expect(v.miReparto).toBeNull();
+    expect(v.padron!.faltan.map((p) => p.nombre)).toContain("Vos");
+    expect(v.resultado.participantes).toEqual({ repartieron: 5, padron: 7 });
+    const l = await r.listar();
+    if (!l.ok) throw new Error("no listó");
+    expect(l.valor[0].yaReparti).toBe(false);
+  });
+
   test("rechaza un reparto inválido y uno de una consulta cerrada", async () => {
     const { almacen, r } = repo();
     const malo = await r.guardarReparto("u1", { regeneracion: 10, resiliencia: 5 });
@@ -82,7 +94,7 @@ describe("RepositorioNavegador", () => {
     const cerrada = await vista(r, "u1");
     expect(cerrada.estado).toBe("cerrada");
     expect(cerrada.puedeCerrar).toBe(false);
-    expect(cerrada.cierreManual).toBe(true);
+    expect(cerrada.cierreManual).toBe(ANTES.toISOString());
     expect(await r.cerrar("u1")).toEqual({ ok: false });
     expect(await r.reabrir("u1")).toEqual({ ok: true });
     expect((await vista(r, "u1")).estado).toBe("abierta");
@@ -93,7 +105,7 @@ describe("RepositorioNavegador", () => {
     const { r } = repo(almacenSimulado(), DESPUES);
     const v = await vista(r, "u1");
     expect(v.estado).toBe("cerrada");
-    expect(v.cierreManual).toBe(false);
+    expect(v.cierreManual).toBeNull();
     expect(await r.reabrir("u1")).toEqual({ ok: false });
   });
 

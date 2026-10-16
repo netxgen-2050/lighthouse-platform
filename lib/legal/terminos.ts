@@ -234,6 +234,12 @@ export const TERMINOS = {
       "El Congreso es un encuentro educativo, no una oferta de inversión. Los proyectos que buscan socios se presentan por separado, solo a quien lo pida, y sumarse es siempre opcional. Cualquier aporte pasa por los documentos propios de cada proyecto.",
     borrador: true,
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  consultivo: {
+    titulo: "Resultado consultivo",
+    texto: "El resultado es consultivo: no reemplaza las decisiones que reservan el contrato o el estatuto.",
+    borrador: true,
+  },
 } as const;
 
 /** Claves de los textos que son borrador (no vienen del mock-up). */

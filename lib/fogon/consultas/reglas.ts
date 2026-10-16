@@ -34,6 +34,11 @@ export function fechaCierre(consulta: Consulta): string {
   return FECHA.format(new Date(consulta.cierre));
 }
 
+/** Fecha de un momento ISO (por ejemplo, el cierre a mano), en el mismo huso fijo. */
+export function fechaDe(iso: string): string {
+  return FECHA.format(new Date(iso));
+}
+
 /** "Cierra el 15 de noviembre de 2026" / "Cerró el …" (si se cerró a mano, la fecha prevista igual se aclara). */
 export function textoCierre(consulta: Consulta, est: Estado): string {
   return est === "abierta" ? `Cierra el ${fechaCierre(consulta)}` : `Cierre previsto: ${fechaCierre(consulta)}`;
