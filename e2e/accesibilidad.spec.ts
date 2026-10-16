@@ -232,8 +232,20 @@ test("axe sin violaciones serias o críticas: /congreso/en con el modo de origen
 test.describe("la plataforma en inglés", () => {
   test.use({ locale: "en-US" });
 
-  for (const ruta of ["/", "/sumarte", "/tribus", "/configuracion"]) {
+  const RUTAS = [
+    "/",
+    "/sumarte",
+    "/tribus",
+    "/tribus/valle",
+    "/tribus/valle/manifiesto",
+    "/tribus/grano/postular",
+    "/territorios/lighthouse",
+    "/configuracion",
+  ];
+  for (const ruta of RUTAS) {
     test(`axe sin violaciones serias o críticas en inglés: ${ruta}`, async ({ page }) => {
+      // Las teselas satelitales son externas: la prueba no depende de ellas.
+      await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
       await page.goto(ruta);
       await expect(page.locator("html")).toHaveAttribute("lang", "en");
       expect(await graves(page)).toEqual([]);

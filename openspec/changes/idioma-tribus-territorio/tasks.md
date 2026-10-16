@@ -18,5 +18,5 @@ Requisito previo: `idioma-base` mergeado (mejor también `idioma-portada-sumarte
 
 ## 3. Pruebas
 
-- [ ] 3.1 Sumar las cinco rutas a `RUTAS_TRADUCIDAS` y crear `e2e/idioma-tribus-territorio.spec.ts` con los escenarios de la spec (estados, ficha de Valle Solar, lugar del mapa, manifiesto traducido con su nota, error de la postulación con foco). Verificar con `pnpm test:e2e e2e/idioma-tribus-territorio.spec.ts e2e/idioma.spec.ts`.
-- [ ] 3.2 Sumar `/tribus/valle` y `/territorios/lighthouse` en inglés a `e2e/accesibilidad.spec.ts`. Verificar con `pnpm verificar`, `pnpm build` y `pnpm test:e2e`.
+- [x] 3.1 Sumar las cinco rutas a `RUTAS_TRADUCIDAS` y crear `e2e/idioma-tribus-territorio.spec.ts` con los escenarios de la spec (estados, ficha de Valle Solar, lugar del mapa, manifiesto traducido con su nota, error de la postulación con foco). Verificar con `pnpm test:e2e e2e/idioma-tribus-territorio.spec.ts e2e/idioma.spec.ts`.
+- [x] 3.2 Sumar `/tribus/valle` y `/territorios/lighthouse` en inglés a `e2e/accesibilidad.spec.ts`. Verificar con `pnpm verificar`, `pnpm build` y `pnpm test:e2e`.

@@ -181,6 +181,8 @@ const PAGINAS = [
   "/",
   "/tribus",
   "/tribus/valle",
+  "/tribus/valle/manifiesto",
+  "/tribus/grano/postular",
   "/territorios/lighthouse",
   "/sumarte",
   "/pactos",
