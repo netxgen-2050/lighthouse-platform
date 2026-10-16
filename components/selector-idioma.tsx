@@ -55,7 +55,13 @@ export function SelectorIdioma() {
   }
 
   return (
-    <div role="group" aria-label="Idioma · Language" className="flex items-center rounded-full border border-muted text-sm">
+    <div
+      role="group"
+      aria-label="Idioma · Language"
+      // Otras partes de la página cambian la query sin cambiar la ruta (`history.replaceState`): se relee al acercarse.
+      onPointerEnter={() => setResto(restoDeLaQuery(window.location.search))}
+      onFocus={() => setResto(restoDeLaQuery(window.location.search))}
+      className="flex items-center rounded-full border border-muted text-sm">
       {OPCIONES.map((o) => {
         const actual = o.idioma === idioma;
         return (
