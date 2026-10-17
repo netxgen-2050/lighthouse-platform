@@ -91,6 +91,9 @@ Mismo orden de operaciones que `run_series`, para que los números coincidan:
    - `extraUn = caja × parteExcedenteUnidades`; `excedenteProcomun = caja − extraUn`; `pagoUn += extraUn`.
    - Flujos del año: Notas `pago`, primera pérdida `pagoPp`, Unidades `pagoUn`, procomún `aFundacion + excedenteProcomun`, NetX `comision`.
 4. `tir(flujos)`: bisección entre −0,99 y 1,0 con 200 iteraciones, igual que el `.py`; si `vpn(−0,99) × vpn(1,0) > 0` devuelve `null` (el `.py` devuelve NaN; acá se convierte en "sin dato"). `multiplo = recibe / pone`, `null` si `pone === 0`.
+<!-- arquitecto: "sin dato" en la TIR tiene dos causas posibles y la pantalla tiene que decirlo, sin cambiar el modelo -->
+   **Ojo: `null` no siempre es "no cobra".** Hay dos casos sin cambio de signo en el intervalo: la clase nunca recupera nada (los dos VPN negativos, por ejemplo rendimiento 0) **o rinde más de 100 % por año** (los dos VPN positivos; pasa en la Agrovoltaica con costo por MW bajo, energía cara y mucho excedente para las Unidades). El modelo sigue devolviendo `null` en los dos (fiel al `.py` y a la spec), pero la pantalla, siempre que alguna TIR de la tabla sea `null`, muestra debajo la nota: "«sin dato» en la TIR: el modelo solo la calcula entre −99 % y 100 % por año; queda sin dato si la clase no recupera lo que puso o si rinde más que eso." Así un resultado muy alto no se lee como "no hay plata".
+5. Defensa: `usd()`, `pct()` y `multiplo()` muestran "sin dato" también con `NaN` o `±Infinity`, nunca "NaN" ni "∞". <!-- arquitecto: el dato que falta no es cero, y tampoco "NaN" -->
 
 **Escenarios.** Funciones de ingresos y costos por año, con los datos medidos como parámetro:
 
@@ -136,6 +139,9 @@ Vivienda: "Entrada: sin dato" y "Canon anual: sin dato"; quién decide: "Asamble
 
 Fuente común de los supuestos fijos: "NS_Tokenomics, doc 28 §7 y sim/series_waterfall_sim.py (v0.1, 17-oct-2026)".
 
+<!-- arquitecto: una sola constante de versión, para que la copia del modelo no se desfase en silencio (ADR-010) -->
+**Versión del modelo.** `escenarios.ts` exporta `VERSION_MODELO = { fuente: "NS_Tokenomics/sim/series_waterfall_sim.py", version: "v0.1", fecha: "2026-10-17" }`. La fuente común de arriba, el comentario de `modelo.ts` y el comentario de la tabla esperada en `modelo.test.ts` salen de esa constante o la citan igual. El dueño del modelo es NS_Tokenomics: si el `.py` cambia, se abre otro cambio que actualiza la constante, la traducción y los números de referencia juntos (ADR-010, en Propuesta).
+
 ## 5. Pantalla
 
 - Encabezado como `/fogon`: "← Fogón", aviso "Prototipo interno · datos de ejemplo", "Fogón de decisiones", `h1` "Simulador de la tokenomics (diseño B)", una frase de qué es, y el aviso del catálogo legal (`TERMINOS.avisosimulador`) en el mismo estilo de aviso (tokens `bg-warn-bg`, `text-warn-ink`).
@@ -168,3 +174,5 @@ Los resultados de referencia están redondeados a enteros (montos), a dos decima
 - **Mover datos medidos parece "decidirlos".** Mitigación: grupo aparte con "(no se votan)" y la fuente de cada uno. Si Gus prefiere que queden fijos, se sacan los controles sin tocar el modelo (pregunta abierta).
 - **El modelo cambia en NS_Tokenomics.** La versión está anotada (v0.1, 17-oct-2026); un cambio del modelo va en otro cambio con sus nuevos números de referencia.
 - **La curva escalada del viñedo** es un supuesto nuevo de esta spec; con el valor de partida no cambia nada.
+- **La copia del modelo se desfasa del `.py`.** <!-- arquitecto --> NS_Tokenomics manda sobre el modelo; acá hay una traducción. Mitigación: `VERSION_MODELO` visible en la pantalla, tabla de referencia completa en los tests y la regla de ADR-010 (un cambio del `.py` = un cambio OpenSpec con números nuevos). No se agrega ningún chequeo automático entre repos en este cambio.
+- **TIR muy alta leída como "sin dato".** <!-- arquitecto --> Ver §3, punto 4: nota debajo de la tabla.
