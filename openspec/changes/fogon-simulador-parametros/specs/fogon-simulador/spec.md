@@ -42,26 +42,41 @@ Under the heading "Valores que se deciden", the page SHALL show one control per 
 - **WHEN** la persona sube la parte de las Unidades a 30 %
 - **THEN** el control dice "70 % procomún · 30 % Unidades"
 
-### Requirement: Descuento del SAFU informativo
-The SAFU discount SHALL appear among the decided values with its value (20 %) and who decides ("NetX + Fundación, una vez por emisión"), without a control, and with the text that the series model does not use it: it applies when the SAFU converts into Units of the Mother Series.
+### Requirement: Conversión del SAFU
+The SAFU discount SHALL appear among the decided values with a control, its starting value (20 %) and who decides ("NetX + Fundación, una vez por emisión"), and the text that it does not change the series, only the SAFU conversion. The page SHALL show how many Units of the Mother Series USD 1.000 in SAFU convert into, as amount divided by one minus the discount, labeled as a platform calculation that is not in the model.
 
 #### Scenario: Ver el SAFU
-- **WHEN** una persona mira el descuento del SAFU
-- **THEN** ve "20 %", quién decide y que este modelo no lo usa, y no hay control para moverlo
+- **WHEN** una persona abre el simulador
+- **THEN** ve "USD 1.000 en SAFU se convierten en USD 1.250 de Unidades de la Serie Madre (descuento 20 %)" y que es un cálculo de la plataforma
+
+#### Scenario: Mover el descuento
+- **WHEN** la persona sube el descuento del SAFU a 25 %
+- **THEN** la frase dice "USD 1.333" y la tabla por clase no cambia
 
 ### Requirement: Datos que se miden
-Under the heading "Datos que se miden (no se votan)", the page SHALL show one control per measured datum of the chosen scenario with label, value, unit, starting value and its source. The vineyard shows yield at maturity and net wine price; the agrivoltaic plant shows cost per MW and energy price.
+Under the heading "Datos que se miden (no se votan)", the page SHALL show one control per measured datum of the chosen scenario with label, value, unit, starting value and its source, so a person can try the possible cases. The vineyard shows yield at maturity and net wine price; the agrivoltaic plant shows cost per MW and energy price.
 
 #### Scenario: Fuente de un dato
 - **WHEN** una persona mira el precio del vino en el Viñedo
-- **THEN** ve "USD 6 por botella (neto para la serie)" y la fuente "Supuesto del modelo, a confirmar con un enólogo local"
+- **THEN** ve "USD 6 por botella (neto para la serie)", "Valor de partida: USD 6" y la fuente "Supuesto del modelo, a confirmar con un enólogo local"
 
-### Requirement: Supuestos fijos visibles
-The page SHALL list the fixed model assumptions of the chosen scenario (hectares, horizon, capital structure, Green Notes rate and terms, reserve, exit multiple, costs) without controls, with the source "NS_Tokenomics, doc 28 §7 y sim/series_waterfall_sim.py".
+### Requirement: Supuestos del modelo a confirmar
+Inside the "no se votan" group, under "Supuestos del modelo · a confirmar con Vagner", the page SHALL show one control per adjustable assumption of the chosen scenario (exit multiple, Green Notes share and rate in the agrivoltaic plant, first-loss share, reserve and, in the vineyard, whether the ramp-up curve scales with yield), each with its starting value and the source "Supuesto del modelo, a confirmar con Vagner", and the resulting Units share as text.
 
 #### Scenario: Supuestos de la agrovoltaica
-- **WHEN** la persona elige la agrovoltaica y abre los supuestos
-- **THEN** ve "60 % Notas Verdes al 7 %, 12 años, 1 de gracia" y "Múltiplo de salida: 3 veces"
+- **WHEN** la persona elige la agrovoltaica
+- **THEN** ve "Parte de Notas Verdes: 60 %", "Tasa de las Notas Verdes: 7 %", "Múltiplo de salida: 3 veces", "Unidades: el resto (30 %)" y "a confirmar con Vagner"
+
+#### Scenario: Mover el múltiplo de salida
+- **WHEN** la persona baja el múltiplo de salida del viñedo a 0
+- **THEN** lo que reciben las Unidades baja y el año 15 deja de sumar una salida
+
+### Requirement: Supuestos fijos visibles
+The page SHALL list the fixed assumptions of the chosen scenario (hectares, horizon, physical investment, costs, Green Notes term and grace) without controls, with the source "NS_Tokenomics, doc 28 §7 y sim/series_waterfall_sim.py".
+
+#### Scenario: Supuestos fijos de la agrovoltaica
+- **WHEN** la persona elige la agrovoltaica y abre los supuestos fijos
+- **THEN** ve "Notas Verdes a 12 años, 1 de gracia" y "20 años"
 
 ### Requirement: Vivienda sin dato
 The page SHALL show the home entry premium and yearly ground rent as "sin dato", with who decides ("Asamblea de residentes + Consejo, después de la aprobación municipal"), never as 0.
@@ -84,8 +99,12 @@ A button "Volver a los valores de partida" SHALL restore every control of the ch
 - **WHEN** la persona movió la regalía y el tope y aprieta "Volver a los valores de partida"
 - **THEN** los controles vuelven a 5 % y 9 % y el resultado vuelve a los números de referencia
 
+#### Scenario: Volver también los supuestos
+- **WHEN** la persona movió el múltiplo de salida y el descuento del SAFU y aprieta "Volver a los valores de partida"
+- **THEN** el múltiplo vuelve a 6 veces y el SAFU a 20 %
+
 ### Requirement: Resultado por clase
-The page SHALL show a results table with one row per class (Procomún · Fundación, Unidades de Regeneración, Primera pérdida, Notas Verdes when the scenario has them, NetX) and the columns: puts in, receives, multiple and IRR. Amounts SHALL show "USD" and thousands separators; a missing IRR or multiple SHALL read "sin dato".
+The page SHALL show a results table with one row per class (Procomún · Fundación, Unidades de Regeneración, Primera pérdida, Notas Verdes when the scenario has them, NetX) and the columns: puts in, receives, multiple and IRR. Amounts SHALL show "USD" and thousands separators. An IRR SHALL always show its value, even above 100 % a year; an IRR or multiple SHALL read "sin dato" only when it cannot be calculated, with a note explaining why.
 
 #### Scenario: Resultado de partida del Viñedo
 - **WHEN** una persona abre el simulador
@@ -97,7 +116,11 @@ The page SHALL show a results table with one row per class (Procomún · Fundaci
 
 #### Scenario: TIR sin dato
 - **WHEN** la persona baja el rendimiento del viñedo a 0 t/ha
-- **THEN** la TIR de las Unidades dice "sin dato"
+- **THEN** la TIR de las Unidades dice "sin dato" y debajo de la tabla se lee que la clase no recupera lo que puso
+
+#### Scenario: TIR muy alta
+- **WHEN** la persona lleva la agrovoltaica a costo por MW 400.000, energía USD 150 por MWh y 50 % del excedente para las Unidades
+- **THEN** cada TIR de la tabla muestra un porcentaje, aunque pase el 100 %, y ninguna dice "sin dato"
 
 ### Requirement: Gráfico con tabla equivalente
 The page SHALL show a chart of how the total paid by the series splits among the classes (theme tokens only, decorative drawing, numbered legend with text and percentage) with an equivalent table.

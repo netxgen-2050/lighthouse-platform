@@ -7,7 +7,7 @@ Calcular, año por año, cómo reparte su plata una serie del programa de fideic
 ## ADDED Requirements
 
 ### Requirement: Parámetros separados por naturaleza
-The model's inputs SHALL be split into three groups: values that are decided (regeneration royalty, ground rent per hectare, Units cap, Units share of the residual, NetX management fee, first-loss target, SAFU discount), data that is measured (vineyard yield at maturity, net wine price, solar plant cost per MW, energy price) and fixed model assumptions. Each decided value and each measured datum SHALL carry its unit, its starting value and a text: who decides it, or its source.
+The model's inputs SHALL be split into four groups: values that are decided (regeneration royalty, ground rent per hectare, Units cap, Units share of the residual, NetX management fee, first-loss target, SAFU discount), data that is measured (vineyard yield at maturity, net wine price, solar plant cost per MW, energy price), adjustable model assumptions to be confirmed with Vagner (exit multiple, Green Notes share and rate, first-loss share, reserve, scaled vineyard curve) and fixed assumptions. Each decided value, measured datum and adjustable assumption SHALL carry its unit, its starting value and a text: who decides it, or its source.
 
 #### Scenario: Un valor que se decide
 - **WHEN** se lee la regalía de regeneración del escenario Viñedo
@@ -16,6 +16,10 @@ The model's inputs SHALL be split into three groups: values that are decided (re
 #### Scenario: Un dato que se mide
 - **WHEN** se lee el precio de la energía del escenario Agrovoltaica
 - **THEN** vale 60, su unidad es "USD por MWh" y su fuente dice que es un supuesto del modelo a confirmar con la cotización de un desarrollador y la consulta a la red
+
+#### Scenario: Un supuesto a confirmar
+- **WHEN** se lee el múltiplo de salida de la Agrovoltaica
+- **THEN** vale 3 y su fuente es "Supuesto del modelo, a confirmar con Vagner"
 
 #### Scenario: El SAFU no entra en la cascada
 - **WHEN** se cambia el descuento del SAFU y se corre el modelo
@@ -85,23 +89,57 @@ The model SHALL scale the Units' cash flows to an investment of USD 1.000 and re
 - **WHEN** se corren los dos escenarios con los valores de partida
 - **THEN** USD 1.000 en Unidades del Viñedo devuelven 2.663 (TIR 9,2 %) y en la Agrovoltaica 2.835 (TIR 10,3 %), ±1 USD y ±0,05 puntos
 
-### Requirement: TIR sin dato
-When a class's cash flows have no sign change in the search interval (for example, it never gets paid), its IRR SHALL be "sin dato" (`null`), never 0 nor an invented value. A class with no capital SHALL have no multiple nor IRR.
+### Requirement: TIR siempre calculada cuando existe
+The IRR SHALL be computed whenever it exists, including above 100 % a year (a platform addition: the source model returns NaN there). It SHALL be "sin dato" (`null`) only when it cannot be calculated: the cash flows have no sign change (for example, the class never recovers anything) or the class put in no capital; never 0 nor an invented value. A class with no capital SHALL have no multiple nor IRR. With the starting values, the IRR SHALL match the source model.
 
 #### Scenario: Una clase que no cobra
 - **WHEN** se corre el Viñedo con el rendimiento en madurez en 0 t/ha
 - **THEN** la TIR de las Unidades es `null`
+
+#### Scenario: Más de 100 % por año
+- **WHEN** se calcula la TIR de los flujos −100 y 1.000
+- **THEN** vale 9 (900 % anual), no `null`
 
 #### Scenario: Viñedo sin Notas
 - **WHEN** se corre el Viñedo con los valores de partida
 - **THEN** las Notas Verdes no tienen múltiplo ni TIR
 
 ### Requirement: Rendimiento del viñedo escalado
-Changing the vineyard yield at maturity SHALL scale the whole ramp-up curve (0, 0, 2, 4, 6 and then 7 t/ha with the starting value) in the same proportion.
+By default, changing the vineyard yield at maturity SHALL scale the whole ramp-up curve (0, 0, 2, 4, 6 and then 7 t/ha with the starting value) in the same proportion. This is a platform assumption to be confirmed with Vagner and SHALL be switchable: when off, years 1 to 5 keep 0, 0, 2, 4 and 6 t/ha and only the maturity value changes.
 
 #### Scenario: Mitad de rendimiento
 - **WHEN** se corre el Viñedo con 3,5 t/ha en madurez
 - **THEN** la cosecha es 0, 0, 1, 2 y 3 t/ha los años 1 a 5 y 3,5 t/ha desde el año 6
+
+#### Scenario: Curva sin escalar
+- **WHEN** se corre el Viñedo con 3,5 t/ha en madurez y la curva escalada apagada
+- **THEN** la cosecha es 0, 0, 2, 4 y 6 t/ha los años 1 a 5 y 3,5 t/ha desde el año 6
+
+### Requirement: Mover un supuesto del modelo
+Changing an adjustable assumption SHALL change the flows only through its place in the model: the exit multiple only the last year's exit; the Notes and first-loss shares the split of the capital raised (the Units take the rest); the Notes rate the Notes payments; the reserve both the capital raised and the cash that covers shortfalls.
+
+#### Scenario: Sin salida
+- **WHEN** se corre el Viñedo con el múltiplo de salida en 0
+- **THEN** los años 1 a 14 son iguales a los de partida y el año 15 no suma salida
+
+#### Scenario: Más reserva
+- **WHEN** se corre el Viñedo con la reserva en 300.000
+- **THEN** la serie levanta 650.000
+
+#### Scenario: Agrovoltaica sin Notas
+- **WHEN** se corre la Agrovoltaica con la parte de Notas Verdes en 0 %
+- **THEN** las Notas no ponen ni cobran nada y las Unidades ponen el 90 % del capital
+
+### Requirement: Conversión del SAFU
+A separate pure function, documented as a platform addition not present in the source model, SHALL convert a SAFU amount into Units at a discount: amount ÷ (1 − discount). It SHALL return `null` for a discount outside [0, 1) or a non-finite amount.
+
+#### Scenario: Con el descuento de partida
+- **WHEN** se convierten USD 1.000 con un descuento de 20 %
+- **THEN** dan USD 1.250 de Unidades
+
+#### Scenario: Descuento imposible
+- **WHEN** se convierten USD 1.000 con un descuento de 100 %
+- **THEN** el resultado es `null`
 
 ### Requirement: Mover un valor que se decide
 Changing a decided value SHALL change the flows only through its place in the waterfall.

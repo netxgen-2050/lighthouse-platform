@@ -16,12 +16,15 @@
 | D · Generar los números en el `.py` y que la plataforma solo muestre tablas fijas | Cero riesgo de desfase | No se puede mover ningún valor: no sirve para lo que pide el issue #94 |
 
 ## Decisión
-**A**, propuesta por el arquitecto. NS_Tokenomics es el **dueño** del modelo; la plataforma tiene una **copia traducida**, fiel al `.py` (mismas fórmulas, mismo orden, mismos supuestos, mismo `NaN` → acá `null` → "sin dato"). Reglas:
+**A**, propuesta por el arquitecto. NS_Tokenomics es el **dueño** del modelo; la plataforma tiene una **copia traducida**, fiel al `.py` (mismas fórmulas, mismo orden, mismos supuestos; lo que no se puede calcular → `null` → "sin dato"). Reglas:
 1. Cada modelo copiado vive en `lib/<modelo>/` como función pura, sin React, Next ni red (test de fuente).
 2. Exporta una constante `VERSION_MODELO` con el archivo de origen, su versión y su fecha, que se ve en la pantalla.
 3. Sus tests reproducen la tabla de resultados del `.py` de esa versión, con tolerancias escritas.
 4. Si el `.py` cambia, se abre **otro cambio OpenSpec** que actualiza a la vez la constante, la traducción y los números de referencia. Si el implementador ve una diferencia entre el diseño y el `.py`, manda el `.py` y lo reporta.
-5. Un supuesto que la plataforma agrega y el `.py` no tiene (por ejemplo, la curva escalada del viñedo) se escribe como "supuesto de la plataforma, no del modelo".
+5. Un supuesto o cálculo que la plataforma agrega y el `.py` no tiene se escribe como "agregado de la plataforma, no del modelo", vive en su propia función o rama del código y tiene su test. En el primer cambio son tres, pedidos por Gus el 21-oct-2026: la curva escalada del viñedo, la conversión del SAFU con su descuento y la TIR por encima de 100 % anual (el `.py` la deja en `NaN`). Un agregado nunca cambia los números de referencia con los valores de partida.
+6. Los supuestos del modelo que todavía no confirmó su dueño (en el primer cambio: múltiplo de salida, estructura de capital, reserva y curva del viñedo, a confirmar con Vagner) se muestran movibles y rotulados "a confirmar con …"; si cambian en el `.py`, aplica la regla 4.
+
+> Numeración: si otro cambio en preparación (`fogon-propuestas-github`) también toma el número 010, el que entre segundo a `dev` renumera su ADR.
 
 ## Consecuencias
 - Ganamos: simulador instantáneo y sin servicios que fallen; tests que atrapan cualquier diferencia con los números publicados del modelo.
