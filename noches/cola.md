@@ -4,6 +4,6 @@ La leen las rutinas de la nube. Cada carril es una línea con los ids de cambios
 
 Gus (o Claude, con su OK) edita este archivo en `main` antes de la noche.
 
-- Carril 1: -
+- Carril 1: consentimiento-alta,consentimiento-en-la-base,fogon-cuadratico-en-la-base,fogon-consultas-panel
 - Carril 2: -
 - Carril 3: -
