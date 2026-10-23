@@ -11,6 +11,12 @@ export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   // Portada y Sumarte (idioma-portada-sumarte).
   /^\/$/,
   /^\/sumarte$/,
+  // Tribus, manifiesto, postulación y territorio (idioma-tribus-territorio).
+  /^\/tribus$/,
+  /^\/tribus\/[^/]+$/,
+  /^\/tribus\/[^/]+\/manifiesto$/,
+  /^\/tribus\/[^/]+\/postular$/,
+  /^\/territorios\/[^/]+$/,
 ];
 
 function limpiar(ruta: string): string {

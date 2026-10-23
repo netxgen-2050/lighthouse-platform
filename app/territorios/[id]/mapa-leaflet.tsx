@@ -15,8 +15,10 @@ import {
   type Anillo,
   type EstadoFinca,
 } from "@/lib/territorios/biopueblo";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { nombreDeLugar } from "@/lib/territorios/textos";
-import { TEXTO_ESTADO, type EstadoTribu } from "@/lib/tribus/tipos";
+import { listarTribus } from "@/lib/tribus/datos";
+import { textoDeEstado, type EstadoTribu } from "@/lib/tribus/tipos";
 
 type Props = {
   /** Id del elemento elegido (barrio, común, finca o lugar), o null. */
@@ -46,6 +48,8 @@ function estiloFinca(estado: EstadoFinca | undefined): PathOptions {
 }
 
 export default function MapaLeaflet({ seleccion, alElegir }: Props) {
+  const idioma = useIdioma();
+  const tx = useTextos("territorio");
   const contenedor = useRef<HTMLDivElement>(null);
   const elegir = useRef(alElegir);
   elegir.current = alElegir;
@@ -141,8 +145,9 @@ export default function MapaLeaflet({ seleccion, alElegir }: Props) {
       registrar(comun.id, L.polygon(aLatLng(comun.anillo), { renderer, ...baseComun }).addTo(mapa), baseComun);
 
       const barrios = listarBarrios();
+      const tribus = listarTribus(idioma);
       for (const b of barrios) {
-        const t = tribuDeBarrio(b);
+        const t = tribuDeBarrio(b, tribus);
         const base = estiloBarrio(t?.estado ?? "vacante");
         registrar(b.id, L.polygon(aLatLng(b.anillo), { renderer, ...base }).addTo(mapa), base);
       }
@@ -172,10 +177,12 @@ export default function MapaLeaflet({ seleccion, alElegir }: Props) {
       };
 
       for (const b of barrios) {
-        const t = tribuDeBarrio(b);
+        const t = tribuDeBarrio(b, tribus);
         const estado = t?.estado ?? "vacante";
         const etiqueta =
-          estado === "vacante" ? `Barrio ${b.barrio} · Busca tribu` : `Barrio ${b.barrio} · ${t?.nombre} · ${TEXTO_ESTADO[estado]}`;
+          estado === "vacante"
+            ? tx.marcador.barrioBuscaTribu(b.barrio)
+            : tx.marcador.barrioTribu(b.barrio, t?.nombre ?? "", textoDeEstado(estado, idioma));
         const centro = capas.current.get(b.id)!.limites().getCenter();
         marcar(b.id, centro, estado === "vacante" ? "+" : (t?.iniciales ?? ""), etiqueta, `mapa-sello-${estado}`, 40);
       }
@@ -183,12 +190,12 @@ export default function MapaLeaflet({ seleccion, alElegir }: Props) {
         comun.id,
         capas.current.get(comun.id)!.limites().getCenter(),
         "C",
-        "Terreno común del Lighthouse",
+        tx.marcador.comun,
         "mapa-sello-comun",
         40,
       );
       for (const l of listarLugares()) {
-        marcar(l.id, [l.punto[1], l.punto[0]], "•", `Lugar de interés · ${nombreDeLugar(l.id, l.nombre)}`, "mapa-sello-lugar", 24);
+        marcar(l.id, [l.punto[1], l.punto[0]], "•", tx.marcador.lugar(nombreDeLugar(l.id, l.nombre, idioma)), "mapa-sello-lugar", 24);
       }
 
       resaltar(seleccionActual.current);
@@ -198,7 +205,9 @@ export default function MapaLeaflet({ seleccion, alElegir }: Props) {
       cancelado = true;
       destruir?.();
     };
-  }, []);
+    // Si cambia el idioma el mapa se arma de nuevo, para que los nombres accesibles de los marcadores cambien con él.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idioma]);
 
   useEffect(() => {
     if (mapaRef.current) resaltar(seleccion);

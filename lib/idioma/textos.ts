@@ -5,8 +5,10 @@ import { comunes } from "./textos/comunes";
 import { marco } from "./textos/marco";
 import { portada } from "./textos/portada";
 import { sumarte } from "./textos/sumarte";
+import { territorio } from "./textos/territorio";
+import { tribus } from "./textos/tribus";
 
-export const DICCIONARIOS = { comunes, marco, portada, sumarte } as const;
+export const DICCIONARIOS = { comunes, marco, portada, sumarte, territorio, tribus } as const;
 
 export type Zona = keyof typeof DICCIONARIOS;
 

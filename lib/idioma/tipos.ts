@@ -9,6 +9,14 @@ export type { Bilingue, Idioma } from "@/lib/congreso/idioma";
 export type BilingueConOriginal = { es: string; en?: string; original?: Idioma };
 
 /**
+ * El texto de un dato de ejemplo en el idioma pedido. En inglés, si falta la traducción (o está vacía) devuelve el
+ * español: nunca devuelve vacío. Para mostrar la caída marcada ("ES") se usa `<TextoBilingue>`.
+ */
+export function textoEn(valor: BilingueConOriginal, idioma: Idioma): string {
+  return idioma === "en" && valor.en !== undefined && valor.en.trim() !== "" ? valor.en : valor.es;
+}
+
+/**
  * Contrato del diccionario en inglés a partir del español: cada texto sigue siendo texto, cada función conserva sus
  * argumentos y devuelve texto, cada objeto se recorre y cada tupla conserva su largo. Así `const en: Textos<typeof es>`
  * no compila si falta una clave o un elemento.

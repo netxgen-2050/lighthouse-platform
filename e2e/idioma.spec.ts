@@ -65,7 +65,8 @@ test.describe("sin cuenta", () => {
   });
 
   test("(d) una página sin traducir en inglés: aviso y contenido en español con lang es", async ({ page }) => {
-    await page.goto("/tribus?lang=en");
+    // /privacidad es pública y todavía no se tradujo (la traduce `idioma-legal`).
+    await page.goto("/privacidad?lang=en");
     const aviso = page.getByText("This page is only available in Spanish for now.");
     await expect(aviso).toBeVisible();
     await expect(aviso).toHaveAttribute("lang", "en");
@@ -180,6 +181,8 @@ const PAGINAS = [
   "/",
   "/tribus",
   "/tribus/valle",
+  "/tribus/valle/manifiesto",
+  "/tribus/grano/postular",
   "/territorios/lighthouse",
   "/sumarte",
   "/pactos",

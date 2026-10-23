@@ -15,8 +15,31 @@ describe("estaTraducida", () => {
     }
   });
 
+  test("las tribus, el manifiesto, la postulación y el territorio están traducidos", () => {
+    for (const ruta of [
+      "/tribus",
+      "/tribus/",
+      "/tribus/valle",
+      "/tribus/valle/manifiesto",
+      "/tribus/grano/postular?x=1",
+      "/territorios/lighthouse",
+    ]) {
+      expect(estaTraducida(ruta), ruta).toBe(true);
+    }
+  });
+
   test("el resto todavía no", () => {
-    for (const ruta of ["/tribus", "/sumarte/otra", "/configuracion", "/congreso/fr", "/congresos"]) {
+    for (const ruta of [
+      "/pactos",
+      "/tribus/valle/otra",
+      "/tribus/valle/manifiesto/mas",
+      "/territorios",
+      "/territorios/lighthouse/x",
+      "/sumarte/otra",
+      "/configuracion",
+      "/congreso/fr",
+      "/congresos",
+    ]) {
       expect(estaTraducida(ruta), ruta).toBe(false);
     }
     expect(estaTraducida(null)).toBe(false);
