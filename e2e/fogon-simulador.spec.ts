@@ -209,4 +209,35 @@ test("el ⚖ de Primera pérdida explica en palabras simples y se marca como bor
   await irAlSimulador(page);
   await fila(page, "Primera pérdida").getByRole("button").click();
   await expect(page.getByText(/Plata catalítica/)).toBeVisible();
+  await expect(page.getByText("Borrador: texto a revisar")).toBeVisible();
+});
+
+test("(d2) con la regalía en 10 %, lo de la Fundación sube en cada año con ventas", async ({ page }) => {
+  await irAlSimulador(page);
+  await abrirAnioPorAnio(page);
+  const filas = page.getByRole("table", { name: /Año por año/ }).getByRole("row");
+  const fundacion = async () => {
+    const out: number[] = [];
+    for (let anio = 4; anio <= 15; anio++) {
+      const f = filas.filter({ has: page.getByRole("rowheader", { name: String(anio), exact: true }) });
+      const celdas = await f.getByRole("cell").allInnerTexts();
+      out.push(Number(celdas[2].replace(/\./g, "")));
+    }
+    return out;
+  };
+  const antes = await fundacion();
+  await control(page, "Regalía de regeneración").fill("10");
+  await expect(page.locator("output").filter({ hasText: "10 % de los ingresos brutos" })).toBeVisible();
+  const despues = await fundacion();
+  despues.forEach((v, i) => expect(v).toBeGreaterThan(antes[i]));
+  await expect(fila(page, "Procomún")).not.toContainText("USD 306.970");
+});
+
+test("(m) una clase sin capital muestra — y la nota lo explica", async ({ page }) => {
+  await irAlSimulador(page);
+  await expect(fila(page, "Procomún").getByRole("cell").first()).toHaveText("—");
+  await expect(fila(page, "NetX").getByRole("cell").first()).toHaveText("—");
+  await elegirAgrovoltaica(page);
+  await control(page, "Parte de Notas Verdes").fill("0");
+  await expect(page.getByText(/una clase con 0 % del capital tampoco puso nada/)).toBeVisible();
 });

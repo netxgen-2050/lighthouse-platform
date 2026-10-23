@@ -83,13 +83,13 @@ function FilaClase({
   clase?: ResultadoClase;
   recibe?: number;
 }) {
-  const pone = clase ? clase.pone : 0;
+  const pone = clase ? usd(clase.pone) : "—";
   const recibido = clase ? clase.recibe : (recibe ?? 0);
   const conCapital = clase !== undefined && clase.pone > 0;
   return (
     <tr className="border-t border-line">
       <th scope="row" className={celdaTexto}>{nombre}</th>
-      <td className={celda}>{usd(pone)}</td>
+      <td className={celda}>{pone}</td>
       <td className={celda}>{usd(recibido)}</td>
       <td className={celda}>{conCapital ? multiplo(clase.multiplo) : "—"}</td>
       <td className={celda}>{conCapital ? pct(clase.tir) : "—"}</td>
@@ -133,6 +133,7 @@ export function SimuladorCliente() {
 
   const clases = [resultado.notas, resultado.primeraPerdida, resultado.unidades].filter((c): c is ResultadoClase => c !== null);
   const hayTirSinDato = clases.some((c) => c.pone > 0 && c.tir === null);
+  const haySinCapital = clases.some((c) => c.pone === 0);
 
   const porciones: PorcionDonut[] = [
     { id: "procomun", etiqueta: "Procomún · Fundación", valor: resultado.procomun.recibe },
@@ -320,6 +321,10 @@ export function SimuladorCliente() {
           </table>
         </div>
         {hayTirSinDato && <p className="text-sm">{NOTA_TIR}</p>}
+        <p className="text-sm text-muted">
+          «—» en Pone, Múltiplo o TIR: no aplica. El procomún y NetX no ponen capital
+          {haySinCapital ? "; una clase con 0 % del capital tampoco puso nada, así que no hay qué dividir" : ""}.
+        </p>
 
         <Donut
           titulo="Cómo se reparte lo que paga la serie"
