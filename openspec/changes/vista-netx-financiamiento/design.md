@@ -47,6 +47,8 @@ components/barras-reparto.tsx  gráfico de barras horizontales con tabla equival
 - Lista en este cambio: Resumen `/netx`, Simulador `/netx/simulador`, Comunidad y embudo `/netx/comunidad`. Es un arreglo exportado (`PESTANAS_NETX`) para que el cambio 2 sume "Modelo de financiamiento" `/netx/financiamiento` en segundo lugar sin tocar el componente.
 - No se usa el patrón ARIA `tablist`: son navegaciones entre páginas, no paneles en la misma página.
 - `metadata.title` por página: "Vista NetX · Resumen", "Simulador de la tokenomics", "Vista NetX · Comunidad y embudo".
+<!-- arquitecto: límite conocido del control de acceso -->
+- **Límite conocido del control de acceso.** `SoloSuperAdmin` es un componente de cliente: oculta el contenido, pero lo que renderiza el servidor (los números del Resumen) viaja igual en la respuesta de la página. Es el mismo patrón que `/netx` tiene hoy y alcanza para el prototipo porque estas pestañas solo muestran números de ejemplo de NS_Tokenomics, sin datos personales. Regla para este cambio y el siguiente: **ninguna pestaña de `/netx` lee datos de personas desde el servidor de la página**; lo que sea de personas sigue pasando por `/api/*`, que verifica el rol en el servidor (como `/api/personas`). Si alguna pestaña necesita datos reales o sensibles, el control pasa al servidor (layout que lee la sesión y responde "No tenés acceso" sin renderizar los hijos) con otro cambio.
 
 ## 3. Comunidad y embudo
 
@@ -57,7 +59,7 @@ components/barras-reparto.tsx  gráfico de barras horizontales con tabla equival
 
 ## 4. Simulador
 
-- Mover `app/fogon/simulador/page.tsx` y `simulador-cliente.tsx` a `app/netx/simulador/` (`git mv`). En la página: quitar "← Fogón", el aviso "Prototipo interno · datos de ejemplo" (lo pone el layout) y el rótulo "Fogón de decisiones"; poner el rótulo "Vista NetX". Se queda el aviso `TERMINOS.avisosimulador`, el h1 y todo el cliente igual.
+- Mover `app/fogon/simulador/page.tsx` y `simulador-cliente.tsx` a `app/netx/simulador/` (`git mv`). En la página: quitar "← Fogón", el aviso "Prototipo interno · datos de ejemplo" (lo pone el layout) y el rótulo "Fogón de decisiones"; poner el rótulo "Vista NetX" y el enlace "← Vista NetX" a `/netx` (lo pide el delta de `fogon-simulador`). <!-- arquitecto: alinear con el delta de fogon-simulador, que exige "← Vista NetX" --> Se queda el aviso `TERMINOS.avisosimulador`, el h1 y todo el cliente igual.
 - `app/fogon/page.tsx`: borrar el bloque "Simulador de la tokenomics".
 - `app/fogon/simulador/page.tsx` nuevo: `import { redirect } from "next/navigation"; export default function () { redirect("/netx/simulador"); }`.
 - El rail marca "NetX" solo (`esActivo("/netx", "/netx/simulador")`).
@@ -149,7 +151,8 @@ De arriba hacia abajo, con tokens del tema y `CARTA = "rounded-xl border border-
 
 1. Rótulo "Vista NetX · para Franz y Vagner", h1 "¿Cómo se financia NetX sin vender lotes?".
 2. Aviso `TERMINOS.avisosimulador.texto` (estilo de aviso, `bg-warn-bg text-warn-ink`).
-3. Respuesta corta (doc 30, "In one breath", en castellano): "NetX es la empresa que diseña, gestiona y opera la plataforma. Cobra por su trabajo, no por vender tierra: la tierra es de la Fundación ⚖ y la plata de los proyectos entra por series ⚖ del programa de fideicomisos."
+3. Respuesta corta (doc 30, "In one breath", en castellano): "NetX es la empresa que diseña, gestiona y opera la plataforma. Cobra por su trabajo, no por vender tierra: en el diseño B la tierra queda en una Fundación ⚖ y la plata de los proyectos entra por series ⚖ del programa de fideicomisos." <!-- arquitecto: la Fundación todavía no existe ni recibió la tierra; se dice "en el diseño B" para no presentarlo como hecho ante Franz -->
+
 4. **Tres bolsillos** (`grid md:grid-cols-3`, cada uno `section` con `h2`):
    - "NetX · la empresa": lista con "Ahora · SAFE de la empresa ⚖(`safe`): USD 375.000 a 500.000 (meta) · a confirmar con Vagner"; "Ahora · contrato de diseño con BioPueblo: sin dato (a cotizar)"; "2027–2028 · comisión de desarrollo: 3 a 5 % del capex, una vez (agrovoltaica: USD 120.000 a 200.000)"; "Por año · comisión de gestión: USD 8.550 (viñedo) · USD 40.000 (agrovoltaica)"; "Membresías y Plan Tribu: USD 1.336 por mes al mes 36 (escenario base)" + marca del Congreso.
    - "Procomún · Fundación": "Viñedo: USD 306.970 en 15 años"; "Agrovoltaica: USD 1.357.031 en 20 años" ("canon, regalía y excedente sobre el tope; cobra antes que cualquier inversor"); "Pase Fundador ⚖(`pasefundador`): USD 49.500 · 96.000 · 171.000 (bajo · base · bueno) — va al procomún, no a NetX; el escenario bajo no llega al mínimo de USD 75.000" + marca del Congreso.
@@ -173,7 +176,8 @@ Formato: `usd`, `pct` y `multiplo` de `lib/series/formato.ts` ("USD 306.970", "9
 ## 8. Catálogo legal
 
 Un término nuevo, con `borrador: true` y el comentario "Texto nuevo, no viene del mock-up":
-- `ordenanza173` · "Ordenanza 173/2026 de Mainqué": "Hasta que el municipio apruebe un loteo, nadie puede ofrecer, publicitar, reservar ni dar prioridad sobre esos lotes. Por eso NetX no se financia vendiendo lotes: no puede, y en el diseño B la tierra del Lighthouse es de la Fundación."
+- `ordenanza173` · "Ordenanza 173/2026 de Mainqué": "Hasta que el municipio apruebe un loteo, nadie puede ofrecer, vender, reservar ni dar prioridad sobre esos lotes. Por eso NetX no se financia vendiendo lotes: no puede, y en el diseño B la tierra del Lighthouse queda en una Fundación que no la vende." <!-- arquitecto: "publicitar" no está en la fuente (doc 22 fila 9, doc 30 §3: "no sales, reservations or priority"); la Fundación es propuesta del diseño B -->
+
 
 Se reusan `safe`, `pasefundador` y los del diseño B que trae `fogon-simulador-parametros`. "Fundación" usa `serieprograma`/texto: si hace falta un ⚖ propio para la Fundación, queda para el cambio 2.
 
@@ -191,4 +195,6 @@ Se reusan `safe`, `pasefundador` y los del diseño B que trae `fogon-simulador-p
 - **Dependencia de un PR sin integrar** (#107). Mitigación: el implementador verifica `lib/series` en `dev` y frena si falta.
 - **Números del Congreso cancelado.** El modelo de la plataforma y el Pase arrancan en el encuentro de febrero 2027. Mitigación: marca visible en cada uno; re-correr el modelo es trabajo de NS_Tokenomics (I-15), no de este cambio.
 - **Monte Carlo copiado.** Si se re-corre en NS_Tokenomics, la tabla queda vieja. Mitigación: versión a la vista y la regla de ADR-010/ADR-014 (un cambio del `.py` = un cambio OpenSpec).
+<!-- arquitecto: orden de archivo -->
+- **Orden de archivo.** El delta de `fogon-simulador` quita el requisito "Acceso desde el Fogón", que crea `fogon-simulador-parametros` y todavía no está archivado: este cambio se archiva **después** de ese (si no, `openspec archive` lo rechaza).
 - **Mover operaciones a `/netx/comunidad`** rompe e2e que abren `/netx` para probar la bandeja o las postulaciones. Mitigación: tarea explícita para actualizar esas rutas; la prueba de "sin acceso" sigue en `/netx`.

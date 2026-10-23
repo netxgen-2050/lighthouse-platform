@@ -51,7 +51,7 @@ Cada ítem de `relato.ts` lleva `fuente: string` ("NS_Tokenomics doc 30 §2"). L
 | Bolsillo | Qué es | Su plata | ¿NetX puede tomar de ahí? |
 |---|---|---|---|
 | NetX Gen (holding + SAS) | La empresa | SAFE, comisiones, contratos, licencias | — (es NetX) |
-| Fundación (procomún) | Dueña de la tierra; Fondo del Procomún | Canon, regalía, excedente, subsidios, RAIZ | No: nunca un porcentaje; solo una tarifa fija y pública si contrata la plataforma |
+| Fundación (procomún) | En el diseño B, dueña de la tierra (todavía no existe); Fondo del Procomún | Canon, regalía, excedente, subsidios, RAIZ | No: nunca un porcentaje; solo una tarifa fija y pública si contrata la plataforma |
 | Series (proyectos) | El fideicomiso de cada proyecto | Plata de inversores e ingresos del proyecto | Solo las comisiones del contrato del fideicomiso, aprobadas por sus inversores |
 | BioPueblo | Dueña de las otras ~9.000 ha | Sus ventas de lotes | Solo por contratos (diseño, regeneración); nunca comisión por venta sin matrícula de corredor |
 
@@ -118,7 +118,8 @@ Los valores numéricos se arman desde las constantes existentes (`fuentes.ts`, `
 ## 6. Catálogo legal (borrador, "Texto nuevo, no viene del mock-up")
 
 - `seriemadre` · "Serie Madre": "Una serie que no tiene un proyecto propio: invierte en todas las demás. Quien entra ahí tiene un pedacito de todos los proyectos, con menos riesgo que en uno solo. Es donde terminan el SAFU y, más adelante, los tokens."
-- `fundaciontierra` · "Fundación de la tierra": "La dueña de la tierra del Lighthouse. Su estatuto le prohíbe venderla, hipotecarla o darla en garantía; cobra un canon y una regalía de cada serie antes que cualquier inversor y con eso paga el procomún. NetX no puede tomar un porcentaje de su plata."
+- `fundaciontierra` · "Fundación de la tierra": "En el diseño B, la entidad que queda como dueña de la tierra del Lighthouse. Todavía no existe: se crea si se acepta el diseño y el dueño actual le pasa la tierra. Su estatuto le prohibiría venderla, hipotecarla o darla en garantía (cómo hacer que eso valga frente a terceros está a verificar con abogado). Cobra un canon y una regalía de cada serie antes que cualquier inversor y con eso paga el procomún. NetX no puede tomar un porcentaje de su plata." <!-- arquitecto: la Fundación es propuesta (doc 25, doc 27); doc 17 y doc 06 L40 marcan que la prohibición de vender/hipotecar hay que hacerla oponible [verify] -->
+
 
 ## 7. Tolerancias
 

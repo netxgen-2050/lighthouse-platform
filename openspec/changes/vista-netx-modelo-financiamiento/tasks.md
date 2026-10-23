@@ -4,7 +4,7 @@ Rama `agente/vista-netx-modelo-financiamiento` desde `dev`. Textos en español c
 
 ## 0. Antes de empezar
 
-- [ ] 0.1 Confirmar que `vista-netx-financiamiento` está en `dev`: existen `lib/financiamiento/resumen.ts`, `lib/financiamiento/riesgo.ts`, `app/netx/pestanas.tsx` con `PESTANAS_NETX` y la entrada `ordenanza173` en `lib/legal/terminos.ts`. Si falta cualquiera, **frenar y reportar**. Verificar con `ls lib/financiamiento app/netx` y `grep -n "ordenanza173" lib/legal/terminos.ts`.
+- [ ] 0.1 Confirmar que `vista-netx-financiamiento` está en `dev`: existen `lib/financiamiento/resumen.ts`, `lib/financiamiento/riesgo.ts`, `app/netx/pestanas.tsx` con `PESTANAS_NETX` y la entrada `ordenanza173` en `lib/legal/terminos.ts`. Si falta cualquiera, **frenar y reportar**. Verificar con `ls lib/financiamiento app/netx` y `grep -n "ordenanza173" lib/legal/terminos.ts`. También existe `convertirSafu` en `lib/series` (`grep -rn "export function convertirSafu" lib/series`). <!-- arquitecto: §3.5 usa convertirSafu, que llega por fogon-simulador-parametros -->
 
 ## 1. Números y relato
 
