@@ -15,6 +15,7 @@ describe("catálogo legal", () => {
         "adhesion",
         "adherente",
         "agencia",
+        "avisosimulador",
         "bitacora",
         "art32",
         "art35",
@@ -39,6 +40,7 @@ describe("catálogo legal", () => {
         "licencia",
         "loteo",
         "membresia",
+        "notasverdes",
         "obra",
         "pacto",
         "pase",
@@ -47,16 +49,35 @@ describe("catálogo legal", () => {
         "personeria",
         "plantribu",
         "presencia",
+        "primeraperdida",
         "remoto",
         "ribera",
         "ritual",
         "ronda0",
         "safe",
+        "safu",
         "semillas",
+        "serieprograma",
         "sumarte",
         "ticket",
         "transferencia",
+        "unidadesregeneracion",
       ].sort(),
+    );
+  });
+  it("los términos del simulador de series son borrador", () => {
+    for (const clave of [
+      "avisosimulador",
+      "unidadesregeneracion",
+      "notasverdes",
+      "primeraperdida",
+      "safu",
+      "serieprograma",
+    ] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+    }
+    expect(TERMINOS.avisosimulador.texto).toBe(
+      "Prototipo interno · valores de partida, no son una oferta ni un pronóstico · el diseño legal no lo revisó un abogado",
     );
   });
   it("encuentroeducativo es borrador", () => {
