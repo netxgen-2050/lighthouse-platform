@@ -3,6 +3,7 @@
 - **Estado:** Propuesta
 - **Fecha:** 2026-10-14
 - **Cambio OpenSpec relacionado:** congreso-bilingue
+- **Nota 23-oct-2026:** el Congreso de febrero 2027 se canceló. La decisión no cambia (los diccionarios propios siguen como base de ADR-004); queda pendiente si `/congreso/en` se reutiliza o se retira.
 
 ## Contexto
 Gus pidió la página del Congreso en inglés para inversores del exterior, sin traducir el resto de la plataforma. La página de los organizadores va a enlazar a la versión en inglés: esa dirección, una vez publicada, cuesta cambiarla (romperíamos enlaces impresos, mails y la página oficial). Además, elegir ahora cómo se guardan los textos condiciona cómo se traduce la plataforma entera el día que se decida.

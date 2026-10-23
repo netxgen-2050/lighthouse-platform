@@ -18,6 +18,13 @@
 
 ### 1. Tablas (una migración nueva)
 
+> **Enmienda 2026-10-23 (gobernanza fractal; `fogon-limpieza` y `fogon-gobernanza-fractal`).** Manda sobre lo que dice la tabla de abajo para `consultas.ambito`:
+> - El enum `ambito` pasa a `equipo`, `circulo`, `tribu`, `comun`, `consejo` (sale `asamblea`: la asamblea de residentes ya no está en el Fogón).
+> - Columna nueva `ambito_ref text` nula: el id del círculo o de la tribu (`circulo` y `tribu` la exigen; `equipo`, `comun` y `consejo` la dejan nula). `check ((ambito in ('circulo','tribu')) = (ambito_ref is not null))`. Es texto y no foránea porque tribus y círculos todavía no están en la base (`datos-en-la-nube`).
+> - El trigger que fija las reglas con envíos también fija `ambito_ref`.
+> - `crearConsulta` sigue aceptando **solo** `equipo` (nadie crea todavía consultas de círculo, tribu, común o consejo); la base acepta los cinco valores para no tener que migrar el enum después.
+> - En el código, `AmbitoConsulta` y `ETIQUETA_AMBITO` (`lib/fogon/consultas/tipos.ts`) siguen el mismo enum, con las etiquetas "Equipo", "Círculo", "Tribu", "Lighthouse (el común)" y "Consejo".
+
 | Tabla | Columnas | Garantías |
 |---|---|---|
 | `consultas` | `id uuid`, `slug text unique` (para la URL), `titulo`, `descripcion` nula, `modo` enum (`prioridades`, `presupuesto`), `ambito` enum (`equipo`, `tribu`, `asamblea`), `estado` enum (`abierta`, `cerrada`) default `abierta`, `cierre_at timestamptz not null`, `cerrada_at` nula, `cerrada_por → personas` nula, `creditos int not null default 100`, `votos_en_contra bool not null default false`, `resultado_visible` enum (`al-votar`, `al-cierre`) default `al-cierre`, `voto` enum (`abierto`, `secreto`) `not null` default `abierto` (ADR-007; hoy solo hay consultas de Equipo, cuyo defecto es abierto), `monto_centavos bigint` nulo, `moneda` enum (`USD`, `ARS`) nula, `monto_nota text` nula (por ejemplo "Sugerencia del equipo: lo decide Franz"), `creada_por → personas not null`, `creada_at` | `check (creditos = 100)` (regla 6); `check ((estado = 'cerrada') = (cerrada_at is not null))`; `check ((modo = 'presupuesto') = (moneda is not null))`; `check (modo = 'presupuesto' or (monto_centavos is null and monto_nota is null))`; `check (monto_centavos is null or monto_centavos >= 0)` |

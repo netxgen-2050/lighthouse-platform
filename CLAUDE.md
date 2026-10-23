@@ -1,6 +1,6 @@
 # CLAUDE.md — lighthouse-platform
 
-Plataforma de NetX para el Lighthouse (Soluna, BioPueblo): descubrir el territorio, encontrar tribu, pactos, semillas y el Congreso de febrero 2027. La documentación de producto, legal y de negocio vive en el repo `NS_platform` (carpeta `Documentation/`). Este repo es **solo código**.
+Plataforma de NetX para el Lighthouse (Soluna, BioPueblo): descubrir el territorio, encontrar tribu, pactos y semillas. **El Congreso de febrero 2027 se canceló (23-oct-2026):** la salida al mercado son eventos de comunidad (`NS_platform`, nota 20); `/congreso` queda como vitrina a reutilizar o retirar. La documentación de producto, legal y de negocio vive en el repo `NS_platform` (carpeta `Documentation/`). Este repo es **solo código**.
 
 ## Quién hace qué
 - **Gus (humano)** aprueba specs, prioriza, lee los reportes cada mañana y decide qué entra a `dev` y cuándo `dev` pasa a `main` (ver "Ramas").
