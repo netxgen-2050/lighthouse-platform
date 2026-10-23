@@ -1,3 +1,6 @@
+import { formatearNumero, sinDato } from "@/lib/idioma/formatos";
+import { comunes } from "@/lib/idioma/textos/comunes";
+import { esIdioma, type Idioma } from "@/lib/idioma/tipos";
 import { USD_ARS } from "@/lib/pactos/datos";
 
 /** Preferencias de la persona. Prototipo interno: se guardan solo en este navegador (sin cuentas). */
@@ -32,8 +35,11 @@ export type Preferencias = {
   avisos: Record<TipoAviso, boolean>;
   mostrarHifa: boolean;
   moneda: Moneda;
-  /** Por ahora solo español; el inglés llega más adelante. */
-  idioma: "es";
+  /**
+   * Idioma que la persona eligió ("es" o "en"); null = no eligió (se usa el del navegador). El campo viejo `idioma: "es"`
+   * se ignora al leer: nunca fue una elección.
+   */
+  idiomaElegido: Idioma | null;
 };
 
 export const PREFERENCIAS_INICIALES: Preferencias = {
@@ -43,7 +49,7 @@ export const PREFERENCIAS_INICIALES: Preferencias = {
   avisos: { comunidades: true, pactos: true, rondas: true, mercado: true, postulaciones: true },
   mostrarHifa: true,
   moneda: "USD",
-  idioma: "es",
+  idiomaElegido: null,
 };
 
 /** Lee lo guardado; cada campo roto o ausente vuelve a su valor inicial. */
@@ -66,7 +72,7 @@ export function leerPreferencias(crudo: string | null): Preferencias {
       avisos,
       mostrarHifa: typeof r.mostrarHifa === "boolean" ? r.mostrarHifa : base.mostrarHifa,
       moneda: r.moneda === "USD" || r.moneda === "ARS" ? r.moneda : base.moneda,
-      idioma: "es",
+      idiomaElegido: esIdioma(r.idiomaElegido) ? r.idiomaElegido : null,
     };
   } catch {
     return base;
@@ -81,16 +87,18 @@ export function tiposOcultos(p: Preferencias): string[] {
 /** Tipo de cambio de ejemplo (el mismo valor de referencia de Pactos). No es una cotización real. */
 export const TIPO_DE_CAMBIO = USD_ARS;
 
-export const NOTA_TIPO_DE_CAMBIO = `Tipo de cambio de ejemplo: 1 USD = ${String(TIPO_DE_CAMBIO).replace(/\B(?=(\d{3})+(?!\d))/g, ".")} ARS. No es una cotización real.`;
-
-function conMiles(n: number): string {
-  return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+/** Nota del tipo de cambio de ejemplo en el idioma pedido. */
+export function notaTipoDeCambio(idioma: Idioma = "es"): string {
+  return comunes[idioma].notaTipoDeCambio(formatearNumero(TIPO_DE_CAMBIO, idioma));
 }
 
+/** La misma nota en español (el idioma por defecto). Las páginas traducidas usan `notaTipoDeCambio(idioma)`. */
+export const NOTA_TIPO_DE_CAMBIO = notaTipoDeCambio("es");
+
 /** Monto en la moneda de referencia elegida. Parte siempre de dólares. Sin dato no se inventa un valor. */
-export function formatearMonto(usd: number | null | undefined, moneda: Moneda): string {
-  if (usd == null || Number.isNaN(usd)) return "sin dato";
-  return moneda === "ARS" ? `ARS ${conMiles(usd * TIPO_DE_CAMBIO)}` : `USD ${conMiles(usd)}`;
+export function formatearMonto(usd: number | null | undefined, moneda: Moneda, idioma: Idioma = "es"): string {
+  if (usd == null || Number.isNaN(usd)) return sinDato(idioma);
+  return moneda === "ARS" ? `ARS ${formatearNumero(usd * TIPO_DE_CAMBIO, idioma)}` : `USD ${formatearNumero(usd, idioma)}`;
 }
 
 /** Atributos que se ponen en <html> para aplicar la apariencia (los lee `app/globals.css`). */

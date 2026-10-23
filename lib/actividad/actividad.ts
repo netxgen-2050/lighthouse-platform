@@ -1,3 +1,6 @@
+import { marco } from "@/lib/idioma/textos/marco";
+import type { Idioma } from "@/lib/idioma/tipos";
+
 export type EventoActividad = {
   id: string;
   /** Qué clase de cosa pasó; sirve para no repetir el mismo aviso. */
@@ -122,7 +125,8 @@ export function marcarTodasLeidas(lista: EventoActividad[], ahora: Date): Evento
 }
 
 /** Texto accesible de la campanita. */
-export function nombreCampanita(noLeidas: number): string {
-  if (noLeidas === 0) return "Notificaciones, sin novedades";
-  return noLeidas === 1 ? "1 notificación sin leer" : `${noLeidas} notificaciones sin leer`;
+export function nombreCampanita(noLeidas: number, idioma: Idioma = "es"): string {
+  const t = marco[idioma].campanita;
+  if (noLeidas === 0) return t.sinNovedades;
+  return noLeidas === 1 ? t.una : t.varias(noLeidas);
 }

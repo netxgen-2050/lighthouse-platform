@@ -19,11 +19,31 @@ test("/configuracion tiene todas las secciones y un único main", async ({ page 
   await expect(page.getByRole("link", { name: "Ver la Bitácora" })).toHaveAttribute("href", "/panel/bitacora");
 });
 
-test("idioma: español elegido e inglés deshabilitado como próximamente", async ({ page }) => {
+test("idioma: Español e English están habilitados y English pasa el marco a inglés", async ({ page }) => {
   await page.goto("/configuracion");
   await expect(page.getByRole("radio", { name: "Español" })).toBeChecked();
-  await expect(page.getByRole("radio", { name: /English/ })).toBeDisabled();
-  await expect(page.getByText("próximamente")).toBeVisible();
+  await expect(page.getByRole("radio", { name: "English" })).toBeEnabled();
+  await expect(page.getByText("próximamente")).toHaveCount(0);
+  await page.getByRole("radio", { name: "English" }).check();
+  await expect(html(page)).toHaveAttribute("lang", "en");
+  await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Home" })).toBeVisible();
+  // Es la misma preferencia que el selector de la barra superior.
+  await expect(page.getByRole("banner").getByRole("link", { name: "EN · English" })).toHaveAttribute("aria-current", "true");
+  await expect(page.getByRole("radio", { name: "English" })).toBeChecked();
+  await page.getByRole("radio", { name: "Español" }).check();
+  await expect(html(page)).toHaveAttribute("lang", "es");
+  await expect(page.getByRole("navigation", { name: "Principal" })).toBeVisible();
+});
+
+test("borrar todo borra la preferencia de idioma de la persona pero la pantalla sigue en el idioma del navegador", async ({ page }) => {
+  await page.goto("/configuracion");
+  await page.getByRole("radio", { name: "English" }).check();
+  await expect(html(page)).toHaveAttribute("lang", "en");
+  await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-configuracion"))).toContain('"idiomaElegido":"en"');
+  page.once("dialog", (d) => void d.accept());
+  await page.getByRole("button", { name: "Borrar todo lo guardado en este navegador" }).click();
+  await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-configuracion"))).toBeNull();
+  await expect(html(page)).toHaveAttribute("lang", "en");
 });
 
 test("tema oscuro: toda la app cambia a la paleta oscura y sigue así al recargar y en otras páginas", async ({ page }) => {

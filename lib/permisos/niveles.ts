@@ -1,3 +1,5 @@
+import { marco } from "@/lib/idioma/textos/marco";
+import type { Idioma } from "@/lib/idioma/tipos";
 import { esPublica } from "@/lib/sesion/rutas-publicas";
 
 /**
@@ -9,13 +11,27 @@ import { esPublica } from "@/lib/sesion/rutas-publicas";
 export const NIVELES = ["sin-cuenta", "explorador", "miembro", "fundador", "lider", "superadmin"] as const;
 export type Nivel = (typeof NIVELES)[number];
 
+const CLAVE_NIVEL = {
+  "sin-cuenta": "sinCuenta",
+  explorador: "explorador",
+  miembro: "miembro",
+  fundador: "fundador",
+  lider: "lider",
+  superadmin: "superadmin",
+} as const satisfies Record<Nivel, keyof typeof marco.es.niveles>;
+
+/** El nombre de un nivel en un idioma (del diccionario del marco, que toma los términos del glosario). */
+export function etiquetaDeNivel(nivel: Nivel, idioma: Idioma = "es"): string {
+  return marco[idioma].niveles[CLAVE_NIVEL[nivel]];
+}
+
 export const ETIQUETA_NIVEL: Record<Nivel, string> = {
-  "sin-cuenta": "Sin cuenta",
-  explorador: "Explorador",
-  miembro: "Miembro",
-  fundador: "Fundador",
-  lider: "Líder de tribu",
-  superadmin: "Super admin",
+  "sin-cuenta": etiquetaDeNivel("sin-cuenta"),
+  explorador: etiquetaDeNivel("explorador"),
+  miembro: etiquetaDeNivel("miembro"),
+  fundador: etiquetaDeNivel("fundador"),
+  lider: etiquetaDeNivel("lider"),
+  superadmin: etiquetaDeNivel("superadmin"),
 };
 
 /** Lo que una persona puede hacer en la plataforma. */
@@ -126,8 +142,9 @@ export function nivelDeParametro(valor: string | null | undefined): Nivel | null
 }
 
 /** Ayuda corta de un destino deshabilitado en el rail. */
-export function ayudaDeRuta(ruta: string): string {
-  return nivelMinimoDeRuta(ruta) === "explorador" ? "Sumate gratis para usar esto" : "Sumate para participar";
+export function ayudaDeRuta(ruta: string, idioma: Idioma = "es"): string {
+  const t = marco[idioma].rail;
+  return nivelMinimoDeRuta(ruta) === "explorador" ? t.ayudaExplorador : t.ayudaMiembro;
 }
 
 /** Solo rutas internas ("/algo"): evita volver a una dirección externa o con barras dobles. */

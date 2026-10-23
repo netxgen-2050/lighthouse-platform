@@ -79,6 +79,9 @@ describe("campanita", () => {
     expect(nombreCampanita(2)).toBe("2 notificaciones sin leer");
     expect(nombreCampanita(1)).toBe("1 notificación sin leer");
     expect(nombreCampanita(0)).toBe("Notificaciones, sin novedades");
+    expect(nombreCampanita(0, "en")).toBe("Notifications, nothing new");
+    expect(nombreCampanita(1, "en")).toBe("1 unread notification");
+    expect(nombreCampanita(3, "en")).toBe("3 unread notifications");
   });
 });
 

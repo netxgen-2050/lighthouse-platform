@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Lock } from "lucide-react";
 import type { ReactNode } from "react";
+import { useIdioma } from "@/lib/idioma/cliente";
 import { ayudaDeRuta, puedeRuta } from "@/lib/permisos/niveles";
 import { esActivo } from "@/lib/ruta-activa";
 import { useSesion } from "./sesion/contexto";
@@ -16,6 +17,8 @@ export type ItemRail = {
   destacado?: boolean;
   /** Marca corta debajo de la etiqueta (NetX: "Interno"). */
   marca?: string;
+  /** Nombre propio o marca que el traductor automático del navegador no debe cambiar (Semillas). */
+  sinTraducir?: boolean;
 };
 
 export type GrupoRail = {
@@ -34,6 +37,7 @@ const CLASE_PASTILLA =
 export function RailEnlaces({ grupos }: { grupos: GrupoRail[] }) {
   const ruta = usePathname();
   const { estado, nivel, nivelListo } = useSesion();
+  const idioma = useIdioma();
   // Mientras se verifica la sesión (o se lee el nivel) no se muestran destinos deshabilitados: la mayoría de las veces hay sesión guardada.
   const verificando = estado === "cargando" || (estado === "ok" && !nivelListo);
   const nivelActual = estado === "ok" ? nivel : "sin-cuenta";
@@ -62,14 +66,16 @@ export function RailEnlaces({ grupos }: { grupos: GrupoRail[] }) {
                       <span className="flex h-7 w-11 items-center justify-center rounded-full sm:w-12">
                         <Lock aria-hidden="true" size={18} />
                       </span>
-                      <span className="break-words">{e.etiqueta}</span>
+                      <span className="break-words" translate={e.sinTraducir ? "no" : undefined}>
+                        {e.etiqueta}
+                      </span>
                     </span>
                     <Link
                       href={`/sumarte?volver=${encodeURIComponent(e.href)}`}
                       className={`${CLASE_PASTILLA} mx-auto w-fit max-w-full text-center underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold`}
-                      aria-label={`${ayudaDeRuta(e.href)}: ${e.etiqueta}`}
+                      aria-label={`${ayudaDeRuta(e.href, idioma)}: ${e.etiqueta}`}
                     >
-                      {ayudaDeRuta(e.href)}
+                      {ayudaDeRuta(e.href, idioma)}
                     </Link>
                   </li>
                 );
@@ -88,7 +94,10 @@ export function RailEnlaces({ grupos }: { grupos: GrupoRail[] }) {
                     >
                       {e.icono}
                     </span>
-                    <span className={`break-words ${activo ? "font-bold underline underline-offset-2" : ""} ${e.destacado ? "font-bold" : ""}`}>
+                    <span
+                      translate={e.sinTraducir ? "no" : undefined}
+                      className={`break-words ${activo ? "font-bold underline underline-offset-2" : ""} ${e.destacado ? "font-bold" : ""}`}
+                    >
                       {e.etiqueta}
                     </span>
                     {e.marca && <span className={CLASE_PASTILLA}>{e.marca}</span>}
