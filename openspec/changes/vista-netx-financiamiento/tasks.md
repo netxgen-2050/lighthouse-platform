@@ -1,0 +1,36 @@
+# Tasks
+
+Rama `agente/vista-netx-financiamiento` desde `dev`. Textos en español con voseo. Sin dependencias nuevas, sin base de datos, sin pedidos de red. Todo lo que hace falta de NS_Tokenomics está copiado en `design.md`.
+
+## 0. Antes de empezar
+
+- [ ] 0.1 Confirmar que `fogon-simulador-parametros` está en `dev`: existen `lib/series/modelo.ts`, `lib/series/formato.ts`, `app/fogon/simulador/page.tsx` y la entrada `avisosimulador` en `lib/legal/terminos.ts`. Si falta cualquiera, **frenar y reportar** (no copiar la rama). Verificar con `ls lib/series app/fogon/simulador` y `grep -n "avisosimulador" lib/legal/terminos.ts`.
+
+## 1. Números del financiamiento
+
+- [ ] 1.1 Crear `lib/financiamiento/fuentes.ts` con `VERSIONES`, consumo, meta del SAFE, comisión de desarrollo y contrato de diseño `null`, cada uno con `fuente` y `aConfirmar` (design §5.1), y `SUPUESTO_CONGRESO` (§5.2). Test: cada constante tiene fuente; el contrato de diseño es `null`; las tres versiones son `v0.1` del `2026-10-17`. Verificar con `pnpm test lib/financiamiento`.
+- [ ] 1.2 Crear `lib/financiamiento/plataforma.ts` (`redondearComoPython`, `correrPlataforma`, `ESCENARIOS_PLATAFORMA`, `PASE_ESCENARIOS`, `recaudacionPase`) traduciendo `platform_revenue_sim.py` (design §5.2). Tests con las tolerancias de design §9: las nueve filas (meses 12, 24 y 36 de bajo, base y bueno) y los tres totales de `RESULTS_platform_revenue.md`, copiados en el test con comentario de fuente y versión; `redondearComoPython` de 0,5 → 0, 1,5 → 2, 2,5 → 2, 3,5 → 4, 2,4 → 2; Pase 49.500 / 96.000 / 171.000 con alcanza no / sí / sí; el Pase tiene destino "procomun". Verificar con `pnpm test lib/financiamiento`.
+- [ ] 1.3 Crear `lib/financiamiento/pista.ts` (`capitalNecesario`, `comisionDesarrollo`) y `usdMillones` (design §5.3 y §6). Tests: 31.000 al 1,5 % → 24.800.000; al 1 % → 37.200.000; tasa 0, negativa, `null` o `NaN` → `null`; capex 4.000.000 → 120.000 a 200.000; capex 0 o `NaN` → `null`; `usdMillones(24800000)` → "USD 24,8 M"; `null` → "sin dato". Verificar con `pnpm test lib/financiamiento`.
+- [ ] 1.4 Crear `lib/financiamiento/riesgo.ts` con `MONTE_CARLO` y `SUPUESTOS_MONTE_CARLO` (design §5.4) y su test con la tabla copiada por separado de `RESULTS_series_montecarlo.md` (doble entrada, ADR-014), P10 ≤ P50 ≤ P90 en cada fila y probabilidades en [0, 1]. Verificar con `pnpm test lib/financiamiento`.
+- [ ] 1.5 Crear `lib/financiamiento/resumen.ts` con `armarResumen()` (design §5.5). Tests: viñedo procomún 306.970, NetX 128.250 y 8.550 por año, Unidades 1.290.250 · 2,66x · 9,2 %, primera pérdida 153.981, Notas `null`; agrovoltaica procomún 1.357.031, NetX 800.000 y 40.000 por año, Notas 3.688.622 · 7,0 %, Unidades 3.402.456 · 2,84x · 10,3 %; comisión de desarrollo de la agrovoltaica 120.000 a 200.000; el Pase no suma a NetX; dos llamadas dan resultados iguales (`toEqual`). Test de fuente: `lib/financiamiento/` no importa `react`, `next` ni `@/app`. Verificar con `pnpm test lib/financiamiento`.
+
+## 2. Catálogo legal y gráfico
+
+- [ ] 2.1 Sumar `ordenanza173` a `lib/legal/terminos.ts` con el texto de design §8, `borrador: true` y el comentario de texto nuevo. Verificar con `pnpm test lib/legal` (`esBorrador("ordenanza173")` es `true`).
+- [ ] 2.2 Crear `components/barras-reparto.tsx` (design §7) y `components/barras-reparto.test.tsx`: un destino con `null` no dibuja barra y la tabla dice "no tiene"; los porcentajes de un grupo suman 100; el SVG tiene `aria-hidden`; el texto de cada barra incluye nombre, monto y porcentaje. Verificar con `pnpm test components` y `pnpm test lib/sin-colores-sueltos`.
+
+## 3. Pestañas, Comunidad y simulador
+
+- [ ] 3.1 Crear `app/netx/layout.tsx` (SoloSuperAdmin, "← Inicio", aviso de prototipo, `<Pestanas/>`) y `app/netx/pestanas.tsx` con `PESTANAS_NETX` y `aria-current="page"` por igualdad exacta de ruta (design §2). Verificar con `pnpm verificar` y con el e2e de 4.1.
+- [ ] 3.2 Mover el contenido actual de `app/netx/page.tsx` a `app/netx/comunidad/page.tsx` con h1 "Comunidad y embudo" y sin `SoloSuperAdmin` ni aviso propios (design §3); `bandeja-pedidos.tsx` y `postulaciones-comunidades.tsx` se mueven con `git mv` si hace falta. Actualizar a `/netx/comunidad` las rutas de `e2e/vista-netx.spec.ts`, `e2e/contactos.spec.ts`, `e2e/postulacion.spec.ts` y los dos casos de bandeja de `e2e/accesibilidad.spec.ts`; en `e2e/login.spec.ts` cambiar "¿Vamos a vender en febrero?" por "¿Cómo se financia NetX sin vender lotes?". Verificar con `pnpm test:e2e e2e/vista-netx.spec.ts e2e/contactos.spec.ts e2e/postulacion.spec.ts e2e/login.spec.ts`.
+- [ ] 3.3 `git mv` de `app/fogon/simulador/page.tsx` y `simulador-cliente.tsx` a `app/netx/simulador/`, ajustar el encabezado (design §4), quitar el bloque del simulador de `app/fogon/page.tsx`, crear `app/fogon/simulador/page.tsx` con `redirect("/netx/simulador")`. `git mv e2e/fogon-simulador.spec.ts e2e/netx-simulador.spec.ts` y cambiar sus rutas; reemplazar su caso (a) por: `/fogon` no tiene enlace al simulador; `/fogon/simulador` termina en `/netx/simulador`; el rail marca "NetX" y la pestaña "Simulador" tiene `aria-current="page"`; con rol "persona", `/fogon/simulador` muestra "No tenés acceso a esta vista". En `e2e/accesibilidad.spec.ts`, cambiar `/fogon/simulador` por `/netx/simulador`. Verificar con `pnpm test:e2e e2e/netx-simulador.spec.ts`.
+
+## 4. Resumen
+
+- [ ] 4.1 Escribir `app/netx/page.tsx` (Resumen) según design §6 con los datos de `armarResumen()` y `BarrasReparto`, y `e2e/vista-netx.spec.ts` con: h1 "¿Cómo se financia NetX sin vender lotes?" y un solo h1 y un solo `main`; ningún texto "¿Vamos a vender en febrero?" en `/netx`, `/netx/simulador` ni `/netx/comunidad`; las tres pestañas en orden y "Resumen" con `aria-current="page"`; Tab hasta "Simulador" + Enter abre `/netx/simulador`; aviso de valores de partida antes del primer "USD"; bloque NetX con "USD 375.000 a 500.000", "USD 8.550", "USD 40.000", "USD 120.000 a 200.000", "USD 1.336" y "sin dato (a cotizar)"; bloque procomún con "USD 306.970", "USD 1.357.031", "USD 49.500", "va al procomún, no a NetX" y la marca del Congreso; inversores con "2,66x", "9,2 %", "2,84x", "10,3 %" y "7,0 %"; "Ver como tabla" con "USD 800.000" en NetX de la agrovoltaica y "no tiene" en Notas Verdes del viñedo; rangos "−2,6 %", "10,8 %", "22 %"; "USD 24,8 M" y "USD 37,2 M"; el ⚖ de la Ordenanza 173 se abre con teclado; "a confirmar con Vagner" visible; fuentes con "v0.1"; a 390 px `document.documentElement.scrollWidth <= 390`; ningún pedido a `/api/` salvo los que ya hace el layout. Verificar con `pnpm test:e2e e2e/vista-netx.spec.ts`.
+- [ ] 4.2 Sumar `/netx/comunidad` y `/netx` con "Ver como tabla" abierto a `e2e/accesibilidad.spec.ts` (`/netx` ya está). Verificar con `pnpm test:e2e e2e/accesibilidad.spec.ts`.
+
+## 5. Decisión e integración
+
+- [ ] 5.1 Revisar que `docs/decisiones/` en `dev` no tenga otro ADR-014 ni otro ADR-010 que choque; si choca, renumerar el de este cambio al siguiente libre (archivo, README y menciones en `design.md`). Verificar con `ls docs/decisiones` (un archivo por número).
+- [ ] 5.2 `pnpm verificar` y `pnpm build` en verde; PR contra `dev` con `scripts/pr.sh`, capturas de las tres pestañas (escritorio y 390 px) y un guion para la reunión con Franz y Vagner en palabras simples. Verificar con los dos comandos y con el PR creado.
