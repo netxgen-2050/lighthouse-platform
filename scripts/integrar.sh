@@ -5,10 +5,10 @@
 # Uso:
 #   scripts/integrar.sh <n> [<n>…]            integra los PRs en dev, en ese orden
 #   scripts/integrar.sh --a main <n> [<n>…]   integra en main (entrega o arreglo urgente)
-#   scripts/integrar.sh --probar <n> …        hace todo menos el push (para revisar antes)
+#   scripts/integrar.sh --probar <n> …        hace todo menos subir la rama y abrir el PR
 #
 # Pasos: copia aparte desde origin/<destino> → merge de cada PR → pnpm verificar, build y e2e
-# → push a <destino> → comentario y cierre de cada PR → espera el deploy de Vercel de ese commit.
+# → rama integracion/<fecha> y PR contra <destino> (dev y main solo aceptan PRs) → comentario en cada PR.
 # Si algo falla, frena antes del push y deja la copia en .carriles/integrar para mirar.
 set -euo pipefail
 
@@ -58,31 +58,22 @@ paso "Todo en verde: ${UNIT:-unitarios ok} · e2e ${E2E:-ok}"
 
 if [[ $PROBAR -eq 1 ]]; then paso "Modo --probar: no pusheo. La copia queda en $DIR."; exit 0; fi
 
-git fetch -q origin "$DESTINO"
-git merge-base --is-ancestor "origin/$DESTINO" HEAD || { echo "$DESTINO avanzó mientras tanto; volvé a correr." >&2; exit 1; }
-git push -q origin "HEAD:$DESTINO"
-SHA="$(git rev-parse HEAD)"; CORTO="$(git rev-parse --short HEAD)"
-paso "Subido a $DESTINO: $CORTO"
+# Desde el 23-oct, dev y main solo aceptan cambios por PR (regla de GitHub): la integración se sube
+# como rama propia y se abre un PR que mergea Gus.
+FECHA="$(date +%F-%H%M)"; RAMA_INT="integracion/$FECHA"
+git switch -q -c "$RAMA_INT"
+git push -q -u origin "$RAMA_INT"
+LISTA="$(printf '#%s, ' "${PRS[@]}")"; LISTA="${LISTA%, }"
+PR_INT="$(scripts/pr.sh crear "$DESTINO" "Integración en $DESTINO: $LISTA" "Integra en \`$DESTINO\` los PRs $LISTA con \`scripts/integrar.sh\`.
 
+**Verificación local:** \`pnpm verificar\` (${UNIT:-ok}), \`pnpm build\` y e2e (${E2E:-ok}) en verde.
+
+Al mergear este PR se pueden cerrar $LISTA.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)")"
+paso "PR de integración: $PR_INT"
 for n in "${PRS[@]}"; do
-  gh api "repos/$REPO/issues/$n/comments" -X POST \
-    -f body="Integrado en \`$DESTINO\` ($CORTO) con \`scripts/integrar.sh\`: verificar (${UNIT:-ok}), build y e2e local (${E2E:-ok})." -q .id >/dev/null
-  if [[ "$(gh api "repos/$REPO/pulls/$n" -q .state)" == "open" ]]; then
-    gh api "repos/$REPO/pulls/$n" -X PATCH -f state=closed -q .number >/dev/null
-  fi
+  gh api "repos/$REPO/issues/$n/comments" -X POST -f body="Incluido en el PR de integración ${PR_INT%% *} (verificado en local: ${UNIT:-ok}, e2e ${E2E:-ok})." -q .id >/dev/null
 done
-paso "PRs comentados y cerrados: ${PRS[*]}"
-
-paso "Esperando el deploy de Vercel de $CORTO"
-for ((i = 0; i < 60; i++)); do
-  for ID in $(gh api "repos/$REPO/deployments?sha=$SHA&per_page=10" -q '.[].id'); do
-    ESTADO="$(gh api "repos/$REPO/deployments/$ID/statuses?per_page=1" -q '.[0] | "\(.state) \(.environment_url // "")"')"
-    case "$ESTADO" in
-      success*) paso "Deploy listo: ${ESTADO#success }"; cd "$RAIZ"; git worktree remove --force "$DIR"; exit 0 ;;
-      failure*|error*) echo "El deploy de Vercel falló para $CORTO." >&2; exit 1 ;;
-    esac
-  done
-  sleep 15
-done
-echo "El deploy de $CORTO no terminó en 15 minutos; revisalo en Vercel." >&2
-exit 1
+cd "$RAIZ"; git worktree remove --force "$DIR"
+paso "Listo: falta que Gus mergee ${PR_INT%% *}."
