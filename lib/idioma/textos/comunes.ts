@@ -16,6 +16,10 @@ const es = {
   traducidoDelOriginal: "Traducido del inglés",
   /** Nombre accesible de la marca "ES" de un texto que todavía no tiene traducción. */
   soloEnEspanol: "(solo disponible en español)",
+  /** Estado de una tribu (lo usan Sumarte, tribus y territorio). */
+  estadoTribu: { activa: "Activa", formacion: "En formación", vacante: "Busca tribu" },
+  /** "3 de 10" en los medidores. */
+  de: "de",
 };
 
 const en: Textos<typeof es> = {
@@ -30,6 +34,8 @@ const en: Textos<typeof es> = {
   notaTipoDeCambio: (tipo: string) => `Sample exchange rate: 1 USD = ${tipo} ARS. This is not a real quote.`,
   traducidoDelOriginal: "Translated from Spanish",
   soloEnEspanol: "(only available in Spanish)",
+  estadoTribu: { activa: "Active", formacion: "Forming", vacante: "Looking for a tribe" },
+  de: "of",
 };
 
 export const comunes = { es, en };

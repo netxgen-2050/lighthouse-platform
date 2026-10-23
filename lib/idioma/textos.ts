@@ -3,8 +3,10 @@
 import type { Idioma, Textos } from "./tipos";
 import { comunes } from "./textos/comunes";
 import { marco } from "./textos/marco";
+import { portada } from "./textos/portada";
+import { sumarte } from "./textos/sumarte";
 
-export const DICCIONARIOS = { comunes, marco } as const;
+export const DICCIONARIOS = { comunes, marco, portada, sumarte } as const;
 
 export type Zona = keyof typeof DICCIONARIOS;
 

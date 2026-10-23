@@ -8,6 +8,9 @@ import type { Idioma } from "./tipos";
 export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   // El Congreso tiene su propia traducción y sus propias direcciones (ADR-003).
   /^\/congreso(\/en)?$/,
+  // Portada y Sumarte (idioma-portada-sumarte).
+  /^\/$/,
+  /^\/sumarte$/,
 ];
 
 function limpiar(ruta: string): string {

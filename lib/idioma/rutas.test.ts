@@ -9,8 +9,14 @@ describe("estaTraducida", () => {
     expect(estaTraducida("/congreso/")).toBe(true);
   });
 
+  test("la portada y Sumarte están traducidas", () => {
+    for (const ruta of ["/", "/?lang=en", "/sumarte", "/sumarte?volver=%2Fpactos", "/sumarte/"]) {
+      expect(estaTraducida(ruta), ruta).toBe(true);
+    }
+  });
+
   test("el resto todavía no", () => {
-    for (const ruta of ["/", "/tribus", "/sumarte", "/configuracion", "/congreso/fr", "/congresos"]) {
+    for (const ruta of ["/tribus", "/sumarte/otra", "/configuracion", "/congreso/fr", "/congresos"]) {
       expect(estaTraducida(ruta), ruta).toBe(false);
     }
     expect(estaTraducida(null)).toBe(false);
