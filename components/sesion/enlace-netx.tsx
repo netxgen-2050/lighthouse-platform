@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { useTextos } from "@/lib/idioma/cliente";
 import { useSesion } from "./contexto";
 
 /** El enlace a NetX de la barra superior: solo lo ve el super admin. */
 export function EnlaceNetx({ href, etiqueta, icono }: { href: string; etiqueta: string; icono: ReactNode }) {
   const { estado, sesion } = useSesion();
+  const t = useTextos("marco");
   if (estado !== "ok" || sesion?.rol !== "superadmin") return null;
   return (
     <Link
@@ -15,7 +17,7 @@ export function EnlaceNetx({ href, etiqueta, icono }: { href: string; etiqueta: 
     >
       {icono}
       {etiqueta}
-      <span className="rounded-full border border-muted px-1.5 text-[0.6875rem] leading-tight text-muted">Interno</span>
+      <span className="rounded-full border border-muted px-1.5 text-[0.6875rem] leading-tight text-muted">{t.barra.interno}</span>
     </Link>
   );
 }

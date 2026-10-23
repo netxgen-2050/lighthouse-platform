@@ -81,8 +81,9 @@ test("grano: barrio vacante", async ({ page }) => {
 });
 
 test("id desconocido: 404 con vuelta al listado", async ({ page }) => {
-  const r = await page.goto("/tribus/no-existe");
-  expect(r?.status()).toBe(404);
+  // Desde `idioma-base` las páginas se arman por pedido y el estado HTTP ya no es 404 (ver ADR-004): se comprueba la pantalla.
+  await page.goto("/tribus/no-existe");
+  await expect(page.getByRole("heading", { level: 1, name: "No encontramos esa página" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Volver a las tribus" })).toHaveAttribute("href", "/tribus");
 });
 

@@ -13,6 +13,8 @@ import {
   type Tema,
 } from "@/lib/configuracion/preferencias";
 import { borrarDemo } from "@/lib/demo/borrar";
+import { useCambiarIdioma, useIdiomaDePlataforma } from "@/lib/idioma/cliente";
+import type { Idioma } from "@/lib/idioma/tipos";
 
 const FOCO = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 const SECCION = "grid gap-3 rounded-xl border border-faint bg-surface p-4";
@@ -48,6 +50,15 @@ function Seccion({ id, titulo, children }: { id: string; titulo: string; childre
 
 export function ConfiguracionCliente() {
   const preferencias = usePreferencias();
+  const idiomaPlataforma = useIdiomaDePlataforma();
+  const cambiarIdiomaDePlataforma = useCambiarIdioma();
+  // La plataforma cambia de idioma cuando el servidor responde; hasta entonces el radio muestra lo recién elegido.
+  const [elegido, setElegido] = useState<{ valor: Idioma; desde: Idioma } | null>(null);
+  const idiomaMostrado = elegido && elegido.desde === idiomaPlataforma ? elegido.valor : idiomaPlataforma;
+  function cambiarIdioma(valor: Idioma) {
+    setElegido({ valor, desde: idiomaPlataforma });
+    cambiarIdiomaDePlataforma(valor);
+  }
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [mensaje, setMensaje] = useState({ n: 0, texto: "" });
 
@@ -187,16 +198,28 @@ export function ConfiguracionCliente() {
       <Seccion id="idioma" titulo="Idioma">
         <fieldset className="grid gap-1">
           <legend className="sr-only">Idioma de la plataforma</legend>
+          {/* Es la misma preferencia que el selector ES / EN de la barra superior. */}
           <label className={OPCION}>
-            <input type="radio" name="idioma" value="es" checked readOnly className={CONTROL} />
-            Español
+            <input
+              type="radio"
+              name="idioma"
+              value="es"
+              checked={idiomaMostrado === "es"}
+              onChange={() => cambiarIdioma("es")}
+              className={CONTROL}
+            />
+            <span lang="es">Español</span>
           </label>
-          <label className={`${OPCION} opacity-70`}>
-            <input type="radio" name="idioma" value="en" disabled className="mt-1 size-4" />
-            <span>
-              English
-              <span className="ml-2 rounded-full border border-faint px-2 text-xs text-muted">próximamente</span>
-            </span>
+          <label className={OPCION}>
+            <input
+              type="radio"
+              name="idioma"
+              value="en"
+              checked={idiomaMostrado === "en"}
+              onChange={() => cambiarIdioma("en")}
+              className={CONTROL}
+            />
+            <span lang="en">English</span>
           </label>
         </fieldset>
       </Seccion>

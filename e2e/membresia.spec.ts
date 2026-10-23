@@ -119,8 +119,9 @@ test("las tribus activas y en formación tienen manifiesto; las vacantes no ofre
     expect(r?.status(), id).toBe(200);
     await expect(page.getByRole("heading", { level: 1 }), id).toContainText("Manifiesto");
   }
-  const vacante = await page.goto("/tribus/grano/manifiesto");
-  expect(vacante?.status()).toBe(404);
+  // Desde `idioma-base` el estado HTTP ya no es 404 (ver ADR-004): se comprueba la pantalla de "no encontrado".
+  await page.goto("/tribus/grano/manifiesto");
+  await expect(page.getByRole("heading", { level: 1, name: "No encontramos esa página" })).toBeVisible();
   await page.goto("/tribus/grano");
   await expect(page.getByText(/manifiesto/i)).toHaveCount(0);
 });

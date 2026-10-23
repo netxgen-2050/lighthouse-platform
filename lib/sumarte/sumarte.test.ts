@@ -18,7 +18,10 @@ describe("datos", () => {
   });
   it("las filas de la tabla están en el mock-up", () => {
     expect(FILAS).toHaveLength(8);
-    for (const f of FILAS) expect(mock).toContain(`["${f.texto}",`);
+    for (const f of FILAS) expect(mock).toContain(`["${f.texto.es}",`);
+  });
+  it("todas las filas tienen su inglés", () => {
+    for (const f of FILAS) expect(f.texto.en?.trim(), f.texto.es).toBeTruthy();
   });
   it("formatea miles con punto", () => {
     expect(miles(46000)).toBe("46.000");

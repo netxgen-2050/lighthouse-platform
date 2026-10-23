@@ -208,7 +208,8 @@ test("(j) guardar el reparto no hace pedidos de red a /api/", async ({ page }) =
   expect(pedidos).toEqual([]);
 });
 
-test("una consulta que no existe da 404", async ({ page }) => {
-  const r = await page.goto("/fogon/consultas/no-existe");
-  expect(r?.status()).toBe(404);
+test("una consulta que no existe muestra la pantalla de no encontrado", async ({ page }) => {
+  // Desde `idioma-base` las páginas se arman por pedido y el estado HTTP ya no es 404 (ver ADR-004): se comprueba la pantalla.
+  await page.goto("/fogon/consultas/no-existe");
+  await expect(page.getByRole("heading", { level: 1, name: "No encontramos esa página" })).toBeVisible();
 });

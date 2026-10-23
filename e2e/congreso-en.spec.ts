@@ -2,6 +2,12 @@ import { expect, test, type Page } from "./fixtura";
 
 const leerLocal = (page: Page, clave: string) => page.evaluate((c) => window.localStorage.getItem(c), clave);
 
+/** El selector ES / EN de la barra del evento (la barra superior de la plataforma tiene otro igual). */
+const selectorEvento = (page: Page) => page.locator(".tema-evento").getByRole("group", { name: "Idioma · Language" });
+
+/** El idioma elegido en este navegador: la cookie `lh-idioma` de la plataforma (el selector del Congreso la escribe). */
+const cookieIdioma = async (page: Page) => (await page.context().cookies()).find((c) => c.name === "lh-idioma")?.value;
+
 /** Texto del contenedor en inglés sin lo que va en un descendiente `lang="es"` (el marco de NetX no se mira). */
 const textoEnIngles = (page: Page) =>
   page.evaluate(() => {
@@ -73,7 +79,7 @@ test("textos clave en inglés: precios, tribus, territorio y modo de origen", as
 
 test("el selector se usa con teclado, va y vuelve conservando #tribus", async ({ page }) => {
   await page.goto("/congreso/en#tribus");
-  const grupo = page.getByRole("group", { name: "Idioma · Language" });
+  const grupo = selectorEvento(page);
   await expect(grupo.getByRole("link", { name: "EN · English" })).toHaveAttribute("aria-current", "true");
   await expect(grupo.getByRole("link", { name: "ES · Español" })).not.toHaveAttribute("aria-current", "true");
   await expect(grupo.getByRole("link", { name: "ES · Español" })).toHaveAttribute("hreflang", "es");
@@ -90,16 +96,16 @@ test("el selector se usa con teclado, va y vuelve conservando #tribus", async ({
 
 test("el selector conserva la query (UTM) al cambiar de idioma", async ({ page }) => {
   await page.goto("/congreso/en?utm_source=pagina-oficial&utm_campaign=congreso-2027#entradas");
-  await page.getByRole("link", { name: "ES · Español" }).click();
+  await selectorEvento(page).getByRole("link", { name: "ES · Español" }).click();
   await expect(page).toHaveURL(/\/congreso\?utm_source=pagina-oficial&utm_campaign=congreso-2027#entradas$/);
 });
 
 test("la preferencia en inglés pasa /congreso a /congreso/en y volver a ES la deshace", async ({ page }) => {
   await page.goto("/congreso");
   await expect(page.locator(".tema-evento")).toHaveAttribute("lang", "es");
-  await page.getByRole("link", { name: "EN · English" }).click();
+  await selectorEvento(page).getByRole("link", { name: "EN · English" }).click();
   await expect(page).toHaveURL(/\/congreso\/en$/);
-  expect(await leerLocal(page, "lh-congreso-idioma")).toBe("en");
+  expect(await cookieIdioma(page)).toBe("en");
 
   await page.goto("/congreso?utm_source=x#tribus");
   await expect(page).toHaveURL(/\/congreso\/en\?utm_source=x#tribus$/);
@@ -109,15 +115,16 @@ test("la preferencia en inglés pasa /congreso a /congreso/en y volver a ES la d
   await page.goto("/congreso/en");
   await expect(page).toHaveURL(/\/congreso\/en$/);
 
-  await page.getByRole("link", { name: "ES · Español" }).click();
+  await selectorEvento(page).getByRole("link", { name: "ES · Español" }).click();
   await expect(page).toHaveURL(/\/congreso$/);
-  expect(await leerLocal(page, "lh-congreso-idioma")).toBe("es");
+  expect(await cookieIdioma(page)).toBe("es");
   await page.goto("/congreso");
   await expect(page.locator(".tema-evento")).toHaveAttribute("lang", "es");
   await expect(page).toHaveURL(/\/congreso$/);
 });
 
-test("un valor raro guardado como preferencia se ignora", async ({ page }) => {
+test("un valor raro guardado como preferencia se ignora", async ({ page, context, baseURL }) => {
+  await context.addCookies([{ name: "lh-idioma", value: "fr", url: baseURL! }]);
   await page.goto("/congreso");
   await page.evaluate(() => window.localStorage.setItem("lh-congreso-idioma", "fr"));
   await page.goto("/congreso");
@@ -230,10 +237,29 @@ test.describe("visitante sin cuenta", () => {
     expect(origen).toMatchObject({ fuente: "pagina-oficial", campana: "congreso-2027" });
   });
 
-  test("sin sesión la preferencia de idioma se guarda por navegador", async ({ page }) => {
+  test("sin sesión la preferencia de idioma se guarda por navegador (cookie de la plataforma)", async ({ page }) => {
     await page.goto("/congreso");
-    await page.getByRole("link", { name: "EN · English" }).click();
+    await selectorEvento(page).getByRole("link", { name: "EN · English" }).click();
     await expect(page).toHaveURL(/\/congreso\/en$/);
-    expect(await leerLocal(page, "lh-congreso-idioma")).toBe("en");
+    expect(await cookieIdioma(page)).toBe("en");
+  });
+
+  test("elegir inglés en el selector del Congreso pone el marco de la plataforma en inglés", async ({ page }) => {
+    await page.goto("/congreso");
+    await selectorEvento(page).getByRole("link", { name: "EN · English" }).click();
+    await expect(page).toHaveURL(/\/congreso\/en$/);
+    await page.goto("/tribus");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Tribes" })).toBeVisible();
+  });
+
+  test("la preferencia vieja del Congreso (lh-congreso-idioma) se usa una vez si no hay cookie", async ({ page }) => {
+    // Se guarda desde un archivo estático del mismo origen (sin la app): en una página de la plataforma, la sincronización
+    // de idioma puede recargarla justo cuando se guarda la preferencia y abortar la navegación siguiente.
+    await page.goto("/file.svg");
+    await page.evaluate(() => window.localStorage.setItem("lh-congreso-idioma", "en"));
+    await page.goto("/tribus");
+    await expect.poll(() => cookieIdioma(page)).toBe("en");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
   });
 });

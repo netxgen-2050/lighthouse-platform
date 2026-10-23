@@ -1,6 +1,9 @@
-import { miles } from "@/lib/sumarte/datos";
+"use client";
 
-// Sin estado: sirve en servidor y en cliente. La barra es decorativa; el dato está en el texto.
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
+import { formatearNumero } from "@/lib/idioma/formatos";
+
+// Sin estado propio. La barra es decorativa; el dato está en el texto ("3 de 10" / "3 of 10").
 export function Medidor({
   titulo,
   actual,
@@ -14,6 +17,8 @@ export function Medidor({
   unidad?: string;
   dorado?: boolean;
 }) {
+  const idioma = useIdioma();
+  const comunes = useTextos("comunes");
   const pct = Math.max(0, Math.min(100, Math.round((actual / tope) * 100)));
   return (
     <div className="grid gap-1 text-sm">
@@ -21,8 +26,8 @@ export function Medidor({
         <span>{titulo}</span>
         <span className="font-medium">
           {unidad}
-          {miles(actual)} de {unidad}
-          {miles(tope)} · {pct}%
+          {formatearNumero(actual, idioma)} {comunes.de} {unidad}
+          {formatearNumero(tope, idioma)} · {pct}%
         </span>
       </p>
       <div aria-hidden="true" className="h-2 overflow-hidden rounded-full bg-surface-2">
