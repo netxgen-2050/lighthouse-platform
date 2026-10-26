@@ -21,5 +21,5 @@ Fuentes pendientes: 13
 | `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 53 |
 | `textos/portada` | Portada: título, bajada, los tres caminos y la cantidad de barrios | 17 |
 | `textos/sumarte` | Sumarte: planes, niveles del pase (Seed, Sprout, Root, a confirmar), inversores, avisos de nivel, formulario de pedido de contacto y panel Entrar como… | 143 |
-| `textos/territorio` | Territorio: vitrina, leyenda y controles del mapa, ficha lateral y marcadores | 60 |
+| `textos/territorio` | Territorio: vitrina, leyenda y controles del mapa, ficha lateral y marcadores | 88 |
 | `textos/tribus` | Tribus: listado, ficha, botones de membresía, interfaz del manifiesto y postulación de una comunidad (formulario, requisitos y errores) | 140 |
