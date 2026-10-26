@@ -37,7 +37,7 @@ lib/financiamiento/
   resumen.ts        armarResumen(): junta lo de arriba con correrSerie() de lib/series
   *.test.ts
 app/netx/
-  layout.tsx        aviso de prototipo + "← Inicio" + <Pestanas/> (sin SoloSuperAdmin: ver §2)
+  layout.tsx        aviso de prototipo + "← Inicio" + <Pestanas/> (sin SoloSuperAdmin: ver §2) + metadata.robots noindex <!-- arquitecto: §2, ADR-015 -->
   pestanas.tsx      cliente: usePathname + useSesion, enlaces con aria-current
   page.tsx          Resumen (servidor)
   resumen/…         piezas del Resumen si hace falta partir el archivo
@@ -77,6 +77,15 @@ components/sesion/solo-super-admin.tsx  solo cambia el texto de la bajada (§2)
 
 <!-- arquitecto: límite conocido del control de acceso (actualizado el 26-oct) -->
 - **Límite conocido del control de acceso, ahora intencional para el relato.** `Puerta` y `SoloSuperAdmin` son componentes de cliente: ocultan, pero lo que renderiza el servidor viaja igual en la respuesta de la página. Para el relato esto ya no es un riesgo sino lo buscado: los números del Resumen, del simulador y del modelo son de ejemplo, salen de NS_Tokenomics y ahora los ve toda persona con sesión. Lo que sí hay que cuidar: alguien sin sesión que pida la página directamente puede leer esos números en la respuesta. Se acepta para el prototipo (son números ilustrativos, sin datos personales) y queda escrito. Regla que se mantiene para este cambio y el siguiente: **ninguna pestaña de `/netx` lee datos de personas desde el servidor de la página**; las operaciones leen por `/api/*`, que verifica el rol en el servidor (como `/api/personas`), o desde el navegador (bandeja y postulaciones). Si alguna pestaña necesita datos reales o sensibles, o si la vista se muestra fuera de NetXGen, el control pasa al servidor (layout que lee la sesión y no renderiza los hijos) con otro cambio.
+
+<!-- arquitecto: revisión del 26-oct sobre la apertura a toda persona con sesión (ADR-015, Propuesta) -->
+- **Qué protege cada capa, dicho sin vueltas** (ADR-015):
+  - *Relato* (Resumen, Simulador, Modelo): oculto en el navegador. Quien tenga la dirección puede leer los números en el código de la respuesta aunque no tenga sesión. En la práctica es "público para quien tenga el enlace", no "solo con sesión". Se acepta porque no hay datos de personas y los números son ilustrativos de NS_Tokenomics.
+  - *Comunidad y embudo*: el embudo, el cumplimiento y las tribus son constantes de ejemplo (`lib/vista-netx/datos`): mismo caso que el relato. El panel de personas lee por `/api/personas`, que verifica el rol en el servidor (403): **esto es lo único que hoy protege el servidor**. La bandeja de pedidos y las postulaciones leen el almacenamiento de **este navegador** (`leerBandejaDelNavegador`, `leerPostulacionesDelNavegador`): no hay dato del servidor que proteger, y el super admin solo ve lo que se cargó en su propio navegador.
+  - **Regla para cuando la bandeja o las postulaciones pasen a la base:** su lectura va por una ruta `/api/*` que use la sesión del servidor y responda 403 a quien no es super admin, igual que `/api/personas`. Ocultarlas con `SoloSuperAdmin` deja de alcanzar en ese momento.
+- **Que no la encuentren los buscadores.** `app/netx/layout.tsx` exporta `metadata.robots = { index: false, follow: false }`. Cuesta una línea y evita que una dirección compartida termine indexada mientras el relato es legible sin sesión.
+- **Modo de prueba en previews.** Con `LH_AUTH_PRUEBA=1` (previews, nunca producción) cualquiera con la dirección del preview entra como un email `.test`, incluido el super admin de prueba si figura en `LH_PERSONAS` del preview. Ya era así antes de este cambio y los previews no tienen datos reales (ADR-008): no cambia nada, pero "con sesión" en un preview equivale a "con la dirección".
+- **Una sola fuente para "es super admin".** `Pestanas` y `SoloSuperAdmin` usan `sesion?.rol === "superadmin"` (el rol que devuelve `/api/sesion`, calculado en el servidor desde `LH_PERSONAS`); `EnlaceNetx` y la `Puerta` usan el nivel, que vale `superadmin` solo con ese mismo rol (`lib/sesion/nivel.ts`). No se agrega otra forma de decidirlo.
 
 ## 3. Comunidad y embudo
 
@@ -296,6 +305,8 @@ Se reusan `safe`, `pasefundador` y los del diseño B que trae `fogon-simulador-p
 - **Las palancas pueden leerse como promesas.** Mitigación: cada una dice "para discutir, no es una decisión", no trae cifras y cita su fuente. Si alguien quiere ver el número con la palanca movida, eso es re-correr el modelo en NS_Tokenomics (otro cambio).
 - **El relato contrasta con lo que propone el CEO.** Franz hoy propone vender tierras. Mitigación: el Juego A se presenta con respeto y con datos, nadie aparece nombrado y hay un test de palabras que no van.
 - **"Con sesión" no es "solo NetXGen"** mientras el registro sea abierto. Mitigación: queda escrito en §2 y como pregunta para Gus (`LH_ACCESO=lista` en el entorno que se comparta).
+<!-- arquitecto: ADR-015 -->
+- **El relato se lee sin sesión en el código de la respuesta** (control en el navegador). Mitigación: sin datos de personas en ninguna pestaña (e2e de la tarea 5.2 que lo prueba sin sesión), `noindex` en el layout y ADR-015 con la señal para pasar el control al servidor (R14, datos reales o la primera pestaña con algo que no sea de ejemplo).
 - **Dependencia de un PR sin integrar** (#107). Mitigación: el implementador verifica `lib/series` en `dev` y frena si falta.
 - **Números del Congreso cancelado.** El modelo de la plataforma y el Pase arrancan en el encuentro de febrero 2027. Mitigación: marca visible en cada uno; re-correr el modelo es trabajo de NS_Tokenomics (I-15), no de este cambio.
 - **Monte Carlo copiado.** Si se re-corre en NS_Tokenomics, la tabla queda vieja. Mitigación: versión a la vista y la regla de ADR-010/ADR-014 (un cambio del `.py` = un cambio OpenSpec).
