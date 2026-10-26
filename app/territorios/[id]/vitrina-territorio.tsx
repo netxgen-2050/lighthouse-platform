@@ -8,9 +8,12 @@ import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import type { territorio } from "@/lib/idioma/textos/territorio";
 import type { Textos } from "@/lib/idioma/tipos";
 import { buscarElemento, listarBarrios,listarFincas, terrenoComun, tribuDeBarrio } from "@/lib/territorios/biopueblo";
+import { CAPAS_PERMACULTURA, buscarElementoPermacultura, elementosDeCapa, resumenPermacultura } from "@/lib/territorios/permacultura";
 import { listarTribus } from "@/lib/tribus/datos";
 import { FichaLateral } from "./ficha-lateral";
+import { FichaPermacultura } from "./ficha-permacultura";
 import MapaCliente from "./mapa-cliente";
+import type { VistaMapa } from "./mapa-leaflet";
 
 type Leyenda = Textos<typeof territorio.es>["leyenda"];
 
@@ -56,13 +59,29 @@ export function VitrinaTerritorio() {
   const idioma = useIdioma();
   const tx = useTextos("territorio");
   const [seleccion, setSeleccion] = useState<string | null>(null);
+  const [vista, setVista] = useState<VistaMapa>("barrios");
   const [consultas, setConsultas] = useState<string[]>([]);
 
   useEffect(() => {
-    // Enlace compartible: ?sel=barrio-6 deja elegido ese elemento (sin recargar ni cambiar de página).
-    const sel = new URLSearchParams(window.location.search).get("sel");
-    if (sel && buscarElemento(sel)) setSeleccion(sel);
+    // Enlace compartible: ?vista=permacultura abre la alternativa y ?sel=barrio-6 deja elegido ese elemento.
+    const params = new URLSearchParams(window.location.search);
+    const v: VistaMapa = params.get("vista") === "permacultura" ? "permacultura" : "barrios";
+    setVista(v);
+    const sel = params.get("sel");
+    if (sel && (v === "permacultura" ? buscarElementoPermacultura(sel) : buscarElemento(sel))) setSeleccion(sel);
   }, []);
+
+  function cambiarVista(v: VistaMapa) {
+    if (v === vista) return;
+    setVista(v);
+    // Lo elegido en una vista no existe en la otra.
+    setSeleccion(null);
+    const url = new URL(window.location.href);
+    if (v === "permacultura") url.searchParams.set("vista", v);
+    else url.searchParams.delete("vista");
+    url.searchParams.delete("sel");
+    window.history.replaceState(window.history.state, "", url);
+  }
 
   // La selección queda en la URL (?sel=…, sin recargar ni sumar al historial): al entrar, la página se rearma
   // y la persona sigue viendo lo que había elegido. No se toca la URL hasta que la selección cambia, para no borrar un ?sel= recién llegado.
@@ -100,6 +119,8 @@ export function VitrinaTerritorio() {
   const disponibles = listarFincas().filter((f) => f.estado === "disponible");
   const comun = terrenoComun();
   const tribus = listarTribus(idioma);
+  const pc = tx.permacultura;
+  const enPermacultura = vista === "permacultura";
 
   return (
     <div className="mt-6 grid gap-6 md:grid-cols-3">
@@ -107,7 +128,33 @@ export function VitrinaTerritorio() {
         <h2 id="mapa-titulo" className="text-xl font-semibold">
           {tx.mapaDe} <span translate="no">Macrolote 7</span>
         </h2>
-        <MapaCliente seleccion={seleccion} alElegir={setSeleccion} />
+        <div role="group" aria-label={tx.vista.grupo} className="flex flex-wrap gap-2">
+          {(["barrios", "permacultura"] as const).map((v) => (
+            <button key={v} type="button" className={botonLista} aria-pressed={vista === v} onClick={() => cambiarVista(v)}>
+              {tx.vista[v]}
+            </button>
+          ))}
+        </div>
+        {enPermacultura && (
+          <div className="grid gap-1 rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+            <p className="font-semibold">{pc.aviso}</p>
+            <p>{pc.avisoDiseno}</p>
+          </div>
+        )}
+        <MapaCliente seleccion={seleccion} alElegir={setSeleccion} vista={vista} />
+        {enPermacultura ? (
+          <div role="group" aria-label={tx.leyenda.grupo} className="grid gap-2 text-sm">
+            <p className="font-semibold">{pc.leyendaTitulo}</p>
+            <ul className="flex flex-wrap gap-x-5 gap-y-2">
+              {CAPAS_PERMACULTURA.map((c) => (
+                <li key={c} className="flex items-center gap-2">
+                  <span aria-hidden="true" className={`mapa-leyenda mapa-leyenda-pc-${c}`} />
+                  {pc.capas[c]}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
         <div role="group" aria-label={tx.leyenda.grupo} className="grid gap-3 text-sm">
           {grupos(tx.leyenda).map((g) => (
             <div key={g.id} className="grid gap-1">
@@ -125,7 +172,16 @@ export function VitrinaTerritorio() {
             </div>
           ))}
         </div>
-        <p className="text-sm text-muted">{tx.notaDistribucion}</p>
+        )}
+        <p className="text-sm text-muted">
+          {enPermacultura ? (
+            <>
+              {pc.notaMetodo} <span lang="es">{resumenPermacultura().metodo}</span>
+            </>
+          ) : (
+            tx.notaDistribucion
+          )}
+        </p>
         <p className="text-sm text-muted">
           {tx.notaImagen}{" "}
           <a className="underline" href="https://www.esri.com" target="_blank" rel="noreferrer">
@@ -133,6 +189,29 @@ export function VitrinaTerritorio() {
           </a>
         </p>
 
+        {enPermacultura ? (
+          <section aria-labelledby="elegir-titulo" className="grid gap-3 rounded-xl border border-faint bg-surface p-4">
+            <h3 id="elegir-titulo" className="font-semibold">
+              {pc.elegirTitulo}
+            </h3>
+            {CAPAS_PERMACULTURA.map((c) => (
+              <div key={c} className="grid gap-1">
+                <p id={`elegir-pc-${c}`} className="text-sm font-medium">
+                  {pc.capas[c]}
+                </p>
+                <ul aria-labelledby={`elegir-pc-${c}`} className="flex flex-wrap gap-2">
+                  {elementosDeCapa(c).map((e) => (
+                    <li key={e.id}>
+                      <button type="button" className={botonLista} aria-pressed={seleccion === e.id} onClick={() => setSeleccion(e.id)}>
+                        {e.textos[idioma].nombre}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </section>
+        ) : (
         <section aria-labelledby="elegir-titulo" className="grid gap-2 rounded-xl border border-faint bg-surface p-4">
           <h3 id="elegir-titulo" className="font-semibold">
             {tx.elegir.titulo}
@@ -175,6 +254,7 @@ export function VitrinaTerritorio() {
             </ul>
           </details>
         </section>
+        )}
       </section>
 
       <aside
@@ -182,7 +262,11 @@ export function VitrinaTerritorio() {
         aria-live="polite"
         className="grid min-w-0 content-start gap-3 rounded-xl border border-faint bg-surface p-4 md:self-start"
       >
-        <FichaLateral seleccion={seleccion} consultas={consultas} alConsultar={consultar} />
+        {enPermacultura ? (
+          <FichaPermacultura seleccion={seleccion} />
+        ) : (
+          <FichaLateral seleccion={seleccion} consultas={consultas} alConsultar={consultar} />
+        )}
         {seleccion && (
           <button
             type="button"

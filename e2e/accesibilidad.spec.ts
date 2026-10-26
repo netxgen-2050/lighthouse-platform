@@ -21,6 +21,7 @@ const rutas = [
   "/panel/bitacora",
   ...listarTribus().map((t) => `/tribus/${t.id}`),
   "/territorios/lighthouse",
+  "/territorios/lighthouse?vista=permacultura",
   "/congreso",
   "/congreso/en",
   "/territorios/no-existe",
@@ -322,6 +323,10 @@ for (const ruta of rutas) {
     if (ruta === "/territorios/lighthouse") {
       // El mapa se arma en el navegador: auditar con los 12 sellos ya puestos.
       await expect(page.locator('[aria-label^="Barrio "][role="button"]')).toHaveCount(12);
+    }
+    if (ruta === "/territorios/lighthouse?vista=permacultura") {
+      // Auditar la alternativa con sus sellos ya puestos.
+      await expect(page.locator('[aria-label^="Primera hectárea"][role="button"]')).toHaveCount(1);
     }
     const r = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])

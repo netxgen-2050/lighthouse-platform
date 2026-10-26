@@ -252,6 +252,78 @@ h3 {
   border-color: var(--color-rose);
 }
 
+/* Alternativa de permacultura: sellos y muestras de la leyenda. Cada grupo cambia también la forma o el trazo. */
+.mapa-sello-pc {
+  width: 34px;
+  height: 34px;
+  font-size: 0.75rem;
+}
+
+.mapa-sello-pc-implementacion {
+  background: var(--color-rose-soft);
+  color: var(--color-rose);
+  border-color: var(--color-rose);
+  border-radius: 0.375rem;
+}
+
+.mapa-sello-pc-asentamiento {
+  background: var(--color-violet-soft);
+  color: var(--color-violet);
+  border-color: var(--color-violet);
+}
+
+.mapa-leyenda-pc-agua {
+  background: var(--color-blue-soft);
+  border-color: var(--color-blue);
+}
+
+.mapa-leyenda-pc-produccion {
+  background: var(--color-gold-soft);
+  border-color: var(--color-gold-ink);
+  border-style: dashed;
+}
+
+.mapa-leyenda-pc-asentamiento {
+  background: var(--color-violet-soft);
+  border-color: var(--color-violet);
+  border-radius: 9999px;
+}
+
+.mapa-leyenda-pc-implementacion {
+  background: var(--color-rose-soft);
+  border-color: var(--color-rose);
+  border-width: 3px;
+}
+
+.mapa-leyenda-pc-silvestre {
+  background: var(--color-green-soft);
+  border-color: var(--color-deep);
+  border-style: dotted;
+}
+
+.mapa-leyenda-pc-camino {
+  height: 0.375rem;
+  background: var(--color-surface);
+  border-color: var(--color-ink);
+  border-width: 1px;
+}
+
+.mapa-leyenda-pc-sector {
+  height: 0;
+  background: transparent;
+  border-width: 3px 0 0;
+  border-style: dotted;
+  border-color: var(--color-green);
+}
+
+.mapa-leyenda-pc-obra {
+  width: 0.75rem;
+  height: 0.75rem;
+  background: var(--color-blue);
+  border-color: var(--color-ink);
+  border-radius: 9999px;
+}
+
 .mapa-leyenda-finca-disponible {
   background: var(--color-blue);
   border-color: var(--color-blue-soft);
