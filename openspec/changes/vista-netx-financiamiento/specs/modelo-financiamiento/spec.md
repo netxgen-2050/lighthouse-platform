@@ -75,6 +75,21 @@ El sistema SHALL ofrecer los resultados de `series_montecarlo_sim.py` v0.1 (2.00
 - **WHEN** se leen los rangos de cualquier serie
 - **THEN** P10 ≤ P50 ≤ P90 y cada probabilidad está entre 0 y 1
 
+### Requirement: Palancas de los números incómodos
+El sistema SHALL ofrecer, para cada número incómodo del modelo (capital bajo gestión necesario, cobertura de las membresías, primera pérdida no recuperada, contrato de diseño con BioPueblo sin dato), una palanca: qué supuesto o parámetro del diseño la movería, en qué dirección y la fuente donde está ese supuesto. Las palancas MUST ser texto sin cifras, para no inventar números que ningún modelo calculó.
+
+#### Scenario: Una palanca por número
+- **WHEN** se recorren las palancas
+- **THEN** hay cuatro, una por número incómodo, cada una con supuesto, dirección y fuente
+- **AND** ningún texto de palanca contiene dígitos
+
+### Requirement: Textos del Juego A y el Juego B
+El sistema SHALL ofrecer los textos del contraste entre el Juego A (vender tierra) y el Juego B (procomún) como datos con fuente, y MUST NOT contener "capitalista", "extractivista", "colonialista", "Franz" ni "diseño B".
+
+#### Scenario: Palabras que no van
+- **WHEN** se leen los textos de los dos juegos
+- **THEN** ninguno contiene esas palabras y cada uno tiene fuente
+
 ### Requirement: Cálculos puros
 Los cálculos del financiamiento SHALL correr sin red, sin base de datos y sin depender de la pantalla, y dar el mismo resultado cada vez que se corren con los mismos datos.
 

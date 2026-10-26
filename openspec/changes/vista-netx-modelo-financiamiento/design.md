@@ -4,6 +4,7 @@
 
 - Segundo cambio del pedido de Gus del 23-oct-2026. El primero (`vista-netx-financiamiento`) deja: `app/netx/layout.tsx` con `PESTANAS_NETX`, el Resumen, `lib/financiamiento/` (`fuentes`, `plataforma`, `pista`, `riesgo`, `resumen`, `usdMillones`), `components/barras-reparto.tsx`, el término `ordenanza173` y ADR-014. A través de él: `lib/series/` (`correrSerie`, `porMil`, `convertirSafu`, `formato`, `VERSION_MODELO`) y los términos ⚖ del diseño B.
 - **Orden de archivo:** este cambio modifica requisitos que crea el cambio 1; se archiva **después** de `fogon-simulador-parametros` y de `vista-netx-financiamiento` (si no, `openspec archive` lo rechaza).
+- **Respuestas de Gus al PR #108 (26-oct-2026)** que tocan este cambio: (a) lenguaje Juego A / Juego B, "diseño B" solo al citar doc 28 (§3.2, §3.7, §6); (b) la pestaña es para toda persona con sesión: la capacidad `vista-netx` del cambio 1 ya cubre `/netx/financiamiento`, no hay código de permisos acá; (c) textos legales con ⚖ y "a verificar con abogado", sin consultoría; (d) los hallazgos incómodos del riesgo se muestran (ya estaba).
 - Fuentes (NS_Tokenomics, `main`, leídas el 23-oct-2026), copiadas acá para que el implementador no las abra: doc 28 §1–§5 y §7, doc 29 §5, doc 30 §1–§3, `RESULTS_series_waterfall.md` (recorridos), `RESULTS_series_montecarlo.md`.
 
 ## Objetivos / No objetivos
@@ -51,7 +52,7 @@ Cada ítem de `relato.ts` lleva `fuente: string` ("NS_Tokenomics doc 30 §2"). L
 | Bolsillo | Qué es | Su plata | ¿NetX puede tomar de ahí? |
 |---|---|---|---|
 | NetX Gen (holding + SAS) | La empresa | SAFE, comisiones, contratos, licencias | — (es NetX) |
-| Fundación (procomún) | En el diseño B, dueña de la tierra (todavía no existe); Fondo del Procomún | Canon, regalía, excedente, subsidios, RAIZ | No: nunca un porcentaje; solo una tarifa fija y pública si contrata la plataforma |
+| Fundación (procomún) | En el Juego B, la tierra queda en ella (todavía no existe); Fondo del Procomún | Canon, regalía, excedente, subsidios, RAIZ | No: nunca un porcentaje; solo una tarifa fija y pública si contrata la plataforma |
 | Series (proyectos) | El fideicomiso de cada proyecto | Plata de inversores e ingresos del proyecto | Solo las comisiones del contrato del fideicomiso, aprobadas por sus inversores |
 | BioPueblo | Dueña de las otras ~9.000 ha | Sus ventas de lotes | Solo por contratos (diseño, regeneración); nunca comisión por venta sin matrícula de corredor |
 
@@ -79,22 +80,26 @@ Debajo, la frase de `convertirSafu(1000, 0.2)` ya existente.
 3. "Las demoras y las heladas mandan las pérdidas. Respuestas a modelar: la Serie Madre repartida entre motores cuyos riesgos no se mueven juntos, un seguro o reserva contra heladas, y abrir series solo con los permisos dados."
 Los porcentajes del 1 se toman de `MONTE_CARLO`, no se escriben en el texto.
 
-### 3.7 Vender lotes o este modelo (doc 30 §3)
-| | Vender lotes ahora | Lo que proponemos |
+### 3.7 Juego A o Juego B (doc 30 §3)
+
+Arriba de la tabla, una línea: "El Juego A es el camino conocido y lo que hace la mayoría. Acá están sus costos y lo que cambia en el Juego B." Columnas con el mismo estilo (ninguna en rojo, tachada ni con íconos de "mal"/"bien"): el contraste está en el texto.
+
+| | Juego A · vender lotes ahora | Juego B · el procomún |
 |---|---|---|
-| Ley | Prohibido antes de la aprobación municipal: ni venta, ni reserva, ni prioridad (Ordenanza 173 ⚖) | Nada a la venta antes de la aprobación; la plata viene de inversores y contratos |
-| Diseño B | La tierra del Lighthouse va a la Fundación: no hay lotes para vender en las ~1.000 ha | Viviendas más adelante en derecho de superficie (entrada + canon anual), después de la aprobación |
+| Ley | Antes de la aprobación municipal no se puede vender, reservar ni dar prioridad (Ordenanza 173 ⚖) | Nada a la venta antes de la aprobación; la plata viene de inversores y contratos |
+| La tierra | Se vende una vez y deja de ser del proyecto | Queda en una Fundación que no la vende; viviendas más adelante en derecho de superficie (entrada + canon anual), después de la aprobación |
+| Ingresos | Entran una sola vez, el día de la venta | Siguen entrando: comisiones de desarrollo y de gestión, contratos de diseño y de operación; cada serie paga al procomún antes que a cualquier inversor |
 | Tierra y agua | Lotes dibujados antes de leer el agua: algunos sin agua, otros se inundan; quien compra lo descubre y el valor cae | Primero el diseño (agua, suelo, accesos), después la venta |
 | Comisión | NetX no puede cobrar comisión por venta sin matrícula de corredor | NetX cobra por diseño y regeneración, no por venta |
 | Quién vende | — | BioPueblo vende sus propios lotes en sus otras ~9.000 ha, ya diseñados y aprobados; una contribución por lote va a la Fundación |
 
-Debajo, la propuesta (doc 30 §3, "the pitch"): "La forma más rápida de vender más y mejor es diseñar la tierra primero. NetX y su socio de permacultura hacen ese diseño, cobrado ahora. BioPueblo vende después, con agua, árboles y una comunidad que se puede visitar, y cada venta financia el procomún que hace más fácil la venta siguiente." Marcar "a verificar con abogado" en Ley y Comisión.
+Debajo, la propuesta (doc 30 §3, "the pitch"): "La forma más rápida de vender más y mejor es diseñar la tierra primero. NetX y su socio de permacultura hacen ese diseño, cobrado ahora. BioPueblo vende después, con agua, árboles y una comunidad que se puede visitar, y cada venta financia el procomún que hace más fácil la venta siguiente." Marcar "a verificar con abogado" en Ley, La tierra y Comisión. Test: los textos de `LOTES_VS_MODELO` no contienen ninguna palabra de `PALABRAS_QUE_NO_VAN` (de `juegos.ts`, cambio 1).
 
 ### 3.8 Supuestos a confirmar
 `SUPUESTOS_A_CONFIRMAR: { etiqueta, valor: string | "sin dato", quien, fuente }[]`, agrupados por `quien`:
 - **Vagner:** consumo USD 31.000 por mes (de los cuales ~USD 10.000 "otros" sin desglosar); meta del SAFE USD 375.000 a 500.000 (hay cuatro valuaciones en circulación, doc 30 §4); comisión de gestión 1 a 1,5 % anual; comisión de desarrollo 3 a 5 % del capex; múltiplo de salida 6 veces (viñedo) · 3 veces (agrovoltaica); estructura de capital de la agrovoltaica 60 % Notas al 7 % · 10 % primera pérdida · 30 % Unidades; retorno neto de la Serie Madre 3 · 6 · 9 %; supuestos de incertidumbre del Monte Carlo; re-correr membresías y Pase sin el Congreso (I-15).
 - **Martín y Franz (después de la aprobación):** entrada y canon anual de la vivienda: sin dato.
-- **Abogado:** si un fideicomiso privado puede emitir un SAFU convertible en Unidades de otra serie; distribuciones en especie; usar Unidades para pagar una vivienda sin que sea una reserva prohibida; si la Serie Madre puede tener Unidades de otras series (doc 28 §8).
+- **A verificar con abogado** (sin consultoría por ahora, Gus 26-oct): si un fideicomiso privado puede emitir un SAFU convertible en Unidades de otra serie; distribuciones en especie; usar Unidades para pagar una vivienda sin que sea una reserva prohibida; si la Serie Madre puede tener Unidades de otras series (doc 28 §8).
 - **Enólogo local:** rendimiento 7 t/ha, USD 6 neto por botella. **Desarrollador y red:** USD 800.000 por MW, USD 60 por MWh.
 - **BioPueblo:** el contrato de diseño regional (sin dato, a cotizar).
 Los valores numéricos se arman desde las constantes existentes (`fuentes.ts`, `escenarios.ts`) cuando existen; el texto queda solo para lo que no es número.
@@ -109,16 +114,18 @@ Los valores numéricos se arman desde las constantes existentes (`fuentes.ts`, `
 ## 5. Página
 
 - `PESTANAS_NETX` suma `{ href: "/netx/financiamiento", etiqueta: "Modelo de financiamiento" }` en segundo lugar. El Resumen suma `Link` "Ver el modelo completo" debajo de la respuesta corta.
-- h1 "Modelo de financiamiento", rótulo "Vista NetX · para Franz y Vagner", aviso `avisosimulador`.
-- Ocho `section` con `aria-labelledby` y `h2`: "La plata entra por etapas", "Quién es quién con la plata", "Cómo paga una serie", "Dinero temprano", "Recorridos de inversores", "¿Y si sale mal?", "Vender lotes o este modelo", "Supuestos a confirmar". Al principio, un índice con enlaces de ancla a cada `h2` (útil para saltar en la reunión).
+- h1 "Modelo de financiamiento", rótulo "Vista NetX · para el equipo de NetXGen", aviso `avisosimulador`.
+- Acceso: ninguno propio. `/netx/financiamiento` cae en la capacidad `vista-netx` del cambio 1 (toda persona con sesión). La página no lee datos de personas.
+- Ocho `section` con `aria-labelledby` y `h2`: "La plata entra por etapas", "Quién es quién con la plata", "Cómo paga una serie", "Dinero temprano", "Recorridos de inversores", "¿Y si sale mal?", "Juego A o Juego B", "Supuestos a confirmar". Al principio, un índice con enlaces de ancla a cada `h2` (útil para saltar en la reunión).
 - Tablas con `caption`, `th scope`, dentro de `div.overflow-x-auto`. Recorrido B: tabla año por año plegada en `details`.
 - Términos ⚖: Serie Madre (`seriemadre`, nuevo), Fundación (`fundaciontierra`, nuevo), SAFU, Unidades, Notas Verdes, primera pérdida, serie, SAFE, Ordenanza 173.
-- Fuentes al pie desde `VERSIONES` y `VERSION_MODELO` + "NS_Tokenomics doc 28 y 29 (v0.1, 17-oct-2026)".
+- Fuentes al pie desde `VERSIONES` y `VERSION_MODELO` + "NS_Tokenomics doc 28 (diseño B) y 29 (v0.1, 17-oct-2026)". Es el único lugar de la pestaña con "diseño B".
+- Tono (Gus, 26-oct): el mismo del Resumen (cambio 1, design §6). Nadie aparece nombrado al hablar del Juego A; "Martín y Franz" aparece solo como quienes confirman la vivienda en "Supuestos a confirmar".
 
 ## 6. Catálogo legal (borrador, "Texto nuevo, no viene del mock-up")
 
 - `seriemadre` · "Serie Madre": "Una serie que no tiene un proyecto propio: invierte en todas las demás. Quien entra ahí tiene un pedacito de todos los proyectos, con menos riesgo que en uno solo. Es donde terminan el SAFU y, más adelante, los tokens."
-- `fundaciontierra` · "Fundación de la tierra": "En el diseño B, la entidad que queda como dueña de la tierra del Lighthouse. Todavía no existe: se crea si se acepta el diseño y el dueño actual le pasa la tierra. Su estatuto le prohibiría venderla, hipotecarla o darla en garantía (cómo hacer que eso valga frente a terceros está a verificar con abogado). Cobra un canon y una regalía de cada serie antes que cualquier inversor y con eso paga el procomún. NetX no puede tomar un porcentaje de su plata." <!-- arquitecto: la Fundación es propuesta (doc 25, doc 27); doc 17 y doc 06 L40 marcan que la prohibición de vender/hipotecar hay que hacerla oponible [verify] -->
+- `fundaciontierra` · "Fundación de la tierra": "En el Juego B, la entidad en la que queda la tierra del Lighthouse. Todavía no existe: se crea si se acepta el diseño y el dueño actual le pasa la tierra. Su estatuto le prohibiría venderla, hipotecarla o darla en garantía (cómo hacer que eso valga frente a terceros está a verificar con abogado). Cobra un canon y una regalía de cada serie antes que cualquier inversor y con eso paga el procomún. NetX no puede tomar un porcentaje de su plata." <!-- arquitecto: la Fundación es propuesta (doc 25, doc 27); doc 17 y doc 06 L40 marcan que la prohibición de vender/hipotecar hay que hacerla oponible [verify] -->
 
 
 ## 7. Tolerancias
@@ -128,6 +135,8 @@ Los valores numéricos se arman desde las constantes existentes (`fuentes.ts`, `
 ## Riesgos / trade-offs
 
 - **Mucho texto en una pestaña.** Mitigación: índice con anclas, una idea por sección, tablas plegadas donde hay detalle.
-- **Textos traducidos de docs en inglés con peso legal.** Mitigación: lo legal va con ⚖ y "a verificar con abogado"; los términos nuevos son borrador.
+- **Textos traducidos de docs en inglés con peso legal.** Mitigación: lo legal va con ⚖ y "a verificar con abogado"; los términos nuevos son borrador. Gus (26-oct) confirmó que alcanza así y que no hay presupuesto para consultoría.
+- **La comparación contrasta con lo que propone el CEO.** Mitigación: el Juego A como "el camino conocido", con costos en datos y sin nombrar a nadie; las dos columnas con el mismo estilo; test de palabras que no van.
+- **Ahora la ve todo el equipo con sesión**, no solo el super admin. Es lo buscado; los números son de ejemplo y no hay datos personales. El límite del control en el navegador está escrito en el cambio 1, design §2.
 - **Hallazgos que debilitan el relato** (primera pérdida, dependencia del SAFE). Mitigación: se muestran igual; son parte de lo que convence a un director financiero (que el modelo sabe dónde falla) y vienen con su respuesta propuesta.
 - **Números del Congreso cancelado** (RAIZ en febrero, membresías, Pase). Mitigación: marca visible; re-correrlos es de NS_Tokenomics.
