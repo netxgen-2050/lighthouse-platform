@@ -2,31 +2,35 @@
 
 ## Purpose
 
-Que la Vista NetX cuente al equipo de NetXGen cómo se financia NetX sin vender lotes: un relato en pestañas que contrasta el Juego A (vender tierra) con el Juego B (procomún), con números de partida, rangos de riesgo, supuestos a la vista y la palanca que movería cada número incómodo, más las herramientas del equipo (simulador) y las operaciones del super admin en el mismo lugar.
+Que la Vista NetX cuente al equipo de NetXGen cómo se financia NetX sin vender lotes: un relato en pestañas que contrasta el Juego A (vender tierra) con el Juego B (procomún), con números de partida, rangos de riesgo, supuestos a la vista y la palanca que movería cada número incómodo, más las herramientas del equipo (simulador) y los números agregados de la comunidad. Es igual para toda persona con sesión; las operaciones del super admin viven aparte, en `/admin` (capacidad `admin-operaciones`).
 
 ## ADDED Requirements
 
 ### Requirement: Pestañas de la Vista NetX
-La Vista NetX SHALL mostrar, arriba del contenido de cada pestaña, una navegación con nombre "Secciones de la Vista NetX" con los enlaces "Resumen" (`/netx`), "Simulador" (`/netx/simulador`) y "Comunidad y embudo" (`/netx/comunidad`), en ese orden. "Comunidad y embudo" MUST aparecer solo para el super admin. El enlace de la pestaña abierta MUST estar marcado como página actual (no solo con color). La navegación MUST usarse con teclado y no desbordar a 390 px.
+La Vista NetX SHALL mostrar, arriba del contenido de cada pestaña, una navegación con nombre "Secciones de la Vista NetX" con los enlaces "Resumen" (`/netx`), "Simulador" (`/netx/simulador`) y "Comunidad y embudo" (`/netx/comunidad`), en ese orden. Las pestañas MUST ser las mismas para toda persona con sesión, sin importar su rol. El enlace de la pestaña abierta MUST estar marcado como página actual (no solo con color). La navegación MUST usarse con teclado y no desbordar a 390 px.
 
 #### Scenario: Pestaña actual
-- **WHEN** el super admin abre `/netx/comunidad`
+- **WHEN** una persona con sesión abre `/netx/comunidad`
 - **THEN** ve las tres pestañas y "Comunidad y embudo" está marcada como página actual; "Resumen" no lo está
 
 #### Scenario: Con teclado
 - **WHEN** una persona con sesión llega con Tab a "Simulador" y aprieta Enter
 - **THEN** se abre `/netx/simulador` y esa pestaña queda marcada como página actual
 
-#### Scenario: Persona sin rol de super admin
-- **WHEN** una persona con rol "persona" abre `/netx`
-- **THEN** ve las pestañas "Resumen" y "Simulador" y no ve "Comunidad y embudo"
+#### Scenario: Mismas pestañas para todos
+- **WHEN** una persona con rol "persona" y el super admin abren `/netx`
+- **THEN** los dos ven "Resumen", "Simulador" y "Comunidad y embudo", en ese orden
 
-### Requirement: El relato es para toda persona con sesión
-Las pestañas del relato (Resumen y Simulador) SHALL mostrarse a toda persona con sesión, de cualquier nivel. A quien no tiene sesión, la plataforma MUST llevarlo a Sumarte como en cualquier página personal, sin mostrar el contenido. El enlace "NetX" de la barra superior SHALL aparecer para toda persona con sesión.
+### Requirement: La Vista NetX es para toda persona con sesión
+Todas las pestañas de la Vista NetX (Resumen, Simulador y Comunidad y embudo) SHALL mostrarse a toda persona con sesión, de cualquier nivel. A quien no tiene sesión, la plataforma MUST llevarlo a Sumarte como en cualquier página personal, sin mostrar el contenido. El enlace "NetX" de la barra superior SHALL aparecer para toda persona con sesión.
 
 #### Scenario: Persona con sesión
 - **WHEN** una persona con rol "persona" abre `/netx`
 - **THEN** ve el h1 "¿Cómo se financia NetX sin vender lotes?" y los tres bolsillos
+
+#### Scenario: Comunidad y embudo con sesión
+- **WHEN** una persona con rol "persona" abre `/netx/comunidad`
+- **THEN** ve el h1 "Comunidad y embudo" y el embudo, sin "No tenés acceso"
 
 #### Scenario: Enlace en la barra
 - **WHEN** una persona con rol "persona" entra a la plataforma
@@ -36,22 +40,22 @@ Las pestañas del relato (Resumen y Simulador) SHALL mostrarse a toda persona co
 - **WHEN** alguien sin sesión abre `/netx`
 - **THEN** termina en Sumarte con la vuelta a `/netx` y no ve el Resumen
 
-### Requirement: Las operaciones son solo del super admin
-La pestaña "Comunidad y embudo", que contiene el panel de personas y roles, las postulaciones de comunidades y la bandeja de pedidos, SHALL mostrarse solo al super admin; a cualquier otra persona le MUST mostrar "No tenés acceso a esta vista", sin mostrar datos. Las lecturas y escrituras de personas MUST seguir verificando el rol en el servidor.
+### Requirement: La Vista NetX no tiene operaciones
+Ninguna pestaña de la Vista NetX SHALL mostrar ni leer el panel de personas y roles, las postulaciones de comunidades, los pedidos de contacto ni otro dato de personas, tampoco para el super admin: esas operaciones viven en la página de administración (`/admin`). La Vista NetX MUST mostrar solo números agregados y de ejemplo.
 
-#### Scenario: Persona sin permiso
-- **WHEN** una persona con rol "persona" abre `/netx/comunidad`
-- **THEN** ve "No tenés acceso a esta vista" y no ve el embudo, el panel de personas, las postulaciones ni la bandeja
+#### Scenario: Super admin en Comunidad y embudo
+- **WHEN** el super admin abre `/netx/comunidad`
+- **THEN** ve el embudo y no ve "Pedidos de contacto", "Postulaciones de comunidades" ni el panel de personas
 
-#### Scenario: El servidor también controla
-- **WHEN** una persona con rol "persona" pide `/api/personas`
-- **THEN** recibe 403
+#### Scenario: Respuesta sin datos de personas
+- **WHEN** alguien sin sesión pide directamente la respuesta de `/netx`, `/netx/simulador` o `/netx/comunidad`
+- **THEN** la respuesta no contiene ningún email ni el texto del panel de personas, la bandeja o las postulaciones
 
 ### Requirement: Un título por pestaña, sin el hito del Congreso
 Cada pestaña SHALL tener un único título de nivel 1 propio y el aviso "Prototipo interno · datos de ejemplo". Ninguna pestaña MUST usar el Congreso ni "febrero" como hito de venta: el texto "¿Vamos a vender en febrero?" desaparece.
 
 #### Scenario: Títulos
-- **WHEN** el super admin recorre las tres pestañas
+- **WHEN** una persona con sesión recorre las tres pestañas
 - **THEN** ve un solo h1 en cada una: "¿Cómo se financia NetX sin vender lotes?", "Simulador de la tokenomics" y "Comunidad y embudo"
 - **AND** en ninguna aparece "¿Vamos a vender en febrero?"
 
@@ -67,12 +71,12 @@ El Resumen SHALL contar el modelo como un contraste entre el **Juego A** (el cam
 - **THEN** no aparece "capitalista", "extractivista", "colonialista" ni "Franz"
 - **AND** "diseño B" aparece solo junto a "doc 28"
 
-### Requirement: Comunidad y embudo conserva lo actual
-La pestaña "Comunidad y embudo" SHALL mostrar los indicadores, el embudo con conversión, el cumplimiento con sus medidores y alertas, la tabla "Tribus por proyecto", el panel de personas, las postulaciones de comunidades y la bandeja de pedidos, con el mismo comportamiento que hoy tienen en `/netx`.
+### Requirement: Comunidad y embudo muestra los números agregados
+La pestaña "Comunidad y embudo" SHALL mostrar los indicadores, el embudo con conversión, el cumplimiento con sus medidores y alertas y la tabla "Tribus por proyecto", con el mismo comportamiento que hoy tienen en `/netx` y la marca de que son datos de ejemplo.
 
 #### Scenario: Embudo en su pestaña
-- **WHEN** el super admin abre `/netx/comunidad`
-- **THEN** ve el embudo con "186" en "En una tribu" y "45% de la etapa anterior", y la bandeja de pedidos
+- **WHEN** una persona con sesión abre `/netx/comunidad`
+- **THEN** ve el embudo con "186" en "En una tribu" y "45% de la etapa anterior", el cumplimiento "22 / 35 · 63%" y la tabla "Tribus por proyecto"
 
 ### Requirement: Simulador como pestaña
 El simulador de la tokenomics SHALL vivir en `/netx/simulador` con el encabezado de la Vista NetX y el mismo comportamiento que tenía en el Fogón. `/fogon/simulador` MUST llevar a `/netx/simulador`, y el Fogón MUST dejar de enlazarlo.

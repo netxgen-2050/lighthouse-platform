@@ -4,11 +4,11 @@
 
 El Resumen (cambio `vista-netx-financiamiento`) responde en una pantalla de dónde sale la plata sin vender lotes. En una reunión, el equipo (Franz y Vagner primero) va a preguntar **cómo**: en qué orden cobra cada uno dentro de una serie, cuándo entra cada peso a NetX, cómo puede invertir alguien hoy si las series todavía no existen, qué pasa si sale mal y por qué el Juego A (vender lotes) no es el atajo. Este es el **segundo cambio de dos** (pedido de Gus, 23-oct-2026): la pestaña **"Modelo de financiamiento"** con ese detalle, sus rangos de riesgo y todos los supuestos que hay que confirmar con Vagner, a la vista.
 
-El 26-oct Gus respondió las preguntas del PR #108: el relato habla de **Juego A** y **Juego B** en lugar de "diseño B", la vista se abre a toda persona con sesión (las operaciones siguen siendo del super admin, y no están en esta pestaña) y los textos con peso legal (SAFU, oferta privada, tokenización CNV) alcanzan con ⚖ y "a verificar con abogado".
+El 26-oct Gus respondió las preguntas del PR #108: el relato habla de **Juego A** y **Juego B** en lugar de "diseño B", la vista se abre entera a toda persona con sesión (las operaciones del super admin se van a una página propia, `/admin`: opción B, cambio 1) y los textos con peso legal (SAFU, oferta privada, tokenización CNV) alcanzan con ⚖ y "a verificar con abogado".
 
 ## What Changes
 
-- **Pestaña nueva** "Modelo de financiamiento" en `/netx/financiamiento`, segunda en la navegación (Resumen · Modelo de financiamiento · Simulador · Comunidad y embudo), visible para **toda persona con sesión** (hereda la capacidad `vista-netx` del cambio 1). El Resumen suma un enlace "Ver el modelo completo".
+- **Pestaña nueva** "Modelo de financiamiento" en `/netx/financiamiento`, segunda en la navegación (Resumen · Modelo de financiamiento · Simulador · Comunidad y embudo, iguales para todos), visible para **toda persona con sesión** (hereda la capacidad `vista-netx` del cambio 1). El Resumen suma un enlace "Ver el modelo completo".
 - **Contenido**, en este orden (fuentes: NS_Tokenomics doc 28, 29 y 30, v0.1 del 17-oct-2026):
   1. **La plata entra por etapas** (doc 30 §2): Semilla (ahora a marzo 2027), Construir (2027–2028) y Escalar (2028+), con qué entra, de qué tamaño y de qué depende. Lo que no tiene número dice "sin dato".
   2. **Quién es quién con la plata** (doc 30 §1): NetX, Fundación, series y BioPueblo, qué plata tiene cada uno y si NetX puede tomar de ahí.
@@ -33,7 +33,7 @@ El 26-oct Gus respondió las preguntas del PR #108: el relato habla de **Juego A
 - Modelar series nuevas (biochar, hospitalidad, vivienda) o la cartera de la Serie Madre: no tienen modelo en NS_Tokenomics.
 - Mover supuestos de riesgo en pantalla (ADR-014).
 - La tokenomics anterior al diseño B (`RESULTS_value_model.md`).
-- Las operaciones del super admin: no están en esta pestaña (ver cambio 1, §3.1).
+- Las operaciones del super admin: viven en `/admin` (cambio 1, design §3); esta pestaña no las toca.
 - Versión en inglés; imprimir o exportar la pestaña.
 
 ## Capabilities

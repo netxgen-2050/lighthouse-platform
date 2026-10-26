@@ -6,18 +6,27 @@ Gus (23-oct-2026) pidió que la Vista NetX (`/netx`) deje de ser un tablero de e
 
 El 26-oct Gus respondió las preguntas del PR #108 y sumó tres cosas: el relato se cuenta como **Juego A** (el camino conocido: vender tierra) contra **Juego B** (procomún: la tierra queda y el valor crece para todos), los números incómodos quedan a la vista **con la palanca que los movería**, y la Vista NetX **deja de ser solo del super admin**: el relato lo ve toda persona con sesión (en esta etapa, gente de NetXGen); las operaciones siguen siendo del super admin.
 
-Este es el **primer cambio de dos** (una noche cada uno). Arma la estructura con pestañas, mueve el simulador y el contenido actual, abre el relato a quien tiene sesión y pone la pestaña **Resumen**: en una pantalla, de dónde sale la plata sin vender lotes, con números que salen de funciones puras testeadas contra los RESULTS de `NS_Tokenomics`. El segundo cambio, `vista-netx-modelo-financiamiento`, suma la pestaña de detalle "Modelo de financiamiento".
+Ese mismo día Gus eligió la **opción B** para las operaciones del super admin (pregunta 3 del PR #108): **una página de administración propia, separada de la Vista NetX** (`/admin`), protegida en el servidor y con su ítem en el rail. La Vista NetX queda solo con el relato y los números agregados, igual para toda persona con sesión.
+
+Este es el **primer cambio de dos** (una noche cada uno, esta cargada: ver Riesgos en design). Arma la estructura con pestañas, mueve el simulador y el contenido actual, saca las operaciones a `/admin`, abre el relato a quien tiene sesión y pone la pestaña **Resumen**: en una pantalla, de dónde sale la plata sin vender lotes, con números que salen de funciones puras testeadas contra los RESULTS de `NS_Tokenomics`. El segundo cambio, `vista-netx-modelo-financiamiento`, suma la pestaña de detalle "Modelo de financiamiento".
 
 ## What Changes
 
 - **Pestañas de la Vista NetX** (navegación con enlaces, una ruta por pestaña):
   - `/netx` → **Resumen** (nuevo).
   - `/netx/simulador` → **Simulador** (movido desde `/fogon/simulador`).
-  - `/netx/comunidad` → **Comunidad y embudo**: todo lo que hoy muestra `/netx` (indicadores, embudo, cumplimiento, tribus por proyecto, panel de personas, postulaciones de comunidades y bandeja de pedidos), sin cambios de comportamiento.
+  - `/netx/comunidad` → **Comunidad y embudo**: los números agregados que hoy muestra `/netx` (indicadores, embudo, cumplimiento y tribus por proyecto, todos de ejemplo), sin operaciones y sin datos de personas.
   - El cambio 2 agrega la pestaña "Modelo de financiamiento" (`/netx/financiamiento`) entre Resumen y Simulador.
+  - Las cuatro pestañas son **iguales para toda persona con sesión**: ninguna se esconde según el rol.
+- **Página de administración `/admin`** (opción B de Gus, 26-oct), solo super admin, con tres pestañas (rutas):
+  - `/admin` → **Pendientes**: postulaciones de comunidades y pedidos de contacto (lo que hoy está al final de `/netx`), con un contador de pendientes.
+  - `/admin/personas` → **Personas y roles**: el panel de roles que hoy está en `/netx` (`PanelPersonas`), sin cambios de comportamiento.
+  - `/admin/comunidades` → **Comunidades**: las tribus del directorio con su barrio, estado, hogares, roles cubiertos y forma jurídica (datos de ejemplo), con enlace a su ficha. Solo lectura.
+  - **Protegida en el servidor:** la ruta entera (`/admin` y todo lo que cuelga) responde **403** a quien no es super admin, también si pide la dirección sin sesión; el servidor no arma el contenido. Además la pantalla lo oculta (`SoloSuperAdmin`), como capa de presentación. Ver design §3 y ADR-016.
+  - **Ítem "Admin" en el rail** con el contador de pendientes, visible **solo para el super admin** (al resto no le aparece ni bloqueado).
 - **Quién ve qué** (Gus, 26-oct):
-  - **Relato** (Resumen, Simulador y, en el cambio 2, Modelo de financiamiento): toda persona **con sesión**, de cualquier nivel. Sin sesión, la plataforma lleva a Sumarte como en cualquier página personal. No es pública: ver design §2.
-  - **Operaciones** (panel de roles y personas, postulaciones de comunidades, bandeja de pedidos), que hoy viven en "Comunidad y embudo": **solo super admin**. La pestaña completa sigue detrás de `SoloSuperAdmin` y no aparece en la navegación para el resto. Las escrituras y lecturas de personas siguen protegidas en el servidor donde ya lo están (`/api/personas` responde 403).
+  - **Vista NetX entera** (Resumen, Simulador, Comunidad y embudo y, en el cambio 2, Modelo de financiamiento): toda persona **con sesión**, de cualquier nivel. Sin sesión, la plataforma lleva a Sumarte como en cualquier página personal. No es pública: ver design §2.
+  - **Operaciones** (`/admin`: pendientes, personas y roles, comunidades): **solo super admin**, controlado en el servidor. Las escrituras y lecturas de personas siguen protegidas también en `/api/personas` (403).
   - El enlace **"NetX"** de la barra superior aparece para toda persona con sesión.
 - **Se va el hito del Congreso.** El título "¿Vamos a vender en febrero?" desaparece. El Resumen pregunta "¿Cómo se financia NetX sin vender lotes?"; Comunidad y embudo se llama así. Todo dato que dependa del Congreso se marca: el modelo de ingresos de la plataforma arranca con los registrados "en el encuentro de febrero 2027" y el Pase Fundador se pensó para esa cohorte; la pantalla lo dice ("supuesto del modelo: el Congreso se canceló, falta re-correrlo · NS_Tokenomics I-15") en vez de esconderlo.
 - **Lenguaje: Juego A y Juego B.** La pantalla deja de decir "diseño B" (queda solo donde se cita el documento técnico, doc 28). El relato contrasta:
@@ -46,23 +55,29 @@ Este es el **primer cambio de dos** (una noche cada uno). Arma la estructura con
 - Los números incómodos quedan visibles, cada uno con su palanca. Las palancas son texto: no se editan los modelos de `NS_Tokenomics` ni se inventan números.
 - La vista trabaja bajo las asunciones legales del diseño definidas hasta ahora: es la excepción de prototipo interno a D9 del backlog ("documentar, no construir, hasta que haya abogado"). Los textos con peso legal llevan ⚖ y "a verificar con abogado".
 - Instrumentos (SAFU, oferta privada, tokenización CNV): alcanza con ⚖ y "a verificar con abogado". No hay presupuesto para consultoría legal; se redacta desde lo que sabemos, en borrador.
-- La Vista NetX se abre a toda persona con sesión, salvo las operaciones.
+- La Vista NetX se abre entera a toda persona con sesión; las operaciones salen a `/admin`.
+- Operaciones del super admin: **opción B**, página de administración propia (`/admin`) con pestañas Pendientes, Personas y roles y Comunidades, ítem "Admin" en el rail con contador solo para el super admin, y la ruta protegida en el servidor (403) además de en la pantalla.
 
 **Supuestos que toma esta spec** (Gus puede cambiarlos):
-- Pestañas como rutas (enlaces con `aria-current="page"`), no como pestañas ARIA dentro de una página: cada pestaña se puede abrir por dirección en una reunión y el lector de pantalla la anuncia como navegación.
-- **Decisión de diseño abierta:** dónde van las operaciones del super admin. Gus quiere ver alternativas gráficas antes de decidir (design §3.1). Mientras tanto, la propuesta por defecto es que queden en "Comunidad y embudo", agrupadas en un solo componente para que moverlas sea cambiar un import.
-- "Comunidad y embudo" entera queda solo para el super admin (también el embudo, que es de ejemplo). Abrir el embudo al resto es una de las alternativas de §3.1.
+- Pestañas como rutas (enlaces con `aria-current="page"`), no como pestañas ARIA dentro de una página: cada pestaña se puede abrir por dirección en una reunión y el lector de pantalla la anuncia como navegación. Vale para `/netx` y para `/admin`.
+- "Pendiente" = todo lo recibido en este navegador: hoy no hay forma de responder ni archivar un pedido o una postulación (están "Recibida (simulado)"), así que el contador es la suma de postulaciones y pedidos guardados. Cuando exista responder (backlog B6), el contador cuenta solo lo no respondido.
+- "Comunidades" muestra las tribus del directorio (`listarTribus`, datos de ejemplo), solo lectura. Qué acciones tendría (aprobar, editar, cambiar líder) queda para otro cambio.
+- El ítem "Admin" va en el rail en un grupo propio al final ("Interno"), y no reemplaza al enlace "NetX" de la barra superior.
+- Para que el servidor sepa quién pide `/admin`, el navegador del super admin manda su sesión en una cookie limitada a `/admin` (design §3.3, ADR-016). Es el primer paso de "control en el servidor" de ADR-015, solo para `/admin`.
 - `RESULTS_value_model.md` es de la tokenomics anterior al diseño B (RAIZ con curva y unidades sobre la tierra): **no se usa** en la vista.
 
 ## Fuera de alcance
 
 - La pestaña "Modelo de financiamiento" (etapas en el tiempo, recorridos de inversores, Serie Madre y SAFU, comparación completa entre Juego A y Juego B, todos los supuestos): cambio 2, `vista-netx-modelo-financiamiento`.
-- Las alternativas gráficas para ubicar las operaciones (maquetas para que Gus elija): no las hace el implementador de esta noche; ver la pregunta abierta.
+- Responder, aprobar, archivar o borrar pendientes desde `/admin` (backlog B6, `aprobaciones-admin` P8): esta noche solo se listan.
+- Pasar la bandeja de pedidos o las postulaciones a la base: siguen leyendo el almacenamiento de **este navegador**.
+- Roles reales en la base más allá de lo que ya edita el panel (backlog B2), o un rol "admin" distinto del super admin.
+- Proteger en el servidor otras páginas además de `/admin` (la Vista NetX sigue con el control en el navegador, ADR-015).
+- Traducir `/admin` al inglés: queda en español con el aviso de página sin traducir.
 - Datos reales de la base, plata real, cobros u ofertas: nada se capta, todo es de ejemplo.
 - Editar los modelos de `NS_Tokenomics` o re-correrlos (por ejemplo sin el Congreso, I-15, o con las palancas movidas): si cambian, otro cambio actualiza números y versión (ADR-010).
 - Cambiar el simulador (controles, modelo, textos) más allá de su ubicación, su encabezado y su h1.
 - Correr Monte Carlo en el navegador o mover sus supuestos.
-- Pasar el control de acceso de la Vista NetX al servidor (hoy oculta en el navegador; ver design §2).
 - Versión en inglés.
 - Mostrar la Vista NetX fuera de NetXGen: antes se revisan estas reglas (R14).
 
@@ -71,15 +86,17 @@ Este es el **primer cambio de dos** (una noche cada uno). Arma la estructura con
 ### New Capabilities
 - `vista-netx-financiamiento`: la Vista NetX como relato con pestañas para el equipo: navegación, quién ve qué, pestaña Resumen (cómo se financia NetX sin vender lotes, Juego A y Juego B, palancas), pestaña Comunidad y embudo, y la ubicación del simulador.
 - `modelo-financiamiento`: los números del financiamiento de NetX, del procomún y de los inversores como funciones puras con fuente, versión y tests que reproducen los RESULTS de `NS_Tokenomics`, más los textos del relato (juegos y palancas) como datos con fuente.
+- `admin-operaciones`: la página de administración del super admin (`/admin`): pestañas Pendientes, Personas y roles y Comunidades, ítem "Admin" del rail con contador, y la protección de la ruta en el servidor (403).
 
 ### Modified Capabilities
 - `fogon-simulador` (del cambio `fogon-simulador-parametros`, todavía sin archivar): el acceso pasa del Fogón a la Vista NetX, para toda persona con sesión.
 
 ## Impact
 
-- Código nuevo: `lib/financiamiento/` (fuentes, plataforma, pista, riesgo, juegos, palancas, resumen y tests), `app/netx/layout.tsx` y `app/netx/pestanas.tsx`, `app/netx/comunidad/page.tsx` y `app/netx/comunidad/operaciones.tsx`, `app/netx/resumen.tsx` (o similar), `components/barras-reparto.tsx` (gráfico de barras con tabla).
-- Código movido: `app/netx/page.tsx` → `app/netx/comunidad/page.tsx`; `app/fogon/simulador/*` → `app/netx/simulador/*`; `app/fogon/simulador/page.tsx` queda como redirección. `app/fogon/page.tsx` pierde el bloque del simulador.
-- **Permisos:** `lib/permisos/niveles.ts` suma la capacidad `vista-netx` (nivel Explorador) para `/netx` y sus pestañas de relato; `/netx/comunidad` sigue con la capacidad `netx` (super admin). `components/sesion/enlace-netx.tsx` muestra el enlace a toda persona con sesión. `SoloSuperAdmin` cambia su texto a "Esta sección de la Vista NetX es solo para el super admin del prototipo."
-- Tests: `lib/permisos/niveles.test.ts`, `e2e/vista-netx.spec.ts` (rutas, título, acceso por rol), `e2e/fogon-simulador.spec.ts` → `e2e/netx-simulador.spec.ts`, rutas de `/netx` en `e2e/contactos.spec.ts`, `e2e/postulacion.spec.ts`, `e2e/accesibilidad.spec.ts` y `e2e/login.spec.ts` donde prueban la bandeja, las postulaciones, el título viejo o el "sin acceso".
-- Decisión: **ADR-014** (en Propuesta) amplía ADR-010: los resultados de Monte Carlo se copian como tabla versionada, no se recalculan.
-- Sin dependencias nuevas, sin base de datos, sin pedidos de red, sin datos personales nuevos. **Toca permisos**: el relato pasa de super admin a toda persona con sesión. Revisión del arquitecto pendiente para este punto (ver resumen del PR).
+- Código nuevo: `lib/financiamiento/` (fuentes, plataforma, pista, riesgo, juegos, palancas, resumen y tests), `app/netx/layout.tsx` y `app/netx/pestanas.tsx`, `app/netx/comunidad/page.tsx`, `app/netx/resumen.tsx` (o similar), `components/barras-reparto.tsx` (gráfico de barras con tabla).
+- Código nuevo de `/admin`: `app/admin/layout.tsx`, `app/admin/pestanas.tsx`, `app/admin/page.tsx` (Pendientes), `app/admin/personas/page.tsx`, `app/admin/comunidades/page.tsx`, `app/forbidden.tsx` (página 403), `lib/admin/pendientes.ts` (contador, función pura), `lib/sesion/pagina.ts` (`sesionDeLaPagina`, `exigirSuperAdmin`), `components/rail-admin.tsx` (ítem del rail con contador).
+- Código movido: `app/netx/page.tsx` → `app/netx/comunidad/page.tsx` (sin las operaciones); `app/netx/bandeja-pedidos.tsx` y `app/netx/postulaciones-comunidades.tsx` → `app/admin/`; `app/fogon/simulador/*` → `app/netx/simulador/*`; `app/fogon/simulador/page.tsx` queda como redirección. `app/fogon/page.tsx` pierde el bloque del simulador.
+- **Permisos:** `lib/permisos/niveles.ts` suma la capacidad `vista-netx` (nivel Explorador) para todo `/netx`, y la capacidad `netx` (super admin) pasa a llamarse `admin` y a cubrir `/admin`. `components/sesion/enlace-netx.tsx` muestra el enlace a toda persona con sesión. `SoloSuperAdmin` cambia su texto a "La administración es solo para el super admin del prototipo." `next.config.ts` activa `experimental.authInterrupts` para usar `forbidden()` (403). `components/sesion/proveedor-sesion.tsx` escribe y borra la cookie de sesión de `/admin` (solo para el super admin con Privy).
+- Tests: `lib/permisos/niveles.test.ts`, `lib/admin/pendientes.test.ts`, `lib/sesion/pagina.test.ts`, `e2e/vista-netx.spec.ts` (rutas, título, acceso por rol), `e2e/admin.spec.ts` (nuevo: 403, rail, pestañas, contador), `e2e/fogon-simulador.spec.ts` → `e2e/netx-simulador.spec.ts`, rutas en `e2e/contactos.spec.ts`, `e2e/postulacion.spec.ts`, `e2e/accesibilidad.spec.ts` y `e2e/login.spec.ts` donde prueban la bandeja, las postulaciones, el panel de personas, el título viejo o el "sin acceso".
+- Decisiones: **ADR-014** (en Propuesta) amplía ADR-010: los resultados de Monte Carlo se copian como tabla versionada. **ADR-016** (en Propuesta, nuevo): `/admin` se protege en el servidor con la sesión en una cookie limitada a `/admin`; es el primer paso de la opción C de ADR-015, solo para esa ruta.
+- Sin dependencias nuevas, sin tablas ni migraciones, sin pedidos de red nuevos, sin datos personales nuevos. **Toca permisos e identidad**: la Vista NetX pasa de super admin a toda persona con sesión, y `/admin` lee la sesión en el servidor desde una cookie. Revisión del arquitecto pendiente (ver resumen del PR).

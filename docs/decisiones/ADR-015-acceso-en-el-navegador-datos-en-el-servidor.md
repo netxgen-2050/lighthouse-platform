@@ -23,6 +23,8 @@ Gus (26-oct) abrió el relato de la Vista NetX (Resumen, Simulador, Modelo de fi
 - Aceptamos: "con sesión" no es "solo NetXGen" mientras el registro sea abierto (`LH_ACCESO` sin `lista`) ni en previews con modo de prueba (ADR-008).
 - Revisar cuando: se muestre la plataforma fuera del equipo (R14); la bandeja, las postulaciones u otra operación pasen a la base; o una pestaña de `/netx` necesite un dato real o que no sea de ejemplo. En cualquiera de esos casos, se pasa a C.
 
+- Actualización del 26-oct (opción B de Gus): las operaciones del super admin salen de la Vista NetX a `/admin`, que sí se protege en el servidor (ADR-016). La Vista NetX queda sin datos de personas y sigue con esta decisión.
+
 ## En palabras simples
 Hoy la plataforma "tapa" las páginas en la pantalla, pero no las guarda bajo llave: quien sabe mirar el código de la página puede leer lo que está tapado. Para los números de ejemplo del relato de NetX eso está bien, y lo decimos en voz alta. Lo que sí está bajo llave son los datos de las personas (por ejemplo la lista de personas y roles): esos solo los entrega el servidor, y solo al super admin. Antes de mostrar la plataforma afuera, se cambia la tapa por una llave.
 

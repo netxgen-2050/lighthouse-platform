@@ -3,15 +3,15 @@
 ## MODIFIED Requirements
 
 ### Requirement: Pestañas de la Vista NetX
-La Vista NetX SHALL mostrar, arriba del contenido de cada pestaña, una navegación con nombre "Secciones de la Vista NetX" con los enlaces "Resumen" (`/netx`), "Modelo de financiamiento" (`/netx/financiamiento`), "Simulador" (`/netx/simulador`) y "Comunidad y embudo" (`/netx/comunidad`), en ese orden. "Comunidad y embudo" MUST aparecer solo para el super admin. El enlace de la pestaña abierta MUST estar marcado como página actual (no solo con color). La navegación MUST usarse con teclado y no desbordar a 390 px.
+La Vista NetX SHALL mostrar, arriba del contenido de cada pestaña, una navegación con nombre "Secciones de la Vista NetX" con los enlaces "Resumen" (`/netx`), "Modelo de financiamiento" (`/netx/financiamiento`), "Simulador" (`/netx/simulador`) y "Comunidad y embudo" (`/netx/comunidad`), en ese orden. Las pestañas MUST ser las mismas para toda persona con sesión, sin importar su rol. El enlace de la pestaña abierta MUST estar marcado como página actual (no solo con color). La navegación MUST usarse con teclado y no desbordar a 390 px.
 
 #### Scenario: Pestaña actual
-- **WHEN** el super admin abre `/netx/financiamiento`
+- **WHEN** una persona con sesión abre `/netx/financiamiento`
 - **THEN** ve las cuatro pestañas en ese orden y "Modelo de financiamiento" está marcada como página actual
 
-#### Scenario: Persona sin rol de super admin
-- **WHEN** una persona con rol "persona" abre `/netx/financiamiento`
-- **THEN** ve las pestañas "Resumen", "Modelo de financiamiento" y "Simulador", en ese orden, y no ve "Comunidad y embudo"
+#### Scenario: Mismas pestañas para todos
+- **WHEN** una persona con rol "persona" y el super admin abren `/netx/financiamiento`
+- **THEN** los dos ven "Resumen", "Modelo de financiamiento", "Simulador" y "Comunidad y embudo", en ese orden
 
 #### Scenario: Con teclado
 - **WHEN** una persona con sesión llega con Tab a "Simulador" y aprieta Enter

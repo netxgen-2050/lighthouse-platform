@@ -6,10 +6,10 @@
 - **Respuestas de Gus al PR #108 (26-oct-2026):**
   1. Los números incómodos quedan visibles en "Lo que tiene que ser cierto", cada uno con la **palanca** que lo movería (§5.7). "Estamos a tiempo de cambiar las asunciones y parámetros de diseño": las palancas lo dicen como texto, sin números nuevos y sin editar NS_Tokenomics.
   2. La vista trabaja bajo las asunciones legales del diseño definidas hasta ahora (excepción de prototipo interno a D9). Lo legal lleva ⚖ y "a verificar con abogado".
-  3. Dónde van las operaciones del super admin: decisión de diseño abierta, Gus quiere ver alternativas gráficas (§3.1). Por defecto, en "Comunidad y embudo".
+  3. Dónde van las operaciones del super admin: **opción B**, una página de administración propia (`/admin`) separada de la Vista NetX, con pestañas Pendientes · Personas y roles · Comunidades, ítem "Admin" con contador en el rail solo para el super admin, y la ruta protegida en el servidor (403) además de en la pantalla (§3). La Vista NetX queda solo con el relato y números agregados, igual para todos los que tengan sesión.
   4. Lenguaje: **Juego A** (el camino conocido: vender tierra) contra **Juego B** (procomún). Tono respetuoso, sin acusar a nadie (§5.6). "Diseño B" solo al citar doc 28.
   5. Instrumentos (SAFU, oferta privada, tokenización CNV): alcanza con ⚖ y "a verificar con abogado"; no hay presupuesto para consultoría legal.
-  6. El relato es para toda persona con sesión; las operaciones, solo super admin (§2).
+  6. La Vista NetX es para toda persona con sesión; las operaciones, solo super admin, en `/admin` (§2 y §3).
 - **Dependencia:** `fogon-simulador-parametros` (PR #96 spec, PR #107 implementación). Trae `lib/series/` (`correrSerie`, `porMil`, `VERSION_MODELO`, `formato.ts` con `usd`, `pct`, `multiplo`), `app/fogon/simulador/`, los términos ⚖ del diseño B (`unidadesregeneracion`, `notasverdes`, `primeraperdida`, `safu`, `serieprograma`, `avisosimulador`) y ADR-010. Al 23-oct **no está en `dev`**. Si al arrancar la noche `lib/series/modelo.ts` no existe en `dev`, el implementador frena y lo reporta.
 - **Fuentes** (todas en `NS_Tokenomics`, rama `main`, leídas el 23-oct-2026; el implementador no necesita abrirlas, este documento copia lo que hace falta):
   - doc 30 "How NetX Gen gets capitalised" (v0.1, 17-oct-2026): tres bolsillos, etapas, SAFE, comisión de desarrollo, consumo, cuenta de la pista y lotes.
@@ -21,7 +21,7 @@
 
 ## Objetivos / No objetivos
 
-- Objetivo: una estructura de pestañas estable, el simulador en su lugar nuevo, y un Resumen de una pantalla cuyos números salen de funciones puras testeadas contra los RESULTS.
+- Objetivo: una estructura de pestañas estable, el simulador en su lugar nuevo, las operaciones del super admin en `/admin` protegidas en el servidor, y un Resumen de una pantalla cuyos números salen de funciones puras testeadas contra los RESULTS.
 - No objetivo: la pestaña "Modelo de financiamiento" (cambio 2), cambiar el simulador, re-correr o mejorar los modelos.
 
 ## 1. Archivos
@@ -41,14 +41,27 @@ app/netx/
   pestanas.tsx      cliente: usePathname + useSesion, enlaces con aria-current
   page.tsx          Resumen (servidor)
   resumen/…         piezas del Resumen si hace falta partir el archivo
-  comunidad/page.tsx      contenido actual de /netx, envuelto en SoloSuperAdmin
-  comunidad/operaciones.tsx  PanelPersonas + PostulacionesComunidades + BandejaPedidos en un solo componente (§3.1)
+  comunidad/page.tsx      números agregados de /netx (indicadores, embudo, cumplimiento, tribus), sin operaciones (§2.1)
   simulador/page.tsx + simulador-cliente.tsx  movidos desde app/fogon/simulador/
+app/admin/                     (§3, solo super admin, protegido en el servidor)
+  layout.tsx        servidor: exigirSuperAdmin() + SoloSuperAdmin + encabezado + <PestanasAdmin/> + noindex
+  pestanas.tsx      cliente: PESTANAS_ADMIN, aria-current, contador en "Pendientes"
+  page.tsx          Pendientes: exigirSuperAdmin() + <PostulacionesComunidades/> + <BandejaPedidos/>
+  personas/page.tsx Personas y roles: exigirSuperAdmin() + <PanelPersonas/>
+  comunidades/page.tsx  Comunidades: exigirSuperAdmin() + tabla de listarTribus()
+  bandeja-pedidos.tsx, postulaciones-comunidades.tsx  git mv desde app/netx/, sin cambios de comportamiento
+app/forbidden.tsx              página del 403 (h1 "No tenés acceso a esta página")
 app/fogon/simulador/page.tsx   solo redirect("/netx/simulador")
+lib/admin/pendientes.ts        contarPendientes() pura (§3.2)
+lib/sesion/pagina.ts           sesionDeLaPagina(), exigirSuperAdmin() (§3.3)
+components/rail-admin.tsx      cliente: ítem "Admin" con contador, solo super admin (§3.4)
 components/barras-reparto.tsx  gráfico de barras horizontales con tabla equivalente
-lib/permisos/niveles.ts        capacidad nueva "vista-netx" (§2)
+lib/permisos/niveles.ts        capacidad nueva "vista-netx"; "netx" pasa a "admin" (§2)
+lib/navegacion.ts              destino "/admin" (grupo "interno")
 components/sesion/enlace-netx.tsx   visible con sesión (§2)
-components/sesion/solo-super-admin.tsx  solo cambia el texto de la bajada (§2)
+components/sesion/solo-super-admin.tsx  solo cambia el texto de la bajada (§3)
+components/sesion/proveedor-sesion.tsx  cookie de sesión para /admin (§3.3)
+next.config.ts                 experimental.authInterrupts: true (§3.3)
 ```
 
 `lib/financiamiento/` no importa React, Next ni nada de `app/` (test de fuente, como `lib/series`). Puede importar `@/lib/series`.
@@ -57,7 +70,7 @@ components/sesion/solo-super-admin.tsx  solo cambia el texto de la bajada (§2)
 
 - `app/netx/layout.tsx` **no** envuelve en `SoloSuperAdmin` (cambio del 26-oct). Dentro: contenedor `mx-auto max-w-5xl p-6 sm:p-10`, enlace "← Inicio", aviso "Prototipo interno · datos de ejemplo" y `<Pestanas/>`. La `Puerta` del layout raíz ya decide si la persona entra (ver "Quién ve qué").
 - `Pestanas` es un `<nav aria-label="Secciones de la Vista NetX">` con una `<ul>` de `Link`. Activa = **igualdad exacta** de ruta (`usePathname() === href`), no `esActivo` (que marcaría "Resumen" en todas). La activa lleva `aria-current="page"` y además negrita y subrayado (no solo color). `flex flex-wrap gap-2` para que a 390 px baje de línea y no desborde.
-- Lista en este cambio: Resumen `/netx`, Simulador `/netx/simulador`, Comunidad y embudo `/netx/comunidad`. Es un arreglo exportado (`PESTANAS_NETX: { href, etiqueta, soloSuperAdmin?: true }[]`) para que el cambio 2 sume "Modelo de financiamiento" `/netx/financiamiento` en segundo lugar sin tocar el componente. "Comunidad y embudo" lleva `soloSuperAdmin: true`: `Pestanas` la filtra con `useSesion()` (`sesion?.rol === "superadmin"`).
+- Lista en este cambio: Resumen `/netx`, Simulador `/netx/simulador`, Comunidad y embudo `/netx/comunidad`. Es un arreglo exportado (`PESTANAS_NETX: { href, etiqueta }[]`) para que el cambio 2 sume "Modelo de financiamiento" `/netx/financiamiento` en segundo lugar sin tocar el componente. **Ninguna pestaña se filtra por rol** (opción B, 26-oct): `Pestanas` no lee la sesión.
 - No se usa el patrón ARIA `tablist`: son navegaciones entre páginas, no paneles en la misma página.
 - `metadata.title` por página: "Vista NetX · Resumen", "Simulador de la tokenomics", "Vista NetX · Comunidad y embudo".
 
@@ -65,47 +78,86 @@ components/sesion/solo-super-admin.tsx  solo cambia el texto de la bajada (§2)
 
 | Qué | Quién | Dónde se controla |
 |---|---|---|
-| Resumen, Simulador (y Modelo de financiamiento, cambio 2) | Toda persona con sesión (nivel Explorador o más) | `Puerta` del layout raíz con la capacidad `vista-netx` |
-| Comunidad y embudo (embudo, panel de personas y roles, postulaciones, bandeja) | Solo super admin | `SoloSuperAdmin` en `app/netx/comunidad/page.tsx` + `/api/personas` (403 en el servidor) |
+| Resumen, Simulador, Comunidad y embudo (y Modelo de financiamiento, cambio 2) | Toda persona con sesión (nivel Explorador o más) | `Puerta` del layout raíz con la capacidad `vista-netx` |
+| `/admin` (Pendientes, Personas y roles, Comunidades) | Solo super admin | **Servidor**: `exigirSuperAdmin()` en el layout y en cada página → `forbidden()` (403). **Pantalla**: `SoloSuperAdmin`. **Datos**: `/api/personas` (403) |
+| Ítem "Admin" del rail, con contador | Solo super admin | `RailAdmin` (no se dibuja para el resto, ni bloqueado) |
 | Enlace "NetX" de la barra | Toda persona con sesión | `EnlaceNetx` |
 
-- **`lib/permisos/niveles.ts`:** nueva `Capacidad` `"vista-netx"` con `NIVEL_MINIMO` `"explorador"`. `capacidadDeRuta`: `/netx/comunidad` (y lo que cuelgue de ahí) → `"netx"`; el resto de `/netx` → `"vista-netx"`. Sin sesión, `Puerta` lleva a Sumarte con `?volver=/netx` (camino que ya existe para páginas personales). Para `/netx/comunidad` sigue el caso especial de `Puerta` ("NetX no redirige": la página explica que es solo del super admin). `avisoDeRuta("/netx")` pasa a dar el aviso de Explorador; `avisoDeRuta("/netx/comunidad")`, el de super admin.
+- **`lib/permisos/niveles.ts`:** nueva `Capacidad` `"vista-netx"` con `NIVEL_MINIMO` `"explorador"`; la capacidad `"netx"` se renombra `"admin"` (sigue en `"superadmin"`). `capacidadDeRuta`: todo `/netx` → `"vista-netx"`; `/admin` y lo que cuelgue → `"admin"`. Sin sesión, `Puerta` lleva a Sumarte con `?volver=/netx` (camino que ya existe para páginas personales). Para `/admin` sigue el caso especial de `Puerta` (las rutas de super admin no redirigen: la página explica que no hay acceso); de todos modos, sin permiso el servidor ya respondió 403 antes de que la `Puerta` corra. `NOMBRE_DE_RUTA` suma `["/admin", "admin"]` (con su texto "la administración" / "the admin page" en `lib/idioma/textos/sumarte.ts`); `avisoDeRuta("/netx")` da el aviso de Explorador y `avisoDeRuta("/admin")`, el de super admin.
 - **`EnlaceNetx`:** se muestra si `estado === "ok"` y `puedeCapacidad(nivel, "vista-netx")`; el comentario de la barra superior deja de decir "solo super admin". Conserva la marca "interno".
-- **`SoloSuperAdmin`:** la bajada pasa a "Esta sección de la Vista NetX es solo para el super admin del prototipo."; el h1 "No tenés acceso a esta vista" no cambia (lo prueban los e2e).
 - **¿Con sesión o pública?** Con sesión. Gus dejó la opción abierta ("o para todos si ya es pública") y la vista no es pública hoy: `/netx` no está en `lib/sesion/rutas-publicas.ts`. Razones para no abrirla: (a) Gus dijo que en esta etapa se comparte solo con gente de NetXGen, y una ruta pública queda a un enlace de cualquiera; (b) el relato habla de captar inversión (SAFE, SAFU, Unidades) con textos legales en borrador, y CLAUDE.md pide revisar estas reglas (R14) antes de mostrar la plataforma afuera; (c) con sesión es el camino que la plataforma ya resuelve (Sumarte con vuelta), sin código nuevo de acceso.
 - **Ojo: "con sesión" hoy no es "solo NetXGen".** Por defecto el acceso es abierto: quien se registra con un email válido entra como Explorador (`lib/sesion/personas.ts`); solo con `LH_ACCESO=lista` la lista se cierra. Para que la Vista NetX quede de verdad dentro de NetXGen, el entorno que se comparta tiene que tener `LH_ACCESO=lista`. Eso es configuración de Vercel, no código de este cambio: queda como pregunta para Gus.
 
 <!-- arquitecto: límite conocido del control de acceso (actualizado el 26-oct) -->
-- **Límite conocido del control de acceso, ahora intencional para el relato.** `Puerta` y `SoloSuperAdmin` son componentes de cliente: ocultan, pero lo que renderiza el servidor viaja igual en la respuesta de la página. Para el relato esto ya no es un riesgo sino lo buscado: los números del Resumen, del simulador y del modelo son de ejemplo, salen de NS_Tokenomics y ahora los ve toda persona con sesión. Lo que sí hay que cuidar: alguien sin sesión que pida la página directamente puede leer esos números en la respuesta. Se acepta para el prototipo (son números ilustrativos, sin datos personales) y queda escrito. Regla que se mantiene para este cambio y el siguiente: **ninguna pestaña de `/netx` lee datos de personas desde el servidor de la página**; las operaciones leen por `/api/*`, que verifica el rol en el servidor (como `/api/personas`), o desde el navegador (bandeja y postulaciones). Si alguna pestaña necesita datos reales o sensibles, o si la vista se muestra fuera de NetXGen, el control pasa al servidor (layout que lee la sesión y no renderiza los hijos) con otro cambio.
+- **Límite conocido del control de acceso, ahora intencional para el relato.** `Puerta` y `SoloSuperAdmin` son componentes de cliente: ocultan, pero lo que renderiza el servidor viaja igual en la respuesta de la página. Para el relato esto ya no es un riesgo sino lo buscado: los números del Resumen, del simulador y del modelo son de ejemplo, salen de NS_Tokenomics y ahora los ve toda persona con sesión. Lo que sí hay que cuidar: alguien sin sesión que pida la página directamente puede leer esos números en la respuesta. Se acepta para el prototipo (son números ilustrativos, sin datos personales) y queda escrito. Regla que se mantiene para este cambio y el siguiente: **ninguna pestaña de `/netx` lee datos de personas** (ni desde el servidor de la página ni desde el navegador): las operaciones se fueron a `/admin` (§3). Si alguna pestaña de `/netx` necesita datos reales o sensibles, o si la vista se muestra fuera de NetXGen, el control pasa al servidor con el mismo mecanismo de `/admin` (§3.3) en otro cambio.
 
 <!-- arquitecto: revisión del 26-oct sobre la apertura a toda persona con sesión (ADR-015, Propuesta) -->
 - **Qué protege cada capa, dicho sin vueltas** (ADR-015):
   - *Relato* (Resumen, Simulador, Modelo): oculto en el navegador. Quien tenga la dirección puede leer los números en el código de la respuesta aunque no tenga sesión. En la práctica es "público para quien tenga el enlace", no "solo con sesión". Se acepta porque no hay datos de personas y los números son ilustrativos de NS_Tokenomics.
-  - *Comunidad y embudo*: el embudo, el cumplimiento y las tribus son constantes de ejemplo (`lib/vista-netx/datos`): mismo caso que el relato. El panel de personas lee por `/api/personas`, que verifica el rol en el servidor (403): **esto es lo único que hoy protege el servidor**. La bandeja de pedidos y las postulaciones leen el almacenamiento de **este navegador** (`leerBandejaDelNavegador`, `leerPostulacionesDelNavegador`): no hay dato del servidor que proteger, y el super admin solo ve lo que se cargó en su propio navegador.
-  - **Regla para cuando la bandeja o las postulaciones pasen a la base:** su lectura va por una ruta `/api/*` que use la sesión del servidor y responda 403 a quien no es super admin, igual que `/api/personas`. Ocultarlas con `SoloSuperAdmin` deja de alcanzar en ese momento.
+  - *Comunidad y embudo*: el embudo, el cumplimiento y las tribus son constantes de ejemplo (`lib/vista-netx/datos`): mismo caso que el relato. Ya no tiene operaciones.
+  - *`/admin`*: **protegido en el servidor** (§3.3): sin permiso, el servidor responde 403 y no arma las pestañas. Además, el panel de personas lee por `/api/personas`, que verifica el rol en el servidor (403). La bandeja de pedidos y las postulaciones leen el almacenamiento de **este navegador** (`leerBandejaDelNavegador`, `leerPostulacionesDelNavegador`): el super admin solo ve lo que se cargó en su propio navegador.
+  - **Regla para cuando la bandeja o las postulaciones pasen a la base:** su lectura va por una ruta `/api/*` que use la sesión del servidor y responda 403 a quien no es super admin, igual que `/api/personas`. Que la página `/admin` dé 403 no alcanza: la API tiene que verificar por su cuenta.
 - **Que no la encuentren los buscadores.** `app/netx/layout.tsx` exporta `metadata.robots = { index: false, follow: false }`. Cuesta una línea y evita que una dirección compartida termine indexada mientras el relato es legible sin sesión.
 - **Modo de prueba en previews.** Con `LH_AUTH_PRUEBA=1` (previews, nunca producción) cualquiera con la dirección del preview entra como un email `.test`, incluido el super admin de prueba si figura en `LH_PERSONAS` del preview. Ya era así antes de este cambio y los previews no tienen datos reales (ADR-008): no cambia nada, pero "con sesión" en un preview equivale a "con la dirección".
-- **Una sola fuente para "es super admin".** `Pestanas` y `SoloSuperAdmin` usan `sesion?.rol === "superadmin"` (el rol que devuelve `/api/sesion`, calculado en el servidor desde `LH_PERSONAS`); `EnlaceNetx` y la `Puerta` usan el nivel, que vale `superadmin` solo con ese mismo rol (`lib/sesion/nivel.ts`). No se agrega otra forma de decidirlo.
+- **Una sola fuente para "es super admin".** En el navegador, `SoloSuperAdmin` y `RailAdmin` usan `sesion?.rol === "superadmin"` (el rol que devuelve `/api/sesion`, calculado en el servidor desde la tabla `personas`); `EnlaceNetx` y la `Puerta` usan el nivel, que vale `superadmin` solo con ese mismo rol (`lib/sesion/nivel.ts`). En el servidor, `exigirSuperAdmin()` usa `persona.rol === "superadmin"` de `sesionDeLaPagina()`, que sale de la misma `personaDeLaSesion` que `/api/sesion` y `/api/personas`. No se agrega otra forma de decidirlo.
 
-## 3. Comunidad y embudo
+## 2.1 Comunidad y embudo (solo números agregados)
 
-`app/netx/comunidad/page.tsx` = el `VistaNetx` actual **envuelto en `SoloSuperAdmin`** (la página entera, también el embudo), sin el aviso de prototipo (lo pone el layout) y con:
-- rótulo "Vista NetX · solo super admin", h1 **"Comunidad y embudo"**, bajada "Embudo, tribus y cumplimiento. Todos los datos de esta vista son de ejemplo." (se conserva el texto que ya prueban los e2e).
-- El enlace "← Inicio" pasa al layout.
-- Todo lo demás igual (indicadores, embudo, cumplimiento, tribus). `PanelPersonas`, `PostulacionesComunidades` y `BandejaPedidos` se juntan en `app/netx/comunidad/operaciones.tsx` (`<Operaciones/>`, una `section` con h2 "Operaciones del super admin"), sin cambiar su comportamiento. Así, si Gus elige otra ubicación (§3.1), moverlas es cambiar dónde se importa `<Operaciones/>`.
+`app/netx/comunidad/page.tsx` = el `VistaNetx` actual **sin** `SoloSuperAdmin`, sin el aviso de prototipo (lo pone el layout), sin el enlace "← Inicio" (lo pone el layout) y **sin** `PanelPersonas`, `PostulacionesComunidades` ni `BandejaPedidos` (se van a `/admin`, §3). Queda:
+- rótulo "Vista NetX · para el equipo de NetXGen", h1 **"Comunidad y embudo"**, bajada "Embudo, tribus y cumplimiento. Todos los datos de esta vista son de ejemplo." (texto que ya prueban los e2e).
+- Indicadores, embudo con conversión, cumplimiento con medidores y alertas, y "Tribus por proyecto": todo igual, de `lib/vista-netx/datos` (constantes de ejemplo, agregadas, sin personas).
+- Sin enlace a `/admin` (el super admin llega por el rail).
+- Regla: nada bajo `app/netx/` importa `components/sesion/panel-personas`, `@/lib/contactos/almacen` ni `@/lib/postulaciones/almacen` (test de fuente, tarea 4.3).
 
-### 3.1 Decisión de diseño abierta: dónde van las operaciones
+## 3. Página de administración `/admin` (opción B de Gus, 26-oct)
 
-Gus (26-oct) quiere ver alternativas gráficas antes de decidir. Este cambio implementa **A** (por defecto). Las demás quedan descritas para que alguien arme las maquetas (fuera de esta noche):
+Las operaciones del super admin salen de la Vista NetX a una página propia. Son las mismas piezas que hoy están al final de `/netx`, **sin cambiar su comportamiento**, más una tabla de solo lectura de las comunidades.
 
-| | Dónde | A favor | En contra |
-|---|---|---|---|
-| **A · por defecto** | Dentro de "Comunidad y embudo", al final, que entera es solo super admin | Cero rutas nuevas; es lo que hay hoy | El embudo (de ejemplo) queda escondido para el resto del equipo |
-| B | Pestaña propia "Operaciones" (`/netx/operaciones`, solo super admin); "Comunidad y embudo" se abre a toda persona con sesión | Separa relato y trabajo; el equipo ve el embudo | Una pestaña más; mover rutas de e2e otra vez |
-| C | Fuera de la Vista NetX, en un espacio de administración propio (por ejemplo, desde el menú de la persona) | La Vista NetX queda solo como relato | Página nueva y entrada nueva en la navegación |
-| D | Panel desplegable "Operaciones" en el Resumen, visible solo para el super admin | Todo a mano en la reunión | Mezcla el relato con el trabajo diario |
+### 3.1 Estructura
 
-La decisión no cambia las reglas de acceso: las operaciones siguen solo para el super admin y sus datos siguen protegidos en el servidor.
+- `app/admin/layout.tsx` (servidor): la **primera línea** es `await exigirSuperAdmin()` (§3.3). Después: `metadata.robots = { index: false, follow: false }`, contenedor `mx-auto max-w-5xl p-6 sm:p-10`, enlace "← Inicio", aviso "Prototipo interno · datos de ejemplo", rótulo "Administración · solo super admin", `<PestanasAdmin/>` y los hijos envueltos en `SoloSuperAdmin` (capa de pantalla: mientras la sesión del navegador se verifica, o si el navegador cambió de persona, no se dibujan las operaciones).
+- `app/admin/pestanas.tsx` (cliente): `<nav aria-label="Secciones de la administración">`, mismo patrón que `Pestanas` de `/netx` (§2: `Link`, igualdad exacta de ruta, `aria-current="page"` con negrita y subrayado, `flex flex-wrap gap-2`). `PESTANAS_ADMIN = [{ href: "/admin", etiqueta: "Pendientes", contador: true }, { href: "/admin/personas", etiqueta: "Personas y roles" }, { href: "/admin/comunidades", etiqueta: "Comunidades" }]`. "Pendientes" muestra el contador (§3.2) como texto: "Pendientes · 3"; con `null`, "Pendientes · sin dato"; mientras se lee el navegador, solo "Pendientes".
+- Cada página llama también a `await exigirSuperAdmin()` al empezar: el layout no se vuelve a ejecutar al pasar de una pestaña a otra dentro de `/admin`, y el pedido de cada página tiene que estar protegido por sí mismo.
+- Un h1 por página: **"Pendientes"**, **"Personas y roles"**, **"Comunidades"**. `metadata.title`: "Admin · Pendientes", "Admin · Personas y roles", "Admin · Comunidades".
+- `SoloSuperAdmin`: el h1 "No tenés acceso a esta vista" no cambia (lo prueban los e2e); la bajada pasa a "La administración es solo para el super admin del prototipo." Con la protección del servidor, en la práctica solo se ve si el navegador cambia de persona sin recargar.
+- `/admin` no está traducida: con la plataforma en inglés se ve en español con el aviso de página sin traducir (comportamiento actual de `Contenido`).
+
+| Pestaña | Ruta | Contenido |
+|---|---|---|
+| Pendientes | `/admin` | Bajada "Postulaciones de comunidades y pedidos de contacto guardados en este navegador (simulado). Todavía no se pueden responder desde acá." + `<PostulacionesComunidades/>` + `<BandejaPedidos/>` (`git mv` desde `app/netx/`, sin cambios) |
+| Personas y roles | `/admin/personas` | `<PanelPersonas/>` sin cambios (lee y escribe por `/api/personas`, que sigue verificando el rol: 403) |
+| Comunidades | `/admin/comunidades` | Bajada "Tribus del directorio (datos de ejemplo). Solo lectura." + tabla con `caption` "Comunidades del directorio" y columnas Comunidad (enlace a `/tribus/<id>`), Barrio, Estado (`textoDeEstado`), Hogares, Roles (`cubiertos/necesarios`), Forma jurídica, desde `listarTribus()`. Contenedor `overflow-x-auto` para 390 px. Sin datos de personas: no muestra líderes ni emails |
+
+### 3.2 Contador de pendientes (`lib/admin/pendientes.ts`)
+
+- Hoy nada se responde: postulaciones y pedidos están todos "Recibida (simulado)". **Pendiente = guardado en este navegador.**
+- `contarPendientes(postulaciones: Postulacion[] | null, pedidos: Pedido[]): number | null` — `null` si `postulaciones` es `null` (el navegador no deja leer: "sin dato", no 0); si no, la suma de los dos largos. Función pura, con test.
+- `usePendientes()` (cliente, en `lib/admin/usar-pendientes.ts`): `undefined` hasta leer el navegador después de hidratar; después `contarPendientes(leerPostulacionesDelNavegador(), leerBandejaDelNavegador())`. Vuelve a leer con el evento `storage` (otra pestaña del navegador guardó algo). La usan `PestanasAdmin` y `RailAdmin`: una sola cuenta.
+- Cuando exista responder (backlog B6), `contarPendientes` cuenta solo lo no respondido: es el único lugar que cambia.
+
+### 3.3 Protección en el servidor (`lib/sesion/pagina.ts`, ADR-016)
+
+Hoy la sesión viaja en una cabecera que manda el navegador a `/api/*` (`Authorization: Bearer <token de Privy>` o `x-lh-prueba` en modo de prueba). Cuando el navegador pide una **página**, esas cabeceras no van: el servidor de la página no sabe quién pide. Para `/admin`:
+
+- **Cookies que lee el servidor:**
+  - Modo de prueba: `lh-auth-prueba` (`COOKIE_PRUEBA`, ya existe, `path=/`). Vale lo mismo que la cabecera `x-lh-prueba`: solo con `modoPruebaActivo` y emails `.test` (ADR-008); en producción se ignora.
+  - Privy: cookie nueva **`lh-sesion-admin`** con el token de acceso de Privy, que escribe `ProveedorSesion` **solo si** la sesión verificada es de super admin (`sesion.rol === "superadmin"`) y no es de prueba. Atributos: `path=/admin` (solo viaja a `/admin`), `SameSite=Strict`, `Secure` cuando la página es `https:`, `max-age=3300` (55 min, menos que la vida del token). Se reescribe con un token fresco (`getAccessToken`) en cada cambio de ruta mientras siga siendo super admin; se borra al salir, al cambiar de persona o si el rol deja de ser super admin.
+- **`sesionDeLaPagina()`** (servidor, `import "server-only"`): lee esas cookies con `cookies()` de `next/headers` y llama a la misma resolución que `sesionDelPedido` (`resolverSesion` + `personaDeLaSesion`). Para no duplicar, `lib/sesion/servidor.ts` extrae `sesionDeCabeceras({ authorization, prueba })` y `sesionDelPedido(req)` pasa a llamarla. `lh-sesion-admin` se traduce a `authorization: "Bearer <valor>"`; `lh-auth-prueba`, a `prueba`.
+- **`exigirSuperAdmin()`**: `const s = await sesionDeLaPagina(); if (s.estado !== 200 || s.persona.rol !== "superadmin") forbidden();` (`forbidden` de `next/navigation`). **Falla cerrado**: sin cookie, token vencido o inválido (401), email no permitido (403), base caída (503) → 403. No escribe nada en el log con datos de la persona.
+- **403 de verdad:** `forbidden()` necesita `experimental: { authInterrupts: true }` en `next.config.ts` (Next 15.5). `app/forbidden.tsx`: aviso de prototipo, h1 **"No tenés acceso a esta página"**, "La administración es solo para el super admin del prototipo. Si sos el super admin y acabás de entrar, recargá la página." y "Volver al inicio". No lee la sesión ni datos de nadie. El servidor no arma nada de `/admin` antes de `exigirSuperAdmin()`, así que la respuesta 403 no trae pestañas, contadores ni tablas. **Si en `pnpm build && pnpm start` la respuesta no es 403, el implementador frena y reporta** (no improvisa otro mecanismo).
+- `export const dynamic = "force-dynamic"` en el layout (lee cookies: nada de `/admin` se guarda en caché ni se genera en el build).
+- **Por qué es seguro para el prototipo** (detalle en ADR-016): el token de la cookie es el mismo que el JavaScript de la página ya tiene (Privy lo guarda en el navegador), así que no abre una exposición nueva; con `path=/admin` y `SameSite=Strict` solo viaja a `/admin` y no lo dispara otro sitio; `/admin` solo lee (las escrituras siguen yendo a `/api/personas` con la cabecera, no con la cookie), así que no hay escrituras por cookie que proteger de pedidos cruzados.
+- **Neon Auth (ADR-009):** cuando llegue, su sesión ya vive en una cookie del servidor; cambia solo `sesionDeLaPagina()`, y `lh-sesion-admin` se borra.
+- `/admin/loquesea` (ruta que no existe): el layout responde 403 antes del 404 para quien no es super admin, así no revela qué rutas hay.
+
+### 3.4 Ítem "Admin" del rail (`components/rail-admin.tsx`)
+
+- `lib/navegacion.ts` suma el destino `{ href: "/admin", clave: "admin", icono: UserCog, grupo: "interno", existe: true }` y el diccionario del marco suma `destinos.admin` ("Admin" en los dos idiomas) y `rail.grupos.interno` ("Interno" / "Internal"). El test de `existe` contra `app/` lo vigila.
+- `Rail` (servidor) pasa a `RailAdmin` la etiqueta y el ícono ya renderizado, y lo dibuja dentro del mismo `<nav>`, después de los grupos, como un grupo propio "Interno" con el mismo estilo de los otros.
+- `RailAdmin` (cliente) **no dibuja nada** salvo que `estado === "ok"` y `sesion?.rol === "superadmin"`: ni bloqueado ni con candado (a diferencia de los otros destinos). Mientras se verifica la sesión, tampoco.
+- Enlace a `/admin` con `aria-current="page"` en cualquier ruta de `/admin` (`esActivo`), mismo estilo que `RailEnlaces` (se exportan `CLASE_ITEM` y `CLASE_PASTILLA` de `rail-enlaces.tsx` para no copiarlas).
+- Contador con `usePendientes()` en la pastilla del ítem (`CLASE_PASTILLA`): `n > 0` → "3" visible y "pendientes" para lector de pantalla (nombre del enlace: "Admin, 3 pendientes"); `0` → sin pastilla (nombre: "Admin"); `null` → "sin dato" visible (nombre: "Admin, pendientes sin dato"); `undefined` → sin pastilla. El número va en texto, no solo como un punto de color.
+- La visibilidad del ítem es presentación: aunque alguien lo dibuje a mano, `/admin` responde 403 en el servidor.
 
 ## 4. Simulador
 
@@ -306,10 +358,15 @@ Se reusan `safe`, `pasefundador` y los del diseño B que trae `fogon-simulador-p
 - **El relato contrasta con lo que propone el CEO.** Franz hoy propone vender tierras. Mitigación: el Juego A se presenta con respeto y con datos, nadie aparece nombrado y hay un test de palabras que no van.
 - **"Con sesión" no es "solo NetXGen"** mientras el registro sea abierto. Mitigación: queda escrito en §2 y como pregunta para Gus (`LH_ACCESO=lista` en el entorno que se comparta).
 <!-- arquitecto: ADR-015 -->
-- **El relato se lee sin sesión en el código de la respuesta** (control en el navegador). Mitigación: sin datos de personas en ninguna pestaña (e2e de la tarea 5.2 que lo prueba sin sesión), `noindex` en el layout y ADR-015 con la señal para pasar el control al servidor (R14, datos reales o la primera pestaña con algo que no sea de ejemplo).
+- **El relato se lee sin sesión en el código de la respuesta** (control en el navegador). Mitigación: sin datos de personas en ninguna pestaña (e2e de la tarea 6.3 que lo prueba sin sesión), `noindex` en el layout y ADR-015 con la señal para pasar el control al servidor (R14, datos reales o la primera pestaña con algo que no sea de ejemplo).
 - **Dependencia de un PR sin integrar** (#107). Mitigación: el implementador verifica `lib/series` en `dev` y frena si falta.
 - **Números del Congreso cancelado.** El modelo de la plataforma y el Pase arrancan en el encuentro de febrero 2027. Mitigación: marca visible en cada uno; re-correr el modelo es trabajo de NS_Tokenomics (I-15), no de este cambio.
 - **Monte Carlo copiado.** Si se re-corre en NS_Tokenomics, la tabla queda vieja. Mitigación: versión a la vista y la regla de ADR-010/ADR-014 (un cambio del `.py` = un cambio OpenSpec).
 <!-- arquitecto: orden de archivo -->
 - **Orden de archivo.** El delta de `fogon-simulador` quita el requisito "Acceso desde el Fogón", que crea `fogon-simulador-parametros` y todavía no está archivado: este cambio se archiva **después** de ese (si no, `openspec archive` lo rechaza).
-- **Mover operaciones a `/netx/comunidad`** rompe e2e que abren `/netx` para probar la bandeja o las postulaciones. Mitigación: tarea explícita para actualizar esas rutas; la prueba de "sin acceso" pasa a `/netx/comunidad` (en `/netx` una persona con sesión ahora entra).
+- **Mover operaciones a `/admin`** rompe e2e que abren `/netx` para probar la bandeja, las postulaciones o el panel de personas. Mitigación: tarea explícita para actualizar esas rutas; la prueba de "sin acceso" pasa a `/admin` (en `/netx` una persona con sesión ahora entra a todo).
+- **Noche cargada.** Con `/admin` y la protección en el servidor, este cambio es más grande que una noche típica. Mitigación: las tareas están en orden de dependencia: `/admin` (sección 3 de tasks) va **antes** de abrir la Vista NetX a todos (sección 4), y el Resumen (sección 5) es independiente. Si la noche no alcanza, el implementador entrega hasta donde llegó y lo reporta: nunca queda un estado intermedio con el panel de personas, la bandeja o las postulaciones dentro de una página abierta a cualquiera con sesión.
+- **La cookie de sesión de `/admin`** es una forma nueva de llevar la sesión al servidor (ADR-016). Mitigación: solo para el super admin, `path=/admin`, `SameSite=Strict`, corta vida, solo lectura, falla cerrado, y se reemplaza cuando llegue Neon Auth. El token es el mismo que la página ya tiene en el navegador.
+- **`forbidden()` es experimental en Next 15.5** (`authInterrupts`). Mitigación: e2e que pide `/admin` y exige 403; si una actualización de Next lo rompe, ese e2e falla. Si en el build no da 403, el implementador frena.
+- **Super admin con un token vencido** ve el 403 al abrir `/admin` por dirección después de un rato sin usar la plataforma. Mitigación: la cookie se renueva en cada cambio de ruta y el 403 dice "recargá la página"; es una molestia para una sola persona, no una fuga.
+- **Rail del lado del navegador.** El ítem "Admin" se decide con la sesión del navegador. Mitigación: es solo presentación; la ruta la protege el servidor (§3.3).
