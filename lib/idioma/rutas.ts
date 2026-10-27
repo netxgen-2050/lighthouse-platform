@@ -17,6 +17,8 @@ export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   /^\/tribus\/[^/]+\/manifiesto$/,
   /^\/tribus\/[^/]+\/postular$/,
   /^\/territorios\/[^/]+$/,
+  // Cómo decidimos (fogon-gobernanza-fractal).
+  /^\/fogon\/gobernanza$/,
 ];
 
 function limpiar(ruta: string): string {

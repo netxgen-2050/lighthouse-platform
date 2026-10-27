@@ -31,6 +31,8 @@ export const NOMBRES_BASE = {
   fogon: "lh-fogon",
   /** Repartos propios y cierres simulados de las consultas del Fogón. */
   fogonConsultas: "lh-fogon-consultas",
+  /** Registros de gobernanza con forma de attestation (validaciones y decisiones llevadas al consejo), solo de agregar. */
+  gobernanza: "lh-gobernanza",
 } as const;
 
 /** Guarda, sin prefijo, cuál fue la última persona: lo necesita el script que aplica el tema antes de hidratar. */

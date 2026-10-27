@@ -5,6 +5,11 @@ import { useEffect, useState, type KeyboardEvent } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
 import { listarActividad, type EventoActividad } from "@/lib/actividad/actividad";
 import { EVENTO_CAMBIO, leerActividadDelNavegador } from "@/lib/actividad/almacen";
+import { personaEnSesion } from "@/lib/demo/claves";
+import { guardarRegistros, leerRegistrosDelNavegador, sincronizarValidaciones, tribusQueValidan } from "@/lib/gobernanza/registros";
+import { useTextos } from "@/lib/idioma/cliente";
+import { COMUNIDAD_LIGHTHOUSE, comunidadesDondeEsMiembro, leerMembresiaDelNavegador } from "@/lib/membresia/estado";
+import { buscarTribu } from "@/lib/tribus/datos";
 import { agruparPorDia } from "@/lib/panel/linea-tiempo";
 import { leerProgreso, proximoPaso, type ProximoPaso } from "@/lib/panel/proximo-paso";
 import { TablaBitacora } from "./bitacora/tabla-bitacora";
@@ -32,12 +37,23 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
   const [paso, setPaso] = useState<ProximoPaso | null>(null);
   const [actividad, setActividad] = useState<EventoActividad[]>([]);
   const [pestana, setPestana] = useState<Pestana>(pestanaInicial);
+  // Tribus que validan a la persona (simulado): su membresía aceptada, guardada como registro que no se edita.
+  const [validaciones, setValidaciones] = useState<string[]>([]);
+  const gob = useTextos("gobernanza").recorrido;
 
   useEffect(() => {
     const leerActividad = () => setActividad(listarActividad(leerActividadDelNavegador(), new Date()));
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
     try {
       setPaso(proximoPaso(leerProgreso((c) => window.localStorage.getItem(c))));
+      const miembro = comunidadesDondeEsMiembro(leerMembresiaDelNavegador()).filter(
+        (c) => c !== COMUNIDAD_LIGHTHOUSE && buscarTribu(c) !== undefined,
+      );
+      const persona = personaEnSesion() ?? "yo";
+      const previos = leerRegistrosDelNavegador();
+      const actual = sincronizarValidaciones(previos, persona, miembro, new Date().toISOString());
+      if (actual.length !== previos.length) guardarRegistros(actual);
+      setValidaciones(tribusQueValidan(persona, actual));
     } catch {
       setFalloAlmacen(true);
     }
@@ -197,6 +213,26 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
           .
         </p>
       </div>
+
+      <section aria-labelledby="validaciones" className="grid gap-2 rounded-xl border border-faint bg-surface p-4">
+        <h2 id="validaciones" className="text-xl font-semibold">
+          {gob.titulo}
+          <TerminoLegal clave="validacioncomun" />
+        </h2>
+        {validaciones.length === 0 ? (
+          <p>{gob.ninguna}</p>
+        ) : (
+          <ul className="grid gap-1">
+            {validaciones.map((id) => (
+              <li key={id}>
+                <span aria-hidden="true">✓ </span>
+                {gob.validadaPor(buscarTribu(id)?.nombre ?? id)}
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="text-sm text-muted">{gob.nota}</p>
+      </section>
     </div>
   );
 }

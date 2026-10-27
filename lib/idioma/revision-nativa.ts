@@ -45,6 +45,14 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Territorio: vitrina, leyenda y controles del mapa, ficha lateral y marcadores",
   },
+  "textos/gobernanza": {
+    estado: "pendiente",
+    que: "Gobernanza fractal: página Cómo decidimos (estructura, círculos, consejo), marca de validación de la ficha de tribu y Quiénes te validaron en Mi recorrido",
+  },
+  "lib/gobernanza/datos.ts": {
+    estado: "pendiente",
+    que: "Nombres de los círculos de ejemplo de cada tribu y del círculo transversal, con su inglés",
+  },
   "lib/tribus/datos.ts": {
     estado: "pendiente",
     que: "Datos de ejemplo de las 12 tribus con su inglés (foco, qué tiene, qué busca, ritual, forma jurídica…) y la declaración de cada tribu, traducida del español",
@@ -89,6 +97,7 @@ export function fuentesObligatorias(): string[] {
     "lib/congreso/evento-ejemplo.ts",
     "lib/sumarte/datos.ts",
     "lib/tribus/datos.ts",
+    "lib/gobernanza/datos.ts",
     "lib/manifiestos/datos.ts",
     "lib/territorios/textos.ts",
   ];
