@@ -4,10 +4,10 @@ Rama `agente/fogon-gobernanza-fractal` desde `dev`, **después** de que `fogon-l
 
 ## 1. Modelo de gobernanza
 
-- [ ] 1.1 `lib/gobernanza/tipos.ts` y `datos.ts` (design §1): común, 12 tribus desde `lib/tribus/datos.ts`, círculos de ejemplo (Avelan Kerum desde sus `areas`), consejo con un lugar por tribu validada y `representante: null` donde no hay. Tests: las vacantes no tienen círculos ni lugar; ningún lugar tiene representante inventado. Verificar con `pnpm test lib/gobernanza`.
-- [ ] 1.2 `lib/gobernanza/registros.ts` (design §2): agregar registro, revocar (registro nuevo que apunta), `estaRevocado`, `validadaPorElComun(tribuId)`, `tribusQueValidan(personaId)`; lectura tolerante de lo guardado; clave nueva en `lib/demo/claves.ts` que "Borrar todo" incluye. Tests: revocar no borra el original; un registro no se edita; datos guardados rotos se leen como lista vacía. Verificar con `pnpm test lib/gobernanza lib/demo`.
+- [x] 1.1 `lib/gobernanza/tipos.ts` y `datos.ts` (design §1): común, 12 tribus desde `lib/tribus/datos.ts`, círculos de ejemplo (Avelan Kerum desde sus `areas`), consejo con un lugar por tribu validada y `representante: null` donde no hay. Tests: las vacantes no tienen círculos ni lugar; ningún lugar tiene representante inventado. Verificar con `pnpm test lib/gobernanza`.
+- [x] 1.2 `lib/gobernanza/registros.ts` (design §2): agregar registro, revocar (registro nuevo que apunta), `estaRevocado`, `validadaPorElComun(tribuId)`, `tribusQueValidan(personaId)`; lectura tolerante de lo guardado; clave nueva en `lib/demo/claves.ts` que "Borrar todo" incluye. Tests: revocar no borra el original; un registro no se edita; datos guardados rotos se leen como lista vacía. Verificar con `pnpm test lib/gobernanza lib/demo`.
 
-- [ ] 1.3 (Enmienda 23-oct-2026) Círculos transversales: un círculo tiene `tribus: string[]` (una o varias, o ninguna) y zona opcional; agregar un círculo transversal de ejemplo con personas de Valle Solar y Taller Común que cuelga del común. Tests: el transversal aparece bajo el común con sus tribus; sin zona no inventa un lote. Verificar con `pnpm test lib/gobernanza`.
+- [x] 1.3 (Enmienda 23-oct-2026) Círculos transversales: un círculo tiene `tribus: string[]` (una o varias, o ninguna) y zona opcional; agregar un círculo transversal de ejemplo con personas de Valle Solar y Taller Común que cuelga del común. Tests: el transversal aparece bajo el común con sus tribus; sin zona no inventa un lote. Verificar con `pnpm test lib/gobernanza`.
 
 ## 2. Página "Cómo decidimos"
 
