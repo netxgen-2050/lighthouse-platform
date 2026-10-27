@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { semillasDePlata, semillasPorMes } from "./calculo";
-import { HOUR_REF_ARS, HOUR_REF_USD, ROLES, USD_ARS } from "./datos";
+import { HOUR_REF_ARS, HOUR_REF_USD, pasosDelPacto, ROLES, textoDeRol, tituloDePestana, USD_ARS } from "./datos";
 import {
   INICIAL,
   deComunidad,
@@ -46,6 +46,19 @@ describe("roles", () => {
     expect(ROLES.map((r) => r.nombre)).toContain("Facilitación");
     expect(ROLES.at(-1)?.clave).toBe("otro");
     for (const r of ROLES) expect(r.descripcion.length).toBeGreaterThan(10);
+  });
+
+  it("cada rol, pestaña y paso tiene su texto en inglés", () => {
+    for (const r of ROLES) {
+      const en = textoDeRol(r, "en");
+      expect(en.nombre.trim(), r.clave).not.toBe("");
+      expect(en.descripcion.length, r.clave).toBeGreaterThan(10);
+      expect(textoDeRol(r, "es")).toEqual({ nombre: r.nombre, descripcion: r.descripcion });
+    }
+    expect(textoDeRol(ROLES[0], "en").nombre).toBe("Facilitation");
+    expect(tituloDePestana("plata", "en")).toBe("Join with money");
+    expect(tituloDePestana("plata", "es")).toBe("Sumarte con plata");
+    expect(pasosDelPacto("en")).toHaveLength(pasosDelPacto("es").length);
   });
 });
 

@@ -171,13 +171,17 @@ test.describe("Sumarte en inglés con una cuenta Explorer", () => {
     await expect(page.getByText("23 of 35")).toBeVisible();
   });
 
-  test("sin identidad verificada, el diálogo de verificación sigue en español con lang es", async ({ page }) => {
+  test("sin identidad verificada, el diálogo de verificación se abre en inglés", async ({ page }) => {
     await page.goto("/sumarte");
     await page.getByRole("button", { name: "Request an invitation" }).click();
-    const dialogo = page.getByRole("dialog");
+    const dialogo = page.getByRole("dialog", { name: /Verify my identity/ });
     await expect(dialogo).toBeVisible();
-    expect(await dialogo.evaluate((el) => Boolean(el.closest('[lang="es"]')))).toBe(true);
-    await expect(dialogo).toContainText("Para pedir una invitación a invertir primero necesitamos verificar tu identidad.");
+    expect(await dialogo.evaluate((el) => Boolean(el.closest('[lang="es"]')))).toBe(false);
+    await expect(dialogo).toContainText("To request an invitation to invest we first need to verify your identity.");
+    // El primer paso sin llenar: el error sale en inglés y el foco va al campo.
+    await dialogo.getByRole("button", { name: "Next" }).click();
+    await expect(dialogo.getByText("Error: Enter your full name.")).toBeVisible();
+    await expect(dialogo.getByLabel("Full name")).toBeFocused();
   });
 });
 

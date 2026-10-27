@@ -3,11 +3,24 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { KycDialogo } from "@/components/kyc-dialogo";
+import { MarcaSemillas } from "@/components/marca-semillas";
 import { CLAVES } from "@/lib/demo/claves";
 import { TerminoEconomico } from "@/components/termino-economico";
 import { TerminoLegal } from "@/components/termino-legal";
 import { semillasDePlata, semillasPorMes } from "@/lib/pactos/calculo";
-import { HORAS, HOUR_REF_ARS, HOUR_REF_USD, MONTO_USD, PASOS, PESTANAS, ROLES, buscarRol, type ClaveRol } from "@/lib/pactos/datos";
+import {
+  HORAS,
+  HOUR_REF_ARS,
+  HOUR_REF_USD,
+  MONTO_USD,
+  PESTANAS,
+  ROLES,
+  buscarRol,
+  pasosDelPacto,
+  textoDeRol,
+  tituloDePestana,
+  type ClaveRol,
+} from "@/lib/pactos/datos";
 import {
   INICIAL,
   MAX_DESCRIPCION,
@@ -22,13 +35,14 @@ import {
 } from "@/lib/pactos/estado";
 import { registrarEvento } from "@/lib/actividad/almacen";
 import { usePreferencias } from "@/lib/configuracion/almacen";
-import { formatearMonto, NOTA_TIPO_DE_CAMBIO } from "@/lib/configuracion/preferencias";
+import { formatearMonto, notaTipoDeCambio } from "@/lib/configuracion/preferencias";
 import { EVENTOS } from "@/lib/actividad/eventos";
+import { formatearFecha, formatearNumero } from "@/lib/idioma/formatos";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { COMUNIDAD_LIGHTHOUSE, comunidadesDondeEsMiembro, leerMembresiaDelNavegador } from "@/lib/membresia/estado";
 import { DATOS_VACIOS, type DatosPersona } from "@/lib/pasaporte/datos";
 import { leerPasaporteDelNavegador } from "@/lib/pasaporte/del-navegador";
 import { useKyc } from "@/lib/pasaporte/usar-kyc";
-import { miles } from "@/lib/sumarte/datos";
 import { buscarTribu } from "@/lib/tribus/datos";
 
 // Todo queda solo en este navegador: no hay pedidos de red ni cobros.
@@ -49,6 +63,16 @@ function nombreComunidad(id: string): string {
 }
 
 export function PactosCliente() {
+  const idioma = useIdioma();
+  const tx = useTextos("pactos");
+  const pasaporte = useTextos("pasaporte");
+  const comunes = useTextos("comunes");
+  const textoSemillas = useTextos("semillas");
+  // Lo que escribe la persona (descripción del pacto, rol "Otro") nunca se traduce. No se guarda en qué idioma se escribió:
+  // con la interfaz en inglés se marca como español, que es lo que se escribe hoy.
+  const langTexto = idioma === "en" ? "es" : undefined;
+  /** Número según el idioma: "1.200" en español, "1,200" en inglés. */
+  const miles = (n: number) => formatearNumero(n, idioma);
   const [estado, setEstado] = useState<EstadoPactos>(INICIAL);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [listo, setListo] = useState(false);
@@ -102,28 +126,28 @@ export function PactosCliente() {
       const donde = nombreComunidad(comunidadId);
       if (accion.tipo === "retirar") {
         foco.current = true;
-        setAnuncio(`Retiraste el pacto de ${donde}: volvió a borrador.`);
+        setAnuncio(tx.anuncios.retiraste(donde));
       } else if (accion.tipo === "proponerCambio") {
         foco.current = true;
-        setAnuncio("Se abrió un borrador del cambio, con los datos de la versión vigente.");
+        setAnuncio(tx.anuncios.cambioAbierto);
       } else if (accion.tipo === "enviarCambio") {
         foco.current = true;
-        setAnuncio(`Cambio enviado a ${donde}.`);
+        setAnuncio(tx.anuncios.cambioEnviado(donde));
         registrarEvento(EVENTOS.propusisteCambioDePacto(donde, comunidadId));
       } else if (accion.tipo === "aceptarCambio") {
         foco.current = true;
-        setAnuncio(`Quien administra ${donde} aceptó el cambio. Ahora rige la versión ${despuesT.version}.`);
+        setAnuncio(tx.anuncios.cambioAceptado(donde, despuesT.version));
         registrarEvento(EVENTOS.cambioDePactoAceptado(donde, comunidadId, despuesT.version));
       } else if (accion.tipo === "rechazarCambio") {
         foco.current = true;
         // El texto va a la región viva siempre montada (se anuncia) y también al aviso visible.
-        const aviso = `Quien administra ${donde} no aceptó el cambio. Sigue vigente la versión ${despuesT.version}.`;
+        const aviso = tx.anuncios.cambioRechazado(donde, despuesT.version);
         setAnuncio(aviso);
         setAvisoRechazo(aviso);
         registrarEvento(EVENTOS.cambioDePactoRechazado(donde, comunidadId));
       } else if (accion.tipo === "descartarCambio") {
         foco.current = true;
-        setAnuncio("Descartaste el cambio. Sigue vigente la versión " + despuesT.version + ".");
+        setAnuncio(tx.anuncios.cambioDescartado(despuesT.version));
       }
     }
     try {
@@ -138,7 +162,7 @@ export function PactosCliente() {
       // Solo se anuncia lo que provoca la persona en esta sesión, no lo que ya estaba guardado.
       const paso = deComunidad(siguiente, accion.comunidad).tiempo.paso;
       const donde = nombreComunidad(accion.comunidad);
-      setAnuncio(paso === 1 ? `Pacto enviado a ${donde}.` : paso === 2 ? `Quien administra ${donde} aceptó el pacto.` : "");
+      setAnuncio(paso === 1 ? tx.anuncios.pactoEnviado(donde) : paso === 2 ? tx.anuncios.pactoAceptado(donde) : "");
       const antes = deComunidad(estado, accion.comunidad).tiempo.paso;
       if (paso === 1 && antes === 0) registrarEvento(EVENTOS.propusistePacto(donde, accion.comunidad));
       if (paso === 2 && antes === 1) {
@@ -159,14 +183,14 @@ export function PactosCliente() {
     document.getElementById(`pestana-${PESTANAS[j][0]}`)?.focus();
   }
 
-  if (!listo) return <p role="status" className="text-sm text-muted">Cargando tus comunidades…</p>;
+  if (!listo) return <p role="status" className="text-sm text-muted">{tx.cargando}</p>;
 
   if (miembro.length === 0) {
     return (
-      <section aria-label="Sin comunidad" className="grid gap-3 rounded-xl border border-faint bg-surface p-4">
-        <p>Para proponer un pacto primero tenés que pertenecer a una comunidad.</p>
+      <section aria-label={tx.sinComunidad.aria} className="grid gap-3 rounded-xl border border-faint bg-surface p-4">
+        <p>{tx.sinComunidad.texto}</p>
         <Link className={BOTON_PRIMARIO} href="/tribus">
-          Ver las comunidades
+          {tx.sinComunidad.ver}
         </Link>
       </section>
     );
@@ -189,13 +213,12 @@ export function PactosCliente() {
     <div className="grid gap-4">
       {falloAlmacen && (
         <p role="alert" className="text-sm font-medium text-danger">
-          Error: tu navegador no permite guardar datos en este sitio, así que el pacto no se puede guardar. Revisá la
-          configuración de privacidad o probá en otro navegador.
+          {tx.errorAlmacenamiento}
         </p>
       )}
-      <section aria-label="Comunidad del pacto" className="grid gap-2 rounded-xl border border-faint bg-surface p-4">
+      <section aria-label={tx.comunidad.aria} className="grid gap-2 rounded-xl border border-faint bg-surface p-4">
         <label className="grid gap-1 text-sm">
-          <span className="font-medium">¿En qué comunidad es el pacto?</span>
+          <span className="font-medium">{tx.comunidad.pregunta}</span>
           <select
             value={comunidad}
             onChange={(e) => {
@@ -212,16 +235,14 @@ export function PactosCliente() {
             ))}
           </select>
         </label>
-        <p className="text-sm text-muted">
-          Solo podés proponer pactos en las comunidades donde sos miembro. Las Semillas son de cada comunidad.
-        </p>
+        <p className="text-sm text-muted"><MarcaSemillas texto={tx.comunidad.ayuda} /></p>
       </section>
 
-      <section aria-label="Estado del pacto" className="grid gap-4 rounded-xl border border-faint bg-surface p-4">
+      <section aria-label={tx.estadoAria} className="grid gap-4 rounded-xl border border-faint bg-surface p-4">
         {estado.pestana === "tiempo" && (
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <ol className="flex flex-wrap gap-2" aria-label="Pasos del pacto">
-              {PASOS.map((p, i) => (
+            <ol className="flex flex-wrap gap-2" aria-label={tx.pasosAria}>
+              {pasosDelPacto(idioma).map((p, i) => (
                 <li
                   key={p}
                   aria-current={i === t.paso ? "step" : undefined}
@@ -234,12 +255,13 @@ export function PactosCliente() {
                 </li>
               ))}
             </ol>
-            {t.version > 0 && <span className="text-sm text-muted" data-testid="version-pacto">Versión {t.version}</span>}
+            {t.version > 0 && <span className="text-sm text-muted" data-testid="version-pacto">{tx.version(t.version)}</span>}
           </div>
         )}
 
-        <div role="tablist" aria-label="Tipo de pacto" className="flex flex-wrap gap-2 border-b border-line pb-2">
-          {PESTANAS.map(([clave, titulo], i) => {
+        <div role="tablist" aria-label={tx.tipoAria} className="flex flex-wrap gap-2 border-b border-line pb-2">
+          {PESTANAS.map(([clave], i) => {
+            const titulo = tituloDePestana(clave, idioma);
             const activa = estado.pestana === clave;
             return (
               <button
@@ -266,34 +288,35 @@ export function PactosCliente() {
           {estado.pestana === "tiempo" && (
             <div className="grid gap-4 md:grid-cols-2">
               <fieldset disabled={!editable} className="grid content-start gap-4 border-0 p-0">
-                <legend className="sr-only">Pacto de tiempo en {nombre}</legend>
+                <legend className="sr-only">{tx.tiempo.legend(nombre)}</legend>
                 <label className="grid gap-1 text-sm">
-                  <span className="font-medium">1. Rol que asumís en {nombre}</span>
+                  <span className="font-medium">{tx.tiempo.rol(nombre)}</span>
                   <select
                     value={t.rol}
                     onChange={(e) => dispatch({ tipo: "rol", comunidad, rol: e.target.value as ClaveRol | "" })}
                     className={`${CAMPO} w-fit`}
                   >
-                    <option value="">Elegí un rol</option>
+                    <option value="">{tx.tiempo.elegiRol}</option>
                     {ROLES.map((r) => (
                       <option key={r.clave} value={r.clave}>
-                        {r.nombre}
+                        {textoDeRol(r, idioma).nombre}
                       </option>
                     ))}
                   </select>
                 </label>
                 {rol && (
                   <p className="rounded-lg bg-surface-2 px-3 py-2 text-sm" data-testid="rol-descripcion">
-                    <b>{rol.nombre}</b>: {rol.descripcion}
+                    <b>{textoDeRol(rol, idioma).nombre}</b>: {textoDeRol(rol, idioma).descripcion}
                   </p>
                 )}
                 {t.rol === "otro" && (
                   <label className="grid gap-1 text-sm">
-                    <span className="font-medium">¿Qué rol es?</span>
+                    <span className="font-medium">{tx.tiempo.queRol}</span>
                     <input
                       type="text"
                       maxLength={MAX_ROL_OTRO}
                       value={t.rolOtro}
+                      lang={langTexto}
                       onChange={(e) => dispatch({ tipo: "rolOtro", comunidad, texto: e.target.value })}
                       className={CAMPO}
                     />
@@ -301,18 +324,19 @@ export function PactosCliente() {
                 )}
                 {t.rol && (
                   <label className="grid gap-1 text-sm">
-                    <span className="font-medium">Tu descripción: qué vas a hacer</span>
+                    <span className="font-medium">{tx.tiempo.descripcion}</span>
                     <textarea
                       rows={3}
                       maxLength={MAX_DESCRIPCION}
                       value={t.descripcion}
+                      lang={langTexto}
                       onChange={(e) => dispatch({ tipo: "descripcion", comunidad, texto: e.target.value })}
                       className={CAMPO}
                     />
                   </label>
                 )}
                 <label className="grid gap-1 text-sm">
-                  <span className="font-medium">2. Compromiso mensual: {t.horas} h/mes</span>
+                  <span className="font-medium">{tx.tiempo.compromiso(t.horas)}</span>
                   <input
                     type="range"
                     min={HORAS.min}
@@ -324,54 +348,51 @@ export function PactosCliente() {
                   />
                 </label>
                 <p className="grid gap-1 text-sm">
-                  <span className="font-medium">Valor de referencia de la hora</span>
+                  <span className="font-medium">{tx.tiempo.valorHora}</span>
                   <span>
                     ARS {miles(HOUR_REF_ARS)} ≈ USD {miles(HOUR_REF_USD)}
-                    <Ejemplo texto="referencia, por ahora" />
+                    <Ejemplo texto={tx.tiempo.referenciaPorAhora} />
                   </span>
                 </p>
                 {datos.modalidad === "obra" ? (
                   <p className={AVISO}>
-                    Horas de obra presenciales
-                    <TerminoLegal clave="obra" />: antes de la primera minga hace falta el seguro y la modalidad
-                    (voluntariado o locación de servicios).
+                    {tx.tiempo.obra}
+                    <TerminoLegal clave="obra" idioma={idioma} />
+                    {tx.tiempo.obraFin}
                   </p>
                 ) : datos.modalidad === "remoto" ? (
                   <p className={AVISO}>
-                    Aporte remoto desde el exterior
-                    <TerminoLegal clave="remoto" />
-                    {t.horas > 20
-                      ? `: comprometés ${t.horas} h/mes${datos.paisResidencia ? ` viviendo en ${datos.paisResidencia}` : ""}. ¿Parte es presencial? Conviene un pacto de verano aparte.`
-                      : "."}
+                    {tx.tiempo.remoto}
+                    <TerminoLegal clave="remoto" idioma={idioma} />
+                    {t.horas > 20 ? tx.tiempo.remotoLargo(t.horas, datos.paisResidencia ?? "") : tx.tiempo.remotoCorto}
                   </p>
                 ) : (
                   <p className={AVISO}>
-                    Sin dato de tu modalidad (presencial o remota).{" "}
+                    {tx.tiempo.sinModalidad}{" "}
                     <Link className="underline" href="/pasaporte">
-                      Cargala en Tus datos
+                      {tx.tiempo.cargala}
                     </Link>{" "}
-                    para ver los avisos que te tocan.
+                    {tx.tiempo.sinModalidadFin}
                   </p>
                 )}
               </fieldset>
               <div className={PANEL_LATERAL}>
-                <p className="font-mono text-sm text-muted">3. Por mes</p>
+                <p className="font-mono text-sm text-muted">{tx.tiempo.porMes}</p>
                 <div>
                   <p className="text-2xl font-semibold" data-testid="semillas-mes">
-                    {miles(semillas)} semillas
+                    <MarcaSemillas texto={textoSemillas.cantidad(miles(semillas))} />
                   </p>
                   <p className="text-sm text-muted">
-                    Semillas
-                    <TerminoEconomico clave="semillas" /> de {nombre}
+                    <span translate="no">{tx.tiempo.semillas}</span>
+                    <TerminoEconomico clave="semillas" />
+                    {tx.tiempo.deNombre(nombre)}
                   </p>
                 </div>
                 <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-                  <dt className="text-muted">Fórmula</dt>
-                  <dd>horas × valor de referencia de la hora</dd>
+                  <dt className="text-muted">{tx.tiempo.formula}</dt>
+                  <dd>{tx.tiempo.formulaValor}</dd>
                 </dl>
-                <p className="text-sm text-muted">
-                  En esta fase solo se da: tiempo o plata. 1 Semilla = 1 USD de referencia: una hora y un dólar se miden igual.
-                </p>
+                <p className="text-sm text-muted"><MarcaSemillas texto={tx.tiempo.nota} /></p>
               </div>
             </div>
           )}
@@ -380,11 +401,13 @@ export function PactosCliente() {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="grid content-start gap-3">
                 <p className="text-sm">
-                  Sumarte con plata en <b>{nombre}</b> se registra como Semillas
-                  <TerminoEconomico clave="semillas" />: 1 USD = 1 Semilla de referencia. Es simulado: no se paga nada.
+                  {tx.plata.antes} <b>{nombre}</b>
+                  <MarcaSemillas texto={tx.plata.medio} />
+                  <TerminoEconomico clave="semillas" />
+                  {tx.plata.fin}
                 </p>
                 <label className="grid gap-1 text-sm">
-                  <span className="font-medium">Monto (USD)</span>
+                  <span className="font-medium">{tx.plata.monto}</span>
                   <input
                     type="number"
                     inputMode="numeric"
@@ -399,10 +422,10 @@ export function PactosCliente() {
                 </label>
                 <p id="ayuda-monto" className="text-sm text-muted">
                   {montoValido
-                    ? `Este aporte equivale a ${miles(semillasDePlata(montoNumero))} Semillas${moneda === "ARS" ? ` (${formatearMonto(montoNumero, moneda)})` : ""}.`
-                    : `Poné un monto entero de USD ${miles(MONTO_USD.min)} a ${miles(MONTO_USD.max)}.`}
+                    ? <MarcaSemillas texto={tx.plata.equivale(miles(semillasDePlata(montoNumero)), moneda === "ARS" ? formatearMonto(montoNumero, moneda, idioma) : "")} />
+                    : tx.plata.montoInvalido(miles(MONTO_USD.min), miles(MONTO_USD.max))}
                 </p>
-                {moneda === "ARS" && <p className="text-sm text-muted">{NOTA_TIPO_DE_CAMBIO}</p>}
+                {moneda === "ARS" && <p className="text-sm text-muted">{notaTipoDeCambio(idioma)}</p>}
                 <button
                   type="button"
                   className={BOTON_PRIMARIO}
@@ -413,23 +436,23 @@ export function PactosCliente() {
                     else setDialogoKyc(true);
                   }}
                 >
-                  Registrar aporte (simulado)
+                  {tx.plata.registrar}
                 </button>
-                <p className={AVISO}>Ningún flujo cobra de verdad: el aporte solo queda registrado en este navegador.</p>
+                <p className={AVISO}>{tx.plata.ningunCobro}</p>
               </div>
               <div className={PANEL_LATERAL}>
-                <p className="font-mono text-sm text-muted">Registrado en {nombre}</p>
+                <p className="font-mono text-sm text-muted">{tx.plata.registradoEn(nombre)}</p>
                 {mias.aportes.length === 0 ? (
-                  <p className="text-sm text-muted">Todavía no registraste aportes en plata.</p>
+                  <p className="text-sm text-muted">{tx.plata.sinAportes}</p>
                 ) : (
                   <>
                     <p className="text-2xl font-semibold" data-testid="semillas-plata">
-                      {miles(semillasDePlata(totalPlata))} Semillas de plata (simulado)
+                      <MarcaSemillas texto={tx.plata.total(miles(semillasDePlata(totalPlata)))} />
                     </p>
                     <ul className="grid gap-1 text-sm">
                       {mias.aportes.map((a, i) => (
                         <li key={i}>
-                          {formatearMonto(a, moneda)} · {miles(semillasDePlata(a))} Semillas
+                          <MarcaSemillas texto={`${formatearMonto(a, moneda, idioma)} · ${miles(semillasDePlata(a))} Semillas`} />
                         </li>
                       ))}
                     </ul>
@@ -454,13 +477,13 @@ export function PactosCliente() {
                     if (pactoCompleto(t)) dispatch({ tipo: "avanzar", comunidad });
                   }}
                 >
-                  Enviar a la comunidad
+                  {tx.pasos.enviar}
                 </button>
                 {!pactoCompleto(t) && (
                   <span id="ayuda-enviar" className="text-sm text-muted">
                     {t.rol === "otro" && !t.rolOtro.trim() && t.descripcion.trim()
-                      ? "Para enviarlo nombrá el rol."
-                      : "Para enviarlo elegí un rol y contá qué vas a hacer."}
+                      ? tx.pasos.nombrarRol
+                      : tx.pasos.elegirRol}
                   </span>
                 )}
               </>
@@ -468,14 +491,14 @@ export function PactosCliente() {
             {t.paso === 1 && (
               <>
                 <button type="button" data-foco-paso className={BOTON_DORADO} onClick={() => dispatch({ tipo: "avanzar", comunidad })}>
-                  Simular: la comunidad acepta
+                  {tx.pasos.simularAcepta}
                 </button>
                 <button
                   type="button"
                   className={`${BOTON} border border-muted hover:bg-surface-2`}
                   onClick={() => dispatch({ tipo: "retirar", comunidad })}
                 >
-                  Retirar y editar
+                  {tx.pasos.retirar}
                 </button>
               </>
             )}
@@ -486,16 +509,16 @@ export function PactosCliente() {
                   data-foco-paso={t.cambio ? undefined : true}
                   className="rounded-full border border-deep bg-green-soft px-3 py-1 text-sm font-medium text-deep"
                 >
-                  ✓ Pacto aceptado
+                  {tx.pasos.aceptado}
                 </span>
-                <span className="text-sm text-muted">Tus Semillas de {nombre} se ven en el libro de semillas.</span>
+                <span className="text-sm text-muted"><MarcaSemillas texto={tx.pasos.verLibro(nombre)} /></span>
                 {!t.cambio && (
                   <button
                     type="button"
                     className={`${BOTON} border border-muted hover:bg-surface-2`}
                     onClick={() => dispatch({ tipo: "proponerCambio", comunidad })}
                   >
-                    Proponer un cambio
+                    {tx.pasos.proponerCambio}
                   </button>
                 )}
               </>
@@ -507,10 +530,10 @@ export function PactosCliente() {
           <section aria-labelledby="titulo-cambio" className="grid gap-4 rounded-xl border border-dashed border-deep p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 id="titulo-cambio" className="text-lg font-semibold">
-                Cambio propuesto
+                {tx.cambio.titulo}
               </h2>
-              <ol className="flex flex-wrap gap-2" aria-label="Pasos del cambio">
-                {PASOS.slice(0, 2).map((p, i) => (
+              <ol className="flex flex-wrap gap-2" aria-label={tx.cambio.pasosAria}>
+                {pasosDelPacto(idioma).slice(0, 2).map((p, i) => (
                   <li
                     key={p}
                     aria-current={i === pasoCambio ? "step" : undefined}
@@ -524,13 +547,11 @@ export function PactosCliente() {
                 ))}
               </ol>
             </div>
-            <p className="text-sm text-muted">
-              Mientras tanto sigue vigente la versión {t.version}: {t.horas} h/mes, {miles(semillas)} semillas por mes.
-            </p>
+            <p className="text-sm text-muted"><MarcaSemillas texto={tx.cambio.vigente(t.version, t.horas, miles(semillas))} /></p>
             <fieldset disabled={t.cambio.paso !== 0} className="grid content-start gap-4 border-0 p-0">
-              <legend className="sr-only">Cambio al pacto de tiempo en {nombre}</legend>
+              <legend className="sr-only">{tx.cambio.legend(nombre)}</legend>
               <label className="grid gap-1 text-sm">
-                <span className="font-medium">Rol propuesto</span>
+                <span className="font-medium">{tx.cambio.rol}</span>
                 <select
                   value={t.cambio.rol}
                   onChange={(e) =>
@@ -538,38 +559,40 @@ export function PactosCliente() {
                   }
                   className={`${CAMPO} w-fit`}
                 >
-                  <option value="">Elegí un rol</option>
+                  <option value="">{tx.tiempo.elegiRol}</option>
                   {ROLES.map((r) => (
                     <option key={r.clave} value={r.clave}>
-                      {r.nombre}
+                      {textoDeRol(r, idioma).nombre}
                     </option>
                   ))}
                 </select>
               </label>
               {t.cambio.rol === "otro" && (
                 <label className="grid gap-1 text-sm">
-                  <span className="font-medium">¿Qué rol es el propuesto?</span>
+                  <span className="font-medium">{tx.cambio.queRol}</span>
                   <input
                     type="text"
                     maxLength={MAX_ROL_OTRO}
                     value={t.cambio.rolOtro}
+                    lang={langTexto}
                     onChange={(e) => dispatch({ tipo: "editarCambio", comunidad, cambios: { rolOtro: e.target.value } })}
                     className={CAMPO}
                   />
                 </label>
               )}
               <label className="grid gap-1 text-sm">
-                <span className="font-medium">Descripción propuesta: qué vas a hacer</span>
+                <span className="font-medium">{tx.cambio.descripcion}</span>
                 <textarea
                   rows={3}
                   maxLength={MAX_DESCRIPCION}
                   value={t.cambio.descripcion}
+                  lang={langTexto}
                   onChange={(e) => dispatch({ tipo: "editarCambio", comunidad, cambios: { descripcion: e.target.value } })}
                   className={CAMPO}
                 />
               </label>
               <label className="grid gap-1 text-sm">
-                <span className="font-medium">Compromiso mensual propuesto: {t.cambio.horas} h/mes</span>
+                <span className="font-medium">{tx.cambio.compromiso(t.cambio.horas)}</span>
                 <input
                   type="range"
                   min={HORAS.min}
@@ -582,7 +605,7 @@ export function PactosCliente() {
               </label>
             </fieldset>
             <p className="text-sm" data-testid="semillas-cambio">
-              Con el cambio serían {miles(semillasPorMes(t.cambio.horas))} semillas por mes.
+              <MarcaSemillas texto={tx.cambio.conCambio(miles(semillasPorMes(t.cambio.horas)))} />
             </p>
             <div className="flex flex-wrap items-center gap-3">
               {t.cambio.paso === 0 ? (
@@ -597,34 +620,34 @@ export function PactosCliente() {
                       if (cambioCompleto) dispatch({ tipo: "enviarCambio", comunidad });
                     }}
                   >
-                    Enviar cambio a la comunidad
+                    {tx.cambio.enviar}
                   </button>
                   <button
                     type="button"
                     className={`${BOTON} border border-muted hover:bg-surface-2`}
                     onClick={() => dispatch({ tipo: "descartarCambio", comunidad })}
                   >
-                    Descartar cambio
+                    {tx.cambio.descartar}
                   </button>
                   {!pactoCompleto(t.cambio) && (
                     <span id="ayuda-enviar-cambio" className="text-sm text-muted">
                       {t.cambio.rol === "otro" && !t.cambio.rolOtro.trim() && t.cambio.descripcion.trim()
-                        ? "Para enviarlo nombrá el rol."
-                        : "Para enviarlo elegí un rol y contá qué vas a hacer."}
+                        ? tx.pasos.nombrarRol
+                        : tx.pasos.elegirRol}
                     </span>
                   )}
                 </>
               ) : (
                 <>
                   <button type="button" data-foco-paso className={BOTON_DORADO} onClick={() => dispatch({ tipo: "aceptarCambio", comunidad })}>
-                    Simular: la comunidad acepta el cambio
+                    {tx.cambio.simularAcepta}
                   </button>
                   <button
                     type="button"
                     className={`${BOTON} border border-muted hover:bg-surface-2`}
                     onClick={() => dispatch({ tipo: "rechazarCambio", comunidad })}
                   >
-                    Simular: la comunidad no lo acepta
+                    {tx.cambio.simularRechaza}
                   </button>
                 </>
               )}
@@ -641,18 +664,28 @@ export function PactosCliente() {
         {estado.pestana === "tiempo" && t.paso === 2 && t.historial.length > 0 && (
           <details className="rounded-lg border border-faint px-3 py-2">
             <summary className="cursor-pointer font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
-              Historial de versiones ({t.historial.length})
+              {tx.historial.titulo(t.historial.length)}
             </summary>
-            <ul className="mt-2 grid gap-2 text-sm" aria-label="Versiones aceptadas">
-              {[...t.historial].reverse().map((v) => (
-                <li key={v.version} className="grid gap-0.5">
-                  <span>
-                    <b>Versión {v.version}</b> · {v.rol === "otro" ? v.rolOtro : (buscarRol(v.rol)?.nombre ?? "sin dato")} · {v.horas} h/mes ·{" "}
-                    {v.aceptado ? new Date(v.aceptado).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" }) : "fecha sin dato"}
-                  </span>
-                  <span className="text-muted">{v.descripcion}</span>
-                </li>
-              ))}
+            <ul className="mt-2 grid gap-2 text-sm" aria-label={tx.historial.aria}>
+              {[...t.historial].reverse().map((v) => {
+                const rolDeVersion = buscarRol(v.rol);
+                return (
+                  <li key={v.version} className="grid gap-0.5">
+                    <span>
+                      <b>{tx.historial.version(v.version)}</b> ·{" "}
+                      {v.rol === "otro" ? (
+                        <span lang={langTexto}>{v.rolOtro}</span>
+                      ) : rolDeVersion ? (
+                        textoDeRol(rolDeVersion, idioma).nombre
+                      ) : (
+                        comunes.sinDato
+                      )}{" "}
+                      · {tx.historial.horas(v.horas)} · {v.aceptado ? formatearFecha(v.aceptado, idioma) : tx.historial.fechaSinDato}
+                    </span>
+                    <span className="text-muted" lang={langTexto}>{v.descripcion}</span>
+                  </li>
+                );
+              })}
             </ul>
           </details>
         )}
@@ -663,7 +696,7 @@ export function PactosCliente() {
       <KycDialogo
         abierto={dialogoKyc}
         kyc={kyc.kyc}
-        motivo="Para registrar un aporte en plata primero necesitamos verificar tu identidad."
+        motivo={pasaporte.kyc.motivoAporte}
         alCerrar={() => {
           setDialogoKyc(false);
           // Con el sello ya obtenido, se sigue con lo que la persona quería hacer.

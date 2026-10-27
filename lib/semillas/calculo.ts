@@ -1,3 +1,5 @@
+import { textos } from "@/lib/idioma/textos";
+import type { Idioma } from "@/lib/idioma/tipos";
 import { HOUR_REF_USD } from "@/lib/pactos/datos";
 import { META_SEMBRADOR, MESES } from "./datos";
 
@@ -36,15 +38,14 @@ export function faltantes(notas: Notas, razones: Razones, companeros: number): F
 }
 
 /** Aviso de por qué no se envió la ronda: dice qué falta (puntuaciones, explicaciones o ambas) y concuerda en número. */
-export function mensajeFaltante(falta: Falta[]): string {
+export function mensajeFaltante(falta: Falta[], idioma: Idioma = "es"): string {
+  const t = textos("semillas", idioma).ronda.faltante;
   const notas = falta.filter((f) => f.falta === "nota").length;
   const razones = falta.length - notas;
-  const plural = (n: number, uno: string, varios: string) => (n === 1 ? `1 ${uno}` : `${n} ${varios}`);
   const partes: string[] = [];
-  if (notas > 0) partes.push(plural(notas, "puntuación", "puntuaciones"));
-  if (razones > 0) partes.push(plural(razones, "explicación", "explicaciones"));
-  const verbo = falta.length === 1 ? "Falta" : "Faltan";
-  return `Error: la ronda no se envió. ${verbo} ${partes.join(" y ")}.`;
+  if (notas > 0) partes.push(t.puntuaciones(notas));
+  if (razones > 0) partes.push(t.explicaciones(razones));
+  return t.mensaje(partes.join(t.y), falta.length === 1);
 }
 
 /** ¿Están todas las puntuaciones con su explicación? */

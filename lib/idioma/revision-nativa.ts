@@ -65,6 +65,30 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Textos del territorio con su inglés: terreno común, descripción y nombres descriptivos de los lugares, bienes comunes",
   },
+  "textos/pasaporte": {
+    estado: "pendiente",
+    que: "Pasaporte: sellos y lo que abren, tarjeta y diálogo de verificación de identidad (KYC) con sus errores, sello de la billetera y datos de aporte",
+  },
+  "textos/semillas": {
+    estado: "pendiente",
+    que: "Semillas: libro por comunidad, detalle, meta de sembrador/a activo/a y ronda de reconocimiento (\"Semillas\" no se traduce)",
+  },
+  "textos/pactos": {
+    estado: "pendiente",
+    que: "Pactos: pactos de tiempo y de plata, cambios, historial, avisos y anuncios",
+  },
+  "lib/semillas/datos.ts": {
+    estado: "pendiente",
+    que: "Datos de ejemplo de la ronda de reconocimiento con su inglés (compañeros, criterios y reconocimiento recibido)",
+  },
+  "lib/pactos/datos.ts": {
+    estado: "pendiente",
+    que: "Roles de ejemplo (nombre y descripción), pestañas y pasos de un pacto, con su inglés",
+  },
+  "lib/economia/terminos.ts": {
+    estado: "pendiente",
+    que: "Término económico 🌱 de Semillas en inglés (borrador, sin revisión)",
+  },
   glosario: {
     estado: "pendiente",
     que: "Glosario de términos de la plataforma (Pase Fundador, Fogón…); confirmado por Gus el 15-oct-2026, falta el nativo",
@@ -100,6 +124,9 @@ export function fuentesObligatorias(): string[] {
     "lib/gobernanza/datos.ts",
     "lib/manifiestos/datos.ts",
     "lib/territorios/textos.ts",
+    "lib/semillas/datos.ts",
+    "lib/pactos/datos.ts",
+    "lib/economia/terminos.ts",
   ];
 }
 

@@ -4,12 +4,15 @@ import type { Idioma, Textos } from "./tipos";
 import { comunes } from "./textos/comunes";
 import { gobernanza } from "./textos/gobernanza";
 import { marco } from "./textos/marco";
+import { pactos } from "./textos/pactos";
+import { pasaporte } from "./textos/pasaporte";
 import { portada } from "./textos/portada";
+import { semillas } from "./textos/semillas";
 import { sumarte } from "./textos/sumarte";
 import { territorio } from "./textos/territorio";
 import { tribus } from "./textos/tribus";
 
-export const DICCIONARIOS = { comunes, gobernanza, marco, portada, sumarte, territorio, tribus } as const;
+export const DICCIONARIOS = { comunes, gobernanza, marco, pactos, pasaporte, portada, semillas, sumarte, territorio, tribus } as const;
 
 export type Zona = keyof typeof DICCIONARIOS;
 

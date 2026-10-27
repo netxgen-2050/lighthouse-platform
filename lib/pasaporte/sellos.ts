@@ -2,6 +2,8 @@
 // El estado sale de lo que ya hay en el navegador (Sumarte, membresía, Congreso, KYC);
 // lo que abre sale del servicio de permisos (`lib/permisos/`).
 import { filasDePuertas, type TribuAceptada } from "@/lib/canales/puertas";
+import { textos } from "@/lib/idioma/textos";
+import type { Idioma } from "@/lib/idioma/tipos";
 import type { ClaveTermino } from "@/lib/legal/terminos";
 import { COMUNIDAD_LIGHTHOUSE, estadoDe, type Membresias } from "@/lib/membresia/estado";
 import type { Persona } from "@/lib/permisos/tipos";
@@ -12,17 +14,16 @@ import type { EstadoKyc } from "./kyc";
 
 export type EstadoSello = "obtenido" | "en-tramite" | "disponible" | "no-disponible";
 
-export const TEXTO_ESTADO_SELLO: Record<EstadoSello, string> = {
-  obtenido: "Obtenido",
-  "en-tramite": "En trámite",
-  disponible: "Disponible",
-  "no-disponible": "No disponible todavía",
-};
+/** El texto del estado de un sello en el idioma pedido. */
+export function textoEstadoSello(estado: EstadoSello, idioma: Idioma = "es"): string {
+  const e = textos("pasaporte", idioma).sellos.estados;
+  return { obtenido: e.obtenido, "en-tramite": e.enTramite, disponible: e.disponible, "no-disponible": e.noDisponible }[estado];
+}
+
+/** "Genesis" es un nombre propio: no se traduce. */
+export const NOMBRE_GENESIS = "Genesis";
 
 export type AccionSello = { tipo: "enlace"; texto: string; href: string };
-
-/** La verificación se completa en la tarjeta de identidad del Pasaporte; los sellos solo llevan hasta ella. */
-const ACCION_VER_VERIFICACION: AccionSello = { tipo: "enlace", texto: "Ver la verificación", href: "/pasaporte#identidad" };
 
 export type Sello = {
   id: string;
@@ -65,26 +66,30 @@ export function comunidadesConSello(): { id: string; nombre: string }[] {
 }
 
 /** Puertas que se abren al tener esta fuente y que una persona sin nada (Explorador) no tiene. */
-export function puertasQueAbre(cambios: Partial<Persona>, tribus: readonly TribuAceptada[] = []): string[] {
-  const base = new Set(filasDePuertas(SIN_PERSONA, []).filter((f) => f.abierta).map((f) => f.clave));
+export function puertasQueAbre(cambios: Partial<Persona>, tribus: readonly TribuAceptada[] = [], idioma: Idioma = "es"): string[] {
+  const base = new Set(filasDePuertas(SIN_PERSONA, [], idioma).filter((f) => f.abierta).map((f) => f.clave));
   const con: Persona = { ...SIN_PERSONA, ...cambios };
-  return filasDePuertas(con, tribus)
+  return filasDePuertas(con, tribus, idioma)
     .filter((f) => f.abierta && !base.has(f.clave))
     .map((f) => `${f.nombre} · ${f.estado}`);
 }
 
-export function sellos(e: EntradaSellos, ahora: Date): Sello[] {
+/** Los sellos de la persona con sus textos en el idioma pedido (por defecto español). Lo que cambia con el idioma es solo el texto. */
+export function sellos(e: EntradaSellos, ahora: Date, idioma: Idioma = "es"): Sello[] {
+  const t = textos("pasaporte", idioma).sellos;
   const hoy = ahora.toISOString();
   const lista: Sello[] = [];
   const fechaDe = (id: string) => e.fechas[id] ?? hoy;
+  /** La verificación se completa en la tarjeta de identidad del Pasaporte; los sellos solo llevan hasta ella. */
+  const verVerificacion: AccionSello = { tipo: "enlace", texto: t.identidad.accion, href: "/pasaporte#identidad" };
 
   lista.push({
     id: "explorador",
-    nombre: "Explorador/a",
+    nombre: t.explorador.nombre,
     estado: "obtenido",
     fecha: fechaDe("explorador"),
-    detalle: "Es tu punto de partida: ya podés recorrer el Lighthouse.",
-    abre: filasDePuertas(SIN_PERSONA, [])
+    detalle: t.explorador.detalle,
+    abre: filasDePuertas(SIN_PERSONA, [], idioma)
       .filter((f) => f.abierta)
       .map((f) => `${f.nombre} · ${f.estado}`),
   });
@@ -92,12 +97,12 @@ export function sellos(e: EntradaSellos, ahora: Date): Sello[] {
   const esMiembro = e.sumarte.plan === "miembro" || e.sumarte.pase !== null;
   lista.push({
     id: "miembro-red",
-    nombre: "Miembro de la red",
+    nombre: t.miembroRed.nombre,
     estado: esMiembro ? "obtenido" : "disponible",
     fecha: esMiembro ? fechaDe("miembro-red") : undefined,
-    detalle: esMiembro ? "Tenés el plan Miembro (simulado)." : "Se consigue con el plan Miembro en Sumarte. Es simulado: no se cobra nada.",
-    accion: esMiembro ? undefined : { tipo: "enlace", texto: "Hacerme Miembro en Sumarte", href: "/sumarte" },
-    abre: puertasQueAbre({ plan: "miembro" }),
+    detalle: esMiembro ? t.miembroRed.detalleSi : t.miembroRed.detalleNo,
+    accion: esMiembro ? undefined : { tipo: "enlace", texto: t.miembroRed.accion, href: "/sumarte" },
+    abre: puertasQueAbre({ plan: "miembro" }, [], idioma),
     legal: ["membresia"],
   });
 
@@ -107,34 +112,34 @@ export function sellos(e: EntradaSellos, ahora: Date): Sello[] {
     const esLh = c.id === COMUNIDAD_LIGHTHOUSE;
     lista.push({
       id,
-      nombre: `Miembro de ${c.nombre}`,
+      nombre: t.comunidad.nombre(c.nombre),
       estado: m === "miembro" ? "obtenido" : m === "pedido" ? "en-tramite" : "disponible",
       fecha: m === "miembro" ? fechaDe(id) : undefined,
       detalle:
         m === "miembro"
-          ? `Tu pedido fue aceptado en ${c.nombre} (simulado).`
+          ? t.comunidad.detalleMiembro(c.nombre)
           : m === "pedido"
-            ? `Pediste entrar a ${c.nombre}: falta que quien la administra lo acepte.`
-            : `Se consigue adhiriendo al manifiesto de ${c.nombre}.`,
-      accion: m === "no-miembro" ? { tipo: "enlace", texto: `Pedir entrar a ${c.nombre}`, href: esLh ? "/territorios/lighthouse" : `/tribus/${c.id}` } : undefined,
-      abre: puertasQueAbre({ tribus: [c.id] }, [{ id: c.id, nombre: c.nombre }]),
+            ? t.comunidad.detallePedido(c.nombre)
+            : t.comunidad.detalleDisponible(c.nombre),
+      accion: m === "no-miembro" ? { tipo: "enlace", texto: t.comunidad.accion(c.nombre), href: esLh ? "/territorios/lighthouse" : `/tribus/${c.id}` } : undefined,
+      abre: puertasQueAbre({ tribus: [c.id] }, [{ id: c.id, nombre: c.nombre }], idioma),
     });
   }
 
   const kycAprobado = e.kyc.estado === "aprobado";
   lista.push({
     id: "identidad",
-    nombre: "Identidad verificada",
+    nombre: t.identidad.nombre,
     estado: kycAprobado ? "obtenido" : e.kyc.estado === "en-tramite" ? "en-tramite" : "disponible",
     fecha: e.kyc.estado === "aprobado" ? e.kyc.aprobado : undefined,
     detalle:
       e.kyc.estado === "aprobado"
-        ? "El fiduciario sabe quién sos (simulado)."
+        ? t.identidad.detalleAprobada
         : e.kyc.estado === "en-tramite"
-          ? "Enviaste tus datos. En el prototipo la aprobación se simula."
-          : "Se pide solo cuando querés aportar plata. En la versión real lo hace el fiduciario.",
-    accion: e.kyc.estado === "sin-tramite" ? ACCION_VER_VERIFICACION : undefined,
-    abre: ["Pedir invitación para invertir en Sumarte", "Registrar un aporte en plata en Pactos"],
+          ? t.identidad.detalleEnTramite
+          : t.identidad.detalleSin,
+    accion: e.kyc.estado === "sin-tramite" ? verVerificacion : undefined,
+    abre: [t.abre.invitacion, t.abre.aporte],
     legal: ["kyc"],
   });
 
@@ -143,19 +148,19 @@ export function sellos(e: EntradaSellos, ahora: Date): Sello[] {
   if (kycAprobado && e.datos.residencia === "argentina") {
     inversor = {
       id: "inversor",
-      nombre: "Inversor habilitado",
+      nombre: t.inversor.nombre,
       estado: "obtenido",
       fecha: fechaDe("inversor"),
-      detalle: "Identidad verificada y residencia fiscal en Argentina.",
-      abre: ["Sumarte al proyecto del Lote 7, por invitación"],
+      detalle: t.inversor.detalleObtenido,
+      abre: [t.abre.loteSiete],
       legal: ["sumarte"],
     };
   } else if (kycAprobado && e.datos.residencia === "exterior") {
     inversor = {
       id: "inversor",
-      nombre: "Inversor habilitado",
+      nombre: t.inversor.nombre,
       estado: "no-disponible",
-      detalle: "Por ahora, no: tu residencia fiscal es del exterior. Ver el motivo en «Aportantes con residencia fiscal en el exterior».",
+      detalle: t.inversor.detalleExterior,
       abre: [],
       legal: ["sumarte"],
       legalDetalle: "inversorexterior",
@@ -163,51 +168,46 @@ export function sellos(e: EntradaSellos, ahora: Date): Sello[] {
   } else {
     inversor = {
       id: "inversor",
-      nombre: "Inversor habilitado",
+      nombre: t.inversor.nombre,
       estado: "disponible",
-      detalle:
-        e.kyc.estado === "en-tramite"
-          ? "Se obtiene cuando se apruebe tu identidad, si tu residencia fiscal es en Argentina."
-          : "Se obtiene con la identidad verificada, si tu residencia fiscal es en Argentina.",
-      accion: e.kyc.estado === "sin-tramite" ? ACCION_VER_VERIFICACION : undefined,
-      abre: ["Sumarte al proyecto del Lote 7, por invitación"],
+      detalle: e.kyc.estado === "en-tramite" ? t.inversor.detalleEnTramite : t.inversor.detalleSin,
+      accion: e.kyc.estado === "sin-tramite" ? verVerificacion : undefined,
+      abre: [t.abre.loteSiete],
       legal: ["sumarte"],
     };
   }
   lista.push(inversor);
 
+  // El nivel del pase se muestra con su nombre en el idioma de la página (en español, como siempre, con el id guardado).
+  const nivelDelPase = e.sumarte.pase ? (idioma === "en" ? textos("sumarte", "en").niveles[e.sumarte.pase] : e.sumarte.pase) : "";
   lista.push({
     id: "fundador",
-    nombre: "Pase Fundador",
+    nombre: t.fundador.nombre,
     estado: e.sumarte.pase ? "obtenido" : "disponible",
     fecha: e.sumarte.pase ? fechaDe("fundador") : undefined,
-    detalle: e.sumarte.pase ? `Tenés el Pase Fundador ${e.sumarte.pase} (simulado).` : "Se consigue en Sumarte. Es simulado: no se cobra nada.",
-    accion: e.sumarte.pase ? undefined : { tipo: "enlace", texto: "Ver el Pase Fundador", href: "/sumarte" },
-    abre: puertasQueAbre({ pase: e.sumarte.pase ?? "semilla" }),
+    detalle: e.sumarte.pase ? t.fundador.detalleSi(nivelDelPase) : t.fundador.detalleNo,
+    accion: e.sumarte.pase ? undefined : { tipo: "enlace", texto: t.fundador.accion, href: "/sumarte" },
+    abre: puertasQueAbre({ pase: e.sumarte.pase ?? "semilla" }, [], idioma),
     legal: ["pasefundador"],
   });
 
   lista.push({
     id: "genesis",
-    nombre: "Genesis",
+    nombre: NOMBRE_GENESIS,
     estado: e.presenciaGenesis ? "obtenido" : e.ticket ? "en-tramite" : "disponible",
     fecha: e.presenciaGenesis ? fechaDe("genesis") : undefined,
-    detalle: e.presenciaGenesis
-      ? "El anfitrión confirmó tu presencia en el check-in del Congreso."
-      : e.ticket
-        ? "Tu ticket está registrado. Falta el check-in en el Congreso: lo confirma el anfitrión."
-        : "Se obtiene con el check-in en el Congreso. Primero registrá tu ticket.",
-    accion: e.presenciaGenesis || e.ticket ? undefined : { tipo: "enlace", texto: "Registrar mi ticket", href: "/congreso" },
-    abre: puertasQueAbre({ presenciaGenesis: true }),
+    detalle: e.presenciaGenesis ? t.genesis.detalleObtenido : e.ticket ? t.genesis.detalleTicket : t.genesis.detalleSin,
+    accion: e.presenciaGenesis || e.ticket ? undefined : { tipo: "enlace", texto: t.genesis.accion, href: "/congreso" },
+    abre: puertasQueAbre({ presenciaGenesis: true }, [], idioma),
     legal: ["presencia"],
   });
 
   lista.push({
     id: "residente",
-    nombre: "Residente",
+    nombre: t.residente.nombre,
     estado: "no-disponible",
-    detalle: "Ejemplo: todavía no se puede pedir. Se abrirá cuando haya residentes en el Lighthouse.",
-    abre: puertasQueAbre({ residente: true }),
+    detalle: t.residente.detalle,
+    abre: puertasQueAbre({ residente: true }, [], idioma),
     legal: ["art32"],
   });
 

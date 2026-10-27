@@ -19,6 +19,10 @@ export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   /^\/territorios\/[^/]+$/,
   // Cómo decidimos (fogon-gobernanza-fractal).
   /^\/fogon\/gobernanza$/,
+  // Pasaporte (con la verificación de identidad), Semillas y Pactos (idioma-pasaporte-semillas-pactos).
+  /^\/pasaporte$/,
+  /^\/semillas$/,
+  /^\/pactos$/,
 ];
 
 function limpiar(ruta: string): string {

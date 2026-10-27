@@ -10,7 +10,7 @@ import { useSesion } from "@/components/sesion/contexto";
 import { EntrarComo } from "@/components/sesion/entrar-como";
 import { TerminoLegal } from "@/components/termino-legal";
 import { TextoBilingue } from "@/components/texto-bilingue";
-import { ProveedorIdioma, useIdioma, useTextos } from "@/lib/idioma/cliente";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { GLOSARIO } from "@/lib/idioma/glosario";
 import {
   alcanza,
@@ -83,6 +83,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
   const t = useTextos("sumarte");
   const marco = useTextos("marco");
   const comunes = useTextos("comunes");
+  const pasaporte = useTextos("pasaporte");
   const { estado: estadoSesion, nivel: nivelCuenta, nivelListo, tribuLider, entrar } = useSesion();
   const conSesion = estadoSesion === "ok";
   const [estado, setEstado] = useState<EstadoSumarte>(INICIAL);
@@ -227,7 +228,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
     <KycDialogo
       abierto={dialogoKyc}
       kyc={kyc.kyc}
-      motivo="Para pedir una invitación a invertir primero necesitamos verificar tu identidad."
+      motivo={pasaporte.kyc.motivoInvitacion}
       alCerrar={() => {
         setDialogoKyc(false);
         // Con el sello ya obtenido, se sigue con lo que la persona quería hacer.
@@ -635,17 +636,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
         </div>
       </section>
 
-      {idioma === "en" ? (
-        // El diálogo de verificación de identidad todavía no tiene traducción (`idioma-pasaporte-semillas-pactos`):
-        // sigue en español, marcado como tal.
-        <div lang="es" className="contents">
-          <ProveedorIdioma idioma="es" soloContenido>
-            {dialogoDeIdentidad}
-          </ProveedorIdioma>
-        </div>
-      ) : (
-        dialogoDeIdentidad
-      )}
+      {dialogoDeIdentidad}
     </div>
   );
 }
