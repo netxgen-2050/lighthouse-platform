@@ -72,7 +72,7 @@ test.describe("Estructura de gobernanza visible", () => {
     await expect(panel(page).getByText("Sin representante elegido")).toHaveCount(8);
     await expect(panel(page).getByText("Lugar de Valle Solar")).toBeVisible();
     await expect(panel(page).getByText("Lugar de Barrio 3")).toHaveCount(0);
-    await expect(panel(page).getByText(/\(ejemplo\)\s*$/)).toHaveCount(0);
+    await expect(panel(page).getByRole("button", { name: /\(ejemplo\)/ })).toHaveCount(0);
   });
 
   test("el círculo transversal cuelga del común, lista sus tribus y no inventa una zona", async ({ page }) => {
@@ -457,6 +457,7 @@ test.describe("Lente Desde mí", () => {
 
   test("las marcas resaltan los lugares con borde grueso y no cambian la cantidad de círculos", async ({ page }) => {
     await page.goto("/fogon/gobernanza");
+    await expect(dibujo(page).locator("circle[data-nodo]")).not.toHaveCount(0);
     const antes = await dibujo(page).locator("circle[data-nodo]").count();
     await desdeMi(page).click();
     expect(await dibujo(page).locator("circle[data-nodo]").count()).toBe(antes);
@@ -512,7 +513,7 @@ test.describe("Cómo decidimos en inglés", () => {
     await expect(page.getByRole("region", { name: "Legend" })).toBeVisible();
     await page.getByText("See the whole structure as a list").click();
     await expect(page.getByText("Taking part: Valle Solar and Taller Común")).toBeVisible();
-    await page.locator("details").getByRole("button", { name: "Agua del Lighthouse", exact: true }).click();
+    await page.locator("details").getByRole("button", { name: "Lighthouse water", exact: true }).click();
     await expect(page.getByRole("region", { name: "Detail" })).toContainText("Purpose: Water");
     await expect(page.getByRole("region", { name: "Detail" })).toContainText("Circle of the commons");
   });

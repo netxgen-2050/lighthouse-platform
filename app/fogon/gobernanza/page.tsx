@@ -38,6 +38,10 @@ export default async function GobernanzaPage() {
         <span className="mt-1 block font-normal">{tx.avisoPersonas}</span>
       </p>
 
+      <div className="mt-6">
+        <HolarquiaCliente raiz={raiz} />
+      </div>
+
       <section aria-labelledby="capas" className="mt-6 grid gap-2 rounded-xl border border-faint bg-surface p-4">
         <h2 id="capas" className="text-lg font-semibold">
           {tx.capas.titulo}
@@ -50,10 +54,6 @@ export default async function GobernanzaPage() {
         </ul>
         <p className="text-sm text-muted">{tx.capas.nota}</p>
       </section>
-
-      <div className="mt-6">
-        <HolarquiaCliente raiz={raiz} />
-      </div>
 
       <p className="mt-6">
         <Link className={ENLACE} href="/fogon">{tx.verDecisiones}</Link>

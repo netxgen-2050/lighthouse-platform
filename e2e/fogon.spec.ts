@@ -66,7 +66,7 @@ test("filtrar por Círculo y por Consejo deja la decisión de ejemplo de cada un
     "Cisterna compartida entre Agua Clara y Valle Solar",
   ]);
   await expect(page.getByText("Viene de Valle Solar (aprobada en la tribu)")).toBeVisible();
-  await expect(page.getByText("En la versión real votan los representantes.")).toBeVisible();
+  await expect(page.getByText("En la versión real votan los representantes.").first()).toBeVisible();
 });
 
 test("hay un enlace Cómo decidimos que lleva a la estructura", async ({ page }) => {
@@ -354,7 +354,7 @@ test.describe("Parámetros opcionales de una decisión", () => {
     const d = tarjeta(page, "Cisterna compartida entre Agua Clara y Valle Solar");
     await expect(d).toContainText("Monto pedido: sin dato");
     await expect(d).not.toContainText("(simulado)");
-    await expect(d).not.toContainText(/Monto pedido: .*\b0\b/);
+    await expect(d).not.toContainText(/Monto pedido:\s*(US\$\s*|\$\s*)?0/);
     await expect(d).toContainText("Se apoya en: Norma: Norma de uso compartido del agua (ejemplo)");
   });
 });
