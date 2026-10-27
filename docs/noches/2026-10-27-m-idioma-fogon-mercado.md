@@ -1,44 +1,57 @@
 # Noche 2026-10-27-m — idioma-fogon-mercado
 **PR:** https://github.com/netxgen-2050/lighthouse-platform/pull/115 · **Preview:** no hay (el deploy de Vercel falló)
 
-## En una línea
-El código quedó hecho y el revisor lo dejó con observaciones, pero **no se pudo probar en el preview porque Vercel falla en todos los deploys** (también en la rama base); en local casi todo pasa y 2 pruebas fallaron de forma intermitente.
+Esta fue una vuelta de corrección: se integró `dev` en la rama, se arreglaron los tests que el merge rompió y se volvió a revisar y probar.
 
-## Qué bloquea (primero)
-- **Vercel no despliega.** El estado dice "Deployment has failed" en menos de 1 segundo. Le pasa a este PR, a la rama base (commit bf2986f) y a más de 15 deploys de la noche (entre 14:34 y 15:48). Parece un problema de infraestructura, no del código. Sin credenciales de Vercel no se ve el motivo (podría ser límite del plan, una variable de entorno o la configuración del proyecto).
-- **Por eso el tester no recorrió el guion manual** (pasos 1 a 8 del PR). No se repitió la prueba porque sin preview no había qué probar.
+## Lo primero: qué falló y qué decidir
+
+**Bloqueo: el deploy de Vercel falla para el último commit (4f3a33c).**
+- No hay preview, así que nadie pudo recorrer a mano el guion de prueba (pasos 1 a 8 del PR).
+- En local todo pasa: el build de producción compila y los tests e2e dan 821 pasaron y 0 fallaron.
+- La causa no se vio. Sospecha sin verificar: en Vercel corre `tsx scripts/migrar.ts` antes de `next build`, y podría fallar por variables de entorno. El revisor ya había avisado que no sale de ninguna línea del cambio.
+- Acción sugerida: abrir el log del deploy en https://vercel.com/net-xg-en/lighthouse-platform/88wwNS6dff1gTu1FYjniWR6jSAo6 y ver el error real. Hasta eso, el PR no debería entrar a `dev`.
+
+**Decisión 6 (media): el campo "para quién es" no existe.**
+- La spec pide validar ese campo en el formulario de Compromisos, pero ya no existe, y el test `e2e/compromisos.spec.ts:35` exige que no esté. Hoy se valida la descripción vacía.
+- Acción sugerida: ajustar la spec para que el escenario hable de la descripción vacía. No hay que tocar código.
+
+**Decisión 7 (media): lo traducido de Canales no se ve en pantalla.**
+- `/canales` solo redirige a `/pasaporte`. El texto "qué plan le falta" (`abreCon`) está traducido y con test unitario, pero no aparece en ninguna pantalla.
+- Acción sugerida: o se ajusta la spec (alcance = solo el diccionario) o se abre otro cambio para mostrarlo.
+
+## En una línea
+El Fogón, Compromisos/Mercado y los textos de Canales quedaron en inglés. Después del merge con `dev` hubo que arreglar tests y traducir lo nuevo. Todo pasa en local, pero Vercel no despliega y quedan dos decisiones sobre la spec.
 
 ## Qué quedó hecho (tareas 5/5)
-- 1.1 Fogón: filtros, votos (In favor / Against / Abstention), motivos para no votar, acta y decisiones de ejemplo en inglés con la nota "Translated from Spanish". Nombres de tribus sin traducir.
-- 2.1 Compromisos y Mercado: formulario, validaciones por idioma, formatos, filtros y ofertas de ejemplo bilingües. Lo que escribe la persona se ve tal cual.
-- 3.1 Canales: motivos, "se abre con", refuerzo, planes y pase desde el diccionario.
-- 4.1 y 4.2 Pruebas: las tres rutas sumadas a las traducidas, e2e nuevo y accesibilidad en inglés.
-- Verificación del implementador: `pnpm verificar` (1361 tests), `pnpm build` y `pnpm test:e2e` (744) en verde.
-
-## Qué decidir a la mañana
-1. **Vercel (urgente).** Abrir https://vercel.com/net-xg-en/lighthouse-platform/37jw2bZYXFsAqMP5S5kUgE1qLREV o correr `npx vercel inspect dpl_37jw2bZYXFsAqMP5S5kUgE1qLREV --logs` para ver el motivo. Acción: arreglarlo y volver a lanzar el tester sobre el preview.
-2. **[media] Campo "Para quién".** La spec lo pide en la validación, pero ese campo ya no existe en la app (hay un e2e que exige que no esté). El código está bien. Acción sugerida: ajustar la spec para quitar ese escenario.
-3. **[media] Canales no muestra "se abre con" ni refuerzo.** `/canales` solo redirige a `/pasaporte`; esos textos están traducidos y testeados pero no aparecen en ninguna pantalla. Acción: o se ajusta la spec, o se decide mostrar "se abre con" en el Pasaporte (eso es alcance nuevo, otro cambio).
-4. **Dos e2e intermitentes en local** (no se investigaron): `e2e/idioma.spec.ts:86` (esperaba `/tribus?sel=valle&lang=en` y vio `/tribus?lang=en`) y `e2e/pactos.spec.ts:130` (timeout de 30 s en `goto /panel`). Repetidas solas pasan. Acción: decidir si se investigan como fallos ocasionales o por carga de la máquina.
-5. **Fuera de alcance, queda en español:** `/fogon/consultas` y `/fogon/simulador` (con aviso de página sin traducir). Acción: decidir si van en un cambio próximo.
-6. Todo el inglés nuevo es borrador pendiente de revisión nativa (lista regenerada).
+- Todas las tareas de `openspec/changes/idioma-fogon-mercado/tasks.md` están marcadas.
+- Se integró `origin/dev` (commit 0137dba) conservando lo nuevo de dev: ámbitos Círculo, Tribu, común, Consejo y Fideicomiso, la gobernanza y la limpieza. Hubo conflictos en `lib/fogon/datos.ts`, `estado.ts`, `app/fogon/page.tsx`, `fogon-cliente.tsx`, `fogon.test.ts` y `lib/idioma/textos.ts`.
+- Se tradujo al inglés lo nuevo del Fogón: los ámbitos, "How we decide", "Take to the council" y las decisiones nuevas. Los nombres de tribu (Valle Solar) y Semillas quedan sin traducir a propósito. `/fogon/gobernanza` ya venía traducida.
+- Se regeneró `docs/idioma/revisar-nativo.md`. Todo el inglés es borrador pendiente de revisión nativa.
+- Sigue sin traducir `/fogon/consultas` y `/fogon/simulador` (ya era así y está fuera del alcance de la spec).
+- Corrección 4f3a33c: arregló los 5 primeros hallazgos del revisor (ver abajo). `pnpm verificar` en verde (1510 tests).
 
 ## Revisor: veredicto y hallazgos
-Veredicto final (3ª pasada): **con observaciones**. Comentario: https://github.com/netxgen-2050/lighthouse-platform/pull/115#issuecomment-6446621394
-- [media] "Para quién" inexistente en el código (ver punto 2). Abierto, decide Gus.
-- [media] "se abre con" y refuerzo no se ven en pantalla (ver punto 3). Abierto, decide Gus.
-- [baja] Nombres de tribu del Fogón sin `translate="no"`: corregido (commit d3ed6db).
-- [baja] El acta tras votar en Valle Solar sin `translate="no"`: corregido (commit 997aed6, con e2e).
-- En las dos primeras pasadas el revisor no pudo publicar el comentario (`pr.sh comentar` rechazado); la tercera sí.
+Veredicto final: ⚠️ con observaciones. Solo quedan abiertas las dos decisiones de arriba.
+
+Primera pasada tras el merge, 3 altas y 2 bajas. Todas resueltas en 4f3a33c y verificadas en la segunda pasada:
+1. (alta) El e2e propio esperaba el filtro "Residents' Assembly", que dev eliminó. Ahora espera los cinco filtros nuevos y que ese no aparezca.
+2. (alta) El e2e esperaba el estado guardado sin `alConsejo: []`. Corregido.
+3. (alta) El e2e esperaba avisos de residencia que ya no existen con los cambios de dev. Ahora refleja el escenario en español (0 avisos).
+4. (baja) El chip de "dónde" marcaba todo como no traducible. Ahora solo el nombre de la tribu.
+5. (baja) Faltaban e2e en inglés de "Take to the council". Se agregaron.
+
+Reglas de CLAUDE.md: sin problemas (aviso de prototipo traducido, un solo `main`, sin colores sueltos ni cobros, el dato faltante se muestra como "sin dato", sin cambios de seguridad).
+
+Comentarios: #issuecomment-6450589668 (1ª pasada) y #issuecomment-6450713474 (2ª pasada).
 
 ## Tester: resultado
-**Bloqueado en el preview, bien en local.** Reporte: https://github.com/netxgen-2050/lighthouse-platform/pull/115#issuecomment-6446843981
-- Preview: `scripts/preview-url.sh` devolvió "El deploy de Vercel falló para 997aed60…". El guion manual no se recorrió.
-- Local: `pnpm build` ok; `pnpm test:e2e` 743 pasaron y 2 fallaron de forma intermitente (punto 4).
+- **Local (build de producción, puerto 3115):** pasa. 821 pasaron, 0 fallaron, incluida la auditoría de accesibilidad (axe) en inglés de `/fogon`, `/compromisos` y `/canales`.
+- **Preview:** bloqueado, no hay deploy (ver arriba).
+- **Guion manual:** los pasos 1 a 8 no se recorrieron a mano. Solo quedan cubiertos por los e2e (filtros y votos del Fogón en inglés y español, validación de Compromisos, filtros del Market, accesibilidad).
+- Reporte: #issuecomment-6450852417.
 
 ## Para la próxima noche
-- Resolver Vercel y correr el guion manual sobre el preview.
-- Ajustar la spec (puntos 2 y 3) o abrir un cambio para mostrar "se abre con".
-- Investigar los dos e2e intermitentes si se repiten.
-- Reforzar para el implementador: crear la rama antes del primer commit (esta noche el primer commit cayó en `agente/idioma-pasaporte-semillas-pactos` y se movió a la rama nueva; origin no se tocó) y no usar `sed -i` (se usó en `tasks.md`; inofensivo, pero está prohibido por CLAUDE.md).
-- Este PR depende de la rama `agente/idioma-pasaporte-semillas-pactos` (su base): mergear en orden.
+- Primero resolver el deploy de Vercel y recién después recorrer el guion manual del PR sobre el preview.
+- Según lo que decidas en 6 y 7, ajustar la spec (cambio chico, sin código) o abrir un cambio nuevo para mostrar "qué plan le falta" en alguna pantalla.
+- Traducir `/fogon/consultas` y `/fogon/simulador` si se quiere completar la zona.
+- Revisión nativa del inglés (`docs/idioma/revisar-nativo.md`).
