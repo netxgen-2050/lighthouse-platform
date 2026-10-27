@@ -178,20 +178,6 @@ export function FogonCliente() {
 
       {listo && (
         <p className="text-sm text-muted">
-          {condicion.residencia === "argentina"
-            ? "Con tu residencia fiscal en Argentina (simulado) votás en la Asamblea de residentes."
-            : condicion.residencia === "exterior"
-              ? "Con tu residencia fiscal en el exterior participás en tu tribu y ves las actas de la Asamblea; no votás en la Asamblea de residentes."
-              : (
-                <>
-                  Todavía no cargaste tu residencia fiscal, así que no sabemos si podés votar en la Asamblea de residentes.{" "}
-                  <Link className="underline" href="/pasaporte">Cargala en Tus datos</Link>.
-                </>
-              )}
-        </p>
-      )}
-      {listo && (
-        <p className="text-sm text-muted">
           {condicion.pase
             ? "Con tu Pase Fundador (simulado) votás en las decisiones del Fideicomiso."
             : "Para votar en el Fideicomiso hace falta el Pase Fundador."}
