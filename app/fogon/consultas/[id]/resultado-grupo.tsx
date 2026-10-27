@@ -1,8 +1,13 @@
+"use client";
+
 import { Donut } from "@/components/donut";
-import { costoReparto, ordenar, porcentajes, repartirPresupuesto, TEXTO_AVISO } from "@/lib/cuadratico/motor";
+import { costoReparto, ordenar, porcentajes, repartirPresupuesto } from "@/lib/cuadratico/motor";
 import { TerminoLegal } from "@/components/termino-legal";
 import { fechaCierre, fechaDe, formatoPlata, textoCuandoSeVe } from "@/lib/fogon/consultas/reglas";
-import { TERMINOS } from "@/lib/legal/terminos";
+import { nombreDePersona } from "@/lib/fogon/consultas/personas";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
+import { textoEn, type Idioma } from "@/lib/idioma/tipos";
+import { terminoMostrado } from "@/lib/legal/mostrar-termino";
 import { textoVotos, votosDe } from "@/lib/fogon/consultas/reparto";
 import type { PadronVista, VistaConsulta } from "@/lib/fogon/consultas/tipos";
 
@@ -10,19 +15,11 @@ import type { PadronVista, VistaConsulta } from "@/lib/fogon/consultas/tipos";
 
 const CAJA = "grid gap-3 rounded-xl border border-faint bg-surface p-4";
 
-function textoPersonas(n: number): string {
-  return n === 1 ? "1 persona" : `${n} personas`;
-}
-
-function textoParticipantes(p: { repartieron: number; padron: number } | null): string {
-  return p ? `${p.repartieron} de ${p.padron} personas ya repartieron` : "Personas que repartieron: sin dato";
-}
-
 /** Filas del resultado ordenadas, con porcentaje, monto y apoyo; se usa en la pantalla y en el acta. */
-function filasDelResultado(vista: VistaConsulta) {
+function filasDelResultado(vista: VistaConsulta, idioma: Idioma) {
   const { consulta, resultado } = vista;
   if (!resultado.visible) return null;
-  const etiqueta = Object.fromEntries(consulta.opciones.map((o) => [o.id, o.etiqueta]));
+  const etiqueta = Object.fromEntries(consulta.opciones.map((o) => [o.id, textoEn(o.etiqueta, idioma)]));
   // Los porcentajes se calculan sobre las filas ya ordenadas, igual que la leyenda del donut (que recibe ese orden),
   // para que con empates en el redondeo cada opción muestre un solo porcentaje.
   const ordenadas = ordenar(resultado.agregado);
@@ -51,51 +48,66 @@ function filasDelResultado(vista: VistaConsulta) {
   };
 }
 
+/** Los textos fijos del gráfico de dona en el idioma de la página. */
+export function useTextosDonut() {
+  const d = useTextos("fogonConsultas").donut;
+  return { verComoTabla: d.verComoTabla, valor: d.valor, restoAria: d.restoAria };
+}
+
 export function ResultadoDelGrupo({ vista }: { vista: VistaConsulta }) {
+  const idioma = useIdioma();
+  const t = useTextos("fogonConsultas");
+  const r = t.resultado;
+  const textosDonut = useTextosDonut();
   const { consulta, resultado, miReparto } = vista;
-  const calculo = filasDelResultado(vista);
+  const calculo = filasDelResultado(vista, idioma);
+  const participantes = (p: { repartieron: number; padron: number } | null) =>
+    p ? t.lista.repartieron(p.repartieron, p.padron) : t.lista.repartieronSinDato;
   return (
     <section aria-labelledby="h-resultado" className={CAJA}>
-      <h2 id="h-resultado" className="font-semibold">Resultado del grupo</h2>
+      <h2 id="h-resultado" className="font-semibold">{r.titulo}</h2>
       {!resultado.visible || !calculo ? (
         <p>
-          {textoCuandoSeVe(consulta)}. {textoParticipantes(resultado.participantes)}.
+          {textoCuandoSeVe(consulta, idioma)}. {participantes(resultado.participantes)}.
         </p>
       ) : (
         <>
           <p className="text-sm text-muted">
             {resultado.participantes
-              ? `${resultado.participantes.repartieron} de ${resultado.participantes.padron} personas repartieron.`
-              : "Personas que repartieron: sin dato."}{" "}
-            El grupo suma votos, no créditos.
+              ? r.repartieron(resultado.participantes.repartieron, resultado.participantes.padron)
+              : r.repartieronSinDato}{" "}
+            {r.sumaVotos}
           </p>
           <Donut
-            titulo="Votos del grupo"
+            titulo={r.votosDelGrupo}
             porciones={calculo.filas.map((f) => ({ id: f.opcion, etiqueta: f.etiqueta, valor: Math.max(0, f.neto) }))}
-            formatoValor={(n) => textoVotos(n)}
+            formatoValor={(n) => textoVotos(n, idioma)}
+            sinDato={t.donut.sinDato}
+            columnaEtiqueta={t.donut.opcion}
+            textos={textosDonut}
           />
-          {calculo.pct === null && <p>Votos del grupo: sin dato</p>}
+          {calculo.pct === null && <p>{r.votosSinDato}</p>}
           <ol className="grid gap-3">
             {calculo.filas.map((f) => (
               <li key={f.opcion} className="grid gap-1">
                 <p className="flex flex-wrap justify-between gap-x-3 font-medium">
                   <span>{f.etiqueta}</span>
                   <span>
-                    {textoVotos(f.neto)} · {f.pct === null ? "sin dato" : `${f.pct} %`}
+                    {textoVotos(f.neto, idioma)} · {f.pct === null ? r.sinDato : `${f.pct} %`}
                   </span>
                 </p>
                 <div aria-hidden="true" className="h-2 overflow-hidden rounded-full bg-surface-2">
                   <div className="h-full bg-green" style={{ width: `${f.pct ?? 0}%` }} />
                 </div>
                 <p className="flex flex-wrap gap-x-4 text-sm text-muted">
-                  <span>{f.apoyos === 1 ? "1 persona la apoyó" : `${f.apoyos} personas la apoyaron`}</span>
-                  {f.enContra > 0 && <span>{textoPersonas(f.enContra)} en contra</span>}
+                  <span>{r.apoyo(f.apoyos)}</span>
+                  {f.enContra > 0 && <span>{r.enContra(t.unidades.persona(f.enContra))}</span>}
                   {f.monto !== undefined && consulta.presupuesto && (
-                    <span>Monto: {formatoPlata(f.monto, consulta.presupuesto.moneda)}</span>
+                    <span>{r.monto(formatoPlata(f.monto, consulta.presupuesto.moneda, idioma))}</span>
                   )}
                   {miReparto && (
                     <span className="font-medium text-deep">
-                      <span aria-hidden="true">● </span>Tu voto: {textoVotos(votosDe(miReparto, f.opcion))}
+                      <span aria-hidden="true">● </span>{r.tuVoto(textoVotos(votosDe(miReparto, f.opcion), idioma))}
                     </span>
                   )}
                 </p>
@@ -105,10 +117,10 @@ export function ResultadoDelGrupo({ vista }: { vista: VistaConsulta }) {
           {calculo.plata && consulta.presupuesto && (calculo.plata.sinAsignar !== 0 || calculo.plata.avisos.length > 0) && (
             <div className="grid gap-1 text-sm">
               {calculo.plata.sinAsignar !== 0 && (
-                <p>Sin asignar: {formatoPlata(calculo.plata.sinAsignar, consulta.presupuesto.moneda)}</p>
+                <p>{r.sinAsignar(formatoPlata(calculo.plata.sinAsignar, consulta.presupuesto.moneda, idioma))}</p>
               )}
               {calculo.plata.avisos.map((a) => (
-                <p key={a} role="note">{TEXTO_AVISO[a]}</p>
+                <p key={a} role="note">{a === "pisos-imposibles" ? r.avisoPisos : a}</p>
               ))}
             </div>
           )}
@@ -120,41 +132,46 @@ export function ResultadoDelGrupo({ vista }: { vista: VistaConsulta }) {
 
 /** "Cómo repartió cada persona": solo llega con voto abierto y resultado visible. */
 export function TablaDeRepartos({ vista }: { vista: VistaConsulta }) {
+  const idioma = useIdioma();
+  const t = useTextos("fogonConsultas");
   const repartos = vista.padron?.repartos;
   if (!repartos) return null;
   const { consulta } = vista;
   return (
     <section aria-labelledby="h-repartos" className={CAJA}>
-      <h2 id="h-repartos" className="font-semibold">Quién repartió cómo</h2>
+      <h2 id="h-repartos" className="font-semibold">{t.repartos.titulo}</h2>
       <div
         role="region"
         tabIndex={0}
-        aria-label="Cómo repartió cada persona (se desplaza hacia los costados)"
+        aria-label={t.repartos.aria}
         className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
       >
         <table className="w-full min-w-max text-left text-sm">
-          <caption className="mb-2 text-left font-medium">Cómo repartió cada persona</caption>
+          <caption className="mb-2 text-left font-medium">{t.repartos.caption}</caption>
           <thead>
             <tr>
-              <th scope="col" className="pr-4">Persona</th>
+              <th scope="col" className="pr-4">{t.repartos.persona}</th>
               {consulta.opciones.map((o) => (
-                <th key={o.id} scope="col" className="pr-4">{o.etiqueta}</th>
+                <th key={o.id} scope="col" className="pr-4">{textoEn(o.etiqueta, idioma)}</th>
               ))}
-              <th scope="col">Créditos usados</th>
+              <th scope="col">{t.repartos.creditosUsados}</th>
             </tr>
           </thead>
           <tbody>
-            {repartos.map(({ persona, reparto, propio }) => (
-              <tr key={persona.id}>
-                <th scope="row" className={`pr-4 ${propio ? "font-semibold" : "font-normal"}`}>
-                  {propio && persona.nombre !== "Vos" ? `${persona.nombre} · Vos` : persona.nombre}
-                </th>
-                {consulta.opciones.map((o) => (
-                  <td key={o.id} className="pr-4">{votosDe(reparto, o.id)}</td>
-                ))}
-                <td>{costoReparto(reparto)}</td>
-              </tr>
-            ))}
+            {repartos.map(({ persona, reparto, propio }) => {
+              const nombre = nombreDePersona(persona, idioma);
+              return (
+                <tr key={persona.id}>
+                  <th scope="row" className={`pr-4 ${propio ? "font-semibold" : "font-normal"}`}>
+                    {propio && persona.nombre !== "Vos" ? t.personas.yoJunto(nombre) : nombre}
+                  </th>
+                  {consulta.opciones.map((o) => (
+                    <td key={o.id} className="pr-4">{votosDe(reparto, o.id)}</td>
+                  ))}
+                  <td>{costoReparto(reparto)}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -164,26 +181,24 @@ export function TablaDeRepartos({ vista }: { vista: VistaConsulta }) {
 
 /** "Faltan votar" (o "No repartieron" si ya cerró); solo con voto abierto. */
 export function QuienFalta({ padron, cerrada }: { padron: PadronVista; cerrada: boolean }) {
-  const titulo = cerrada ? "No repartieron" : "Faltan votar";
+  const idioma = useIdioma();
+  const t = useTextos("fogonConsultas").padron;
+  const titulo = cerrada ? t.noRepartieron : t.faltan;
   return (
     <section aria-labelledby="h-faltan" className={CAJA}>
       <h2 id="h-faltan" className="font-semibold">{titulo}</h2>
       {padron.faltan.length === 0 && padron.sinAceptar === 0 ? (
-        <p>Ya repartió todo el padrón</p>
+        <p>{t.todoElPadron}</p>
       ) : (
         <>
           {padron.faltan.length > 0 && (
             <ul className="list-disc pl-5">
               {padron.faltan.map((p) => (
-                <li key={p.id}>{p.nombre}</li>
+                <li key={p.id}>{nombreDePersona(p, idioma)}</li>
               ))}
             </ul>
           )}
-          {padron.sinAceptar > 0 && (
-            <p className="text-sm text-muted">
-              y {padron.sinAceptar === 1 ? "1 persona del padrón que todavía no entró" : `${padron.sinAceptar} personas del padrón que todavía no entraron`}
-            </p>
-          )}
+          {padron.sinAceptar > 0 && <p className="text-sm text-muted">{t.sinAceptar(padron.sinAceptar)}</p>}
         </>
       )}
     </section>
@@ -192,43 +207,45 @@ export function QuienFalta({ padron, cerrada }: { padron: PadronVista; cerrada: 
 
 /** Acta de ejemplo de una consulta cerrada. */
 export function Acta({ vista }: { vista: VistaConsulta }) {
+  const idioma = useIdioma();
+  const t = useTextos("fogonConsultas");
+  const a = t.acta;
   const { consulta, resultado, cierreManual } = vista;
-  const calculo = filasDelResultado(vista);
-  const textoConsultivo = TERMINOS.consultivo.texto;
+  const calculo = filasDelResultado(vista, idioma);
+  const consultivo = terminoMostrado("consultivo", idioma);
+  const sinDato = t.resultado.sinDato;
   return (
     <section aria-labelledby="h-acta" className={CAJA}>
-      <h2 id="h-acta" className="font-semibold">Acta (ejemplo)</h2>
+      <h2 id="h-acta" className="font-semibold">{a.titulo}</h2>
       <dl className="grid gap-1 text-sm sm:grid-cols-[10rem_1fr]">
-        <dt className="font-medium">Consulta</dt>
-        <dd>{consulta.titulo}</dd>
-        <dt className="font-medium">Cierre</dt>
-        <dd>{cierreManual ? `Cerrada a mano el ${fechaDe(cierreManual)} (simulado)` : fechaCierre(consulta)}</dd>
-        <dt className="font-medium">Regla</dt>
-        <dd>Voto cuadrático, 100 créditos por persona</dd>
-        <dt className="font-medium">Participantes</dt>
+        <dt className="font-medium">{a.consulta}</dt>
+        <dd>{textoEn(consulta.titulo, idioma)}</dd>
+        <dt className="font-medium">{a.cierre}</dt>
+        <dd>{cierreManual ? t.cierre.manual(fechaDe(cierreManual, idioma)) : fechaCierre(consulta, idioma)}</dd>
+        <dt className="font-medium">{a.regla}</dt>
+        <dd>{a.reglaTexto}</dd>
+        <dt className="font-medium">{a.participantes}</dt>
         <dd>
-          {resultado.participantes
-            ? `${resultado.participantes.repartieron} de ${resultado.participantes.padron} personas`
-            : "sin dato"}
+          {resultado.participantes ? a.participantesTexto(resultado.participantes.repartieron, resultado.participantes.padron) : sinDato}
         </dd>
-        <dt className="font-medium">Resultado</dt>
+        <dt className="font-medium">{a.resultado}</dt>
         <dd>
           {calculo ? (
             <ol className="list-decimal pl-5">
               {calculo.filas.map((f) => (
                 <li key={f.opcion}>
-                  {f.etiqueta} · {textoVotos(f.neto)} · {f.pct === null ? "sin dato" : `${f.pct} %`}
-                  {f.monto !== undefined && consulta.presupuesto && ` · ${formatoPlata(f.monto, consulta.presupuesto.moneda)}`}
+                  {f.etiqueta} · {textoVotos(f.neto, idioma)} · {f.pct === null ? sinDato : `${f.pct} %`}
+                  {f.monto !== undefined && consulta.presupuesto && ` · ${formatoPlata(f.monto, consulta.presupuesto.moneda, idioma)}`}
                 </li>
               ))}
             </ol>
           ) : (
-            "sin dato"
+            sinDato
           )}
         </dd>
       </dl>
       <p className="text-sm">
-        {textoConsultivo} <TerminoLegal clave="consultivo" />
+        <span lang={consultivo.langTexto}>{consultivo.texto}</span> <TerminoLegal clave="consultivo" idioma={idioma} />
       </p>
     </section>
   );

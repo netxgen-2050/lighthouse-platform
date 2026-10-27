@@ -23,8 +23,11 @@ export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   /^\/pasaporte$/,
   /^\/semillas$/,
   /^\/pactos$/,
-  // Fogón, Compromisos con su Mercado y Canales (idioma-fogon-mercado). Las consultas y el simulador del Fogón siguen sin traducir.
+  // Fogón, Compromisos con su Mercado y Canales (idioma-fogon-mercado).
   /^\/fogon$/,
+  // Consultas del Fogón: la lista y cada consulta (idioma-pendientes).
+  /^\/fogon\/consultas$/,
+  /^\/fogon\/consultas\/[^/]+$/,
   /^\/compromisos$/,
   /^\/canales$/,
   // Perfil, Mi recorrido, la bandeja de notificaciones y Configuración (idioma-perfil-recorrido).
@@ -32,6 +35,28 @@ export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   /^\/panel$/,
   /^\/bandeja$/,
   /^\/configuracion$/,
+];
+
+/**
+ * Páginas internas del equipo (no se traducen, siguen la excepción de `idioma-hifa-avisos`) o que redirigen. Una página
+ * nueva tiene que estar en esta lista o en `RUTAS_TRADUCIDAS`: lo vigila `rutas.test.ts` (regla "toda pantalla nueva nace
+ * bilingüe", `idioma-pendientes`).
+ */
+export const RUTAS_INTERNAS: readonly RegExp[] = [
+  /^\/admin(\/.*)?$/,
+  /^\/netx(\/.*)?$/,
+  /^\/panel\/bitacora$/,
+  // Redirige a /netx/simulador.
+  /^\/fogon\/simulador$/,
+];
+
+/**
+ * Páginas de usuarias que todavía esperan su cambio de idioma. Cuando ese cambio las traduce, pasan a `RUTAS_TRADUCIDAS`
+ * y salen de acá (el test falla si una ruta está en las dos).
+ */
+export const RUTAS_PENDIENTES: readonly { ruta: RegExp; cambio: string }[] = [
+  { ruta: /^\/mis-datos$/, cambio: "idioma-legal" },
+  { ruta: /^\/privacidad$/, cambio: "idioma-legal" },
 ];
 
 function limpiar(ruta: string): string {

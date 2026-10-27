@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test } from "vitest";
+import { ProveedorIdioma } from "@/lib/idioma/cliente";
 import type { Agregado } from "@/lib/cuadratico/motor";
 import { RepositorioNavegador, type Almacen } from "@/lib/fogon/consultas/navegador";
 import { buscarConsulta, PADRON } from "@/lib/fogon/consultas/ejemplo";
@@ -75,6 +76,41 @@ describe("porcentajes", () => {
     }
     expect(html).not.toContain("13 %");
     expect(html).not.toContain("37 %");
+  });
+});
+
+describe("Resultado y acta en inglés", () => {
+  const enIngles = (nodo: React.ReactNode) =>
+    renderToStaticMarkup(<ProveedorIdioma idioma="en">{nodo}</ProveedorIdioma>);
+
+  test("el resultado de U4 cerrada sale en inglés, con montos y fechas en formato en-US", async () => {
+    const vista = await vistaDe("u4", CERRADA);
+    const html = enIngles(<ResultadoDelGrupo vista={vista} />);
+    expect(html).toContain("Group result");
+    expect(html).toContain("Amount: USD 5,555.56");
+    expect(html).toContain("Group votes");
+    expect(html).toContain("Native plant nursery");
+    expect(html).toContain("View as table");
+    expect(html).not.toContain("Resultado del grupo");
+    expect(html).not.toContain("Vivero de nativas");
+  });
+
+  test("el acta nombra la consulta y las fechas en inglés", async () => {
+    const r = repo(new Date("2026-10-20T12:00:00-03:00"));
+    await r.cerrar("u1");
+    const l = await r.abrir("u1");
+    if (!l.ok) throw new Error("no abrió");
+    const html = enIngles(<Acta vista={l.valor} />);
+    expect(html).toContain("Minutes (sample)");
+    expect(html).toContain("Closed by hand on October 20, 2026 (simulated)");
+    expect(html).toContain("What does the Lighthouse optimize for?");
+  });
+
+  test("quienes faltan se nombran en inglés", () => {
+    const html = enIngles(<QuienFalta padron={{ faltan: [PADRON[5]], sinAceptar: 2, repartos: null }} cerrada={false} />);
+    expect(html).toContain("Yet to vote");
+    expect(html).toContain("Sample person 6");
+    expect(html).toContain("and 2 people on the roll who haven&#x27;t joined yet");
   });
 });
 

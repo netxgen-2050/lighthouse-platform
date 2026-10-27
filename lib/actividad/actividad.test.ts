@@ -224,6 +224,32 @@ describe("tipos de notificación apagados", () => {
   });
 });
 
+describe("eventos de cambio a un pacto, en los dos idiomas", () => {
+  const guardado = (e: ReturnType<typeof EVENTOS.cambioDePactoRechazado>, id: string) => registrar([], e, t0, id)[0];
+
+  it("el cambio aceptado se guarda con tipo y datos y se arma en el idioma actual", () => {
+    const e = guardado(EVENTOS.cambioDePactoAceptado("Valle Solar", "valle-solar", 2), "a");
+    expect(e.mensaje).toBe("cambioDePactoAceptado");
+    expect(e.datos).toEqual({ comunidad: "Valle Solar" });
+    expect(textoDeEvento(e, "es")).toEqual({ texto: "Valle Solar aceptó el cambio a tu pacto", idioma: "es" });
+    expect(textoDeEvento(e, "en")).toEqual({ texto: "Valle Solar accepted the change to your pact", idioma: "en" });
+  });
+
+  it("el cambio rechazado también", () => {
+    const e = guardado(EVENTOS.cambioDePactoRechazado("Valle Solar", "valle-solar"), "b");
+    expect(e.mensaje).toBe("cambioDePactoRechazado");
+    expect(e.datos).toEqual({ comunidad: "Valle Solar" });
+    expect(textoDeEvento(e, "es").texto).toBe("Valle Solar no aceptó el cambio a tu pacto");
+    expect(textoDeEvento(e, "en").texto).toBe("Valle Solar did not accept the change to your pact");
+  });
+
+  it("la propuesta de cambio dice 'tu comunidad' / 'your community' sin nombre", () => {
+    const e = guardado(EVENTOS.propusisteCambioDePacto("", "valle-solar"), "c");
+    expect(textoDeEvento(e, "es").texto).toContain("tu comunidad");
+    expect(textoDeEvento(e, "en").texto).toContain("your community");
+  });
+});
+
 it("el borrado de la demo quita también las preferencias", () => {
   const quitadas: string[] = [];
   borrarDemo((k) => quitadas.push(k));
