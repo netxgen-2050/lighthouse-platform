@@ -21,6 +21,10 @@ export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   /^\/pasaporte$/,
   /^\/semillas$/,
   /^\/pactos$/,
+  // Fogón, Compromisos con su Mercado y Canales (idioma-fogon-mercado). Las consultas y el simulador del Fogón siguen sin traducir.
+  /^\/fogon$/,
+  /^\/compromisos$/,
+  /^\/canales$/,
 ];
 
 function limpiar(ruta: string): string {

@@ -77,6 +77,26 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Roles de ejemplo (nombre y descripción), pestañas y pasos de un pacto, con su inglés",
   },
+  "textos/fogon": {
+    estado: "pendiente",
+    que: "Fogón: encabezado, filtros por ámbito, opciones de voto, motivos para no votar, acta de ejemplo y ayudas (\"Fideicomiso\" = Trust)",
+  },
+  "textos/compromisos": {
+    estado: "pendiente",
+    que: "Compromisos y Mercado: formulario, validaciones, tipos y medios de intercambio, filtros y avisos",
+  },
+  "textos/canales": {
+    estado: "pendiente",
+    que: "Canales: por qué se abre cada puerta, qué la abre, refuerzo por presencia y nombres de planes y niveles del pase",
+  },
+  "lib/fogon/datos.ts": {
+    estado: "pendiente",
+    que: "Decisiones de ejemplo del Fogón (título, lugar y regla) con su inglés, traducidas del español",
+  },
+  "lib/compromisos/mercado.ts": {
+    estado: "pendiente",
+    que: "Ofertas de ejemplo del Mercado con su inglés, traducidas del español (las que publica la persona no se traducen)",
+  },
   "lib/economia/terminos.ts": {
     estado: "pendiente",
     que: "Término económico 🌱 de Semillas en inglés (borrador, sin revisión)",
@@ -117,6 +137,8 @@ export function fuentesObligatorias(): string[] {
     "lib/territorios/textos.ts",
     "lib/semillas/datos.ts",
     "lib/pactos/datos.ts",
+    "lib/fogon/datos.ts",
+    "lib/compromisos/mercado.ts",
     "lib/economia/terminos.ts",
   ];
 }

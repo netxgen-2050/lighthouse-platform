@@ -23,6 +23,9 @@ describe("estaTraducida", () => {
       "/tribus/valle/manifiesto",
       "/tribus/grano/postular?x=1",
       "/territorios/lighthouse",
+      "/fogon",
+      "/compromisos",
+      "/canales",
     ]) {
       expect(estaTraducida(ruta), ruta).toBe(true);
     }
@@ -30,7 +33,8 @@ describe("estaTraducida", () => {
 
   test("el resto todavía no", () => {
     for (const ruta of [
-      "/fogon",
+      "/fogon/consultas",
+      "/fogon/simulador",
       "/pactos/otra",
       "/semillas/otra",
       "/pasaporte/otra",

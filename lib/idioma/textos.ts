@@ -1,7 +1,10 @@
 // Registro de los diccionarios por zona. Cada cambio de zona suma el suyo acá, para que los tests los recorran todos
 // (sin textos vacíos, sin copias sin traducir, y anotado en la revisión nativa).
 import type { Idioma, Textos } from "./tipos";
+import { canales } from "./textos/canales";
 import { comunes } from "./textos/comunes";
+import { compromisos } from "./textos/compromisos";
+import { fogon } from "./textos/fogon";
 import { marco } from "./textos/marco";
 import { pactos } from "./textos/pactos";
 import { pasaporte } from "./textos/pasaporte";
@@ -11,7 +14,20 @@ import { sumarte } from "./textos/sumarte";
 import { territorio } from "./textos/territorio";
 import { tribus } from "./textos/tribus";
 
-export const DICCIONARIOS = { comunes, marco, pactos, pasaporte, portada, semillas, sumarte, territorio, tribus } as const;
+export const DICCIONARIOS = {
+  canales,
+  comunes,
+  compromisos,
+  fogon,
+  marco,
+  pactos,
+  pasaporte,
+  portada,
+  semillas,
+  sumarte,
+  territorio,
+  tribus,
+} as const;
 
 export type Zona = keyof typeof DICCIONARIOS;
 

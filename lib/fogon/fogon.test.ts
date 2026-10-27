@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { textos } from "@/lib/idioma/textos";
 import { TERMINOS } from "@/lib/legal/terminos";
-import { DECISIONES } from "./datos";
+import { ambitos, DECISIONES, opciones } from "./datos";
 import { contar, filtrar, INICIAL, leer, motivoSinVoto, SIN_CONDICION, votar, votoPropio, type Condicion } from "./estado";
 
 const mock = readFileSync(path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"), "utf8");
@@ -14,9 +15,24 @@ describe("datos", () => {
   it("son las cinco decisiones del mock-up, con títulos y reglas copiados", () => {
     expect(DECISIONES).toHaveLength(5);
     for (const d of DECISIONES) {
-      expect(mock).toContain(`["${d.titulo}","${d.donde}","${d.regla}","${d.base}"`);
+      expect(mock).toContain(`["${d.titulo.es}","${d.donde.es}","${d.regla.es}","${d.base}"`);
       expect(TERMINOS[d.base]).toBeDefined();
     }
+  });
+  it("cada decisión tiene su inglés, con el español como original", () => {
+    for (const d of DECISIONES) {
+      for (const v of [d.titulo, d.donde, d.regla]) {
+        expect(v.en.trim(), d.id).not.toBe("");
+        expect(v.original).toBe("es");
+      }
+      expect(d.titulo.en, d.id).not.toBe(d.titulo.es);
+    }
+  });
+  it("las etiquetas de ámbitos y opciones salen del diccionario, en los dos idiomas", () => {
+    expect(ambitos("es").map((a) => a.etiqueta)).toEqual(["Tribu", "Asamblea de residentes", "Fideicomiso"]);
+    expect(ambitos("en").map((a) => a.etiqueta)).toEqual(["Tribe", "Residents' Assembly", "Trust"]);
+    expect(opciones("es").map((o) => o.etiqueta)).toEqual(["A favor", "En contra", "Abstención"]);
+    expect(opciones("en").map((o) => o.etiqueta)).toEqual(["In favor", "Against", "Abstention"]);
   });
   it("no hay personas de ejemplo en los datos", () => {
     expect(JSON.stringify(DECISIONES)).not.toMatch(/Luc[ií]a|Lucas/);
@@ -30,23 +46,31 @@ const conPase: Condicion = { residencia: undefined, pase: true };
 describe("quién puede votar (residencia cargada y Pase Fundador)", () => {
   it("con residencia en el exterior y sin Pase vota en tribu; no en la asamblea ni en el fideicomiso", () => {
     expect(motivoSinVoto(huerta, exterior)).toBeNull();
-    expect(motivoSinVoto(bomba, exterior)).toBe("Solo residentes");
-    expect(motivoSinVoto(presupuesto, exterior)).toBe("Votan quienes tienen el Pase Fundador");
+    expect(motivoSinVoto(bomba, exterior)).toBe("residentes");
+    expect(motivoSinVoto(presupuesto, exterior)).toBe("pase");
+  });
+  it("el motivo se lee en los dos idiomas desde el diccionario", () => {
+    expect(textos("fogon", "es").motivos).toEqual({
+      pase: "Votan quienes tienen el Pase Fundador",
+      residentes: "Solo residentes",
+      sinDato: "Sin dato de tu residencia",
+    });
+    expect(textos("fogon", "en").motivos.residentes).toBe("Residents only");
   });
   it("con residencia en Argentina vota en tribu y asamblea; el fideicomiso pide el Pase", () => {
     for (const d of DECISIONES) {
-      expect(motivoSinVoto(d, argentina)).toBe(d.id === "presupuesto" ? "Votan quienes tienen el Pase Fundador" : null);
+      expect(motivoSinVoto(d, argentina)).toBe(d.id === "presupuesto" ? "pase" : null);
     }
   });
   it("sin dato de residencia vota en tribu y en la asamblea dice que falta el dato (no asume)", () => {
     expect(motivoSinVoto(huerta, SIN_CONDICION)).toBeNull();
-    expect(motivoSinVoto(bomba, SIN_CONDICION)).toBe("Sin dato de tu residencia");
-    expect(motivoSinVoto(presupuesto, SIN_CONDICION)).toBe("Votan quienes tienen el Pase Fundador");
+    expect(motivoSinVoto(bomba, SIN_CONDICION)).toBe("sinDato");
+    expect(motivoSinVoto(presupuesto, SIN_CONDICION)).toBe("pase");
   });
   it("con el Pase vota en el fideicomiso sin importar la residencia; la asamblea sigue pidiendo residencia", () => {
     expect(motivoSinVoto(presupuesto, conPase)).toBeNull();
     expect(motivoSinVoto(presupuesto, { residencia: "exterior", pase: true })).toBeNull();
-    expect(motivoSinVoto(bomba, conPase)).toBe("Sin dato de tu residencia");
+    expect(motivoSinVoto(bomba, conPase)).toBe("sinDato");
   });
 });
 
