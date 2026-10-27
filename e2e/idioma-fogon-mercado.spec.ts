@@ -40,6 +40,16 @@ test.describe("Fogón en inglés", () => {
     expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
 
+  test("el acta de ejemplo tras votar también marca el nombre de la tribu con translate=no", async ({ page }) => {
+    await page.goto("/fogon");
+    const valle = decision(page, "Choose a facilitator for Valle Solar");
+    await valle.getByRole("button", { name: "Vote" }).click();
+    await valle.getByRole("button", { name: "In favor" }).click();
+    const acta = valle.getByText("Minutes (sample)");
+    await expect(acta).toBeVisible();
+    await expect(acta.locator('[translate="no"]', { hasText: "Valle Solar" })).toHaveCount(1);
+  });
+
   test("sin residencia cargada dice en inglés que falta el dato", async ({ page }) => {
     await page.goto("/fogon");
     await expect(page.getByText("No data on your residency", { exact: true })).toHaveCount(2);

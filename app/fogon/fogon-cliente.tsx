@@ -189,7 +189,7 @@ export function FogonCliente() {
                 <p className="rounded-lg border border-deep bg-green-soft px-3 py-2 text-sm text-deep">
                   <span aria-hidden="true">✓ </span>
                   {t.tuVoto(OPCIONES.find((o) => o.id === propio)!.etiqueta)}
-                  <span className="block">{t.acta(OPCIONES.find((o) => o.id === propio)!.etiqueta.toLowerCase(), titulo)}</span>
+                  <span className="block"><ConTribu texto={t.acta(OPCIONES.find((o) => o.id === propio)!.etiqueta.toLowerCase(), titulo)} tribu={d.tribu} /></span>
                 </p>
               )}
             </li>
