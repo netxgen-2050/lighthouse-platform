@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "./fixtura";
 
-const PESTANAS = ["Resumen", "Simulador", "Comunidad y embudo"];
+const PESTANAS = ["Resumen", "Modelo de financiamiento", "Simulador", "Comunidad y embudo"];
 const EMAIL = /[\w.+-]+@[\w-]+\.[\w.]+/;
 
 const navegacion = (page: Page) => page.getByRole("navigation", { name: "Secciones de la Vista NetX" });
@@ -33,7 +33,7 @@ test.describe("estructura", () => {
     }
   });
 
-  test("las tres pestañas, en orden, con Resumen en aria-current", async ({ page }) => {
+  test("las cuatro pestañas, en orden, con Resumen en aria-current", async ({ page }) => {
     await page.goto("/netx");
     const enlaces = navegacion(page).getByRole("link");
     await expect(enlaces).toHaveText(PESTANAS);

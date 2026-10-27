@@ -36,6 +36,7 @@ describe("catálogo legal", () => {
         "espejo",
         "estatuto",
         "fidasamblea",
+        "fundaciontierra",
         "gobernanzafideicomiso",
         "guardian",
         "hacienda",
@@ -62,6 +63,7 @@ describe("catálogo legal", () => {
         "safe",
         "safu",
         "semillas",
+        "seriemadre",
         "serieprograma",
         "sumarte",
         "ticket",
@@ -97,6 +99,13 @@ describe("catálogo legal", () => {
     expect(TERMINOS.ordenanza173.texto).toContain("en el Juego B");
     expect(TERMINOS.ordenanza173.texto).toContain("A verificar con abogado");
     expect(TERMINOS.ordenanza173.texto).not.toContain("diseño B");
+  });
+  it("seriemadre y fundaciontierra son borrador y la Fundación se verifica con abogado", () => {
+    expect(esBorrador("seriemadre")).toBe(true);
+    expect(esBorrador("fundaciontierra")).toBe(true);
+    expect(TERMINOS.fundaciontierra.texto.startsWith("En el Juego B")).toBe(true);
+    expect(TERMINOS.fundaciontierra.texto).toContain("a verificar con abogado");
+    expect(TERMINOS.fundaciontierra.texto).not.toContain("diseño B");
   });
   it("encuentroeducativo es borrador", () => {
     expect(esBorrador("encuentroeducativo")).toBe(true);
