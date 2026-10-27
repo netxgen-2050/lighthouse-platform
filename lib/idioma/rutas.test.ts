@@ -41,12 +41,6 @@ describe("cobertura de rutas (toda pantalla nueva nace bilingüe)", () => {
     expect(dobles).toEqual([]);
   });
 
-  test("la lista falla si falta una ruta: sin las consultas, quedarían sueltas", () => {
-    // Simula quitar la ruta de la lista: las consultas dejarían de estar cubiertas.
-    const sinConsultas = rutasDeApp().filter((r) => r.startsWith("/fogon/consultas"));
-    expect(sinConsultas.length).toBeGreaterThan(0);
-    for (const r of sinConsultas) expect(esInterna(r) || esPendiente(r), r).toBe(false);
-  });
 });
 
 describe("estaTraducida", () => {

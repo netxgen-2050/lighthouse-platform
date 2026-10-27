@@ -4,6 +4,7 @@
 // Las personas de ejemplo del padrón ("Persona de ejemplo N", "Vos") se nombran acá para que cambien con el idioma.
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
+import type { AvisoPresupuesto } from "../../cuadratico/motor";
 
 const G = GLOSARIO;
 
@@ -126,7 +127,9 @@ const es = {
     monto: (monto: string) => `Monto: ${monto}`,
     tuVoto: (votos: string) => `Tu voto: ${votos}`,
     sinAsignar: (monto: string) => `Sin asignar: ${monto}`,
-    avisoPisos: "Los pisos suman más que el monto: no se aplicaron",
+    avisos: {
+      "pisos-imposibles": "Los pisos suman más que el monto: no se aplicaron",
+    } satisfies Record<AvisoPresupuesto, string>,
   },
   repartos: {
     titulo: "Quién repartió cómo",
@@ -280,7 +283,9 @@ const en: Textos<typeof es> = {
     monto: (monto: string) => `Amount: ${monto}`,
     tuVoto: (votos: string) => `Your vote: ${votos}`,
     sinAsignar: (monto: string) => `Unassigned: ${monto}`,
-    avisoPisos: "The minimums add up to more than the amount: they were not applied",
+    avisos: {
+      "pisos-imposibles": "The minimums add up to more than the amount: they were not applied",
+    },
   },
   repartos: {
     titulo: "Who split how",

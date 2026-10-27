@@ -120,7 +120,7 @@ export function ResultadoDelGrupo({ vista }: { vista: VistaConsulta }) {
                 <p>{r.sinAsignar(formatoPlata(calculo.plata.sinAsignar, consulta.presupuesto.moneda, idioma))}</p>
               )}
               {calculo.plata.avisos.map((a) => (
-                <p key={a} role="note">{a === "pisos-imposibles" ? r.avisoPisos : a}</p>
+                <p key={a} role="note">{r.avisos[a]}</p>
               ))}
             </div>
           )}
