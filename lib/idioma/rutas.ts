@@ -27,6 +27,11 @@ export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   /^\/fogon$/,
   /^\/compromisos$/,
   /^\/canales$/,
+  // Perfil, Mi recorrido, la bandeja de notificaciones y Configuración (idioma-perfil-recorrido).
+  /^\/perfil$/,
+  /^\/panel$/,
+  /^\/bandeja$/,
+  /^\/configuracion$/,
 ];
 
 function limpiar(ruta: string): string {

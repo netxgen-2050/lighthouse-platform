@@ -111,7 +111,7 @@ export function FormularioPostulacion({ tribuId, barrio }: { tribuId: string; ba
       return;
     }
     setFalloGuardar(false);
-    registrarEvento(EVENTOS.enviastePostulacion(b.nombreComunidad.trim() || "tu comunidad"));
+    registrarEvento(EVENTOS.enviastePostulacion(b.nombreComunidad.trim()));
     registrarEvento(EVENTOS.postulacionRecibida(p.id));
     setEnviada(true);
   }

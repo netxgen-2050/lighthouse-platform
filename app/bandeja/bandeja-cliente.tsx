@@ -4,13 +4,16 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { contarNoLeidas, listarNotificaciones, type EventoActividad } from "@/lib/actividad/actividad";
 import { EVENTO_CAMBIO, leerActividadDelNavegador, marcarTodasLeidasEnNavegador } from "@/lib/actividad/almacen";
-
+import { TextoEvento } from "@/components/texto-evento";
 import { usePreferencias } from "@/lib/configuracion/almacen";
 import { tiposOcultos } from "@/lib/configuracion/preferencias";
-
-const fecha =new Intl.DateTimeFormat("es-AR", { dateStyle: "medium", timeStyle: "short" });
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
+import { LOCALES } from "@/lib/idioma/formatos";
 
 export function BandejaCliente() {
+  const idioma = useIdioma();
+  const t = useTextos("bandeja");
+  const fecha = new Intl.DateTimeFormat(LOCALES[idioma], { dateStyle: "medium", timeStyle: "short" });
   const [lista, setLista] = useState<EventoActividad[]>([]);
   const [listo, setListo] = useState(false);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
@@ -39,7 +42,7 @@ export function BandejaCliente() {
   function marcar() {
     const guardo = marcarTodasLeidasEnNavegador();
     setFalloAlmacen(!guardo);
-    setAviso(guardo ? "Todas las notificaciones quedaron como leídas." : "");
+    setAviso(guardo ? t.todasLeidas : "");
   }
 
   return (
@@ -47,7 +50,7 @@ export function BandejaCliente() {
       <section aria-labelledby="notificaciones" className="grid gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 id="notificaciones" className="text-xl font-semibold">
-            Notificaciones
+            {t.notificaciones}
           </h2>
           <button
             type="button"
@@ -55,7 +58,7 @@ export function BandejaCliente() {
             disabled={sinLeer === 0}
             className="rounded-lg border border-muted px-4 py-1.5 font-medium hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
           >
-            Marcar todas como leídas
+            {t.marcarTodas}
           </button>
         </div>
         <p role="status" className="text-sm text-muted">
@@ -63,24 +66,24 @@ export function BandejaCliente() {
         </p>
         {falloAlmacen && (
           <p role="alert" className="text-sm font-medium">
-            No se pudo guardar en este navegador: las notificaciones vuelven a figurar sin leer al recargar.
+            {t.noSeGuardo}
           </p>
         )}
         {!listo ? null : notificaciones.length === 0 ? (
           <p className="rounded-xl border border-faint bg-surface p-4">
-            Todavía no tenés notificaciones. Cuando una comunidad responda a lo que hiciste, te avisamos acá.
+            {t.vacio}
           </p>
         ) : (
           <ul className="grid gap-2">
             {notificaciones.map((n) => (
               <li key={n.id} className="rounded-xl border border-faint bg-surface p-4">
                 <Link href={n.enlace} className="font-medium underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
-                  {n.texto}
+                  <TextoEvento evento={n} />
                 </Link>
                 <p className="mt-1 text-sm text-muted">
                   <time dateTime={n.visibleDesde ?? n.fecha}>{fecha.format(new Date(n.visibleDesde ?? n.fecha))}</time>
                   {" · "}
-                  <span className="font-medium">{n.leida ? "Leída" : "Sin leer"}</span>
+                  <span className="font-medium">{n.leida ? t.leida : t.sinLeer}</span>
                 </p>
               </li>
             ))}
@@ -90,11 +93,9 @@ export function BandejaCliente() {
 
       <section aria-labelledby="mensajes" className="grid gap-3">
         <h2 id="mensajes" className="text-xl font-semibold">
-          Mensajes
+          {t.mensajes.titulo}
         </h2>
-        <p className="rounded-xl border border-faint bg-surface-2 p-4">
-          Pronto vas a poder recibir mensajes de tu comunidad y del equipo
-        </p>
+        <p className="rounded-xl border border-faint bg-surface-2 p-4">{t.mensajes.pronto}</p>
       </section>
     </div>
   );
