@@ -1,0 +1,81 @@
+# Design
+
+## Contexto
+
+- `lib/pactos/estado.ts` guarda, por persona (`u:<id>:lh-pactos`), el pacto de tiempo de cada comunidad: contenido vigente, `paso` (0 borrador, 1 enviado, 2 aceptado), `version`, `historial` y un `cambio` opcional (paso 0 o 1). Hoy las acciones `avanzar` (1 → 2), `aceptarCambio` y `rechazarCambio` las dispara la misma persona con botones "Simular…".
+- Todo lo de la demo se guarda con el prefijo de la persona (`lib/demo/claves.ts`): la otra parte **no puede leerlo**. Por eso hace falta un registro compartido.
+- `lib/gobernanza/registros.ts` ya tiene una lista de solo agregar con forma de attestation (`id`, `esquema`, `afirma`, `sobre`, `apuntaA`, `cuando`, `datos`; revocar = agregar un `revoca`). Se copia la forma, no el módulo (sus esquemas son otros).
+- Quién lidera sale de `useSesion().tribuLider` (Plan Tribu o `admin-tribu` con `tribuAdmin`); el super admin de `sesion.rol === "superadmin"`. El id estable de la persona es `sesion.idPersona` (en prueba, `prueba:<email>`).
+
+## Decisiones
+
+### 1. Constancia de pacto (forma de EAS, ADR-012 y ADR-018)
+
+```ts
+type EsquemaPacto = "pacto-propone" | "pacto-acepta" | "pacto-no-acepta" | "revoca";
+type ConstanciaPacto = {
+  id: string;               // `p<n>-<esquema>`, n = largo de la lista + 1 (como gobernanza)
+  esquema: EsquemaPacto;
+  afirma: string;           // "persona:<idPersona>" | "tribu:<id>" | "comunidad:lighthouse"
+  por: string;              // idPersona de quien apretó el botón (la persona misma, o quien lidera)
+  sobre: string;            // "pacto:<comunidad>:<idPersona de la persona del pacto>"
+  version: number;          // la versión que se propone o que se acepta
+  apuntaA: string | null;   // acepta / no-acepta / revoca → la propuesta
+  cuando: string;           // ISO
+  revocable: boolean;       // true en propone y acepta; false en no-acepta y revoca
+  datos: Record<string, string>; // propone: tipo ("nuevo"|"cambio"), rol, rolOtro, descripcion, horas, horasVigentes, email
+                                  // no-acepta: motivo
+};
+```
+
+- `revocada` se **calcula** (existe un `revoca` que apunta a ella), nunca se guarda.
+- Una propuesta está **pendiente** si no está revocada y no tiene `acepta` ni `no-acepta` que la apunte. Está **acordada** si tiene un `acepta` no revocado cuyo `afirma` es la contraparte (persona ↔ tribu) y cuyo `por` no es la persona del pacto.
+- Funciones puras en `lib/pactos/constancias.ts`: `agregar`, `revocar`, `estaRevocada`, `pendientes(lista, comunidades)`, `respuestaDe(lista, propuestaId)`, `puedeResponder(sesion, comunidad, propuesta)`, `leerConstancias(crudo)`. Las fechas y los ids de persona vienen de afuera (sin `Date.now()` adentro).
+- `datos.email` va solo para que la tribu sepa quién propone (es lo que el prototipo tiene). Antes de firmar o publicar (etapas 2 y 3 de ADR-012) `datos` se reemplaza por un hash: nunca datos personales en la cadena.
+
+### 2. Registro compartido en el navegador
+
+- Clave nueva **sin prefijo de persona**: `compartido:pactos-constancias`, en `lib/demo/claves.ts` como `CLAVES_COMPARTIDAS` (fuera de `CLAVES`, que siempre prefija). El nombre no empieza con `lh-` a propósito: la fixtura de e2e prefija todo lo `lh-*`.
+- Lectura y escritura en `lib/pactos/registro-compartido.ts`: `leerDelNavegador(): ConstanciaPacto[] | null` (null = el navegador no deja leer → "sin dato") y `agregarEnNavegador(nueva)`, que relee antes de escribir (dos pestañas).
+- Solo se escribe al **enviar**, **retirar**, **aceptar** y **no aceptar**. El borrador nunca sale de la clave de la persona.
+
+### 3. La persona: enviar y retirar escriben constancias; aceptar ya no
+
+- `avanzar` de 0 → 1 y `enviarCambio` agregan una `pacto-propone` (versión = `version + 1`). `retirar` (pacto) y un `retirar` nuevo del cambio enviado (vuelve a paso 0 del cambio) agregan un `revoca` sobre la propuesta pendiente, **solo si sigue pendiente**; si ya hay respuesta, se concilia primero y no se retira.
+- Se quitan de la pantalla los botones simulados. Las acciones `avanzar` de 1 → 2, `aceptarCambio` y `rechazarCambio` del reductor **se mantienen** pero solo las llama la conciliación (no la persona).
+
+### 4. Conciliar al leer
+
+- `conciliar(estado, constancias, idPersona, ahora)` en `lib/pactos/estado.ts`, pura: por cada comunidad con pacto o cambio en paso 1, busca la última propuesta de esa persona y aplica la respuesta: `acepta` → `avanzar` / `aceptarCambio` con la fecha de la constancia (no la de hoy); `no-acepta` → pacto a paso 0, o `rechazarCambio`, y deja `ultimaRespuesta = { tipo: "no-acepta", motivo, comunidad, cuando }` para el aviso. Devuelve también la lista de respuestas aplicadas, para que `/pactos` anuncie y registre eventos.
+- **Quién la usa:** `/pactos` (guarda el resultado en la clave de la persona y registra los eventos con `clave` única por propuesta para no duplicarlos), y en memoria —sin guardar— `lib/semillas/estado.ts`, `app/semillas/semillas-cliente.tsx`, `app/perfil/perfil-cliente.tsx` y `lib/panel/proximo-paso.ts`. Un helper `leerPactosConciliados(lector, idPersona)` evita repetir el código.
+- Si el registro compartido no se puede leer, se usa el estado de la persona sin conciliar (no se inventa una respuesta).
+
+### 5. Eventos
+
+- Nuevos: `pactoNoAceptado(comunidad, id, motivo)` (tipo `pacto`). Se reutilizan `pactoAceptado`, `rondaAbierta`, `cambioDePactoAceptado` y `cambioDePactoRechazado`, ahora disparados por la conciliación. El evento de "no aceptado" **no** copia el motivo al texto del evento (queda en el pacto); solo el nombre de la comunidad.
+
+### 6. Pantalla de la tribu: `/pactos/responder`
+
+- Página cliente (como `/pactos`), con el aviso de prototipo del layout. Lee `useSesion()`: comunidades que puede responder = `[tribuLider]` y, si es super admin, también `lighthouse`. Cada pendiente es un `<article>` con encabezado; "Aceptar" y "No aceptar"; "No aceptar" despliega un `<textarea>` con su `<label>` y "Confirmar". El resultado se anuncia en una región `role="status"` siempre montada y el foco va ahí.
+- Antes de escribir, se relee el registro y se vuelve a comprobar que la propuesta siga pendiente (spec: "Este pacto ya no está pendiente").
+- En `/tribus/[id]`, un componente cliente chico junto a `MarcaAdmin` muestra "Pactos para responder (N)" si `tribuLider === id`; con el registro ilegible muestra "Pactos para responder (sin dato)".
+
+### 7. Descargar y borrar mis datos
+
+- `borrarDemo` solo recibe un `quitar(clave)`: no sirve para sacar entradas de una lista compartida. Se agrega `quitarConstanciasDe(idPersona)` en `lib/pactos/registro-compartido.ts`, que reescribe `compartido:pactos-constancias` sin las constancias cuyo `sobre` es `pacto:*:<idPersona>`, y `/mis-datos` la llama junto a `borrarDemo` al retirar el consentimiento. Es la excepción al "solo agregar", en el navegador. En la base será anonimizar (ADR-005).
+- `exportarMisDatos` suma `datos.pactosConstancias`: las constancias cuyo `sobre` es de la persona (`null` si el registro no se puede leer).
+- Las constancias donde la persona solo aparece como `por` (respondió por su tribu) **no** se borran: son de la tribu y de la otra persona. Queda como pregunta para Gus.
+
+### 8. Compatibilidad
+
+- Un pacto guardado en paso 1 **sin** propuesta en el registro (de antes de este cambio) se publica como propuesta la primera vez que la persona abre `/pactos`, con `cuando` = ahora y `datos.migrada = "1"`. Los pactos ya aceptados (paso 2) quedan aceptados sin constancia (no se inventa una aceptación de la tribu); el historial ya dice "fecha sin dato" cuando corresponde.
+
+## Riesgos
+
+- **La verificación es del navegador.** Cualquiera con las herramientas del navegador puede escribir una aceptación. Aceptable en el prototipo interno; en la base, el servidor verifica quién responde y sobre qué tribu (P9).
+- **Datos de una persona visibles para otra en el mismo navegador** (email, rol, descripción del pacto). Es lo que pide el flujo; solo se comparte lo enviado, y el borrado lo quita.
+- **Solo funciona en un mismo navegador.** Para mostrarlo entre dos computadoras hace falta la base.
+
+## Revisión de arquitectura
+
+Pendiente: toca permisos (quién responde por una tribu) y datos personales (lo enviado lo lee otra persona). El especificador no pudo invocar al agente arquitecto en esta sesión; hay que pedírsela con el id `pactos-dos-partes` antes de aprobar.
