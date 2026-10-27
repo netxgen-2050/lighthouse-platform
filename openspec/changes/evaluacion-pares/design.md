@@ -23,6 +23,8 @@ Gus decidió el 23-oct-2026 (ADR-012, en Propuesta; `NS_Tokenomics` 07 J-2 y 29 
 Separado de `lib/semillas/` porque la evaluación entre pares también va a servir para círculos, convocatorias (D31) y el pacto en dos partes. Archivos:
 - `tipos.ts`: `Dimension = "rol" | "cultura"`, `Evaluacion = { de: string; a: string; dimension: Dimension; nota: number; motivo: string }`, `Parametros`, `Resultado`, `MotivoDescarte = "autoevaluacion" | "fuera-del-equipo" | "sin-motivo" | "nota-invalida" | "reciprocidad"`.
 - `parametros.ts`: `PARAMETROS_DE_PARTIDA = { agregado: "mediana", umbralReciprocidad: 1.5, topePorEvaluador: 1, minimoEvaluadores: 3, pesoRol: 0.5, fuerza: 0.2 }` y `FUERZAS = [0, 0.05, 0.1, 0.15, 0.2]`. Comentario: "valores de partida, se calibran con simulación (NS_Tokenomics 29 K11)".
+  <!-- arquitecto: versión del algoritmo para que cada ajuste sea reproducible (ADR-018, como ADR-010 con los modelos de tokenomics). -->
+  También `VERSION_EVALUACION = 1`: se sube con cada cambio del orden del cálculo o de los parámetros de partida.
 - `calculo.ts`: `calcularFactorEvaluacion(equipo: string[], evaluaciones: Evaluacion[], persona: string, parametros?: Partial<Parametros>): Resultado` y helpers puros (`mediana`, `mediaRecortada`, `redondearFactor`).
 - `guia.ts`: guía por dimensión y nivel, es/en.
 - `constancias.ts`: `constanciasDeRonda(...)`.
@@ -40,6 +42,8 @@ Separado de `lib/semillas/` porque la evaluación entre pares también va a serv
 **Redondeo**: `Math.round(Number((f * 100).toFixed(6))) / 100` (evita que 1,025 dé 1,02). Hay un test con 1,025.
 
 **Propiedad del tope** (test): como la mediana y la media recortada mueven su resultado como mucho lo que se mueve una nota, acotar cada nota a ± tope garantiza que reemplazar la nota de un evaluador por la mediana de los demás cambia el agregado como mucho en `tope`. Se prueba con varios conjuntos fijos (sin generadores aleatorios, para que el test sea determinista).
+<!-- arquitecto: la propiedad no está demostrada porque la ventana de cada nota depende de las notas de los demás. -->
+**Ojo:** la cota no está demostrada en general: al reemplazar la nota de E también se mueven las ventanas de los otros evaluadores. Los conjuntos fijos tienen que incluir al menos un equipo polarizado (1, 1, 5, 5 más una quinta nota) y uno con todas las notas iguales salvo una. Si algún conjunto rompe la cota, **no se ajusta el algoritmo para que pase**: se deja el conjunto en el test marcado como caso conocido (`it.fails`) y se reporta, porque cambiar el orden del cálculo es una decisión de calibración (K11).
 
 **Alternativas descartadas:** medir la influencia "sacando" al evaluador (leave-one-out) cambia el número de evaluadores y puede cruzar el mínimo de 3, así que no da una cota limpia; ponderar la nota recíproca con 0,5 en vez de descartarla complica la mediana. Ambas quedan para la calibración.
 
@@ -67,7 +71,12 @@ type Constancia = { uid: string; schema: "semillas-base" | "semillas-ajuste"; af
   apunta_a: string | null; datos: Record<string, string | number>; creada_en: string; revocada_en: null; vence_en: null };
 ```
 - Base: `uid = ejemplo-base-<comunidad>-<periodo>`, `datos = { pacto, horas, valor_hora_usd: HOUR_REF_USD, periodo, version_pacto: "v1-ejemplo", semillas: Math.round(horas × HOUR_REF_USD) }` (una ronda = un mes; 10 h → 50).
-- Ajuste: `uid = ejemplo-ajuste-<comunidad>-<periodo>`, `apunta_a = uid de la base`, `datos = { f_eval, semillas: Math.round(base × f_eval) }` (50 × 1,05 → 53).
+- Ajuste: `uid = ejemplo-ajuste-<comunidad>-<periodo>-f<fuerza × 100>`, `apunta_a = uid de la base`, `datos = { f_eval, semillas, version_evaluacion, fuerza, agregado, umbral_reciprocidad, tope_por_evaluador, minimo_evaluadores, peso_rol, evaluadores_rol, evaluadores_cultura }` (50 × 1,05 → 53).
+<!-- arquitecto: ADR-012 dice "nunca se edita"; con el mismo uid y otra fuerza el ejemplo enseñaría a editar. Parámetros congelados por ADR-018. -->
+  - El `uid` del ajuste cambia con la fuerza: otra fuerza es **otra** constancia que apunta a la misma base (en la versión real, la anterior se revoca). La pantalla lo dice en una línea ("con otra fuerza, esta constancia se revoca y se emite otra que apunta a la misma base").
+  - `datos` guarda los parámetros con que se calculó (ADR-018) y solo conteos agregados: **nunca** ids de evaluadores ni motivos. Test: `JSON.stringify(constancias)` no contiene ningún id de evaluador.
+  - `semillas` del ajuste = `Math.round(semillasBase × f_eval)` sobre la base **entera** ya emitida (no sobre las horas), con el mismo cuidado de coma flotante que `redondearFactor` (50 × 1,05 = 52,5 está justo en el medio).
+  - Las Semillas base salen de una sola función mensual reutilizada (la misma cuenta que `semillasTiempo` sin el × `MESES`), para que el bloque de constancias y el panel no diverjan. El bloque aclara que la constancia es **por ronda (un mes)**, porque el panel muestra 3 meses (150).
 - `creada_en` fija (`2026-10-31T00:00:00Z`) para que sea determinista. `afirma` siempre `"netx"` (ADR-012: nunca la billetera de una persona).
 - Sin pacto aceptado: la función no se llama y la pantalla muestra "sin dato".
 
@@ -80,6 +89,13 @@ type Constancia = { uid: string; schema: "semillas-base" | "semillas-ajuste"; af
 ### 7. Textos y ⚖
 - Textos en `lib/idioma/textos/semillas.ts` (es/en). Se reemplazan `factorFijo` y `pie`.
 - `lib/legal/terminos.ts`: `evaluacionPares` ("Evaluación entre pares": quién evalúa, que es privada y agregada, que las Semillas no son plata ni se transfieren y que los parámetros son de prueba) y `constanciaSemillas` ("Constancia de Semillas": registro que no se edita, se revoca y se vuelve a emitir; hoy vive en el navegador como ejemplo; nunca datos personales en una cadena). Ambos `borrador: true` y con `en`.
+
+### 8. Camino a la versión real (no se construye ahora)
+<!-- arquitecto: para que el prototipo no fije un patrón que con datos reales filtraría quién evaluó a quién (ADR-018, ADR-015). -->
+- `calcularFactorEvaluacion` es pura y se puede importar desde el servidor tal cual. En la versión real corre **solo en el servidor**; al navegador llega únicamente el `Resultado`. Las evaluaciones con `de` nunca viajan al navegador de otra persona.
+- El `equipo` lo arma el servidor desde la membresía del pacto o círculo en el período, nunca desde lo que mande el navegador.
+- Las evaluaciones van a una tabla propia (`evaluaciones`, skill `base-de-datos`), de solo agregar, nunca en `jsonb` ni en logs, y entran en "Mis datos" (lo que la persona **dio**; lo recibido, solo agregado).
+- Hoy la ronda (con los motivos que la persona escribe sobre Martina y Joaquín, de ejemplo) ya vive en `localStorage` (`lh-semillas-ronda`, desde `semillas-v2`) y ya sale en "Mis datos". Este cambio no agrega nada guardado: la fuerza no se guarda y el resultado se calcula en render.
 
 ## Risks / Trade-offs
 
