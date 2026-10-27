@@ -5,6 +5,7 @@ import { canales } from "./textos/canales";
 import { comunes } from "./textos/comunes";
 import { compromisos } from "./textos/compromisos";
 import { fogon } from "./textos/fogon";
+import { gobernanza } from "./textos/gobernanza";
 import { marco } from "./textos/marco";
 import { pactos } from "./textos/pactos";
 import { pasaporte } from "./textos/pasaporte";
@@ -19,6 +20,7 @@ export const DICCIONARIOS = {
   comunes,
   compromisos,
   fogon,
+  gobernanza,
   marco,
   pactos,
   pasaporte,

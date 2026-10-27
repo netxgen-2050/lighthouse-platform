@@ -5,8 +5,8 @@ const fila = (page: Page, clase: string) => tablaClases(page).getByRole("row").f
 const control = (page: Page, etiqueta: string | RegExp) => page.getByLabel(etiqueta);
 
 async function irAlSimulador(page: Page) {
-  await page.goto("/fogon/simulador");
-  await expect(page.getByRole("heading", { level: 1, name: "Simulador de la tokenomics (diseño B)" })).toBeVisible();
+  await page.goto("/netx/simulador");
+  await expect(page.getByRole("heading", { level: 1, name: "Simulador de la tokenomics" })).toBeVisible();
 }
 
 async function elegirAgrovoltaica(page: Page) {
@@ -17,13 +17,39 @@ async function abrirAnioPorAnio(page: Page) {
   await page.getByText("Ver año por año").click();
 }
 
-test("(a) /fogon enlaza al simulador y el rail marca Fogón", async ({ page }) => {
+test("(a) el simulador vive en la Vista NetX: /fogon ya no lo enlaza y /fogon/simulador redirige", async ({ page }) => {
   await page.goto("/fogon");
-  await page.getByRole("link", { name: "Simular los parámetros de la tokenomics" }).click();
-  await expect(page).toHaveURL(/\/fogon\/simulador$/);
-  await expect(page.getByRole("heading", { level: 1, name: "Simulador de la tokenomics (diseño B)" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Simular los parámetros de la tokenomics" })).toHaveCount(0);
+  await expect(page.locator('a[href="/fogon/simulador"]')).toHaveCount(0);
+  await page.goto("/fogon/simulador");
+  await expect(page).toHaveURL(/\/netx\/simulador$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Simulador de la tokenomics" })).toBeVisible();
   await expect(page.locator("main")).toHaveCount(1);
-  await expect(page.getByRole("link", { name: "Fogón" }).first()).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("navigation", { name: "Secciones de la Vista NetX" }).getByRole("link", { name: "Simulador" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await expect(page.getByRole("link", { name: "← Vista NetX" })).toHaveAttribute("href", "/netx");
+  await expect(page.getByText("← Fogón")).toHaveCount(0);
+  await expect(page.getByText("Fogón de decisiones")).toHaveCount(0);
+  await expect(page.getByText("Modelo de NS_Tokenomics doc 28 (diseño B)")).toBeVisible();
+});
+
+test.describe("con rol persona", () => {
+  test.use({ rol: "persona" });
+  test("(a2) ve el simulador, también entrando por la dirección vieja", async ({ page }) => {
+    await page.goto("/fogon/simulador");
+    await expect(page).toHaveURL(/\/netx\/simulador$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Simulador de la tokenomics" })).toBeVisible();
+  });
+});
+
+test.describe("sin sesión", () => {
+  test.use({ rol: "ninguno" });
+  test("(a3) /netx/simulador lleva a Sumarte", async ({ page }) => {
+    await page.goto("/netx/simulador");
+    await expect(page).toHaveURL(/\/sumarte/);
+  });
 });
 
 test("(b) se ven los dos avisos arriba de los controles", async ({ page }) => {

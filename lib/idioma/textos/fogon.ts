@@ -1,4 +1,4 @@
-// Textos del Fogón (`/fogon`): encabezado, enlaces a las consultas y al simulador, filtros por ámbito, opciones de voto,
+// Textos del Fogón (`/fogon`): encabezado, enlaces a "Cómo decidimos" y a las consultas, filtros por ámbito, opciones de voto,
 // motivos por los que no se puede votar, conteos, acta de ejemplo, anuncios y ayudas. Las decisiones de ejemplo (título,
 // dónde y regla) viven en `lib/fogon/datos.ts` con su inglés. Las páginas de consultas y del simulador siguen en español
 // (con el aviso de página sin traducir) hasta su propio cambio. "Fideicomiso" es "Trust", igual que en el Pasaporte.
@@ -20,21 +20,35 @@ const es = {
       texto: "Repartí 100 créditos de voz con voto cuadrático para priorizar y repartir presupuesto.",
       enlace: "Ver las consultas",
     },
-    simulador: {
-      titulo: "Simulador de la tokenomics",
+    decidimos: {
+      titulo: "Cómo decidimos",
       texto:
-        "Mové los valores del diseño B y mirá cuánto recibe el procomún, cada clase de inversor y NetX. Los números son de ejemplo, no una oferta.",
-      enlace: "Simular los parámetros de la tokenomics",
+        "Círculos dentro de cada tribu, las doce tribus, Lighthouse como el común y un consejo con un lugar por tribu. Mirá quién valida a quién y qué sube al consejo.",
+      enlace: "Cómo decidimos",
     },
   },
   errorAlmacenamiento:
     "Error: tu navegador no permite guardar datos en este sitio, así que el voto no se puede guardar. Revisá la configuración de privacidad o probá en otro navegador.",
   filtrarAria: "Filtrar por ámbito",
   todas: "Todas",
-  ambitos: { tribu: "Tribu", asamblea: "Asamblea de residentes", fideicomiso: "Fideicomiso" },
+  ambitos: {
+    circulo: "Círculo",
+    tribu: "Tribu",
+    comun: "Lighthouse (el común)",
+    consejo: "Consejo",
+    fideicomiso: "Fideicomiso",
+  },
   opciones: { favor: "A favor", contra: "En contra", abstencion: "Abstención" },
   /** Etiqueta del ámbito "Tribu" en cada decisión de una tribu. */
   chipTribu: "Tribu",
+  chipCirculo: "Círculo",
+  pideAlComun: "Aprobada en la tribu · pide algo al común",
+  vieneDe: "Viene de",
+  aprobadaEnTribu: "(aprobada en la tribu)",
+  llevarAlConsejo: "Llevar al consejo",
+  yaEnConsejo: "Ya está en el consejo",
+  votanRepresentantes: "En la versión real votan los representantes. Acá la votación es abierta y simulada.",
+  llevaste: (titulo: string) => `Llevaste «${titulo}» al consejo (simulado). La ves en el ámbito Consejo.`,
   /** Por qué una persona no puede votar en una decisión. */
   motivos: {
     pase: "Votan quienes tienen el Pase Fundador",
@@ -50,13 +64,6 @@ const es = {
   acta: (opcion: string, titulo: string) =>
     `Acta (ejemplo): votaste ${opcion} en «${titulo}». Tu voto quedó registrado en el historial del acta (simulado).`,
   anuncioVoto: (opcion: string, titulo: string) => `Tu voto quedó registrado: ${opcion} en «${titulo}» (simulado).`,
-  residencia: {
-    argentina: "Con tu residencia fiscal en Argentina (simulado) votás en la Asamblea de residentes.",
-    exterior:
-      "Con tu residencia fiscal en el exterior participás en tu tribu y ves las actas de la Asamblea; no votás en la Asamblea de residentes.",
-    sinDato: "Todavía no cargaste tu residencia fiscal, así que no sabemos si podés votar en la Asamblea de residentes.",
-    cargala: "Cargala en Tus datos",
-  },
   pase: {
     con: "Con tu Pase Fundador (simulado) votás en las decisiones del Fideicomiso.",
     sin: "Para votar en el Fideicomiso hace falta el Pase Fundador.",
@@ -76,20 +83,34 @@ const en: Textos<typeof es> = {
       texto: "Spread 100 voice credits with quadratic voting to set priorities and split a budget.",
       enlace: "See the consultations",
     },
-    simulador: {
-      titulo: "Tokenomics simulator",
+    decidimos: {
+      titulo: "How we decide",
       texto:
-        "Move the values of design B and see how much goes to the commons, to each investor class and to NetX. The numbers are samples, not an offer.",
-      enlace: "Simulate the tokenomics parameters",
+        "Circles inside each tribe, the twelve tribes, Lighthouse as the commons and a council with one seat per tribe. See who validates whom and what goes up to the council.",
+      enlace: "How we decide",
     },
   },
   errorAlmacenamiento:
     "Error: your browser doesn't allow saving data on this site, so the vote can't be saved. Check your privacy settings or try another browser.",
   filtrarAria: "Filter by scope",
   todas: "All",
-  ambitos: { tribu: "Tribe", asamblea: "Residents' Assembly", fideicomiso: "Trust" },
+  ambitos: {
+    circulo: "Circle",
+    tribu: "Tribe",
+    comun: "Lighthouse (the commons)",
+    consejo: "Council",
+    fideicomiso: "Trust",
+  },
   opciones: { favor: "In favor", contra: "Against", abstencion: "Abstention" },
   chipTribu: "Tribe",
+  chipCirculo: "Circle",
+  pideAlComun: "Approved in the tribe · asks the commons for something",
+  vieneDe: "Comes from",
+  aprobadaEnTribu: "(approved in the tribe)",
+  llevarAlConsejo: "Take to the council",
+  yaEnConsejo: "Already in the council",
+  votanRepresentantes: "In the real version the representatives vote. Here the vote is open and simulated.",
+  llevaste: (titulo: string) => `You took «${titulo}» to the council (simulated). You can see it under the Council scope.`,
   motivos: {
     pase: "Only Founder Pass holders vote",
     residentes: "Residents only",
@@ -104,13 +125,6 @@ const en: Textos<typeof es> = {
   acta: (opcion: string, titulo: string) =>
     `Minutes (sample): you voted ${opcion} on «${titulo}». Your vote was recorded in the minutes history (simulated).`,
   anuncioVoto: (opcion: string, titulo: string) => `Your vote was recorded: ${opcion} on «${titulo}» (simulated).`,
-  residencia: {
-    argentina: "With your tax residency in Argentina (simulated) you vote in the Residents' Assembly.",
-    exterior:
-      "With your tax residency abroad you take part in your tribe and see the Assembly minutes; you don't vote in the Residents' Assembly.",
-    sinDato: "You haven't entered your tax residency yet, so we don't know whether you can vote in the Residents' Assembly.",
-    cargala: "Add it in My data",
-  },
   pase: {
     con: "With your Founder Pass (simulated) you vote on the Trust decisions.",
     sin: "Voting in the Trust requires the Founder Pass.",

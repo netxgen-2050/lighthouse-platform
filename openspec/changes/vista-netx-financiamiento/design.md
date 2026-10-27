@@ -180,7 +180,7 @@ export const VERSIONES = {
 
 type Supuesto = { valor: number | null; fuente: string; aConfirmar?: string };
 
-CONSUMO_MENSUAL_USD: Supuesto = { valor: 31000, fuente: "doc 30 §2b (doc 12, modelo de Vagner)", aConfirmar: "Vagner" }
+CONSUMO_MENSUAL_USD: Supuesto = { valor: 31000, fuente: "NS_Tokenomics doc 30 §2b (doc 12)", aConfirmar: "Vagner" }
 META_SAFE_USD = { min: 375000, max: 500000, fuente: "doc 30 §2 (doc 12)", aConfirmar: "Vagner" }
 COMISION_DESARROLLO = { min: 0.03, max: 0.05, fuente: "doc 30 §2 (parámetro)", aConfirmar: "Vagner" }
 CONTRATO_DISENO_BIOPUEBLO_USD: Supuesto = { valor: null, fuente: "doc 30 §2 (a cotizar)" }

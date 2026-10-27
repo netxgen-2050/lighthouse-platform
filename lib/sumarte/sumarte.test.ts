@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { COHORT, EMISION, FILAS, miles, PASSES } from "./datos";
+import { COHORT, EMISION, FILAS, MEMBRESIA, miles, PASSES, PLAN_TRIBU } from "./datos";
 import { INICIAL, leer, reducir } from "./estado";
 
 const mock = readFileSync(path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"), "utf8");
@@ -22,6 +22,10 @@ describe("datos", () => {
   });
   it("todas las filas tienen su inglés", () => {
     for (const f of FILAS) expect(f.texto.en?.trim(), f.texto.es).toBeTruthy();
+  });
+  it("el precio anual es 10 veces el mensual (2 meses gratis)", () => {
+    expect(MEMBRESIA.anual).toBe(MEMBRESIA.mensual * 10);
+    expect(PLAN_TRIBU.anual).toBe(PLAN_TRIBU.mensual * 10);
   });
   it("formatea miles con punto", () => {
     expect(miles(46000)).toBe("46.000");

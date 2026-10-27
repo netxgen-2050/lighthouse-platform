@@ -12,6 +12,7 @@ import {
   Settings,
   ShieldCheck,
   Sprout,
+  UserCog,
   UserRound,
   Users,
   type LucideIcon,
@@ -28,7 +29,7 @@ export type Destino = {
   href: string;
   clave: ClaveDestino;
   icono: LucideIcon;
-  /** Grupo del rail al que pertenece. "persona" va en el menú del avatar y "interno" (NetX) en la barra superior, junto a la campanita. */
+  /** Grupo del rail al que pertenece. "persona" va en el menú del avatar; "interno": NetX en la barra superior, junto a la campanita, y Admin en el rail (solo super admin). */
   grupo: IdGrupo;
   /** ¿Existe la página en app/? Se mantiene a mano y lo vigila lib/navegacion.test.ts contra el disco. */
   existe: boolean;
@@ -53,6 +54,7 @@ export const DESTINOS: readonly Destino[] = [
   { href: "/configuracion", clave: "configuracion", icono: Settings, grupo: "persona", existe: true },
   { href: "/mis-datos", clave: "misDatos", icono: ShieldCheck, grupo: "persona", existe: true },
   { href: "/netx", clave: "netx", icono: BarChart3, grupo: "interno", existe: true },
+  { href: "/admin", clave: "admin", icono: UserCog, grupo: "interno", existe: true },
 ];
 
 /** El nombre de un destino en un idioma. */
@@ -62,6 +64,11 @@ export function etiquetaDeDestino(d: Destino, idioma: Idioma): string {
 
 export function destinosDisponibles() {
   return DESTINOS.filter((d) => d.existe);
+}
+
+/** El título del grupo "Interno" (el ítem Admin del rail, solo para el super admin). */
+export function tituloGrupoInterno(idioma: Idioma): string {
+  return marco[idioma].rail.grupos.interno;
 }
 
 /** Grupos que se muestran con título en el rail, en orden. */

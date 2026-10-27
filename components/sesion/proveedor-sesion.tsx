@@ -4,6 +4,8 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type
 import { usePathname, useRouter } from "next/navigation";
 import { CLAVE_ULTIMA_PERSONA, establecerPersona } from "@/lib/demo/claves";
 import { useConsentimiento } from "@/lib/privacidad/usar-consentimiento";
+import { cookieAdminBorrada, cookieAdminSegunSesion, debeEscribirCookieAdmin } from "@/lib/sesion/cookie-admin";
+import { COOKIE_PRUEBA } from "@/lib/sesion/cookies";
 import { calcularNivel, EVENTO_NIVEL, leerEstadoGuardado } from "@/lib/sesion/nivel";
 import { INICIAL, type EstadoSumarte } from "@/lib/sumarte/estado";
 import { ContextoSesion, type EstadoSesion, type PrivyMinimo, type SesionCliente, type ValorSesion } from "./contexto";
@@ -13,7 +15,7 @@ import { ContextoSesion, type EstadoSesion, type PrivyMinimo, type SesionCliente
  * así no depende del almacenamiento de datos de la demo, que se puede bloquear o borrar sin cerrar la sesión).
  * Solo vale si el servidor tiene el modo de prueba activo; en producción `/api/sesion` ignora el header.
  */
-export const COOKIE_PRUEBA = "lh-auth-prueba";
+export { COOKIE_PRUEBA };
 
 type Resultado = { estado: EstadoSesion; sesion: SesionCliente | null };
 
@@ -155,8 +157,35 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
     setPrueba(email);
   }, []);
 
+  // Cookie de /admin (ADR-016): solo la sesión de Privy de un super admin verificado; se renueva en cada cambio de ruta y se
+  // borra al salir, al cambiar de persona o si el rol deja de ser super admin.
+  const rolActual = resultado.estado === "ok" ? resultado.sesion?.rol : undefined;
+  useEffect(() => {
+    if (prueba === undefined) return;
+    const https = window.location.protocol === "https:";
+    const p = { prueba, estado: resultado.estado, rol: rolActual };
+    if (!debeEscribirCookieAdmin(p)) {
+      document.cookie = cookieAdminSegunSesion(p, null, https);
+      return;
+    }
+    let vigente = true;
+    void (async () => {
+      try {
+        const token = await obtenerToken.current?.();
+        if (!vigente) return;
+        document.cookie = cookieAdminSegunSesion(p, token, https);
+      } catch {
+        if (vigente) document.cookie = cookieAdminBorrada(https);
+      }
+    })();
+    return () => {
+      vigente = false;
+    };
+  }, [prueba, resultado.estado, rolActual, idPersona, ruta]);
+
   const logout = privy?.logout;
   const salir = useCallback(async () => {
+    document.cookie = cookieAdminBorrada(window.location.protocol === "https:");
     document.cookie = `${COOKIE_PRUEBA}=; path=/; max-age=0; SameSite=Lax`;
     setPrueba(null);
     setResultado({ estado: "sin-sesion", sesion: null });

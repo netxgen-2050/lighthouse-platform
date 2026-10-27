@@ -40,7 +40,7 @@ import {
   FILAS,
   MEMBRESIA,
   PASSES,
-  PLAN_TRIBU_MENSUAL,
+  PLAN_TRIBU,
   type NivelPase,
 } from "@/lib/sumarte/datos";
 import { useKyc } from "@/lib/pasaporte/usar-kyc";
@@ -320,6 +320,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
               {estado.facturacion === "anual" ? t.facturacion.porAnio : t.facturacion.porMes}
             </span>
           </p>
+          {estado.facturacion === "anual" && <p className="text-sm font-medium">{t.facturacion.dosMesesGratis}</p>}
           <p className="text-muted">{t.miembro.descripcion}</p>
           <ul className="list-disc pl-5 text-sm">
             <li>{t.miembro.todoExplorador}</li>
@@ -369,7 +370,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
           </fieldset>
           <p className="text-2xl font-bold">
             {monto(nivel.precio)}
-            <span className="text-base font-normal text-muted">{t.fundador.pagoUnico}</span>
+            <span className="text-base font-normal">{t.fundador.pagoUnico}</span>
           </p>
           <p className="text-muted">
             {t.fundador.financias}
@@ -426,9 +427,12 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
             <TerminoLegal clave="plantribu" idioma={idioma} />
           </h2>
           <p className="text-2xl font-bold">
-            {monto(PLAN_TRIBU_MENSUAL)}
-            <span className="text-base font-normal text-muted">{t.facturacion.porMes}</span>
+            {monto(estado.facturacion === "anual" ? PLAN_TRIBU.anual : PLAN_TRIBU.mensual)}
+            <span className="text-base font-normal text-muted">
+              {estado.facturacion === "anual" ? t.facturacion.porAnio : t.facturacion.porMes}
+            </span>
           </p>
+          {estado.facturacion === "anual" && <p className="text-sm font-medium">{t.facturacion.dosMesesGratis}</p>}
           <p className="text-muted">{t.tribu.descripcion}</p>
           <ul className="list-disc pl-5 text-sm">
             {t.tribu.incluye.map((x) => (

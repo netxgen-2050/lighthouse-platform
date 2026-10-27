@@ -45,6 +45,14 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Territorio: vitrina, leyenda y controles del mapa, ficha lateral y marcadores",
   },
+  "textos/gobernanza": {
+    estado: "pendiente",
+    que: "Gobernanza fractal: página Cómo decidimos (estructura, círculos, consejo), marca de validación de la ficha de tribu y Quiénes te validaron en Mi recorrido",
+  },
+  "lib/gobernanza/datos.ts": {
+    estado: "pendiente",
+    que: "Nombres de los círculos de ejemplo de cada tribu y del círculo transversal, con su inglés",
+  },
   "lib/tribus/datos.ts": {
     estado: "pendiente",
     que: "Datos de ejemplo de las 12 tribus con su inglés (foco, qué tiene, qué busca, ritual, forma jurídica…) y la declaración de cada tribu, traducida del español",
@@ -79,7 +87,7 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "textos/fogon": {
     estado: "pendiente",
-    que: "Fogón: encabezado, filtros por ámbito, opciones de voto, motivos para no votar, acta de ejemplo y ayudas (\"Fideicomiso\" = Trust)",
+    que: "Fogón: encabezado, enlace a Cómo decidimos, filtros por ámbito (Círculo, Tribu, común, Consejo, Fideicomiso), opciones de voto, motivos para no votar, llevar al consejo, acta de ejemplo y ayudas (\"Fideicomiso\" = Trust)",
   },
   "textos/compromisos": {
     estado: "pendiente",
@@ -91,7 +99,7 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "lib/fogon/datos.ts": {
     estado: "pendiente",
-    que: "Decisiones de ejemplo del Fogón (título, lugar y regla) con su inglés, traducidas del español",
+    que: "Decisiones de ejemplo del Fogón (título, lugar y regla; incluye las de círculo, tribu, común y consejo) con su inglés, traducidas del español",
   },
   "lib/compromisos/mercado.ts": {
     estado: "pendiente",
@@ -133,6 +141,7 @@ export function fuentesObligatorias(): string[] {
     "lib/congreso/evento-ejemplo.ts",
     "lib/sumarte/datos.ts",
     "lib/tribus/datos.ts",
+    "lib/gobernanza/datos.ts",
     "lib/manifiestos/datos.ts",
     "lib/territorios/textos.ts",
     "lib/semillas/datos.ts",

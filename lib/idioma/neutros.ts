@@ -6,6 +6,7 @@ export const NEUTROS: readonly string[] = [
   "Semillas",
   "Error:",
   "Super admin",
+  "Admin",
   "NetXGen",
   "Hifa",
   "Email",

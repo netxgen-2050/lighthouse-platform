@@ -25,12 +25,19 @@ export type ResultadoSesion =
  * base. Sin base configurada en producción, o si la base falla, responde 503 y lo deja en el log (sin datos de la persona).
  */
 export async function sesionDelPedido(req: Request): Promise<ResultadoSesion> {
+  return sesionDeCabeceras({ authorization: req.headers.get("authorization"), prueba: req.headers.get("x-lh-prueba") });
+}
+
+/**
+ * Lo mismo que `sesionDelPedido`, desde los dos datos que acreditan la sesión. Lo usan los pedidos a `/api/*` (cabeceras) y
+ * las páginas protegidas en el servidor (`lib/sesion/pagina.ts`, que los saca de cookies).
+ */
+export async function sesionDeCabeceras(cabeceras: {
+  authorization: string | null;
+  prueba: string | null;
+}): Promise<ResultadoSesion> {
   const entorno = entornoDeSesion();
-  const verificada = await resolverSesion(
-    { authorization: req.headers.get("authorization"), prueba: req.headers.get("x-lh-prueba") },
-    entorno,
-    crearClientePrivy,
-  );
+  const verificada = await resolverSesion(cabeceras, entorno, crearClientePrivy);
   if (verificada.estado !== 200) return { estado: verificada.estado };
   try {
     const base = await db();

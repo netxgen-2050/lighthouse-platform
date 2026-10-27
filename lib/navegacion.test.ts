@@ -36,6 +36,7 @@ test("el orden de la lista es el de la spec", () => {
     "Configuración",
     "Mis datos",
     "NetX",
+    "Admin",
   ]);
 });
 
@@ -46,7 +47,7 @@ test("los grupos del rail y del menú de la persona salen de la lista única", (
   expect(etiquetas("participar")).toEqual(["Pactos", "Semillas", "Fogón", "Compromisos", "Congreso"]);
   expect(etiquetas("sumarte")).toEqual(["Sumarte"]);
   expect(etiquetas("persona")).toEqual(["Perfil", "Pasaporte", "Mi recorrido", "Configuración", "Mis datos"]);
-  expect(etiquetas("interno")).toEqual(["NetX"]);
+  expect(etiquetas("interno")).toEqual(["NetX", "Admin"]);
 });
 
 test("en inglés el rail dice lo que fija el glosario, y Semillas no se traduce", () => {
