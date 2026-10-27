@@ -34,6 +34,7 @@ test("el período aplica a todos los planes periódicos; el pase no cambia", asy
   await page.getByRole("button", { name: /^Mensual/ }).click();
   await expect(tribu).toContainText("USD 60/mes");
   await expect(tribu).not.toContainText("/año");
+  await expect(miembro).not.toContainText("/año");
   await expect(miembro).not.toContainText("2 meses gratis");
   await expect(tribu).not.toContainText("2 meses gratis");
   await expect(pase).toContainText("pago único · de por vida");
@@ -44,6 +45,24 @@ test("el período aplica a todos los planes periódicos; el pase no cambia", asy
   await expect(miembro).toContainText("2 meses gratis");
   await expect(tribu).toContainText("2 meses gratis");
   await expect(pase).toContainText("USD 1.500 · pago único · de por vida");
+  // Legible: el texto del pase no es más chico que el de los otros precios (16 px, no 12).
+  const tamano = await pase.getByText("pago único · de por vida").evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+  expect(tamano).toBeGreaterThanOrEqual(16);
+});
+
+test("moneda en pesos: con Anual los dos precios periódicos se convierten y dicen /año", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("lh-configuracion", JSON.stringify({ moneda: "ARS" }));
+  });
+  await page.goto("/sumarte");
+  const miembro = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Miembro de la red/ }) });
+  const tribu = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Plan Tribu/ }) });
+  await page.getByRole("button", { name: /^Anual/ }).click();
+  await expect(miembro).toContainText("ARS 140.000/año");
+  await expect(tribu).toContainText("ARS 840.000/año");
+  await expect(tribu).not.toContainText("USD");
+  await page.getByRole("button", { name: /^Mensual/ }).click();
+  await expect(tribu).toContainText("ARS 84.000/mes");
 });
 
 test("elegir el nivel Raíz cambia precio y créditos", async ({ page }) => {

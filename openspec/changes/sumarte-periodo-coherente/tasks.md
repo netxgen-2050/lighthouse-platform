@@ -18,5 +18,5 @@
 
 ## 3. Cierre
 
-- [ ] 3.1 Escenario "Moneda en pesos": con ARS y Anual, los dos precios anuales se convierten y dicen "/año". Verificación: e2e o test de componente.
+- [x] 3.1 Escenario "Moneda en pesos": con ARS y Anual, los dos precios anuales se convierten y dicen "/año". Verificación: e2e o test de componente.
 - [x] 3.2 `pnpm verificar` y `pnpm build` en verde; auditoría de axe de `/sumarte` sin errores nuevos.
