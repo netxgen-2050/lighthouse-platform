@@ -3,15 +3,14 @@
 import { useEffect, useState } from "react";
 import { leer, type Bitacora } from "@/lib/demo/bitacora";
 import { CLAVES } from "@/lib/demo/claves";
-
-const TIPOS = { "estado-loteo": "Estado del loteo", "termino-legal": "Término legal" } as const;
-
-function formatear(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleString("es-AR", { dateStyle: "short", timeStyle: "medium" });
-}
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
+import { LOCALES } from "@/lib/idioma/formatos";
 
 export function TablaBitacora() {
+  const idioma = useIdioma();
+  const recorrido = useTextos("recorrido");
+  const t = recorrido.tabla;
+  const comunes = useTextos("comunes");
   const [listo, setListo] = useState(false);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [crudo, setCrudo] = useState<string | null>(null);
@@ -29,6 +28,10 @@ export function TablaBitacora() {
     setListo(true);
   }, []);
 
+  function formatear(iso: string): string {
+    return new Date(iso).toLocaleString(LOCALES[idioma], { dateStyle: "short", timeStyle: "medium" });
+  }
+
   function descargar() {
     // Tal como está guardada; si no hay nada, un arreglo vacío.
     const blob = new Blob([crudo ?? "[]"], { type: "application/json" });
@@ -42,22 +45,22 @@ export function TablaBitacora() {
     URL.revokeObjectURL(url);
   }
 
-  if (!listo) return <p role="status">Cargando…</p>;
+  if (!listo) return <p role="status">{comunes.cargando}</p>;
 
   if (falloAlmacen) {
     return (
       <p role="alert" className="text-sm font-medium text-danger">
-        Error: tu navegador no permite leer los datos guardados en este sitio, así que no podemos mostrar la
-        bitácora. Revisá la configuración de privacidad o probá en otro navegador.
+        Error: {t.errorLectura}
       </p>
     );
   }
 
   if (entradas.length === 0) {
-    return <p>Todavía no hay nada anotado en este navegador.</p>;
+    return <p>{t.vacia}</p>;
   }
 
   const recientes = [...entradas].reverse();
+  const tipos = { "estado-loteo": t.tipos.estadoLoteo, "termino-legal": t.tipos.terminoLegal } as const;
 
   return (
     <div className="grid gap-4">
@@ -66,24 +69,24 @@ export function TablaBitacora() {
         onClick={descargar}
         className="w-fit rounded-lg border border-muted px-3 py-1.5 hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
       >
-        Descargar (JSON)
+        {t.descargar}
       </button>
       {/* Región con scroll propio en celular: enfocable para usarla con teclado. */}
       <div
         role="region"
-        aria-label="Tabla de lo que te mostramos"
+        aria-label={t.aria}
         tabIndex={0}
         className="overflow-x-auto rounded-xl border border-faint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
       >
         <table className="w-full min-w-[40rem] border-collapse text-left text-sm">
-          <caption className="sr-only">Lo que te mostramos, de lo más nuevo a lo más viejo</caption>
+          <caption className="sr-only">{t.titulo}</caption>
           <thead className="bg-surface-2">
             <tr>
-              <th scope="col" className="px-3 py-2">Fecha y hora</th>
-              <th scope="col" className="px-3 py-2">Pantalla</th>
-              <th scope="col" className="px-3 py-2">Qué se mostró</th>
-              <th scope="col" className="px-3 py-2">Huella</th>
-              <th scope="col" className="px-3 py-2">Borrador</th>
+              <th scope="col" className="px-3 py-2">{t.fecha}</th>
+              <th scope="col" className="px-3 py-2">{t.pantalla}</th>
+              <th scope="col" className="px-3 py-2">{t.queSeMostro}</th>
+              <th scope="col" className="px-3 py-2">{t.huella}</th>
+              <th scope="col" className="px-3 py-2">{t.borrador}</th>
             </tr>
           </thead>
           <tbody>
@@ -94,12 +97,13 @@ export function TablaBitacora() {
                 </td>
                 <td className="px-3 py-2">{e.ruta}</td>
                 <td className="px-3 py-2">
-                  <span className="font-medium">{TIPOS[e.tipo]}</span>
+                  <span className="font-medium">{tipos[e.tipo]}</span>
                   <br />
-                  {e.mostrado}
+                  {/* Lo que se mostró queda en el idioma en que se mostró (las entradas viejas no traen idioma: eran en español). */}
+                  <span lang={e.idioma ?? "es"}>{e.mostrado}</span>
                 </td>
                 <td className="px-3 py-2 font-mono">{e.huella}</td>
-                <td className="px-3 py-2">Borrador: {e.borrador ? "sí" : "no"}</td>
+                <td className="px-3 py-2">{t.borradorFila(e.borrador)}</td>
               </tr>
             ))}
           </tbody>

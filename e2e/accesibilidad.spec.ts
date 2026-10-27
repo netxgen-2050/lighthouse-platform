@@ -278,6 +278,12 @@ test.describe("la plataforma en inglés", () => {
     "/pasaporte",
     "/semillas",
     "/pactos",
+    "/fogon",
+    "/compromisos",
+    "/canales",
+    "/perfil",
+    "/panel",
+    "/bandeja",
   ];
   for (const ruta of RUTAS) {
     test(`axe sin violaciones serias o críticas en inglés: ${ruta}`, async ({ page }) => {

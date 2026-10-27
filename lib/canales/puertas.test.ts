@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { leer } from "@/lib/sumarte/estado";
 import type { Persona } from "@/lib/permisos/tipos";
-import { filasDePuertas, personaDesdeSumarte } from "./puertas";
+import { filasDePuertas, nombresDePases, nombresDePlanes, personaDesdeSumarte } from "./puertas";
 
 const VALLE = { id: "valle", nombre: "Valle Solar" };
 const base: Persona = personaDesdeSumarte(leer(null));
@@ -20,6 +20,34 @@ describe("personaDesdeSumarte", () => {
   it("toma plan y pase de Sumarte", () => {
     const estado = leer(JSON.stringify({ plan: "miembro", pase: "brote" }));
     expect(personaDesdeSumarte(estado)).toMatchObject({ plan: "miembro", pase: "brote", tribus: [] });
+  });
+});
+
+describe("filasDePuertas en inglés", () => {
+  const buscarEn = (filas: ReturnType<typeof filasDePuertas>, nombre: string) => buscar(filas, nombre);
+
+  it("dice en inglés qué le falta a una persona Explorer", () => {
+    const filas = filasDePuertas(base, [], "en");
+    const fundadores = buscarEn(filas, "Founders channel");
+    expect(fundadores.estado).toBe("Closed");
+    expect(fundadores.abreCon).toBe("Founder Pass");
+    expect(buscarEn(filas, "Vote in the Residents' Assembly").abreCon).toBe("being a resident");
+    expect(buscarEn(filas, "Network forums").abreCon).toBe(
+      "Member plan, Founder Pass, being accepted into a tribe, Genesis presence or being a resident",
+    );
+  });
+
+  it("los motivos y el refuerzo salen en inglés", () => {
+    const f = buscarEn(filasDePuertas(con({ plan: "miembro", pase: "brote" }), [], "en"), "Network forums");
+    expect(f.motivos).toEqual(["because of your plan", "because of your pass"]);
+    const voz = buscarEn(filasDePuertas(con({ plan: "miembro", pase: "raiz", presenciaGenesis: true }), [], "en"), `Voice in the Common Fund`);
+    expect(voz.refuerzo).toBe("Presence boost: to be decided");
+  });
+
+  it("los nombres de los planes y del pase salen del glosario", () => {
+    expect(nombresDePlanes("en")).toEqual({ explorador: "Explorer", miembro: "Member" });
+    expect(nombresDePases("en")).toEqual({ semilla: "Seed", brote: "Sprout", raiz: "Root" });
+    expect(nombresDePases("es")).toEqual({ semilla: "Semilla", brote: "Brote", raiz: "Raíz" });
   });
 });
 

@@ -22,8 +22,11 @@ export type Condicion = { residencia: Residencia | undefined; pase: boolean; lid
 
 export const SIN_CONDICION: Condicion = { residencia: undefined, pase: false };
 
-/** Texto de quien ve el Fideicomiso sin el Pase. */
-export const MOTIVO_SIN_PASE = "Votan quienes tienen el Pase Fundador";
+/**
+ * Por qué una persona no puede votar en una decisión. Es una clave: el texto sale del diccionario del Fogón
+ * (`textos("fogon", idioma).motivos`), así que se lee igual en los dos idiomas.
+ */
+export type MotivoSinVoto = "pase" | "residentes" | "sinDato";
 
 /** Las decisiones que se ven: las de siempre más las copias de las que se llevaron al consejo. */
 export function decisionesVisibles(e: EstadoFogon): readonly Decision[] {
@@ -42,13 +45,13 @@ export function votoPropio(e: EstadoFogon, d: Decision, condicion: Condicion): O
 
 const OPCIONES: readonly string[] = ["favor", "contra", "abstencion"];
 
-/** null si puede votar; si no, el motivo que se muestra. Sin dato de residencia no se asume nada. */
-export function motivoSinVoto(d: Pick<Decision, "requisito">, condicion: Condicion): string | null {
+/** null si puede votar; si no, la clave del motivo que se muestra. Sin dato de residencia no se asume nada. */
+export function motivoSinVoto(d: Pick<Decision, "requisito">, condicion: Condicion): MotivoSinVoto | null {
   if (d.requisito === "ninguno") return null;
-  if (d.requisito === "pase") return condicion.pase ? null : MOTIVO_SIN_PASE;
+  if (d.requisito === "pase") return condicion.pase ? null : "pase";
   if (condicion.residencia === "argentina") return null;
-  if (condicion.residencia === undefined) return "Sin dato de tu residencia";
-  return "Solo residentes";
+  if (condicion.residencia === undefined) return "sinDato";
+  return "residentes";
 }
 
 export function filtrar(ambito: Ambito | null, e: EstadoFogon = INICIAL): readonly Decision[] {

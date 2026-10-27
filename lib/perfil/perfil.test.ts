@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CHATS } from "./preguntas";
+import { CHATS, preguntasEn } from "./preguntas";
 import { propuestaDePerfil } from "./propuesta";
 import { ESTADO_INICIAL, cantidadConfirmados, estaCompleta, leerGuardado, reducir } from "./estado";
 
@@ -9,6 +9,12 @@ describe("preguntas", () => {
       "Qué te trae", "Bioregión", "Cómo decidir", "Lo que aportás", "Tiempo", "No negociables",
     ]);
     expect(CHATS[0].texto).toBe("¿Qué te trae a BioPueblo?");
+  });
+  it("en inglés son las mismas 6, en el mismo orden", () => {
+    const en = preguntasEn("en");
+    expect(en).toHaveLength(CHATS.length);
+    expect(en[0].texto).toBe("What brings you to BioPueblo?");
+    expect(preguntasEn("es")).toEqual(CHATS);
   });
 });
 

@@ -189,6 +189,7 @@ const PAGINAS = [
   "/semillas",
   "/fogon",
   "/compromisos",
+  "/canales",
   "/perfil",
   "/pasaporte",
   "/panel",

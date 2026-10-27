@@ -4,6 +4,7 @@ import { esNeutro as esNeutroCongreso, NEUTROS as NEUTROS_CONGRESO } from "@/lib
 export const NEUTROS: readonly string[] = [
   ...NEUTROS_CONGRESO,
   "Semillas",
+  "Error:",
   "Super admin",
   "Admin",
   "NetXGen",

@@ -1,8 +1,18 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { textos } from "@/lib/idioma/textos";
 import { TERMINOS } from "@/lib/legal/terminos";
-import { AMBITOS, DECISIONES, DECISIONES_BASE, DECISIONES_DEL_COMUN, DECISIONES_DE_GOBERNANZA, EJEMPLOS_COMUN } from "./datos";
+import {
+  AMBITOS,
+  ambitos,
+  DECISIONES,
+  DECISIONES_BASE,
+  DECISIONES_DEL_COMUN,
+  DECISIONES_DE_GOBERNANZA,
+  EJEMPLOS_COMUN,
+  opciones,
+} from "./datos";
 import {
   contar,
   decisionesVisibles,
@@ -28,23 +38,39 @@ describe("datos", () => {
   it("son las tres decisiones del mock-up que quedan en el Fogón, con títulos y reglas copiados", () => {
     expect(DECISIONES).toHaveLength(3);
     for (const d of [...DECISIONES, ...EJEMPLOS_COMUN]) {
-      expect(mock).toContain(`["${d.titulo}","${d.donde}","${d.regla}","${d.base}"`);
+      expect(mock).toContain(`["${d.titulo.es}","${d.donde.es}","${d.regla.es}","${d.base}"`);
       expect(TERMINOS[d.base]).toBeDefined();
     }
+  });
+  it("cada decisión (las del mock-up, las del común y las de gobernanza) tiene su inglés, con el español como original", () => {
+    for (const d of [...DECISIONES_BASE, ...EJEMPLOS_COMUN]) {
+      for (const v of [d.titulo, d.donde, d.regla]) {
+        expect(v.en.trim(), d.id).not.toBe("");
+        expect(v.original).toBe("es");
+      }
+      expect(d.titulo.en, d.id).not.toBe(d.titulo.es);
+    }
+  });
+  it("las etiquetas de ámbitos y opciones salen del diccionario, en los dos idiomas", () => {
+    expect(ambitos("es").map((a) => a.etiqueta)).toEqual(["Círculo", "Tribu", "Lighthouse (el común)", "Consejo", "Fideicomiso"]);
+    expect(ambitos("en").map((a) => a.etiqueta)).toEqual(["Circle", "Tribe", "Lighthouse (the commons)", "Council", "Trust"]);
+    expect(opciones("es").map((o) => o.etiqueta)).toEqual(["A favor", "En contra", "Abstención"]);
+    expect(opciones("en").map((o) => o.etiqueta)).toEqual(["In favor", "Against", "Abstention"]);
   });
   it("los ámbitos son Círculo, Tribu, Lighthouse (el común), Consejo y Fideicomiso, y no hay Asamblea de residentes", () => {
     expect(AMBITOS.map((a) => a.etiqueta)).toEqual(["Círculo", "Tribu", "Lighthouse (el común)", "Consejo", "Fideicomiso"]);
     expect(AMBITOS.map((a) => a.etiqueta).join()).not.toMatch(/Asamblea de residentes/);
+    expect(ambitos("en").map((a) => a.etiqueta).join()).not.toMatch(/Residents' Assembly/);
   });
-  it("ninguna decisión visible nombra a la Asamblea de residentes", () => {
-    expect(DECISIONES_BASE.filter((d) => d.donde === "Asamblea de residentes")).toEqual([]);
+  it("ninguna decisión visible nombra a la Asamblea de residentes, en ningún idioma", () => {
+    expect(DECISIONES_BASE.filter((d) => d.donde.es === "Asamblea de residentes" || d.donde.en === "Residents' Assembly")).toEqual([]);
   });
   it("los ejemplos para el común conservan las dos decisiones con su ⚖, ahora en el ámbito del común y sin pedir residencia", () => {
     expect(EJEMPLOS_COMUN.map((d) => d.id)).toEqual(["bomba", "animales"]);
     for (const d of EJEMPLOS_COMUN) expect(TERMINOS[d.base]).toBeDefined();
     expect(DECISIONES_DEL_COMUN.map((d) => d.ambito)).toEqual(["comun", "comun"]);
     expect(DECISIONES_DEL_COMUN.map((d) => d.requisito)).toEqual(["ninguno", "ninguno"]);
-    expect(DECISIONES_DEL_COMUN.map((d) => d.titulo)).toEqual([
+    expect(DECISIONES_DEL_COMUN.map((d) => d.titulo.es)).toEqual([
       "Usar el fondo común para la bomba solar",
       "Permitir animales de granja en las chacras",
     ]);
@@ -53,7 +79,7 @@ describe("datos", () => {
     expect(DECISIONES_DE_GOBERNANZA.map((d) => d.ambito)).toEqual(["circulo", "tribu", "consejo"]);
     for (const d of DECISIONES_DE_GOBERNANZA) expect(TERMINOS[d.base]).toBeDefined();
     const consejo = DECISIONES_DE_GOBERNANZA[2];
-    expect(consejo.titulo).toBe("Pedido de Valle Solar al Fondo Común para la bomba solar");
+    expect(consejo.titulo.es).toBe("Pedido de Valle Solar al Fondo Común para la bomba solar");
     expect(consejo.origen).toEqual({ tribuId: "valle", aprobadaEn: "Valle Solar" });
   });
   it("no hay personas de ejemplo en los datos", () => {
@@ -68,24 +94,32 @@ const conPase: Condicion = { residencia: undefined, pase: true };
 describe("quién puede votar (residencia cargada y Pase Fundador)", () => {
   it("con residencia en el exterior y sin Pase vota en tribu; no en la asamblea ni en el fideicomiso", () => {
     expect(motivoSinVoto(huerta, exterior)).toBeNull();
-    expect(motivoSinVoto(bomba, exterior)).toBe("Solo residentes");
-    expect(motivoSinVoto(presupuesto, exterior)).toBe("Votan quienes tienen el Pase Fundador");
+    expect(motivoSinVoto(bomba, exterior)).toBe("residentes");
+    expect(motivoSinVoto(presupuesto, exterior)).toBe("pase");
+  });
+  it("el motivo se lee en los dos idiomas desde el diccionario", () => {
+    expect(textos("fogon", "es").motivos).toEqual({
+      pase: "Votan quienes tienen el Pase Fundador",
+      residentes: "Solo residentes",
+      sinDato: "Sin dato de tu residencia",
+    });
+    expect(textos("fogon", "en").motivos.residentes).toBe("Residents only");
   });
   it("con residencia en Argentina vota en tribu; el fideicomiso pide el Pase", () => {
     for (const d of DECISIONES) {
-      expect(motivoSinVoto(d, argentina)).toBe(d.id === "presupuesto" ? "Votan quienes tienen el Pase Fundador" : null);
+      expect(motivoSinVoto(d, argentina)).toBe(d.id === "presupuesto" ? "pase" : null);
     }
     expect(motivoSinVoto(bomba, argentina)).toBeNull();
   });
   it("sin dato de residencia vota en tribu y en la asamblea dice que falta el dato (no asume)", () => {
     expect(motivoSinVoto(huerta, SIN_CONDICION)).toBeNull();
-    expect(motivoSinVoto(bomba, SIN_CONDICION)).toBe("Sin dato de tu residencia");
-    expect(motivoSinVoto(presupuesto, SIN_CONDICION)).toBe("Votan quienes tienen el Pase Fundador");
+    expect(motivoSinVoto(bomba, SIN_CONDICION)).toBe("sinDato");
+    expect(motivoSinVoto(presupuesto, SIN_CONDICION)).toBe("pase");
   });
   it("con el Pase vota en el fideicomiso sin importar la residencia; la asamblea sigue pidiendo residencia", () => {
     expect(motivoSinVoto(presupuesto, conPase)).toBeNull();
     expect(motivoSinVoto(presupuesto, { residencia: "exterior", pase: true })).toBeNull();
-    expect(motivoSinVoto(bomba, conPase)).toBe("Sin dato de tu residencia");
+    expect(motivoSinVoto(bomba, conPase)).toBe("sinDato");
   });
 });
 

@@ -85,6 +85,42 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Roles de ejemplo (nombre y descripción), pestañas y pasos de un pacto, con su inglés",
   },
+  "textos/fogon": {
+    estado: "pendiente",
+    que: "Fogón: encabezado, enlace a Cómo decidimos, filtros por ámbito (Círculo, Tribu, común, Consejo, Fideicomiso), opciones de voto, motivos para no votar, llevar al consejo, acta de ejemplo y ayudas (\"Fideicomiso\" = Trust)",
+  },
+  "textos/compromisos": {
+    estado: "pendiente",
+    que: "Compromisos y Mercado: formulario, validaciones, tipos y medios de intercambio, filtros y avisos",
+  },
+  "textos/canales": {
+    estado: "pendiente",
+    que: "Canales: por qué se abre cada puerta, qué la abre, refuerzo por presencia y nombres de planes y niveles del pase",
+  },
+  "textos/perfil": {
+    estado: "pendiente",
+    que: "Perfil: encabezado, formulario, tarjetas, errores de validación y las seis preguntas de la entrevista",
+  },
+  "textos/recorrido": {
+    estado: "pendiente",
+    que: "Mi recorrido: próximo paso (cinco pasos), pestañas, línea de tiempo y tabla de la Bitácora",
+  },
+  "textos/bandeja": {
+    estado: "pendiente",
+    que: "Bandeja y notificaciones: textos de cada evento de la actividad, que se arman al mostrarlos en el idioma actual",
+  },
+  "textos/configuracion": {
+    estado: "pendiente",
+    que: "Configuración: apariencia, avisos por tipo, Hifa, moneda, idioma y borrado de lo guardado en el navegador",
+  },
+  "lib/fogon/datos.ts": {
+    estado: "pendiente",
+    que: "Decisiones de ejemplo del Fogón (título, lugar y regla; incluye las de círculo, tribu, común y consejo) con su inglés, traducidas del español",
+  },
+  "lib/compromisos/mercado.ts": {
+    estado: "pendiente",
+    que: "Ofertas de ejemplo del Mercado con su inglés, traducidas del español (las que publica la persona no se traducen)",
+  },
   "lib/economia/terminos.ts": {
     estado: "pendiente",
     que: "Término económico 🌱 de Semillas en inglés (borrador, sin revisión)",
@@ -126,6 +162,8 @@ export function fuentesObligatorias(): string[] {
     "lib/territorios/textos.ts",
     "lib/semillas/datos.ts",
     "lib/pactos/datos.ts",
+    "lib/fogon/datos.ts",
+    "lib/compromisos/mercado.ts",
     "lib/economia/terminos.ts",
   ];
 }
