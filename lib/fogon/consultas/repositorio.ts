@@ -1,4 +1,4 @@
-import type { Reparto } from "@/lib/cuadratico/motor";
+import type { MotivoInvalido, Reparto } from "@/lib/cuadratico/motor";
 import type { ResumenConsulta, VistaConsulta } from "./tipos";
 
 /**
@@ -10,7 +10,7 @@ export type Lectura<T> = { ok: true; valor: T } | { ok: false; error: ErrorLectu
 
 export type ResultadoGuardar =
   | { ok: true }
-  | { ok: false; error: "invalido" | "cerrada" | "sin-permiso" | "sin-sesion" | "falla"; motivos?: string[] };
+  | { ok: false; error: "invalido" | "cerrada" | "sin-permiso" | "sin-sesion" | "falla"; motivos?: MotivoInvalido[] };
 
 /**
  * La costura entre las pantallas del Fogón y los datos de las consultas. Hoy la implementa el navegador
@@ -26,10 +26,3 @@ export interface RepositorioConsultas {
   /** Solo la versión del navegador (para repetir la demo). */
   reabrir?(id: string): Promise<{ ok: boolean }>;
 }
-
-/** Texto de cada error de lectura, para las pantallas (`error` en `Lectura`). */
-export const TEXTO_ERROR_LECTURA: Record<ErrorLectura, string> = {
-  "no-encontrada": "No encontramos esta consulta",
-  "sin-sesion": "Entrá para ver las consultas del Fogón",
-  falla: "No pudimos cargar las consultas. Probá de nuevo.",
-};

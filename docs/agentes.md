@@ -27,6 +27,12 @@ Modelos pensados para Max 5x: Opus solo donde se piensa (spec y revisión). Con 
  entrega Gus decide: PR dev → main (verificación completa, preview de dev probado) → producción
 ```
 
+## Regla: toda pantalla nueva nace bilingüe
+Vale desde `idioma-pendientes`. La plataforma tiene español e inglés y no puede volver a abrirse el hueco de pantallas que solo existen en español.
+- **Especificador:** cada cambio que suma o modifica texto de interfaz lo declara en la spec con español e inglés, y cada ruta nueva navegable dice si entra a `RUTAS_TRADUCIDAS` en el mismo cambio o queda declarada interna (`RUTAS_INTERNAS` en `lib/idioma/rutas.ts`). Un cambio de pantalla sin ese punto no se aprueba.
+- **Implementador:** el texto nuevo va a los diccionarios tipados de `lib/idioma/textos/` (el tipo `Textos<>` exige el inglés) y los datos de ejemplo con inglés llevan `original: "es"`. La ruta nueva se suma a `lib/idioma/rutas.ts` en el mismo cambio.
+- **Revisor:** un PR que suma texto solo en español, o una página nueva que no está en `RUTAS_TRADUCIDAS` ni en `RUTAS_INTERNAS`, no se aprueba. El test `lib/idioma/rutas.test.ts` falla si una página de `app/` o un destino del rail no está traducido ni declarado.
+
 ## Ramas: `dev` y `main`
 - `dev` es la rama de trabajo: specs aprobadas, noches, integración. `main` es producción estable para las pruebas del equipo.
 - **Entrega:** `git switch dev && git pull`, luego `scripts/pr.sh crear main "Entrega <fecha>" "<qué entra>"` desde una rama `entrega/<fecha>` creada desde `dev`. Se verifica (`pnpm verificar`, `pnpm build`, e2e local y contra el preview de esa rama) y lo mergea Gus (o Claude con su OK).
