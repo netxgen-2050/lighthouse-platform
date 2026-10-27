@@ -33,6 +33,10 @@ describe("leerPreferencias", () => {
     expect(p.idiomaElegido).toBeNull();
   });
 
+  it("un aviso de Mercado guardado se conserva aunque no se muestre", () => {
+    expect(leerPreferencias(JSON.stringify({ avisos: { mercado: false } })).avisos.mercado).toBe(false);
+  });
+
   it("idiomaElegido: es y en valen; otro valor o ausente es null (no eligió)", () => {
     expect(leerPreferencias(JSON.stringify({ idiomaElegido: "en" })).idiomaElegido).toBe("en");
     expect(leerPreferencias(JSON.stringify({ idiomaElegido: "es" })).idiomaElegido).toBe("es");
@@ -89,10 +93,10 @@ describe("formatearMonto", () => {
 });
 
 describe("tiposAviso", () => {
-  it("son los mismos cinco en los dos idiomas, con el mismo id", () => {
+  it("son los mismos cuatro en los dos idiomas, con el mismo id (Mercado está en pausa)", () => {
     const es = tiposAviso("es");
     const en = tiposAviso("en");
-    expect(es.map((t) => t.id)).toEqual(["comunidades", "pactos", "rondas", "mercado", "postulaciones"]);
+    expect(es.map((t) => t.id)).toEqual(["comunidades", "pactos", "rondas", "postulaciones"]);
     expect(en.map((t) => t.id)).toEqual(es.map((t) => t.id));
     expect(es[0].etiqueta).toBe("Comunidades");
     expect(en[0].etiqueta).toBe("Communities");

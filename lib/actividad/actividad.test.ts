@@ -48,7 +48,8 @@ describe("registro de eventos", () => {
   });
 
   it("el aviso simulado no se ve hasta que pasa la demora", () => {
-    const l = con([], EVENTOS.interesEnOferta("c1"), t0, "a");
+    // Un aviso con demora de otro tipo: el del Mercado está en pausa y no se cuenta.
+    const l = con([], { ...EVENTOS.interesEnOferta("c1"), tipo: "x" }, t0, "a");
     expect(contarNoLeidas(l, en(1))).toBe(0);
     expect(contarNoLeidas(l, en(60))).toBe(1);
   });
@@ -69,7 +70,7 @@ describe("no leídas y marcar", () => {
   });
 
   it("marcar todas deja la cuenta en cero y no toca lo que todavía no llegó", () => {
-    let l = con(base(), EVENTOS.interesEnOferta("c"), en(2), "3");
+    let l = con(base(), { ...EVENTOS.interesEnOferta("c"), tipo: "x" }, en(2), "3");
     l = marcarTodasLeidas(l, en(3));
     expect(contarNoLeidas(l, en(3))).toBe(0);
     expect(contarNoLeidas(l, en(100))).toBe(1);
@@ -221,6 +222,38 @@ describe("tipos de notificación apagados", () => {
 
   it("sin tipos apagados se ve todo", () => {
     expect(contarNoLeidas(lista(), en(1))).toBe(2);
+  });
+});
+
+describe("avisos del Mercado en pausa", () => {
+  const conInteres = () => {
+    let l: EventoActividad[] = [];
+    l = con(l, EVENTOS.interesEnOferta("c1"), t0, "i");
+    return l;
+  };
+
+  it("una notificación interes-oferta visible y sin leer no se lista ni se cuenta", () => {
+    expect(listarNotificaciones(conInteres(), en(60))).toEqual([]);
+    expect(contarNoLeidas(conInteres(), en(60))).toBe(0);
+  });
+
+  it("junto con otra notificación, solo cuenta la otra", () => {
+    const l = con(conInteres(), EVENTOS.pactoAceptado("Valle Solar", "valle-solar"), t0, "b");
+    expect(contarNoLeidas(l, en(60))).toBe(1);
+  });
+
+  it("un evento mercado no sale en la actividad, pero sigue guardado", () => {
+    const l = con([], EVENTOS.publicasteEnMercado("Mi oferta"), t0, "m");
+    expect(listarActividad(l, en(1))).toEqual([]);
+    const leidos = leerEventos(JSON.stringify([...l, ...conInteres()]));
+    expect(leidos.map((e) => e.tipo)).toEqual(["mercado", "interes-oferta"]);
+  });
+
+  it("marcar todas como leídas no toca lo de tipos en pausa", () => {
+    const l = con(conInteres(), EVENTOS.pactoAceptado("Valle Solar", "valle-solar"), t0, "b");
+    const marcada = marcarTodasLeidas(l, en(60));
+    expect(marcada.find((e) => e.tipo === "interes-oferta")?.leida).toBe(false);
+    expect(marcada.find((e) => e.tipo === "pacto-aceptado")?.leida).toBe(true);
   });
 });
 

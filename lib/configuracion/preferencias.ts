@@ -14,10 +14,16 @@ export type TipoAviso = "comunidades" | "pactos" | "rondas" | "mercado" | "postu
 
 const IDS_AVISO: readonly TipoAviso[] = ["comunidades", "pactos", "rondas", "mercado", "postulaciones"];
 
+/**
+ * Avisos que no se ofrecen en Configuración: "mercado" lleva a /compromisos, que está en pausa por decisión de Gus
+ * del 27-oct-2026. Lo guardado se conserva; para volver, vaciar esta lista (ver docs/notas/compromisos-en-pausa.md).
+ */
+export const AVISOS_EN_PAUSA: readonly TipoAviso[] = ["mercado"];
+
 /** Los tipos de aviso con su etiqueta y su explicación en el idioma pedido (el texto vive en el diccionario `configuracion`). */
 export function tiposAviso(idioma: Idioma = "es"): readonly { id: TipoAviso; etiqueta: string; detalle: string }[] {
   const t = configuracion[idioma].avisos.tipos;
-  return IDS_AVISO.map((id) => ({ id, ...t[id] }));
+  return IDS_AVISO.filter((id) => !AVISOS_EN_PAUSA.includes(id)).map((id) => ({ id, ...t[id] }));
 }
 
 /** Los mismos tipos en español (el idioma por defecto). Las páginas traducidas usan `tiposAviso(idioma)`. */
@@ -66,8 +72,8 @@ export function leerPreferencias(crudo: string | null): Preferencias {
     const r = o as Record<string, unknown>;
     const avisosCrudos = typeof r.avisos === "object" && r.avisos !== null ? (r.avisos as Record<string, unknown>) : {};
     const avisos = { ...base.avisos };
-    for (const t of TIPOS_AVISO) {
-      if (typeof avisosCrudos[t.id] === "boolean") avisos[t.id] = avisosCrudos[t.id] as boolean;
+    for (const id of IDS_AVISO) {
+      if (typeof avisosCrudos[id] === "boolean") avisos[id] = avisosCrudos[id] as boolean;
     }
     return {
       tema: r.tema === "claro" || r.tema === "oscuro" || r.tema === "sistema" ? r.tema : base.tema,
