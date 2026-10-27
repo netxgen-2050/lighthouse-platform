@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
+import { ignorarEnSinRed } from "./ayudas";
 
 const lista = (page: Page) => page.getByRole("region", { name: "La estructura en una lista" });
 const tribu = (page: Page, nombre: string) =>
@@ -53,6 +54,9 @@ test.describe("Cómo decidimos", () => {
     await expect(dibujo.getByText("○ Busca tribu")).toHaveCount(4);
     await expect(dibujo.getByText("● Activa")).toHaveCount(3);
     await expect(dibujo.getByText("◐ En formación")).toHaveCount(5);
+    // Los círculos como satélites (7 tribus con círculos: 3+2+2+2+4+3+10+3 = 29 con Avelan) y la validación tribu-persona.
+    await expect(dibujo.locator("circle[r='5']")).toHaveCount(29);
+    await expect(dibujo.getByText("la tribu valida a la persona")).toBeVisible();
   });
 
   test("la lista se recorre con teclado: de una tribu a la siguiente con Tab", async ({ page }) => {
@@ -137,9 +141,19 @@ test.describe("Validaciones visibles", () => {
       if (window.localStorage.getItem("lh-membresia")) return;
       window.localStorage.setItem("lh-membresia", JSON.stringify({ lighthouse: "miembro", taller: "miembro", valle: "pedido" }));
     });
+    // Validar (crear el registro) no manda nada por la red.
+    const pedidos: string[] = [];
+    page.on("request", (r) => {
+      const u = new URL(r.url());
+      if (ignorarEnSinRed(r) || u.pathname === "/api/sesion") return;
+      const claves = [...u.searchParams.keys()];
+      if (r.method() === "GET" && claves.length === 1 && claves[0] === "_rsc" && !u.hash) return;
+      if (["fetch", "xhr", "websocket", "eventsource"].includes(r.resourceType()) || r.method() !== "GET") pedidos.push(`${r.method()} ${r.url()}`);
+    });
     await page.goto("/panel");
     await expect(page.getByText("Validada por Taller Común")).toBeVisible();
     await expect(page.getByText("Validada por Valle Solar")).toHaveCount(0);
+    expect(pedidos).toEqual([]);
     const registros = await page.evaluate(() => JSON.parse(window.localStorage.getItem("lh-gobernanza") ?? "[]"));
     expect(registros).toHaveLength(1);
     expect(registros[0]).toMatchObject({ esquema: "valida-persona", afirma: "taller", apuntaA: null });
@@ -148,5 +162,6 @@ test.describe("Validaciones visibles", () => {
     await expect(page.getByText("Validada por Taller Común")).toBeVisible();
     const despues = await page.evaluate(() => JSON.parse(window.localStorage.getItem("lh-gobernanza") ?? "[]"));
     expect(despues).toHaveLength(1);
+    expect(pedidos).toEqual([]);
   });
 });

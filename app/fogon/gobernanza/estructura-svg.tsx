@@ -123,9 +123,42 @@ export function EstructuraSvg({ vista, tx }: { vista: VistaGobernanza; tx: Tx })
         </g>
       ))}
 
-      <line x1={CX} y1={CY + RY + CAJA_H / 2 + 8} x2={CX} y2={600} className="stroke-deep" strokeWidth={2} markerEnd="url(#flecha)" />
-      <text x={CX + 12} y={590} className="fill-ink" fontSize={11}>
+      {/* Los círculos de cada tribu, como satélites hacia afuera de su caja (los nombres están en la lista). */}
+      {vista.tribus.map((t, i) => {
+        const ang = (i * 30 - 90) * (Math.PI / 180);
+        const dx = Math.cos(ang);
+        const dy = Math.sin(ang);
+        const n = t.circulos.length;
+        const ext = Math.min(CAJA_W / 2 / Math.max(Math.abs(dx), 0.001), CAJA_H / 2 / Math.max(Math.abs(dy), 0.001)) + 12;
+        const px = CX + RX * dx + dx * ext;
+        const py = CY + RY * dy + dy * ext;
+        return Array.from({ length: n }, (_, k) => {
+          const desp = (k - (n - 1) / 2) * 13;
+          return (
+            <circle
+              key={`${t.id}-${k}`}
+              cx={px - dy * desp}
+              cy={py + dx * desp}
+              r={5}
+              className="fill-surface stroke-deep"
+              strokeWidth={1.5}
+            />
+          );
+        });
+      })}
+
+      <line x1={490} y1={540} x2={490} y2={600} className="stroke-deep" strokeWidth={2} markerEnd="url(#flecha)" />
+      <text x={502} y={580} className="fill-ink" fontSize={11}>
         {d.sube}
+      </text>
+
+      {/* La tribu valida a la persona: tribu, flecha y persona. */}
+      <rect x={40} y={548} width={34} height={20} rx={5} className="fill-green-soft stroke-deep" strokeWidth={1.5} />
+      <line x1={78} y1={558} x2={104} y2={558} className="stroke-deep" strokeWidth={2} markerEnd="url(#flecha)" />
+      <circle cx={116} cy={553} r={4} className="fill-deep" />
+      <path d="M 108 569 Q 116 555 124 569 z" className="fill-deep" />
+      <text x={132} y={562} className="fill-ink" fontSize={11}>
+        {d.validaPersona}
       </text>
 
       <rect x={40} y={606} width={720} height={116} rx={14} className="fill-surface-2 stroke-deep" strokeWidth={2} />
