@@ -13,7 +13,9 @@ const es = {
     navegacion: "Principal",
     ayudaExplorador: "Sumate gratis para usar esto",
     ayudaMiembro: "Sumate para participar",
-    grupos: { descubrir: G.descubrir.es, participar: G.participar.es, sumarte: G.sumarte.es },
+    grupos: { descubrir: G.descubrir.es, participar: G.participar.es, sumarte: G.sumarte.es, interno: "Interno" },
+    pendientes: "pendientes",
+    pendientesSinDato: "pendientes sin dato",
   },
   destinos: {
     inicio: G.inicio.es,
@@ -31,6 +33,7 @@ const es = {
     configuracion: G.configuracion.es,
     misDatos: G.misDatos.es,
     netx: "NetX",
+    admin: "Admin",
   },
   niveles: {
     sinCuenta: "Sin cuenta",
@@ -84,7 +87,9 @@ const en: Textos<typeof es> = {
     navegacion: "Main",
     ayudaExplorador: "Join for free to use this",
     ayudaMiembro: "Join to take part",
-    grupos: { descubrir: G.descubrir.en, participar: G.participar.en, sumarte: G.sumarte.en },
+    grupos: { descubrir: G.descubrir.en, participar: G.participar.en, sumarte: G.sumarte.en, interno: "Internal" },
+    pendientes: "pending",
+    pendientesSinDato: "pending, no data",
   },
   destinos: {
     inicio: G.inicio.en,
@@ -102,6 +107,7 @@ const en: Textos<typeof es> = {
     configuracion: G.configuracion.en,
     misDatos: G.misDatos.en,
     netx: "NetX",
+    admin: "Admin",
   },
   niveles: {
     sinCuenta: "No account",

@@ -1,7 +1,8 @@
-import { destinosDeGrupo, etiquetaDeDestino, GRUPOS_RAIL, tituloDeGrupo, type Destino } from "@/lib/navegacion";
+import { destinosDeGrupo, etiquetaDeDestino, GRUPOS_RAIL, tituloDeGrupo, tituloGrupoInterno, type Destino } from "@/lib/navegacion";
 import { idiomaDelPedido } from "@/lib/idioma/servidor";
 import type { Idioma } from "@/lib/idioma/tipos";
 import { textos } from "@/lib/idioma/textos";
+import { RailAdmin } from "./rail-admin";
 import { RailEnlaces, type GrupoRail } from "./rail-enlaces";
 
 // Server component: toma los destinos que existen y pasa íconos ya renderizados al cliente.
@@ -26,10 +27,19 @@ export async function Rail() {
     tituloVisible: g.id !== "sumarte",
     items: destinosDeGrupo(g.id).map((d) => item(d, idioma, { destacado: g.id === "sumarte" })),
   })).filter((g) => g.items.length > 0);
+  const admin = destinosDeGrupo("interno").find((d) => d.clave === "admin");
   return (
     <div className="sticky top-0 flex h-dvh w-16 shrink-0 flex-col overflow-y-auto overscroll-contain bg-deep py-3 text-on-deep sm:w-20">
       <nav aria-label={t.rail.navegacion}>
         <RailEnlaces grupos={grupos} />
+        {admin && (
+          <RailAdmin
+            href={admin.href}
+            etiqueta={etiquetaDeDestino(admin, idioma)}
+            titulo={tituloGrupoInterno(idioma)}
+            icono={<admin.icono aria-hidden="true" size={20} />}
+          />
+        )}
       </nav>
     </div>
   );

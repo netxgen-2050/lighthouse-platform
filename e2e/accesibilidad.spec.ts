@@ -14,6 +14,7 @@ const rutas = [
   "/fogon",
   "/fogon/gobernanza",
   "/netx",
+  "/netx/comunidad",
   "/pasaporte",
   "/bandeja",
   "/configuracion",
@@ -157,17 +158,49 @@ test("axe sin violaciones serias o críticas: /sumarte con el formulario de cont
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("axe sin violaciones serias o críticas: /netx con un pedido en la bandeja", async ({ page }) => {
+test("axe sin violaciones serias o críticas: /admin con un pedido en la bandeja", async ({ page }) => {
   await page.goto("/sumarte");
   await page.getByRole("button", { name: "Pedir una charla" }).click();
   await page.getByRole("radio", { name: "Email" }).check();
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
   await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
-  await page.goto("/netx");
+  await page.goto("/admin");
   await expect(page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" })).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /admin, /admin/personas y /admin/comunidades con una postulación y un pedido cargados", async ({ page }) => {
+  await page.goto("/sumarte");
+  await page.getByRole("button", { name: "Pedir una charla" }).click();
+  await page.getByRole("radio", { name: "Email" }).check();
+  await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
+  await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
+  await page.goto("/admin");
+  await expect(page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+  await page.goto("/admin/personas");
+  await expect(page.getByRole("region", { name: "Personas y roles" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+  await page.goto("/admin/comunidades");
+  await expect(page.getByRole("table", { name: "Comunidades del directorio" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: el 403 de /admin", async ({ page }) => {
+  await page.context().clearCookies();
+  const r = await page.goto("/admin");
+  expect(r?.status()).toBe(403);
+  await expect(page.getByRole("heading", { level: 1, name: "No tenés acceso a esta página" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /netx con la tabla del gráfico abierta", async ({ page }) => {
+  await page.goto("/netx");
+  await page.getByText("Ver como tabla").click();
+  await expect(page.getByRole("table", { name: /¿Adónde va lo que paga cada serie\?/ })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
 });
 
 test("axe sin violaciones serias o críticas: /?camino=congreso con la tarjeta recomendada", async ({ page }) => {
@@ -178,7 +211,7 @@ test("axe sin violaciones serias o críticas: /?camino=congreso con la tarjeta r
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("axe sin violaciones serias o críticas: /netx con un pedido con origen", async ({ page }) => {
+test("axe sin violaciones serias o críticas: /admin con un pedido con origen", async ({ page }) => {
   await page.goto("/?utm_source=newsletter&utm_campaign=congreso-2027");
   await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-origen"))).not.toBeNull();
   await page.goto("/sumarte");
@@ -186,7 +219,7 @@ test("axe sin violaciones serias o críticas: /netx con un pedido con origen", a
   await page.getByRole("radio", { name: "Email" }).check();
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
   await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
-  await page.goto("/netx");
+  await page.goto("/admin");
   await expect(page.getByRole("row").filter({ hasText: "newsletter · sin dato · congreso-2027" })).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
@@ -341,8 +374,8 @@ test("axe sin violaciones serias o críticas: /fogon/consultas/u4 cerrada, con r
   expect(await graves(page)).toEqual([]);
 });
 
-test("axe sin violaciones serias o críticas: /fogon/simulador con el año por año y la tabla del gráfico abiertos, en los dos escenarios", async ({ page }) => {
-  await page.goto("/fogon/simulador");
+test("axe sin violaciones serias o críticas: /netx/simulador con el año por año y la tabla del gráfico abiertos, en los dos escenarios", async ({ page }) => {
+  await page.goto("/netx/simulador");
   await page.getByText("Ver año por año").click();
   await page.getByText("Ver como tabla").click();
   await page.getByText("Ver los supuestos fijos de este escenario").click();

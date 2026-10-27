@@ -46,7 +46,8 @@ export type Capacidad =
   | "participar"
   | "adherir"
   | "admin-tribu"
-  | "netx";
+  | "vista-netx"
+  | "admin";
 
 /** Nivel mínimo que habilita cada capacidad. */
 export const NIVEL_MINIMO: Record<Capacidad, Nivel> = {
@@ -59,7 +60,8 @@ export const NIVEL_MINIMO: Record<Capacidad, Nivel> = {
   participar: "miembro",
   adherir: "miembro",
   "admin-tribu": "lider",
-  netx: "superadmin",
+  "vista-netx": "explorador",
+  admin: "superadmin",
 };
 
 /** ¿Este nivel llega al mínimo pedido? */
@@ -88,7 +90,8 @@ export function capacidadDeRuta(ruta: string): Capacidad {
   const r = limpiar(ruta);
   if (dentroDe(r, "/sumarte")) return "sumarte";
   if (esPublica(r)) return "descubrir";
-  if (dentroDe(r, "/netx")) return "netx";
+  if (dentroDe(r, "/netx")) return "vista-netx";
+  if (dentroDe(r, "/admin")) return "admin";
   if (PARTICIPAR.some((p) => dentroDe(r, p))) return "participar";
   if (dentroDe(r, "/congreso")) return "congreso";
   return "personal";
@@ -114,6 +117,7 @@ const NOMBRE_DE_RUTA: readonly [string, keyof (typeof sumarte)["es"]["avisos"]["
   ["/bandeja", "bandeja"],
   ["/configuracion", "configuracion"],
   ["/netx", "netx"],
+  ["/admin", "admin"],
 ];
 
 /** Aviso de Sumarte cuando alguien abre por dirección una página que su nivel no habilita. */

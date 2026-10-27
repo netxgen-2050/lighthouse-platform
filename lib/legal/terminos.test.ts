@@ -46,6 +46,7 @@ describe("catálogo legal", () => {
         "membresia",
         "notasverdes",
         "obra",
+        "ordenanza173",
         "pacto",
         "pase",
         "pasaporte",
@@ -90,6 +91,12 @@ describe("catálogo legal", () => {
       expect(terminoEn(clave)?.texto.trim(), clave).toBeTruthy();
       expect(TERMINOS[clave].texto, clave).toMatch(/todavía|no existe/);
     }
+  });
+  it("ordenanza173 es borrador y dice que se verifica con abogado", () => {
+    expect(esBorrador("ordenanza173")).toBe(true);
+    expect(TERMINOS.ordenanza173.texto).toContain("en el Juego B");
+    expect(TERMINOS.ordenanza173.texto).toContain("A verificar con abogado");
+    expect(TERMINOS.ordenanza173.texto).not.toContain("diseño B");
   });
   it("encuentroeducativo es borrador", () => {
     expect(esBorrador("encuentroeducativo")).toBe(true);

@@ -39,16 +39,6 @@ export default function FogonPage() {
           <Link className="underline" href="/fogon/consultas">Ver las consultas</Link>
         </p>
       </div>
-      <div className="mb-5 rounded-xl border border-deep bg-green-soft p-4 text-sm">
-        <p className="font-semibold">Simulador de la tokenomics</p>
-        <p className="mt-1">
-          Mové los valores del diseño B y mirá cuánto recibe el procomún, cada clase de inversor y NetX. Los números son
-          de ejemplo, no una oferta.
-        </p>
-        <p className="mt-2">
-          <Link className="underline" href="/fogon/simulador">Simular los parámetros de la tokenomics</Link>
-        </p>
-      </div>
       <FogonCliente />
     </div>
   );

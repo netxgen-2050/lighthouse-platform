@@ -7,13 +7,14 @@ import { EnlaceNetx } from "./sesion/enlace-netx";
 import { SoloConSesion } from "./sesion/puerta";
 
 /**
- * Barra superior fija, arriba a la derecha: NetX (interno, solo super admin), la campanita, el selector de idioma
+ * Barra superior fija, arriba a la derecha: NetX (interno, toda persona con sesión), la campanita, el selector de idioma
  * (con y sin sesión) y el menú de la persona (o "Sumarte" y "Entrar" sin sesión).
  * Server component: toma los destinos que existen y pasa íconos ya renderizados al cliente.
  */
 export async function BarraSuperior() {
   const idioma = await idiomaDelPedido();
-  const interno = destinosDeGrupo("interno");
+  // Solo NetX va arriba; Admin (también "interno") va en el rail y solo lo ve el super admin.
+  const interno = destinosDeGrupo("interno").filter((d) => d.clave === "netx");
   const persona = destinosDeGrupo("persona").map((d) => ({
     href: d.href,
     etiqueta: etiquetaDeDestino(d, idioma),

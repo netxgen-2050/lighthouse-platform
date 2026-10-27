@@ -40,21 +40,21 @@ describe("capacidades por nivel", () => {
     expect(puedeCapacidad("sin-cuenta", "descubrir")).toBe(true);
     expect(puedeCapacidad("sin-cuenta", "sumarte")).toBe(true);
     expect(puedeCapacidad("sin-cuenta", "reportar")).toBe(true);
-    for (const c of ["hifa", "congreso", "personal", "participar", "adherir", "admin-tribu", "netx"] as const) {
+    for (const c of ["hifa", "congreso", "personal", "participar", "adherir", "admin-tribu", "vista-netx", "admin"] as const) {
       expect(puedeCapacidad("sin-cuenta", c)).toBe(false);
     }
   });
   it("Explorador suma Hifa, Congreso, espacio personal y Reportar, pero no participa", () => {
-    for (const c of ["hifa", "congreso", "personal", "reportar"] as const) expect(puedeCapacidad("explorador", c)).toBe(true);
-    for (const c of ["participar", "adherir", "admin-tribu", "netx"] as const) expect(puedeCapacidad("explorador", c)).toBe(false);
+    for (const c of ["hifa", "congreso", "personal", "reportar", "vista-netx"] as const) expect(puedeCapacidad("explorador", c)).toBe(true);
+    for (const c of ["participar", "adherir", "admin-tribu", "admin"] as const) expect(puedeCapacidad("explorador", c)).toBe(false);
   });
   it("Miembro participa y adhiere; Líder suma la administración de su tribu; NetX es solo del super admin", () => {
     expect(puedeCapacidad("miembro", "participar")).toBe(true);
     expect(puedeCapacidad("miembro", "adherir")).toBe(true);
     expect(puedeCapacidad("miembro", "admin-tribu")).toBe(false);
     expect(puedeCapacidad("lider", "admin-tribu")).toBe(true);
-    expect(puedeCapacidad("lider", "netx")).toBe(false);
-    expect(puedeCapacidad("superadmin", "netx")).toBe(true);
+    expect(puedeCapacidad("lider", "admin")).toBe(false);
+    expect(puedeCapacidad("superadmin", "admin")).toBe(true);
   });
 });
 
@@ -74,7 +74,13 @@ describe("rutas", () => {
     ["/pasaporte", "personal"],
     ["/panel/bitacora", "personal"],
     ["/tribus/grano/postular", "personal"],
-    ["/netx", "netx"],
+    ["/netx", "vista-netx"],
+    ["/netx/simulador", "vista-netx"],
+    ["/netx/comunidad", "vista-netx"],
+    ["/netx/financiamiento", "vista-netx"],
+    ["/admin", "admin"],
+    ["/admin/personas", "admin"],
+    ["/admin/comunidades", "admin"],
   ])("%s pide %s", (ruta, capacidad) => expect(capacidadDeRuta(ruta)).toBe(capacidad));
 
   it("puedeRuta cruza nivel y ruta", () => {
@@ -83,20 +89,26 @@ describe("rutas", () => {
     expect(puedeRuta("miembro", "/pactos")).toBe(true);
     expect(puedeRuta("explorador", "/congreso")).toBe(true);
     expect(puedeRuta("sin-cuenta", "/")).toBe(true);
-    expect(nivelMinimoDeRuta("/netx")).toBe("superadmin");
+    expect(nivelMinimoDeRuta("/netx")).toBe("explorador");
+    expect(nivelMinimoDeRuta("/admin")).toBe("superadmin");
+    expect(puedeRuta("explorador", "/netx/comunidad")).toBe(true);
+    expect(puedeRuta("sin-cuenta", "/netx")).toBe(false);
+    expect(puedeRuta("lider", "/admin")).toBe(false);
+    expect(puedeRuta("superadmin", "/admin/personas")).toBe(true);
   });
 
   it("el aviso dice qué plan habilita la página", () => {
     expect(avisoDeRuta("/pactos")).toBe("Pactos se habilita con el plan Miembro.");
     expect(avisoDeRuta("/perfil")).toBe("Perfil se habilita al sumarte gratis como Explorador.");
-    expect(avisoDeRuta("/netx")).toContain("super admin");
+    expect(avisoDeRuta("/netx")).toContain("Explorador");
+    expect(avisoDeRuta("/admin")).toContain("super admin");
   });
 
   it("el aviso dice en inglés qué plan habilita la página", () => {
     expect(avisoDeRuta("/pactos", "en")).toBe("Pacts is unlocked with the Member plan.");
     expect(avisoDeRuta("/perfil", "en")).toBe("Profile is unlocked by joining for free as an Explorer.");
     expect(avisoDeRuta("/panel", "en")).toContain("My journey");
-    expect(avisoDeRuta("/netx", "en")).toContain("super admin");
+    expect(avisoDeRuta("/admin", "en")).toContain("super admin");
     expect(avisoDeRuta("/otra-cosa", "en")).toMatch(/^This page /);
   });
 
