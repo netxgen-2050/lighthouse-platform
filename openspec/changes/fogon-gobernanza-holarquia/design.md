@@ -29,18 +29,27 @@
      | { tipo: "comun" | "consejo" | "tribu" | "circulo"; id: string; nombre: string;
          proposito: Proposito | null; decide: string[]; hijos: NodoH[];
          estado?: EstadoTribu; validada?: boolean; tribus?: string[] /* transversal */; ejemplo: boolean }
-     | { tipo: "rol"; id: string; persona: string; rol: Rol; esYo: boolean; ejemplo: boolean }
+     | { tipo: "rol"; id: string; personaId: string; persona: string; rol: Rol; esYo: boolean; ejemplo: boolean }
      | { tipo: "lugar-libre"; id: string }
      | { tipo: "lugar"; id: string; tribuId: string; representante: null };
    function construirHolarquia(idioma, registros: readonly Registro[] = []): NodoH;
    function caminoHasta(raiz, id): NodoH[];   // para migas y "Desde mí"
-   function rolesDe(raiz, persona): { rol; camino }[];
+   type RolDePersona = { nodoRolId: string; rol: Rol; circuloId: string; circulo: string;
+                         lugar: { tipo: "tribu"; tribuId: string; nombre: string } | { tipo: "comun" } };
+   function rolesDe(raiz, personaId): RolDePersona[];   // en el orden del árbol: primero el común, después las tribus
    ```
    <!-- arquitecto: el árbol no depende del navegador; "Desde mí" va aparte (§6) para que servidor y cliente dibujen lo mismo -->
    - **Un solo árbol, igual en servidor y cliente.** `construirHolarquia` no recibe nada del navegador: el servidor la llama con `registros = []` (cuentan solo las validaciones de ejemplo, como hoy en el PR #112) y el cliente usa ese mismo modelo. "Desde mí" **no agrega nodos**: marca nodos que ya existen (ver §6). Así el empaquetado no salta después de montar y no hay diferencias de hidratación (cuando el HTML del servidor no coincide con el primer dibujo del navegador).
    - **Ids únicos en todo el árbol.** Los círculos del común llevan prefijo `comun-` (por ejemplo `comun-agua`), para no chocar con la tribu `agua`; los roles, `<idCirculo>-rol-<n>`; los lugares del consejo, `consejo-<tribuId>`. Un test recorre el árbol y verifica que ningún id se repite (los caminos, las migas y el zoom buscan por id).
    - Los datos de ejemplo nuevos van en `lib/gobernanza/datos.ts`: `CIRCULOS_DEL_COMUN` (7 círculos del boceto con propósito y "Decide sobre" bilingües), propósito y "Decide sobre" de cada círculo de tribu (los de `CIRCULOS_POR_TRIBU` pasan de `BilingueConOriginal[]` a `{ nombre, proposito, decide }[]`) y los roles de ejemplo.
    - **Personas de ejemplo:** nombres de pila de una lista fija, asignados de forma determinística (sin `Math.random`), todos con `ejemplo: true` y marca visible "(ejemplo)". La persona demo es "Vos" con dos roles: Miembro en Permacultura y suelo (común) y Enlace hacia arriba en Cuidado de la tierra (Valle Solar), como en el boceto.
+   - **Personas en varios círculos (agregado del 27-oct).** Cada persona de ejemplo es `{ id, nombre }` en `PERSONAS_DE_EJEMPLO` (`lib/gobernanza/datos.ts`) y cada rol apunta a su `personaId`. "Todos los roles de…" busca por `personaId`, **nunca por nombre** (el boceto busca por nombre y, como recicla 40 nombres, junta personas distintas que se llaman igual). Además de los roles de relleno (una persona por rol, sin repetir dentro del mismo círculo), una tabla corta `ROLES_CRUZADOS` fija a mano a quienes participan en varios lugares:
+     - Ana: Facilita en Huerta intensiva (Semilla Viva) · Miembro en Agua del Lighthouse (el común);
+     - Bruno: Facilita en Agua del Lighthouse (el común) · Enlace hacia arriba en Toma y cisterna (Agua Clara) · Memoria en Energía solar (Valle Solar) — conecta con la decisión de la cisterna compartida;
+     - Carla: Enlace del nivel de arriba en Banco de semillas (Semilla Viva) · Miembro en Tokenomics y Semillas (el común);
+     - Diego: Memoria en Herrería (Taller Común) · Miembro en Bioconstrucción (Monte Nuevo).
+     Los nombres de `ROLES_CRUZADOS` no se reusan como relleno, así un nombre es una sola persona en todo el árbol. Un test verifica que ninguna persona tiene dos roles en el mismo círculo y que los ids de persona de `ROLES_CRUZADOS` existen.
+   - **Dónde está cada rol (`lugar`):** si el círculo cuelga de una tribu, `{ tipo: "tribu", nombre }`; si cuelga del común (círculos del común y transversales), `{ tipo: "comun" }`. El panel lo arma con el diccionario: es "{rol} en {círculo} ({tribu | el común})", en "{rol} in {círculo} ({tribu | the commons})".
    - **Consejo:** sus hijos son los lugares de `lugaresDelConsejo(registros)` del PR #112, con `representante: null` → "Sin representante elegido". No se inventan nombres en los lugares (elegir representantes queda fuera de alcance; ver Open Questions).
    - **Transversales:** siguen saliendo de `circulosTransversales()`, cuelgan del común y el panel dice "Participan: …".
    - `vista.ts` y `estructura-svg.tsx` del PR #112 se borran (`git rm`) si nada más los usa; sus tests se reescriben contra `holarquia.ts`.
@@ -52,6 +61,8 @@
    - **Zoom propio** en lugar de `d3-interpolate`: la vista es `[cx, cy, ancho]`; la transición interpola lineal con suavizado (`ease-in-out`) en `requestAnimationFrame` durante ~600 ms. Con `prefers-reduced-motion: reduce` se salta directo al final. Son ~30 líneas y no suman `d3-color`.
    - **Render en React**, no con d3 sobre el DOM: `<svg role="img" aria-labelledby>` con `<circle>` y `<text>` generados desde el modelo; los círculos del dibujo no son focusables (el teclado va por la lista y las migas, para no duplicar el orden de tabulación con cientos de nodos). Clic en un círculo con hijos → entrar; en una hoja → mostrar en el panel; en el fondo → subir un nivel.
    - Etiquetas: solo se muestran las de los hijos del foco con radio en pantalla suficiente (como el boceto), para que no se pisen.
+   - **Nombre y rol de cada persona** (agregado del 27-oct): un nodo `rol` se rotula con dos líneas dentro de su círculo: el nombre (11 px) y, debajo, el rol en su idioma (10 px, color `muted`). Una función pura `etiquetaPersona(radioEnPantalla): "nada" | "nombre" | "nombre-y-rol"` decide qué entra, con umbrales como el boceto (nombre desde 26 px de radio, rol desde 34 px); se testea sola. Nada se recorta con "…": lo que no entra no se dibuja. Las etiquetas del SVG son `aria-hidden` (el equivalente accesible es el panel y la lista, como el resto del dibujo). Se recalcula en cada cuadro del zoom con el radio ya escalado, sin estado extra.
+   - **Elegir a una persona:** clic en un nodo `rol` del dibujo → `seleccion = nodoRolId` (no cambia el foco). El panel, en cualquier lente salvo Decisiones, muestra "Todos los roles de {nombre} (ejemplo)" con `rolesDe(raiz, personaId)`: una `<ul>` con un `<button>` por rol que hace `enfocar(circuloId)` y deja la selección en esa persona. Si tiene un solo rol, la lista tiene una entrada (no se oculta ni se rellena).
    - Alternativas descartadas: d3 completo (grande y manipula el DOM fuera de React); empaquetado propio (algoritmo no trivial, riesgo alto para una noche); librería de grafos.
 
 3. **Registro de lentes** (`lib/gobernanza/lentes.ts`, la parte pura; los paneles en `app/fogon/gobernanza/lentes/`):
@@ -112,7 +123,8 @@
 7. **Página y accesibilidad:**
    - `page.tsx` (servidor) arma la holarquía en el idioma pedido y pasa el modelo a `holarquia-cliente.tsx` (cliente), que tiene foco, lente y selección en estado de React. La URL no guarda el foco (fuera de alcance).
    - Orden en el DOM: barra de lentes → migas (`<nav aria-label>` con `aria-current="location"`) → dibujo → leyenda → panel (`aria-live="polite"`) → árbol ("Ver toda la estructura como lista", en un `<details>` cerrado por defecto como en el boceto, con su `summary` siempre visible y alcanzable con teclado).
-   - Árbol: `<ul>` anidado con un `<button>` por nodo que hace zoom; la tribu dice su estado en texto; los círculos dicen su propósito en texto.
+   - Árbol: `<ul>` anidado con un `<button>` por nodo que hace zoom; la tribu dice su estado en texto; los círculos dicen su propósito en texto. Las personas van como último nivel bajo su círculo, con texto "{nombre} (ejemplo) · {rol}"; su botón enfoca el círculo y selecciona a la persona (el panel muestra todos sus roles).
+   - Panel de un círculo: la sección "Roles" es una `<ul>` con un `<button>` por persona ("{nombre} (ejemplo)" + rol), que selecciona a la persona. Así, solo con teclado: lista o panel → persona → cualquiera de sus roles → zoom a ese círculo.
    - Grilla: `minmax(0,1.35fr) minmax(300px,1fr)` en escritorio; una columna en < 860 px. El SVG usa `viewBox` y `width:100%`, así no desborda en 390 px (se sacan el `hidden sm:block` y el aviso de "solo lista" del PR #112).
    - Se mantienen el aviso de prototipo, el aviso "Estructura de ejemplo" con ⚖ `consejo`, la sección "Quién valida a quién" (corta) y el enlace al Fogón.
 
@@ -121,6 +133,8 @@
 ## Risks / Trade-offs
 
 - [Cientos de nodos en un celular] → solo se rotulan los hijos del foco; los roles se rotulan recién cuando el círculo tiene radio suficiente en pantalla.
+- [Dos líneas por persona en celular] → con 390 px casi nunca entra el rol; el umbral lo saca del dibujo y el panel lo muestra. No se achica la letra por debajo de 10 px.
+- [Confundir estos roles con los permisos de la plataforma (`personas.rol`, backlog B2)] → son roles de círculo, de ejemplo, que viven solo en `lib/gobernanza/`; no leen ni escriben la base.
 - [Nombres de ejemplo que parecen personas reales] → todos llevan "(ejemplo)" y el aviso general dice que las personas son de ejemplo.
 - [Dependencia nueva] → `d3-hierarchy` se usa solo dentro de `empaquetar()`; si se quisiera sacar, se cambia una función.
 - [Rehacer la página del PR #112 antes de que entre a `dev`] → se apila sobre su rama; si el PR #112 cambia en revisión, este cambio se rebasa. Ver tasks.
@@ -140,5 +154,7 @@ Revisado por el agente `arquitecto` (27-oct-2026): se puede aprobar con los ajus
 ## Open Questions
 
 - ¿Los lugares del consejo muestran un nombre de ejemplo, como el boceto, o siguen "Sin representante elegido" como pide el PR #112? Este diseño mantiene "Sin representante elegido".
+- Roles de cada persona: ¿un rol en un círculo transversal dice "(el común)" o "(transversal: Valle Solar y Taller Común)"? Este diseño dice "el común", porque el transversal cuelga del común.
+- ¿Quiénes son las personas con varios roles (Ana, Bruno, Carla, Diego) y en qué círculos? Se cambian en `ROLES_CRUZADOS` sin tocar la spec, salvo los escenarios de Ana y Bruno.
 - Cifras de ejemplo de los montos y fechas de cierre: se pueden cambiar en `lib/fogon/datos.ts` sin tocar las specs.
 - Nombres, propósitos y "Decide sobre" finales de los círculos: se cambian en `lib/gobernanza/datos.ts` sin tocar las specs.

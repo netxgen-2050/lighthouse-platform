@@ -10,6 +10,7 @@
 - **Holarquía con zoom en `/fogon/gobernanza`** (reemplaza la rueda SVG y la lista larga del PR #112):
   - el común (Lighthouse) contiene **sus propios círculos** (de ejemplo: Permacultura y suelo, Agua del Lighthouse, Legal y fideicomiso, Tokenomics y Semillas, Comunicación y marketing, Cuidado y conflictos, Plataforma y datos), el **Consejo de tribus** (un lugar por tribu validada) y las **12 tribus reales**; cada tribu activa o en formación tiene sus círculos según su propósito; las que buscan tribu muestran "Lugar libre";
   - cada círculo tiene **roles**: Facilita, Enlace hacia arriba, Enlace del nivel de arriba, Memoria, Miembro, con personas de ejemplo marcadas como ejemplo;
+  - **los roles de cada persona se ven** (agregado de Gus, 27-oct-2026): al entrar a un círculo, cada persona muestra en el dibujo su nombre y, debajo, su rol en ese círculo, si el tamaño en pantalla alcanza; si no, el rol se lee en el panel y en la lista. Al tocar o elegir a una persona, el panel muestra **todos sus roles en toda la holarquía** con su lugar ("Facilita en Huerta intensiva (Semilla Viva)", "Miembro en Agua del Lighthouse (el común)"); cada entrada es un botón que lleva a ese círculo. Todo esto también desde teclado, por el panel y la lista. Los datos de ejemplo tienen personas con roles en varios círculos y niveles, identificadas por un id estable y no por el nombre;
   - tocar un círculo **entra** (zoom); tocar el fondo o una **miga** sale. El zoom también se maneja desde la lista y las migas;
   - círculos transversales del PR #112: siguen colgando del común y dicen qué tribus participan.
 - **Panel de detalle** del nivel elegido: tipo, propósito, "Decide sobre", sus círculos o sus roles y la validación por el común. En celular, el dibujo arriba y el panel abajo.
@@ -28,6 +29,8 @@
 - Base de datos, firmas o constancias reales: todo sigue en el navegador.
 - Pagos reales o movimiento del Fondo Común.
 - Editar la estructura (crear círculos, asignar roles) desde la pantalla.
+- Personas reales en los roles, perfiles de persona o un enlace a una ficha de la persona: los roles son de ejemplo y solo se ven dentro de `/fogon/gobernanza`. Tampoco se cruzan con los roles de la base (`personas.rol`, backlog B2), que son otra cosa (permisos de la plataforma).
+- Nombres o roles en los lugares del consejo (siguen "Sin representante elegido").
 - Una 5.ª lente visible: solo se prueba la extensibilidad con una lente de ejemplo en los tests.
 
 ## Capabilities
@@ -36,7 +39,7 @@
 <!-- ninguna -->
 
 ### Modified Capabilities
-- `gobernanza-fractal` (creada por `fogon-gobernanza-fractal`): la estructura pasa a ser una holarquía con zoom, con círculos del común, roles por círculo, panel de detalle, lentes extensibles y su equivalente accesible.
+- `gobernanza-fractal` (creada por `fogon-gobernanza-fractal`): la estructura pasa a ser una holarquía con zoom, con círculos del común, roles por círculo visibles en el dibujo, todos los roles de una persona en el panel, panel de detalle, lentes extensibles y su equivalente accesible.
 - `fogon`: las decisiones aceptan parámetros opcionales (plazo, acuerdo o norma, monto y fuente) y suman dos decisiones de ejemplo con camino.
 
 ## Impact

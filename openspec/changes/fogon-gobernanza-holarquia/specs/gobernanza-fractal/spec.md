@@ -70,11 +70,45 @@ The system SHALL show, for the current or selected level, a detail panel with: i
 - **THEN** el panel dice "Tribu", "Activa", "Validada por el común (ejemplo)", lo que decide y la lista de sus círculos, cada uno navegable
 
 ### Requirement: Roles en cada círculo
-Each example circle SHALL have roles taken from: Facilita, Enlace hacia arriba, Enlace del nivel de arriba, Memoria, Miembro. Selecting a role MUST show every role that same example person holds, at every level.
+Each example circle SHALL have roles taken from: Facilita, Enlace hacia arriba, Enlace del nivel de arriba, Memoria, Miembro, each held by an example person identified by a stable id (not by name). The example data MUST include people who hold roles in several circles and at several levels (at least one person with roles in a circle of the común and in a circle of a tribe, and at least one person with three roles across the común and two different tribes). The detail panel of a circle MUST list its people with their role in that circle, and the accessible list MUST include each person under their circle with their role in text.
 
-#### Scenario: Una persona en varios círculos
-- **WHEN** la persona elige un rol cuya persona de ejemplo participa en dos círculos
-- **THEN** el panel lista los dos roles con el camino de cada uno (por ejemplo "Lighthouse › Valle Solar › Cuidado de la tierra")
+#### Scenario: Roles de un círculo en el panel
+- **WHEN** la persona entra a "Huerta intensiva" de Semilla Viva
+- **THEN** el panel lista cada persona del círculo con su rol en ese círculo (entre ellas "Ana (ejemplo)" con "Facilita")
+
+#### Scenario: Roles en la lista
+- **WHEN** la persona abre "Ver toda la estructura como lista" y llega a "Agua del Lighthouse"
+- **THEN** debajo del círculo encuentra cada persona con su rol en texto, entre ellas "Ana (ejemplo) · Miembro"
+
+### Requirement: Roles visibles en el dibujo
+When the drawing is zoomed into a circle, each person inside it SHALL show their name and, below it, their role in that circle, as long as the circle of that person has enough radius on screen for each line; when there is not enough room, the name or role MUST be omitted from the drawing (never overlapped or truncated into something unreadable), and they remain available in the panel and in the list. Role labels in the drawing are visual only; the accessible equivalent is the panel and the list.
+
+#### Scenario: Zoom a un círculo con lugar
+- **WHEN** la persona, en una pantalla de escritorio, entra a "Agua del Lighthouse"
+- **THEN** el dibujo muestra cada persona con su nombre y, debajo, su rol (por ejemplo "Ana" y debajo "Miembro")
+
+#### Scenario: Sin lugar para el rol
+- **WHEN** la persona está en el nivel del común, donde los círculos de las personas son chicos
+- **THEN** el dibujo no muestra nombres ni roles de personas, y el panel y la lista siguen mostrando los roles de cada círculo
+
+### Requirement: Todos los roles de una persona
+Selecting a person (in the drawing, in the panel of a circle or in the list) SHALL show in the panel every role that same example person holds in the whole holarchy, one entry per role, each saying the role, the circle and where that circle is: the tribe's name for a tribe circle, or "el común" for a circle of the común or a transversal circle (for example "Facilita en Huerta intensiva (Semilla Viva)" and "Miembro en Agua del Lighthouse (el común)"). Each entry MUST be a keyboard-operable control that zooms the drawing to that circle and keeps the person selected. Selecting a person MUST be possible with the keyboard alone, from the panel of a circle and from the list.
+
+#### Scenario: Una persona en varios círculos y niveles
+- **WHEN** la persona toca a "Ana" en "Huerta intensiva"
+- **THEN** el panel dice "Todos los roles de Ana (ejemplo)" y lista "Facilita en Huerta intensiva (Semilla Viva)" y "Miembro en Agua del Lighthouse (el común)"
+
+#### Scenario: Tres roles en tres lugares
+- **WHEN** la persona elige a "Bruno"
+- **THEN** el panel lista "Facilita en Agua del Lighthouse (el común)", "Enlace hacia arriba en Toma y cisterna (Agua Clara)" y "Memoria en Energía solar (Valle Solar)"
+
+#### Scenario: Roles de una persona con teclado
+- **WHEN** la persona, solo con teclado, elige a "Ana" desde la lista y después activa "Miembro en Agua del Lighthouse (el común)" en el panel
+- **THEN** el dibujo hace zoom a "Agua del Lighthouse", las migas dicen "Lighthouse › Agua del Lighthouse" y el panel sigue mostrando todos los roles de Ana
+
+#### Scenario: Persona con un solo rol
+- **WHEN** la persona elige a alguien de ejemplo que tiene un solo rol
+- **THEN** el panel muestra ese único rol con su círculo y su lugar, sin una lista vacía ni roles inventados
 
 ### Requirement: Lentes
 The page SHALL offer the lenses Estructura, Propósitos, Decisiones que suben and Desde mí as toggle buttons with `aria-pressed`. Each lens MUST define how the drawing paints the circles, what the panel shows and its legend. Every legend entry MUST pair the color with a text or symbol.
