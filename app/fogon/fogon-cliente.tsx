@@ -170,7 +170,7 @@ export function FogonCliente() {
                   </div>
                   <p className="flex flex-wrap gap-2">
                     <span className={CHIP}>
-                      {d.tribu ? <span translate="no">{textoEn(d.donde, idioma)}</span> : <TextoBilingue valor={d.donde} sinNota />}
+                      {d.tribu ? <ConTribu texto={textoEn(d.donde, idioma)} tribu={d.tribu} /> : <TextoBilingue valor={d.donde} sinNota />}
                     </span>
                     <span className={`${CHIP} border-deep text-deep`}>
                       <TextoBilingue valor={d.regla} sinNota />

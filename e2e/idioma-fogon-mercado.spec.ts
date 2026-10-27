@@ -12,7 +12,9 @@ test.describe("Fogón en inglés", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.getByRole("heading", { level: 1, name: "What is being decided" })).toBeVisible();
     await expect(page.getByText("This page is only available in Spanish for now.")).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Residents' Assembly" })).toBeVisible();
+    const filtros = page.getByRole("group", { name: "Filter by scope" }).getByRole("button");
+    await expect(filtros).toHaveText([/All$/, /Circle$/, /Tribe$/, /Lighthouse \(the commons\)$/, /Council$/, /Trust$/]);
+    await expect(page.getByText("Residents' Assembly")).toHaveCount(0);
     const huerta = decision(page, "2027 community garden plan");
     await expect(huerta).toBeVisible();
     await expect(huerta.getByText("Translated from Spanish")).toBeVisible();
@@ -36,7 +38,7 @@ test.describe("Fogón en inglés", () => {
     await expect(huerta.getByRole("button", { name: "Change vote" })).toBeFocused();
     // El voto es el mismo que en español: se guarda con la clave, no con el texto.
     const guardado = await page.evaluate(() => window.localStorage.getItem("lh-fogon"));
-    expect(JSON.parse(guardado ?? "{}")).toEqual({ votos: { huerta: "favor" } });
+    expect(JSON.parse(guardado ?? "{}")).toEqual({ votos: { huerta: "favor" }, alConsejo: [] });
     expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
 
@@ -50,10 +52,35 @@ test.describe("Fogón en inglés", () => {
     await expect(acta.locator('[translate="no"]', { hasText: "Valle Solar" })).toHaveCount(1);
   });
 
-  test("sin residencia cargada dice en inglés que falta el dato", async ({ page }) => {
+  test("sin residencia cargada no pide el dato en inglés", async ({ page }) => {
     await page.goto("/fogon");
-    await expect(page.getByText("No data on your residency", { exact: true })).toHaveCount(2);
-    await expect(page.getByRole("link", { name: "Add it in My data" })).toBeVisible();
+    await expect(page.getByText("No data on your residency")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Vote" })).toHaveCount(7);
+  });
+
+  const cisterna = (page: Page) => decision(page, /cistern/);
+
+  test("quien no lidera Valle Solar no ve Take to the council", async ({ page }) => {
+    await page.goto("/fogon");
+    await expect(cisterna(page)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Take to the council" })).toHaveCount(0);
+  });
+
+  test("la líder de Valle Solar la lleva al consejo: anuncio en inglés, origen y chip con la tribu sin traducir", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem("lh-sumarte", JSON.stringify({ plan: "miembro", tribu: true, tribuId: "valle" }));
+    });
+    await page.goto("/fogon");
+    const chip = cisterna(page).locator('[translate="no"]', { hasText: "Valle Solar" });
+    await expect(chip).toHaveCount(2);
+    await cisterna(page).getByRole("button", { name: "Take to the council" }).click();
+    await expect(page.getByRole("status")).toContainText("You took «Ask the Common Fund for a cistern for the Valle Solar garden» to the council (simulated).");
+    await expect(cisterna(page).getByText("Already in the council")).toBeVisible();
+    await page.getByRole("button", { name: "Council", exact: true }).click();
+    const copia = cisterna(page);
+    await expect(copia).toContainText("Comes from Valle Solar (approved in the tribe)");
+    await expect(copia.locator('[translate="no"]', { hasText: /^Valle Solar$/ })).toHaveCount(2);
+    expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
 
   test("el voto guardado desde la plataforma en español se ve en inglés", async ({ page }) => {
