@@ -22,6 +22,19 @@ const BOTON_SUAVE = `${BOTON} border-muted hover:bg-surface-2`;
 const BOTON_ACTIVO = `${BOTON} border-deep bg-deep text-on-deep`;
 const CHIP = "rounded-full border border-faint px-3 py-0.5 text-sm";
 
+/** El texto con el nombre de la tribu (si lo trae) marcado `translate="no"`: los nombres propios no se traducen. */
+function ConTribu({ texto, tribu }: { texto: string; tribu?: string }) {
+  const i = tribu ? texto.indexOf(tribu) : -1;
+  if (!tribu || i < 0) return <>{texto}</>;
+  return (
+    <>
+      {texto.slice(0, i)}
+      <span translate="no">{tribu}</span>
+      {texto.slice(i + tribu.length)}
+    </>
+  );
+}
+
 export function FogonCliente() {
   const idioma = useIdioma();
   const t = useTextos("fogon");
@@ -119,11 +132,13 @@ export function FogonCliente() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="grid gap-2">
                   <div>
-                    <h2 id={idTitulo} className="font-semibold"><TextoBilingue valor={d.titulo} sinNota /></h2>
+                    <h2 id={idTitulo} className="font-semibold"><ConTribu texto={titulo} tribu={d.tribu} /></h2>
                     {traducido && <p className="text-xs text-muted">{comunes.traducidoDelOriginal}</p>}
                   </div>
                   <p className="flex flex-wrap gap-2">
-                    <span className={CHIP}><TextoBilingue valor={d.donde} sinNota /></span>
+                    <span className={CHIP}>
+                      {d.tribu ? <span translate="no">{textoEn(d.donde, idioma)}</span> : <TextoBilingue valor={d.donde} sinNota />}
+                    </span>
                     <span className={`${CHIP} border-deep text-deep`}>
                       <TextoBilingue valor={d.regla} sinNota />
                       <TerminoLegal clave={d.base} />

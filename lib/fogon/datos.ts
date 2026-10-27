@@ -15,6 +15,8 @@ export type Decision = {
   /** Título en español (original) y en inglés. */
   titulo: BilingueConOriginal & { en: string };
   donde: BilingueConOriginal & { en: string };
+  /** Nombre de la tribu cuando el lugar o el título la nombran: no se traduce (va con `translate="no"`). */
+  tribu?: string;
   regla: BilingueConOriginal & { en: string };
   base: ClaveTermino;
   ambito: Ambito;
@@ -31,6 +33,7 @@ export const DECISIONES: readonly Decision[] = [
     id: "huerta",
     titulo: b("Plan de huerta comunitaria 2027", "2027 community garden plan"),
     donde: b("Círculo de Tierra", "Círculo de Tierra"),
+    tribu: "Círculo de Tierra",
     regla: b("Consentimiento", "Consent"),
     base: "art32",
     ambito: "tribu",
@@ -71,6 +74,7 @@ export const DECISIONES: readonly Decision[] = [
     id: "facilitador",
     titulo: b("Elegir facilitador/a de Valle Solar", "Choose a facilitator for Valle Solar"),
     donde: b("Valle Solar", "Valle Solar"),
+    tribu: "Valle Solar",
     regla: b("Según el estatuto de la tribu", "As set by the tribe's bylaws"),
     base: "estatuto",
     ambito: "tribu",

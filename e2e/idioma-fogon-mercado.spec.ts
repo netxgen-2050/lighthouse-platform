@@ -19,6 +19,9 @@ test.describe("Fogón en inglés", () => {
     await expect(huerta).toContainText("Sample votes: In favor 14 · Against 1 · Abstention 3");
     // Los nombres de tribus no se traducen.
     await expect(huerta).toContainText("Círculo de Tierra");
+    await expect(huerta.locator('[translate="no"]', { hasText: "Círculo de Tierra" })).toHaveCount(1);
+    const valle = decision(page, "Choose a facilitator for Valle Solar");
+    await expect(valle.locator('[translate="no"]', { hasText: "Valle Solar" })).toHaveCount(2);
     expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
 
