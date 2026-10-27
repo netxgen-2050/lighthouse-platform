@@ -16,7 +16,8 @@ export const EMISION = { total: 480000, aportantes: 22, cupo: 35, noCalificados:
 
 export const MEMBRESIA = { mensual: 10, anual: 100 };
 
-export const PLAN_TRIBU_MENSUAL = 60;
+/** Cifras de ejemplo. El anual sigue la misma regla de "2 meses gratis" que Miembro: 10 × el mensual. */
+export const PLAN_TRIBU = { mensual: 60, anual: 600 };
 
 export type Fila = { texto: Bilingue; incluye: readonly [boolean, boolean, boolean] };
 

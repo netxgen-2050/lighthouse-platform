@@ -97,7 +97,7 @@ const es = {
   fundador: {
     cohorte: "Cohorte Génesis · Feb 2027",
     nivelDelPase: "Nivel del pase",
-    pagoUnico: " · pago único",
+    pagoUnico: " · pago único · de por vida",
     financias: "Financiás el Fondo Común",
     financiasFin: " y entrás a la cohorte fundadora. Mismo voto en los tres niveles.",
     todoMiembro: `Todo lo de ${G.miembro.es}, 1 año incluido`,
@@ -276,7 +276,7 @@ const en: Textos<typeof es> = {
   fundador: {
     cohorte: "Genesis Cohort · Feb 2027",
     nivelDelPase: "Pass level",
-    pagoUnico: " · one-time payment",
+    pagoUnico: " · one-time payment · lifetime",
     financias: "You fund the Common Fund",
     financiasFin: " and join the founding cohort. Same vote at all three levels.",
     todoMiembro: `Everything in ${G.miembro.en}, 1 year included`,

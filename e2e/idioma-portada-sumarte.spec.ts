@@ -75,7 +75,8 @@ test.describe("Sumarte en inglés", () => {
     await expect(miembro).toContainText("USD 10/month");
     await page.getByRole("button", { name: /^Yearly/ }).click();
     await expect(miembro).toContainText("USD 100/year");
-    await expect(page.getByText("2 months free")).toBeVisible();
+    await expect(miembro).toContainText("2 months free");
+    await expect(tarjeta(page, /Tribe Plan/)).toContainText("2 months free");
   });
 
   test("el contenido no deja español suelto", async ({ page }) => {
