@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useSesion } from "@/components/sesion/contexto";
 import { CLAVES } from "@/lib/demo/claves";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { COMUNIDAD_LIGHTHOUSE, leer as leerMembresia, type Membresias } from "@/lib/membresia/estado";
-import { ROLES, buscarRol } from "@/lib/pactos/datos";
+import { ROLES, buscarRol, textoDeRol } from "@/lib/pactos/datos";
 import { leer as leerPactos, pactosAceptados } from "@/lib/pactos/estado";
 import {
   PERFIL_VACIO,
@@ -35,10 +36,6 @@ const ORDEN_CAMPOS: (keyof ErroresPerfil)[] = ["nombre", "lugar", "frase", "ofre
 type Resumen = { pactos: number | null; semillas: number | null };
 type Comunidad = { id: string; nombre: string; href: string; estado: "miembro" | "pedido" };
 
-function SinDato() {
-  return <span className="text-muted">sin dato</span>;
-}
-
 function resumir(pactosCrudo: string | null): Resumen {
   const estado = leerPactos(pactosCrudo);
   const semillas = totalConDato(Object.keys(estado.comunidades).map((id) => semillasDeComunidad(pactosCrudo, id).total));
@@ -62,6 +59,9 @@ function comunidadesDe(m: Membresias): Comunidad[] {
 
 export function PerfilCliente() {
   const { sesion, nombre: nombreCuenta } = useSesion();
+  const idioma = useIdioma();
+  const t = useTextos("perfil");
+  const comunes = useTextos("comunes");
   const [listo, setListo] = useState(false);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [perfil, setPerfil] = useState<Perfil>(PERFIL_VACIO);
@@ -121,7 +121,7 @@ export function PerfilCliente() {
 
   function guardar(e: React.FormEvent) {
     e.preventDefault();
-    const errs = validar(borrador);
+    const errs = validar(borrador, idioma);
     setErrores(errs);
     if (Object.keys(errs).length > 0) {
       // El foco al primer campo con error (descrito por su mensaje) hace que el lector lo anuncie.
@@ -144,14 +144,21 @@ export function PerfilCliente() {
     foco.current = "editar";
   }
 
-  if (!listo) return <p role="status" className="text-muted">Cargando…</p>;
+  if (!listo) return <p role="status" className="text-muted">{comunes.cargando}</p>;
+
+  /** "sin dato" / "no data": el dato que falta no es cero. */
+  const sinDato = <span className="text-muted">{comunes.sinDato}</span>;
+  /** Lo que escribió la persona se muestra tal cual; con la plataforma en inglés se marca como español (no se traduce). */
+  const propio = (texto: string): ReactNode => (idioma === "en" ? <span lang="es">{texto}</span> : texto);
 
   const vacio = perfilVacio(perfil);
-  const nombresRoles = perfil.roles.map((c) => (c === "otro" && perfil.rolOtro ? `Otro: ${perfil.rolOtro}` : (buscarRol(c)?.nombre ?? c)));
+  const nombresRoles = perfil.roles.map((c) => {
+    if (c === "otro" && perfil.rolOtro) return <>{t.datos.rolOtro}{propio(perfil.rolOtro)}</>;
+    const rol = buscarRol(c);
+    return rol ? textoDeRol(rol, idioma).nombre : c;
+  });
   const aviso = (
-    <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-      Tu perfil queda solo en este navegador. Nadie más lo ve.
-    </p>
+    <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">{t.aviso}</p>
   );
 
   // Función común (no componente): devuelve el aviso del campo, o nada si está bien.
@@ -164,11 +171,12 @@ export function PerfilCliente() {
   const describe = (campo: keyof ErroresPerfil) => (errores[campo] ? `error-${campo}` : undefined);
 
   if (editando) {
+    const f = t.formulario;
     return (
       <form ref={formRef} onSubmit={guardar} noValidate aria-labelledby="editar-perfil" className={`${TARJETA} max-w-3xl`}>
-        <h2 id="editar-perfil" className="text-xl font-semibold">Editar mi perfil</h2>
+        <h2 id="editar-perfil" className="text-xl font-semibold">{f.titulo}</h2>
         <div>
-          <label htmlFor="p-nombre">Nombre</label>
+          <label htmlFor="p-nombre">{f.nombre}</label>
           <input
             id="p-nombre"
             data-campo="nombre"
@@ -182,7 +190,7 @@ export function PerfilCliente() {
           {error("nombre")}
         </div>
         <div>
-          <label htmlFor="p-lugar">De dónde sos</label>
+          <label htmlFor="p-lugar">{f.lugar}</label>
           <input
             id="p-lugar"
             data-campo="lugar"
@@ -195,7 +203,7 @@ export function PerfilCliente() {
           {error("lugar")}
         </div>
         <div>
-          <label htmlFor="p-frase">Una frase sobre vos</label>
+          <label htmlFor="p-frase">{f.frase}</label>
           <input
             id="p-frase"
             data-campo="frase"
@@ -208,7 +216,7 @@ export function PerfilCliente() {
           {error("frase")}
         </div>
         <div>
-          <label htmlFor="p-ofrezco">Qué sabés hacer y qué ofrecés</label>
+          <label htmlFor="p-ofrezco">{f.ofrezco}</label>
           <textarea
             id="p-ofrezco"
             data-campo="ofrezco"
@@ -222,8 +230,8 @@ export function PerfilCliente() {
           {error("ofrezco")}
         </div>
         <fieldset className="grid gap-2">
-          <legend className="font-medium">Tus roles</legend>
-          <p className="text-sm text-muted">Los mismos roles que ves en Pactos.</p>
+          <legend className="font-medium">{f.roles}</legend>
+          <p className="text-sm text-muted">{f.rolesAyuda}</p>
           <div className="grid gap-1 sm:grid-cols-2">
             {ROLES.map((r) => (
               <label key={r.clave} className="flex items-center gap-2">
@@ -233,14 +241,14 @@ export function PerfilCliente() {
                   onChange={(e) => alternarRol(r.clave, e.target.checked)}
                   className={FOCO}
                 />
-                {r.nombre}
+                {textoDeRol(r, idioma).nombre}
               </label>
             ))}
           </div>
         </fieldset>
         {borrador.roles.includes("otro") && (
           <div>
-            <label htmlFor="p-rol-otro">Qué otro rol tenés</label>
+            <label htmlFor="p-rol-otro">{f.rolOtro}</label>
             <input
               id="p-rol-otro"
               data-campo="rolOtro"
@@ -254,7 +262,7 @@ export function PerfilCliente() {
           </div>
         )}
         <div>
-          <label htmlFor="p-decision">Cómo te gusta decidir en comunidad</label>
+          <label htmlFor="p-decision">{f.decision}</label>
           <textarea
             id="p-decision"
             data-campo="decision"
@@ -268,7 +276,7 @@ export function PerfilCliente() {
           {error("decision")}
         </div>
         <div>
-          <label htmlFor="p-no-negociables">Qué no negociás</label>
+          <label htmlFor="p-no-negociables">{f.noNegociables}</label>
           <textarea
             id="p-no-negociables"
             data-campo="noNegociables"
@@ -282,27 +290,30 @@ export function PerfilCliente() {
           {error("noNegociables")}
         </div>
         <div className="flex gap-2">
-          <button type="submit" className={BOTON_PRINCIPAL}>Guardar</button>
-          <button type="button" className={BOTON} onClick={cancelar}>Cancelar</button>
+          <button type="submit" className={BOTON_PRINCIPAL}>{f.guardar}</button>
+          <button type="button" className={BOTON} onClick={cancelar}>{f.cancelar}</button>
         </div>
       </form>
     );
   }
+
+  const d = t.datos;
+  const cita = (frase: string) => (idioma === "en" ? <>“{propio(frase)}”</> : `«${frase}»`);
 
   return (
     <div className="grid gap-6">
       {aviso}
       {sesion?.email && (
         <p className="text-sm text-muted">
-          Tu cuenta: <span className="font-medium text-ink">{sesion.email}</span>
+          {t.tuCuenta}<span className="font-medium text-ink">{sesion.email}</span>
         </p>
       )}
       {falloAlmacen && (
         <p role="alert" className="text-sm font-medium text-danger">
-          Error: tu navegador no permite guardar datos en este sitio, así que tu perfil se pierde al recargar.
+          Error: {t.errorAlmacenamiento}
         </p>
       )}
-      <p role="status" className="text-sm font-medium">{guardado ? "Listo: guardamos tu perfil." : ""}</p>
+      <p role="status" className="text-sm font-medium">{guardado ? t.guardado : ""}</p>
 
       <section aria-labelledby="encabezado" className={`${TARJETA} sm:grid-cols-[auto_1fr_auto] sm:items-center`}>
         <span
@@ -313,81 +324,81 @@ export function PerfilCliente() {
         </span>
         <div>
           <h2 id="encabezado" className="text-2xl font-semibold">
-            {perfil.nombre || <SinDato />}
+            {perfil.nombre ? propio(perfil.nombre) : sinDato}
           </h2>
           <p>
-            <span className="text-muted">De dónde sos: </span>
-            {perfil.lugar || <SinDato />}
+            <span className="text-muted">{d.deDonde}</span>
+            {perfil.lugar ? propio(perfil.lugar) : sinDato}
           </p>
           <p>
-            <span className="text-muted">Sobre vos: </span>
-            {perfil.frase ? `«${perfil.frase}»` : <SinDato />}
+            <span className="text-muted">{d.sobreVos}</span>
+            {perfil.frase ? cita(perfil.frase) : sinDato}
           </p>
         </div>
         <button ref={editarRef} type="button" className={BOTON_PRINCIPAL} onClick={empezar}>
-          {vacio ? "Completar mi perfil" : "Editar mi perfil"}
+          {vacio ? t.completar : t.editar}
         </button>
       </section>
 
       <div className="grid gap-4 md:grid-cols-2">
         <section aria-labelledby="t-hacer" className={TARJETA}>
-          <h2 id="t-hacer" className="text-xl font-semibold">Qué sabés hacer y qué ofrecés</h2>
-          <p>{perfil.ofrezco || <SinDato />}</p>
+          <h2 id="t-hacer" className="text-xl font-semibold">{d.ofrezcoTitulo}</h2>
+          <p>{perfil.ofrezco ? propio(perfil.ofrezco) : sinDato}</p>
           {nombresRoles.length > 0 ? (
-            <ul aria-label="Tus roles" className="flex flex-wrap gap-2">
-              {nombresRoles.map((n) => (
-                <li key={n} className={ETIQUETA}>{n}</li>
+            <ul aria-label={d.rolesAria} className="flex flex-wrap gap-2">
+              {nombresRoles.map((n, i) => (
+                <li key={perfil.roles[i]} className={ETIQUETA}>{n}</li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-muted">Roles: sin dato</p>
+            <p className="text-sm text-muted">{d.rolesSinDato}</p>
           )}
         </section>
 
         <section aria-labelledby="t-comunidades" className={TARJETA}>
-          <h2 id="t-comunidades" className="text-xl font-semibold">Tus comunidades</h2>
+          <h2 id="t-comunidades" className="text-xl font-semibold">{t.comunidades.titulo}</h2>
           {comunidades === null ? (
-            <p><SinDato /></p>
+            <p>{sinDato}</p>
           ) : comunidades.length > 0 ? (
             <ul className="grid gap-2">
               {comunidades.map((c) => (
                 <li key={c.id} className="flex flex-wrap items-center gap-2">
-                  <Link className="underline" href={c.href}>{c.nombre}</Link>
+                  <Link className="underline" href={c.href} translate="no">{c.nombre}</Link>
                   <span className={ETIQUETA}>
                     <span aria-hidden="true">{c.estado === "miembro" ? "✓ " : "… "}</span>
-                    {c.estado === "miembro" ? "Miembro" : "Pedido enviado"}
+                    {c.estado === "miembro" ? t.comunidades.miembro : t.comunidades.pedido}
                   </span>
                 </li>
               ))}
             </ul>
           ) : (
             <p className="text-muted">
-              Todavía no pertenecés a ninguna comunidad. <Link className="underline" href="/tribus">Mirá las tribus</Link>.
+              {t.comunidades.ninguna} <Link className="underline" href="/tribus">{t.comunidades.mirar}</Link>.
             </p>
           )}
         </section>
 
         <section aria-labelledby="t-resumen" className={TARJETA}>
-          <h2 id="t-resumen" className="text-xl font-semibold">Resumen</h2>
+          <h2 id="t-resumen" className="text-xl font-semibold">{t.resumen.titulo}</h2>
           <p>
-            Pactos activos: <b>{resumen && resumen.pactos !== null ? resumen.pactos : <SinDato />}</b>{" "}
-            <Link className="underline" href="/pactos">Ir a Pactos</Link>
+            {t.resumen.pactosActivos}<b>{resumen && resumen.pactos !== null ? resumen.pactos : sinDato}</b>{" "}
+            <Link className="underline" href="/pactos">{t.resumen.irPactos}</Link>
           </p>
           <p>
-            Semillas totales: <b>{resumen && resumen.semillas !== null ? resumen.semillas : <SinDato />}</b>{" "}
-            <Link className="underline" href="/semillas">Ir a Semillas</Link>
+            {t.resumen.semillasTotales}<b>{resumen && resumen.semillas !== null ? resumen.semillas : sinDato}</b>{" "}
+            <Link className="underline" href="/semillas">{t.resumen.irSemillas}</Link>
           </p>
         </section>
 
         <section aria-labelledby="t-decidis" className={TARJETA}>
-          <h2 id="t-decidis" className="text-xl font-semibold">Cómo decidís y qué no negociás</h2>
+          <h2 id="t-decidis" className="text-xl font-semibold">{d.decidisTitulo}</h2>
           <p>
-            <span className="text-muted">Cómo te gusta decidir: </span>
-            {perfil.decision || <SinDato />}
+            <span className="text-muted">{d.comoDecidir}</span>
+            {perfil.decision ? propio(perfil.decision) : sinDato}
           </p>
           <p>
-            <span className="text-muted">Qué no negociás: </span>
-            {perfil.noNegociables || <SinDato />}
+            <span className="text-muted">{d.noNegocias}</span>
+            {perfil.noNegociables ? propio(perfil.noNegociables) : sinDato}
           </p>
         </section>
       </div>

@@ -89,6 +89,22 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Canales: por qué se abre cada puerta, qué la abre, refuerzo por presencia y nombres de planes y niveles del pase",
   },
+  "textos/perfil": {
+    estado: "pendiente",
+    que: "Perfil: encabezado, formulario, tarjetas, errores de validación y las seis preguntas de la entrevista",
+  },
+  "textos/recorrido": {
+    estado: "pendiente",
+    que: "Mi recorrido: próximo paso (cinco pasos), pestañas, línea de tiempo y tabla de la Bitácora",
+  },
+  "textos/bandeja": {
+    estado: "pendiente",
+    que: "Bandeja y notificaciones: textos de cada evento de la actividad, que se arman al mostrarlos en el idioma actual",
+  },
+  "textos/configuracion": {
+    estado: "pendiente",
+    que: "Configuración: apariencia, avisos por tipo, Hifa, moneda, idioma y borrado de lo guardado en el navegador",
+  },
   "lib/fogon/datos.ts": {
     estado: "pendiente",
     que: "Decisiones de ejemplo del Fogón (título, lugar y regla) con su inglés, traducidas del español",

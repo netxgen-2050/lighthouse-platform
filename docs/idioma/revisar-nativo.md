@@ -6,7 +6,7 @@ Todo el inglés lo escribió un agente y está pendiente hasta que un hablante n
 **Cómo marcar algo como revisado:** en `lib/idioma/revision-nativa.ts`, cambiá el `estado` de la fuente a `"revisado"`
 y sumá `revisadoPor` y `fecha` (AAAA-MM-DD). Después corré `pnpm idioma:pendientes`.
 
-Fuentes pendientes: 24
+Fuentes pendientes: 28
 
 | Fuente | Qué es | Textos en inglés |
 |---|---|---|
@@ -22,14 +22,18 @@ Fuentes pendientes: 24
 | `lib/sumarte/datos.ts` | Comparativa de planes de Sumarte (filas de ejemplo con su inglés) | — |
 | `lib/territorios/textos.ts` | Textos del territorio con su inglés: terreno común, descripción y nombres descriptivos de los lugares, bienes comunes | — |
 | `lib/tribus/datos.ts` | Datos de ejemplo de las 12 tribus con su inglés (foco, qué tiene, qué busca, ritual, forma jurídica…) y la declaración de cada tribu, traducida del español | — |
+| `textos/bandeja` | Bandeja y notificaciones: textos de cada evento de la actividad, que se arman al mostrarlos en el idioma actual | 28 |
 | `textos/canales` | Canales: por qué se abre cada puerta, qué la abre, refuerzo por presencia y nombres de planes y niveles del pase | 31 |
 | `textos/compromisos` | Compromisos y Mercado: formulario, validaciones, tipos y medios de intercambio, filtros y avisos | 58 |
 | `textos/comunes` | Textos que se repiten en todas las zonas (cargando, cancelar, sin dato, notas de traducción…) | 15 |
+| `textos/configuracion` | Configuración: apariencia, avisos por tipo, Hifa, moneda, idioma y borrado de lo guardado en el navegador | 48 |
 | `textos/fogon` | Fogón: encabezado, filtros por ámbito, opciones de voto, motivos para no votar, acta de ejemplo y ayudas ("Fideicomiso" = Trust) | 38 |
 | `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 53 |
 | `textos/pactos` | Pactos: pactos de tiempo y de plata, cambios, historial, avisos y anuncios | 84 |
 | `textos/pasaporte` | Pasaporte: sellos y lo que abren, tarjeta y diálogo de verificación de identidad (KYC) con sus errores, sello de la billetera y datos de aporte | 149 |
+| `textos/perfil` | Perfil: encabezado, formulario, tarjetas, errores de validación y las seis preguntas de la entrevista | 58 |
 | `textos/portada` | Portada: título, bajada, los tres caminos y la cantidad de barrios | 17 |
+| `textos/recorrido` | Mi recorrido: próximo paso (cinco pasos), pestañas, línea de tiempo y tabla de la Bitácora | 45 |
 | `textos/semillas` | Semillas: libro por comunidad, detalle, meta de sembrador/a activo/a y ronda de reconocimiento ("Semillas" no se traduce) | 73 |
 | `textos/sumarte` | Sumarte: planes, niveles del pase (Seed, Sprout, Root, a confirmar), inversores, avisos de nivel, formulario de pedido de contacto y panel Entrar como… | 143 |
 | `textos/territorio` | Territorio: vitrina, leyenda y controles del mapa, ficha lateral y marcadores | 60 |

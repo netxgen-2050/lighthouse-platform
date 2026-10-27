@@ -3,33 +3,29 @@
 import Link from "next/link";
 import { useEffect, useState, type KeyboardEvent } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
+import { TextoEvento } from "@/components/texto-evento";
 import { listarActividad, type EventoActividad } from "@/lib/actividad/actividad";
 import { EVENTO_CAMBIO, leerActividadDelNavegador } from "@/lib/actividad/almacen";
-import { agruparPorDia } from "@/lib/panel/linea-tiempo";
-import { leerProgreso, proximoPaso, type ProximoPaso } from "@/lib/panel/proximo-paso";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
+import { agruparPorDia, etiquetaDelDia, horaDelEvento } from "@/lib/panel/linea-tiempo";
+import { leerProgreso, proximoPaso, type Progreso } from "@/lib/panel/proximo-paso";
 import { TablaBitacora } from "./bitacora/tabla-bitacora";
 
 export type Pestana = "camino" | "bitacora";
 
-const PESTANAS: readonly [Pestana, string][] = [
-  ["camino", "Tu camino"],
-  ["bitacora", "Bitácora"],
-];
+const PESTANAS: readonly Pestana[] = ["camino", "bitacora"];
 
 const ENLACE_PRINCIPAL =
   "w-fit rounded-lg bg-deep px-4 py-1.5 text-on-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
-const hora = new Intl.DateTimeFormat("es-AR", { timeStyle: "short" });
-const diaLargo = new Intl.DateTimeFormat("es-AR", { dateStyle: "full" });
-
-function horaDe(e: EventoActividad): string {
-  return hora.format(new Date(e.visibleDesde ?? e.fecha));
-}
-
 export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pestana }) {
+  const idioma = useIdioma();
+  const t = useTextos("recorrido");
+  const comunes = useTextos("comunes");
   const [listo, setListo] = useState(false);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
-  const [paso, setPaso] = useState<ProximoPaso | null>(null);
+  // Se guarda el progreso y no el paso ya armado: así el paso cambia de idioma sin volver a leer el navegador.
+  const [progreso, setProgreso] = useState<Progreso | null>(null);
   const [actividad, setActividad] = useState<EventoActividad[]>([]);
   const [pestana, setPestana] = useState<Pestana>(pestanaInicial);
 
@@ -37,7 +33,7 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
     const leerActividad = () => setActividad(listarActividad(leerActividadDelNavegador(), new Date()));
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
     try {
-      setPaso(proximoPaso(leerProgreso((c) => window.localStorage.getItem(c))));
+      setProgreso(leerProgreso((c) => window.localStorage.getItem(c)));
     } catch {
       setFalloAlmacen(true);
     }
@@ -60,36 +56,34 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
     else if (e.key === "End") destino = PESTANAS.length - 1;
     if (destino < 0) return;
     e.preventDefault();
-    setPestana(PESTANAS[destino][0]);
-    document.getElementById(`pestana-${PESTANAS[destino][0]}`)?.focus();
+    setPestana(PESTANAS[destino]);
+    document.getElementById(`pestana-${PESTANAS[destino]}`)?.focus();
   }
 
   const aviso = (
-    <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-      Modo demostración: este panel lee lo que guardaste en este navegador.
-    </p>
+    <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">{t.modoDemo}</p>
   );
 
-  if (!listo) return <p role="status">Cargando…</p>;
+  if (!listo) return <p role="status">{comunes.cargando}</p>;
 
   if (falloAlmacen) {
     return (
       <div className="grid gap-4">
         {aviso}
         <p role="alert" className="text-sm font-medium text-danger">
-          Error: tu navegador no permite leer los datos guardados en este sitio, así que el panel no puede
-          mostrar tu recorrido. Revisá la configuración de privacidad o probá en otro navegador.
+          Error: {t.errorLectura}
         </p>
       </div>
     );
   }
 
+  const paso = progreso ? proximoPaso(progreso, idioma) : null;
   const grupos = agruparPorDia(actividad);
 
   return (
     <div className="grid gap-6">
       <section aria-labelledby="proximo" className="grid gap-3 rounded-xl border border-faint bg-surface-2 p-4">
-        <h2 id="proximo" className="text-xl font-semibold">Tu próximo paso</h2>
+        <h2 id="proximo" className="text-xl font-semibold">{t.proximo.titulo}</h2>
         {paso ? (
           <>
             <p className="font-medium">{paso.titulo}</p>
@@ -97,13 +91,13 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
             <Link href={paso.href} className={ENLACE_PRINCIPAL}>{paso.boton}</Link>
           </>
         ) : (
-          <p>Ya recorriste todo lo que hay por ahora.</p>
+          <p>{t.proximo.todoHecho}</p>
         )}
       </section>
 
       <div className="grid gap-4">
-        <div role="tablist" aria-label="Mi recorrido" className="flex flex-wrap gap-2 border-b border-line pb-2">
-          {PESTANAS.map(([clave, titulo], i) => {
+        <div role="tablist" aria-label={t.pestanas.aria} className="flex flex-wrap gap-2 border-b border-line pb-2">
+          {PESTANAS.map((clave, i) => {
             const activa = pestana === clave;
             return (
               <button
@@ -120,7 +114,7 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
                   activa ? "bg-deep text-on-deep" : "border border-muted hover:bg-surface-2"
                 }`}
               >
-                {titulo}
+                {t.pestanas[clave]}
               </button>
             );
           })}
@@ -136,22 +130,20 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
         >
           {pestana === "camino" &&
             (grupos.length === 0 ? (
-              <p className="rounded-xl border border-faint bg-surface p-4">
-                Todavía no hay nada en tu camino. Lo que hagas en la plataforma va a aparecer acá.
-              </p>
+              <p className="rounded-xl border border-faint bg-surface p-4">{t.vacio}</p>
             ) : (
               <div className="grid gap-5">
                 {grupos.map((g) => (
                   <section key={g.dia} aria-labelledby={`dia-${g.dia}`} className="grid gap-2">
                     <h3 id={`dia-${g.dia}`} className="font-semibold">
-                      <time dateTime={g.dia}>{diaLargo.format(new Date(`${g.dia}T12:00:00`))}</time>
+                      <time dateTime={g.dia}>{etiquetaDelDia(g.dia, idioma)}</time>
                     </h3>
                     <ul className="grid gap-2">
                       {g.eventos.map((e) => (
                         <li key={e.id} className="flex flex-wrap items-baseline gap-x-3 rounded-xl border border-faint bg-surface px-4 py-2">
-                          <time className="text-sm text-muted" dateTime={e.visibleDesde ?? e.fecha}>{horaDe(e)}</time>
+                          <time className="text-sm text-muted" dateTime={e.visibleDesde ?? e.fecha}>{horaDelEvento(e, idioma)}</time>
                           <Link href={e.enlace} className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
-                            {e.texto}
+                            <TextoEvento evento={e} />
                           </Link>
                         </li>
                       ))}
@@ -173,14 +165,10 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
           {pestana === "bitacora" && (
             <>
               <p className="max-w-2xl text-muted">
-                Lo que te mostramos: anotamos qué estado del loteo y qué explicaciones legales viste, y cuándo,
-                para poder probar con qué información contabas al decidir.
-                <TerminoLegal clave="bitacora" />
+                {t.bitacora.intro}
+                <TerminoLegal clave="bitacora" idioma={idioma} />
               </p>
-              <p className="max-w-2xl text-sm text-muted">
-                En el prototipo la bitácora queda solo en este navegador y la podés borrar: todavía no sirve como
-                prueba. Con el login y la base de datos se va a guardar de verdad.
-              </p>
+              <p className="max-w-2xl text-sm text-muted">{t.bitacora.prototipo}</p>
               <TablaBitacora />
             </>
           )}
@@ -190,9 +178,9 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
       <div className="grid gap-3">
         {aviso}
         <p className="text-sm">
-          Para borrar lo que guardaste en este navegador, andá a{" "}
+          {t.borrarAntes}
           <Link className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/configuracion">
-            Configuración, en Tus datos
+            {t.borrarEnlace}
           </Link>
           .
         </p>

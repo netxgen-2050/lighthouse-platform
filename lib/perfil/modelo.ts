@@ -1,3 +1,5 @@
+import { perfil as textosPerfil } from "@/lib/idioma/textos/perfil";
+import type { Idioma } from "@/lib/idioma/tipos";
 import { ROLES, type ClaveRol } from "@/lib/pactos/datos";
 import { CHATS } from "./preguntas";
 import { leerGuardado, type Estado as EstadoEntrevista } from "./estado";
@@ -35,18 +37,19 @@ export const PERFIL_VACIO: Perfil = {
 
 export type ErroresPerfil = Partial<Record<"nombre" | "lugar" | "frase" | "ofrezco" | "rolOtro" | "decision" | "noNegociables", string>>;
 
-/** Valida el formulario. El nombre es obligatorio; "Otro" pide que cuentes cuál. Sin errores = objeto vacío. */
-export function validar(p: Perfil): ErroresPerfil {
+/** Valida el formulario. El nombre es obligatorio; "Otro" pide que cuentes cuál. Sin errores = objeto vacío. Los mensajes salen en el idioma pedido. */
+export function validar(p: Perfil, idioma: Idioma = "es"): ErroresPerfil {
+  const t = textosPerfil[idioma].errores;
   const e: ErroresPerfil = {};
-  if (p.nombre.trim() === "") e.nombre = "Escribí tu nombre.";
-  else if (p.nombre.trim().length > MAX.nombre) e.nombre = `El nombre puede tener hasta ${MAX.nombre} caracteres.`;
+  if (p.nombre.trim() === "") e.nombre = t.nombre;
+  else if (p.nombre.trim().length > MAX.nombre) e.nombre = t.nombreMax(MAX.nombre);
   for (const campo of ["lugar", "frase", "ofrezco", "decision", "noNegociables"] as const) {
-    if (p[campo].trim().length > MAX[campo]) e[campo] = `Puede tener hasta ${MAX[campo]} caracteres.`;
+    if (p[campo].trim().length > MAX[campo]) e[campo] = t.max(MAX[campo]);
   }
   // El texto de "Otro" solo cuenta si "Otro" está marcado (si no, el campo ni se ve).
   if (p.roles.includes("otro")) {
-    if (p.rolOtro.trim() === "") e.rolOtro = "Contanos qué otro rol tenés.";
-    else if (p.rolOtro.trim().length > MAX.rolOtro) e.rolOtro = `Puede tener hasta ${MAX.rolOtro} caracteres.`;
+    if (p.rolOtro.trim() === "") e.rolOtro = t.rolOtro;
+    else if (p.rolOtro.trim().length > MAX.rolOtro) e.rolOtro = t.max(MAX.rolOtro);
   }
   return e;
 }

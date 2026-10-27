@@ -31,6 +31,12 @@ describe("estaTraducida", () => {
     }
   });
 
+  test("el perfil, Mi recorrido, la bandeja y Configuración están traducidos", () => {
+    for (const ruta of ["/perfil", "/panel", "/panel/", "/bandeja", "/configuracion?x=1"]) {
+      expect(estaTraducida(ruta), ruta).toBe(true);
+    }
+  });
+
   test("el resto todavía no", () => {
     for (const ruta of [
       "/fogon/consultas",
@@ -43,7 +49,8 @@ describe("estaTraducida", () => {
       "/territorios",
       "/territorios/lighthouse/x",
       "/sumarte/otra",
-      "/configuracion",
+      "/panel/bitacora",
+      "/perfil/otra",
       "/congreso/fr",
       "/congresos",
     ]) {

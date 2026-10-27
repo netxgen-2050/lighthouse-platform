@@ -4,6 +4,7 @@ import {
   formatearMonto,
   leerPreferencias,
   NOTA_TIPO_DE_CAMBIO,
+  tiposAviso,
   notaTipoDeCambio,
   PREFERENCIAS_INICIALES,
   TIPO_DE_CAMBIO,
@@ -84,6 +85,17 @@ describe("formatearMonto", () => {
   it("en español es idéntico a antes", () => {
     expect(formatearMonto(1200, "USD", "es")).toBe("USD 1.200");
     expect(formatearMonto(2100000 / 1400, "ARS")).toBe("ARS 2.100.000");
+  });
+});
+
+describe("tiposAviso", () => {
+  it("son los mismos cinco en los dos idiomas, con el mismo id", () => {
+    const es = tiposAviso("es");
+    const en = tiposAviso("en");
+    expect(es.map((t) => t.id)).toEqual(["comunidades", "pactos", "rondas", "mercado", "postulaciones"]);
+    expect(en.map((t) => t.id)).toEqual(es.map((t) => t.id));
+    expect(es[0].etiqueta).toBe("Comunidades");
+    expect(en[0].etiqueta).toBe("Communities");
   });
 });
 
