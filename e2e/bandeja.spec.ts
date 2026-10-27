@@ -91,6 +91,21 @@ test("compromisos: una oferta registra la publicación y un aviso de interés co
   await expect(campanita(page)).toHaveAttribute("aria-label", "Notificaciones, sin novedades");
 });
 
+test("compromisos: publicar por la URL sigue guardando y el aviso de interés no se muestra al pasar la demora (Mercado en pausa)", async ({ page }) => {
+  await page.clock.install();
+  await page.goto("/compromisos");
+  await page.getByRole("radio", { name: "Ofrezco" }).check();
+  await page.getByRole("radio", { name: "Tiempo" }).check();
+  await page.getByLabel("Descripción").fill("Taller de compost");
+  await page.getByLabel("Horas por mes").fill("8");
+  await page.getByRole("button", { name: "Registrar" }).click();
+  await expect.poll(async () => (await actividad(page)).length).toBe(2);
+  await page.clock.fastForward(30_000);
+  await expect(campanita(page)).toHaveAttribute("aria-label", "Notificaciones, sin novedades");
+  await page.goto("/bandeja");
+  await expect(page.getByText("Todavía no tenés notificaciones")).toBeVisible();
+});
+
 test("postulación: enviar registra la actividad y el aviso de recibida", async ({ page }) => {
   await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
   await page.goto("/tribus/grano/postular");
@@ -200,11 +215,24 @@ test("el aviso de interés en una oferta (Mercado en pausa) no se cuenta ni se l
   await expect(page.locator('a[href="/compromisos"]')).toHaveCount(0);
 });
 
+test("un único aviso de interés (Mercado en pausa): sin novedades y bandeja vacía", async ({ page }) => {
+  await semilla(page, [
+    evento("1", "Alguien se interesó en tu oferta", "2026-10-01T10:00:00Z", { tipo: "interes-oferta", enlace: "/compromisos" }),
+  ]);
+  await page.goto("/bandeja");
+  await expect(page.getByText("Todavía no tenés notificaciones")).toBeVisible();
+  await expect(campanita(page)).toHaveAttribute("aria-label", "Notificaciones, sin novedades");
+  await expect(page.getByText("Alguien se interesó en tu oferta")).toHaveCount(0);
+});
+
 test("la publicación en el Mercado (en pausa) no sale en Mi recorrido", async ({ page }) => {
   await semilla(page, [
     evento("1", "Publicaste en el mercado: Taller de compost", "2026-10-01T10:00:00Z", { tipo: "mercado", enlace: "/compromisos", notificacion: false }),
+    evento("2", "Actividad visible de control", "2026-10-02T10:00:00Z", { notificacion: false }),
   ]);
   await page.goto("/panel");
+  // Esperar a que Mi recorrido deje de cargar y muestre otro evento: recién ahí la ausencia del del Mercado prueba el filtro.
+  await expect(page.getByText("Actividad visible de control")).toBeVisible();
   await expect(page.locator("main")).toHaveCount(1);
   await expect(page.getByText("Publicaste en el mercado")).toHaveCount(0);
   await expect(page.locator('main a[href="/compromisos"]')).toHaveCount(0);

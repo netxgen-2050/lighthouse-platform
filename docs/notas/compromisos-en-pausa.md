@@ -1,6 +1,6 @@
 **Compromisos y Mercado en pausa: qué pasó y cómo volver**
 
-Nota escrita el 27-oct-2026 con el cambio `openspec/changes/rail-sin-compromisos/` (spec en el PR #121, código en el PR de implementación de ese cambio).
+Nota escrita el 27-oct-2026 con el cambio `openspec/changes/rail-sin-compromisos/` (spec en el PR #121, código en el PR #124).
 
 **1. Qué pasó y por qué**
 
@@ -46,7 +46,7 @@ Las marcas que lo dejan en pausa:
    - e2e: `e2e/marco.spec.ts`, `e2e/descubrir-publico.spec.ts`, `e2e/sumarte-acceso.spec.ts`, `e2e/fixtura.ts` (comentario), `e2e/compromisos.spec.ts`, `e2e/idioma-fogon-mercado.spec.ts`, `e2e/bandeja.spec.ts`, `e2e/configuracion.spec.ts` y `e2e/idioma-perfil-recorrido.spec.ts`.
 6. Correr `pnpm verificar`, `pnpm build` y `pnpm test:e2e`.
 
-Atajo: `git revert` del commit de implementación de `rail-sin-compromisos` hace todo lo anterior menos borrar esta nota.
+Atajo: revertir los tres commits de la implementación (`b8a9119`, `a4f78af` y `b77403f`; los dos primeros son el código y los e2e, y deshacerlos por separado deja tests rotos). Si el PR #124 entra a `dev` con squash o con merge, es más simple revertir ese commit de entrada: en ambos casos también borra esta nota, así que hay que recuperarla de la historia si se quiere conservar.
 
 **4. Qué no se tocó**
 

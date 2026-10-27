@@ -37,6 +37,14 @@ describe("leerPreferencias", () => {
     expect(leerPreferencias(JSON.stringify({ avisos: { mercado: false } })).avisos.mercado).toBe(false);
   });
 
+  it("el aviso de Mercado apagado sigue apagado después de cambiar y guardar otra preferencia", () => {
+    const guardado = JSON.stringify(leerPreferencias(JSON.stringify({ avisos: { mercado: false } })));
+    const cambiada = leerPreferencias(guardado);
+    const vuelta = leerPreferencias(JSON.stringify({ ...cambiada, avisos: { ...cambiada.avisos, rondas: false } }));
+    expect(vuelta.avisos.rondas).toBe(false);
+    expect(vuelta.avisos.mercado).toBe(false);
+  });
+
   it("idiomaElegido: es y en valen; otro valor o ausente es null (no eligió)", () => {
     expect(leerPreferencias(JSON.stringify({ idiomaElegido: "en" })).idiomaElegido).toBe("en");
     expect(leerPreferencias(JSON.stringify({ idiomaElegido: "es" })).idiomaElegido).toBe("es");
