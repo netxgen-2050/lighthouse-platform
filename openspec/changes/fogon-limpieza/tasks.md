@@ -4,8 +4,8 @@ Rama `agente/fogon-limpieza` desde `dev`. Depende de `fogon-decisiones` (ya en `
 
 ## 1. Datos y estado
 
-- [ ] 1.1 `lib/fogon/datos.ts`: sacar `asamblea` de `Ambito` y de `AMBITOS`; mover las decisiones `bomba` y `animales` a `EJEMPLOS_COMUN` (design §1). Actualizar `lib/fogon/fogon.test.ts`: `AMBITOS` tiene exactamente `tribu` y `fideicomiso`; `DECISIONES` no tiene ninguna con donde "Asamblea de residentes"; `EJEMPLOS_COMUN` conserva las dos con su ⚖. Verificar con `pnpm test lib/fogon`.
-- [ ] 1.2 `lib/fogon/estado.ts`: `leer` ignora votos de decisiones que ya no existen (design §2), con un test que lee un estado guardado con un voto en `bomba` y no falla. Verificar con `pnpm test lib/fogon`.
+- [x] 1.1 `lib/fogon/datos.ts`: sacar `asamblea` de `Ambito` y de `AMBITOS`; mover las decisiones `bomba` y `animales` a `EJEMPLOS_COMUN` (design §1). Actualizar `lib/fogon/fogon.test.ts`: `AMBITOS` tiene exactamente `tribu` y `fideicomiso`; `DECISIONES` no tiene ninguna con donde "Asamblea de residentes"; `EJEMPLOS_COMUN` conserva las dos con su ⚖. Verificar con `pnpm test lib/fogon`.
+- [x] 1.2 `lib/fogon/estado.ts`: `leer` ignora votos de decisiones que ya no existen (design §2), con un test que lee un estado guardado con un voto en `bomba` y no falla. Verificar con `pnpm test lib/fogon`.
 
 ## 2. Pantalla
 
