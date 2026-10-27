@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { INICIAL } from "@/lib/sumarte/estado";
 import { KYC_VACIO } from "./kyc";
-import { fechasPorGuardar, fechasPorQuitar,leerFechas, sellos, type EntradaSellos } from "./sellos";
+import { fechasPorGuardar, fechasPorQuitar, leerFechas, sellos, textoEstadoSello, type EntradaSellos } from "./sellos";
 
 const ahora = new Date("2026-10-09T15:00:00Z");
 
@@ -107,6 +107,55 @@ describe("sellos", () => {
     const s = por(vacia);
     expect(s.identidad.legal).toEqual(["kyc"]);
     expect(s.fundador.legal).toEqual(["pasefundador"]);
+  });
+});
+
+describe("sellos en inglés", () => {
+  const todos = (e: EntradaSellos, idioma: "es" | "en") => sellos(e, ahora, idioma);
+  const escenarios: [string, EntradaSellos][] = [
+    ["persona nueva", vacia],
+    ["con pase y trámite de identidad", { ...vacia, sumarte: { ...INICIAL, plan: "miembro", pase: "brote" }, kyc: { estado: "en-tramite", enviado: "2026-10-01T10:00:00.000Z" } }],
+    ["identidad aprobada con residencia en el exterior", { ...vacia, kyc: aprobado, datos: { residencia: "exterior" } }],
+    ["identidad aprobada con residencia en Argentina y ticket", { ...vacia, kyc: aprobado, datos: { residencia: "argentina" }, ticket: true }],
+  ];
+
+  it.each(escenarios)("cada sello tiene el mismo id, estado y acciones que en español (%s)", (_n, e) => {
+    const es = todos(e, "es");
+    const en = todos(e, "en");
+    expect(en.map((s) => s.id)).toEqual(es.map((s) => s.id));
+    expect(en.map((s) => s.estado)).toEqual(es.map((s) => s.estado));
+    expect(en.map((s) => s.accion?.href)).toEqual(es.map((s) => s.accion?.href));
+    expect(en.map((s) => s.abre.length)).toEqual(es.map((s) => s.abre.length));
+  });
+
+  it.each(escenarios)("ningún texto del sello en inglés queda en español (%s)", (_n, e) => {
+    const ESPANOL = /(?<![\p{L}])(el|los|las|que|para|tu|tus|con|sin|más|del|una)(?![\p{L}])|[¿¡ñ]/iu;
+    for (const s of todos(e, "en")) {
+      for (const texto of [s.detalle, s.accion?.texto ?? "", ...s.abre]) {
+        expect(ESPANOL.test(texto), `${s.id}: "${texto}"`).toBe(false);
+      }
+    }
+  });
+
+  it("Genesis conserva su nombre y lo que abre un sello sale en inglés", () => {
+    const en = Object.fromEntries(todos({ ...vacia, sumarte: { ...INICIAL, plan: "miembro", pase: "brote" } }, "en").map((s) => [s.id, s]));
+    expect(en.genesis.nombre).toBe("Genesis");
+    expect(en.fundador.nombre).toBe("Founder Pass");
+    expect(en.fundador.detalle).toBe("You have the Founder Pass Sprout (simulated).");
+    expect(en.fundador.abre.join(" | ")).toContain("Founders channel");
+    expect(en.fundador.abre.join(" | ")).toContain("Voice in the Common Fund · Open · 1 voice");
+    expect(en.residente.estado).toBe("no-disponible");
+  });
+
+  it("el estado de un sello se dice en inglés", () => {
+    expect(textoEstadoSello("no-disponible", "en")).toBe("Not available yet");
+    expect(textoEstadoSello("no-disponible")).toBe("No disponible todavía");
+    expect(textoEstadoSello("obtenido", "en")).toBe("Obtained");
+  });
+
+  it("en español nada cambia sin pasar idioma", () => {
+    expect(sellos(vacia, ahora)).toEqual(sellos(vacia, ahora, "es"));
+    expect(por(vacia).residente.detalle).toBe("Ejemplo: todavía no se puede pedir. Se abrirá cuando haya residentes en el Lighthouse.");
   });
 });
 

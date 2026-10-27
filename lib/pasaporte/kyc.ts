@@ -1,5 +1,7 @@
 // Verificación de identidad (KYC) simulada. Todo queda solo en este navegador:
 // no se verifica ningún documento y en la versión real lo hace el fiduciario.
+import { textos } from "@/lib/idioma/textos";
+import type { Idioma } from "@/lib/idioma/tipos";
 import type { Nacionalidad, Residencia, TipoInversor, DatosPersona } from "./datos";
 
 /** Estado guardado del trámite. Sin trámite no hay nada guardado. */
@@ -35,13 +37,8 @@ export const BORRADOR_VACIO: BorradorKyc = {
   inversor: "",
 };
 
-export const PASOS_KYC = [
-  "Datos personales",
-  "Residencia fiscal y nacionalidad",
-  "Origen de los fondos",
-  "Tipo de inversor",
-  "Revisión y envío",
-] as const;
+/** Los cinco pasos del diálogo, en español. En otro idioma: `textos("pasaporte", idioma).kyc.pasos`. */
+export const PASOS_KYC: readonly string[] = textos("pasaporte", "es").kyc.pasos;
 
 export const MAX_TEXTO = 120;
 export const EDAD_MINIMA = 18;
@@ -64,27 +61,28 @@ export function edadEn(nacimiento: Date, hoy: Date): number {
   return edad;
 }
 
-/** Errores de un paso (1 a 5). Paso 5 revisa todo. Vacío = el paso es válido. */
-export function validarPaso(paso: number, b: BorradorKyc, hoy: Date = new Date()): ErroresKyc {
+/** Errores de un paso (1 a 5), en el idioma pedido. Paso 5 revisa todo. Vacío = el paso es válido. */
+export function validarPaso(paso: number, b: BorradorKyc, hoy: Date = new Date(), idioma: Idioma = "es"): ErroresKyc {
+  const m = textos("pasaporte", idioma).kyc.errores;
   const e: ErroresKyc = {};
   if (paso === 1 || paso === 5) {
-    if (b.nombre.trim().length < 2) e.nombre = "Escribí tu nombre completo.";
-    if (!/^[A-Za-z0-9]{6,12}$/.test(b.documento.trim())) e.documento = "Escribí tu número de documento (6 a 12 letras o números, sin puntos).";
+    if (b.nombre.trim().length < 2) e.nombre = m.nombre;
+    if (!/^[A-Za-z0-9]{6,12}$/.test(b.documento.trim())) e.documento = m.documento;
     const f = esFechaValida(b.nacimiento);
-    if (!f) e.nacimiento = "Escribí tu fecha de nacimiento.";
-    else if (f.getTime() > hoy.getTime() || edadEn(f, hoy) < EDAD_MINIMA) e.nacimiento = `Tenés que ser mayor de ${EDAD_MINIMA} años.`;
+    if (!f) e.nacimiento = m.nacimiento;
+    else if (f.getTime() > hoy.getTime() || edadEn(f, hoy) < EDAD_MINIMA) e.nacimiento = m.mayor(EDAD_MINIMA);
   }
   if (paso === 2 || paso === 5) {
-    if (b.nacionalidad === "") e.nacionalidad = "Elegí tu nacionalidad.";
-    else if (b.nacionalidad === "otra" && b.paisNacionalidad.trim() === "") e.paisNacionalidad = "Escribí tu país de nacionalidad.";
-    if (b.residencia === "") e.residencia = "Elegí tu residencia fiscal.";
-    else if (b.residencia === "exterior" && b.paisResidencia.trim() === "") e.paisResidencia = "Escribí tu país de residencia fiscal.";
+    if (b.nacionalidad === "") e.nacionalidad = m.nacionalidad;
+    else if (b.nacionalidad === "otra" && b.paisNacionalidad.trim() === "") e.paisNacionalidad = m.paisNacionalidad;
+    if (b.residencia === "") e.residencia = m.residencia;
+    else if (b.residencia === "exterior" && b.paisResidencia.trim() === "") e.paisResidencia = m.paisResidencia;
   }
   if (paso === 3 || paso === 5) {
-    if (b.origenFondos.trim() === "") e.origenFondos = "Contanos de dónde vienen los fondos.";
+    if (b.origenFondos.trim() === "") e.origenFondos = m.origenFondos;
   }
   if (paso === 4 || paso === 5) {
-    if (b.inversor === "") e.inversor = "Elegí qué tipo de inversor sos.";
+    if (b.inversor === "") e.inversor = m.inversor;
   }
   return e;
 }
@@ -145,9 +143,12 @@ export function leerKycDelNavegador(clave: string): EstadoKyc {
   }
 }
 
-/** Fecha en español para mostrar ("9 de octubre de 2026"), sin depender del locale del entorno. */const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-export function fechaLarga(iso: string): string {
+/** Fecha para mostrar: "9 de octubre de 2026" en español (sin depender del locale del entorno) o "October 9, 2026" en inglés. */
+const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+export function fechaLarga(iso: string, idioma: Idioma = "es"): string {
   const d = new Date(iso);
   // Hora local de la persona: de noche en Argentina, UTC ya es el día siguiente.
+  if (idioma === "en") return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
   return `${d.getDate()} de ${MESES[d.getMonth()]} de ${d.getFullYear()}`;
 }

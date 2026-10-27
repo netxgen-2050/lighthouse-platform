@@ -85,6 +85,19 @@ describe("ronda de reconocimiento", () => {
       ]),
     ).toBe("Error: la ronda no se envió. Faltan 1 puntuación y 2 explicaciones.");
   });
+  it("el aviso también sale en inglés, con el mismo conteo", () => {
+    expect(mensajeFaltante([{ clave: "0|rol", falta: "nota" }], "en")).toBe("Error: the round was not sent. Missing: 1 score.");
+    expect(
+      mensajeFaltante(
+        [
+          { clave: "0|rol", falta: "nota" },
+          { clave: "0|cultura", falta: "razon" },
+          { clave: "1|cultura", falta: "razon" },
+        ],
+        "en",
+      ),
+    ).toBe("Error: the round was not sent. Missing: 1 score and 2 explanations.");
+  });
   it("con notas y explicaciones se puede enviar, y el factor sigue fijo en 1,0", () => {
     expect(rondaCompleta(notas(5), razones, 2)).toBe(true);
     expect(FACTOR_EVALUACION).toBe(1);

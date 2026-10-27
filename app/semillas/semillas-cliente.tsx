@@ -7,17 +7,21 @@ import { EVENTOS } from "@/lib/actividad/eventos";
 import { TerminoLegal } from "@/components/termino-legal";
 import { esCodigoValido } from "@/lib/congreso/ticket";
 import { CLAVES } from "@/lib/demo/claves";
+import { LOCALES, formatearNumero } from "@/lib/idioma/formatos";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
+import { textos } from "@/lib/idioma/textos";
+import type { Idioma } from "@/lib/idioma/tipos";
 import { COMUNIDAD_LIGHTHOUSE, comunidadesDondeEsMiembro, leerMembresiaDelNavegador } from "@/lib/membresia/estado";
 import { clave, estadoMedidor, FACTOR_EVALUACION, faltantes, mensajeFaltante } from "@/lib/semillas/calculo";
 import { leerPasaporteDelNavegador } from "@/lib/pasaporte/del-navegador";
 import type { Residencia } from "@/lib/pasaporte/datos";
 import {
-  COMPANEROS,
-  DIMENSIONES,
+  companeros,
+  dimensiones,
   MAX_RAZON,
   META_SEMBRADOR,
-  PREGUNTA_PORQUE,
-  RECONOCIMIENTO_RECIBIDO,
+  preguntaPorque,
+  reconocimientoRecibido,
 } from "@/lib/semillas/datos";
 import {
   enviarRonda,
@@ -31,7 +35,7 @@ import {
   type Ronda,
   type Rondas,
 } from "@/lib/semillas/estado";
-import { miles, PASSES } from "@/lib/sumarte/datos";
+import { PASSES } from "@/lib/sumarte/datos";
 import { buscarTribu } from "@/lib/tribus/datos";
 
 // Todo queda solo en este navegador: no hay pedidos de red ni cobros.
@@ -61,11 +65,10 @@ function leerClave(k: string): string | null {
   }
 }
 
-function valor(n: number | null): string {
-  return n === null ? "sin dato" : `${miles(n)} semillas`;
-}
-
 export function SemillasCliente() {
+  const idioma = useIdioma();
+  const t = useTextos("semillas");
+  const comunes = useTextos("comunes");
   const [listo, setListo] = useState(false);
   const [datos, setDatos] = useState<Datos>({ pactos: null, pase: null, ticket: false, residencia: undefined });
   const [miembro, setMiembro] = useState<string[]>([]);
@@ -101,35 +104,36 @@ export function SemillasCliente() {
     }
   }
 
-  if (!listo) return <p className="text-muted">Cargando tus datos…</p>;
+  if (!listo) return <p className="text-muted">{t.cargando}</p>;
+
+  /** Un valor en Semillas con el número según el idioma; el dato que falta es "sin dato", nunca 0. */
+  const valor = (n: number | null): string => (n === null ? comunes.sinDato : t.cantidad(formatearNumero(n, idioma)));
 
   const hayComunidad = elegida !== "";
   const semillas = hayComunidad ? semillasDeComunidad(datos.pactos, elegida) : null;
   const tiempo = semillas?.tiempo ?? null;
+  const pase = datos.pase ? PASSES.find((p) => p.id === datos.pase) : undefined;
 
   return (
     <div className="grid gap-4">
       {falloAlmacen && (
         <p role="alert" className="text-sm font-medium text-danger">
-          Error: tu navegador no permite guardar datos en este sitio, así que la ronda no se puede guardar.
+          {t.errorAlmacenamiento}
         </p>
       )}
 
       <section aria-labelledby="panel" className="grid gap-3">
         <h2 id="panel" className="text-xl font-semibold">
-          Tus Semillas por comunidad
+          {t.panel.titulo}
         </h2>
         {miembro.length === 0 ? (
           <div className="grid gap-2 rounded-xl border border-faint bg-surface p-4">
-            <p>Todavía no sos miembro de ninguna comunidad, así que no tenés Semillas.</p>
-            <p className="text-sm text-muted">
-              Para empezar, entrá a una comunidad (el Lighthouse o una tribu) y pedí ser miembro. Después podés proponer
-              tu pacto y tus Semillas aparecen acá, una tarjeta por comunidad.
-            </p>
-            <Link className="w-fit underline" href="/tribus">Ver las comunidades</Link>
+            <p>{t.panel.sinComunidad}</p>
+            <p className="text-sm text-muted">{t.panel.sinComunidadAyuda}</p>
+            <Link className="w-fit underline" href="/tribus">{t.panel.verComunidades}</Link>
           </div>
         ) : (
-          <ul className="grid gap-4 md:grid-cols-2" aria-label="Comunidades donde sos miembro">
+          <ul className="grid gap-4 md:grid-cols-2" aria-label={t.panel.listaAria}>
             {miembro.map((id) => {
               const s = semillasDeComunidad(datos.pactos, id);
               const nombre = nombreComunidad(id);
@@ -142,23 +146,23 @@ export function SemillasCliente() {
                 >
                   <h3 className="text-lg font-semibold">{nombre}</h3>
                   <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-                    <dt className="text-muted">Tiempo</dt>
+                    <dt className="text-muted">{t.panel.tiempo}</dt>
                     <dd>{valor(s.tiempo)}</dd>
-                    <dt className="text-muted">Plata</dt>
+                    <dt className="text-muted">{t.panel.plata}</dt>
                     <dd>{valor(s.plata)}</dd>
-                    <dt className="text-muted">Presencia</dt>
+                    <dt className="text-muted">{t.panel.presencia}</dt>
                     <dd>{valor(s.presencia)}</dd>
-                    <dt className="font-medium">Total</dt>
+                    <dt className="font-medium">{t.panel.total}</dt>
                     <dd className="font-semibold" data-testid={`total-${id}`}>{valor(s.total)}</dd>
                   </dl>
                   <button
                     type="button"
                     aria-pressed={activa}
-                    aria-label={`Ver el detalle de ${nombre}`}
+                    aria-label={t.panel.verDetalleDe(nombre)}
                     onClick={() => setElegida(id)}
                     className={`mt-1 w-fit rounded-lg border px-3 py-1 text-sm font-medium ${FOCO} ${activa ? "border-deep bg-deep text-on-deep" : "border-muted hover:bg-surface-2"}`}
                   >
-                    {activa ? "Mostrando el detalle" : "Ver el detalle"}
+                    {activa ? t.panel.mostrando : t.panel.verDetalle}
                   </button>
                 </li>
               );
@@ -169,68 +173,68 @@ export function SemillasCliente() {
 
       {hayComunidad && semillas && (
         <>
-          <h2 className="text-xl font-semibold">Detalle de {nombreComunidad(elegida)}</h2>
-          <section aria-label="De dónde vienen tus semillas" className="grid gap-4 md:grid-cols-3">
+          <h2 className="text-xl font-semibold">{t.detalle.titulo(nombreComunidad(elegida))}</h2>
+          <section aria-label={t.detalle.aria} className="grid gap-4 md:grid-cols-3">
             <div className={TARJETA}>
-              <p className={ETIQUETA}>Tiempo · 3 meses</p>
+              <p className={ETIQUETA}>{t.detalle.tiempo3}</p>
               {semillas.horas !== null && tiempo !== null ? (
                 <>
-                  <p className={GRANDE} data-testid="semillas-tiempo">{miles(tiempo)} semillas</p>
-                  <p className="text-sm text-muted">{semillas.horas} h/mes en tu pacto aceptado</p>
+                  <p className={GRANDE} data-testid="semillas-tiempo">{valor(tiempo)}</p>
+                  <p className="text-sm text-muted">{t.detalle.horasMes(semillas.horas)}</p>
                 </>
               ) : (
                 <>
-                  <p className={GRANDE}>sin dato</p>
+                  <p className={GRANDE}>{comunes.sinDato}</p>
                   <p className="text-sm text-muted">
-                    Todavía no tenés un pacto de tiempo aceptado.{" "}
-                    <Link className="underline" href={`/pactos?comunidad=${elegida}`}>Proponé un pacto de tiempo</Link>.
+                    {t.detalle.sinPacto}{" "}
+                    <Link className="underline" href={`/pactos?comunidad=${elegida}`}>{t.detalle.proponer}</Link>.
                   </p>
                 </>
               )}
             </div>
 
             <div className={TARJETA}>
-              <p className={ETIQUETA}>Plata</p>
+              <p className={ETIQUETA}>{t.panel.plata}</p>
               {semillas.plata !== null ? (
                 <>
-                  <p className={GRANDE} data-testid="semillas-plata">{miles(semillas.plata)} semillas</p>
-                  <p className="text-sm text-muted">Aportes registrados en esta comunidad (simulado)</p>
+                  <p className={GRANDE} data-testid="semillas-plata">{valor(semillas.plata)}</p>
+                  <p className="text-sm text-muted">{t.detalle.plataRegistrada}</p>
                 </>
               ) : (
                 <>
-                  <p className={GRANDE}>sin dato</p>
+                  <p className={GRANDE}>{comunes.sinDato}</p>
                   {datos.residencia === "argentina" ? (
-                    <p className="text-sm text-muted">Pendiente de firma con el fiduciario</p>
+                    <p className="text-sm text-muted">{t.detalle.pendienteFirma}</p>
                   ) : datos.residencia === "exterior" ? (
-                    <p className="text-sm text-muted">No disponible por residencia fiscal</p>
+                    <p className="text-sm text-muted">{t.detalle.noDisponibleResidencia}</p>
                   ) : (
                     <p className="text-sm text-muted">
-                      Sin dato de tu residencia fiscal. <Link className="underline" href="/pasaporte">Cargala en Tus datos</Link>.
+                      {t.detalle.sinResidencia} <Link className="underline" href="/pasaporte">{t.detalle.cargala}</Link>.
                     </p>
                   )}
                 </>
               )}
               {datos.pase && (
-                <p className="text-sm text-muted">Pase Fundador {PASSES.find((p) => p.id === datos.pase)?.nombre ?? datos.pase} activo (simulado), un servicio que no suma semillas
-                  <TerminoLegal clave="pasefundador" />.
+                <p className="text-sm text-muted">{t.detalle.paseActivo(nombreDelNivel(pase?.nombre, datos.pase, idioma))}
+                  <TerminoLegal clave="pasefundador" idioma={idioma} />.
                 </p>
               )}
             </div>
 
             <div className={TARJETA}>
               <p className={ETIQUETA}>
-                Presencia
-                <TerminoLegal clave="presencia" />
+                {t.detalle.presencia}
+                <TerminoLegal clave="presencia" idioma={idioma} />
               </p>
-              <p className={GRANDE}>{datos.ticket && elegida === COMUNIDAD_LIGHTHOUSE ? "Ticket registrado" : "sin dato"}</p>
+              <p className={GRANDE}>{datos.ticket && elegida === COMUNIDAD_LIGHTHOUSE ? t.detalle.ticketRegistrado : comunes.sinDato}</p>
               <p className="text-sm text-muted">
                 {datos.ticket && elegida === COMUNIDAD_LIGHTHOUSE ? (
-                  "Genesis se activa con el primer check-in."
+                  t.detalle.genesis
                 ) : datos.ticket ? (
-                  "La presencia del Congreso se cuenta en el Lighthouse."
+                  t.detalle.presenciaCongreso
                 ) : (
                   <>
-                    Registrá tu ticket del Congreso en <Link className="underline" href="/congreso">Congreso</Link>.
+                    {t.detalle.registraTicket} <Link className="underline" href="/congreso">{t.detalle.congreso}</Link>.
                   </>
                 )}
               </p>
@@ -256,31 +260,41 @@ export function SemillasCliente() {
   );
 }
 
+/** Nombre del nivel del pase: en español el de Sumarte (o el id guardado); en inglés el de `sumarte` (Seed, Sprout, Root). */
+function nombreDelNivel(nombreEs: string | undefined, id: string, idioma: Idioma): string {
+  if (idioma !== "en") return nombreEs ?? id;
+  const niveles: Record<string, string> = textos("sumarte", idioma).niveles;
+  return niveles[id] ?? id;
+}
+
 /** Meta de Semillas de tiempo para ser sembrador/a activo/a. Lo que se abre con cada paso vive en el pasaporte. */
 function MetaSembrador({ tiempo }: { tiempo: number | null }) {
+  const idioma = useIdioma();
+  const t = useTextos("semillas");
+  const comunes = useTextos("comunes");
   return (
     <section aria-labelledby="meta-sembrador" className="grid gap-2 rounded-xl border border-faint bg-surface p-4">
-      <h2 id="meta-sembrador" className="text-xl font-semibold">Sembrador/a activo/a</h2>
+      <h2 id="meta-sembrador" className="text-xl font-semibold">{t.meta.titulo}</h2>
       <p className="flex flex-wrap items-center gap-2 text-sm">
-        Semillas de tiempo en 3 meses
+        {t.meta.tiempo3}
         <span className="w-fit rounded-full border border-gold-ink bg-gold-soft px-3 py-0.5 font-medium text-gold-ink">
-          {tiempo === null ? "sin dato" : estadoMedidor(tiempo)}
+          {tiempo === null ? comunes.sinDato : estadoMedidor(tiempo) === "Lista" ? t.meta.lista : t.meta.enCamino}
         </span>
       </p>
       {tiempo === null ? (
-        <p className="text-sm text-muted" data-testid="medidor">sin dato de 120 semillas: falta un pacto aceptado</p>
+        <p className="text-sm text-muted" data-testid="medidor">{t.meta.sinDatoMeta(META_SEMBRADOR)}</p>
       ) : (
         <>
           <div className="h-2 w-full max-w-xs overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
             <div className="h-full bg-gold" style={{ width: `${Math.min(100, (tiempo / META_SEMBRADOR) * 100)}%` }} />
           </div>
           <p className="text-sm font-medium" data-testid="medidor">
-            {miles(tiempo)} de {META_SEMBRADOR} semillas
+            {t.meta.avance(formatearNumero(tiempo, idioma), META_SEMBRADOR)}
           </p>
         </>
       )}
       <p className="text-sm">
-        <Link className="underline" href="/pasaporte">Ver lo que te abre tu pasaporte</Link>
+        <Link className="underline" href="/pasaporte">{t.meta.verPasaporte}</Link>
       </p>
     </section>
   );
@@ -297,23 +311,29 @@ type PropsRonda = {
 };
 
 function RondaDeComunidad({ comunidad, nombre, habilitada, ronda, intento, onIntento, onCambio }: PropsRonda) {
+  const idioma = useIdioma();
+  const t = useTextos("semillas");
   if (!habilitada) {
     return (
       <section aria-labelledby="ronda" className="grid gap-2 rounded-xl border border-faint bg-surface p-4">
-        <h2 id="ronda" className="text-xl font-semibold">Ronda de reconocimiento · {nombre}</h2>
-        <p>La ronda es solo para quienes tienen un pacto aceptado en {nombre}.</p>
+        <h2 id="ronda" className="text-xl font-semibold">{t.ronda.titulo(nombre)}</h2>
+        <p>{t.ronda.soloConPacto(nombre)}</p>
         <p className="text-sm text-muted">
-          Para habilitarla, <Link className="underline" href={`/pactos?comunidad=${comunidad}`}>proponé tu pacto de tiempo en {nombre}</Link>{" "}
-          y esperá a que la comunidad lo acepte.
+          {t.ronda.paraHabilitar} <Link className="underline" href={`/pactos?comunidad=${comunidad}`}>{t.ronda.proponerEn(nombre)}</Link>
+          {t.ronda.yEsperar}
         </p>
       </section>
     );
   }
 
-  const falta = faltantes(ronda.notas, ronda.razones, COMPANEROS.length);
+  const personas = companeros(idioma);
+  const criterios = dimensiones(idioma);
+  const falta = faltantes(ronda.notas, ronda.razones, personas.length);
   const faltaDe = (k: string) => falta.find((f) => f.clave === k)?.falta;
   const idRazon = (k: string) => `razon-${comunidad}-${k.replace("|", "-")}`;
   const idNota = (k: string, n: number) => `nota-${comunidad}-${k.replace("|", "-")}-${n}`;
+  // El factor se escribe según el idioma: "1,0" en español y "1.0" en inglés.
+  const factor = FACTOR_EVALUACION.toLocaleString(LOCALES[idioma], { minimumFractionDigits: 1 });
 
   function enviar() {
     if (falta.length > 0) {
@@ -322,7 +342,7 @@ function RondaDeComunidad({ comunidad, nombre, habilitada, ronda, intento, onInt
       document.getElementById(primera.falta === "razon" ? idRazon(primera.clave) : idNota(primera.clave, 1))?.focus();
       return;
     }
-    onCambio((r) => enviarRonda(r, COMPANEROS.length));
+    onCambio((r) => enviarRonda(r, personas.length));
     registrarEvento(EVENTOS.enviasteRonda(nombre, comunidad));
   }
 
@@ -330,27 +350,24 @@ function RondaDeComunidad({ comunidad, nombre, habilitada, ronda, intento, onInt
     <>
       <section aria-labelledby="ronda" className="grid gap-3 rounded-xl border border-faint bg-surface p-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 id="ronda" className="text-xl font-semibold">Ronda de reconocimiento · {nombre} (ejemplo)</h2>
-          <span className="text-sm text-muted">Privada · se muestra agregada</span>
+          <h2 id="ronda" className="text-xl font-semibold">{t.ronda.tituloEjemplo(nombre)}</h2>
+          <span className="text-sm text-muted">{t.ronda.privada}</span>
         </div>
-        <p className="text-sm text-muted">
-          Reconocé a tus compañeras y compañeros de {nombre} con una puntuación de 1 a 5 en cada criterio. Cada
-          puntuación necesita que cuentes por qué.
-        </p>
-        {COMPANEROS.map((c, i) => (
+        <p className="text-sm text-muted">{t.ronda.intro(nombre)}</p>
+        {personas.map((c, i) => (
           <div key={c.nombre} className="grid gap-3 rounded-lg bg-surface-2 p-3 md:grid-cols-[10rem_1fr_1fr]">
             <div>
               <p className="font-medium">{c.nombre}</p>
               <p className="text-sm text-muted">{c.rol}</p>
             </div>
-            {DIMENSIONES.map(([d, titulo, ayuda]) => {
+            {criterios.map(([d, titulo, ayuda]) => {
               const k = clave(i, d);
               const nota = ronda.notas[k] ?? 0;
               const error = intento ? faltaDe(k) : undefined;
               const idAyuda = `ayuda-${comunidad}-${k.replace("|", "-")}`;
               const idErrorNota = `${idAyuda}-error-nota`;
               return (
-                <div key={d} role="group" aria-label={`${titulo}, ${c.nombre}`} className="grid content-start gap-1">
+                <div key={d} role="group" aria-label={t.ronda.grupoAria(titulo, c.nombre)} className="grid content-start gap-1">
                   <p className="text-sm font-medium">{titulo}</p>
                   <p className="text-sm text-muted" id={idAyuda}>{ayuda}</p>
                   <div className="flex gap-1">
@@ -360,7 +377,7 @@ function RondaDeComunidad({ comunidad, nombre, habilitada, ronda, intento, onInt
                         id={idNota(k, n)}
                         type="button"
                         aria-pressed={nota === n}
-                        aria-label={`${n} de 5`}
+                        aria-label={t.ronda.nDe5(n)}
                         aria-describedby={error === "nota" ? `${idAyuda} ${idErrorNota}` : idAyuda}
                         disabled={ronda.enviada}
                         onClick={() => onCambio((r) => ponerNota(r, i, d, n))}
@@ -372,11 +389,11 @@ function RondaDeComunidad({ comunidad, nombre, habilitada, ronda, intento, onInt
                       </button>
                     ))}
                   </div>
-                  <p className="text-sm text-muted">{nota ? `Puntaje: ${nota} de 5` : "Sin puntaje"}</p>
+                  <p className="text-sm text-muted">{nota ? t.ronda.puntaje(nota) : t.ronda.sinPuntaje}</p>
                   {error === "nota" && (
-                    <p id={idErrorNota} className="text-sm font-medium text-danger">Error: elegí una puntuación de 1 a 5.</p>
+                    <p id={idErrorNota} className="text-sm font-medium text-danger">{t.ronda.errorNota}</p>
                   )}
-                  <label htmlFor={idRazon(k)} className="text-sm font-medium">{PREGUNTA_PORQUE}</label>
+                  <label htmlFor={idRazon(k)} className="text-sm font-medium">{preguntaPorque(idioma)}</label>
                   <textarea
                     id={idRazon(k)}
                     rows={3}
@@ -391,7 +408,7 @@ function RondaDeComunidad({ comunidad, nombre, habilitada, ronda, intento, onInt
                   />
                   {error === "razon" && (
                     <p id={`${idRazon(k)}-error`} className="text-sm font-medium text-danger">
-                      Error: escribí por qué le das esta puntuación.
+                      {t.ronda.errorRazon}
                     </p>
                   )}
                 </div>
@@ -402,50 +419,45 @@ function RondaDeComunidad({ comunidad, nombre, habilitada, ronda, intento, onInt
         <div className="grid gap-2">
           {ronda.enviada ? (
             <p role="status">
-              <span className="font-medium">Ronda enviada (simulado)</span> · Factor de evaluación:{" "}
-              <strong data-testid="factor">{FACTOR_EVALUACION.toLocaleString("es-AR", { minimumFractionDigits: 1 })}</strong>
+              <span className="font-medium">{t.ronda.enviada}</span> · {t.ronda.factorEvaluacion}{" "}
+              <strong data-testid="factor">{factor}</strong>
             </p>
           ) : (
             <>
               {intento && falta.length > 0 && (
                 <p role="alert" className="text-sm font-medium text-danger">
-                  {mensajeFaltante(falta)}
+                  {mensajeFaltante(falta, idioma)}
                 </p>
               )}
               <div className="flex flex-wrap items-center gap-3">
                 <button type="button" className={BOTON} onClick={enviar}>
-                  Enviar ronda
+                  {t.ronda.enviar}
                 </button>
-                <p className="text-sm text-muted">Factor de evaluación: 1,0.</p>
+                <p className="text-sm text-muted">{t.ronda.factorFijo(factor)}</p>
               </div>
             </>
           )}
         </div>
-        <p className="text-sm text-muted">
-          El factor de evaluación entre pares es 1,0 fijo, como en el mock-up: la ronda se envía de forma simulada y no
-          cambia tus semillas.
-        </p>
+        <p className="text-sm text-muted">{t.ronda.pie(factor)}</p>
       </section>
 
       <section aria-labelledby="recibido" className="grid gap-3 rounded-xl border border-faint bg-surface p-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 id="recibido" className="text-xl font-semibold">Cómo te reconocieron</h2>
-          <span className="text-sm text-muted">Ejemplo · no es de personas reales</span>
+          <h2 id="recibido" className="text-xl font-semibold">{t.recibido.titulo}</h2>
+          <span className="text-sm text-muted">{t.recibido.ejemplo}</span>
         </div>
         <ul className="grid gap-3">
-          {RECONOCIMIENTO_RECIBIDO.map((r) => (
+          {reconocimientoRecibido(idioma).map((r) => (
             <li key={r.de} className="grid gap-2 rounded-lg bg-surface-2 p-3 md:grid-cols-2">
-              <p className="font-medium md:col-span-2">De {r.de}</p>
+              <p className="font-medium md:col-span-2">{t.recibido.de(r.de)}</p>
               {[
-                [DIMENSIONES[0][1], r.rol],
-                [DIMENSIONES[1][1], r.aporte],
+                [criterios[0][1], r.rol],
+                [criterios[1][1], r.aporte],
               ].map(([titulo, x]) => {
                 const dato = x as { nota: number; porque: string };
                 return (
                   <div key={titulo as string}>
-                    <p className="text-sm font-medium">
-                      {titulo as string}: {dato.nota} de 5
-                    </p>
+                    <p className="text-sm font-medium">{t.recibido.puntuacion(titulo as string, dato.nota)}</p>
                     <p className="text-sm text-muted">{dato.porque}</p>
                   </div>
                 );

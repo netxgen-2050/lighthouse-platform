@@ -30,7 +30,10 @@ describe("estaTraducida", () => {
 
   test("el resto todavía no", () => {
     for (const ruta of [
-      "/pactos",
+      "/fogon",
+      "/pactos/otra",
+      "/semillas/otra",
+      "/pasaporte/otra",
       "/tribus/valle/otra",
       "/tribus/valle/manifiesto/mas",
       "/territorios",

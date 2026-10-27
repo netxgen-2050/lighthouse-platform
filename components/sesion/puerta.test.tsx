@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Una página que todavía no está en `RUTAS_TRADUCIDAS`.
-let ruta = "/pactos";
+let ruta = "/fogon";
 vi.mock("next/navigation", () => ({
   usePathname: () => ruta,
   useRouter: () => ({ push: () => {}, replace: () => {}, refresh: () => {} }),
@@ -31,7 +31,7 @@ const dibujar = (idioma: Idioma) =>
   );
 
 beforeEach(() => {
-  ruta = "/pactos";
+  ruta = "/fogon";
 });
 
 describe("página sin traducir con la plataforma en inglés", () => {

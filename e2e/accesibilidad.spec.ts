@@ -241,6 +241,9 @@ test.describe("la plataforma en inglés", () => {
     "/tribus/grano/postular",
     "/territorios/lighthouse",
     "/configuracion",
+    "/pasaporte",
+    "/semillas",
+    "/pactos",
   ];
   for (const ruta of RUTAS) {
     test(`axe sin violaciones serias o críticas en inglés: ${ruta}`, async ({ page }) => {
@@ -251,6 +254,27 @@ test.describe("la plataforma en inglés", () => {
       expect(await graves(page)).toEqual([]);
     });
   }
+
+  test("axe en inglés: el diálogo de verificación de identidad abierto, con un error a la vista", async ({ page }) => {
+    await page.goto("/pasaporte");
+    await page.getByRole("button", { name: "Complete my verification (KYC)" }).click();
+    const dialogo = page.getByRole("dialog", { name: /Verify my identity/ });
+    await dialogo.getByRole("button", { name: "Next" }).click();
+    await expect(dialogo.getByText("Error: Enter your full name.")).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+
+  test("axe en inglés: /semillas con la ronda y sus errores a la vista", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem("lh-membresia", JSON.stringify({ lighthouse: "miembro" }));
+      const tiempo = { rol: "facilitacion", rolOtro: "", descripcion: "Facilito", horas: 20, paso: 2 };
+      window.localStorage.setItem("lh-pactos", JSON.stringify({ comunidades: { lighthouse: { tiempo, aportes: [200] } } }));
+    });
+    await page.goto("/semillas");
+    await page.getByRole("button", { name: "Send round" }).click();
+    await expect(page.getByRole("alert").filter({ hasText: "the round was not sent" })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
 
   test("axe en inglés: el menú de la persona abierto", async ({ page }) => {
     await page.goto("/tribus");
