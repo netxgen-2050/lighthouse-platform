@@ -1,5 +1,7 @@
 // Datos copiados de V.sumarte, PASSES, COHORT y EMISION en docs/referencia/netx-tribus-mockup-v6.html.
 // Cifras de ejemplo: ningún flujo cobra de verdad.
+import type { Bilingue } from "@/lib/idioma/tipos";
+
 export type NivelPase = "semilla" | "brote" | "raiz";
 
 export const PASSES: readonly { id: NivelPase; nombre: string; precio: number; creditos: number }[] = [
@@ -16,18 +18,51 @@ export const MEMBRESIA = { mensual: 10, anual: 100 };
 
 export const PLAN_TRIBU_MENSUAL = 60;
 
-export type Fila = { texto: string; incluye: readonly [boolean, boolean, boolean] };
+export type Fila = { texto: Bilingue; incluye: readonly [boolean, boolean, boolean] };
 
-/** Columnas: Explorador, Miembro, Pase Fundador. */
+/** Columnas: Explorador, Miembro, Pase Fundador. El inglés está pendiente de revisión nativa. */
 export const FILAS: readonly Fila[] = [
-  { texto: "Mapa, tribus, eventos abiertos y registro de tu ticket del Congreso", incluye: [true, true, true] },
-  { texto: "Entrevista con el agente y tribus sugeridas", incluye: [true, true, true] },
-  { texto: "Salas de tribu y foros de la red", incluye: [false, true, true] },
-  { texto: "Proponer pactos y sumar Semillas", incluye: [false, true, true] },
-  { texto: "Voz en las decisiones de tu tribu (según su estatuto)", incluye: [false, true, true] },
-  { texto: "Canal de fundadores y encuentros con el Consejo", incluye: [false, false, true] },
-  { texto: "Voz en la Ronda 0 del Fondo Común (1 persona = 1 voz)", incluye: [false, false, true] },
-  { texto: "Créditos comunes y de estadía", incluye: [false, false, true] },
+  {
+    texto: {
+      es: "Mapa, tribus, eventos abiertos y registro de tu ticket del Congreso",
+      en: "Map, tribes, open events and registration of your Congress ticket",
+    },
+    incluye: [true, true, true],
+  },
+  {
+    texto: { es: "Entrevista con el agente y tribus sugeridas", en: "Interview with the agent and suggested tribes" },
+    incluye: [true, true, true],
+  },
+  {
+    texto: { es: "Salas de tribu y foros de la red", en: "Tribe rooms and network forums" },
+    incluye: [false, true, true],
+  },
+  {
+    texto: { es: "Proponer pactos y sumar Semillas", en: "Propose pacts and earn Semillas" },
+    incluye: [false, true, true],
+  },
+  {
+    texto: {
+      es: "Voz en las decisiones de tu tribu (según su estatuto)",
+      en: "A voice in your tribe's decisions (according to its bylaws)",
+    },
+    incluye: [false, true, true],
+  },
+  {
+    texto: {
+      es: "Canal de fundadores y encuentros con el Consejo",
+      en: "Founders channel and meetings with the Council",
+    },
+    incluye: [false, false, true],
+  },
+  {
+    texto: {
+      es: "Voz en la Ronda 0 del Fondo Común (1 persona = 1 voz)",
+      en: "A voice in Round 0 of the Common Fund (1 person = 1 voice)",
+    },
+    incluye: [false, false, true],
+  },
+  { texto: { es: "Créditos comunes y de estadía", en: "Common and stay credits" }, incluye: [false, false, true] },
 ];
 
 /** Número con punto de miles (es-AR), sin depender del locale del entorno. */

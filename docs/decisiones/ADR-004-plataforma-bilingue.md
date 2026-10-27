@@ -26,6 +26,7 @@ Opción D con diccionarios propios. Es la más chica que cumple el pedido, no mu
 ## Consecuencias
 - Ganamos inglés en toda la plataforma sin reordenar el código, zona por zona, con caída al español visible y tests que atrapan textos sin traducir.
 - Aceptamos: páginas sin dirección propia en inglés (salvo el Congreso), renderizado por pedido en todas las páginas, y mantener unas 150 líneas propias en lugar de una librería.
+- Consecuencia vista al implementar (`idioma-base`): como las páginas pasan a armarse por pedido y la puerta de sesión dibuja "Cargando…" en el servidor, una dirección con un id que no existe (`/tribus/no-existe`) muestra la pantalla de "no encontrado" pero responde con estado HTTP 200 en lugar de 404 (antes las páginas estáticas con `dynamicParams = false` daban 404). Para el prototipo no importa (casi todo pide sesión); si algún día hace falta el 404 real, se resuelve en el ruteo (por ejemplo, validando el id antes de la puerta). Los e2e que comprobaban el 404 ahora comprueban la pantalla.
 - Este ADR completa a ADR-003: confirma su dirección `/congreso/en` y extiende sus diccionarios a toda la plataforma; si se acepta, ADR-003 sigue vigente.
 - Revisar si: (1) hace falta que las páginas públicas aparezcan en buscadores en inglés (se suma un prefijo solo para ellas y `/congreso/en` pasa a redirección permanente); (2) se suma un tercer idioma o traductores externos con una herramienta (se pasa a next-intl; la migración es mecánica porque los textos ya están en diccionarios).
 

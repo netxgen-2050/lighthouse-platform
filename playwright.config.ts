@@ -14,6 +14,9 @@ export default defineConfig({
   reporter: [["list"]],
   use: {
     baseURL,
+    // El Chromium de Playwright manda inglés: sin esto, la plataforma (que arranca en el idioma del navegador) se vería en
+    // inglés y los e2e en español fallarían en masa. Los casos de detección usan test.use({ locale }).
+    locale: "es-AR",
     // Contra un preview de Vercel: el secreto para entrar y sin la barra de comentarios de Vercel
     // (vercel-live-feedback), que no es la app y atrapa el foco del teclado.
     extraHTTPHeaders: process.env.BASE_URL

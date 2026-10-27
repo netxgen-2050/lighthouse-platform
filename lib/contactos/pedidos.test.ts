@@ -13,6 +13,15 @@ const base: Borrador = {
   estadoMostrado: "Loteo en trámite · Ord. 173/2026",
 };
 
+describe("validar en inglés", () => {
+  it("los errores salen en inglés", () => {
+    expect(validar({ canal: "", mensaje: "" }, "en").canal).toBe("Choose how you'd like us to contact you");
+    expect(validar({ canal: "email", mensaje: "a".repeat(501) }, "en").mensaje).toBe(
+      "The message can have up to 500 characters",
+    );
+  });
+});
+
 describe("validar", () => {
   it("el canal es obligatorio", () => {
     expect(validar({ canal: "", mensaje: "" }).canal).toBe("Elegí cómo preferís que te contactemos");

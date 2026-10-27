@@ -3,6 +3,7 @@
 - **Estado:** Propuesta
 - **Fecha:** 2026-10-14
 - **Cambio OpenSpec relacionado:** `congreso-tema-evento` (base) y `congreso-vitrina` (página)
+- **Nota 23-oct-2026:** el Congreso de febrero 2027 se canceló. La decisión no cambia; queda pendiente si `/congreso` se reutiliza para eventos de comunidad o se retira.
 
 ## Contexto
 Gus necesita mostrarle al CEO y a un inversor el Congreso de febrero 2027 como una página de evento con fuerza de marketing, al estilo de las páginas de evento de UnityHub. La regla del repo es "solo tokens del tema" (los de NetX, en `app/globals.css`), y un test la vigila. Además, los organizadores podrían querer su propia página, fuera de NetX (servida por ellos o por UnityHub, con enlaces de vuelta a NetX), y NetX quiere conservar una vitrina dentro de su sección Congreso. Hay que decidir cómo se ve distinto sin desordenar el estilo de toda la plataforma, y cómo se arma para poder llevarlo afuera.

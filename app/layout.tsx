@@ -9,6 +9,9 @@ import { SCRIPT_APARIENCIA } from "@/lib/configuracion/script-apariencia";
 import { Pie } from "@/components/pie";
 import { BotonReportar } from "@/components/boton-reportar";
 import { Hifa } from "@/components/hifa/hifa";
+import { ProveedorIdioma, SincronizarIdioma } from "@/lib/idioma/cliente";
+import { idiomaDelPedido } from "@/lib/idioma/servidor";
+import { textos } from "@/lib/idioma/textos";
 import { versionDesplegada } from "@/lib/reportes/reporte";
 import "./globals.css";
 
@@ -16,12 +19,13 @@ const anek = Anek_Latin({ variable: "--font-anek", subsets: ["latin"] });
 const figtree = Figtree({ variable: "--font-figtree", subsets: ["latin"] });
 const jetbrains = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "Lighthouse",
-  description: "Plataforma del Lighthouse: territorio y tribus.",
-};
+// El título y la descripción dependen del idioma del pedido (cookie o navegador).
+export async function generateMetadata(): Promise<Metadata> {
+  const t = textos("marco", await idiomaDelPedido());
+  return { title: "Lighthouse", description: t.descripcionSitio };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -30,9 +34,12 @@ export default function RootLayout({
     VERCEL_GIT_COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA,
     VERCEL_ENV: process.env.VERCEL_ENV,
   });
+  // Leer la cookie hace que todas las páginas se armen en cada pedido (ADR-004).
+  const idioma = await idiomaDelPedido();
+  const t = textos("marco", idioma);
   return (
     // suppressHydrationWarning: el script de apariencia pone data-tema, data-texto, data-movimiento y data-hifa antes de hidratar.
-    <html lang="es" suppressHydrationWarning>
+    <html lang={idioma} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_APARIENCIA }} />
       </head>
@@ -43,28 +50,34 @@ export default function RootLayout({
           href="#contenido"
           className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-deep focus:px-4 focus:py-2 focus:text-on-deep"
         >
-          Saltar al contenido
+          {t.saltar}
         </a>
-        <ProveedorSesion>
-          <SoloConSesion>
-            <AplicarPreferencias />
-          </SoloConSesion>
-          <Rail />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <BarraSuperior />
-            <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
-              <Puerta>{children}</Puerta>
-            </main>
-            <Pie anioRespaldo={new Date().getFullYear()} />
-            {/* Espacio para que el botón fijo de Hifa no tape el final de la página. */}
-            <div aria-hidden="true" className="h-16 shrink-0" />
-          </div>
-          {/* Reportar es para toda persona, con o sin sesión; Hifa se habilita desde el nivel Explorador. */}
-          <BotonReportar version={despliegue.version} entorno={despliegue.entorno} />
-          <SoloConCapacidad capacidad="hifa">
-            <Hifa version={despliegue.version} entorno={despliegue.entorno} />
-          </SoloConCapacidad>
-        </ProveedorSesion>
+        <ProveedorIdioma idioma={idioma}>
+          <ProveedorSesion>
+            <SincronizarIdioma />
+            <SoloConSesion>
+              <AplicarPreferencias />
+            </SoloConSesion>
+            <Rail />
+            <div className="flex min-w-0 flex-1 flex-col">
+              <BarraSuperior />
+              <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
+                <Puerta>{children}</Puerta>
+              </main>
+              <Pie anioRespaldo={new Date().getFullYear()} />
+              {/* Espacio para que el botón fijo de Hifa no tape el final de la página. */}
+              <div aria-hidden="true" className="h-16 shrink-0" />
+            </div>
+            {/* Reportar es para toda persona, con o sin sesión; Hifa se habilita desde el nivel Explorador. */}
+            {/* Reportar y Hifa todavía están solo en español (`idioma-hifa-avisos`): en inglés se marcan como español. */}
+            <div lang={idioma === "en" ? "es" : undefined} className="contents">
+              <BotonReportar version={despliegue.version} entorno={despliegue.entorno} />
+              <SoloConCapacidad capacidad="hifa">
+                <Hifa version={despliegue.version} entorno={despliegue.entorno} />
+              </SoloConCapacidad>
+            </div>
+          </ProveedorSesion>
+        </ProveedorIdioma>
       </body>
     </html>
   );

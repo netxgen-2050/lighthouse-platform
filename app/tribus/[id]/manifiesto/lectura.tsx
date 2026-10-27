@@ -8,7 +8,10 @@ import { puedeCapacidad } from "@/lib/permisos/niveles";
 import { TerminoLegal } from "@/components/termino-legal";
 import { registrarEvento } from "@/lib/actividad/almacen";
 import { EVENTOS } from "@/lib/actividad/eventos";
-import type { Manifiesto } from "@/lib/manifiestos/datos";
+import { TextoBilingue } from "@/components/texto-bilingue";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
+import { textoEn } from "@/lib/idioma/tipos";
+import type { ManifiestoBilingue } from "@/lib/manifiestos/datos";
 import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
 import { useMembresia } from "@/lib/membresia/usar-membresia";
 
@@ -19,7 +22,12 @@ const SUAVE = `${BOTON} border border-muted hover:bg-surface-2`;
 
 const HUELGA = 8; // píxeles de tolerancia para dar por llegado al final
 
-export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manifiesto; pactos: boolean }) {
+export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: ManifiestoBilingue; pactos: boolean }) {
+  const idioma = useIdioma();
+  const tx = useTextos("tribus");
+  const t = tx.manifiesto;
+  const tm = tx.membresia;
+  const comunes = useTextos("comunes");
   const { estado: estadoSesion, nivel, nivelListo } = useSesion();
   const conSesion = estadoSesion === "ok";
   // Adherir es de Miembro en adelante; Explorador y sin cuenta ven "Sumate para adherir".
@@ -55,44 +63,56 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
     }
   }, [estado]);
 
-  const textoPedido = `Tu pedido llegó ${esLighthouse ? "al Lighthouse" : `a ${m.comunidad}`}. Quien ${esLighthouse ? "lo" : "la"} administra lo va a revisar.`;
-  const textoMiembro = `Ya sos parte ${esLighthouse ? "del Lighthouse" : `de ${m.comunidad}`}.`;
+  const textoPedido = tm.pedidoLlego(esLighthouse, m.comunidad);
+  const textoMiembro = tm.yaSosParte(esLighthouse, m.comunidad);
   // El estado guardado se muestra como texto común; la zona de avisos solo se llena por una acción de esta sesión.
   const textoGuardado = !cargado || mensaje ? "" : estado === "pedido" ? textoPedido : estado === "miembro" ? textoMiembro : "";
 
   const puede = llegoAlFinal && leyo && cuidar;
   const faltan: string[] = [];
-  if (!llegoAlFinal) faltan.push("llegar al final del texto");
-  if (!leyo || !cuidar) faltan.push("marcar las dos casillas");
+  if (!llegoAlFinal) faltan.push(t.faltaFinal);
+  if (!leyo || !cuidar) faltan.push(t.faltaCasillas);
+
+  // El texto del manifiesto es la voz de la comunidad: en otro idioma que el original lleva una nota visible, una sola
+  // para todo el texto (cada pieza se muestra sin nota propia).
+  const traducido = (m.introduccion.original ?? "es") !== idioma;
 
   return (
     <>
-      <h1 className="mt-4 text-3xl font-semibold">{m.titulo}</h1>
+      <h1 className="mt-4 text-3xl font-semibold">
+        <TextoBilingue valor={m.titulo} sinNota />
+      </h1>
       <p className="mt-1 text-sm text-muted">
-        Versión del {m.version} <span className="rounded-full border border-faint px-2 py-0.5 text-xs">(ejemplo)</span>
+        {t.versionDel(textoEn(m.version, idioma))}{" "}
+        <span className="rounded-full border border-faint px-2 py-0.5 text-xs">{tx.ejemplo}</span>
         <TerminoLegal clave="adhesion" />
       </p>
+      {traducido && <p className="mt-1 text-sm font-medium text-muted">{comunes.traducidoDelOriginal}</p>}
 
       <div
         ref={texto}
         onScroll={revisarFinal}
         role="region"
-        aria-label="Texto del manifiesto"
+        aria-label={t.textoDelManifiesto}
         tabIndex={0}
         className="mt-4 grid max-h-[28rem] gap-4 overflow-y-auto rounded-xl border border-faint bg-surface p-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
       >
-        <p>{m.introduccion}</p>
+        <p>
+          <TextoBilingue valor={m.introduccion} sinNota />
+        </p>
         <ol className="grid gap-3">
           {m.compromisos.map((c, i) => (
-            <li key={c.titulo} className="grid gap-1">
+            <li key={c.titulo.es} className="grid gap-1">
               <h2 className="font-semibold">
-                {i + 1}. {c.titulo}
+                {i + 1}. <TextoBilingue valor={c.titulo} sinNota />
               </h2>
-              <p>{c.texto}</p>
+              <p>
+                <TextoBilingue valor={c.texto} sinNota />
+              </p>
             </li>
           ))}
         </ol>
-        <p className="text-sm text-muted">Fin del manifiesto.</p>
+        <p className="text-sm text-muted">{t.fin}</p>
       </div>
 
       {/* Zona de avisos siempre presente: los lectores de pantalla leen lo que se escribe en ella y recibe el foco
@@ -110,8 +130,8 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
       {!puedeAdherir ? (
         estadoSesion === "cargando" || (conSesion && !nivelListo) ? null : (
           <div className="mt-4 grid gap-3 rounded-xl border border-faint bg-surface-2 p-4">
-            <p className="text-sm">Podés leer el manifiesto sin cuenta. Para adherir, sumate como Miembro.</p>
-            <EntrarPara texto="Sumate para adherir" nivelMinimo="miembro" />
+            <p className="text-sm">{tm.puedesLeer}</p>
+            <EntrarPara texto={tm.sumateAdherir} nivelMinimo="miembro" />
           </div>
         )
       ) : !cargado ? null : estado === "no-miembro" ? (
@@ -127,31 +147,24 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
             }
           }}
         >
-          <h2 className="text-lg font-semibold">Antes de adherir</h2>
-          <p className="text-sm">
-            Sumarte a {esLighthouse ? "el Lighthouse" : m.comunidad} es pertenecer a un grupo de personas reales. Tomate el tiempo
-            que necesites.
-          </p>
+          <h2 className="text-lg font-semibold">{t.antesDeAdherir}</h2>
+          <p className="text-sm">{t.sumarteA(esLighthouse, m.comunidad)}</p>
           <label className="flex items-start gap-2">
             <input type="checkbox" className="mt-1 size-4" checked={leyo} onChange={(e) => setLeyo(e.target.checked)} />
-            <span>Leí el manifiesto con atención y entiendo que sumarme es comprometerme con un grupo de personas</span>
+            <span>{t.leiAtentamente}</span>
           </label>
           <label className="flex items-start gap-2">
             <input type="checkbox" className="mt-1 size-4" checked={cuidar} onChange={(e) => setCuidar(e.target.checked)} />
-            <span>
-              Me comprometo a cuidar estos acuerdos y a hablar con la comunidad si algún día no puedo cumplirlos
-            </span>
+            <span>{t.mePrometo}</span>
           </label>
           <span className="inline-flex items-center">
             <button type="submit" className={PRIMARIO} disabled={!puede} aria-describedby="adherir-ayuda">
-              Adherir
+              {t.adherir}
             </button>
             <TerminoLegal clave="adhesion" />
           </span>
           <p id="adherir-ayuda" className="text-sm text-muted">
-            {puede
-              ? "Tu pedido le llega a quien administra la comunidad, que decide si te acepta."
-              : `Para adherir falta ${faltan.join(" y ")}.`}
+            {puede ? t.ayudaPuede : t.ayudaFalta(faltan.join(t.y))}
           </p>
         </form>
       ) : estado === "pedido" ? (
@@ -166,7 +179,7 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
               registrarEvento(EVENTOS.adhesionAceptada(m.comunidad, m.id));
             }}
           >
-            Simular: la comunidad me acepta
+            {tm.simularAcepta}
           </button>
         </div>
       ) : (
@@ -174,18 +187,18 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
           <div className="flex flex-wrap gap-3">
             {pactos && (
               <Link className={PRIMARIO} href={`/pactos?comunidad=${m.id}`}>
-                Proponer mi pacto
+                {tm.proponerPacto}
               </Link>
             )}
             <Link className={SUAVE} href={esLighthouse ? "/territorios/lighthouse" : `/tribus/${m.id}`}>
-              Volver
+              {t.volver}
             </Link>
           </div>
         </div>
       )}
       {falloAlmacen && (
         <p role="alert" className="mt-2 text-sm font-medium">
-          No se pudo guardar en este navegador: la membresía vale solo hasta que recargues la página.
+          {tm.falloAlmacen}
         </p>
       )}
     </>

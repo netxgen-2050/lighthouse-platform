@@ -1,5 +1,7 @@
 # Proposal
 
+> 🔴 **Estado al 23-oct-2026: evento cancelado.** El Congreso de febrero 2027 no se hace (anunciado en la llamada con UnityHub del 23-oct). Este cambio ya está implementado (modo demostración). El registro del ticket y la presencia Genesis quedan **a re-anclar en los primeros eventos de comunidad**, con presencia confirmada por el anfitrión (ADR-012, `NS_platform` nota 20). Decisión pendiente de Gus.
+
 ## Why
 
 El Congreso de febrero 2027 es el momento de lanzamiento. La plataforma no vende el ticket (lo vende el organizador), pero sí lo **registra** para conectar la presencia con el perfil y dar el registro Genesis (nota 18, punto 2). Queremos la página del Congreso visible en el preview, con la agenda y el registro del ticket en **modo demostración**.

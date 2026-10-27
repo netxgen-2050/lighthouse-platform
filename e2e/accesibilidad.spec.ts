@@ -228,6 +228,48 @@ test("axe sin violaciones serias o críticas: /congreso/en con el modo de origen
   expect(await graves(page)).toEqual([]);
 });
 
+// La plataforma en inglés: el marco traducido y el aviso de "página sin traducir" también tienen que pasar axe.
+test.describe("la plataforma en inglés", () => {
+  test.use({ locale: "en-US" });
+
+  const RUTAS = [
+    "/",
+    "/sumarte",
+    "/tribus",
+    "/tribus/valle",
+    "/tribus/valle/manifiesto",
+    "/tribus/grano/postular",
+    "/territorios/lighthouse",
+    "/configuracion",
+  ];
+  for (const ruta of RUTAS) {
+    test(`axe sin violaciones serias o críticas en inglés: ${ruta}`, async ({ page }) => {
+      // Las teselas satelitales son externas: la prueba no depende de ellas.
+      await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+      await page.goto(ruta);
+      await expect(page.locator("html")).toHaveAttribute("lang", "en");
+      expect(await graves(page)).toEqual([]);
+    });
+  }
+
+  test("axe en inglés: el menú de la persona abierto", async ({ page }) => {
+    await page.goto("/tribus");
+    await page.getByRole("button", { name: "Person menu" }).click();
+    await expect(page.locator("#menu-persona")).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+
+  test.describe("sin sesión", () => {
+    test.use({ rol: "ninguno" });
+
+    test("axe en inglés: la portada sin cuenta", async ({ page }) => {
+      await page.goto("/");
+      await expect(page.locator("html")).toHaveAttribute("lang", "en");
+      expect(await graves(page)).toEqual([]);
+    });
+  });
+});
+
 test.describe("/congreso/en sin sesión", () => {
   test.use({ rol: "ninguno" });
 

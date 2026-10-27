@@ -6,6 +6,7 @@ import { EntrarPara } from "@/components/sesion/entrar-para";
 import { useSesion } from "@/components/sesion/contexto";
 import { puedeCapacidad } from "@/lib/permisos/niveles";
 import { TerminoLegal } from "@/components/termino-legal";
+import { useTextos } from "@/lib/idioma/cliente";
 import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
 import { useMembresia } from "@/lib/membresia/usar-membresia";
 
@@ -35,11 +36,11 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
   // Adherir es de Miembro en adelante; Explorador y sin cuenta ven "Sumate para adherir".
   const puedeAdherir = conSesion && puedeCapacidad(nivel, "adherir");
   const { estado, cargado, falloAlmacen, aceptar } = useMembresia(comunidad, conSesion);
+  const t = useTextos("tribus").membresia;
   const [mensaje, setMensaje] = useState("");
   const aviso = useRef<HTMLParagraphElement>(null);
   const moverFoco = useRef(false);
   const esLighthouse = comunidad === COMUNIDAD_LIGHTHOUSE;
-  const de = esLighthouse ? "del Lighthouse" : "de la tribu";
   const manifiesto = `/tribus/${comunidad}/manifiesto`;
 
   // Si el botón que tenía el foco desaparece (por ejemplo al aceptar), el foco pasa a la zona de avisos.
@@ -56,12 +57,12 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
       <div className="grid gap-2">
         <div className="flex flex-wrap gap-3">
           <Link className={SUAVE} href={manifiesto}>
-            Leer el manifiesto {de}
+            {t.leerManifiesto(esLighthouse)}
           </Link>
-          <EntrarPara texto="Sumate para adherir" clase={DORADO} nivelMinimo="miembro" />
+          <EntrarPara texto={t.sumateAdherir} clase={DORADO} nivelMinimo="miembro" />
           {extra}
         </div>
-        <p className="text-sm text-muted">Podés leer el manifiesto sin cuenta. Para adherir, sumate como Miembro.</p>
+        <p className="text-sm text-muted">{t.puedesLeer}</p>
       </div>
     );
   }
@@ -69,7 +70,7 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
   // Hasta leer lo guardado no se muestra ningún botón, para no mostrar "Adherir" a quien ya es miembro.
   if (!cargado) return <div className="min-h-10" aria-hidden="true" />;
 
-  const textoPedido = `Tu pedido llegó ${esLighthouse ? "al Lighthouse" : `a ${nombre}`}. Quien ${esLighthouse ? "lo" : "la"} administra lo va a revisar.`;
+  const textoPedido = t.pedidoLlego(esLighthouse, nombre);
 
   return (
     <div className="grid gap-2">
@@ -83,32 +84,26 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
           <>
             {pactos && (
               <Link className={PRIMARIO} href={`/pactos?comunidad=${comunidad}`}>
-                Proponer mi pacto
+                {t.proponerPacto}
               </Link>
             )}
             <button
               type="button"
               className={SUAVE}
-              onClick={() =>
-                setMensaje(
-                  esLighthouse
-                    ? "Abriríamos la sala del Lighthouse en Telegram. Podés salir cuando quieras."
-                    : "Abriríamos la sala de la tribu en Telegram. Podés salir cuando quieras.",
-                )
-              }
+              onClick={() => setMensaje(esLighthouse ? t.salaLighthouse : t.salaTribu)}
             >
-              Entrar a la sala
+              {t.entrarSala}
             </button>
           </>
         ) : (
           <>
             <Link className={SUAVE} href={manifiesto}>
-              Leer el manifiesto {de}
+              {t.leerManifiesto(esLighthouse)}
             </Link>
             {estado === "no-miembro" ? (
               <span className="inline-flex items-center">
                 <Link className={DORADO} href={manifiesto}>
-                  Adherir al manifiesto {de}
+                  {t.adherirManifiesto(esLighthouse)}
                 </Link>
                 <TerminoLegal clave="adhesion" />
               </span>
@@ -118,25 +113,21 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
                 className={PRIMARIO}
                 onClick={() => {
                   moverFoco.current = true;
-                  setMensaje(`Ya sos parte ${esLighthouse ? "del Lighthouse" : `de ${nombre}`}.`);
+                  setMensaje(t.yaSosParte(esLighthouse, nombre));
                   aceptar();
                 }}
               >
-                Simular: la comunidad me acepta
+                {t.simularAcepta}
               </button>
             )}
           </>
         )}
         {extra}
       </div>
-      {estado === "no-miembro" && (
-        <p className="text-sm text-muted">
-          Para adherir hay que leer el manifiesto hasta el final. Es el primer paso antes de cualquier pacto.
-        </p>
-      )}
+      {estado === "no-miembro" && <p className="text-sm text-muted">{t.antesDeAdherir}</p>}
       {falloAlmacen && (
         <p role="alert" className="text-sm font-medium">
-          No se pudo guardar en este navegador: la membresía vale solo hasta que recargues la página.
+          {t.falloAlmacen}
         </p>
       )}
     </div>
