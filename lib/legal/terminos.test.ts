@@ -42,6 +42,7 @@ describe("catálogo legal", () => {
         "membresia",
         "notasverdes",
         "obra",
+        "ordenanza173",
         "pacto",
         "pase",
         "pasaporte",
@@ -79,6 +80,12 @@ describe("catálogo legal", () => {
     expect(TERMINOS.avisosimulador.texto).toBe(
       "Prototipo interno · valores de partida, no son una oferta ni un pronóstico · el diseño legal no lo revisó un abogado",
     );
+  });
+  it("ordenanza173 es borrador y dice que se verifica con abogado", () => {
+    expect(esBorrador("ordenanza173")).toBe(true);
+    expect(TERMINOS.ordenanza173.texto).toContain("en el Juego B");
+    expect(TERMINOS.ordenanza173.texto).toContain("A verificar con abogado");
+    expect(TERMINOS.ordenanza173.texto).not.toContain("diseño B");
   });
   it("encuentroeducativo es borrador", () => {
     expect(esBorrador("encuentroeducativo")).toBe(true);
