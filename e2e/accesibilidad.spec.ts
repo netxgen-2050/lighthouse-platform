@@ -316,6 +316,18 @@ test("axe sin violaciones serias o críticas: /fogon/consultas/u4 cerrada, con r
   expect(await graves(page)).toEqual([]);
 });
 
+test("axe sin violaciones serias o críticas: /fogon/simulador con el año por año y la tabla del gráfico abiertos, en los dos escenarios", async ({ page }) => {
+  await page.goto("/fogon/simulador");
+  await page.getByText("Ver año por año").click();
+  await page.getByText("Ver como tabla").click();
+  await page.getByText("Ver los supuestos fijos de este escenario").click();
+  await expect(page.getByRole("table", { name: /Año por año/ })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+  await page.getByRole("radio", { name: "Agrovoltaica · 5 MW" }).check();
+  await expect(page.getByRole("table", { name: /Año por año/ })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
 for (const ruta of rutas) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);

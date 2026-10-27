@@ -264,6 +264,48 @@ export const TERMINOS = {
     texto: "El resultado es consultivo: no reemplaza las decisiones que reservan el contrato o el estatuto.",
     borrador: true,
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  avisosimulador: {
+    titulo: "Aviso del simulador",
+    texto:
+      "Prototipo interno · valores de partida, no son una oferta ni un pronóstico · el diseño legal no lo revisó un abogado",
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  unidadesregeneracion: {
+    titulo: "Unidades de Regeneración",
+    texto:
+      "Participaciones en una serie del programa de fideicomisos. Cobran después de la Fundación y de las Notas Verdes, y solo hasta un tope por año; lo que sobra va casi todo al procomún. No dan ningún derecho sobre la tierra, que sigue siendo de la Fundación.",
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  notasverdes: {
+    titulo: "Notas Verdes",
+    texto:
+      "Deuda de una serie: cobra un interés fijo y devuelve su capital antes que los otros inversores. Su garantía es el derecho de superficie y las instalaciones de la serie, nunca la tierra.",
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  primeraperdida: {
+    titulo: "Primera pérdida",
+    texto:
+      "Plata catalítica (fundaciones, fondos climáticos, donantes) que cobra después de las Unidades y es la primera en perder si el proyecto rinde menos. Esa protección es la que permite que entren inversores más prudentes.",
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  safu: {
+    titulo: "SAFU",
+    texto:
+      "Acuerdo simple por Unidades futuras: alguien pone plata hoy, antes de que existan las series, y la recibe como Unidades de la Serie Madre cuando abra, con un descuento. Cómo se ofrece legalmente todavía lo tiene que confirmar un abogado.",
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  serieprograma: {
+    titulo: "Serie",
+    texto:
+      "Un proyecto con su propia plata, sus propios ingresos y sus propios inversores (por ejemplo, el viñedo o el parque solar) dentro del programa de fideicomisos. Cada fideicomiso es un patrimonio separado: un problema en una serie no alcanza a otra.",
+    borrador: true,
+  },
 } as const;
 
 /** Claves de los textos que son borrador (no vienen del mock-up). */
