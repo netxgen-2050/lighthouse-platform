@@ -95,11 +95,9 @@ test.describe("contenido", () => {
   test("recorridos: A y B", async ({ page }) => {
     await page.goto(RUTA);
     const s = seccion(page, "Recorridos de inversores");
-    await expect(s).toContainText("USD 13.439");
-    await expect(s).toContainText("23.674");
+    await expect(s).toContainText("USD 13.439 · 17.908 · 23.674");
     await expect(s).toContainText("Entrada a la vivienda: sin dato");
-    await expect(s).toContainText("USD 2.663");
-    await expect(s).toContainText("9,2 %");
+    await expect(s).toContainText("USD 2.663 en 15 años (TIR 9,2 %)");
     await expect(s).toContainText("302 botellas");
     await expect(s).toContainText("USD 850 el año 15");
   });
@@ -112,6 +110,8 @@ test.describe("contenido", () => {
     await s.getByText("Ver como tabla").click();
     const tabla = s.getByRole("table", { name: /TIR de las Unidades por serie/ });
     await expect(tabla).toBeVisible();
+    await expect(tabla.getByRole("row", { name: /Agrovoltaica/ })).toContainText("1,2 %");
+    await expect(tabla.getByRole("row", { name: /Agrovoltaica/ })).toContainText("8,5 %");
     await expect(tabla.getByRole("row", { name: /Agrovoltaica/ })).toContainText("14,0 %");
     await expect(tabla.getByRole("row", { name: /Viñedo/ })).toContainText("−2,6 %");
   });

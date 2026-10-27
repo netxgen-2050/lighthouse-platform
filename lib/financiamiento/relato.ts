@@ -363,6 +363,16 @@ function porciento(n: number): string {
   return numero(n, Number.isInteger(n) ? 0 : 1);
 }
 
+/** Número de un supuesto: sin decimales si es entero, uno si no; "sin dato" si falta. */
+function num(n: number | null | undefined): string {
+  return typeof n === "number" && Number.isFinite(n) ? porciento(n) : SIN_DATO;
+}
+
+/** "N veces" o "sin dato" si falta el número. */
+function veces(n: number | null | undefined): string {
+  return typeof n === "number" && Number.isFinite(n) ? `${num(n)} veces` : SIN_DATO;
+}
+
 const vin = ESCENARIOS.vinedo;
 const agro = ESCENARIOS.agrovoltaica;
 const comisionMin = Math.min(vin.decididos.comisionNetx.partida, agro.decididos.comisionNetx.partida);
@@ -406,7 +416,7 @@ export const SUPUESTOS_A_CONFIRMAR: readonly SupuestoAConfirmar[] = [
   },
   {
     etiqueta: "Múltiplo de salida",
-    valor: `${vin.supuestos.multiploSalida?.partida} veces (viñedo) · ${agro.supuestos.multiploSalida?.partida} veces (agrovoltaica)`,
+    valor: `${veces(vin.supuestos.multiploSalida?.partida)} (viñedo) · ${veces(agro.supuestos.multiploSalida?.partida)} (agrovoltaica)`,
     quien: "vagner",
     fuente: `${F28} §7`,
   },
@@ -415,7 +425,7 @@ export const SUPUESTOS_A_CONFIRMAR: readonly SupuestoAConfirmar[] = [
     valor:
       agroNotas === undefined || agroTasa === undefined || agroPp === undefined
         ? SIN_DATO
-        : `${agroNotas} % Notas Verdes al ${agroTasa} % · ${agroPp} % primera pérdida · ${100 - agroNotas - agroPp} % Unidades`,
+        : `${num(agroNotas)} % Notas Verdes al ${num(agroTasa)} % · ${num(agroPp)} % primera pérdida · ${num(100 - agroNotas - agroPp)} % Unidades`,
     quien: "vagner",
     fuente: `${F28} §7`,
   },
@@ -465,7 +475,7 @@ export const SUPUESTOS_A_CONFIRMAR: readonly SupuestoAConfirmar[] = [
   },
   {
     etiqueta: "Rendimiento del viñedo y precio del vino",
-    valor: `${rendimiento} t por ha · ${usd(precioVino)} neto por botella`,
+    valor: `${num(rendimiento)} t por ha · ${usd(precioVino)} neto por botella`,
     quien: "enologo",
     fuente: "Supuesto del modelo (lib/series/escenarios)",
   },

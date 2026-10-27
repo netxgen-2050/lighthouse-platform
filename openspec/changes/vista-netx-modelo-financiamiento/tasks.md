@@ -24,4 +24,5 @@ Rama `agente/vista-netx-modelo-financiamiento` desde `dev`. Textos en español c
 
 ## 4. Integración
 
-- [x] 4.1 `pnpm verificar` y `pnpm build` en verde; PR contra `dev` con `scripts/pr.sh`, capturas de la pestaña (escritorio y 390 px) y un guion de la reunión en palabras simples (qué mostrar en cada sección y qué preguntas de Vagner responde). Verificar con los dos comandos y con el PR creado.
+- [ ] 4.1 `pnpm verificar` y `pnpm build` en verde; PR contra `dev` con `scripts/pr.sh`, capturas de la pestaña (escritorio y 390 px) y un guion de la reunión en palabras simples (qué mostrar en cada sección y qué preguntas de Vagner responde). Verificar con los dos comandos y con el PR creado. <!-- implementador: hecho el PR y los dos comandos en verde; PENDIENTE las capturas (escritorio y 390 px) y el guion de la reunión por sección, que no se pueden generar en la corrida nocturna -->
+
