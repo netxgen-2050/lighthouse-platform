@@ -547,7 +547,7 @@ export function PactosCliente() {
                 ))}
               </ol>
             </div>
-            <p className="text-sm text-muted">{tx.cambio.vigente(t.version, t.horas, miles(semillas))}</p>
+            <p className="text-sm text-muted"><MarcaSemillas texto={tx.cambio.vigente(t.version, t.horas, miles(semillas))} /></p>
             <fieldset disabled={t.cambio.paso !== 0} className="grid content-start gap-4 border-0 p-0">
               <legend className="sr-only">{tx.cambio.legend(nombre)}</legend>
               <label className="grid gap-1 text-sm">
@@ -605,7 +605,7 @@ export function PactosCliente() {
               </label>
             </fieldset>
             <p className="text-sm" data-testid="semillas-cambio">
-              {tx.cambio.conCambio(miles(semillasPorMes(t.cambio.horas)))}
+              <MarcaSemillas texto={tx.cambio.conCambio(miles(semillasPorMes(t.cambio.horas)))} />
             </p>
             <div className="flex flex-wrap items-center gap-3">
               {t.cambio.paso === 0 ? (

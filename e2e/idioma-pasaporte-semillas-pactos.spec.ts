@@ -51,6 +51,8 @@ test.describe("Semillas en inglés", () => {
     await expect(page).toHaveTitle(/Semillas/);
     await expect(page.getByText(/^Semillas \(seeds\) are not sold/)).toBeVisible();
     await expect(page.getByText("Seeds", { exact: true })).toHaveCount(0);
+    await expect(page.locator('main [translate="no"]', { hasText: "Semillas (seeds)" }).first()).toBeVisible();
+    await expect(page.getByTestId("total-lighthouse").locator('[translate="no"]')).toBeVisible();
     await page.getByRole("button", { name: "What it means in the community economy: Semillas" }).first().focus();
     await expect(page.getByRole("tooltip")).toContainText("Draft: text under review");
     expect(await textosEnEspanol(page, "main")).toEqual([]);
@@ -77,6 +79,16 @@ test.describe("Pactos en inglés", () => {
     const texto = page.getByRole("list", { name: "Accepted versions" }).locator('[lang="es"]', { hasText: "Facilito reuniones y cuido los acuerdos" });
     await expect(texto).toBeVisible();
     expect(await textosEnEspanol(page, "main")).toEqual([]);
+  });
+
+  test("las frases del cambio propuesto también marcan Semillas con translate=no", async ({ page }) => {
+    await conPactoAceptado(page);
+    await page.goto("/pactos");
+    await page.getByRole("button", { name: "Propose a change" }).click();
+    for (const frase of [/Meanwhile version 1 stays in force/, /With the change it would be/]) {
+      const p = page.locator("main p", { hasText: frase });
+      await expect(p.locator('[translate="no"]', { hasText: "Semillas" })).toBeVisible();
+    }
   });
 
   test("el aporte en plata abre la verificación en inglés y muestra su error", async ({ page }) => {
