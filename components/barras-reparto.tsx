@@ -41,7 +41,7 @@ export function BarrasReparto({
           return (
             <figure key={grupo.id} className="grid gap-2 text-sm">
               <figcaption className="font-medium">
-                {grupo.etiqueta} · total {formatoValor(total)}
+                {grupo.etiqueta} · total {bs.length === 0 ? "sin dato" : formatoValor(total)}
               </figcaption>
               {bs.length === 0 ? (
                 <p>sin dato</p>

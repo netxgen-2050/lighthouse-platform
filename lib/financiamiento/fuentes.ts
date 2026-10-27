@@ -12,7 +12,7 @@ export type Supuesto = { valor: number | null; fuente: string; aConfirmar?: stri
 /** Consumo mensual del equipo (USD). */
 export const CONSUMO_MENSUAL_USD: Supuesto = {
   valor: 31000,
-  fuente: "doc 30 §2b (doc 12, modelo de Vagner)",
+  fuente: "NS_Tokenomics doc 30 §2b (doc 12)",
   aConfirmar: "Vagner",
 };
 

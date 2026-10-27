@@ -29,7 +29,7 @@ Gus (26-oct) eligió sacar las operaciones del super admin (pendientes, personas
 ## Hallazgos de la implementación (27-oct-2026)
 - **El 403 no llegaba con estado HTTP 403 mientras la `Puerta` no dibujara `children` en el servidor.** La `Puerta` del layout raíz es de cliente y, sin sesión resuelta, dibuja "Cargando…": el HTML del servidor nunca tocaba el `forbidden()` y la respuesta salía 200 (con el aviso de acceso solo en el navegador). Sin cambiar el mecanismo, la `Puerta` deja pasar `children` en `/admin` mientras la sesión del navegador no está lista (`capacidadDeRuta === "admin"`); así el servidor responde 403 de verdad. Eso además evita que quien no tiene sesión sea llevado a Sumarte desde `/admin`. `SoloSuperAdmin` no dibuja nada mientras la sesión carga.
 - **El título de cada pestaña es el mismo ("Admin")**: el `metadata.title` de una página (por ejemplo "Pendientes") viajaba en la respuesta 403 aunque el servidor no armara nada. Queda un solo título, el del layout.
-- **Una ruta que no existe bajo `/admin`** (`/admin/loquesea`) responde 404, no 403: el enrutador la descarta antes de correr los layouts. No revela contenido, solo que esa ruta no existe.
+- **Una ruta que no existe bajo `/admin`** (`/admin/loquesea`) respondía 404 en vez de 403, porque el enrutador la descarta antes de correr los layouts. Se arregla con una ruta comodín `app/admin/[...resto]/page.tsx` que llama a `exigirSuperAdmin()` y después a `notFound()`: quien no es super admin recibe 403 en cualquier dirección bajo `/admin` (el e2e pide `/admin/loquesea`); el super admin recibe 404.
 - `import "server-only"` funciona sin instalar el paquete (Next lo resuelve por dentro); en los tests de Vitest se simula con `vi.mock("server-only")`.
 
 ## En palabras simples

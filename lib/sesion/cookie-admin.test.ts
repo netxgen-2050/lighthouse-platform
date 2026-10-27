@@ -1,5 +1,7 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { cookieAdmin, cookieAdminBorrada, debeEscribirCookieAdmin } from "./cookie-admin";
+import { cookieAdmin, cookieAdminBorrada, cookieAdminSegunSesion, debeEscribirCookieAdmin } from "./cookie-admin";
 
 describe("cookie de /admin", () => {
   it("con rol persona no se escribe; con superadmin sí", () => {
@@ -23,5 +25,24 @@ describe("cookie de /admin", () => {
   it("salir la borra", () => {
     expect(cookieAdminBorrada(false)).toContain("max-age=0");
     expect(cookieAdminBorrada(false)).toContain("path=/admin");
+    expect(cookieAdminBorrada(true)).toContain("; Secure");
+  });
+  it("salir() (components/sesion/proveedor-sesion.tsx) escribe la cookie borrada de /admin", () => {
+    const src = readFileSync(join(__dirname, "../../components/sesion/proveedor-sesion.tsx"), "utf8");
+    const salir = src.slice(src.indexOf("const salir = useCallback"), src.indexOf("const cabeceras = useCallback"));
+    expect(salir).toContain('document.cookie = cookieAdminBorrada(window.location.protocol === "https:")');
+  });
+  it("al cambiar de rol: se escribe, se renueva con el token nuevo y se borra", () => {
+    const sa = { prueba: null, estado: "ok", rol: "superadmin" };
+    expect(cookieAdminSegunSesion(sa, "t1", true)).toContain("lh-sesion-admin=t1");
+    expect(cookieAdminSegunSesion(sa, "t2", true)).toContain("lh-sesion-admin=t2");
+    expect(cookieAdminSegunSesion({ ...sa, rol: "persona" }, "t2", true)).toContain("max-age=0");
+    expect(cookieAdminSegunSesion({ ...sa, estado: "sin-sesion", rol: undefined }, "t2", true)).toContain("max-age=0");
+    expect(cookieAdminSegunSesion({ ...sa, prueba: "x@y.test" }, "t2", true)).toContain("max-age=0");
+  });
+  it("superadmin sin token (o con error al pedirlo) borra en vez de dejar una cookie vieja", () => {
+    const sa = { prueba: null, estado: "ok", rol: "superadmin" };
+    expect(cookieAdminSegunSesion(sa, null, false)).toContain("max-age=0");
+    expect(cookieAdminSegunSesion(sa, undefined, false)).toContain("max-age=0");
   });
 });

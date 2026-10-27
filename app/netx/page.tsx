@@ -128,8 +128,8 @@ export default function ResumenPage() {
                 {desarrollo ? `${usd(desarrollo.min)} a ${numero(desarrollo.max)}` : SIN_DATO})
               </li>
               <li>
-                Por año · comisión de gestión: {usd(r.netx.gestionAnual.vinedo)} (viñedo) ·{" "}
-                {usd(r.netx.gestionAnual.agrovoltaica)} (agrovoltaica)
+                Comisión de gestión: {usd(r.netx.gestionAnual.vinedo)} por año (viñedo) ·{" "}
+                {usd(r.netx.gestionAnual.agrovoltaica)} por año (agrovoltaica)
               </li>
               <li>
                 Membresías y Plan Tribu: {usd(mp.base.ingreso)} por mes al mes 36 (escenario base). {SUPUESTO_CONGRESO}

@@ -18,3 +18,17 @@ export function cookieAdmin(token: string, https: boolean): string {
 export function cookieAdminBorrada(https: boolean): string {
   return `${COOKIE_SESION_ADMIN}=; path=/admin; max-age=0; SameSite=Strict${https ? "; Secure" : ""}`;
 }
+
+/**
+ * Qué se escribe en `document.cookie` cada vez que cambia la sesión, la ruta o el rol: la cookie con el token (se escribe
+ * y se renueva) o la cookie borrada (rol que deja de ser super admin, sin token, o error al pedirlo). Sin sesión de Privy
+ * verificada de super admin, siempre borra.
+ */
+export function cookieAdminSegunSesion(
+  p: { prueba: string | null; estado: string; rol: string | undefined },
+  token: string | null | undefined,
+  https: boolean,
+): string {
+  if (!debeEscribirCookieAdmin(p)) return cookieAdminBorrada(https);
+  return token ? cookieAdmin(token, https) : cookieAdminBorrada(https);
+}

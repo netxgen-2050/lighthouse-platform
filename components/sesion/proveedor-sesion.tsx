@@ -4,7 +4,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type
 import { usePathname, useRouter } from "next/navigation";
 import { CLAVE_ULTIMA_PERSONA, establecerPersona } from "@/lib/demo/claves";
 import { useConsentimiento } from "@/lib/privacidad/usar-consentimiento";
-import { cookieAdmin, cookieAdminBorrada, debeEscribirCookieAdmin } from "@/lib/sesion/cookie-admin";
+import { cookieAdminBorrada, cookieAdminSegunSesion, debeEscribirCookieAdmin } from "@/lib/sesion/cookie-admin";
 import { COOKIE_PRUEBA } from "@/lib/sesion/cookies";
 import { calcularNivel, EVENTO_NIVEL, leerEstadoGuardado } from "@/lib/sesion/nivel";
 import { INICIAL, type EstadoSumarte } from "@/lib/sumarte/estado";
@@ -163,8 +163,9 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
   useEffect(() => {
     if (prueba === undefined) return;
     const https = window.location.protocol === "https:";
-    if (!debeEscribirCookieAdmin({ prueba, estado: resultado.estado, rol: rolActual })) {
-      document.cookie = cookieAdminBorrada(https);
+    const p = { prueba, estado: resultado.estado, rol: rolActual };
+    if (!debeEscribirCookieAdmin(p)) {
+      document.cookie = cookieAdminSegunSesion(p, null, https);
       return;
     }
     let vigente = true;
@@ -172,7 +173,7 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       try {
         const token = await obtenerToken.current?.();
         if (!vigente) return;
-        document.cookie = token ? cookieAdmin(token, https) : cookieAdminBorrada(https);
+        document.cookie = cookieAdminSegunSesion(p, token, https);
       } catch {
         if (vigente) document.cookie = cookieAdminBorrada(https);
       }

@@ -1,7 +1,7 @@
 import { COOKIE_PRUEBA, EMAILS, expect, test, type Page } from "./fixtura";
 
 const EMAIL = /[\w.+-]+@[\w-]+\.[\w.]+/;
-const RUTAS = ["/admin", "/admin/personas", "/admin/comunidades"];
+const RUTAS = ["/admin", "/admin/personas", "/admin/comunidades", "/admin/loquesea", "/admin/personas/otra/mas"];
 const NO_DEBE_APARECER = ["Pendientes", "Personas y roles", "Pedidos de contacto"];
 
 const rail = (page: Page) => page.getByRole("navigation", { name: "Principal" });

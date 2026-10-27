@@ -69,6 +69,10 @@ test("/admin muestra sin dato (no 0) si el navegador no deja leer", async ({ pag
   });
   await page.goto("/admin");
   await expect(page.getByTestId("total-postulaciones")).toContainText("sin dato");
+  await expect(
+    page.getByRole("navigation", { name: "Secciones de la administración" }).getByRole("link", { name: "Pendientes · sin dato" }),
+  ).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Admin, pendientes sin dato" })).toBeVisible();
 });
 
 test("no existe el formulario para barrios que no están vacantes", async ({ page }) => {

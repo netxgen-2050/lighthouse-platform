@@ -159,7 +159,7 @@ test.describe("Resumen", () => {
     expect(aviso).toBeGreaterThan(-1);
     expect(aviso).toBeLessThan(texto.indexOf("USD"));
     // NetX
-    for (const t of ["USD 375.000 a 500.000", "USD 8.550", "USD 40.000", "USD 120.000 a 200.000", "USD 1.336", "sin dato (a cotizar)"]) {
+    for (const t of ["USD 375.000 a 500.000", "USD 8.550 por año", "USD 40.000 por año", "USD 120.000 a 200.000", "USD 1.336", "sin dato (a cotizar)"]) {
       expect(texto, t).toContain(t);
     }
     // Procomún

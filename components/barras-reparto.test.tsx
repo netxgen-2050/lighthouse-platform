@@ -30,6 +30,12 @@ describe("BarrasReparto", () => {
     expect(html).toContain("no tiene");
     expect(html).not.toContain("Notas Verdes · sin dato");
   });
+  test("una serie sin ningún monto dice 'sin dato' y no 'total USD 0'", () => {
+    const vacio = [{ id: "v", etiqueta: "Serie V", items: [{ id: "p", etiqueta: "Procomún", valor: null }] }];
+    const html = renderToStaticMarkup(<BarrasReparto titulo="T" grupos={vacio} formatoValor={(n) => `USD ${n}`} />);
+    expect(html).toContain("Serie V · total sin dato");
+    expect(html).not.toContain("USD 0");
+  });
   test("los porcentajes de cada grupo suman 100", () => {
     for (const g of grupos) expect(calcularBarras(g.items).reduce((s, b) => s + b.pct, 0)).toBe(100);
   });

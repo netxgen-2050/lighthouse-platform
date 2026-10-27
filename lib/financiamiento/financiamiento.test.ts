@@ -27,6 +27,7 @@ describe("fuentes", () => {
     for (const c of [CONSUMO_MENSUAL_USD, META_SAFE_USD, COMISION_DESARROLLO, CONTRATO_DISENO_BIOPUEBLO_USD]) {
       expect(c.fuente.trim()).toBeTruthy();
     }
+    expect(CONSUMO_MENSUAL_USD.fuente).toBe("NS_Tokenomics doc 30 §2b (doc 12)");
     expect(CONSUMO_MENSUAL_USD.aConfirmar).toBe("Vagner");
     expect(SUPUESTO_CONGRESO).toContain("I-15");
   });
@@ -218,7 +219,14 @@ describe("armarResumen", () => {
   });
   test("el Pase no suma a NetX", () => {
     expect(r.procomun.pase.base.recaudado).toBe(96000);
-    expect(r.reparto.vinedo.find((x) => x.destino === "netx")!.monto!).toBeLessThan(200000);
+    // Lo que recibe NetX es solo la gestión de la serie: si se le sumara el Pase, estas igualdades se romperían.
+    for (const serie of ["vinedo", "agrovoltaica"] as const) {
+      const netx = r.reparto[serie].find((x) => x.destino === "netx")!.monto!;
+      expect(netx).toBeCloseTo(r.netx.gestionAnual[serie] * r.procomun[serie].anios, 6);
+    }
+    expect(r.reparto.vinedo.find((x) => x.destino === "netx")!.monto!).not.toBeGreaterThanOrEqual(
+      r.netx.gestionAnual.vinedo * r.procomun.vinedo.anios + r.procomun.pase.base.recaudado,
+    );
   });
   test("es determinístico", () => {
     expect(armarResumen()).toEqual(armarResumen());
