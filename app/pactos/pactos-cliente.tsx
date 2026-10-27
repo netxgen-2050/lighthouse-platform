@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { KycDialogo } from "@/components/kyc-dialogo";
+import { MarcaSemillas } from "@/components/marca-semillas";
 import { CLAVES } from "@/lib/demo/claves";
 import { TerminoEconomico } from "@/components/termino-economico";
 import { TerminoLegal } from "@/components/termino-legal";
@@ -234,7 +235,7 @@ export function PactosCliente() {
             ))}
           </select>
         </label>
-        <p className="text-sm text-muted">{tx.comunidad.ayuda}</p>
+        <p className="text-sm text-muted"><MarcaSemillas texto={tx.comunidad.ayuda} /></p>
       </section>
 
       <section aria-label={tx.estadoAria} className="grid gap-4 rounded-xl border border-faint bg-surface p-4">
@@ -315,6 +316,7 @@ export function PactosCliente() {
                       type="text"
                       maxLength={MAX_ROL_OTRO}
                       value={t.rolOtro}
+                      lang={langTexto}
                       onChange={(e) => dispatch({ tipo: "rolOtro", comunidad, texto: e.target.value })}
                       className={CAMPO}
                     />
@@ -378,7 +380,7 @@ export function PactosCliente() {
                 <p className="font-mono text-sm text-muted">{tx.tiempo.porMes}</p>
                 <div>
                   <p className="text-2xl font-semibold" data-testid="semillas-mes">
-                    {textoSemillas.cantidad(miles(semillas))}
+                    <MarcaSemillas texto={textoSemillas.cantidad(miles(semillas))} />
                   </p>
                   <p className="text-sm text-muted">
                     <span translate="no">{tx.tiempo.semillas}</span>
@@ -390,7 +392,7 @@ export function PactosCliente() {
                   <dt className="text-muted">{tx.tiempo.formula}</dt>
                   <dd>{tx.tiempo.formulaValor}</dd>
                 </dl>
-                <p className="text-sm text-muted">{tx.tiempo.nota}</p>
+                <p className="text-sm text-muted"><MarcaSemillas texto={tx.tiempo.nota} /></p>
               </div>
             </div>
           )}
@@ -400,7 +402,7 @@ export function PactosCliente() {
               <div className="grid content-start gap-3">
                 <p className="text-sm">
                   {tx.plata.antes} <b>{nombre}</b>
-                  {tx.plata.medio}
+                  <MarcaSemillas texto={tx.plata.medio} />
                   <TerminoEconomico clave="semillas" />
                   {tx.plata.fin}
                 </p>
@@ -420,7 +422,7 @@ export function PactosCliente() {
                 </label>
                 <p id="ayuda-monto" className="text-sm text-muted">
                   {montoValido
-                    ? tx.plata.equivale(miles(semillasDePlata(montoNumero)), moneda === "ARS" ? formatearMonto(montoNumero, moneda, idioma) : "")
+                    ? <MarcaSemillas texto={tx.plata.equivale(miles(semillasDePlata(montoNumero)), moneda === "ARS" ? formatearMonto(montoNumero, moneda, idioma) : "")} />
                     : tx.plata.montoInvalido(miles(MONTO_USD.min), miles(MONTO_USD.max))}
                 </p>
                 {moneda === "ARS" && <p className="text-sm text-muted">{notaTipoDeCambio(idioma)}</p>}
@@ -445,12 +447,12 @@ export function PactosCliente() {
                 ) : (
                   <>
                     <p className="text-2xl font-semibold" data-testid="semillas-plata">
-                      {tx.plata.total(miles(semillasDePlata(totalPlata)))}
+                      <MarcaSemillas texto={tx.plata.total(miles(semillasDePlata(totalPlata)))} />
                     </p>
                     <ul className="grid gap-1 text-sm">
                       {mias.aportes.map((a, i) => (
                         <li key={i}>
-                          {formatearMonto(a, moneda, idioma)} · {miles(semillasDePlata(a))} Semillas
+                          <MarcaSemillas texto={`${formatearMonto(a, moneda, idioma)} · ${miles(semillasDePlata(a))} Semillas`} />
                         </li>
                       ))}
                     </ul>
@@ -509,7 +511,7 @@ export function PactosCliente() {
                 >
                   {tx.pasos.aceptado}
                 </span>
-                <span className="text-sm text-muted">{tx.pasos.verLibro(nombre)}</span>
+                <span className="text-sm text-muted"><MarcaSemillas texto={tx.pasos.verLibro(nombre)} /></span>
                 {!t.cambio && (
                   <button
                     type="button"
@@ -572,6 +574,7 @@ export function PactosCliente() {
                     type="text"
                     maxLength={MAX_ROL_OTRO}
                     value={t.cambio.rolOtro}
+                    lang={langTexto}
                     onChange={(e) => dispatch({ tipo: "editarCambio", comunidad, cambios: { rolOtro: e.target.value } })}
                     className={CAMPO}
                   />

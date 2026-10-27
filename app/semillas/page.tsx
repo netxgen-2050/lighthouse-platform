@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MarcaSemillas } from "@/components/marca-semillas";
 import { TerminoEconomico } from "@/components/termino-economico";
 import { idiomaDelPedido } from "@/lib/idioma/servidor";
 import { textos } from "@/lib/idioma/textos";
@@ -26,7 +27,7 @@ export default async function SemillasPage() {
         {t.porComunidad}
       </p>
       <h1 className="text-3xl font-semibold">{t.h1}</h1>
-      <p className="mt-2 mb-4 max-w-2xl text-muted">{t.intro}</p>
+      <p className="mt-2 mb-4 max-w-2xl text-muted"><MarcaSemillas texto={t.intro} /></p>
       <SemillasCliente />
     </div>
   );

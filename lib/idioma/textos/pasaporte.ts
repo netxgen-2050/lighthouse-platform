@@ -323,7 +323,7 @@ const en: Textos<typeof es> = {
       nombre: "Eligible investor",
       detalleObtenido: "Identity verified and tax residence in Argentina.",
       detalleExterior:
-        'Not for now: your tax residence is abroad. See the reason under "Contributors with tax residence abroad".',
+        "Not for now: your tax residence is abroad. See the reason in the explanation next to this text.",
       detalleEnTramite: "You get it once your identity is approved, if your tax residence is in Argentina.",
       detalleSin: "You get it with a verified identity, if your tax residence is in Argentina.",
     },

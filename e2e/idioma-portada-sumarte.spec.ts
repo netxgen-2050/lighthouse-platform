@@ -177,6 +177,10 @@ test.describe("Sumarte en inglés con una cuenta Explorer", () => {
     await expect(dialogo).toBeVisible();
     expect(await dialogo.evaluate((el) => Boolean(el.closest('[lang="es"]')))).toBe(false);
     await expect(dialogo).toContainText("To request an invitation to invest we first need to verify your identity.");
+    // El primer paso sin llenar: el error sale en inglés y el foco va al campo.
+    await dialogo.getByRole("button", { name: "Next" }).click();
+    await expect(dialogo.getByText("Error: Enter your full name.")).toBeVisible();
+    await expect(dialogo.getByLabel("Full name")).toBeFocused();
   });
 });
 

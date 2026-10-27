@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { registrarEvento } from "@/lib/actividad/almacen";
 import { EVENTOS } from "@/lib/actividad/eventos";
+import { MarcaSemillas } from "@/components/marca-semillas";
 import { TerminoLegal } from "@/components/termino-legal";
 import { esCodigoValido } from "@/lib/congreso/ticket";
 import { CLAVES } from "@/lib/demo/claves";
@@ -124,12 +125,12 @@ export function SemillasCliente() {
 
       <section aria-labelledby="panel" className="grid gap-3">
         <h2 id="panel" className="text-xl font-semibold">
-          {t.panel.titulo}
+          <MarcaSemillas texto={t.panel.titulo} />
         </h2>
         {miembro.length === 0 ? (
           <div className="grid gap-2 rounded-xl border border-faint bg-surface p-4">
-            <p>{t.panel.sinComunidad}</p>
-            <p className="text-sm text-muted">{t.panel.sinComunidadAyuda}</p>
+            <p><MarcaSemillas texto={t.panel.sinComunidad} /></p>
+            <p className="text-sm text-muted"><MarcaSemillas texto={t.panel.sinComunidadAyuda} /></p>
             <Link className="w-fit underline" href="/tribus">{t.panel.verComunidades}</Link>
           </div>
         ) : (
@@ -147,13 +148,13 @@ export function SemillasCliente() {
                   <h3 className="text-lg font-semibold">{nombre}</h3>
                   <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
                     <dt className="text-muted">{t.panel.tiempo}</dt>
-                    <dd>{valor(s.tiempo)}</dd>
+                    <dd><MarcaSemillas texto={valor(s.tiempo)} /></dd>
                     <dt className="text-muted">{t.panel.plata}</dt>
-                    <dd>{valor(s.plata)}</dd>
+                    <dd><MarcaSemillas texto={valor(s.plata)} /></dd>
                     <dt className="text-muted">{t.panel.presencia}</dt>
-                    <dd>{valor(s.presencia)}</dd>
+                    <dd><MarcaSemillas texto={valor(s.presencia)} /></dd>
                     <dt className="font-medium">{t.panel.total}</dt>
-                    <dd className="font-semibold" data-testid={`total-${id}`}>{valor(s.total)}</dd>
+                    <dd className="font-semibold" data-testid={`total-${id}`}><MarcaSemillas texto={valor(s.total)} /></dd>
                   </dl>
                   <button
                     type="button"
@@ -179,7 +180,7 @@ export function SemillasCliente() {
               <p className={ETIQUETA}>{t.detalle.tiempo3}</p>
               {semillas.horas !== null && tiempo !== null ? (
                 <>
-                  <p className={GRANDE} data-testid="semillas-tiempo">{valor(tiempo)}</p>
+                  <p className={GRANDE} data-testid="semillas-tiempo"><MarcaSemillas texto={valor(tiempo)} /></p>
                   <p className="text-sm text-muted">{t.detalle.horasMes(semillas.horas)}</p>
                 </>
               ) : (
@@ -197,7 +198,7 @@ export function SemillasCliente() {
               <p className={ETIQUETA}>{t.panel.plata}</p>
               {semillas.plata !== null ? (
                 <>
-                  <p className={GRANDE} data-testid="semillas-plata">{valor(semillas.plata)}</p>
+                  <p className={GRANDE} data-testid="semillas-plata"><MarcaSemillas texto={valor(semillas.plata)} /></p>
                   <p className="text-sm text-muted">{t.detalle.plataRegistrada}</p>
                 </>
               ) : (
@@ -215,7 +216,7 @@ export function SemillasCliente() {
                 </>
               )}
               {datos.pase && (
-                <p className="text-sm text-muted">{t.detalle.paseActivo(nombreDelNivel(pase?.nombre, datos.pase, idioma))}
+                <p className="text-sm text-muted"><MarcaSemillas texto={t.detalle.paseActivo(nombreDelNivel(pase?.nombre, datos.pase, idioma))} />
                   <TerminoLegal clave="pasefundador" idioma={idioma} />.
                 </p>
               )}
@@ -276,20 +277,20 @@ function MetaSembrador({ tiempo }: { tiempo: number | null }) {
     <section aria-labelledby="meta-sembrador" className="grid gap-2 rounded-xl border border-faint bg-surface p-4">
       <h2 id="meta-sembrador" className="text-xl font-semibold">{t.meta.titulo}</h2>
       <p className="flex flex-wrap items-center gap-2 text-sm">
-        {t.meta.tiempo3}
+        <MarcaSemillas texto={t.meta.tiempo3} />
         <span className="w-fit rounded-full border border-gold-ink bg-gold-soft px-3 py-0.5 font-medium text-gold-ink">
           {tiempo === null ? comunes.sinDato : estadoMedidor(tiempo) === "Lista" ? t.meta.lista : t.meta.enCamino}
         </span>
       </p>
       {tiempo === null ? (
-        <p className="text-sm text-muted" data-testid="medidor">{t.meta.sinDatoMeta(META_SEMBRADOR)}</p>
+        <p className="text-sm text-muted" data-testid="medidor"><MarcaSemillas texto={t.meta.sinDatoMeta(META_SEMBRADOR)} /></p>
       ) : (
         <>
           <div className="h-2 w-full max-w-xs overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
             <div className="h-full bg-gold" style={{ width: `${Math.min(100, (tiempo / META_SEMBRADOR) * 100)}%` }} />
           </div>
           <p className="text-sm font-medium" data-testid="medidor">
-            {t.meta.avance(formatearNumero(tiempo, idioma), META_SEMBRADOR)}
+            <MarcaSemillas texto={t.meta.avance(formatearNumero(tiempo, idioma), META_SEMBRADOR)} />
           </p>
         </>
       )}
@@ -438,7 +439,7 @@ function RondaDeComunidad({ comunidad, nombre, habilitada, ronda, intento, onInt
             </>
           )}
         </div>
-        <p className="text-sm text-muted">{t.ronda.pie(factor)}</p>
+        <p className="text-sm text-muted"><MarcaSemillas texto={t.ronda.pie(factor)} /></p>
       </section>
 
       <section aria-labelledby="recibido" className="grid gap-3 rounded-xl border border-faint bg-surface p-4">

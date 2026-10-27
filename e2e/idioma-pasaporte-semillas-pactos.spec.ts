@@ -79,6 +79,30 @@ test.describe("Pactos en inglés", () => {
     expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
 
+  test("el aporte en plata abre la verificación en inglés y muestra su error", async ({ page }) => {
+    await conPactoAceptado(page);
+    await page.goto("/pactos");
+    await page.getByRole("tab", { name: "Join with money" }).click();
+    await page.getByRole("button", { name: "Record contribution (simulated)" }).click();
+    const dialogo = page.getByRole("dialog", { name: /Verify my identity/ });
+    await expect(dialogo).toContainText("To record a money contribution we first need to verify your identity.");
+    await dialogo.getByRole("button", { name: "Next" }).click();
+    await expect(dialogo.getByText("Error: Enter your full name.")).toBeVisible();
+  });
+
+  test("el campo del rol Otro lleva lang es", async ({ page }) => {
+    await page.addInitScript(() => window.localStorage.setItem("lh-membresia", JSON.stringify({ lighthouse: "miembro" })));
+    await page.goto("/pactos");
+    await page.getByLabel(/Role you take on/).selectOption({ label: "Other" });
+    await expect(page.getByLabel("What role is it?")).toHaveAttribute("lang", "es");
+  });
+
+  test("Semillas va marcada para que no se traduzca sola", async ({ page }) => {
+    await conPactoAceptado(page);
+    await page.goto("/pactos");
+    await expect(page.locator('main [translate="no"]', { hasText: "Semillas (seeds)" }).first()).toBeVisible();
+  });
+
   test("el pacto de plata muestra el aporte y la primera mención explica Semillas", async ({ page }) => {
     await conPactoAceptado(page);
     await page.goto("/pactos");
