@@ -42,3 +42,11 @@ export const SUPUESTO_CONGRESO =
   "Supone el Congreso de febrero 2027 (cancelado el 23-oct-2026): falta re-correr el modelo (NS_Tokenomics I-15).";
 
 export const A_CONFIRMAR_CON_VAGNER = "a confirmar con Vagner";
+
+const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+
+/** "2026-10-17" → "17-oct-2026". */
+export function fechaCorta(iso: string): string {
+  const [a, m, d] = iso.split("-");
+  return `${Number(d)}-${MESES[Number(m) - 1]}-${a}`;
+}

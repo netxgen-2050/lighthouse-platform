@@ -361,6 +361,14 @@ test("axe sin violaciones serias o críticas: /netx/simulador con el año por a�
   expect(await graves(page)).toEqual([]);
 });
 
+test("axe sin violaciones serias o críticas: /netx/financiamiento con todos los details abiertos", async ({ page }) => {
+  await page.goto("/netx/financiamiento");
+  await expect(page.getByRole("heading", { level: 1, name: "Modelo de financiamiento" })).toBeVisible();
+  await page.evaluate(() => document.querySelectorAll("details").forEach((d) => d.setAttribute("open", "")));
+  await expect(page.getByRole("table", { name: /Rangos|TIR de las Unidades por serie/ })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
 for (const ruta of rutas) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);

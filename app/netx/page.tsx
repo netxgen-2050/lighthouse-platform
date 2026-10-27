@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { BarrasReparto } from "@/components/barras-reparto";
 import { TerminoLegal } from "@/components/termino-legal";
-import { SUPUESTO_CONGRESO, VERSIONES } from "@/lib/financiamiento/fuentes";
+import { SUPUESTO_CONGRESO, VERSIONES, fechaCorta } from "@/lib/financiamiento/fuentes";
 import { JUEGO_A, JUEGO_B, PROCOMUN_EN_SIMPLE } from "@/lib/financiamiento/juegos";
 import { PALANCAS, type IdPalanca } from "@/lib/financiamiento/palancas";
 import { usdMillones } from "@/lib/financiamiento/pista";
@@ -75,7 +76,10 @@ export default function ResumenPage() {
       <p className="mb-6 max-w-3xl text-lg">
         NetX es la empresa que diseña, gestiona y opera la plataforma. Cobra por su trabajo, no por vender tierra: en el
         Juego B, la tierra queda en una Fundación y la plata de los proyectos entra por series{" "}
-        <TerminoLegal clave="serieprograma" /> del programa de fideicomisos.
+        <TerminoLegal clave="serieprograma" /> del programa de fideicomisos.{" "}
+        <Link href="/netx/financiamiento" className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
+          Ver el modelo completo
+        </Link>
       </p>
 
       <section aria-labelledby="t-juegos" className="mb-6">
@@ -275,12 +279,4 @@ export default function ResumenPage() {
       </p>
     </div>
   );
-}
-
-const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
-
-/** "2026-10-17" → "17-oct-2026". */
-function fechaCorta(iso: string): string {
-  const [a, m, d] = iso.split("-");
-  return `${Number(d)}-${MESES[Number(m) - 1]}-${a}`;
 }

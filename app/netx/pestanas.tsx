@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-// El cambio vista-netx-modelo-financiamiento suma "Modelo de financiamiento" (/netx/financiamiento) en segundo lugar.
 export const PESTANAS_NETX: readonly { href: string; etiqueta: string }[] = [
   { href: "/netx", etiqueta: "Resumen" },
+  { href: "/netx/financiamiento", etiqueta: "Modelo de financiamiento" },
   { href: "/netx/simulador", etiqueta: "Simulador" },
   { href: "/netx/comunidad", etiqueta: "Comunidad y embudo" },
 ];
