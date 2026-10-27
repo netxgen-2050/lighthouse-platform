@@ -77,12 +77,15 @@ export function Donut({
   resto,
   formatoValor = (n) => String(n),
   sinDato = "sin dato",
+  columnaEtiqueta = "Opción",
 }: {
   titulo: string;
   porciones: readonly PorcionDonut[];
   resto?: { etiqueta: string; valor: number };
   formatoValor?: (valor: number) => string;
   sinDato?: string;
+  /** Encabezado de la primera columna de la tabla equivalente. */
+  columnaEtiqueta?: string;
 }) {
   const arcos = calcularArcos(porciones, resto);
   return (
@@ -154,7 +157,7 @@ export function Donut({
                 <caption className="sr-only">{titulo}</caption>
                 <thead>
                   <tr>
-                    <th scope="col" className="pr-4">Opción</th>
+                    <th scope="col" className="pr-4">{columnaEtiqueta}</th>
                     <th scope="col" className="pr-4">Valor</th>
                     <th scope="col">%</th>
                   </tr>
