@@ -55,10 +55,10 @@ test.describe("Fogón en inglés", () => {
   test("sin residencia cargada no pide el dato en inglés", async ({ page }) => {
     await page.goto("/fogon");
     await expect(page.getByText("No data on your residency")).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Vote" })).toHaveCount(7);
+    await expect(page.getByRole("button", { name: "Vote" })).toHaveCount(9);
   });
 
-  const cisterna = (page: Page) => decision(page, /cistern/);
+  const cisterna = (page: Page) => decision(page, /Ask the Common Fund for a cistern/);
 
   test("quien no lidera Valle Solar no ve Take to the council", async ({ page }) => {
     await page.goto("/fogon");

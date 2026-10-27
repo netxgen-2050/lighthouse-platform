@@ -32,6 +32,8 @@ describe("catálogo legal", () => {
         "contacto",
         "creditos",
         "datos",
+        "dobleenlace",
+        "dominio",
         "encuentroeducativo",
         "espejo",
         "estatuto",
@@ -88,7 +90,7 @@ describe("catálogo legal", () => {
     );
   });
   it("los términos de la gobernanza fractal son borrador, con inglés, y avisan que el reglamento falta", () => {
-    for (const clave of ["circulotrabajo", "consejo", "representante", "validacioncomun"] as const) {
+    for (const clave of ["circulotrabajo", "consejo", "representante", "validacioncomun", "dobleenlace", "dominio"] as const) {
       expect(esBorrador(clave), clave).toBe(true);
       expect(terminoEn(clave)?.texto.trim(), clave).toBeTruthy();
       expect(TERMINOS[clave].texto, clave).toMatch(/todavía|no existe/);
