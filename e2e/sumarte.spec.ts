@@ -26,11 +26,51 @@ test("cambiar a anual / mensual", async ({ page }) => {
   await expect(miembro).toContainText("USD 100/año");
 });
 
+test("el período aplica a todos los planes periódicos; el pase no cambia", async ({ page }) => {
+  await page.goto("/sumarte");
+  const miembro = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Miembro de la red/ }) });
+  const tribu = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Plan Tribu/ }) });
+  const pase = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Pase Fundador/ }) });
+  await page.getByRole("button", { name: /^Mensual/ }).click();
+  await expect(tribu).toContainText("USD 60/mes");
+  await expect(tribu).not.toContainText("/año");
+  await expect(miembro).not.toContainText("/año");
+  await expect(miembro).not.toContainText("2 meses gratis");
+  await expect(tribu).not.toContainText("2 meses gratis");
+  await expect(pase).toContainText("pago único · de por vida");
+  await page.getByRole("button", { name: /^Anual/ }).click();
+  await expect(tribu).toContainText("USD 600/año");
+  await expect(tribu).not.toContainText("/mes");
+  await expect(miembro).not.toContainText("/mes");
+  await expect(miembro).toContainText("2 meses gratis");
+  await expect(tribu).toContainText("2 meses gratis");
+  await expect(pase).toContainText("USD 1.500 · pago único · de por vida");
+  // Legible: el texto del pase no es más chico que el de los otros precios (16 px, no 12).
+  const tamano = await pase.getByText("pago único · de por vida").evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+  expect(tamano).toBeGreaterThanOrEqual(16);
+});
+
+test("moneda en pesos: con Anual los dos precios periódicos se convierten y dicen /año", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("lh-configuracion", JSON.stringify({ moneda: "ARS" }));
+  });
+  await page.goto("/sumarte");
+  const miembro = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Miembro de la red/ }) });
+  const tribu = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Plan Tribu/ }) });
+  await page.getByRole("button", { name: /^Anual/ }).click();
+  await expect(miembro).toContainText("ARS 140.000/año");
+  await expect(tribu).toContainText("ARS 840.000/año");
+  await expect(tribu).not.toContainText("USD");
+  await page.getByRole("button", { name: /^Mensual/ }).click();
+  await expect(tribu).toContainText("ARS 84.000/mes");
+});
+
 test("elegir el nivel Raíz cambia precio y créditos", async ({ page }) => {
   await page.goto("/sumarte");
   const pase = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Pase Fundador/ }) });
   await pase.getByRole("radio", { name: /Raíz/ }).check({ force: true });
   await expect(pase).toContainText("USD 5.000 · pago único");
+  await expect(pase).toContainText("de por vida");
   await expect(pase).toContainText("USD 1.500 en créditos");
   await expect(pase.getByRole("button", { name: "Quiero el Pase Raíz" })).toBeVisible();
 });

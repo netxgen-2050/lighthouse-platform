@@ -11,13 +11,15 @@ import { esCodigoValido } from "@/lib/congreso/ticket";
 import { CLAVES } from "@/lib/demo/claves";
 import { leerMembresiaDelNavegador, type Membresias } from "@/lib/membresia/estado";
 import { DATOS_VACIOS, leerDatos, MAX_HORAS, type DatosPersona } from "@/lib/pasaporte/datos";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { fechaLarga } from "@/lib/pasaporte/kyc";
 import {
   fechasPorGuardar,
   fechasPorQuitar,
   leerFechas,
+  NOMBRE_GENESIS,
   sellos,
-  TEXTO_ESTADO_SELLO,
+  textoEstadoSello,
   type EstadoSello,
   type FechasSellos,
   type Sello,
@@ -70,6 +72,8 @@ function Opcion<T extends string>({
 }
 
 function TarjetaSello({ s }: { s: Sello }) {
+  const idioma = useIdioma();
+  const t = useTextos("pasaporte").sellos;
   return (
     <li data-sello={s.id} className="grid content-start gap-3 rounded-xl border border-faint bg-surface p-4">
       <div className="flex items-start gap-4">
@@ -81,20 +85,20 @@ function TarjetaSello({ s }: { s: Sello }) {
         </div>
         <div className="grid min-w-0 gap-1">
           <h3 className="text-lg font-semibold break-words">
-            {s.nombre}
-            {s.legal?.map((k) => <TerminoLegal key={k} clave={k} />)}
+            {s.nombre === NOMBRE_GENESIS ? <span translate="no">{s.nombre}</span> : s.nombre}
+            {s.legal?.map((k) => <TerminoLegal key={k} clave={k} idioma={idioma} />)}
           </h3>
           <p className="flex flex-wrap items-center gap-2">
             <span className={`rounded-full border px-2 py-0.5 text-sm font-medium ${ETIQUETA[s.estado]}`}>
-              {TEXTO_ESTADO_SELLO[s.estado]}
+              {textoEstadoSello(s.estado, idioma)}
             </span>
-            {s.fecha && <span className="text-sm text-muted">{fechaLarga(s.fecha)}</span>}
+            {s.fecha && <span className="text-sm text-muted">{fechaLarga(s.fecha, idioma)}</span>}
           </p>
         </div>
       </div>
       <p className="text-sm">
         {s.detalle}
-        {s.legalDetalle && <TerminoLegal clave={s.legalDetalle} />}
+        {s.legalDetalle && <TerminoLegal clave={s.legalDetalle} idioma={idioma} />}
       </p>
       {s.accion &&
         (s.accion.href.includes("#") ? (
@@ -123,7 +127,7 @@ function TarjetaSello({ s }: { s: Sello }) {
         ))}
       {s.abre.length > 0 && (
         <div>
-          <p className="text-sm font-medium">{s.estado === "obtenido" ? "Qué abre" : "Qué abriría"}</p>
+          <p className="text-sm font-medium">{s.estado === "obtenido" ? t.queAbre : t.queAbriria}</p>
           <ul className="list-disc pl-5 text-sm">
             {s.abre.map((a) => (
               <li key={a}>{a}</li>
@@ -136,6 +140,8 @@ function TarjetaSello({ s }: { s: Sello }) {
 }
 
 export function PasaporteCliente() {
+  const idioma = useIdioma();
+  const t = useTextos("pasaporte");
   const kyc = useKyc();
   const { billetera } = useSesion();
   const [listo, setListo] = useState(false);
@@ -175,9 +181,10 @@ export function PasaporteCliente() {
         ? sellos(
             { sumarte, membresias, kyc: kyc.kyc, datos: kyc.datos, ticket, presenciaGenesis: false, fechas },
             ahora,
+            idioma,
           )
         : [],
-    [ahora, kyc.cargado, kyc.kyc, kyc.datos, sumarte, membresias, ticket, fechas],
+    [ahora, kyc.cargado, kyc.kyc, kyc.datos, sumarte, membresias, ticket, fechas, idioma],
   );
 
   // Cada sello obtenido guarda el día en que se lo vio por primera vez;
@@ -214,7 +221,7 @@ export function PasaporteCliente() {
     setDatosAporte(siguiente);
   }
 
-  if (!listo || !kyc.cargado) return <p role="status" className="text-sm text-muted">Cargando tu pasaporte…</p>;
+  if (!listo || !kyc.cargado) return <p role="status" className="text-sm text-muted">{t.cargando}</p>;
 
   const horasInvalidas = horasTexto !== "" && datosAporte.horas === undefined;
 
@@ -222,7 +229,7 @@ export function PasaporteCliente() {
     <div className="grid gap-8">
       {(falloAlmacen || kyc.falloAlmacen) && (
         <p role="alert" className="text-sm font-medium text-warn-ink">
-          No pudimos guardar tus datos en este navegador. Se ven ahora, pero se pierden al recargar.
+          {t.errorAlmacenamiento}
         </p>
       )}
 
@@ -235,7 +242,7 @@ export function PasaporteCliente() {
       />
 
       <section aria-labelledby="titulo-sellos" className="grid gap-4">
-        <h2 id="titulo-sellos" className="text-xl font-semibold">Tus sellos</h2>
+        <h2 id="titulo-sellos" className="text-xl font-semibold">{t.sellos.tusSellos}</h2>
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {lista.map((s) => (
             <TarjetaSello key={s.id} s={s} />
@@ -245,20 +252,18 @@ export function PasaporteCliente() {
       </section>
 
       <section aria-labelledby="titulo-aporte" className={`${TARJETA} max-w-xl`}>
-        <h2 id="titulo-aporte" className="text-xl font-semibold">Cómo vas a aportar</h2>
-        <p className="text-sm text-muted">
-          Lo usa Pactos para mostrarte los avisos que te tocan. Simulado: lo que cargues queda solo en este navegador.
-        </p>
+        <h2 id="titulo-aporte" className="text-xl font-semibold">{t.aporte.titulo}</h2>
+        <p className="text-sm text-muted">{t.aporte.ayuda}</p>
         <fieldset className="grid gap-2">
-          <legend className="font-medium">Modalidad de aporte</legend>
+          <legend className="font-medium">{t.aporte.modalidad}</legend>
           <div className="flex flex-wrap gap-4">
-            <Opcion nombre="modalidad" valor="obra" actual={datosAporte.modalidad} etiqueta="Obra presencial" alElegir={(v) => cambiarAporte({ modalidad: v })} />
-            <Opcion nombre="modalidad" valor="remoto" actual={datosAporte.modalidad} etiqueta="Remoto" alElegir={(v) => cambiarAporte({ modalidad: v })} />
+            <Opcion nombre="modalidad" valor="obra" actual={datosAporte.modalidad} etiqueta={t.aporte.obra} alElegir={(v) => cambiarAporte({ modalidad: v })} />
+            <Opcion nombre="modalidad" valor="remoto" actual={datosAporte.modalidad} etiqueta={t.aporte.remoto} alElegir={(v) => cambiarAporte({ modalidad: v })} />
           </div>
         </fieldset>
         {datosAporte.modalidad === "obra" && (
           <div>
-            <label htmlFor="horas" className="font-medium">Horas por mes</label>
+            <label htmlFor="horas" className="font-medium">{t.aporte.horas}</label>
             <input
               id="horas"
               type="number"
@@ -270,29 +275,27 @@ export function PasaporteCliente() {
               aria-invalid={horasInvalidas}
               aria-describedby={horasInvalidas ? "horas-error" : undefined}
               onChange={(e) => {
-                const t = e.target.value;
-                setHorasTexto(t);
+                const escrito = e.target.value;
+                setHorasTexto(escrito);
                 try {
-                  window.localStorage.setItem(CLAVES.pasaporteHorasTexto, t);
+                  window.localStorage.setItem(CLAVES.pasaporteHorasTexto, escrito);
                 } catch {
                   // el aviso de almacenamiento lo da cambiarAporte()
                 }
-                const n = t === "" ? undefined : Number(t);
+                const n = escrito === "" ? undefined : Number(escrito);
                 cambiarAporte({ horas: n !== undefined && Number.isFinite(n) && n >= 0 && n <= MAX_HORAS ? n : undefined });
               }}
             />
             {horasInvalidas && (
               <p id="horas-error" className="mt-1 text-sm font-medium text-warn-ink">
-                Ingresá un número de horas entre 0 y {MAX_HORAS}.
+                {t.aporte.horasError(MAX_HORAS)}
               </p>
             )}
           </div>
         )}
       </section>
 
-      <p className="text-sm text-muted">
-        Estos datos los custodiaría el fiduciario. La plataforma guardaría qué se te mostró y cuándo.
-      </p>
+      <p className="text-sm text-muted">{t.notaFiduciario}</p>
 
       <KycDialogo
         abierto={dialogo}

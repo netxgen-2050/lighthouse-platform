@@ -8,6 +8,7 @@ import { SelloTribu } from "@/components/sello-tribu";
 import { TerminoLegal } from "@/components/termino-legal";
 import { TextoBilingue } from "@/components/texto-bilingue";
 import { Medidor } from "@/components/medidor";
+import { validadaPorElComun } from "@/lib/gobernanza/registros";
 import { idiomaDelPedido } from "@/lib/idioma/servidor";
 import { textos } from "@/lib/idioma/textos";
 import { destinosDisponibles } from "@/lib/navegacion";
@@ -50,6 +51,18 @@ export default async function TribuPage({ params }: Props) {
   if (!t || !original) notFound();
   const tx = textos("tribus", idioma);
   const f = tx.ficha;
+  // Validación del común (dato de ejemplo): en palabras, no solo con color.
+  const gob = textos("gobernanza", idioma).ficha;
+  const validada = validadaPorElComun(t.id);
+  const marcaValidacion = (
+    <p
+      className={`w-fit rounded-full border px-3 py-1 text-sm font-medium ${validada ? "border-deep bg-green-soft text-deep" : "border-faint text-muted"}`}
+    >
+      <span aria-hidden="true">{validada ? "✓ " : "○ "}</span>
+      {validada ? gob.validadaComun : gob.noValidadaComun} {gob.ejemplo}
+      <TerminoLegal clave="validacioncomun" idioma={idioma} />
+    </p>
+  );
 
   const volver = (
     <p className="mb-2 text-sm">
@@ -76,6 +89,7 @@ export default async function TribuPage({ params }: Props) {
         </p>
         <AvisoEjemplo />
         {prototipo}
+        <div className="mt-2">{marcaValidacion}</div>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <section className={tarjeta}>
             <h2 className="text-lg font-semibold">{v.necesita}</h2>
@@ -106,7 +120,7 @@ export default async function TribuPage({ params }: Props) {
     <div className="mx-auto max-w-5xl p-6 sm:p-10">
       {volver}
       <p className="text-sm text-muted">{tx.barrioFoco(t.barrio, t.foco)}</p>
-      <div className="mt-2 mb-4 flex items-center gap-4">
+      <div className="mt-2 mb-4 flex flex-wrap items-center gap-4">
         <SelloTribu iniciales={t.iniciales} estado={t.estado} grande />
         <div>
           <h1 className="text-3xl font-semibold" translate="no">{t.nombre}</h1>
@@ -117,6 +131,8 @@ export default async function TribuPage({ params }: Props) {
             </p>
           )}
         </div>
+        {/* Al lado del título, para no empujar el resto de la ficha hacia abajo. */}
+        <div className="md:ml-auto">{marcaValidacion}</div>
       </div>
       <AvisoEjemplo />
       {prototipo}

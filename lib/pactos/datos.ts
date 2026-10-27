@@ -1,5 +1,7 @@
 // Valor de referencia de la hora, copiado del mock-up v6 (docs/referencia/netx-tribus-mockup-v6.html).
 // Es "referencia, por ahora": no es el valor propio de cada persona.
+import type { Idioma } from "@/lib/idioma/tipos";
+
 export const USD_ARS = 1400;
 export const HOUR_REF_ARS = 7049;
 export const HOUR_REF_USD = HOUR_REF_ARS / USD_ARS;
@@ -34,4 +36,47 @@ export type ClaveRol = (typeof ROLES)[number]["clave"];
 
 export function buscarRol(clave: string) {
   return ROLES.find((r) => r.clave === clave);
+}
+
+// Inglés de los textos de ejemplo (borrador a revisar: ver `lib/idioma/revision-nativa.ts`).
+const ROLES_EN: Record<ClaveRol, { nombre: string; descripcion: string }> = {
+  facilitacion: { nombre: "Facilitation", descripcion: "Leads meetings and helps the group decide clearly and carefully." },
+  "community-manager": {
+    nombre: "Community manager",
+    descripcion: "Keeps the community conversation going: channels, news and a welcome for newcomers.",
+  },
+  "culture-manager": { nombre: "Culture manager", descripcion: "Looks after the living agreements and the culture of the group." },
+  coordinacion: {
+    nombre: "Coordination or project management",
+    descripcion: "Organizes tasks, deadlines and owners so projects move forward.",
+  },
+  abogacia: { nombre: "Legal support", descripcion: "Helps with legal matters: bylaws, contracts and permits." },
+  economia: { nombre: "Economics", descripcion: "Keeps the accounts, budgets and economic planning of the community." },
+  jardineria: { nombre: "Gardening", descripcion: "Looks after shared vegetable gardens, gardens and green spaces." },
+  permacultura: {
+    nombre: "Permaculture design",
+    descripcion: "Designs how land, water and energy are used in a regenerative way.",
+  },
+  bioconstruccion: {
+    nombre: "Natural building",
+    descripcion: "Builds and maintains structures with natural materials and low-impact techniques.",
+  },
+  comunicacion: { nombre: "Communication", descripcion: "Tells what happens in the community: texts, images and outreach." },
+  otro: { nombre: "Other", descripcion: "A role that is not on the list: tell us which one in your own words." },
+};
+
+/** Nombre y descripción de un rol en el idioma de la página. */
+export function textoDeRol(rol: (typeof ROLES)[number], idioma: Idioma): { nombre: string; descripcion: string } {
+  return idioma === "en" ? ROLES_EN[rol.clave] : { nombre: rol.nombre, descripcion: rol.descripcion };
+}
+
+const PESTANAS_EN: Record<(typeof PESTANAS)[number][0], string> = { tiempo: "Time pact", plata: "Join with money" };
+const PASOS_EN = ["Draft", "Sent to the community", "Accepted by whoever manages the community"] as const;
+
+export function tituloDePestana(clave: (typeof PESTANAS)[number][0], idioma: Idioma): string {
+  return idioma === "en" ? PESTANAS_EN[clave] : (PESTANAS.find((p) => p[0] === clave)?.[1] ?? clave);
+}
+
+export function pasosDelPacto(idioma: Idioma): readonly string[] {
+  return idioma === "en" ? PASOS_EN : PASOS;
 }

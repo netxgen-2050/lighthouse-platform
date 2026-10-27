@@ -22,6 +22,7 @@ describe("CLAVES", () => {
     expect(CLAVES.kyc).toBe("lh-kyc");
     expect(CLAVES.sellos).toBe("lh-sellos");
     expect(CLAVES.fogon).toBe("lh-fogon");
+    expect(CLAVES.gobernanza).toBe("lh-gobernanza");
   });
 });
 

@@ -306,6 +306,72 @@ export const TERMINOS = {
       "Un proyecto con su propia plata, sus propios ingresos y sus propios inversores (por ejemplo, el viñedo o el parque solar) dentro del programa de fideicomisos. Cada fideicomiso es un patrimonio separado: un problema en una serie no alcanza a otra.",
     borrador: true,
   },
+  // Textos nuevos de la gobernanza fractal, no vienen del mock-up: borradores a revisar antes de cualquier uso real.
+  circulotrabajo: {
+    titulo: "Círculo de trabajo",
+    texto:
+      "Un grupo de personas que se hace cargo de un tema (por ejemplo, el cuidado de la tierra o la comunicación) dentro de una tribu, o entre varias tribus. Decide lo suyo sin pedir permiso arriba. Los círculos de esta página son un ejemplo: cómo se forman y qué pueden decidir lo define el reglamento, que todavía no existe.",
+    borrador: true,
+    en: {
+      titulo: "Working circle",
+      texto:
+        "A group of people who take charge of a topic (for example, land care or communications) inside a tribe, or across several tribes. It decides its own matters without asking for permission above. The circles on this page are an example: how they form and what they can decide is set by the rules, which do not exist yet.",
+    },
+  },
+  consejo: {
+    titulo: "Consejo de las tribus",
+    texto:
+      "Un espacio de coordinación con un lugar por tribu validada por el común. Cada tribu decide primero adentro y después lleva al consejo lo que no puede resolver sola, por ejemplo pedir plata del fondo común. No es un órgano del fideicomiso. En el prototipo todo es de ejemplo; cómo vota el consejo y con qué mayoría lo define el diseño legal, que todavía hay que confirmar con el equipo legal.",
+    borrador: true,
+    en: {
+      titulo: "Council of the tribes",
+      texto:
+        "A coordination space with one seat for each tribe validated by the commons. Each tribe first decides internally and then brings to the council what it cannot solve alone, for example asking for money from the common fund. It is not a body of the trust. In the prototype everything is an example; how the council votes and with what majority is set by the legal design, which still has to be confirmed with the legal team.",
+    },
+  },
+  representante: {
+    titulo: "Representante de la tribu",
+    texto:
+      "La persona que ocupa el lugar de su tribu en el consejo y lleva lo que la tribu votó adentro. En el prototipo no se eligió a nadie: por eso dice «Sin representante elegido». Cómo se elige y por cuánto tiempo lo define el reglamento, que todavía hay que escribir.",
+    borrador: true,
+    en: {
+      titulo: "Tribe representative",
+      texto:
+        "The person who holds the tribe's seat on the council and carries what the tribe voted on internally. In the prototype nobody was elected, which is why it says \"No representative chosen\". How they are chosen and for how long is set by the rules, which still have to be written.",
+    },
+  },
+  validacioncomun: {
+    titulo: "Validación del común",
+    texto:
+      "Una afirmación de que el común (Lighthouse) reconoce a una tribu, y de que una tribu reconoce a una persona. Se guarda como un registro que no se edita: si se retira, se agrega otro registro que lo anula y el original queda a la vista. En el prototipo vive solo en este navegador y no tiene valor legal; qué efectos tiene una validación lo define el diseño legal, que todavía hay que confirmar con el equipo legal.",
+    borrador: true,
+    en: {
+      titulo: "Validation by the commons",
+      texto:
+        "A statement that the commons (Lighthouse) recognizes a tribe, and that a tribe recognizes a person. It is kept as a record that is never edited: if it is withdrawn, another record is added that cancels it and the original stays visible. In the prototype it lives only in this browser and has no legal value; what effects a validation has is set by the legal design, which still has to be confirmed with the legal team.",
+    },
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  seriemadre: {
+    titulo: "Serie Madre",
+    texto:
+      "Una serie que no tiene un proyecto propio: invierte en todas las demás. Quien entra ahí tiene un pedacito de todos los proyectos, con menos riesgo que en uno solo. Es donde terminan el SAFU y, más adelante, los tokens.",
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  fundaciontierra: {
+    titulo: "Fundación de la tierra",
+    texto:
+      "En el Juego B, la entidad en la que queda la tierra del Lighthouse. Todavía no existe: se crea si se acepta el diseño y el dueño actual le pasa la tierra. Su estatuto le prohibiría venderla, hipotecarla o darla en garantía (cómo hacer que eso valga frente a terceros está a verificar con abogado). Cobra un canon y una regalía de cada serie antes que cualquier inversor y con eso paga el procomún. NetX no puede tomar un porcentaje de su plata.",
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  ordenanza173: {
+    titulo: "Ordenanza 173/2026 de Mainqué",
+    texto:
+      "Hasta que el municipio apruebe un loteo, nadie puede ofrecer, vender, reservar ni dar prioridad sobre esos lotes. Por eso NetX no se financia vendiendo lotes: no puede, y en el Juego B la tierra del Lighthouse queda en una Fundación que no la vende. A verificar con abogado.",
+    borrador: true,
+  },
 } as const;
 
 /** Claves de los textos que son borrador (no vienen del mock-up). */

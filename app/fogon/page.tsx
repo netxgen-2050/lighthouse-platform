@@ -21,22 +21,22 @@ export default function FogonPage() {
         navegador.
       </p>
       <div className="mb-5 rounded-xl border border-deep bg-green-soft p-4 text-sm">
+        <p className="font-semibold">Cómo decidimos</p>
+        <p className="mt-1">
+          Círculos dentro de cada tribu, las doce tribus, Lighthouse como el común y un consejo con un lugar por tribu.
+          Mirá quién valida a quién y qué sube al consejo.
+        </p>
+        <p className="mt-2">
+          <Link className="underline" href="/fogon/gobernanza">Cómo decidimos</Link>
+        </p>
+      </div>
+      <div className="mb-5 rounded-xl border border-deep bg-green-soft p-4 text-sm">
         <p className="font-semibold">Consultas de prioridades y presupuesto</p>
         <p className="mt-1">
           Repartí 100 créditos de voz con voto cuadrático para priorizar y repartir presupuesto.
         </p>
         <p className="mt-2">
           <Link className="underline" href="/fogon/consultas">Ver las consultas</Link>
-        </p>
-      </div>
-      <div className="mb-5 rounded-xl border border-deep bg-green-soft p-4 text-sm">
-        <p className="font-semibold">Simulador de la tokenomics</p>
-        <p className="mt-1">
-          Mové los valores del diseño B y mirá cuánto recibe el procomún, cada clase de inversor y NetX. Los números son
-          de ejemplo, no una oferta.
-        </p>
-        <p className="mt-2">
-          <Link className="underline" href="/fogon/simulador">Simular los parámetros de la tokenomics</Link>
         </p>
       </div>
       <FogonCliente />

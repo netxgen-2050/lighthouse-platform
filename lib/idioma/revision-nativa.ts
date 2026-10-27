@@ -45,6 +45,14 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Territorio: vitrina, leyenda y controles del mapa, ficha lateral y marcadores",
   },
+  "textos/gobernanza": {
+    estado: "pendiente",
+    que: "Gobernanza fractal: página Cómo decidimos (estructura, círculos, consejo), marca de validación de la ficha de tribu y Quiénes te validaron en Mi recorrido",
+  },
+  "lib/gobernanza/datos.ts": {
+    estado: "pendiente",
+    que: "Nombres de los círculos de ejemplo de cada tribu y del círculo transversal, con su inglés",
+  },
   "lib/tribus/datos.ts": {
     estado: "pendiente",
     que: "Datos de ejemplo de las 12 tribus con su inglés (foco, qué tiene, qué busca, ritual, forma jurídica…) y la declaración de cada tribu, traducida del español",
@@ -56,6 +64,30 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   "lib/territorios/textos.ts": {
     estado: "pendiente",
     que: "Textos del territorio con su inglés: terreno común, descripción y nombres descriptivos de los lugares, bienes comunes",
+  },
+  "textos/pasaporte": {
+    estado: "pendiente",
+    que: "Pasaporte: sellos y lo que abren, tarjeta y diálogo de verificación de identidad (KYC) con sus errores, sello de la billetera y datos de aporte",
+  },
+  "textos/semillas": {
+    estado: "pendiente",
+    que: "Semillas: libro por comunidad, detalle, meta de sembrador/a activo/a y ronda de reconocimiento (\"Semillas\" no se traduce)",
+  },
+  "textos/pactos": {
+    estado: "pendiente",
+    que: "Pactos: pactos de tiempo y de plata, cambios, historial, avisos y anuncios",
+  },
+  "lib/semillas/datos.ts": {
+    estado: "pendiente",
+    que: "Datos de ejemplo de la ronda de reconocimiento con su inglés (compañeros, criterios y reconocimiento recibido)",
+  },
+  "lib/pactos/datos.ts": {
+    estado: "pendiente",
+    que: "Roles de ejemplo (nombre y descripción), pestañas y pasos de un pacto, con su inglés",
+  },
+  "lib/economia/terminos.ts": {
+    estado: "pendiente",
+    que: "Término económico 🌱 de Semillas en inglés (borrador, sin revisión)",
   },
   glosario: {
     estado: "pendiente",
@@ -89,8 +121,12 @@ export function fuentesObligatorias(): string[] {
     "lib/congreso/evento-ejemplo.ts",
     "lib/sumarte/datos.ts",
     "lib/tribus/datos.ts",
+    "lib/gobernanza/datos.ts",
     "lib/manifiestos/datos.ts",
     "lib/territorios/textos.ts",
+    "lib/semillas/datos.ts",
+    "lib/pactos/datos.ts",
+    "lib/economia/terminos.ts",
   ];
 }
 

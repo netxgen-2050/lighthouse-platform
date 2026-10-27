@@ -10,7 +10,7 @@ import { useSesion } from "@/components/sesion/contexto";
 import { EntrarComo } from "@/components/sesion/entrar-como";
 import { TerminoLegal } from "@/components/termino-legal";
 import { TextoBilingue } from "@/components/texto-bilingue";
-import { ProveedorIdioma, useIdioma, useTextos } from "@/lib/idioma/cliente";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { GLOSARIO } from "@/lib/idioma/glosario";
 import {
   alcanza,
@@ -40,7 +40,7 @@ import {
   FILAS,
   MEMBRESIA,
   PASSES,
-  PLAN_TRIBU_MENSUAL,
+  PLAN_TRIBU,
   type NivelPase,
 } from "@/lib/sumarte/datos";
 import { useKyc } from "@/lib/pasaporte/usar-kyc";
@@ -83,6 +83,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
   const t = useTextos("sumarte");
   const marco = useTextos("marco");
   const comunes = useTextos("comunes");
+  const pasaporte = useTextos("pasaporte");
   const { estado: estadoSesion, nivel: nivelCuenta, nivelListo, tribuLider, entrar } = useSesion();
   const conSesion = estadoSesion === "ok";
   const [estado, setEstado] = useState<EstadoSumarte>(INICIAL);
@@ -227,7 +228,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
     <KycDialogo
       abierto={dialogoKyc}
       kyc={kyc.kyc}
-      motivo="Para pedir una invitación a invertir primero necesitamos verificar tu identidad."
+      motivo={pasaporte.kyc.motivoInvitacion}
       alCerrar={() => {
         setDialogoKyc(false);
         // Con el sello ya obtenido, se sigue con lo que la persona quería hacer.
@@ -319,6 +320,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
               {estado.facturacion === "anual" ? t.facturacion.porAnio : t.facturacion.porMes}
             </span>
           </p>
+          {estado.facturacion === "anual" && <p className="text-sm font-medium">{t.facturacion.dosMesesGratis}</p>}
           <p className="text-muted">{t.miembro.descripcion}</p>
           <ul className="list-disc pl-5 text-sm">
             <li>{t.miembro.todoExplorador}</li>
@@ -368,7 +370,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
           </fieldset>
           <p className="text-2xl font-bold">
             {monto(nivel.precio)}
-            <span className="text-base font-normal text-muted">{t.fundador.pagoUnico}</span>
+            <span className="text-base font-normal">{t.fundador.pagoUnico}</span>
           </p>
           <p className="text-muted">
             {t.fundador.financias}
@@ -425,9 +427,12 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
             <TerminoLegal clave="plantribu" idioma={idioma} />
           </h2>
           <p className="text-2xl font-bold">
-            {monto(PLAN_TRIBU_MENSUAL)}
-            <span className="text-base font-normal text-muted">{t.facturacion.porMes}</span>
+            {monto(estado.facturacion === "anual" ? PLAN_TRIBU.anual : PLAN_TRIBU.mensual)}
+            <span className="text-base font-normal text-muted">
+              {estado.facturacion === "anual" ? t.facturacion.porAnio : t.facturacion.porMes}
+            </span>
           </p>
+          {estado.facturacion === "anual" && <p className="text-sm font-medium">{t.facturacion.dosMesesGratis}</p>}
           <p className="text-muted">{t.tribu.descripcion}</p>
           <ul className="list-disc pl-5 text-sm">
             {t.tribu.incluye.map((x) => (
@@ -631,17 +636,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
         </div>
       </section>
 
-      {idioma === "en" ? (
-        // El diálogo de verificación de identidad todavía no tiene traducción (`idioma-pasaporte-semillas-pactos`):
-        // sigue en español, marcado como tal.
-        <div lang="es" className="contents">
-          <ProveedorIdioma idioma="es" soloContenido>
-            {dialogoDeIdentidad}
-          </ProveedorIdioma>
-        </div>
-      ) : (
-        dialogoDeIdentidad
-      )}
+      {dialogoDeIdentidad}
     </div>
   );
 }

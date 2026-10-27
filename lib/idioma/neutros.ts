@@ -5,6 +5,7 @@ export const NEUTROS: readonly string[] = [
   ...NEUTROS_CONGRESO,
   "Semillas",
   "Super admin",
+  "Admin",
   "NetXGen",
   "Hifa",
   "Email",
@@ -14,6 +15,10 @@ export const NEUTROS: readonly string[] = [
   "Soluna",
   "Macrolote 7",
   // Palabras que se escriben igual en los dos idiomas.
+  "Argentina",
+  "Total",
+  "Community manager",
+  "Culture manager",
   "Compost",
   "Marketing",
   "Temazcal",

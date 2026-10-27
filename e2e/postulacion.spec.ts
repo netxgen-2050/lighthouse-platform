@@ -58,7 +58,7 @@ test("el selector de forma jurídica está en su grupo y se puede elegir", async
   await expect(grupo.getByLabel(/^Forma jurídica/)).toBeVisible();
 });
 
-test("/netx muestra sin dato (no 0) si el navegador no deja leer", async ({ page }) => {
+test("/admin muestra sin dato (no 0) si el navegador no deja leer", async ({ page }) => {
   await page.addInitScript(() => {
     // El consentimiento de privacidad ya está dado (lo siembra la fixture): lo demás no se puede leer.
     const leer = Storage.prototype.getItem;
@@ -67,8 +67,12 @@ test("/netx muestra sin dato (no 0) si el navegador no deja leer", async ({ page
       throw new Error("bloqueado");
     };
   });
-  await page.goto("/netx");
+  await page.goto("/admin");
   await expect(page.getByTestId("total-postulaciones")).toContainText("sin dato");
+  await expect(
+    page.getByRole("navigation", { name: "Secciones de la administración" }).getByRole("link", { name: "Pendientes · sin dato" }),
+  ).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Admin, pendientes sin dato" })).toBeVisible();
 });
 
 test("no existe el formulario para barrios que no están vacantes", async ({ page }) => {
@@ -91,8 +95,8 @@ test("falta el nombre: error junto al campo y no se envía", async ({ page }) =>
   await expect(page.getByText("Recibimos tu postulación")).toHaveCount(0);
 });
 
-test("enviar: confirmación, Agendar una llamada en otra pestaña y conteo en /netx", async ({ page }) => {
-  await page.goto("/netx");
+test("enviar: confirmación, Agendar una llamada en otra pestaña y conteo en /admin", async ({ page }) => {
+  await page.goto("/admin");
   await expect(page.getByTestId("total-postulaciones")).toHaveText("0");
   await page.goto("/tribus/grano/postular");
   await completar(page);
@@ -103,7 +107,7 @@ test("enviar: confirmación, Agendar una llamada en otra pestaña y conteo en /n
   const llamada = page.getByRole("link", { name: /Agendar una llamada/ });
   await expect(llamada).toHaveAttribute("href", "https://calendly.com/netx-ejemplo/postulacion");
   await expect(llamada).toHaveAttribute("target", "_blank");
-  await page.goto("/netx");
+  await page.goto("/admin");
   await expect(page.getByTestId("total-postulaciones")).toHaveText("1");
   await expect(page.getByRole("row", { name: /Los Álamos/ })).toBeVisible();
 });

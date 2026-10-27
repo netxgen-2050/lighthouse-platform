@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   turbopack: { root: process.cwd() },
   // PGlite (Postgres embebido, solo local y tests) trae archivos binarios: se carga desde node_modules, no se empaqueta.
   serverExternalPackages: ["@electric-sql/pglite"],
+  // forbidden() (403) para proteger /admin en el servidor (ADR-016). Experimental en Next 15.5: lo vigila e2e/admin.spec.ts.
+  experimental: { authInterrupts: true },
 };
 
 export default nextConfig;

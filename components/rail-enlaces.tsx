@@ -29,9 +29,9 @@ export type GrupoRail = {
   items: ItemRail[];
 };
 
-const CLASE_ITEM =
+export const CLASE_ITEM =
   "flex flex-col items-center gap-1 rounded-xl px-0.5 py-1.5 text-center text-[0.625rem] font-medium leading-tight focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold sm:text-xs";
-const CLASE_PASTILLA =
+export const CLASE_PASTILLA =
   "rounded-full border border-on-deep-muted px-1 text-[0.5625rem] leading-tight text-on-deep-muted";
 
 export function RailEnlaces({ grupos }: { grupos: GrupoRail[] }) {

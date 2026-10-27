@@ -4,8 +4,24 @@ import { useEffect, useState } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
 import Link from "next/link";
 import { CLAVES } from "@/lib/demo/claves";
-import { AMBITOS, DECISIONES, OPCIONES, type Ambito, type Opcion } from "@/lib/fogon/datos";
-import { contar, filtrar, INICIAL, leer, MOTIVO_SIN_PASE, motivoSinVoto, SIN_CONDICION, votar, votoPropio, type Condicion, type EstadoFogon } from "@/lib/fogon/estado";
+import { AMBITOS, OPCIONES, type Ambito, type Opcion } from "@/lib/fogon/datos";
+import {
+  contar,
+  decisionesVisibles,
+  filtrar,
+  INICIAL,
+  leer,
+  llevarAlConsejo,
+  MOTIVO_SIN_PASE,
+  motivoSinVoto,
+  puedeLlevarAlConsejo,
+  SIN_CONDICION,
+  votar,
+  votoPropio,
+  type Condicion,
+  type EstadoFogon,
+} from "@/lib/fogon/estado";
+import { agregar, guardarRegistros, leerRegistrosDelNavegador } from "@/lib/gobernanza/registros";
 import { personaDesdeSumarte } from "@/lib/canales/puertas";
 import { puede } from "@/lib/permisos/calcular";
 import { leerPasaporteDelNavegador } from "@/lib/pasaporte/del-navegador";
@@ -32,8 +48,11 @@ export function FogonCliente() {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
     try {
       // Si el navegador bloquea el almacenamiento, ni siquiera existe `window.localStorage`: queda sin Pase.
-      const pase = puede(personaDesdeSumarte(leerEstadoGuardado(window.localStorage)), "voto-fideicomiso").abierta;
-      setCondicion({ residencia: leerPasaporteDelNavegador().residencia, pase });
+      const sumarte = leerEstadoGuardado(window.localStorage);
+      const pase = puede(personaDesdeSumarte(sumarte), "voto-fideicomiso").abierta;
+      // La tribu que lidera sale de lo elegido en Sumarte (Plan Tribu); sin tribu elegida no lidera ninguna.
+      const lidera = sumarte.tribu ? sumarte.tribuId : null;
+      setCondicion({ residencia: leerPasaporteDelNavegador().residencia, pase, lidera });
       setEstado(leer(window.localStorage.getItem(CLAVES.fogon)));
     } catch {
       setFalloAlmacen(true);
@@ -54,7 +73,7 @@ export function FogonCliente() {
   }
 
   function elegir(id: string, opcion: Opcion) {
-    const d = DECISIONES.find((x) => x.id === id);
+    const d = decisionesVisibles(estado).find((x) => x.id === id);
     if (!d || !guardar(votar(estado, id, opcion, condicion))) return;
     setAbierta(null);
     // Se vacía primero y se escribe en el próximo tick: si el texto es igual al anterior (mismo voto
@@ -66,7 +85,22 @@ export function FogonCliente() {
     document.getElementById(`abrir-${id}`)?.focus();
   }
 
-  const lista = filtrar(ambito);
+  function llevar(id: string) {
+    const siguiente = llevarAlConsejo(estado, id, condicion);
+    const d = decisionesVisibles(estado).find((x) => x.id === id);
+    if (siguiente === estado || !d?.tribuId || !guardar(siguiente)) return;
+    // Registro con forma de attestation: la tribu afirma que llevó esta decisión. Solo en este navegador.
+    guardarRegistros(
+      agregar(leerRegistrosDelNavegador(), { esquema: "lleva-al-consejo", afirma: d.tribuId, sobre: id, datos: { titulo: d.titulo } }, new Date().toISOString()),
+    );
+    const texto = `Llevaste «${d.titulo}» al consejo (simulado). La ves en el ámbito Consejo.`;
+    setAnuncio("");
+    setTimeout(() => setAnuncio(texto), 50);
+    // El botón desaparece: el foco pasa al título de la decisión.
+    document.getElementById(`dec-${id}`)?.focus();
+  }
+
+  const lista = filtrar(ambito, estado);
 
   return (
     <div className="grid gap-5">
@@ -108,7 +142,7 @@ export function FogonCliente() {
             <li key={d.id} aria-labelledby={idTitulo} className="grid gap-3 rounded-xl border border-faint bg-surface p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="grid gap-2">
-                  <h2 id={idTitulo} className="font-semibold">{d.titulo}</h2>
+                  <h2 id={idTitulo} tabIndex={-1} className="font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">{d.titulo}</h2>
                   <p className="flex flex-wrap gap-2">
                     <span className={CHIP}>{d.donde}</span>
                     <span className={`${CHIP} border-deep text-deep`}>
@@ -116,9 +150,25 @@ export function FogonCliente() {
                       <TerminoLegal clave={d.base} />
                     </span>
                     {d.ambito === "tribu" && <span className={CHIP}>Tribu</span>}
+                    {d.ambito === "circulo" && <span className={CHIP}>Círculo</span>}
+                    {d.pideAlComun && <span className={CHIP}>Aprobada en la tribu · pide algo al común</span>}
                   </p>
+                  {d.origen && (
+                    <p className="text-sm font-medium">
+                      Viene de {d.origen.aprobadaEn} (aprobada en la tribu)
+                      <TerminoLegal clave="consejo" />
+                    </p>
+                  )}
                 </div>
-                <div className="text-right">
+                <div className="grid justify-items-end gap-2 text-right">
+                  {listo && puedeLlevarAlConsejo(estado, d, condicion) && (
+                    <button type="button" onClick={() => llevar(d.id)} className={BOTON_SUAVE}>
+                      Llevar al consejo
+                    </button>
+                  )}
+                  {listo && d.pideAlComun && estado.alConsejo.includes(d.id) && (
+                    <span className={`${CHIP} text-muted`}>Ya está en el consejo</span>
+                  )}
                   {!listo ? null : motivo ? (
                     <span className={`${CHIP} text-muted`}>
                       {motivo}
@@ -157,6 +207,9 @@ export function FogonCliente() {
               <p className="text-sm text-muted">
                 Votos de ejemplo: A favor {c.favor} · En contra {c.contra} · Abstención {c.abstencion}
               </p>
+              {d.ambito === "consejo" && (
+                <p className="text-sm text-muted">En la versión real votan los representantes. Acá la votación es abierta y simulada.</p>
+              )}
               {listo && propio && (
                 <p className="rounded-lg border border-deep bg-green-soft px-3 py-2 text-sm text-deep">
                   <span aria-hidden="true">✓ </span>
@@ -176,20 +229,6 @@ export function FogonCliente() {
         {anuncio}
       </p>
 
-      {listo && (
-        <p className="text-sm text-muted">
-          {condicion.residencia === "argentina"
-            ? "Con tu residencia fiscal en Argentina (simulado) votás en la Asamblea de residentes."
-            : condicion.residencia === "exterior"
-              ? "Con tu residencia fiscal en el exterior participás en tu tribu y ves las actas de la Asamblea; no votás en la Asamblea de residentes."
-              : (
-                <>
-                  Todavía no cargaste tu residencia fiscal, así que no sabemos si podés votar en la Asamblea de residentes.{" "}
-                  <Link className="underline" href="/pasaporte">Cargala en Tus datos</Link>.
-                </>
-              )}
-        </p>
-      )}
       {listo && (
         <p className="text-sm text-muted">
           {condicion.pase

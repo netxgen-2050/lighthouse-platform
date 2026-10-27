@@ -1,0 +1,198 @@
+// Textos de Semillas (`/semillas`): libro por comunidad, detalle de dónde vienen, meta de sembrador/a activo/a, ronda de
+// reconocimiento y reconocimiento recibido. Los textos de ejemplo (compañeros, criterios y lo recibido) viven en
+// `lib/semillas/datos.ts` con su inglés. "Semillas" no se traduce (decisión de Gus, 15-oct-2026): en inglés se dice
+// "Semillas" y la primera mención del contenido de la página se explica como "Semillas (seeds)" (glosario).
+// Los textos con peso legal (⚖) no están acá: los trae el catálogo legal.
+import { GLOSARIO } from "../glosario";
+import type { Textos } from "../tipos";
+
+const G = GLOSARIO;
+
+const es = {
+  pagina: {
+    titulo: G.semillas.es,
+    volverInicio: `← ${G.inicio.es}`,
+    sobretitulo: G.semillas.es,
+    porComunidad: " · por comunidad",
+    h1: "Lo que sembraste y lo que te abre",
+    intro:
+      "Las semillas no se venden ni se transfieren: son la cuenta de lo que cada quien aportó al proyecto. Todo es simulado y queda solo en este navegador.",
+  },
+  cargando: "Cargando tus datos…",
+  errorAlmacenamiento: "Error: tu navegador no permite guardar datos en este sitio, así que la ronda no se puede guardar.",
+  /** "120 semillas" / "120 Semillas" (el nombre no se traduce). */
+  cantidad: (n: string) => `${n} semillas`,
+  panel: {
+    titulo: "Tus Semillas por comunidad",
+    sinComunidad: "Todavía no sos miembro de ninguna comunidad, así que no tenés Semillas.",
+    sinComunidadAyuda:
+      "Para empezar, entrá a una comunidad (el Lighthouse o una tribu) y pedí ser miembro. Después podés proponer tu pacto y tus Semillas aparecen acá, una tarjeta por comunidad.",
+    verComunidades: "Ver las comunidades",
+    listaAria: "Comunidades donde sos miembro",
+    tiempo: "Tiempo",
+    plata: "Plata",
+    presencia: "Presencia",
+    total: "Total",
+    verDetalleDe: (nombre: string) => `Ver el detalle de ${nombre}`,
+    mostrando: "Mostrando el detalle",
+    verDetalle: "Ver el detalle",
+  },
+  detalle: {
+    titulo: (nombre: string) => `Detalle de ${nombre}`,
+    aria: "De dónde vienen tus semillas",
+    tiempo3: "Tiempo · 3 meses",
+    horasMes: (h: number) => `${h} h/mes en tu pacto aceptado`,
+    sinPacto: "Todavía no tenés un pacto de tiempo aceptado.",
+    proponer: "Proponé un pacto de tiempo",
+    plataRegistrada: "Aportes registrados en esta comunidad (simulado)",
+    pendienteFirma: "Pendiente de firma con el fiduciario",
+    noDisponibleResidencia: "No disponible por residencia fiscal",
+    sinResidencia: "Sin dato de tu residencia fiscal.",
+    cargala: "Cargala en Tus datos",
+    paseActivo: (nivel: string) => `${G.paseFundador.es} ${nivel} activo (simulado), un servicio que no suma semillas`,
+    presencia: "Presencia",
+    ticketRegistrado: "Ticket registrado",
+    genesis: "Genesis se activa con el primer check-in.",
+    presenciaCongreso: "La presencia del Congreso se cuenta en el Lighthouse.",
+    registraTicket: "Registrá tu ticket del Congreso en",
+    congreso: G.congreso.es,
+  },
+  meta: {
+    titulo: "Sembrador/a activo/a",
+    tiempo3: "Semillas de tiempo en 3 meses",
+    lista: "Lista",
+    enCamino: "En camino",
+    sinDatoMeta: (meta: number) => `sin dato de ${meta} semillas: falta un pacto aceptado`,
+    avance: (n: string, meta: number) => `${n} de ${meta} semillas`,
+    verPasaporte: "Ver lo que te abre tu pasaporte",
+  },
+  ronda: {
+    titulo: (nombre: string) => `Ronda de reconocimiento · ${nombre}`,
+    tituloEjemplo: (nombre: string) => `Ronda de reconocimiento · ${nombre} (ejemplo)`,
+    soloConPacto: (nombre: string) => `La ronda es solo para quienes tienen un pacto aceptado en ${nombre}.`,
+    paraHabilitar: "Para habilitarla,",
+    proponerEn: (nombre: string) => `proponé tu pacto de tiempo en ${nombre}`,
+    yEsperar: " y esperá a que la comunidad lo acepte.",
+    privada: "Privada · se muestra agregada",
+    intro: (nombre: string) =>
+      `Reconocé a tus compañeras y compañeros de ${nombre} con una puntuación de 1 a 5 en cada criterio. Cada puntuación necesita que cuentes por qué.`,
+    grupoAria: (criterio: string, persona: string) => `${criterio}, ${persona}`,
+    nDe5: (n: number) => `${n} de 5`,
+    puntaje: (n: number) => `Puntaje: ${n} de 5`,
+    sinPuntaje: "Sin puntaje",
+    errorNota: "Error: elegí una puntuación de 1 a 5.",
+    errorRazon: "Error: escribí por qué le das esta puntuación.",
+    enviada: "Ronda enviada (simulado)",
+    factorEvaluacion: "Factor de evaluación:",
+    enviar: "Enviar ronda",
+    factorFijo: (factor: string) => `Factor de evaluación: ${factor}.`,
+    pie: (factor: string) =>
+      `El factor de evaluación entre pares es ${factor} fijo, como en el mock-up: la ronda se envía de forma simulada y no cambia tus semillas.`,
+    faltante: {
+      mensaje: (partes: string, uno: boolean) => `Error: la ronda no se envió. ${uno ? "Falta" : "Faltan"} ${partes}.`,
+      puntuaciones: (n: number) => (n === 1 ? "1 puntuación" : `${n} puntuaciones`),
+      explicaciones: (n: number) => (n === 1 ? "1 explicación" : `${n} explicaciones`),
+      y: " y ",
+    },
+  },
+  recibido: {
+    titulo: "Cómo te reconocieron",
+    ejemplo: "Ejemplo · no es de personas reales",
+    de: (nombre: string) => `De ${nombre}`,
+    puntuacion: (criterio: string, nota: number) => `${criterio}: ${nota} de 5`,
+  },
+};
+
+const en: Textos<typeof es> = {
+  pagina: {
+    titulo: G.semillas.en,
+    volverInicio: `← ${G.inicio.en}`,
+    sobretitulo: G.semillas.en,
+    porComunidad: " · by community",
+    h1: "What you have sown and what it opens",
+    intro: `${G.semillas.explicada.en} are not sold or transferred: they are the account of what each person has contributed to the project. Everything is simulated and stays only in this browser.`,
+  },
+  cargando: "Loading your data…",
+  errorAlmacenamiento: "Error: your browser doesn't allow saving data on this site, so the round can't be saved.",
+  cantidad: (n: string) => `${n} ${G.semillas.en}`,
+  panel: {
+    titulo: `Your ${G.semillas.en} by community`,
+    sinComunidad: `You are not a member of any community yet, so you have no ${G.semillas.en}.`,
+    sinComunidadAyuda: `To start, go into a community (the Lighthouse or a tribe) and ask to become a member. Then you can propose your pact and your ${G.semillas.en} show up here, one card per community.`,
+    verComunidades: "See the communities",
+    listaAria: "Communities where you are a member",
+    tiempo: "Time",
+    plata: "Money",
+    presencia: "Presence",
+    total: "Total",
+    verDetalleDe: (nombre: string) => `See the details of ${nombre}`,
+    mostrando: "Showing the details",
+    verDetalle: "See the details",
+  },
+  detalle: {
+    titulo: (nombre: string) => `Details of ${nombre}`,
+    aria: `Where your ${G.semillas.en} come from`,
+    tiempo3: "Time · 3 months",
+    horasMes: (h: number) => `${h} h/month in your accepted pact`,
+    sinPacto: "You don't have an accepted time pact yet.",
+    proponer: "Propose a time pact",
+    plataRegistrada: "Contributions recorded in this community (simulated)",
+    pendienteFirma: "Pending signature with the trustee",
+    noDisponibleResidencia: "Not available because of tax residence",
+    sinResidencia: "No data on your tax residence.",
+    cargala: "Add it in My data",
+    paseActivo: (nivel: string) => `${G.paseFundador.en} ${nivel} active (simulated), a service that does not add ${G.semillas.en}`,
+    presencia: "Presence",
+    ticketRegistrado: "Ticket registered",
+    genesis: "Genesis is activated with the first check-in.",
+    presenciaCongreso: "Presence at the Congress is counted in the Lighthouse.",
+    registraTicket: "Register your Congress ticket in",
+    congreso: G.congreso.en,
+  },
+  meta: {
+    titulo: "Active sower",
+    tiempo3: `Time ${G.semillas.en} in 3 months`,
+    lista: "Ready",
+    enCamino: "On the way",
+    sinDatoMeta: (meta: number) => `no data on ${meta} ${G.semillas.en}: an accepted pact is missing`,
+    avance: (n: string, meta: number) => `${n} of ${meta} ${G.semillas.en}`,
+    verPasaporte: "See what your passport opens",
+  },
+  ronda: {
+    titulo: (nombre: string) => `Recognition round · ${nombre}`,
+    tituloEjemplo: (nombre: string) => `Recognition round · ${nombre} (example)`,
+    soloConPacto: (nombre: string) => `The round is only for people who have an accepted pact in ${nombre}.`,
+    paraHabilitar: "To enable it,",
+    proponerEn: (nombre: string) => `propose your time pact in ${nombre}`,
+    yEsperar: " and wait for the community to accept it.",
+    privada: "Private · shown in aggregate",
+    intro: (nombre: string) =>
+      `Recognize your fellow members of ${nombre} with a score from 1 to 5 on each criterion. Each score needs you to say why.`,
+    grupoAria: (criterio: string, persona: string) => `${criterio}, ${persona}`,
+    nDe5: (n: number) => `${n} of 5`,
+    puntaje: (n: number) => `Score: ${n} of 5`,
+    sinPuntaje: "No score",
+    errorNota: "Error: choose a score from 1 to 5.",
+    errorRazon: "Error: write why you are giving this score.",
+    enviada: "Round sent (simulated)",
+    factorEvaluacion: "Evaluation factor:",
+    enviar: "Send round",
+    factorFijo: (factor: string) => `Evaluation factor: ${factor}.`,
+    pie: (factor: string) =>
+      `The peer evaluation factor is fixed at ${factor}, as in the mock-up: the round is sent in a simulated way and does not change your ${G.semillas.en}.`,
+    faltante: {
+      mensaje: (partes: string) => `Error: the round was not sent. Missing: ${partes}.`,
+      puntuaciones: (n: number) => (n === 1 ? "1 score" : `${n} scores`),
+      explicaciones: (n: number) => (n === 1 ? "1 explanation" : `${n} explanations`),
+      y: " and ",
+    },
+  },
+  recibido: {
+    titulo: "How you were recognized",
+    ejemplo: "Example · not from real people",
+    de: (nombre: string) => `From ${nombre}`,
+    puntuacion: (criterio: string, nota: number) => `${criterio}: ${nota} of 5`,
+  },
+};
+
+export const semillas = { es, en };
