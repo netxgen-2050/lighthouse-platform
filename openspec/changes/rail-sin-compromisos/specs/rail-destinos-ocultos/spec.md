@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Permite que una página siga existiendo y se pueda abrir por su URL sin ofrecerla en la navegación principal (rail, barra superior y menú del avatar). La usa Compromisos desde el 27-oct-2026, cuando el Mercado pasó a llevarse fuera de la plataforma.
+Permite que una página siga existiendo y se pueda abrir por su URL sin que la plataforma la ofrezca: no aparece en la navegación principal (rail, barra superior y menú del avatar), no llegan avisos que lleven a ella, no hay preferencias sobre ella y la política de privacidad no la nombra. La usa Compromisos desde el 27-oct-2026, cuando el Mercado pasó a llevarse fuera de la plataforma.
 
 ## ADDED Requirements
 
@@ -54,3 +54,48 @@ The single navigation list SHALL keep Compromisos declared as an existing page, 
 #### Scenario: Volver a mostrarlo
 - **WHEN** alguien quita la marca de oculto de Compromisos
 - **THEN** el enlace vuelve al grupo Participar en su lugar de antes, entre Fogón y Congreso
+
+### Requirement: Sin avisos que lleven al Mercado
+The inbox (`/bandeja`), the bell (campanita) and Mi recorrido SHALL NOT list or count activity events of type `mercado` ("Publicaste en el mercado: …") or `interes-oferta` ("Alguien se interesó en tu oferta (simulado)"), including those already saved in the browser before this change. The code that creates those events MUST remain, and publishing from `/compromisos` MUST keep saving them.
+
+#### Scenario: Aviso de interés guardado
+- **WHEN** el navegador tiene guardada una notificación `interes-oferta` sin leer que ya se ve, y ninguna otra
+- **THEN** la campanita dice "Notificaciones, sin novedades" y la bandeja dice "Todavía no tenés notificaciones"
+
+#### Scenario: Junto con otros avisos
+- **WHEN** el navegador tiene una notificación `interes-oferta` y otra de otro tipo, las dos sin leer
+- **THEN** la campanita dice "1 notificación sin leer" y la bandeja muestra solo la otra
+
+#### Scenario: Publicación en Mi recorrido
+- **WHEN** el navegador tiene guardado un evento `mercado` "Publicaste en el mercado: Miel"
+- **THEN** Mi recorrido no lo muestra ni enlaza a `/compromisos`
+
+#### Scenario: Publicar por la URL sigue guardando
+- **WHEN** una persona publica una oferta desde `/compromisos` entrando por la URL
+- **THEN** el navegador guarda el evento de la publicación y el aviso de interés con demora, como antes, y ninguno de los dos aparece en la bandeja, la campanita ni Mi recorrido
+
+### Requirement: Sin preferencia de aviso del Mercado
+`/configuracion` SHALL NOT show the "Mercado" notification preference (in English, "Market"). The other notification preferences MUST stay, in order: Comunidades, Pactos, Rondas de reconocimiento and Postulaciones. A value already saved for `mercado` MUST be kept when reading and saving preferences.
+
+#### Scenario: Ver las preferencias
+- **WHEN** una persona abre la sección de avisos de `/configuracion`
+- **THEN** ve cuatro casillas, sin ninguna "Mercado"
+
+#### Scenario: En inglés
+- **WHEN** la persona abre `/configuracion` en inglés
+- **THEN** no aparece ninguna casilla "Market"
+
+#### Scenario: Valor guardado
+- **WHEN** las preferencias guardadas tienen `mercado: false` y la persona cambia otra preferencia
+- **THEN** lo guardado sigue teniendo `mercado: false`
+
+### Requirement: La política de privacidad no nombra Compromisos
+The draft privacy policy (`/privacidad` and the consent screen) SHALL NOT name Compromisos or "los compromisos que asumís" as data the platform handles: not in the summary, not in the data-per-screen table and not in the purposes. The policy version MUST NOT change because of this edit.
+
+#### Scenario: Leer la política
+- **WHEN** una persona abre `/privacidad`
+- **THEN** no encuentra la palabra "compromisos" en el resumen, en la tabla de datos por pantalla ni en las finalidades, y la fila de votos se llama "Votos"
+
+#### Scenario: Consentimiento ya dado
+- **WHEN** una persona que ya aceptó la política antes de este cambio vuelve a entrar
+- **THEN** no se le vuelve a pedir el consentimiento
