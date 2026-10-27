@@ -32,6 +32,11 @@ export type Decision = {
   pideAlComun?: boolean;
   /** En el consejo: de qué tribu viene y que ya se aprobó ahí (el nombre de la tribu no se traduce). */
   origen?: { tribuId: string; aprobadaEn: string };
+  /** Parámetros opcionales (fogon-gobernanza-holarquia): solo se muestran si existen. No van en el mapa. */
+  plazo?: { cierra: string /* AAAA-MM-DD */ };
+  acuerdo?: { tipo: "pacto" | "norma"; nombre: Bi; href?: string };
+  /** Plata SIMULADA. `cantidad: null` es "sin dato", nunca 0. */
+  monto?: { cantidad: number | null; moneda: "USD"; fuente: "fondo-comun" | "tribu" | "fideicomiso" };
 };
 
 const b = (es: string, en: string): { es: string; en: string; original: "es" } => ({ es, en, original: "es" });
@@ -151,11 +156,49 @@ export const DECISIONES_DE_GOBERNANZA: readonly Decision[] = [
     requisito: "ninguno",
     votos: { favor: 5, contra: 1, abstencion: 1 },
     origen: { tribuId: "valle", aprobadaEn: "Valle Solar" },
+    plazo: { cierra: "2026-11-15" },
+    monto: { cantidad: 4800, moneda: "USD", fuente: "fondo-comun" },
+  },
+];
+
+/** Decisiones de ejemplo para la lente "Decisiones que suben" (fogon-gobernanza-holarquia): una del común y una del consejo. */
+export const DECISIONES_CON_CAMINO: readonly Decision[] = [
+  {
+    id: "regalia",
+    titulo: b("Parámetros de la regalía de regeneración", "Parameters of the regeneration royalty"),
+    donde: b("Lighthouse (el común)", "Lighthouse (the commons)"),
+    regla: b("Consenso", "Consensus"),
+    base: "art35",
+    ambito: "comun",
+    requisito: "ninguno",
+    votos: { favor: 8, contra: 1, abstencion: 2 },
+    plazo: { cierra: "2026-12-01" },
+    acuerdo: { tipo: "pacto", nombre: b("Pacto de regalía regenerativa (ejemplo)", "Regenerative royalty pact (sample)") },
+  },
+  {
+    id: "cisterna-compartida",
+    titulo: b("Cisterna compartida entre Agua Clara y Valle Solar", "Shared cistern between Agua Clara and Valle Solar"),
+    donde: DONDE_CONSEJO,
+    tribu: "Agua Clara",
+    regla: REGLA_CONSEJO,
+    base: "consejo",
+    ambito: "consejo",
+    requisito: "ninguno",
+    votos: { favor: 3, contra: 0, abstencion: 1 },
+    acuerdo: { tipo: "norma", nombre: b("Norma de uso compartido del agua (ejemplo)", "Shared water use rule (sample)") },
+    monto: { cantidad: null, moneda: "USD", fuente: "fondo-comun" },
   },
 ];
 
 /** Todas las decisiones que se ven en /fogon, antes de sumar las que se llevaron al consejo. */
-export const DECISIONES_BASE: readonly Decision[] = [...DECISIONES, ...DECISIONES_DE_GOBERNANZA.slice(0, 2), ...DECISIONES_DEL_COMUN, ...DECISIONES_DE_GOBERNANZA.slice(2)];
+export const DECISIONES_BASE: readonly Decision[] = [
+  ...DECISIONES,
+  ...DECISIONES_DE_GOBERNANZA.slice(0, 2),
+  ...DECISIONES_DEL_COMUN,
+  DECISIONES_CON_CAMINO[0],
+  DECISIONES_DE_GOBERNANZA[2],
+  DECISIONES_CON_CAMINO[1],
+];
 
 /** Copia de una decisión de tribu en el ámbito del consejo (id propio, con su origen). Los votos del consejo arrancan en cero. */
 export function copiaParaElConsejo(d: Decision): Decision {

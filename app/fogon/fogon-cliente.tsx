@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
 import Link from "next/link";
 import { CLAVES } from "@/lib/demo/claves";
+import { ParametrosDecision } from "./parametros-decision";
 import { TextoBilingue } from "@/components/texto-bilingue";
 import { ambitos as ambitosDe, opciones as opcionesDe, type Ambito, type Opcion } from "@/lib/fogon/datos";
 import {
@@ -186,6 +187,7 @@ export function FogonCliente() {
                       <TerminoLegal clave="consejo" />
                     </p>
                   )}
+                  <ParametrosDecision decision={d} />
                 </div>
                 <div className="grid justify-items-end gap-2 text-right">
                   {listo && puedeLlevarAlConsejo(estado, d, condicion) && (
