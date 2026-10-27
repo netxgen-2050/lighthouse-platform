@@ -24,6 +24,10 @@ describe("catálogo legal", () => {
         "calificado",
         "chacra",
         "circulo",
+        "circulotrabajo",
+        "consejo",
+        "representante",
+        "validacioncomun",
         "consultivo",
         "contacto",
         "creditos",
@@ -79,6 +83,13 @@ describe("catálogo legal", () => {
     expect(TERMINOS.avisosimulador.texto).toBe(
       "Prototipo interno · valores de partida, no son una oferta ni un pronóstico · el diseño legal no lo revisó un abogado",
     );
+  });
+  it("los términos de la gobernanza fractal son borrador, con inglés, y avisan que el reglamento falta", () => {
+    for (const clave of ["circulotrabajo", "consejo", "representante", "validacioncomun"] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+      expect(terminoEn(clave)?.texto.trim(), clave).toBeTruthy();
+      expect(TERMINOS[clave].texto, clave).toMatch(/todavía|no existe/);
+    }
   });
   it("encuentroeducativo es borrador", () => {
     expect(esBorrador("encuentroeducativo")).toBe(true);

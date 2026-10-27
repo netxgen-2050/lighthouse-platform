@@ -11,17 +11,17 @@ Rama `agente/fogon-gobernanza-fractal` desde `dev`, **después** de que `fogon-l
 
 ## 2. Página "Cómo decidimos"
 
-- [ ] 2.1 `app/fogon/gobernanza/` con el gráfico SVG y la lista anidada (design §5), aviso de prototipo, ⚖ nuevos con `borrador: true` en `lib/legal/terminos.ts` (y su test), textos es/en. Verificar con `pnpm verificar`.
-- [ ] 2.2 `e2e/fogon-gobernanza.spec.ts`: ver la estructura; Barrio 3 sin círculos ni lugar; lista recorrible con teclado; 390 px sin scroll horizontal; botón de reportar presente. Sumar la página a `e2e/accesibilidad.spec.ts`. Verificar con `pnpm test:e2e e2e/fogon-gobernanza.spec.ts e2e/accesibilidad.spec.ts`.
+- [x] 2.1 `app/fogon/gobernanza/` con el gráfico SVG y la lista anidada (design §5), aviso de prototipo, ⚖ nuevos con `borrador: true` en `lib/legal/terminos.ts` (y su test), textos es/en. Verificar con `pnpm verificar`.
+- [x] 2.2 `e2e/fogon-gobernanza.spec.ts`: ver la estructura; Barrio 3 sin círculos ni lugar; lista recorrible con teclado; 390 px sin scroll horizontal; botón de reportar presente. Sumar la página a `e2e/accesibilidad.spec.ts`. Verificar con `pnpm test:e2e e2e/fogon-gobernanza.spec.ts e2e/accesibilidad.spec.ts`.
 
 ## 3. Fogón con ámbitos nuevos
 
-- [ ] 3.1 `lib/fogon/datos.ts` y `estado.ts` (design §3 y §4): ámbitos nuevos, `EJEMPLOS_COMUN` en el común, decisión de círculo y de consejo de ejemplo, "llevar al consejo" con su registro. Tests: filtrar por cada ámbito; llevar al consejo crea la copia con `origen` y el registro; quien no lidera no puede. Verificar con `pnpm test lib/fogon`.
-- [ ] 3.2 `app/fogon/fogon-cliente.tsx` y `page.tsx`: filtros nuevos, marca "Viene de … (aprobada en la tribu)", botón "Llevar al consejo" solo para quien lidera, enlace "Cómo decidimos". Actualizar `e2e/fogon.spec.ts` con los escenarios del delta de `fogon`. Verificar con `pnpm test:e2e e2e/fogon.spec.ts`.
+- [x] 3.1 `lib/fogon/datos.ts` y `estado.ts` (design §3 y §4): ámbitos nuevos, `EJEMPLOS_COMUN` en el común, decisión de círculo y de consejo de ejemplo, "llevar al consejo" con su registro. Tests: filtrar por cada ámbito; llevar al consejo crea la copia con `origen` y el registro; quien no lidera no puede. Verificar con `pnpm test lib/fogon`.
+- [x] 3.2 `app/fogon/fogon-cliente.tsx` y `page.tsx`: filtros nuevos, marca "Viene de … (aprobada en la tribu)", botón "Llevar al consejo" solo para quien lidera, enlace "Cómo decidimos". Actualizar `e2e/fogon.spec.ts` con los escenarios del delta de `fogon`. Verificar con `pnpm test:e2e e2e/fogon.spec.ts`.
 
 ## 4. Validaciones visibles
 
-- [ ] 4.1 Ficha de tribu (`app/tribus/[id]`): "Validada por el común" / "Todavía no validada por el común". "Mi recorrido": "Validada por <tribu>" para cada membresía aceptada (simulado). E2E en `e2e/fogon-gobernanza.spec.ts`. Verificar con `pnpm test:e2e e2e/fogon-gobernanza.spec.ts`.
+- [x] 4.1 Ficha de tribu (`app/tribus/[id]`): "Validada por el común" / "Todavía no validada por el común". "Mi recorrido": "Validada por <tribu>" para cada membresía aceptada (simulado). E2E en `e2e/fogon-gobernanza.spec.ts`. Verificar con `pnpm test:e2e e2e/fogon-gobernanza.spec.ts`.
 
 ## 5. Integración
 

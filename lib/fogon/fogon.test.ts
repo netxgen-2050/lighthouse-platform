@@ -2,8 +2,21 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { TERMINOS } from "@/lib/legal/terminos";
-import { AMBITOS, DECISIONES, EJEMPLOS_COMUN } from "./datos";
-import { contar, filtrar, INICIAL, leer, motivoSinVoto, SIN_CONDICION, votar, votoPropio, type Condicion } from "./estado";
+import { AMBITOS, DECISIONES, DECISIONES_BASE, DECISIONES_DEL_COMUN, DECISIONES_DE_GOBERNANZA, EJEMPLOS_COMUN } from "./datos";
+import {
+  contar,
+  decisionesVisibles,
+  filtrar,
+  INICIAL,
+  leer,
+  llevarAlConsejo,
+  motivoSinVoto,
+  puedeLlevarAlConsejo,
+  SIN_CONDICION,
+  votar,
+  votoPropio,
+  type Condicion,
+} from "./estado";
 
 const mock = readFileSync(path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"), "utf8");
 const huerta = DECISIONES[0];
@@ -19,17 +32,29 @@ describe("datos", () => {
       expect(TERMINOS[d.base]).toBeDefined();
     }
   });
-  it("los ámbitos son solo tribu y fideicomiso", () => {
-    expect(AMBITOS.map((a) => a.id)).toEqual(["tribu", "fideicomiso"]);
+  it("los ámbitos son Círculo, Tribu, Lighthouse (el común), Consejo y Fideicomiso, y no hay Asamblea de residentes", () => {
+    expect(AMBITOS.map((a) => a.etiqueta)).toEqual(["Círculo", "Tribu", "Lighthouse (el común)", "Consejo", "Fideicomiso"]);
+    expect(AMBITOS.map((a) => a.etiqueta).join()).not.toMatch(/Asamblea de residentes/);
   });
-  it("ninguna decisión visible es de la Asamblea de residentes", () => {
-    expect(DECISIONES.filter((d) => d.donde === "Asamblea de residentes")).toEqual([]);
-    expect(DECISIONES.map((d) => d.id)).not.toContain("bomba");
-    expect(DECISIONES.map((d) => d.id)).not.toContain("animales");
+  it("ninguna decisión visible nombra a la Asamblea de residentes", () => {
+    expect(DECISIONES_BASE.filter((d) => d.donde === "Asamblea de residentes")).toEqual([]);
   });
-  it("los ejemplos para el común conservan las dos decisiones con su ⚖", () => {
+  it("los ejemplos para el común conservan las dos decisiones con su ⚖, ahora en el ámbito del común y sin pedir residencia", () => {
     expect(EJEMPLOS_COMUN.map((d) => d.id)).toEqual(["bomba", "animales"]);
     for (const d of EJEMPLOS_COMUN) expect(TERMINOS[d.base]).toBeDefined();
+    expect(DECISIONES_DEL_COMUN.map((d) => d.ambito)).toEqual(["comun", "comun"]);
+    expect(DECISIONES_DEL_COMUN.map((d) => d.requisito)).toEqual(["ninguno", "ninguno"]);
+    expect(DECISIONES_DEL_COMUN.map((d) => d.titulo)).toEqual([
+      "Usar el fondo común para la bomba solar",
+      "Permitir animales de granja en las chacras",
+    ]);
+  });
+  it("las decisiones nuevas de gobernanza son de círculo, de tribu y de consejo, con ⚖ del catálogo", () => {
+    expect(DECISIONES_DE_GOBERNANZA.map((d) => d.ambito)).toEqual(["circulo", "tribu", "consejo"]);
+    for (const d of DECISIONES_DE_GOBERNANZA) expect(TERMINOS[d.base]).toBeDefined();
+    const consejo = DECISIONES_DE_GOBERNANZA[2];
+    expect(consejo.titulo).toBe("Pedido de Valle Solar al Fondo Común para la bomba solar");
+    expect(consejo.origen).toEqual({ tribuId: "valle", aprobadaEn: "Valle Solar" });
   });
   it("no hay personas de ejemplo en los datos", () => {
     expect(JSON.stringify(DECISIONES)).not.toMatch(/Luc[ií]a|Lucas/);
@@ -69,7 +94,57 @@ describe("filtro", () => {
     expect(filtrar("fideicomiso").map((d) => d.id)).toEqual(["presupuesto"]);
   });
   it("sin filtro están todas", () => {
-    expect(filtrar(null)).toHaveLength(3);
+    expect(filtrar(null)).toHaveLength(8);
+  });
+  it("cada ámbito deja sus decisiones", () => {
+    expect(filtrar("circulo").map((d) => d.id)).toEqual(["siembra"]);
+    expect(filtrar("tribu").map((d) => d.id)).toEqual(["huerta", "facilitador", "cisterna"]);
+    expect(filtrar("comun").map((d) => d.id)).toEqual(["bomba", "animales"]);
+    expect(filtrar("consejo").map((d) => d.id)).toEqual(["consejo-bomba"]);
+  });
+  it("el común trae las dos decisiones del mock-up, cada una con su regla y su ⚖", () => {
+    for (const d of filtrar("comun")) {
+      expect(d.regla).toBeTruthy();
+      expect(TERMINOS[d.base]).toBeDefined();
+    }
+  });
+});
+
+const lideraValle: Condicion = { residencia: undefined, pase: false, lidera: "valle" };
+const lideraTaller: Condicion = { residencia: undefined, pase: false, lidera: "taller" };
+const cisterna = DECISIONES_DE_GOBERNANZA[1];
+
+describe("llevar al consejo", () => {
+  it("quien lidera Valle Solar puede, y crea la copia en el consejo con su origen", () => {
+    expect(puedeLlevarAlConsejo(INICIAL, cisterna, lideraValle)).toBe(true);
+    const e = llevarAlConsejo(INICIAL, "cisterna", lideraValle);
+    expect(e.alConsejo).toEqual(["cisterna"]);
+    const copia = filtrar("consejo", e).find((d) => d.id === "consejo-cisterna")!;
+    expect(copia.titulo).toBe(cisterna.titulo);
+    expect(copia.origen).toEqual({ tribuId: "valle", aprobadaEn: "Valle Solar" });
+    expect(copia.ambito).toBe("consejo");
+    // La original sigue en la tribu.
+    expect(filtrar("tribu", e).map((d) => d.id)).toContain("cisterna");
+  });
+  it("quien no lidera esa tribu no puede, ni quien no lidera ninguna", () => {
+    expect(puedeLlevarAlConsejo(INICIAL, cisterna, lideraTaller)).toBe(false);
+    expect(puedeLlevarAlConsejo(INICIAL, cisterna, SIN_CONDICION)).toBe(false);
+    expect(llevarAlConsejo(INICIAL, "cisterna", lideraTaller)).toBe(INICIAL);
+    expect(llevarAlConsejo(INICIAL, "cisterna", SIN_CONDICION)).toBe(INICIAL);
+  });
+  it("solo se llevan las decisiones de tribu que piden algo al común, y una sola vez", () => {
+    expect(llevarAlConsejo(INICIAL, "huerta", lideraValle)).toBe(INICIAL);
+    expect(llevarAlConsejo(INICIAL, "facilitador", lideraValle)).toBe(INICIAL);
+    const e = llevarAlConsejo(INICIAL, "cisterna", lideraValle);
+    expect(llevarAlConsejo(e, "cisterna", lideraValle)).toBe(e);
+    expect(puedeLlevarAlConsejo(e, cisterna, lideraValle)).toBe(false);
+    expect(decisionesVisibles(e).filter((d) => d.id === "consejo-cisterna")).toHaveLength(1);
+  });
+  it("se puede votar en la copia del consejo y el voto queda", () => {
+    const e = llevarAlConsejo(INICIAL, "cisterna", lideraValle);
+    const v = votar(e, "consejo-cisterna", "favor", SIN_CONDICION);
+    expect(v.votos["consejo-cisterna"]).toBe("favor");
+    expect(v.alConsejo).toEqual(["cisterna"]);
   });
 });
 
@@ -85,15 +160,15 @@ describe("votar", () => {
     expect(c.favor).toBe(huerta.votos.favor);
     expect(c.contra).toBe(huerta.votos.contra + 1);
   });
-  it("una decisión que ya no existe (la bomba) no registra nada", () => {
-    expect(votar(INICIAL, "bomba", "favor", argentina)).toBe(INICIAL);
+  it("una decisión que no existe no registra nada", () => {
+    expect(votar(INICIAL, "no-existe", "favor", argentina)).toBe(INICIAL);
   });
   it("el fideicomiso solo registra el voto de quien tiene el Pase", () => {
     expect(votar(INICIAL, "presupuesto", "favor", argentina)).toBe(INICIAL);
     expect(votar(INICIAL, "presupuesto", "favor", conPase).votos.presupuesto).toBe("favor");
   });
   it("el voto guardado en un ámbito donde ya no puede votar no se muestra", () => {
-    const e = { votos: { presupuesto: "contra" as const } };
+    const e = { votos: { presupuesto: "contra" as const }, alConsejo: [] };
     expect(votoPropio(e, presupuesto, argentina)).toBeUndefined();
     expect(votoPropio(e, presupuesto, conPase)).toBe("contra");
   });
@@ -106,19 +181,33 @@ describe("leer", () => {
   });
   it("descarta votos inválidos y decisiones desconocidas", () => {
     const e = leer(JSON.stringify({ votos: { huerta: "favor", bomba: "ya", otra: "favor" } }));
-    expect(e).toEqual({ votos: { huerta: "favor" } });
+    expect(e).toEqual({ votos: { huerta: "favor" }, alConsejo: [] });
   });
-  it("un estado guardado con un voto en la bomba (decisión que salió) no falla y lo ignora", () => {
+  it("un voto guardado en una decisión del común se conserva (la bomba y los animales volvieron en ese ámbito)", () => {
     const e = leer(JSON.stringify({ votos: { huerta: "contra", bomba: "favor", animales: "favor" } }));
-    expect(e).toEqual({ votos: { huerta: "contra" } });
+    expect(e).toEqual({ votos: { huerta: "contra", bomba: "favor", animales: "favor" }, alConsejo: [] });
   });
   it("lo guardado con personas de ejemplo (formato viejo) no pasa a quien mira", () => {
     const viejo = leer(
       JSON.stringify({ persona: "lucas", votos: { lucia: { huerta: "favor" }, lucas: { bomba: "contra" } } }),
     );
-    expect(viejo).toEqual({ votos: {} });
+    expect(viejo).toEqual({ votos: {}, alConsejo: [] });
   });
   it("el formato plano más viejo con persona tampoco pasa a quien mira", () => {
-    expect(leer(JSON.stringify({ persona: "lucas", votos: { bomba: "contra" } }))).toEqual({ votos: {} });
+    expect(leer(JSON.stringify({ persona: "lucas", votos: { bomba: "contra" } }))).toEqual({ votos: {}, alConsejo: [] });
+  });
+});
+
+describe("lo llevado al consejo se lee tolerante", () => {
+  it("conserva la decisión llevada y su voto; descarta ids que no se pueden llevar", () => {
+    const e = leer(JSON.stringify({ votos: { "consejo-cisterna": "favor" }, alConsejo: ["cisterna", "huerta", 7, "otra"] }));
+    expect(e.alConsejo).toEqual(["cisterna"]);
+    expect(e.votos).toEqual({ "consejo-cisterna": "favor" });
+  });
+  it("un voto en una copia que no se llevó se ignora", () => {
+    expect(leer(JSON.stringify({ votos: { "consejo-cisterna": "favor" } })).votos).toEqual({});
+  });
+  it("alConsejo roto vuelve a vacío", () => {
+    expect(leer(JSON.stringify({ votos: {}, alConsejo: "cisterna" })).alConsejo).toEqual([]);
   });
 });
