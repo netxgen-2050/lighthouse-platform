@@ -6,7 +6,9 @@ import { useSesion } from "./contexto";
 
 /** Muestra el contenido solo al super admin; al resto le dice que no tiene acceso. */
 export function SoloSuperAdmin({ children }: { children: ReactNode }) {
-  const { sesion } = useSesion();
+  const { estado, sesion } = useSesion();
+  // Mientras se verifica la sesión no se dibuja nada (ni el aviso de "sin acceso" ni las operaciones).
+  if (estado === "cargando") return null;
   if (sesion?.rol !== "superadmin") {
     return (
       <div className="mx-auto max-w-xl p-6 sm:p-10">

@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { nivelMinimoDeRuta, puedeCapacidad, puedeRuta, type Capacidad } from "@/lib/permisos/niveles";
+import { capacidadDeRuta, nivelMinimoDeRuta, puedeCapacidad, puedeRuta, type Capacidad } from "@/lib/permisos/niveles";
 import {
   corresponderOfrecerImportacion,
   descartarImportacion,
@@ -28,6 +28,10 @@ const BOTON_SECUNDARIO = `${BOTON} border border-faint hover:bg-surface-2`;
 export function Puerta({ children }: { children: ReactNode }) {
   const { estado, nivel, nivelListo, consentimiento } = useSesion();
   const ruta = usePathname();
+  // /admin la protege el servidor (ADR-016): sin permiso ya respondió 403 y no armó nada. Se deja pasar a `children` mientras
+  // la sesión del navegador no está lista (también en el servidor) para que esa respuesta llegue con su estado HTTP 403 y
+  // para que quien no tiene sesión vea el 403 y no sea llevado a Sumarte. `SoloSuperAdmin` cubre la pantalla.
+  if (estado !== "ok" && capacidadDeRuta(ruta) === "admin") return <Contenido>{children}</Contenido>;
   // Mientras se verifica la sesión se espera ("Cargando…"): mostrar la página y rearmarla al confirmar la sesión
   // haría perder lo que la persona ya estaba haciendo (foco, scroll, casillas).
   if (estado === "sin-sesion") {

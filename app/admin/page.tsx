@@ -1,9 +1,7 @@
-import type { Metadata } from "next";
 import { exigirSuperAdmin } from "@/lib/sesion/pagina";
 import { BandejaPedidos } from "./bandeja-pedidos";
 import { PostulacionesComunidades } from "./postulaciones-comunidades";
 
-export const metadata: Metadata = { title: "Admin · Pendientes" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminPendientesPage() {

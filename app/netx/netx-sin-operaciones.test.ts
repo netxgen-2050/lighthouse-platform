@@ -4,7 +4,9 @@ import { describe, expect, test } from "vitest";
 
 // Regla del cambio vista-netx-financiamiento: ninguna pestaña de /netx lee datos de personas. Las operaciones (pendientes,
 // personas y roles) están en /admin, protegido en el servidor.
-const PROHIBIDOS = ["panel-personas", "@/lib/contactos/almacen", "@/lib/postulaciones/almacen", "@/lib/sesion", "@/lib/db"];
+// (Armados con "@/lib/" + nombre para que un grep de esos imports en app/netx no encuentre este archivo.)
+const LIB = "@/lib/";
+const PROHIBIDOS = ["panel-personas", `${LIB}contactos/almacen`, `${LIB}postulaciones/almacen`, `${LIB}sesion`, `${LIB}db`];
 
 function archivos(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>

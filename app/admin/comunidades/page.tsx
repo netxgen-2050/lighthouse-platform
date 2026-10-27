@@ -1,10 +1,8 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { exigirSuperAdmin } from "@/lib/sesion/pagina";
 import { listarTribus } from "@/lib/tribus/datos";
 import { textoDeEstado } from "@/lib/tribus/tipos";
 
-export const metadata: Metadata = { title: "Admin · Comunidades" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminComunidadesPage() {

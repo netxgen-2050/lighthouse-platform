@@ -26,6 +26,12 @@ Gus (26-oct) eligió sacar las operaciones del super admin (pendientes, personas
 - Aceptamos: el resto de la plataforma (incluida la Vista NetX) sigue con ADR-015: se oculta en el navegador.
 - Revisar cuando: llegue Neon Auth (ADR-009) — entonces se lee su cookie y `lh-sesion-admin` se borra —; cuando otra página necesite protección en el servidor (se reusa `exigirSuperAdmin` o se pasa a C); o cuando la bandeja o las postulaciones pasen a la base (sus APIs tienen que verificar por su cuenta, el 403 de la página no alcanza).
 
+## Hallazgos de la implementación (27-oct-2026)
+- **El 403 no llegaba con estado HTTP 403 mientras la `Puerta` no dibujara `children` en el servidor.** La `Puerta` del layout raíz es de cliente y, sin sesión resuelta, dibuja "Cargando…": el HTML del servidor nunca tocaba el `forbidden()` y la respuesta salía 200 (con el aviso de acceso solo en el navegador). Sin cambiar el mecanismo, la `Puerta` deja pasar `children` en `/admin` mientras la sesión del navegador no está lista (`capacidadDeRuta === "admin"`); así el servidor responde 403 de verdad. Eso además evita que quien no tiene sesión sea llevado a Sumarte desde `/admin`. `SoloSuperAdmin` no dibuja nada mientras la sesión carga.
+- **El título de cada pestaña es el mismo ("Admin")**: el `metadata.title` de una página (por ejemplo "Pendientes") viajaba en la respuesta 403 aunque el servidor no armara nada. Queda un solo título, el del layout.
+- **Una ruta que no existe bajo `/admin`** (`/admin/loquesea`) responde 404, no 403: el enrutador la descarta antes de correr los layouts. No revela contenido, solo que esa ruta no existe.
+- `import "server-only"` funciona sin instalar el paquete (Next lo resuelve por dentro); en los tests de Vitest se simula con `vi.mock("server-only")`.
+
 ## En palabras simples
 Hasta hoy la plataforma "tapaba" las páginas en la pantalla. Para la nueva página de administración ponemos una llave de verdad: cuando el super admin entra, su navegador guarda un pase que solo sirve para la puerta de `/admin`. Si alguien sin ese pase pide la página, el servidor contesta "no tenés acceso" y no manda nada de adentro. Por ejemplo, una persona que copia la dirección `/admin` y la abre ve solo el aviso, aunque sepa mirar el código. El resto de la plataforma sigue como antes hasta que cambiemos el login.
 

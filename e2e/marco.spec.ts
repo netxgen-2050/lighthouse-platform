@@ -20,7 +20,8 @@ test("el rail trae solo la navegación, en orden", async ({ page }) => {
   const nav = page.getByRole("navigation", { name: "Principal" });
   await expect(nav).toBeVisible();
   const textos = (await nav.getByRole("link").allInnerTexts()).map((t) => t.trim().split("\n")[0]);
-  const orden = ["Inicio", "Territorio", "Tribus", "Pactos", "Semillas", "Fogón", "Compromisos", "Congreso", "Sumarte"];
+  // "Admin" va al final, en el grupo "Interno", y solo lo ve el super admin (el rol por defecto de estas pruebas).
+  const orden = ["Inicio", "Territorio", "Tribus", "Pactos", "Semillas", "Fogón", "Compromisos", "Congreso", "Sumarte", "Admin"];
   expect(textos).toEqual(orden.filter((o) => textos.includes(o)));
   expect(textos).toEqual(expect.arrayContaining(["Inicio", "Tribus", "Congreso", "Sumarte"]));
   // Perfil, Pasaporte, Mi recorrido y Configuración viven en el menú del avatar; NetX y la campanita, en la barra superior.
@@ -172,12 +173,13 @@ test("Tab: primero Saltar al contenido y después Inicio en el rail; justo despu
   await page.keyboard.press("Tab");
   const nav = page.getByRole("navigation", { name: "Principal" });
   await expect(nav.getByRole("link", { name: "Inicio" })).toBeFocused();
-  // Se llega con Tab hasta el último enlace del rail (Sumarte); justo después va NetX, la campanita y luego el avatar.
-  const sumarte = nav.getByRole("link", { name: "Sumarte" });
-  for (let i = 0; i < 20 && !(await sumarte.evaluate((el) => el === document.activeElement)); i++) {
+  // Se llega con Tab hasta el último enlace del rail (Admin, solo para el super admin, después de Sumarte); justo después
+  // va NetX, la campanita y luego el avatar.
+  const admin = nav.getByRole("link", { name: /^Admin/ });
+  for (let i = 0; i < 20 && !(await admin.evaluate((el) => el === document.activeElement)); i++) {
     await page.keyboard.press("Tab");
   }
-  await expect(sumarte).toBeFocused();
+  await expect(admin).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("banner").getByRole("link", { name: /NetX/ })).toBeFocused();
   await page.keyboard.press("Tab");

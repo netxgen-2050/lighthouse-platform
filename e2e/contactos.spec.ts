@@ -60,7 +60,7 @@ test("cancelar cierra el formulario, devuelve el foco al botón y no guarda", as
   expect(await page.evaluate(() => window.localStorage.getItem("lh-contactos"))).toBeNull();
 });
 
-test("enviar una consulta: anuncio, sigue tras recargar y aparece en /netx", async ({ page }) => {
+test("enviar una consulta: anuncio, sigue tras recargar y aparece en /admin", async ({ page }) => {
   await abrirFinca502(page);
   await ficha(page).getByRole("radio", { name: "WhatsApp" }).check();
   await ficha(page).getByRole("button", { name: "Enviar pedido (simulado)" }).click();
@@ -70,7 +70,7 @@ test("enviar una consulta: anuncio, sigue tras recargar y aparece en /netx", asy
   await page.reload();
   await expect(ficha(page).getByText("Consulta enviada (simulado)")).toBeVisible();
 
-  await page.goto("/netx");
+  await page.goto("/admin");
   const fila = page.getByRole("row").filter({ hasText: "Finca 502" });
   await expect(fila).toContainText("Consulta por un lote");
   await expect(fila).toContainText("WhatsApp");
@@ -88,7 +88,7 @@ test("pedir invitación al círculo: suma uno al medidor y queda en la bandeja",
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
   await expect(page.getByText("Invitación pedida (simulado)")).toBeVisible();
   await expect(page.getByText("23 de 35")).toBeVisible();
-  await page.goto("/netx");
+  await page.goto("/admin");
   const fila = page.getByRole("row").filter({ hasText: "Invitación al círculo" });
   await expect(fila).toContainText("Lote 7");
   await expect(fila).toContainText("Equipo NetX");
@@ -115,21 +115,21 @@ test("pedir una charla queda en la bandeja con destino Equipo NetX", async ({ pa
   await page.getByLabel(/^Mensaje/).fill("Hola");
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
   await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
-  await page.goto("/netx");
+  await page.goto("/admin");
   const fila = page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" });
   await expect(fila).toContainText("Telegram");
   await expect(fila).toContainText("Equipo NetX");
 });
 
-test("bandeja vacía en /netx", async ({ page }) => {
-  await page.goto("/netx");
+test("bandeja vacía en /admin", async ({ page }) => {
+  await page.goto("/admin");
   await expect(page.getByRole("heading", { name: "Pedidos de contacto · este navegador (simulado)" })).toBeVisible();
   await expect(page.getByText("Todavía no hay pedidos en este navegador.")).toBeVisible();
   await expect(page.getByText("En el producto real irían al CRM")).toBeVisible();
 });
 
 test("dato guardado inválido: la bandeja se lee vacía y la pantalla no falla", async ({ page }) => {
-  await page.goto("/netx");
+  await page.goto("/admin");
   await page.evaluate(() => window.localStorage.setItem("lh-contactos", "{no es una lista"));
   await page.reload();
   await expect(page.getByText("Todavía no hay pedidos en este navegador.")).toBeVisible();
@@ -145,7 +145,7 @@ test("borrar todo desde /configuracion vacía la bandeja", async ({ page }) => {
   page.once("dialog", (d) => void d.accept());
   await page.getByRole("button", { name: "Borrar todo lo guardado en este navegador" }).click();
   await expect(page.getByRole("status").filter({ hasText: "se borró todo" })).toBeVisible();
-  await page.goto("/netx");
+  await page.goto("/admin");
   await expect(page.getByText("Todavía no hay pedidos en este navegador.")).toBeVisible();
 });
 
@@ -212,7 +212,7 @@ test("falla guardar la página después del pedido: una sola alerta y reintentar
 });
 
 test("un mensaje o estado de tipo raro en lh-contactos no rompe /netx", async ({ page }) => {
-  await page.goto("/netx");
+  await page.goto("/admin");
   await page.evaluate(() =>
     window.localStorage.setItem(
       "lh-contactos",
@@ -233,13 +233,13 @@ async function pedirCharla(page: Page) {
   await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
 }
 
-test("pedido después de una campaña: guarda el origen y /netx muestra la columna Origen", async ({ page }) => {
+test("pedido después de una campaña: guarda el origen y /admin muestra la columna Origen", async ({ page }) => {
   await page.goto("/?utm_source=newsletter&utm_campaign=congreso-2027");
   await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-origen"))).not.toBeNull();
   await pedirCharla(page);
   const guardado = await page.evaluate(() => JSON.parse(window.localStorage.getItem("lh-contactos") ?? "[]"));
   expect(guardado[0].origen).toEqual({ fuente: "newsletter", campana: "congreso-2027" });
-  await page.goto("/netx");
+  await page.goto("/admin");
   await expect(page.getByRole("columnheader", { name: "Origen" })).toBeVisible();
   const fila = page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" });
   await expect(fila).toContainText("newsletter · sin dato · congreso-2027");
@@ -249,7 +249,7 @@ test("pedido sin origen: la columna Origen dice sin dato", async ({ page }) => {
   await pedirCharla(page);
   const guardado = await page.evaluate(() => JSON.parse(window.localStorage.getItem("lh-contactos") ?? "[]"));
   expect(guardado[0]).not.toHaveProperty("origen");
-  await page.goto("/netx");
+  await page.goto("/admin");
   const celdas = page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" }).getByRole("cell");
   await expect(celdas.nth(7)).toHaveText("sin dato");
 });

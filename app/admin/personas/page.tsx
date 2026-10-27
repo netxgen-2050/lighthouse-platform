@@ -1,8 +1,6 @@
-import type { Metadata } from "next";
 import { PanelPersonas } from "@/components/sesion/panel-personas";
 import { exigirSuperAdmin } from "@/lib/sesion/pagina";
 
-export const metadata: Metadata = { title: "Admin · Personas y roles" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminPersonasPage() {

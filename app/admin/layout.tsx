@@ -5,7 +5,9 @@ import { SoloSuperAdmin } from "@/components/sesion/solo-super-admin";
 import { exigirSuperAdmin } from "@/lib/sesion/pagina";
 import { PestanasAdmin } from "./pestanas";
 
-export const metadata: Metadata = { robots: { index: false, follow: false } };
+// El título es el mismo en las tres pestañas a propósito: el de cada página (por ejemplo "Pendientes") viajaría en la
+// respuesta 403 de quien no es super admin, y esa respuesta no puede traer nada de la administración.
+export const metadata: Metadata = { title: "Admin", robots: { index: false, follow: false } };
 // Lee cookies: nada de /admin se guarda en caché ni se genera en el build.
 export const dynamic = "force-dynamic";
 
