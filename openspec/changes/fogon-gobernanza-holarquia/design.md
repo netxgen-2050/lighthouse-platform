@@ -32,10 +32,13 @@
      | { tipo: "rol"; id: string; persona: string; rol: Rol; esYo: boolean; ejemplo: boolean }
      | { tipo: "lugar-libre"; id: string }
      | { tipo: "lugar"; id: string; tribuId: string; representante: null };
-   function construirHolarquia(idioma, registros, desdeMi: LugarMio[]): NodoH;
+   function construirHolarquia(idioma, registros: readonly Registro[] = []): NodoH;
    function caminoHasta(raiz, id): NodoH[];   // para migas y "Desde mí"
    function rolesDe(raiz, persona): { rol; camino }[];
    ```
+   <!-- arquitecto: el árbol no depende del navegador; "Desde mí" va aparte (§6) para que servidor y cliente dibujen lo mismo -->
+   - **Un solo árbol, igual en servidor y cliente.** `construirHolarquia` no recibe nada del navegador: el servidor la llama con `registros = []` (cuentan solo las validaciones de ejemplo, como hoy en el PR #112) y el cliente usa ese mismo modelo. "Desde mí" **no agrega nodos**: marca nodos que ya existen (ver §6). Así el empaquetado no salta después de montar y no hay diferencias de hidratación (cuando el HTML del servidor no coincide con el primer dibujo del navegador).
+   - **Ids únicos en todo el árbol.** Los círculos del común llevan prefijo `comun-` (por ejemplo `comun-agua`), para no chocar con la tribu `agua`; los roles, `<idCirculo>-rol-<n>`; los lugares del consejo, `consejo-<tribuId>`. Un test recorre el árbol y verifica que ningún id se repite (los caminos, las migas y el zoom buscan por id).
    - Los datos de ejemplo nuevos van en `lib/gobernanza/datos.ts`: `CIRCULOS_DEL_COMUN` (7 círculos del boceto con propósito y "Decide sobre" bilingües), propósito y "Decide sobre" de cada círculo de tribu (los de `CIRCULOS_POR_TRIBU` pasan de `BilingueConOriginal[]` a `{ nombre, proposito, decide }[]`) y los roles de ejemplo.
    - **Personas de ejemplo:** nombres de pila de una lista fija, asignados de forma determinística (sin `Math.random`), todos con `ejemplo: true` y marca visible "(ejemplo)". La persona demo es "Vos" con dos roles: Miembro en Permacultura y suelo (común) y Enlace hacia arriba en Cuidado de la tierra (Valle Solar), como en el boceto.
    - **Consejo:** sus hijos son los lugares de `lugaresDelConsejo(registros)` del PR #112, con `representante: null` → "Sin representante elegido". No se inventan nombres en los lugares (elegir representantes queda fuera de alcance; ver Open Questions).
@@ -82,6 +85,9 @@
    - `siembra`: Cuidado de la tierra → Valle Solar (`queda`; el texto dice que no hace falta subir);
    - `cisterna-compartida` (nueva): Toma y cisterna (Agua Clara) → Agua Clara → Consejo → Agua del Lighthouse (`deriva`).
    Una decisión llevada al consejo con "Llevar al consejo" (PR #112) hereda el camino de su decisión de origen más el paso Consejo.
+   <!-- arquitecto: falta el caso de una copia cuyo origen no tiene camino cargado (por ejemplo `consejo-cisterna`) -->
+   - `caminoDe(decision): { camino: string[]; tipo } | null` resuelve en este orden: (1) la entrada de `CAMINOS`; (2) si es una copia del consejo (`origen.tribuId`), el camino de la decisión original si existe, y si no `[origen.tribuId, "consejo"]`, más el paso Consejo, con tipo `sube`; (3) si no, `null`, y el panel dice "Sin camino de ejemplo" (no se inventa un camino). Un id del camino que no existe en el árbol se descarta con un aviso en consola de desarrollo, nunca rompe la página.
+   - La lente lista solo las decisiones de ejemplo de `CAMINOS`. Las copias que la persona llevó al consejo en su navegador se leen después de montar (como `fogon-cliente.tsx`) y se suman al final; si no se pueden leer, la lista queda con las de ejemplo.
 
 5. **Parámetros opcionales de una decisión** (`lib/fogon/datos.ts`):
    ```ts
@@ -90,6 +96,8 @@
      monto?: { cantidad: number | null; moneda: "USD"; fuente: "fondo-comun" | "tribu" | "fideicomiso" } };
    ```
    - Un componente `ParametrosDecision` (en `app/fogon/`) los muestra en la tarjeta de `/fogon` y en el panel de la lente Decisiones: cada fila solo si el campo existe; `cantidad: null` → "Monto pedido: sin dato"; el monto lleva "(simulado)". Fechas y montos con `Intl` en el idioma de la persona.
+   <!-- arquitecto: una fecha AAAA-MM-DD leída con `new Date()` es medianoche UTC; en Argentina (UTC−3) se ve un día antes y puede diferir entre servidor y navegador -->
+   - **Fechas sin corrimiento:** la fecha de cierre se formatea con `Intl.DateTimeFormat(idioma, { dateStyle: "long", timeZone: "UTC" })` (o armando la fecha desde sus partes), así `2026-11-15` dice 15 de noviembre en cualquier zona horaria. Un monto con `cantidad` que no es un número finito se trata como `null`.
    - Ejemplos: `consejo-bomba` con monto (cifra de ejemplo), fuente Fondo Común y fecha de cierre; `cisterna-compartida` con monto `cantidad: null` (para probar "sin dato") y acuerdo de tipo norma; `regalia` con plazo y acuerdo; las demás sin parámetros.
    - Alternativa descartada: pintar montos o plazos en el mapa (Gus lo dejó fuera: el mapa es la estructura).
 
@@ -97,6 +105,8 @@
    - los dos roles de ejemplo de "Vos" (marcados "(ejemplo)");
    - por cada membresía aceptada de tribu, rol Miembro en esa tribu; si lidera una tribu en Sumarte, rol Facilita en esa tribu.
    - Se leen en el navegador después de montar (como `fogon-cliente.tsx`), así el HTML del servidor no depende de `localStorage`. No se guarda nada nuevo ni sale nada por la red.
+   <!-- arquitecto: "Desde mí" solo lee; no llama a sincronizarValidaciones ni a guardarRegistros -->
+   - Los lugares que vienen del navegador **no crean nodos**: el rol Miembro o Facilita de una tribu marca el nodo de esa tribu (borde `gold` grosor 3) y aparece en el panel con su camino. Los dos roles de "Vos" ya están en el árbol de ejemplo (`esYo: true`). "Desde mí" no llama a `sincronizarValidaciones` ni a `guardarRegistros` (esas escriben); si `localStorage` falla o trae algo raro, quedan solo los dos roles de ejemplo.
    - Ideas de gamificación: un párrafo del diccionario, sin estado ni botones.
 
 7. **Página y accesibilidad:**
@@ -123,6 +133,9 @@ Sin base. Los registros del PR #112 (clave del navegador `gobernanza`) no cambia
 ## Revisión de arquitectura
 
 Este cambio toca plata simulada (monto pedido), permisos ya existentes ("Llevar al consejo", sin cambios) y datos del navegador de la persona (lectura, sin escribir nada nuevo), y suma una dependencia. Pide revisión del agente `arquitecto` antes de aprobarlo (ver el resumen del especificador). Puntos a mirar: que `d3-hierarchy` sea la versión más chica que alcanza; que "Desde mí" no escriba ni mande nada; que el monto no se lea como un cobro.
+
+<!-- arquitecto: resultado de la revisión (27-oct-2026) -->
+Revisado por el agente `arquitecto` (27-oct-2026): se puede aprobar con los ajustes ya incorporados arriba (§1 árbol único e ids únicos, §4 `caminoDe` con caso sin camino, §5 fechas en UTC, §6 "Desde mí" solo lee y no crea nodos). `d3-hierarchy` queda encapsulada en `empaquetar()`; no hace falta ADR (se revierte cambiando una función). Sin base, sin servicio externo, sin datos personales nuevos.
 
 ## Open Questions
 
