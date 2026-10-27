@@ -2,21 +2,31 @@ import { describe, expect, it } from "vitest";
 import { entraElNombre, etiquetaPersona, interpolar, suavizar, vistaPara } from "./zoom";
 
 describe("etiquetaPersona", () => {
-  it("25 → nada, 30 → nombre, 40 → nombre y rol", () => {
-    expect(etiquetaPersona(25)).toBe("nada");
-    expect(etiquetaPersona(30)).toBe("nombre");
-    expect(etiquetaPersona(40)).toBe("nombre-y-rol");
+  it("25 → nada, 30 → nombre, 40 → nombre y rol (con textos cortos)", () => {
+    expect(etiquetaPersona(25, "Ana", "Memoria")).toBe("nada");
+    expect(etiquetaPersona(30, "Ana", "Memoria")).toBe("nombre");
+    expect(etiquetaPersona(40, "Ana", "Memoria")).toBe("nombre-y-rol");
   });
 
   it("los bordes: 26 ya rotula el nombre y 34 también el rol", () => {
-    expect(etiquetaPersona(25.9)).toBe("nada");
-    expect(etiquetaPersona(26)).toBe("nombre");
-    expect(etiquetaPersona(33.9)).toBe("nombre");
-    expect(etiquetaPersona(34)).toBe("nombre-y-rol");
+    expect(etiquetaPersona(25.9, "Ana", "Memoria")).toBe("nada");
+    expect(etiquetaPersona(26, "Ana", "Memoria")).toBe("nombre");
+    expect(etiquetaPersona(33.9, "Ana", "Memoria")).toBe("nombre");
+    expect(etiquetaPersona(34, "Ana", "Memoria")).toBe("nombre-y-rol");
   });
 
   it("un radio de cero no rotula nada", () => {
-    expect(etiquetaPersona(0)).toBe("nada");
+    expect(etiquetaPersona(0, "Ana", "Memoria")).toBe("nada");
+  });
+
+  it("un rol largo no se dibuja si no entra en el círculo, aunque el radio pase el umbral", () => {
+    expect(etiquetaPersona(34, "Ana", "Enlace del nivel de arriba")).toBe("nombre");
+    expect(etiquetaPersona(120, "Ana", "Enlace del nivel de arriba")).toBe("nombre-y-rol");
+  });
+
+  it("un nombre largo no se dibuja si no entra, aunque el radio pase el umbral", () => {
+    expect(etiquetaPersona(26, "Joaquín G.", "Memoria")).toBe("nada");
+    expect(etiquetaPersona(40, "Joaquín G.", "Memoria")).toBe("nombre-y-rol");
   });
 });
 

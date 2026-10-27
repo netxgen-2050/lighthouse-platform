@@ -34,6 +34,7 @@ const Circulos = memo(function Circulos({
   focoId,
   onEnfocar,
   onSeleccionar,
+  onSalir,
 }: {
   celdas: readonly Celda[];
   pinturas: ReadonlyMap<string, Pintura>;
@@ -41,6 +42,7 @@ const Circulos = memo(function Circulos({
   focoId: string;
   onEnfocar: (id: string) => void;
   onSeleccionar: (id: string) => void;
+  onSalir: () => void;
 }) {
   return (
     <>
@@ -67,6 +69,7 @@ const Circulos = memo(function Circulos({
               e.stopPropagation();
               if (!hoja) {
                 if (nodo.id !== focoId) onEnfocar(nodo.id);
+                else onSalir();
               } else onSeleccionar(nodo.id);
             }}
           />
@@ -146,7 +149,7 @@ export function Dibujo({ raiz, foco, pinturas, marcas, personaId, onEnfocar, onS
     if (!c) return null;
     const rPx = c.r * k;
     if (h.tipo === "rol") {
-      const modo = etiquetaPersona(rPx);
+      const modo = etiquetaPersona(rPx, h.persona, tx.roles[h.rol]);
       if (modo === "nada") return null;
       return (
         <g key={h.id} textAnchor="middle" pointerEvents="none">
@@ -200,7 +203,7 @@ export function Dibujo({ raiz, foco, pinturas, marcas, personaId, onEnfocar, onS
       onClick={onSalir}
     >
       <title id={idTitulo}>{tx.dibujo.nombre}</title>
-      <Circulos celdas={celdas} pinturas={pinturas} personaId={personaId} focoId={foco.id} onEnfocar={onEnfocar} onSeleccionar={onSeleccionar} />
+      <Circulos celdas={celdas} pinturas={pinturas} personaId={personaId} focoId={foco.id} onEnfocar={onEnfocar} onSeleccionar={onSeleccionar} onSalir={onSalir} />
       <g aria-hidden="true">{etiquetas}</g>
       <g aria-hidden="true" pointerEvents="none">
         {marcas.map((m) => {

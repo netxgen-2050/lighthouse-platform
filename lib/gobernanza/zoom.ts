@@ -32,10 +32,16 @@ export const UMBRAL_ROL = 34;
  * Qué se dibuja dentro del círculo de una persona según su radio en pantalla. Lo que no entra no se dibuja (nunca se
  * recorta con "…"): sigue estando en el panel y en la lista.
  */
-export function etiquetaPersona(radioEnPantalla: number): EtiquetaPersona {
-  if (radioEnPantalla >= UMBRAL_ROL) return "nombre-y-rol";
-  if (radioEnPantalla >= UMBRAL_NOMBRE) return "nombre";
-  return "nada";
+export function etiquetaPersona(radioEnPantalla: number, nombre: string, rol: string): EtiquetaPersona {
+  if (radioEnPantalla < UMBRAL_NOMBRE || !entraElNombre(nombre, radioEnPantalla)) return "nada";
+  if (radioEnPantalla >= UMBRAL_ROL && entraElRol(rol, radioEnPantalla)) return "nombre-y-rol";
+  return "nombre";
+}
+
+/** ¿Entra el rol (a ~10 px, 12 px debajo del centro) dentro de la cuerda del círculo a esa altura? */
+export function entraElRol(rol: string, radioEnPantalla: number): boolean {
+  const media = Math.sqrt(Math.max(0, radioEnPantalla * radioEnPantalla - 12 * 12));
+  return rol.length * 5.7 <= media * 2 * 0.9;
 }
 
 /** ¿Entra el nombre de un círculo (a ~11 px) dentro de su ancho en pantalla? Sin recortar: si no entra, no se rotula. */

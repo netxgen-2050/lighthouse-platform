@@ -238,9 +238,11 @@ export function DetalleNodo({ raiz, nodo, personaId, enfocar, seleccionar }: Pro
         <div className="grid gap-2">
           <h4 className="text-sm font-semibold">
             {p.roles}
-            <TerminoLegal clave="dobleenlace" />
           </h4>
-          <p className="text-xs text-muted">{p.rolesNota}</p>
+          <p className="text-xs text-muted">
+            {p.rolesNota}
+            <TerminoLegal clave="dobleenlace" />
+          </p>
           <ul className="grid gap-2 sm:grid-cols-2">
             {roles.map((r) =>
               r.tipo === "rol" ? (

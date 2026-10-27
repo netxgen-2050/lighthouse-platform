@@ -161,6 +161,14 @@ test.describe("Zoom por niveles", () => {
     await expect(panel(page)).toContainText("Tipo: Común");
   });
 
+  test("tocar el círculo que ya está enfocado sale un nivel (haciendo clic en el círculo, no en el fondo)", async ({ page }) => {
+    await page.goto("/fogon/gobernanza");
+    await tocarCirculo(page, "valle");
+    await foco(page, "valle");
+    await tocarCirculo(page, "valle");
+    await foco(page, "lighthouse");
+  });
+
   test("las migas llevan al común y la actual queda marcada como ubicación actual", async ({ page }) => {
     await page.goto("/fogon/gobernanza");
     await irDesdeLista(page, "Valle Solar");
