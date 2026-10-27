@@ -51,7 +51,7 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "lib/gobernanza/datos.ts": {
     estado: "pendiente",
-    que: "Nombres de los círculos de ejemplo de cada tribu y del círculo transversal, con su inglés",
+    que: "Nombres, propósitos y 'Decide sobre' de los círculos de ejemplo del común, de cada tribu y del círculo transversal, con su inglés",
   },
   "lib/tribus/datos.ts": {
     estado: "pendiente",

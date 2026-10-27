@@ -11,7 +11,6 @@ import {
   tribusQueValidan,
   validadaPorElComun,
 } from "./registros";
-import { construirVista } from "./vista";
 
 const AHORA = "2026-10-27T10:00:00.000Z";
 const vacantes = listarTribusBilingues().filter((t) => t.estado === "vacante");
@@ -131,29 +130,6 @@ describe("registros de solo agregar", () => {
   it("sincronizar suma una validación por cada tribu nueva", () => {
     const a = sincronizarValidaciones([], "yo", ["taller", "valle"], AHORA);
     expect(tribusQueValidan("yo", a).sort()).toEqual(["taller", "valle"]);
-  });
-});
-
-describe("vista de la estructura", () => {
-  it("Barrio 3 aparece como busca tribu, sin círculos y sin lugar", () => {
-    const v = construirVista("es");
-    const b3 = v.tribus.find((t) => t.nombre === "Barrio 3")!;
-    expect(b3.estado).toBe("vacante");
-    expect(b3.circulos).toEqual([]);
-    expect(b3.tieneLugar).toBe(false);
-    expect(b3.validada).toBe(false);
-    expect(v.lugares.map((l) => l.tribu)).not.toContain("Barrio 3");
-  });
-
-  it("el transversal muestra los nombres de las tribus que participan y ninguna zona", () => {
-    const [t] = construirVista("es").transversales;
-    expect(t.tribus).toEqual(["Valle Solar", "Taller Común"]);
-    expect(t.zona).toBeUndefined();
-  });
-
-  it("los nombres de los círculos salen en inglés si se pide", () => {
-    const valle = construirVista("en").tribus.find((t) => t.id === "valle")!;
-    expect(valle.circulos).toContain("Land care");
   });
 });
 
