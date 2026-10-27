@@ -116,6 +116,13 @@ test("apagar rondas: esas notificaciones dejan de contarse y de verse", async ({
   await expect(campanita).toHaveAttribute("aria-label", "2 notificaciones sin leer");
 });
 
+test("los avisos son cuatro y no hay casilla de Mercado (en pausa)", async ({ page }) => {
+  await page.goto("/configuracion");
+  const avisos = page.getByRole("group", { name: "Tipos de aviso" });
+  await expect(avisos.getByRole("checkbox")).toHaveCount(4);
+  await expect(page.getByRole("checkbox", { name: /Mercado/ })).toHaveCount(0);
+});
+
 test("Hifa apagada: el script del <head> ya lo sabe antes de hidratar (sin parpadeo); con Hifa visible, el botón sí se ve", async ({ page }) => {
   const boton = page.locator('[aria-controls="chat-hifa"]');
 
