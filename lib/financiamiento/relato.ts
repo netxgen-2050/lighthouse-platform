@@ -364,12 +364,12 @@ function porciento(n: number): string {
 }
 
 /** Número de un supuesto: sin decimales si es entero, uno si no; "sin dato" si falta. */
-function num(n: number | null | undefined): string {
+export function num(n: number | null | undefined): string {
   return typeof n === "number" && Number.isFinite(n) ? porciento(n) : SIN_DATO;
 }
 
 /** "N veces" o "sin dato" si falta el número. */
-function veces(n: number | null | undefined): string {
+export function veces(n: number | null | undefined): string {
   return typeof n === "number" && Number.isFinite(n) ? `${num(n)} veces` : SIN_DATO;
 }
 

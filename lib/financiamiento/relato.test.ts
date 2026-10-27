@@ -13,7 +13,23 @@ import {
   PROPUESTA_PARA_QUIEN_VENDE,
   SERIES_POSIBLES,
   SUPUESTOS_A_CONFIRMAR,
+  num,
+  veces,
 } from "./relato";
+
+describe("num y veces", () => {
+  test("el dato que falta es sin dato, nunca cero", () => {
+    for (const falta of [undefined, null, Number.NaN]) {
+      expect(num(falta)).toBe("sin dato");
+      expect(veces(falta)).toBe("sin dato");
+    }
+  });
+
+  test("7,5 sale 7,5 veces y un entero sin decimales", () => {
+    expect(veces(7.5)).toBe("7,5 veces");
+    expect(veces(8)).toBe("8 veces");
+  });
+});
 
 function textos(x: unknown): string[] {
   if (typeof x === "string") return [x];
