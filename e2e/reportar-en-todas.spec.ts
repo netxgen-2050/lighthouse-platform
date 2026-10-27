@@ -5,7 +5,7 @@ import { expect, test } from "./fixtura";
 // Esta prueba avisa si alguna página deja de tenerlo.
 const NOMBRE_BOTON = "Reportar un problema o una idea";
 
-const RUTAS = [...DESTINOS.filter((d) => d.existe).map((d) => d.href), "/fogon/consultas"];
+const RUTAS = [...DESTINOS.filter((d) => d.existe).map((d) => d.href), "/fogon/consultas", "/fogon/simulador"];
 
 test("el botón Reportar está en cada página del rail y abre el diálogo con Enter", async ({ page }) => {
   test.setTimeout(120_000);

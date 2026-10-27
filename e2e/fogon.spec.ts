@@ -15,10 +15,21 @@ test("lista las tres decisiones con dónde, regla y ⚖, y el aviso de prototipo
   await expect(huerta.getByRole("button", { name: /Qué significa legalmente/ })).toBeVisible();
 });
 
+test("sin eventos: el Fogón solo lista decisiones, no encuentros ni jornadas", async ({ page }) => {
+  await page.goto("/fogon");
+  await expect(page.getByRole("heading", { level: 2 })).toHaveText([
+    "Plan de huerta comunitaria 2027",
+    "Presupuesto de obra 2027 del macrolote",
+    "Elegir facilitador/a de Valle Solar",
+  ]);
+  await expect(page.getByRole("list").getByText(/encuentro|jornada|convocatoria/i)).toHaveCount(0);
+});
+
 test("los filtros son Todas, Tribu y Fideicomiso; no hay Asamblea de residentes ni bomba solar", async ({ page }) => {
   await page.goto("/fogon");
   const filtros = page.getByRole("group", { name: "Filtrar por ámbito" }).getByRole("button");
-  await expect(filtros).toHaveText(["Todas", "Tribu", "Fideicomiso"]);
+  // El botón activo lleva un "✓" oculto para lectores que cuenta como texto: se compara el final.
+  await expect(filtros).toHaveText([/Todas$/, /Tribu$/, /Fideicomiso$/]);
   await expect(page.getByText("Asamblea de residentes")).toHaveCount(0);
   await expect(page.getByText(/bomba solar/)).toHaveCount(0);
   await expect(page.getByText(/residencia fiscal/)).toHaveCount(0);
