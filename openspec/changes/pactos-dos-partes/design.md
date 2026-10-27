@@ -64,7 +64,7 @@ type ConstanciaPacto = {
 
 - `borrarDemo` solo recibe un `quitar(clave)`: no sirve para sacar entradas de una lista compartida. Se agrega `quitarConstanciasDe(idPersona)` en `lib/pactos/registro-compartido.ts`, que reescribe `compartido:pactos-constancias` sin las constancias cuyo `sobre` es `pacto:*:<idPersona>`, y `/mis-datos` la llama junto a `borrarDemo` al retirar el consentimiento. Es la excepción al "solo agregar", en el navegador. En la base será anonimizar (ADR-005).
 - `exportarMisDatos` suma `datos.pactosConstancias`: las constancias cuyo `sobre` es de la persona (`null` si el registro no se puede leer).
-- Las constancias donde la persona solo aparece como `por` (respondió por su tribu) **no** se borran: son de la tribu y de la otra persona. Queda como pregunta para Gus.
+- Las constancias donde la persona solo aparece como `por` (respondió por su tribu) **no** se borran: son de la tribu y de la otra persona. Queda como pregunta para Gus. <!-- arquitecto: se anonimiza `por`, ver §12 -->Se anonimiza su `por` (ver §12).
 
 ### 8. Compatibilidad
 
@@ -78,4 +78,26 @@ type ConstanciaPacto = {
 
 ## Revisión de arquitectura
 
-Pendiente: toca permisos (quién responde por una tribu) y datos personales (lo enviado lo lee otra persona). El especificador no pudo invocar al agente arquitecto en esta sesión; hay que pedírsela con el id `pactos-dos-partes` antes de aprobar.
+<!-- arquitecto: revisión del 27-oct-2026; ajustes 9 a 14 agregados -->
+Hecha el 27-oct-2026 (agente arquitecto). Decisión en ADR-018 (Propuesta). Ajustes incorporados:
+
+### 9. Lo que vale es lo que la tribu vio
+- Al conciliar una aceptación, el contenido del pacto (rol, rolOtro, descripción, horas) se toma de los `datos` de la **propuesta aceptada**, no del estado local de la persona. Si el estado local tiene otro contenido (otra pestaña, datos tocados a mano), gana la constancia. Así Semillas cuenta exactamente lo que la tribu aceptó, y `pactos-pedir-cambios` (que acepta horas de la tribu) usa la misma regla.
+- Conciliar solo aplica una respuesta si su `version` es `version vigente + 1`; si no coincide, se ignora (no se inventa un salto de versión).
+
+### 10. Quién puede responder, en un solo lugar
+- `comunidadesQueResponde(sesion): string[]` en `lib/pactos/constancias.ts` es el **único** lugar que traduce la sesión en comunidades (hoy `[tribuLider]` más `lighthouse` si es super admin). `/pactos/responder`, la ficha de la tribu y `puedeResponder` la usan. Cuando entre `liderar-varias-tribus` (`tribusLider` como lista) se cambia solo esa función.
+- `pendientes` solo cuenta propuestas cuyo `afirma` empieza con `persona:` (las de la tribu, que trae `pactos-pedir-cambios`, no le aparecen a la tribu misma).
+
+### 11. Ids con dos puntos
+- `idPersona` puede tener `:` (`prueba:<email>`, `did:privy:…`). `sobre` **nunca se parte con `split(":")`**: se compara armando el string completo (`pacto:${comunidad}:${idPersona}`) o con `startsWith("pacto:")` + `endsWith(":" + idPersona)` verificando la comunidad. Lo mismo en `quitarConstanciasDe` y en la descarga.
+
+### 12. Borrar también desde Configuración, y anonimizar al que respondió
+- "Borrar datos de la demo" en `/configuracion` también llama a `quitarConstanciasDe(idPersona)`: si no, la tribu ve pendiente un pacto que la persona ya no tiene (huérfano).
+- Al borrar, en las constancias donde la persona solo es `por` (respondió por su tribu) se reemplaza `por` por `"persona-borrada"`: la constancia de la tribu sigue, sin dejar el id de quien se fue (ADR-001 y ADR-005: borrar es anonimizar). Es la segunda excepción al "solo agregar", solo en el navegador. Si Gus prefiere conservar el id, se saca este punto (ver pregunta abierta).
+
+### 13. Compatibilidad sin inventar
+- La publicación de §8 solo ocurre si el registro compartido se pudo leer (no `null`) y no hay ninguna propuesta de esa persona y comunidad, revocada o no. Con el registro ilegible no se publica nada.
+
+### 14. Lo que la base hereda
+- El email en `datos.email` es solo del prototipo. En la base (P9) la constancia guarda el id de la persona y la vista de la tribu resuelve el nombre o email con permiso; el email no se copia a la tabla de constancias. Queda anotado para `aprobaciones-pactos`.

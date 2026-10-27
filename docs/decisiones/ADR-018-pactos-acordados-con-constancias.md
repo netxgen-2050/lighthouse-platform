@@ -21,6 +21,8 @@ Reglas:
 - **La aceptación la afirma la tribu, no la persona que lidera.** `por` dice quién apretó el botón, para auditoría, pero la parte es la tribu (coherente con ADR-012: nunca la billetera personal de un admin como firmante de algo de la comunidad).
 - **Solo se comparte lo enviado.** El borrador nunca sale de los datos de la persona.
 - **Sin datos personales hacia afuera.** Antes de firmar o publicar (etapas 2 y 3 de ADR-012), `datos` se reemplaza por un hash del contenido.
+- **Vale lo que la otra parte vio.** El pacto acordado toma su contenido de la constancia aceptada, no de lo que la persona tenga guardado.
+- **Borrar es anonimizar.** Si una persona borra sus datos, se quitan las constancias sobre su pacto y, en las que respondió por su tribu, su id se reemplaza por "persona borrada" (ADR-001, ADR-005).
 - **En la base** (P9) el registro compartido pasa a ser una tabla de solo agregar y el servidor verifica quién responde y sobre qué tribu. Las pantallas no cambian: solo cambia `lib/pactos/registro-compartido.ts`.
 
 ## Consecuencias
