@@ -115,6 +115,7 @@ test.describe("Compromisos y Mercado en inglés", () => {
 
   test("la validación se lee en inglés, queda asociada al campo y el foco va a ese campo", async ({ page }) => {
     await expect(page.getByRole("heading", { level: 1, name: "Commitments" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Commitments" })).toHaveCount(0);
     await page.getByRole("button", { name: "Register" }).click();
     const campo = page.getByLabel("Description");
     await expect(page.getByText("Error: Write a description.")).toBeVisible();

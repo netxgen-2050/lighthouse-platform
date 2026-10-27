@@ -188,6 +188,28 @@ test("un aviso simulado futuro no cuenta hasta que llega", async ({ page }) => {
   await expect(page.getByText("Actividad propia")).toHaveCount(0);
 });
 
+test("el aviso de interés en una oferta (Mercado en pausa) no se cuenta ni se lista", async ({ page }) => {
+  await semilla(page, [
+    evento("1", "Alguien se interesó en tu oferta", "2026-10-01T10:00:00Z", { tipo: "interes-oferta", enlace: "/compromisos" }),
+    evento("2", "Otro aviso", "2026-10-02T10:00:00Z"),
+  ]);
+  await page.goto("/bandeja");
+  await expect(campanita(page)).toHaveAttribute("aria-label", "1 notificación sin leer");
+  await expect(page.getByRole("link", { name: "Otro aviso" })).toBeVisible();
+  await expect(page.getByText("Alguien se interesó en tu oferta")).toHaveCount(0);
+  await expect(page.locator('a[href="/compromisos"]')).toHaveCount(0);
+});
+
+test("la publicación en el Mercado (en pausa) no sale en Mi recorrido", async ({ page }) => {
+  await semilla(page, [
+    evento("1", "Publicaste en el mercado: Taller de compost", "2026-10-01T10:00:00Z", { tipo: "mercado", enlace: "/compromisos", notificacion: false }),
+  ]);
+  await page.goto("/panel");
+  await expect(page.locator("main")).toHaveCount(1);
+  await expect(page.getByText("Publicaste en el mercado")).toHaveCount(0);
+  await expect(page.locator('main a[href="/compromisos"]')).toHaveCount(0);
+});
+
 test("axe sin violaciones serias o críticas: /bandeja con notificaciones", async ({ page }) => {
   await semilla(page, [evento("1", "Aviso de prueba", "2026-10-01T10:00:00Z")]);
   await page.goto("/bandeja");
