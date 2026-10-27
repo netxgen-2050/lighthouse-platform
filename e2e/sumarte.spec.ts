@@ -70,6 +70,7 @@ test("elegir el nivel Raíz cambia precio y créditos", async ({ page }) => {
   const pase = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Pase Fundador/ }) });
   await pase.getByRole("radio", { name: /Raíz/ }).check({ force: true });
   await expect(pase).toContainText("USD 5.000 · pago único");
+  await expect(pase).toContainText("de por vida");
   await expect(pase).toContainText("USD 1.500 en créditos");
   await expect(pase.getByRole("button", { name: "Quiero el Pase Raíz" })).toBeVisible();
 });
