@@ -1,0 +1,38 @@
+# Tasks
+
+**Dependencia:** este cambio se apila sobre `fogon-gobernanza-fractal` (PR #112). Rama `agente/fogon-gobernanza-holarquia` **desde `origin/agente/fogon-gobernanza-fractal`**, no desde `dev`. Si el PR #112 ya entró a `dev`, partir de `dev`. Si esa rama no existe o no tiene `lib/gobernanza/`, frenar y reportar. El PR apunta a `dev` y dice en la descripción que depende del #112 (o a la rama del #112 si Gus lo pide). Para archivar este cambio, antes hay que archivar `fogon-gobernanza-fractal`.
+
+Referencia de comportamiento y datos: `docs/referencia/gobernanza-fractal-boceto.html` (ya está en el repo). No copiar su código: usa `innerHTML`, colores sueltos y d3 entero.
+
+**Noche 1** (1 a 3): modelo, layout, lentes Estructura y Propósitos, página con zoom, migas, panel y árbol. **Corte:** si la noche termina acá, abrir el PR como borrador con las lentes Decisiones y Desde mí sin mostrar (no se registran) y reportar. **Noche 2** (4 a 6).
+
+## 1. Modelo de la holarquía
+
+- [ ] 1.1 `lib/gobernanza/datos.ts`: `CIRCULOS_DEL_COMUN` (los 7 del boceto, con propósito y "Decide sobre" es/en), propósito y "Decide sobre" para cada círculo de tribu (los de Avelan Kerum salen de sus `areas`, con propósito asignado acá), roles de ejemplo determinísticos y la persona demo "Vos" con sus dos roles (design §1). Verificar con `pnpm test lib/gobernanza`.
+- [ ] 1.2 `lib/gobernanza/holarquia.ts`: `construirHolarquia`, `caminoHasta`, `rolesDe` (design §1). Tests: el común contiene sus 7 círculos, el consejo, el transversal y las 12 tribus; las 4 vacantes tienen solo "Lugar libre"; el consejo tiene un lugar por tribu validada y todos con `representante: null`; todo nodo de persona tiene `ejemplo: true`; `caminoHasta("valle-0")` da común › Valle Solar › Cuidado de la tierra. Verificar con `pnpm test lib/gobernanza`.
+- [ ] 1.3 Sumar `d3-hierarchy` y `@types/d3-hierarchy` (dev) con `pnpm add`; `lib/gobernanza/empaquetar.ts` con `empaquetar(raiz, tamaño)` (design §2). Tests: cada hijo queda dentro de su padre; mismo resultado en dos llamadas. Borrar `vista.ts` y `app/fogon/gobernanza/estructura-svg.tsx` con `git rm` si ya nada los usa, y adaptar `gobernanza.test.ts`. Verificar con `pnpm verificar`.
+
+## 2. Registro de lentes (parte pura)
+
+- [ ] 2.1 `lib/gobernanza/lentes.ts`: tipos `Lente`, `Pintura`, `EntradaLeyenda`, `Marca`, `TokenColor`; funciones `pinturasDe`, `leyendaDe`, `marcasDe` que reciben el registro; lentes `estructura` y `propositos` (design §3). Tests: cada propósito tiene token y texto; ninguna entrada de leyenda queda sin texto; **test de extensibilidad** con una `lentePrueba` agregada solo en el test que pinta, tiene leyenda y marcas sin cambiar otro código, y que no está en `LENTES`. Verificar con `pnpm test lib/gobernanza`.
+
+## 3. Página con zoom (lentes Estructura y Propósitos)
+
+- [ ] 3.1 `app/fogon/gobernanza/page.tsx` (servidor) y `holarquia-cliente.tsx`: dibujo SVG en React con nombre accesible, zoom propio con suavizado y sin animación con `prefers-reduced-motion`, clic para entrar, fondo para salir, migas con `aria-current="location"`, leyenda, panel de detalle (tipo, propósito, "Decide sobre", círculos o roles, validación; "sin dato" si falta), árbol `<details>` con un botón por nodo que hace zoom, barra de lentes con `aria-pressed` que lee el registro (design §2, §3 y §7). Solo tokens del tema. Textos nuevos en `lib/idioma/textos/gobernanza.ts` (es y en). Verificar con `pnpm verificar`.
+- [ ] 3.2 ⚖ nuevos `dobleenlace` y `dominio` con `borrador: true` en `lib/legal/terminos.ts` (y su test), usados en el panel junto a "Enlace hacia arriba" y "Decide sobre". Verificar con `pnpm test lib/legal`.
+- [ ] 3.3 Reescribir `e2e/fogon-gobernanza.spec.ts` con los escenarios de "Estructura de gobernanza visible", "Gráfico accesible", "Zoom por niveles", "Panel de detalle", "Roles en cada círculo", "Lentes" y "Lente Propósitos": entrar a Valle Solar desde el dibujo y desde la lista con teclado; migas; Barrio 3 con "Lugar libre"; consejo sin nombres; 390 px sin scroll horizontal con dibujo arriba y panel abajo; movimiento reducido (`page.emulateMedia({ reducedMotion: "reduce" })`); botón de reportar; en inglés. Mantener los tests del PR #112 de validaciones visibles, transversal sin zona y "sin pedidos de red". Verificar con `pnpm test:e2e e2e/fogon-gobernanza.spec.ts`.
+
+## 4. Decisiones con parámetros y lente Decisiones que suben
+
+- [ ] 4.1 `lib/fogon/datos.ts`: campos opcionales `plazo`, `acuerdo`, `monto` (design §5); decisiones nuevas `regalia` (común) y `cisterna-compartida` (consejo) marcadas como ejemplo; parámetros de ejemplo en `consejo-bomba`, `cisterna-compartida` y `regalia`. Tests: filtrar por común incluye `regalia`; por consejo incluye `cisterna-compartida`; `cantidad: null` no se convierte en 0. Verificar con `pnpm test lib/fogon`.
+- [ ] 4.2 `app/fogon/parametros-decision.tsx` y su uso en la tarjeta de `fogon-cliente.tsx`: una fila por parámetro existente, "Monto pedido: sin dato" si no hay cifra, "(simulado)" junto al monto, fechas y montos con `Intl`. Textos es/en. Sumar a `e2e/fogon.spec.ts` los escenarios de "Parámetros opcionales de una decisión" y "Decisiones de ejemplo con camino". Verificar con `pnpm test:e2e e2e/fogon.spec.ts`.
+- [ ] 4.3 `lib/gobernanza/caminos.ts` (design §4) y la lente `decisiones` (borde y marcas numeradas) con su panel: lista de decisiones como botones con `aria-pressed`, camino en texto, tipo (sube, deriva, queda) explicado, `ParametrosDecision`. Una decisión llevada al consejo hereda el camino de su origen. Tests: todo id de `CAMINOS` existe en el Fogón y en la holarquía; `marcasDe` numera en orden. E2E: escenarios "Camino que sube", "Derivación", "Parámetros que existen y que faltan" y "Se decide abajo". Verificar con `pnpm test lib/gobernanza` y `pnpm test:e2e e2e/fogon-gobernanza.spec.ts`.
+
+## 5. Lente Desde mí
+
+- [ ] 5.1 `lugaresMios(membresias, tribuLider)` en `lib/gobernanza/holarquia.ts` y la lente `desdeMi` con su panel (design §6): lugares con camino, rol y "Decide sobre", enlace "Ir a este círculo", párrafo de ideas de gamificación sin mecánica. Se lee después de montar; no escribe nada. Tests: sin datos del navegador da los dos roles de ejemplo; con Taller Común aceptado suma Miembro en Taller Común; liderar Valle Solar suma Facilita. E2E: "Varios niveles", "Membresía del navegador" (con `localStorage` preparado como en los tests del PR #112) e "Ideas, no juego". Verificar con `pnpm test lib/gobernanza` y `pnpm test:e2e e2e/fogon-gobernanza.spec.ts`.
+
+## 6. Integración
+
+- [ ] 6.1 `e2e/accesibilidad.spec.ts`: auditar `/fogon/gobernanza` con cada una de las cuatro lentes elegida. Verificar con `pnpm test:e2e e2e/accesibilidad.spec.ts`.
+- [ ] 6.2 `pnpm verificar`, `pnpm build` y los e2e tocados en verde. PR con `scripts/pr.sh`, aclarando: depende del PR #112; única dependencia nueva `d3-hierarchy`; personas, círculos, montos y caminos son de ejemplo; plata simulada; sin Consenso Formal ni gamificación. Verificar que el PR muestra el preview de Vercel y correr `BASE_URL=<url> pnpm test:e2e e2e/fogon-gobernanza.spec.ts` contra él.
