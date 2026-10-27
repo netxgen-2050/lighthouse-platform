@@ -14,7 +14,7 @@ export function SoloSuperAdmin({ children }: { children: ReactNode }) {
           Prototipo interno · datos de ejemplo
         </p>
         <h1 className="text-2xl font-semibold">No tenés acceso a esta vista</h1>
-        <p className="mt-3 text-muted">La vista NetX es solo para el super admin del prototipo.</p>
+        <p className="mt-3 text-muted">La administración es solo para el super admin del prototipo.</p>
         <p className="mt-4">
           <Link className="underline" href="/">
             Volver al inicio

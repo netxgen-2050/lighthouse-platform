@@ -5,6 +5,7 @@ export const NEUTROS: readonly string[] = [
   ...NEUTROS_CONGRESO,
   "Semillas",
   "Super admin",
+  "Admin",
   "NetXGen",
   "Hifa",
   "Email",
