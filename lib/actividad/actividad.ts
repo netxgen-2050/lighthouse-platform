@@ -133,6 +133,25 @@ export function armarTexto(mensaje: ClaveMensaje, datos: DatosEvento, idioma: Id
   return (t.eventos[mensaje] as (dato: string) => string)(dato);
 }
 
+const MARCA = "\u0001";
+
+/**
+ * El texto de un mensaje partido en lo que va antes del dato, el dato que no se traduce (comunidad o descripción) y lo
+ * que va después. Se arma desde la plantilla, sin buscar el dato dentro del texto. `dato` es `null` si el mensaje no
+ * usa ninguno o si no hay nombre (dice "tu comunidad"): entonces todo va en `antes`.
+ */
+export function partesDeTexto(
+  mensaje: ClaveMensaje,
+  datos: DatosEvento,
+  idioma: Idioma,
+): { antes: string; dato: string | null; despues: string } {
+  const usado = DATO_DEL_MENSAJE[mensaje];
+  const valor = usado === null ? "" : (datos[usado] ?? "");
+  const partes = valor.trim() === "" ? [] : (bandeja[idioma].eventos[mensaje] as (d: string) => string)(MARCA).split(MARCA);
+  if (partes.length !== 2) return { antes: armarTexto(mensaje, datos, idioma), dato: null, despues: "" };
+  return { antes: partes[0], dato: valor, despues: partes[1] };
+}
+
 /**
  * El texto de un evento en el idioma pedido. Un evento con mensaje y datos se arma en ese idioma; uno guardado antes
  * (solo texto) o con datos dañados devuelve su texto original, y el `idioma` que vuelve es "es" para marcarlo así.

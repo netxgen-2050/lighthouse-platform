@@ -1,6 +1,6 @@
 "use client";
 
-import { textoDeEvento, type EventoActividad } from "@/lib/actividad/actividad";
+import { partesDeTexto, textoDeEvento, type EventoActividad } from "@/lib/actividad/actividad";
 import { useIdioma } from "@/lib/idioma/cliente";
 
 /**
@@ -13,17 +13,17 @@ export function TextoEvento({ evento }: { evento: EventoActividad }) {
   const { texto, idioma: idiomaDelTexto } = textoDeEvento(evento, idioma);
   if (idiomaDelTexto !== idioma) return <span lang={idiomaDelTexto}>{texto}</span>;
 
-  const propio = evento.datos?.descripcion;
-  const dato = evento.datos?.comunidad || propio;
-  const i = dato ? texto.indexOf(dato) : -1;
-  if (!dato || i < 0) return <>{texto}</>;
+  if (!evento.mensaje || !evento.datos) return <>{texto}</>;
+  const { antes, dato, despues } = partesDeTexto(evento.mensaje, evento.datos, idioma);
+  if (dato === null) return <>{texto}</>;
+  const propio = Boolean(evento.datos.descripcion);
   return (
     <>
-      {texto.slice(0, i)}
+      {antes}
       <span translate="no" lang={propio && idioma === "en" ? "es" : undefined}>
         {dato}
       </span>
-      {texto.slice(i + dato.length)}
+      {despues}
     </>
   );
 }

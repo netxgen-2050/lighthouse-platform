@@ -8,6 +8,7 @@ import {
   listarNotificaciones,
   marcarTodasLeidas,
   nombreCampanita,
+  partesDeTexto,
   registrar,
   textoDeEvento,
   type EventoActividad,
@@ -146,6 +147,28 @@ describe("texto de un evento en el idioma actual", () => {
 
   it("lo guardado y vuelto a leer conserva el mensaje y los datos", () => {
     expect(leerEventos(JSON.stringify([nuevo()]))).toEqual([nuevo()]);
+  });
+
+  it("parte el texto por la plantilla aunque el dato repita una palabra de la frase fija", () => {
+    expect(partesDeTexto("publicasteEnMercado", { descripcion: "market" }, "en")).toEqual({
+      antes: "You posted in the market: ",
+      dato: "market",
+      despues: "",
+    });
+    expect(partesDeTexto("propusistePacto", { comunidad: "pacto" }, "es")).toEqual({
+      antes: "Propusiste un pacto en ",
+      dato: "pacto",
+      despues: "",
+    });
+  });
+
+  it("sin dato (o sin nombre de comunidad) no marca nada y devuelve el texto entero", () => {
+    expect(partesDeTexto("enviastePostulacion", { comunidad: "" }, "en")).toEqual({
+      antes: "You sent an application for your community",
+      dato: null,
+      despues: "",
+    });
+    expect(partesDeTexto("interesEnOferta", {}, "es").dato).toBeNull();
   });
 });
 
