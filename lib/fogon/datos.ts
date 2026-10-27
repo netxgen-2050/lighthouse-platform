@@ -2,7 +2,7 @@
 // Los conteos de votos son de ejemplo (el mock-up no trae cifras).
 import type { ClaveTermino } from "@/lib/legal/terminos";
 
-export type Ambito = "tribu" | "asamblea" | "fideicomiso";
+export type Ambito = "tribu" | "fideicomiso";
 export type Requisito = "ninguno" | "residente" | "pase";
 export type Opcion = "favor" | "contra" | "abstencion";
 
@@ -31,26 +31,6 @@ export const DECISIONES: readonly Decision[] = [
     votos: { favor: 14, contra: 1, abstencion: 3 },
   },
   {
-    id: "bomba",
-    titulo: "Usar el fondo común para la bomba solar",
-    donde: "Asamblea de residentes",
-    regla: "Consenso",
-    base: "art35",
-    ambito: "asamblea",
-    requisito: "residente",
-    votos: { favor: 21, contra: 4, abstencion: 2 },
-  },
-  {
-    id: "animales",
-    titulo: "Permitir animales de granja en las chacras",
-    donde: "Asamblea de residentes",
-    regla: "2/3 de los votos",
-    base: "art44",
-    ambito: "asamblea",
-    requisito: "residente",
-    votos: { favor: 12, contra: 9, abstencion: 5 },
-  },
-  {
     id: "presupuesto",
     titulo: "Presupuesto de obra 2027 del macrolote",
     donde: "Asamblea de beneficiarios",
@@ -72,9 +52,33 @@ export const DECISIONES: readonly Decision[] = [
   },
 ];
 
+/**
+ * Ejemplos del mock-up que antes eran de la Asamblea de residentes (todavía no existe). No se muestran en /fogon:
+ * quedan guardados para el ámbito "Lighthouse (el común)" de `fogon-gobernanza-fractal`, que les define el ámbito.
+ */
+export const EJEMPLOS_COMUN: readonly Omit<Decision, "ambito">[] = [
+  {
+    id: "bomba",
+    titulo: "Usar el fondo común para la bomba solar",
+    donde: "Asamblea de residentes",
+    regla: "Consenso",
+    base: "art35",
+    requisito: "residente",
+    votos: { favor: 21, contra: 4, abstencion: 2 },
+  },
+  {
+    id: "animales",
+    titulo: "Permitir animales de granja en las chacras",
+    donde: "Asamblea de residentes",
+    regla: "2/3 de los votos",
+    base: "art44",
+    requisito: "residente",
+    votos: { favor: 12, contra: 9, abstencion: 5 },
+  },
+];
+
 export const AMBITOS: readonly { id: Ambito; etiqueta: string }[] = [
   { id: "tribu", etiqueta: "Tribu" },
-  { id: "asamblea", etiqueta: "Asamblea de residentes" },
   { id: "fideicomiso", etiqueta: "Fideicomiso" },
 ];
 

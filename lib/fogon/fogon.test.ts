@@ -2,21 +2,34 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { TERMINOS } from "@/lib/legal/terminos";
-import { DECISIONES } from "./datos";
+import { AMBITOS, DECISIONES, EJEMPLOS_COMUN } from "./datos";
 import { contar, filtrar, INICIAL, leer, motivoSinVoto, SIN_CONDICION, votar, votoPropio, type Condicion } from "./estado";
 
 const mock = readFileSync(path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"), "utf8");
 const huerta = DECISIONES[0];
-const bomba = DECISIONES[1];
-const presupuesto = DECISIONES[3];
+const presupuesto = DECISIONES[1];
+// Una decisión que pide residencia: ya no hay ninguna visible, pero la regla sigue en el código.
+const bomba = EJEMPLOS_COMUN[0];
 
 describe("datos", () => {
-  it("son las cinco decisiones del mock-up, con títulos y reglas copiados", () => {
-    expect(DECISIONES).toHaveLength(5);
-    for (const d of DECISIONES) {
+  it("son las tres decisiones del mock-up que quedan en el Fogón, con títulos y reglas copiados", () => {
+    expect(DECISIONES).toHaveLength(3);
+    for (const d of [...DECISIONES, ...EJEMPLOS_COMUN]) {
       expect(mock).toContain(`["${d.titulo}","${d.donde}","${d.regla}","${d.base}"`);
       expect(TERMINOS[d.base]).toBeDefined();
     }
+  });
+  it("los ámbitos son solo tribu y fideicomiso", () => {
+    expect(AMBITOS.map((a) => a.id)).toEqual(["tribu", "fideicomiso"]);
+  });
+  it("ninguna decisión visible es de la Asamblea de residentes", () => {
+    expect(DECISIONES.filter((d) => d.donde === "Asamblea de residentes")).toEqual([]);
+    expect(DECISIONES.map((d) => d.id)).not.toContain("bomba");
+    expect(DECISIONES.map((d) => d.id)).not.toContain("animales");
+  });
+  it("los ejemplos para el común conservan las dos decisiones con su ⚖", () => {
+    expect(EJEMPLOS_COMUN.map((d) => d.id)).toEqual(["bomba", "animales"]);
+    for (const d of EJEMPLOS_COMUN) expect(TERMINOS[d.base]).toBeDefined();
   });
   it("no hay personas de ejemplo en los datos", () => {
     expect(JSON.stringify(DECISIONES)).not.toMatch(/Luc[ií]a|Lucas/);
@@ -33,10 +46,11 @@ describe("quién puede votar (residencia cargada y Pase Fundador)", () => {
     expect(motivoSinVoto(bomba, exterior)).toBe("Solo residentes");
     expect(motivoSinVoto(presupuesto, exterior)).toBe("Votan quienes tienen el Pase Fundador");
   });
-  it("con residencia en Argentina vota en tribu y asamblea; el fideicomiso pide el Pase", () => {
+  it("con residencia en Argentina vota en tribu; el fideicomiso pide el Pase", () => {
     for (const d of DECISIONES) {
       expect(motivoSinVoto(d, argentina)).toBe(d.id === "presupuesto" ? "Votan quienes tienen el Pase Fundador" : null);
     }
+    expect(motivoSinVoto(bomba, argentina)).toBeNull();
   });
   it("sin dato de residencia vota en tribu y en la asamblea dice que falta el dato (no asume)", () => {
     expect(motivoSinVoto(huerta, SIN_CONDICION)).toBeNull();
@@ -55,7 +69,7 @@ describe("filtro", () => {
     expect(filtrar("fideicomiso").map((d) => d.id)).toEqual(["presupuesto"]);
   });
   it("sin filtro están todas", () => {
-    expect(filtrar(null)).toHaveLength(5);
+    expect(filtrar(null)).toHaveLength(3);
   });
 });
 
@@ -71,19 +85,15 @@ describe("votar", () => {
     expect(c.favor).toBe(huerta.votos.favor);
     expect(c.contra).toBe(huerta.votos.contra + 1);
   });
-  it("sin derecho a voto no registra nada", () => {
-    expect(votar(INICIAL, "bomba", "favor", SIN_CONDICION)).toBe(INICIAL);
-    expect(votar(INICIAL, "bomba", "favor", exterior)).toBe(INICIAL);
-    expect(votar(INICIAL, "bomba", "favor", argentina).votos.bomba).toBe("favor");
+  it("una decisión que ya no existe (la bomba) no registra nada", () => {
+    expect(votar(INICIAL, "bomba", "favor", argentina)).toBe(INICIAL);
   });
   it("el fideicomiso solo registra el voto de quien tiene el Pase", () => {
     expect(votar(INICIAL, "presupuesto", "favor", argentina)).toBe(INICIAL);
     expect(votar(INICIAL, "presupuesto", "favor", conPase).votos.presupuesto).toBe("favor");
   });
   it("el voto guardado en un ámbito donde ya no puede votar no se muestra", () => {
-    const e = { votos: { bomba: "favor" as const, presupuesto: "contra" as const } };
-    expect(votoPropio(e, bomba, exterior)).toBeUndefined();
-    expect(votoPropio(e, bomba, argentina)).toBe("favor");
+    const e = { votos: { presupuesto: "contra" as const } };
     expect(votoPropio(e, presupuesto, argentina)).toBeUndefined();
     expect(votoPropio(e, presupuesto, conPase)).toBe("contra");
   });
@@ -97,6 +107,10 @@ describe("leer", () => {
   it("descarta votos inválidos y decisiones desconocidas", () => {
     const e = leer(JSON.stringify({ votos: { huerta: "favor", bomba: "ya", otra: "favor" } }));
     expect(e).toEqual({ votos: { huerta: "favor" } });
+  });
+  it("un estado guardado con un voto en la bomba (decisión que salió) no falla y lo ignora", () => {
+    const e = leer(JSON.stringify({ votos: { huerta: "contra", bomba: "favor", animales: "favor" } }));
+    expect(e).toEqual({ votos: { huerta: "contra" } });
   });
   it("lo guardado con personas de ejemplo (formato viejo) no pasa a quien mira", () => {
     const viejo = leer(

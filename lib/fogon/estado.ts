@@ -12,7 +12,7 @@ export const INICIAL: EstadoFogon = { votos: {} };
 
 /**
  * Lo que habilita votar. `residencia` es la que la persona cargó en "Tus datos" (`undefined` si no la cargó: sin dato);
- * por ahora, en el prototipo, residir fiscalmente en Argentina habilita la Asamblea de residentes (simulado).
+ * el requisito `residente` ya no lo usa ninguna decisión visible (la Asamblea de residentes todavía no existe).
  * `pase` es si tiene el Pase Fundador (cualquier nivel): es lo que habilita el Fideicomiso.
  */
 export type Condicion = { residencia: Residencia | undefined; pase: boolean };
@@ -31,7 +31,7 @@ export function votoPropio(e: EstadoFogon, d: Decision, condicion: Condicion): O
 const OPCIONES: readonly string[] = ["favor", "contra", "abstencion"];
 
 /** null si puede votar; si no, el motivo que se muestra. Sin dato de residencia no se asume nada. */
-export function motivoSinVoto(d: Decision, condicion: Condicion): string | null {
+export function motivoSinVoto(d: Pick<Decision, "requisito">, condicion: Condicion): string | null {
   if (d.requisito === "ninguno") return null;
   if (d.requisito === "pase") return condicion.pase ? null : MOTIVO_SIN_PASE;
   if (condicion.residencia === "argentina") return null;
@@ -65,6 +65,7 @@ export function leer(crudo: string | null): EstadoFogon {
     if ("persona" in o) return INICIAL;
     const crudos = o.votos && typeof o.votos === "object" ? (o.votos as Record<string, unknown>) : {};
     const votos: Record<string, Opcion> = {};
+    // Solo se leen decisiones que existen: un voto guardado en una que salió (p. ej. `bomba`) se ignora.
     for (const d of DECISIONES) {
       const v = crudos[d.id];
       if (typeof v === "string" && OPCIONES.includes(v)) votos[d.id] = v as Opcion;

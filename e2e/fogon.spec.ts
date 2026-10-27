@@ -2,17 +2,37 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
 import { ignorarEnSinRed } from "./ayudas";
 
-test("lista las cinco decisiones con dónde, regla y ⚖, y el aviso de prototipo", async ({ page }) => {
+test("lista las tres decisiones con dónde, regla y ⚖, y el aviso de prototipo", async ({ page }) => {
   const respuesta = await page.goto("/fogon");
   expect(respuesta?.status()).toBe(200);
   await expect(page.getByRole("heading", { level: 1, name: "Lo que se está decidiendo" })).toBeVisible();
   await expect(page.getByText("Prototipo interno · datos de ejemplo")).toBeVisible();
   await expect(page.locator("main")).toHaveCount(1);
-  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(5);
-  const bomba = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Usar el fondo común para la bomba solar" }) });
-  await expect(bomba).toContainText("Asamblea de residentes");
-  await expect(bomba).toContainText("Consenso");
-  await expect(bomba.getByRole("button", { name: "Qué significa legalmente: Reglamento de Soluna, art. 35" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(3);
+  const huerta = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Plan de huerta comunitaria 2027" }) });
+  await expect(huerta).toContainText("Círculo de Tierra");
+  await expect(huerta).toContainText("Consentimiento");
+  await expect(huerta.getByRole("button", { name: /Qué significa legalmente/ })).toBeVisible();
+});
+
+test("sin eventos: el Fogón solo lista decisiones, no encuentros ni jornadas", async ({ page }) => {
+  await page.goto("/fogon");
+  await expect(page.getByRole("heading", { level: 2 })).toHaveText([
+    "Plan de huerta comunitaria 2027",
+    "Presupuesto de obra 2027 del macrolote",
+    "Elegir facilitador/a de Valle Solar",
+  ]);
+  await expect(page.getByRole("list").getByText(/encuentro|jornada|convocatoria/i)).toHaveCount(0);
+});
+
+test("los filtros son Todas, Tribu y Fideicomiso; no hay Asamblea de residentes ni bomba solar", async ({ page }) => {
+  await page.goto("/fogon");
+  const filtros = page.getByRole("group", { name: "Filtrar por ámbito" }).getByRole("button");
+  // El botón activo lleva un "✓" oculto para lectores que cuenta como texto: se compara el final.
+  await expect(filtros).toHaveText([/Todas$/, /Tribu$/, /Fideicomiso$/]);
+  await expect(page.getByText("Asamblea de residentes")).toHaveCount(0);
+  await expect(page.getByText(/bomba solar/)).toHaveCount(0);
+  await expect(page.getByText(/residencia fiscal/)).toHaveCount(0);
 });
 
 function cargarResidencia(page: Page, residencia: "argentina" | "exterior") {
@@ -21,19 +41,19 @@ function cargarResidencia(page: Page, residencia: "argentina" | "exterior") {
   }, residencia);
 }
 
-test("sin residencia cargada no se asume nada: dice que falta el dato y no hay personas de ejemplo", async ({ page }) => {
+test("sin residencia cargada no pide el dato y no hay personas de ejemplo", async ({ page }) => {
   await page.goto("/fogon");
-  await expect(page.getByText("Sin dato de tu residencia", { exact: true })).toHaveCount(2);
+  await expect(page.getByText("Sin dato de tu residencia")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(2);
-  await expect(page.getByRole("link", { name: "Cargala en Tus datos" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Cargala en Tus datos" })).toHaveCount(0);
   await expect(page.getByLabel("Persona de ejemplo")).toHaveCount(0);
   await expect(page.getByText(/Lucía|Lucas/)).toHaveCount(0);
 });
 
-test("con residencia en el exterior ve el motivo de cada decisión", async ({ page }) => {
+test("con residencia en el exterior no aparece \"Solo residentes\"; el fideicomiso pide el Pase", async ({ page }) => {
   await cargarResidencia(page, "exterior");
   await page.goto("/fogon");
-  await expect(page.getByText("Solo residentes")).toHaveCount(2);
+  await expect(page.getByText("Solo residentes")).toHaveCount(0);
   await expect(page.getByText("Votan quienes tienen el Pase Fundador")).toBeVisible();
   await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(2);
 });
@@ -44,7 +64,7 @@ test("filtrar por Fideicomiso deja solo el presupuesto de obra", async ({ page }
   await expect(page.getByRole("button", { name: "Fideicomiso" })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByRole("heading", { level: 2 })).toHaveText(["Presupuesto de obra 2027 del macrolote"]);
   await page.getByRole("button", { name: "Todas" }).click();
-  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(5);
+  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(3);
 });
 
 test("votar a favor en la huerta actualiza el conteo, sin red, y sobrevive a la recarga", async ({ page }) => {
@@ -72,28 +92,22 @@ test("votar a favor en la huerta actualiza el conteo, sin red, y sobrevive a la 
   await expect(huerta).toContainText("A favor 15");
 });
 
-test("con residencia en Argentina se puede votar en la asamblea; el fideicomiso pide el Pase", async ({ page }) => {
+test("con residencia en Argentina el fideicomiso sigue pidiendo el Pase", async ({ page }) => {
   await cargarResidencia(page, "argentina");
   await page.goto("/fogon");
-  await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(4);
+  await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(2);
   await expect(page.getByText("Solo residentes")).toHaveCount(0);
-  const bomba = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: /bomba solar/ }) });
-  await bomba.getByRole("button", { name: "Votar" }).click();
-  await bomba.getByRole("button", { name: "Abstención" }).click();
-  await expect(bomba).toContainText("Abstención 3");
+  await expect(page.getByText("Votan quienes tienen el Pase Fundador")).toBeVisible();
 });
 
-test("un voto guardado en la asamblea no se muestra si la residencia cargada pasa a ser del exterior", async ({ page }) => {
+test("un voto guardado en una decisión que salió (la bomba solar) no rompe el Fogón y se ignora", async ({ page }) => {
   await page.addInitScript(() => {
-    window.localStorage.setItem("lh-pasaporte", JSON.stringify({ residencia: "exterior" }));
-    window.localStorage.setItem("lh-fogon", JSON.stringify({ votos: { bomba: "favor", huerta: "favor" } }));
+    window.localStorage.setItem("lh-fogon", JSON.stringify({ votos: { bomba: "favor", animales: "contra", huerta: "favor" } }));
   });
   await page.goto("/fogon");
-  const bomba = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: /bomba solar/ }) });
   const huerta = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Plan de huerta comunitaria 2027" }) });
-  await expect(bomba).toContainText("Solo residentes");
-  await expect(bomba.getByText("Tu voto:")).toHaveCount(0);
-  await expect(bomba).toContainText("A favor 21");
+  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(3);
+  await expect(page.getByText(/bomba solar/)).toHaveCount(0);
   await expect(huerta).toContainText("Tu voto: A favor (simulado)");
 });
 
