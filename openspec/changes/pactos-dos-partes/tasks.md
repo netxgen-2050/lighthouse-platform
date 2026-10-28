@@ -30,4 +30,4 @@
 
 ## Integración
 
-- [ ] F.1 `pnpm verificar` y `pnpm build` en verde. PR desde `agente/pactos-dos-partes` hacia `dev` con guion de prueba: entrar como `persona@prueba.test` → pedir membresía y ser miembro de Valle Solar → enviar pacto → "Entrar como…" `admin@prueba.test` → `/tribus/valle` → "Pactos para responder (1)" → aceptar → volver como persona → ver "Aceptado", versión 1, Semillas y Mi recorrido; repetir con un cambio no aceptado.
+- [x] F.1 `pnpm verificar` y `pnpm build` en verde. PR desde `agente/pactos-dos-partes` hacia `dev` con guion de prueba: entrar como `persona@prueba.test` → pedir membresía y ser miembro de Valle Solar → enviar pacto → "Entrar como…" `admin@prueba.test` → `/tribus/valle` → "Pactos para responder (1)" → aceptar → volver como persona → ver "Aceptado", versión 1, Semillas y Mi recorrido; repetir con un cambio no aceptado.
