@@ -24,6 +24,7 @@ done
 RAIZ="$(git rev-parse --show-toplevel)"; cd "$RAIZ"
 REPO="$(git remote get-url origin | sed -E 's#^(git@github.com:|https://github.com/)##; s#\.git$##')"
 DOCS="$(cd "$RAIZ/.." && pwd)/NS_platform"
+TOKENOMICS="$(cd "$RAIZ/.." && pwd)/NS_Tokenomics"
 RAMA="spec/$NOMBRE"; DIR="$RAIZ/.carriles/spec-$NOMBRE"; LOGS="$(mktemp -d)"
 paso() { echo "[$(date +%T)] $*"; }
 
@@ -31,6 +32,7 @@ paso() { echo "[$(date +%T)] $*"; }
 agente() {
   local nombre="$1" prompt="$2" salida="$3" extra=()
   [[ -d "$DOCS" ]] && extra=(--add-dir "$DOCS")
+  [[ -d "$TOKENOMICS" ]] && extra+=(--add-dir "$TOKENOMICS")
   for _ in $(seq 1 8); do
     (cd "$DIR" && claude -p "$prompt" --agent "$nombre" --permission-mode acceptEdits \
         "${extra[@]}" --output-format text < /dev/null) > "$salida" 2>&1 || true
@@ -53,7 +55,7 @@ git worktree add -q -B "$RAMA" "$DIR" origin/dev
 paso "Especificador escribiendo la spec"
 agente especificador "$PEDIDO
 
-Rutas de la documentación de producto: $DOCS/Documentation. Escribí los cambios OpenSpec en la rama actual ($RAMA), validá cada uno con 'pnpm exec openspec validate <id> --strict' y hacé commit sin push. Terminá con un resumen corto y, al final, una sección que empiece exactamente con '**Preguntas abiertas**'." "$LOGS/especificador.txt"
+Rutas de la documentación de producto: $DOCS/Documentation (y el tokenomics en $TOKENOMICS, si existe). Escribí los cambios OpenSpec en la rama actual ($RAMA), validá cada uno con 'pnpm exec openspec validate <id> --strict' y hacé commit sin push. Terminá con un resumen corto y, al final, una sección que empiece exactamente con '**Preguntas abiertas**'." "$LOGS/especificador.txt"
 
 if [[ $ARQUITECTO -eq 1 ]]; then
   paso "Arquitecto revisando"

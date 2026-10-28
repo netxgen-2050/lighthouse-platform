@@ -4,6 +4,7 @@ import {
   BORRADOR_VACIO,
   datosDesdeBorrador,
   enviarKyc,
+  fechaLarga,
   KYC_VACIO,
   leerKyc,
   validarPaso,
@@ -23,6 +24,29 @@ const completo: BorradorKyc = {
   origenFondos: "Ahorros de mi trabajo",
   inversor: "no-calificado",
 };
+
+describe("validarPaso en inglés", () => {
+  it("los mensajes salen en inglés, asociados a su campo", () => {
+    const e = validarPaso(5, BORRADOR_VACIO, hoy, "en");
+    expect(e.nombre).toBe("Enter your full name.");
+    expect(e.nacimiento).toBe("Enter your date of birth.");
+    expect(e.inversor).toBe("Choose what type of investor you are.");
+    expect(Object.keys(e)).toHaveLength(7);
+  });
+  it("la edad mínima también", () => {
+    expect(validarPaso(1, { ...completo, nacimiento: "2010-10-10" }, hoy, "en").nacimiento).toBe("You must be over 18 years old.");
+  });
+  it("sin idioma sigue en español", () => {
+    expect(validarPaso(1, BORRADOR_VACIO, hoy).nombre).toBe("Escribí tu nombre completo.");
+  });
+});
+
+describe("fechaLarga", () => {
+  it("en español y en inglés", () => {
+    expect(fechaLarga("2026-10-09T15:00:00", "es")).toBe("9 de octubre de 2026");
+    expect(fechaLarga("2026-10-09T15:00:00", "en")).toBe("October 9, 2026");
+  });
+});
 
 describe("validarPaso", () => {
   it("un borrador vacío falla en cada paso con su campo", () => {

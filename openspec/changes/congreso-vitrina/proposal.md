@@ -1,5 +1,7 @@
 # Proposal
 
+> 🔴 **Estado al 23-oct-2026: evento cancelado.** El Congreso de febrero 2027 no se hace (anunciado en la llamada con UnityHub del 23-oct). Este cambio ya está implementado: `/congreso` queda como **vitrina de ejemplo, a reutilizar** (por ejemplo, para los eventos de comunidad de `NS_platform` nota 20) **o retirar**. Decisión pendiente de Gus; no implementar nada nuevo sobre esta base hasta entonces.
+
 ## Why
 
 Gus le va a mostrar al CEO y a un inversor cómo se vería el Congreso de febrero 2027: una página de evento que dé ganas de ir (al estilo de las páginas de evento de UnityHub) y que, a la vez, deje claro cómo el ticket se conecta con NetX: tribus, ticket vinculado y sello Genesis. La `/congreso` de hoy es una agenda y un formulario; no cumple ese papel. Este cambio la rehace como **vitrina**, sobre la base de `congreso-tema-evento` (contenido tipado, tema propio y piezas portables).

@@ -1,0 +1,28 @@
+# Tasks
+
+Rama `agente/vista-netx-modelo-financiamiento` desde `dev`. Textos en español con voseo. Sin dependencias nuevas, sin base de datos, sin pedidos de red. Todo lo que hace falta de NS_Tokenomics está copiado en `design.md`.
+
+## 0. Antes de empezar
+
+- [x] 0.1 Confirmar que `vista-netx-financiamiento` está en `dev`: existen `lib/financiamiento/resumen.ts`, `lib/financiamiento/riesgo.ts`, `lib/financiamiento/juegos.ts` con `PALABRAS_QUE_NO_VAN`, `app/netx/pestanas.tsx` con `PESTANAS_NETX`, la capacidad `vista-netx` en `lib/permisos/niveles.ts` y la entrada `ordenanza173` en `lib/legal/terminos.ts`. Si falta cualquiera, **frenar y reportar**. Verificar con `ls lib/financiamiento app/netx`, `grep -n "vista-netx" lib/permisos/niveles.ts` y `grep -n "ordenanza173" lib/legal/terminos.ts`. También existe `convertirSafu` en `lib/series` (`grep -rn "export function convertirSafu" lib/series`). <!-- arquitecto: §3.5 usa convertirSafu, que llega por fogon-simulador-parametros -->
+
+## 1. Números y relato
+
+- [x] 1.1 Crear `lib/financiamiento/recorridos.ts` (`valorFuturo`, `RETORNO_SERIE_MADRE`, `caminoDelVino`) según design §2, con tests: 10.000 → 13.439 · 17.908 · 23.674 y 30.000 → 40.317 · 53.725 · 71.021 (±1, copiados de `RESULTS_series_waterfall.md` con comentario de fuente y versión); `valorFuturo` con `null`, `NaN` o retorno −1 → `null`; camino del vino con la partida → 302 botellas y 850 (±1); precio 0 → `null`. Verificar con `pnpm test lib/financiamiento`.
+- [x] 1.2 Crear `lib/financiamiento/relato.ts` con los datos de design §3 y su test: cada ítem tiene `fuente`; `ETAPAS` son Semilla, Construir y Escalar en ese orden; `CASCADA` tiene siete pasos en el orden de design §3.3; `SERIES_POSIBLES` marca con modelo solo agrovoltaica y viñedo; `SUPUESTOS_A_CONFIRMAR` tiene `quien` y `fuente` en todos y la vivienda vale "sin dato"; `LOTES_VS_MODELO` tiene las filas Ley, La tierra, Ingresos, Tierra y agua, Comisión y Quién vende, y ninguno de sus textos contiene una palabra de `PALABRAS_QUE_NO_VAN`; ningún texto de `relato.ts` contiene "diseño B", "reservá" ni "reservar tu"; la fila Fundación de `BOLSILLOS` dice "en el Juego B" y "todavía no existe"; el test de fuente de `lib/financiamiento/` sigue en verde. Verificar con `pnpm test lib/financiamiento`.
+
+## 2. Catálogo legal y gráfico
+
+- [x] 2.1 Sumar `seriemadre` y `fundaciontierra` a `lib/legal/terminos.ts` con los textos de design §6 (`fundaciontierra` empieza "En el Juego B" y dice "a verificar con abogado"), `borrador: true` y el comentario de texto nuevo. Verificar con `pnpm test lib/legal`.
+- [x] 2.2 Crear `components/rangos.tsx` (design §4) y `components/rangos.test.tsx`: la escala incluye el 0 y el P10 negativo; una fila con `null` muestra "sin dato" y no dibuja; el SVG tiene `aria-hidden`; el texto de cada fila trae P10, P50 y P90. Verificar con `pnpm test components` y `pnpm test lib/sin-colores-sueltos`.
+
+## 3. Pestaña
+
+- [x] 3.1 Sumar "Modelo de financiamiento" a `PESTANAS_NETX` en segundo lugar y el enlace "Ver el modelo completo" en el Resumen; actualizar en `e2e/vista-netx.spec.ts` el orden de las cuatro pestañas, igual como super admin y como rol "persona". Verificar con `pnpm test:e2e e2e/vista-netx.spec.ts`.
+- [x] 3.2 Escribir `app/netx/financiamiento/page.tsx` (design §5) y `e2e/netx-financiamiento.spec.ts` con: un solo h1 "Modelo de financiamiento" y un solo `main`; "Modelo de financiamiento" con `aria-current="page"`; aviso de valores de partida antes del primer "USD"; ocho h2 en el orden de design §5 (incluido "Juego A o Juego B") y el índice lleva a cada uno; etapa Semilla con "USD 375.000 a 500.000" y "sin dato (a cotizar)"; fila Fundación con "en el Juego B", "todavía no existe" y "nunca un porcentaje"; cascada con siete pasos y "80 % procomún · 20 % Unidades"; S1 "sin modelo todavía"; "USD 1.250 de Unidades de la Serie Madre" y "a verificar con abogado" en la tabla de instrumentos; recorrido A "USD 13.439", "USD 23.674" y "Entrada a la vivienda: sin dato"; recorrido B "USD 2.663", "9,2 %" y "302 botellas"; riesgo con "61 %" y el hallazgo de la primera pérdida; "Ver como tabla" de rangos con "14,0 %"; tabla de juegos con encabezados "Juego A · vender lotes ahora" y "Juego B · el procomún", fila Comisión con "matrícula de corredor" y fila Ingresos con "una sola vez"; el texto de `main` no contiene "capitalista", "extractivista" ni "colonialista", y "diseño B" aparece solo junto a "doc 28"; grupo "A confirmar con Vagner" con "USD 31.000" y "3 · 6 · 9 %"; los ⚖ de Serie Madre y Fundación se abren con teclado; **con rol "persona" ve la pestaña completa** (h1 "Modelo de financiamiento"); sin sesión termina en `/sumarte` y la respuesta de `/netx/financiamiento` pedida con `request.get` no contiene ningún email (caso sin sesión de la tarea 6.3 del cambio 1) <!-- arquitecto: ADR-015 -->; a 390 px `document.documentElement.scrollWidth <= 390`. Verificar con `pnpm test:e2e e2e/netx-financiamiento.spec.ts`.
+- [x] 3.3 Sumar `/netx/financiamiento` (con todos los `details` abiertos) a `e2e/accesibilidad.spec.ts`. Verificar con `pnpm test:e2e e2e/accesibilidad.spec.ts`.
+
+## 4. Integración
+
+- [ ] 4.1 `pnpm verificar` y `pnpm build` en verde; PR contra `dev` con `scripts/pr.sh`, capturas de la pestaña (escritorio y 390 px) y un guion de la reunión en palabras simples (qué mostrar en cada sección y qué preguntas de Vagner responde). Verificar con los dos comandos y con el PR creado. <!-- implementador: hecho el PR y los dos comandos en verde; PENDIENTE las capturas (escritorio y 390 px) y el guion de la reunión por sección, que no se pueden generar en la corrida nocturna -->
+

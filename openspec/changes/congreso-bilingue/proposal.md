@@ -1,5 +1,7 @@
 # Proposal
 
+> 🔴 **Estado al 23-oct-2026: evento cancelado.** El Congreso de febrero 2027 no se hace (anunciado en la llamada con UnityHub del 23-oct). Este cambio ya está implementado: `/congreso` y `/congreso/en` quedan como **vitrina de ejemplo, a reutilizar o retirar** (decisión pendiente de Gus). Los diccionarios `{es,en}` siguen valiendo como base de ADR-004.
+
 ## Why
 
 Al Congreso de febrero 2027 lo van a mirar inversores del exterior, y la página de los organizadores tiene que poder mandarlos directo a una versión en inglés. Hoy la vitrina (`congreso-vitrina`) es solo en español (voseo). Gus pidió que **la página del Congreso** sea bilingüe español / inglés, sin traducir todavía el resto de la plataforma.

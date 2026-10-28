@@ -49,6 +49,22 @@ describe("validar", () => {
   it("un texto demasiado largo da error", () => {
     expect(validar({ ...completo, tierra: "x".repeat(1001) }).tierra).toBeTruthy();
   });
+  it("los mensajes salen en español por defecto, idénticos a los de siempre", () => {
+    const e = validar(BORRADOR_VACIO);
+    expect(e.nombreComunidad).toBe("Escribí el nombre de la comunidad");
+    expect(e.personas).toBe("Escribí cuántas personas son (un número mayor que cero)");
+    expect(e.formaJuridica).toBe("Elegí la forma jurídica actual o prevista");
+    expect(validar({ ...completo, tierra: "x".repeat(1001) }).tierra).toBe("Puede tener hasta 1000 caracteres");
+  });
+  it("en inglés, los mismos campos con los mensajes en inglés", () => {
+    const es = validar(BORRADOR_VACIO);
+    const en = validar(BORRADOR_VACIO, "en");
+    expect(Object.keys(en).sort()).toEqual(Object.keys(es).sort());
+    expect(en.nombreComunidad).toBe("Write the name of the community");
+    expect(en.formaJuridica).toBe("Choose the current or planned legal form");
+    for (const campo of Object.keys(en) as (keyof typeof en)[]) expect(en[campo], campo).not.toBe(es[campo]);
+    expect(validar({ ...completo, tierra: "x".repeat(1001) }, "en").tierra).toBe("It can be up to 1000 characters long");
+  });
 });
 
 describe("crearPostulacion", () => {

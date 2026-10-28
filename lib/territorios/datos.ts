@@ -1,3 +1,5 @@
+import { sinDato } from "../idioma/formatos";
+import type { Idioma } from "../idioma/tipos";
 import { listarTribus } from "../tribus/datos";
 import type { Tribu } from "../tribus/tipos";
 import type { ResumenTerritorio, Territorio } from "./tipos";
@@ -46,6 +48,6 @@ export function resumenDeTerritorio(id: string): ResumenTerritorio | undefined {
   };
 }
 
-export function textoSuperficie(t: { superficie?: string }): string {
-  return t.superficie ? t.superficie : "sin dato";
+export function textoSuperficie(t: { superficie?: string }, idioma: Idioma = "es"): string {
+  return t.superficie ? t.superficie : sinDato(idioma);
 }

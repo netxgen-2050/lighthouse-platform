@@ -12,7 +12,9 @@ const rutas = [
   "/semillas",
   "/canales",
   "/fogon",
+  "/fogon/gobernanza",
   "/netx",
+  "/netx/comunidad",
   "/pasaporte",
   "/bandeja",
   "/configuracion",
@@ -36,8 +38,8 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 32 rutas auditadas", () => {
-  expect(rutas).toHaveLength(32);
+test("hay 34 rutas auditadas", () => {
+  expect(rutas).toHaveLength(34);
 });
 
 async function graves(page: Page) {
@@ -156,17 +158,49 @@ test("axe sin violaciones serias o críticas: /sumarte con el formulario de cont
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("axe sin violaciones serias o críticas: /netx con un pedido en la bandeja", async ({ page }) => {
+test("axe sin violaciones serias o críticas: /admin con un pedido en la bandeja", async ({ page }) => {
   await page.goto("/sumarte");
   await page.getByRole("button", { name: "Pedir una charla" }).click();
   await page.getByRole("radio", { name: "Email" }).check();
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
   await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
-  await page.goto("/netx");
+  await page.goto("/admin");
   await expect(page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" })).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /admin, /admin/personas y /admin/comunidades con una postulación y un pedido cargados", async ({ page }) => {
+  await page.goto("/sumarte");
+  await page.getByRole("button", { name: "Pedir una charla" }).click();
+  await page.getByRole("radio", { name: "Email" }).check();
+  await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
+  await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
+  await page.goto("/admin");
+  await expect(page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+  await page.goto("/admin/personas");
+  await expect(page.getByRole("region", { name: "Personas y roles" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+  await page.goto("/admin/comunidades");
+  await expect(page.getByRole("table", { name: "Comunidades del directorio" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: el 403 de /admin", async ({ page }) => {
+  await page.context().clearCookies();
+  const r = await page.goto("/admin");
+  expect(r?.status()).toBe(403);
+  await expect(page.getByRole("heading", { level: 1, name: "No tenés acceso a esta página" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /netx con la tabla del gráfico abierta", async ({ page }) => {
+  await page.goto("/netx");
+  await page.getByText("Ver como tabla").click();
+  await expect(page.getByRole("table", { name: /¿Adónde va lo que paga cada serie\?/ })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
 });
 
 test("axe sin violaciones serias o críticas: /?camino=congreso con la tarjeta recomendada", async ({ page }) => {
@@ -177,7 +211,7 @@ test("axe sin violaciones serias o críticas: /?camino=congreso con la tarjeta r
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("axe sin violaciones serias o críticas: /netx con un pedido con origen", async ({ page }) => {
+test("axe sin violaciones serias o críticas: /admin con un pedido con origen", async ({ page }) => {
   await page.goto("/?utm_source=newsletter&utm_campaign=congreso-2027");
   await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-origen"))).not.toBeNull();
   await page.goto("/sumarte");
@@ -185,7 +219,7 @@ test("axe sin violaciones serias o críticas: /netx con un pedido con origen", a
   await page.getByRole("radio", { name: "Email" }).check();
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
   await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
-  await page.goto("/netx");
+  await page.goto("/admin");
   await expect(page.getByRole("row").filter({ hasText: "newsletter · sin dato · congreso-2027" })).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
@@ -226,6 +260,78 @@ test("axe sin violaciones serias o críticas: /congreso/en con el modo de origen
   await page.getByRole("button", { name: "Buy full pass" }).click();
   await expect(page.getByRole("dialog", { name: "Here you would buy your ticket" })).toBeVisible();
   expect(await graves(page)).toEqual([]);
+});
+
+// La plataforma en inglés: el marco traducido y el aviso de "página sin traducir" también tienen que pasar axe.
+test.describe("la plataforma en inglés", () => {
+  test.use({ locale: "en-US" });
+
+  const RUTAS = [
+    "/",
+    "/sumarte",
+    "/tribus",
+    "/tribus/valle",
+    "/tribus/valle/manifiesto",
+    "/tribus/grano/postular",
+    "/territorios/lighthouse",
+    "/configuracion",
+    "/pasaporte",
+    "/semillas",
+    "/pactos",
+    "/fogon",
+    "/compromisos",
+    "/canales",
+    "/perfil",
+    "/panel",
+    "/bandeja",
+  ];
+  for (const ruta of RUTAS) {
+    test(`axe sin violaciones serias o críticas en inglés: ${ruta}`, async ({ page }) => {
+      // Las teselas satelitales son externas: la prueba no depende de ellas.
+      await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+      await page.goto(ruta);
+      await expect(page.locator("html")).toHaveAttribute("lang", "en");
+      expect(await graves(page)).toEqual([]);
+    });
+  }
+
+  test("axe en inglés: el diálogo de verificación de identidad abierto, con un error a la vista", async ({ page }) => {
+    await page.goto("/pasaporte");
+    await page.getByRole("button", { name: "Complete my verification (KYC)" }).click();
+    const dialogo = page.getByRole("dialog", { name: /Verify my identity/ });
+    await dialogo.getByRole("button", { name: "Next" }).click();
+    await expect(dialogo.getByText("Error: Enter your full name.")).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+
+  test("axe en inglés: /semillas con la ronda y sus errores a la vista", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem("lh-membresia", JSON.stringify({ lighthouse: "miembro" }));
+      const tiempo = { rol: "facilitacion", rolOtro: "", descripcion: "Facilito", horas: 20, paso: 2 };
+      window.localStorage.setItem("lh-pactos", JSON.stringify({ comunidades: { lighthouse: { tiempo, aportes: [200] } } }));
+    });
+    await page.goto("/semillas");
+    await page.getByRole("button", { name: "Send round" }).click();
+    await expect(page.getByRole("alert").filter({ hasText: "the round was not sent" })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+
+  test("axe en inglés: el menú de la persona abierto", async ({ page }) => {
+    await page.goto("/tribus");
+    await page.getByRole("button", { name: "Person menu" }).click();
+    await expect(page.locator("#menu-persona")).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+
+  test.describe("sin sesión", () => {
+    test.use({ rol: "ninguno" });
+
+    test("axe en inglés: la portada sin cuenta", async ({ page }) => {
+      await page.goto("/");
+      await expect(page.locator("html")).toHaveAttribute("lang", "en");
+      expect(await graves(page)).toEqual([]);
+    });
+  });
 });
 
 test.describe("/congreso/en sin sesión", () => {
@@ -271,6 +377,47 @@ test("axe sin violaciones serias o críticas: /fogon/consultas/u4 cerrada, con r
   await page.getByRole("button", { name: "Simular el cierre" }).click();
   await expect(page.getByRole("region", { name: "Acta (ejemplo)" })).toBeVisible();
   await expect(page.getByRole("table", { name: "Cómo repartió cada persona" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /netx/simulador con el año por año y la tabla del gráfico abiertos, en los dos escenarios", async ({ page }) => {
+  await page.goto("/netx/simulador");
+  await page.getByText("Ver año por año").click();
+  await page.getByText("Ver como tabla").click();
+  await page.getByText("Ver los supuestos fijos de este escenario").click();
+  await expect(page.getByRole("table", { name: /Año por año/ })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+  await page.getByRole("radio", { name: "Agrovoltaica · 5 MW" }).check();
+  await expect(page.getByRole("table", { name: /Año por año/ })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /netx/financiamiento con todos los details abiertos", async ({ page }) => {
+  await page.goto("/netx/financiamiento");
+  await expect(page.getByRole("heading", { level: 1, name: "Modelo de financiamiento" })).toBeVisible();
+  await page.evaluate(() => document.querySelectorAll("details").forEach((d) => d.setAttribute("open", "")));
+  await expect(page.getByRole("table", { name: /Rangos|TIR de las Unidades por serie/ })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
+for (const lente of ["Estructura", "Propósitos", "Decisiones que suben", "Desde mí"]) {
+  test(`axe sin violaciones serias o críticas: /fogon/gobernanza con la lente ${lente}`, async ({ page }) => {
+    await page.goto("/fogon/gobernanza");
+    await page.getByRole("button", { name: lente, exact: true }).click();
+    await expect(page.getByRole("button", { name: lente, exact: true })).toHaveAttribute("aria-pressed", "true");
+    if (lente === "Decisiones que suben") {
+      await page.getByRole("button", { name: "Pedido de Valle Solar al Fondo Común para la bomba solar" }).click();
+      await expect(page.getByTestId("camino-texto")).toBeVisible();
+    }
+    expect(await graves(page)).toEqual([]);
+  });
+}
+
+test("axe sin violaciones serias o críticas: /fogon/gobernanza con Ana seleccionada y la lista abierta", async ({ page }) => {
+  await page.goto("/fogon/gobernanza");
+  await page.getByText("Ver toda la estructura como lista").click();
+  await page.locator("details").getByRole("button", { name: "Ana (ejemplo) · Miembro" }).click();
+  await expect(page.getByRole("heading", { name: "Todos los roles de Ana (ejemplo)" })).toBeVisible();
   expect(await graves(page)).toEqual([]);
 });
 

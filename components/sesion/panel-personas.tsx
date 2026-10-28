@@ -118,7 +118,8 @@ export function PanelPersonas() {
           {personas.length === 0 ? (
             <p className="text-sm">sin dato</p>
           ) : (
-            <div className="overflow-x-auto">
+            // relative: los textos sr-only de la tabla se posicionan acá y no ensanchan la página a 390 px
+            <div className="relative overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <caption className="sr-only">Personas con acceso a la plataforma: rol, perfil de prueba, tribu que administra y acceso</caption>
                 <thead>

@@ -1,7 +1,7 @@
 import { readdirSync } from "node:fs";
 import path from "node:path";
 import { expect, test } from "vitest";
-import { DESTINOS, destinosDeGrupo, destinosDisponibles, GRUPOS_RAIL } from "./navegacion";
+import { DESTINOS, destinosDeGrupo, destinosDisponibles, etiquetaDeDestino, GRUPOS_RAIL, tituloDeGrupo } from "./navegacion";
 import { esActivo } from "./ruta-activa";
 
 const APP = path.resolve(__dirname, "..", "app");
@@ -20,7 +20,7 @@ function rutasDeApp(dir = APP, ruta = ""): string[] {
 }
 
 test("el orden de la lista es el de la spec", () => {
-  expect(DESTINOS.map((d) => d.etiqueta)).toEqual([
+  expect(DESTINOS.map((d) => etiquetaDeDestino(d, "es"))).toEqual([
     "Inicio",
     "Territorio",
     "Tribus",
@@ -36,17 +36,38 @@ test("el orden de la lista es el de la spec", () => {
     "Configuración",
     "Mis datos",
     "NetX",
+    "Admin",
   ]);
 });
 
 test("los grupos del rail y del menú de la persona salen de la lista única", () => {
-  const etiquetas = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => d.etiqueta);
-  expect(GRUPOS_RAIL.map((g) => g.titulo)).toEqual(["Descubrir", "Participar", "Sumarte"]);
+  const etiquetas = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "es"));
+  expect(GRUPOS_RAIL.map((g) => tituloDeGrupo(g.id, "es"))).toEqual(["Descubrir", "Participar", "Sumarte"]);
   expect(etiquetas("descubrir")).toEqual(["Inicio", "Territorio", "Tribus"]);
-  expect(etiquetas("participar")).toEqual(["Pactos", "Semillas", "Fogón", "Compromisos", "Congreso"]);
+  expect(etiquetas("participar")).toEqual(["Pactos", "Semillas", "Fogón", "Congreso"]);
   expect(etiquetas("sumarte")).toEqual(["Sumarte"]);
   expect(etiquetas("persona")).toEqual(["Perfil", "Pasaporte", "Mi recorrido", "Configuración", "Mis datos"]);
-  expect(etiquetas("interno")).toEqual(["NetX"]);
+  expect(etiquetas("interno")).toEqual(["NetX", "Admin"]);
+});
+
+test("en inglés el rail dice lo que fija el glosario, y Semillas no se traduce", () => {
+  const ingles = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "en"));
+  expect(GRUPOS_RAIL.map((g) => tituloDeGrupo(g.id, "en"))).toEqual(["Discover", "Take part", "Join"]);
+  expect(ingles("descubrir")).toEqual(["Home", "Territory", "Tribes"]);
+  expect(ingles("participar")).toEqual(["Pacts", "Semillas", "Fireside", "Congress"]);
+  expect(ingles("persona")).toEqual(["Profile", "Passport", "My journey", "Settings", "My data"]);
+});
+
+test("Compromisos existe pero no aparece en ningún grupo", () => {
+  const compromisos = DESTINOS.find((d) => d.href === "/compromisos");
+  expect(compromisos?.existe).toBe(true);
+  expect(compromisos?.oculto).toBe(true);
+  const grupos = ["descubrir", "participar", "sumarte", "persona", "interno"] as const;
+  expect(grupos.flatMap((g) => destinosDeGrupo(g)).some((d) => d.href === "/compromisos")).toBe(false);
+});
+
+test("todo destino oculto existe", () => {
+  expect(DESTINOS.filter((d) => d.oculto).every((d) => d.existe)).toBe(true);
 });
 
 test("ningún destino apunta a /canales", () => {
@@ -68,7 +89,7 @@ test("`existe` de cada destino coincide con las páginas reales de app/", () => 
 });
 
 test("solo destinos que existen: sin la ruta /panel no se muestra Mi recorrido", () => {
-  const etiquetas = destinosDisponibles().map((d) => d.etiqueta);
+  const etiquetas = destinosDisponibles().map((d) => etiquetaDeDestino(d, "es"));
   // Mientras app/ no tenga /panel; el día que exista, el test de coincidencia obliga a poner existe: true.
   expect(atiende("/panel", rutasDeApp())).toBe(etiquetas.includes("Mi recorrido"));
   expect(etiquetas).toContain("Tribus");

@@ -15,6 +15,7 @@ describe("catálogo legal", () => {
         "adhesion",
         "adherente",
         "agencia",
+        "avisosimulador",
         "bitacora",
         "art32",
         "art35",
@@ -23,14 +24,21 @@ describe("catálogo legal", () => {
         "calificado",
         "chacra",
         "circulo",
+        "circulotrabajo",
+        "consejo",
+        "representante",
+        "validacioncomun",
         "consultivo",
         "contacto",
         "creditos",
         "datos",
+        "dobleenlace",
+        "dominio",
         "encuentroeducativo",
         "espejo",
         "estatuto",
         "fidasamblea",
+        "fundaciontierra",
         "gobernanzafideicomiso",
         "guardian",
         "hacienda",
@@ -39,7 +47,9 @@ describe("catálogo legal", () => {
         "licencia",
         "loteo",
         "membresia",
+        "notasverdes",
         "obra",
+        "ordenanza173",
         "pacto",
         "pase",
         "pasaporte",
@@ -47,17 +57,57 @@ describe("catálogo legal", () => {
         "personeria",
         "plantribu",
         "presencia",
+        "primeraperdida",
         "remoto",
         "ribera",
         "ritual",
         "ronda0",
         "safe",
+        "safu",
         "semillas",
+        "seriemadre",
+        "serieprograma",
         "sumarte",
         "ticket",
         "transferencia",
+        "unidadesregeneracion",
       ].sort(),
     );
+  });
+  it("los términos del simulador de series son borrador", () => {
+    for (const clave of [
+      "avisosimulador",
+      "unidadesregeneracion",
+      "notasverdes",
+      "primeraperdida",
+      "safu",
+      "serieprograma",
+    ] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+    }
+    expect(TERMINOS.avisosimulador.texto).toBe(
+      "Prototipo interno · valores de partida, no son una oferta ni un pronóstico · el diseño legal no lo revisó un abogado",
+    );
+  });
+  it("los términos de la gobernanza fractal son borrador, con inglés, y avisan que el reglamento falta", () => {
+    for (const clave of ["circulotrabajo", "consejo", "representante", "validacioncomun", "dobleenlace", "dominio"] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+      expect(terminoEn(clave)?.texto.trim(), clave).toBeTruthy();
+      expect(TERMINOS[clave].texto, clave).toMatch(/todavía|no existe/);
+    }
+  });
+  it("ordenanza173 es borrador y dice que se verifica con abogado", () => {
+    expect(esBorrador("ordenanza173")).toBe(true);
+    expect(TERMINOS.ordenanza173.texto).toContain("en el Juego B");
+    expect(TERMINOS.ordenanza173.texto).toContain("A verificar con abogado");
+    expect(TERMINOS.ordenanza173.texto).not.toContain("diseño B");
+  });
+  it("seriemadre y fundaciontierra son borrador y la Fundación se verifica con abogado", () => {
+    expect(esBorrador("seriemadre")).toBe(true);
+    expect(esBorrador("fundaciontierra")).toBe(true);
+    expect(TERMINOS.fundaciontierra.texto.startsWith("En el Juego B")).toBe(true);
+    expect(TERMINOS.fundaciontierra.texto).toContain("a verificar con abogado");
+    expect(TERMINOS.fundaciontierra.texto).not.toContain("diseño B");
   });
   it("encuentroeducativo es borrador", () => {
     expect(esBorrador("encuentroeducativo")).toBe(true);

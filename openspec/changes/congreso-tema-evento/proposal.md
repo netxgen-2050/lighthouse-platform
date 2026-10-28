@@ -1,5 +1,7 @@
 # Proposal
 
+> 🔴 **Estado al 23-oct-2026: evento cancelado.** El Congreso de febrero 2027 no se hace (anunciado en la llamada con UnityHub del 23-oct). Este cambio ya está implementado: el tema y las piezas portables de `/congreso` quedan como **vitrina de ejemplo, a reutilizar** para eventos de comunidad (`NS_platform` nota 20) **o retirar**. Decisión pendiente de Gus.
+
 ## Why
 
 Gus quiere mostrarle al CEO y a un inversor cómo se vería el Congreso de febrero 2027 como **página de evento con fuerza de marketing**, al estilo de las páginas de evento de UnityHub, dentro del marco de NetX. Antes de rehacer la página (cambio `congreso-vitrina`), hace falta la base: el contenido del evento tipado y en un solo lugar, una identidad visual propia que no rompa la regla de "solo tokens del tema", y las piezas visuales reutilizables. Además, los organizadores podrían querer su propia página fuera de NetX: por eso las piezas del evento tienen que ser **portables** desde el principio.

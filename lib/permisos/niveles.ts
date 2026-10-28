@@ -1,3 +1,6 @@
+import { marco } from "@/lib/idioma/textos/marco";
+import { sumarte } from "@/lib/idioma/textos/sumarte";
+import type { Idioma } from "@/lib/idioma/tipos";
 import { esPublica } from "@/lib/sesion/rutas-publicas";
 
 /**
@@ -9,13 +12,27 @@ import { esPublica } from "@/lib/sesion/rutas-publicas";
 export const NIVELES = ["sin-cuenta", "explorador", "miembro", "fundador", "lider", "superadmin"] as const;
 export type Nivel = (typeof NIVELES)[number];
 
+const CLAVE_NIVEL = {
+  "sin-cuenta": "sinCuenta",
+  explorador: "explorador",
+  miembro: "miembro",
+  fundador: "fundador",
+  lider: "lider",
+  superadmin: "superadmin",
+} as const satisfies Record<Nivel, keyof typeof marco.es.niveles>;
+
+/** El nombre de un nivel en un idioma (del diccionario del marco, que toma los términos del glosario). */
+export function etiquetaDeNivel(nivel: Nivel, idioma: Idioma = "es"): string {
+  return marco[idioma].niveles[CLAVE_NIVEL[nivel]];
+}
+
 export const ETIQUETA_NIVEL: Record<Nivel, string> = {
-  "sin-cuenta": "Sin cuenta",
-  explorador: "Explorador",
-  miembro: "Miembro",
-  fundador: "Fundador",
-  lider: "Líder de tribu",
-  superadmin: "Super admin",
+  "sin-cuenta": etiquetaDeNivel("sin-cuenta"),
+  explorador: etiquetaDeNivel("explorador"),
+  miembro: etiquetaDeNivel("miembro"),
+  fundador: etiquetaDeNivel("fundador"),
+  lider: etiquetaDeNivel("lider"),
+  superadmin: etiquetaDeNivel("superadmin"),
 };
 
 /** Lo que una persona puede hacer en la plataforma. */
@@ -29,7 +46,8 @@ export type Capacidad =
   | "participar"
   | "adherir"
   | "admin-tribu"
-  | "netx";
+  | "vista-netx"
+  | "admin";
 
 /** Nivel mínimo que habilita cada capacidad. */
 export const NIVEL_MINIMO: Record<Capacidad, Nivel> = {
@@ -42,7 +60,8 @@ export const NIVEL_MINIMO: Record<Capacidad, Nivel> = {
   participar: "miembro",
   adherir: "miembro",
   "admin-tribu": "lider",
-  netx: "superadmin",
+  "vista-netx": "explorador",
+  admin: "superadmin",
 };
 
 /** ¿Este nivel llega al mínimo pedido? */
@@ -71,7 +90,8 @@ export function capacidadDeRuta(ruta: string): Capacidad {
   const r = limpiar(ruta);
   if (dentroDe(r, "/sumarte")) return "sumarte";
   if (esPublica(r)) return "descubrir";
-  if (dentroDe(r, "/netx")) return "netx";
+  if (dentroDe(r, "/netx")) return "vista-netx";
+  if (dentroDe(r, "/admin")) return "admin";
   if (PARTICIPAR.some((p) => dentroDe(r, p))) return "participar";
   if (dentroDe(r, "/congreso")) return "congreso";
   return "personal";
@@ -85,39 +105,42 @@ export function puedeRuta(nivel: Nivel, ruta: string): boolean {
   return alcanza(nivel, nivelMinimoDeRuta(ruta));
 }
 
-const NOMBRE_DE_RUTA: readonly [string, string][] = [
-  ["/pactos", "Pactos"],
-  ["/semillas", "Semillas"],
-  ["/fogon", "Fogón"],
-  ["/compromisos", "Compromisos"],
-  ["/congreso", "Congreso"],
-  ["/perfil", "Perfil"],
-  ["/pasaporte", "Pasaporte"],
-  ["/panel", "Mi recorrido"],
-  ["/bandeja", "Bandeja"],
-  ["/configuracion", "Configuración"],
-  ["/netx", "NetX"],
+const NOMBRE_DE_RUTA: readonly [string, keyof (typeof sumarte)["es"]["avisos"]["rutas"]][] = [
+  ["/pactos", "pactos"],
+  ["/semillas", "semillas"],
+  ["/fogon", "fogon"],
+  ["/compromisos", "compromisos"],
+  ["/congreso", "congreso"],
+  ["/perfil", "perfil"],
+  ["/pasaporte", "pasaporte"],
+  ["/panel", "panel"],
+  ["/bandeja", "bandeja"],
+  ["/configuracion", "configuracion"],
+  ["/netx", "netx"],
+  ["/admin", "admin"],
 ];
 
 /** Aviso de Sumarte cuando alguien abre por dirección una página que su nivel no habilita. */
-export function avisoDeRuta(ruta: string): string {
+export function avisoDeRuta(ruta: string, idioma: Idioma = "es"): string {
+  const t = sumarte[idioma].avisos;
   const r = limpiar(ruta);
-  const nombre = NOMBRE_DE_RUTA.find(([base]) => dentroDe(r, base))?.[1] ?? "Esta página";
+  const nombre = t.rutas[NOMBRE_DE_RUTA.find(([base]) => dentroDe(r, base))?.[1] ?? "otra"];
   const minimo = nivelMinimoDeRuta(r);
-  if (minimo === "superadmin") return `${nombre} es solo para el super admin del prototipo.`;
-  if (minimo === "fundador") return `${nombre} se habilita con el Pase Fundador.`;
-  if (minimo === "lider") return `${nombre} se habilita con el Plan Tribu.`;
-  if (minimo === "miembro") return `${nombre} se habilita con el plan Miembro.`;
-  return `${nombre} se habilita al sumarte gratis como Explorador.`;
+  if (minimo === "superadmin") return t.rutaSuperadmin(nombre);
+  if (minimo === "fundador") return t.rutaFundador(nombre);
+  if (minimo === "lider") return t.rutaLider(nombre);
+  if (minimo === "miembro") return t.rutaMiembro(nombre);
+  return t.rutaExplorador(nombre);
 }
 
 /** Aviso cuando una acción (no una página) pide un nivel, por ejemplo adherir a una tribu. */
-export function avisoDeNivel(minimo: Nivel): string {
-  if (minimo === "explorador") return "Esta acción se habilita al sumarte gratis como Explorador.";
-  if (minimo === "miembro") return "Esta acción se habilita con el plan Miembro.";
-  if (minimo === "fundador") return "Esta acción se habilita con el Pase Fundador.";
-  if (minimo === "lider") return "Esta acción se habilita con el Plan Tribu.";
-  return "Esta acción no se habilita desde Sumarte.";
+export function avisoDeNivel(minimo: Nivel, idioma: Idioma = "es"): string {
+  const t = sumarte[idioma].avisos;
+  if (minimo === "explorador") return t.accionExplorador;
+  if (minimo === "miembro") return t.accionMiembro;
+  if (minimo === "fundador") return t.accionFundador;
+  if (minimo === "lider") return t.accionLider;
+  return t.accionNinguna;
 }
 
 /** Convierte lo que viene en la dirección (`?para=`) en un nivel que se puede elegir en Sumarte, o null. */
@@ -126,8 +149,9 @@ export function nivelDeParametro(valor: string | null | undefined): Nivel | null
 }
 
 /** Ayuda corta de un destino deshabilitado en el rail. */
-export function ayudaDeRuta(ruta: string): string {
-  return nivelMinimoDeRuta(ruta) === "explorador" ? "Sumate gratis para usar esto" : "Sumate para participar";
+export function ayudaDeRuta(ruta: string, idioma: Idioma = "es"): string {
+  const t = marco[idioma].rail;
+  return nivelMinimoDeRuta(ruta) === "explorador" ? t.ayudaExplorador : t.ayudaMiembro;
 }
 
 /** Solo rutas internas ("/algo"): evita volver a una dirección externa o con barras dobles. */

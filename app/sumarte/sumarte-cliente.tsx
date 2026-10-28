@@ -9,6 +9,9 @@ import { PedidoContacto } from "@/components/pedido-contacto";
 import { useSesion } from "@/components/sesion/contexto";
 import { EntrarComo } from "@/components/sesion/entrar-como";
 import { TerminoLegal } from "@/components/termino-legal";
+import { TextoBilingue } from "@/components/texto-bilingue";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
+import { GLOSARIO } from "@/lib/idioma/glosario";
 import {
   alcanza,
   avisoDeNivel,
@@ -26,18 +29,18 @@ import {
   leerPendiente,
 } from "@/lib/sesion/nivel";
 import { buscarTribu, listarTribus } from "@/lib/tribus/datos";
-import { TEXTO_ESTADO } from "@/lib/tribus/tipos";
+import { textoDeEstado } from "@/lib/tribus/tipos";
 import { guardarPedido } from "@/lib/contactos/almacen";
 import type { Pedido } from "@/lib/contactos/tipos";
 import { usePreferencias } from "@/lib/configuracion/almacen";
-import { formatearMonto, NOTA_TIPO_DE_CAMBIO, TIPO_DE_CAMBIO } from "@/lib/configuracion/preferencias";
+import { formatearMonto, notaTipoDeCambio, TIPO_DE_CAMBIO } from "@/lib/configuracion/preferencias";
 import {
   COHORT,
   EMISION,
   FILAS,
   MEMBRESIA,
   PASSES,
-  PLAN_TRIBU_MENSUAL,
+  PLAN_TRIBU,
   type NivelPase,
 } from "@/lib/sumarte/datos";
 import { useKyc } from "@/lib/pasaporte/usar-kyc";
@@ -57,8 +60,30 @@ const ETIQUETA_ACTUAL = "w-fit rounded-full border border-deep bg-green-soft px-
 
 const ACCIONES_DE_PLAN: readonly Accion["tipo"][] = ["plan", "pase", "tribu"];
 
+/** "Semillas" es una marca de la plataforma: el traductor del navegador no la cambia (`translate="no"`). */
+function ConMarcas({ texto }: { texto: string }) {
+  return (
+    <>
+      {texto.split(/(Semillas(?: \(seeds\))?)/).map((parte, i) =>
+        i % 2 === 1 ? (
+          <span key={i} translate="no">
+            {parte}
+          </span>
+        ) : (
+          parte
+        ),
+      )}
+    </>
+  );
+}
+
 export function SumarteCliente({ volver, para }: { volver: string | null; para: string | null }) {
   const router = useRouter();
+  const idioma = useIdioma();
+  const t = useTextos("sumarte");
+  const marco = useTextos("marco");
+  const comunes = useTextos("comunes");
+  const pasaporte = useTextos("pasaporte");
   const { estado: estadoSesion, nivel: nivelCuenta, nivelListo, tribuLider, entrar } = useSesion();
   const conSesion = estadoSesion === "ok";
   const [estado, setEstado] = useState<EstadoSumarte>(INICIAL);
@@ -77,7 +102,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
   const requerido: Nivel | null = nivelDeParametro(para) ?? (volver ? nivelMinimoDeRuta(volver) : null);
   const volverAlLugar = volver && !volver.startsWith("/sumarte") ? volver : null;
   const faltaNivel = requerido !== null && requerido !== "sin-cuenta" && !alcanza(nivelCuenta, requerido);
-  const aviso = !volverAlLugar || !faltaNivel ? null : para ? avisoDeNivel(requerido!) : avisoDeRuta(volverAlLugar);
+  const aviso = !volverAlLugar || !faltaNivel ? null : para ? avisoDeNivel(requerido!, idioma) : avisoDeRuta(volverAlLugar, idioma);
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor). Sin sesión no se lee ni se guarda nada.
@@ -156,7 +181,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
     return true;
   }
 
-  const tribusParaLiderar = listarTribus().filter((t) => t.estado === "activa" || t.estado === "formacion");
+  const tribusParaLiderar = listarTribus().filter((tr) => tr.estado === "activa" || tr.estado === "formacion");
 
   function confirmarTribu() {
     if (tribuElegida === "") return;
@@ -184,37 +209,53 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
   const esExplorador = conSesion && estado.plan === "explorador";
   const esMiembro = conSesion && estado.plan === "miembro" && !estado.tribu;
   const tribuLiderada = esLider && estado.tribuId ? buscarTribu(estado.tribuId) : undefined;
+  const nombreNivel = (id: NivelPase) => t.niveles[id];
   const nombrePlan = esLider
-    ? "Líder de tribu"
+    ? marco.niveles.lider
     : paseActivo
-      ? `Pase Fundador ${paseActivo.nombre}`
+      ? t.estadoPlan.paseFundador(nombreNivel(paseActivo.id))
       : esMiembro
-        ? "Miembro"
-        : "Explorador";
+        ? marco.niveles.miembro
+        : marco.niveles.explorador;
   const sumaInvitacion = estado.invitacion ? 1 : 0;
   const factorMoneda = moneda === "ARS" ? TIPO_DE_CAMBIO : 1;
+  const monto = (usd: number) => formatearMonto(usd, moneda, idioma);
+  const tuPlanSimulado = `${t.estadoPlan.tuPlan} ${comunes.simulado}`;
+  // La primera mención de Semillas en el contenido de la página lleva su explicación; las siguientes, solo el nombre.
+  const semillasPrimera = idioma === "en" ? GLOSARIO.semillas.explicada.en : GLOSARIO.semillas.es;
+
+  const dialogoDeIdentidad = (
+    <KycDialogo
+      abierto={dialogoKyc}
+      kyc={kyc.kyc}
+      motivo={pasaporte.kyc.motivoInvitacion}
+      alCerrar={() => {
+        setDialogoKyc(false);
+        // Con el sello ya obtenido, se sigue con lo que la persona quería hacer.
+        if (kyc.verificada && !estado.invitacion) setFormulario("invitacion");
+      }}
+      alEnviar={kyc.enviar}
+      alAprobar={kyc.aprobar}
+    />
+  );
 
   return (
     <div className="grid gap-6">
       {aviso && (
         <p role="status" className="rounded-lg border border-gold-ink bg-gold-soft px-4 py-3 text-sm font-medium">
-          {aviso} Elegí un plan para sumarte{volverAlLugar ? " y volvemos a donde estabas" : ""}.
+          {aviso} {t.avisos.elegiUnPlan}
+          {volverAlLugar ? t.avisos.yVolvemos : ""}.
         </p>
       )}
-      {!conSesion && listo && (
-        <p className="max-w-2xl text-sm">
-          Al elegir un plan te registrás o entrás con tu email o con Google, sin salir de esta página. Si ya tenés cuenta, usá
-          &quot;Entrar&quot; arriba.
-        </p>
-      )}
+      {!conSesion && listo && <p className="max-w-2xl text-sm">{t.registro.ayuda(marco.barra.entrar)}</p>}
       <EntrarComo />
       {falloAlmacen && (
         <p role="alert" className="text-sm font-medium text-danger">
-          Error: tu navegador no permite guardar datos en este sitio, así que la elección no se puede guardar. Revisá la configuración de privacidad o probá en otro navegador.
+          {t.registro.errorAlmacenamiento}
         </p>
       )}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div role="group" aria-label="Facturación" className="flex gap-2">
+        <div role="group" aria-label={t.facturacion.grupo} className="flex gap-2">
           {(["mensual", "anual"] as const).map((f) => (
             <button
               key={f}
@@ -224,8 +265,8 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
               className={`rounded-lg border px-4 py-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep ${estado.facturacion === f ? "border-deep bg-deep text-on-deep" : "border-muted hover:bg-surface-2"}`}
             >
               {estado.facturacion === f && <span aria-hidden="true">✓ </span>}
-              {f === "mensual" ? "Mensual" : "Anual"}
-              {f === "anual" && <span className="ml-2 text-sm">2 meses gratis</span>}
+              {f === "mensual" ? t.facturacion.mensual : t.facturacion.anual}
+              {f === "anual" && <span className="ml-2 text-sm">{t.facturacion.dosMesesGratis}</span>}
             </button>
           ))}
         </div>
@@ -233,10 +274,10 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
           {listo ? (
             conSesion ? (
               <>
-                Tu plan actual: <b>{nombrePlan}</b> (simulado)
+                {t.estadoPlan.actual} <b>{nombrePlan}</b> {comunes.simulado}
               </>
             ) : (
-              "Todavía no te sumaste: elegí un plan."
+              t.estadoPlan.sinCuenta
             )
           ) : null}
         </p>
@@ -244,68 +285,70 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
 
       {moneda === "ARS" && (
         <p className="text-sm text-muted">
-          Montos en pesos argentinos (ARS). {NOTA_TIPO_DE_CAMBIO}{" "}
-          <Link className="underline" href="/configuracion">Cambiar la moneda</Link>
+          {t.pesos.montos} {notaTipoDeCambio(idioma)}{" "}
+          <Link className="underline" href="/configuracion">{t.pesos.cambiarMoneda}</Link>
         </p>
       )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <article aria-labelledby="plan-explorador" className={`${TARJETA} ${esExplorador ? BORDE_ACTUAL : BORDE}`}>
-          <h2 id="plan-explorador" className="text-xl font-semibold">Explorador</h2>
-          <p className="text-2xl font-bold">Gratis</p>
-          <p className="text-muted">Conocé el territorio, las tribus y a la gente.</p>
+          <h2 id="plan-explorador" className="text-xl font-semibold">{t.explorador.nombre}</h2>
+          <p className="text-2xl font-bold">{t.explorador.precio}</p>
+          <p className="text-muted">{t.explorador.descripcion}</p>
           <ul className="list-disc pl-5 text-sm">
-            <li>Mapa y páginas de tribus</li>
-            <li>Entrevista con el agente</li>
-            <li>Eventos abiertos</li>
-            <li>Registro de tu ticket del Congreso</li>
-            <li>Hifa, Congreso y tu espacio personal</li>
+            {t.explorador.incluye.map((x) => (
+              <li key={x}>{x}</li>
+            ))}
           </ul>
           {esExplorador ? (
-            <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="plan-explorador">Tu plan (simulado)</p>
+            <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="plan-explorador">{tuPlanSimulado}</p>
           ) : (
             <button type="button" className={BOTON_SUAVE} onClick={() => dispatch({ tipo: "plan", plan: "explorador" }, "plan-explorador")}>
-              {conSesion ? "Volver a Explorador" : "Sumarme gratis"}
+              {conSesion ? t.explorador.volver : t.explorador.sumarme}
             </button>
           )}
         </article>
 
         <article aria-labelledby="plan-miembro" className={`${TARJETA} ${esMiembro ? BORDE_ACTUAL : BORDE}`}>
           <h2 id="plan-miembro" className="text-xl font-semibold">
-            Miembro de la red
-            <TerminoLegal clave="membresia" />
+            {t.miembro.nombre}
+            <TerminoLegal clave="membresia" idioma={idioma} />
           </h2>
           <p className="text-2xl font-bold">
-            {formatearMonto(estado.facturacion === "anual" ? MEMBRESIA.anual : MEMBRESIA.mensual, moneda)}
-            <span className="text-base font-normal text-muted">{estado.facturacion === "anual" ? "/año" : "/mes"}</span>
+            {monto(estado.facturacion === "anual" ? MEMBRESIA.anual : MEMBRESIA.mensual)}
+            <span className="text-base font-normal text-muted">
+              {estado.facturacion === "anual" ? t.facturacion.porAnio : t.facturacion.porMes}
+            </span>
           </p>
-          <p className="text-muted">Entrá a las salas, proponé pactos y empezá a sumar.</p>
+          {estado.facturacion === "anual" && <p className="text-sm font-medium">{t.facturacion.dosMesesGratis}</p>}
+          <p className="text-muted">{t.miembro.descripcion}</p>
           <ul className="list-disc pl-5 text-sm">
-            <li>Todo lo de Explorador</li>
-            <li>Salas de tribu y foros</li>
+            <li>{t.miembro.todoExplorador}</li>
+            <li>{t.miembro.salas}</li>
             <li>
-              Pactos y Semillas
-              <TerminoLegal clave="semillas" />
+              {t.miembro.pactosY}
+              <span translate="no">{semillasPrimera}</span>
+              <TerminoLegal clave="semillas" idioma={idioma} />
             </li>
-            <li>Voz en tu tribu</li>
+            <li>{t.miembro.voz}</li>
           </ul>
           {esMiembro ? (
-            <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="plan-miembro">Tu plan (simulado)</p>
+            <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="plan-miembro">{tuPlanSimulado}</p>
           ) : (
             <button type="button" className={BOTON_PRIMARIO} onClick={() => dispatch({ tipo: "plan", plan: "miembro" }, "plan-miembro")}>
-              Hacerme miembro
+              {t.miembro.hacerme}
             </button>
           )}
         </article>
 
         <article aria-labelledby="plan-fundador" className={`${TARJETA} ${paseActivo ? BORDE_ACTUAL : "border-2 border-gold-ink"}`}>
-          <p className="w-fit rounded-full bg-gold-soft px-3 py-1 text-sm font-medium text-gold-ink">Cohorte Génesis · Feb 2027</p>
+          <p className="w-fit rounded-full bg-gold-soft px-3 py-1 text-sm font-medium text-gold-ink">{t.fundador.cohorte}</p>
           <h2 id="plan-fundador" className="text-xl font-semibold">
-            Pase Fundador
-            <TerminoLegal clave="pasefundador" />
+            {GLOSARIO.paseFundador[idioma]}
+            <TerminoLegal clave="pasefundador" idioma={idioma} />
           </h2>
           <fieldset className="grid grid-cols-3 gap-2">
-            <legend className="sr-only">Nivel del pase</legend>
+            <legend className="sr-only">{t.fundador.nivelDelPase}</legend>
             {PASSES.map((p) => (
               <label
                 key={p.id}
@@ -320,104 +363,120 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
                   onChange={() => dispatch({ tipo: "nivel", nivel: p.id as NivelPase })}
                   className="sr-only"
                 />
-                <span className="font-medium">{p.nombre}</span>
-                <span className="text-sm">{formatearMonto(p.precio, moneda)}</span>
+                <span className="font-medium">{nombreNivel(p.id)}</span>
+                <span className="text-sm">{monto(p.precio)}</span>
               </label>
             ))}
           </fieldset>
           <p className="text-2xl font-bold">
-            {formatearMonto(nivel.precio, moneda)}
-            <span className="text-base font-normal text-muted"> · pago único</span>
+            {monto(nivel.precio)}
+            <span className="text-base font-normal">{t.fundador.pagoUnico}</span>
           </p>
           <p className="text-muted">
-            Financiás el Fondo Común
-            <TerminoLegal clave="guardian" /> y entrás a la cohorte fundadora. Mismo voto en los tres niveles.
+            {t.fundador.financias}
+            <TerminoLegal clave="guardian" idioma={idioma} />
+            {t.fundador.financiasFin}
           </p>
           <ul className="list-disc pl-5 text-sm">
-            <li>Todo lo de Miembro, 1 año incluido</li>
+            <li>{t.fundador.todoMiembro}</li>
             <li>
-              Voz en la Ronda 0
-              <TerminoLegal clave="ronda0" />: 1 persona = 1 voz
+              {t.fundador.ronda0}
+              <TerminoLegal clave="ronda0" idioma={idioma} />
+              {t.fundador.ronda0Fin}
             </li>
             <li>
-              {formatearMonto(nivel.creditos, moneda)} en créditos comunes y de estadía
-              <TerminoLegal clave="creditos" />, en 3 años
+              {t.fundador.creditos(monto(nivel.creditos))}
+              <TerminoLegal clave="creditos" idioma={idioma} />
+              {t.fundador.creditosFin}
             </li>
             <li>
-              Voz en las decisiones del fideicomiso y del Fondo Común
-              <TerminoLegal clave="gobernanzafideicomiso" />
+              {t.fundador.fideicomiso}
+              <TerminoLegal clave="gobernanzafideicomiso" idioma={idioma} />
             </li>
-            <li>Canal de fundadores</li>
-            <li>Registro Genesis si venís al Congreso</li>
+            <li>{t.fundador.canal}</li>
+            <li>{t.fundador.registroGenesis}</li>
           </ul>
-          <Medidor titulo="Pases de la cohorte" actual={COHORT.vendidos + (paseActivo ? 1 : 0)} tope={COHORT.cupo} dorado />
+          <Medidor titulo={t.fundador.medidorPases} actual={COHORT.vendidos + (paseActivo ? 1 : 0)} tope={COHORT.cupo} dorado />
           <Medidor
-            titulo="Mínimo para abrir el Fondo Común"
+            titulo={t.fundador.medidorMinimo}
             actual={(COHORT.recaudado + (paseActivo ? paseActivo.precio : 0)) * factorMoneda}
             tope={COHORT.minimo * factorMoneda}
             unidad={`${moneda} `}
           />
           {paseActivo ? (
             <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="pase">
-              Pase {paseActivo.nombre} activo (simulado)
+              {t.fundador.activo(nombreNivel(paseActivo.id))} {comunes.simulado}
             </p>
           ) : (
             <button type="button" className={BOTON_DORADO} onClick={() => dispatch({ tipo: "pase" }, "pase")}>
-              Quiero el Pase {nivel.nombre}
+              {t.fundador.quiero(nombreNivel(nivel.id))}
             </button>
           )}
-          <p className="text-sm text-muted">No es una inversión: no da tierra, lotes, prioridad ni rendimiento, y no se revende.</p>
+          {/* Texto con peso legal (R16): hasta `idioma-legal` se ve en español, marcado como tal. */}
+          <p className="text-sm text-muted">
+            <TextoBilingue
+              valor={{ es: "No es una inversión: no da tierra, lotes, prioridad ni rendimiento, y no se revende." }}
+              sinNota
+            />
+          </p>
         </article>
 
         <article aria-labelledby="plan-tribu" className={`${TARJETA} ${esLider ? BORDE_ACTUAL : BORDE}`}>
           <h2 id="plan-tribu" className="text-xl font-semibold">
-            Plan Tribu
-            <TerminoLegal clave="plantribu" />
+            {t.tribu.nombre}
+            <TerminoLegal clave="plantribu" idioma={idioma} />
           </h2>
           <p className="text-2xl font-bold">
-            {formatearMonto(PLAN_TRIBU_MENSUAL, moneda)}
-            <span className="text-base font-normal text-muted">/mes</span>
+            {monto(estado.facturacion === "anual" ? PLAN_TRIBU.anual : PLAN_TRIBU.mensual)}
+            <span className="text-base font-normal text-muted">
+              {estado.facturacion === "anual" ? t.facturacion.porAnio : t.facturacion.porMes}
+            </span>
           </p>
-          <p className="text-muted">Para tribus con personería que quieren organizarse acá.</p>
+          {estado.facturacion === "anual" && <p className="text-sm font-medium">{t.facturacion.dosMesesGratis}</p>}
+          <p className="text-muted">{t.tribu.descripcion}</p>
           <ul className="list-disc pl-5 text-sm">
-            <li>Página pública y convocatorias</li>
-            <li>Pactos, rondas de reconocimiento y Semillas</li>
-            <li>Salas y canales propios</li>
-            <li>Ritual de entrada configurable</li>
+            {t.tribu.incluye.map((x) => (
+              <li key={x}>
+                <ConMarcas texto={x} />
+              </li>
+            ))}
           </ul>
-          <p className="text-sm">
-            Al elegirlo sos líder de tu tribu: todo lo de Miembro y la administración de la tribu que elijas. Cobro simulado, sin
-            aprobación todavía.
-          </p>
+          <p className="text-sm">{t.tribu.alElegir}</p>
           {esLider && !eligiendoTribu ? (
             <>
               <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="tribu">
-                {tribuLiderada
-                  ? `Sos líder de ${tribuLiderada.nombre} (simulado)`
-                  : "Tu tribu nueva está por proponerse (simulado)"}
+                {tribuLiderada ? (
+                  <>
+                    {t.tribu.liderDe("")}
+                    <span translate="no">{tribuLiderada.nombre}</span> {comunes.simulado}
+                  </>
+                ) : (
+                  `${t.tribu.tribuNueva} ${comunes.simulado}`
+                )}
               </p>
               <button type="button" className={BOTON_SUAVE} onClick={() => setEligiendoTribu(true)}>
-                Cambiar de tribu
+                {t.tribu.cambiar}
               </button>
               {!tribuLiderada && (
                 <Link className="w-fit text-sm underline" href="/tribus#sec-vacantes">
-                  Elegir un barrio vacante para proponerla
+                  {t.tribu.elegirBarrio}
                 </Link>
               )}
             </>
           ) : eligiendoTribu ? (
             <fieldset className="grid gap-2">
-              <legend className="mb-1 text-sm font-medium">¿Qué tribu vas a liderar?</legend>
-              {tribusParaLiderar.map((t) => (
-                <label key={t.id} className="flex cursor-pointer items-center gap-2 text-sm has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-deep">
+              <legend className="mb-1 text-sm font-medium">{t.tribu.cual}</legend>
+              {tribusParaLiderar.map((tr) => (
+                <label key={tr.id} className="flex cursor-pointer items-center gap-2 text-sm has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-deep">
                   <input
                     type="radio"
                     name="tribu-a-liderar"
-                    value={t.id}
-                    checked={tribuElegida === t.id}
-                    onChange={() => setTribuElegida(t.id)}
+                    value={tr.id}
+                    checked={tribuElegida === tr.id}
+                    onChange={() => setTribuElegida(tr.id)}
                   />
-                  {t.nombre} <span className="text-muted">({TEXTO_ESTADO[t.estado]})</span>
+                  <span translate="no">{tr.nombre}</span>{" "}
+                  <span className="text-muted">({textoDeEstado(tr.estado, idioma)})</span>
                 </label>
               ))}
               <label className="flex cursor-pointer items-center gap-2 text-sm has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-deep">
@@ -428,14 +487,14 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
                   checked={tribuElegida === "nueva"}
                   onChange={() => setTribuElegida("nueva")}
                 />
-                Proponer una tribu nueva
+                {t.tribu.proponerNueva}
               </label>
               <div className="flex flex-wrap gap-2">
                 <button type="button" className={BOTON_PRIMARIO} disabled={tribuElegida === ""} onClick={confirmarTribu}>
-                  Ser líder de esta tribu
+                  {t.tribu.serLider}
                 </button>
                 <button type="button" className={BOTON_SUAVE} onClick={() => setEligiendoTribu(false)}>
-                  Cancelar
+                  {comunes.cancelar}
                 </button>
               </div>
             </fieldset>
@@ -448,33 +507,35 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
                 setEligiendoTribu(true);
               }}
             >
-              Sumar mi tribu
+              {t.tribu.sumarMiTribu}
             </button>
           )}
         </article>
       </div>
 
       <section aria-labelledby="comparativa" className={`min-w-0 rounded-xl border bg-surface p-4 ${BORDE}`}>
-        <h2 id="comparativa" className="mb-2 text-xl font-semibold">Qué incluye cada plan</h2>
+        <h2 id="comparativa" className="mb-2 text-xl font-semibold">{t.comparativa.titulo}</h2>
         {/* relative: los textos sr-only de la tabla (position: absolute) quedan recortados con la tabla y no ensanchan la página. */}
         <div className="relative overflow-x-auto">
           <table className="w-full min-w-[32rem] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-line">
-                <td className="p-2"><span className="sr-only">Función</span></td>
-                <th scope="col" className="p-2">Explorador</th>
-                <th scope="col" className="p-2">Miembro</th>
-                <th scope="col" className="p-2">Pase Fundador</th>
+                <td className="p-2"><span className="sr-only">{t.comparativa.funcion}</span></td>
+                <th scope="col" className="p-2">{GLOSARIO.explorador[idioma]}</th>
+                <th scope="col" className="p-2">{GLOSARIO.miembro[idioma]}</th>
+                <th scope="col" className="p-2">{GLOSARIO.paseFundador[idioma]}</th>
               </tr>
             </thead>
             <tbody>
               {FILAS.map((f) => (
-                <tr key={f.texto} className="border-b border-line">
-                  <th scope="row" className="p-2 font-normal">{f.texto}</th>
+                <tr key={f.texto.es} className="border-b border-line">
+                  <th scope="row" className="p-2 font-normal">
+                    <TextoBilingue valor={f.texto} sinNota />
+                  </th>
                   {f.incluye.map((si, i) => (
                     <td key={i} className="p-2">
                       <span aria-hidden="true">{si ? "✓" : "—"}</span>
-                      <span className="sr-only">{si ? "Incluido" : "No incluido"}</span>
+                      <span className="sr-only">{si ? t.comparativa.incluido : t.comparativa.noIncluido}</span>
                     </td>
                   ))}
                 </tr>
@@ -483,31 +544,33 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
           </table>
         </div>
         <p className="mt-3 text-sm">
-          <Link className="underline" href="/pasaporte">Ver qué te abre cada sello de tu pasaporte</Link>
+          <Link className="underline" href="/pasaporte">{t.comparativa.verSellos}</Link>
         </p>
       </section>
 
       <section aria-labelledby="inversores" className="grid gap-3">
-        <h2 id="inversores" className="text-2xl font-semibold">Para inversores</h2>
+        <h2 id="inversores" className="text-2xl font-semibold">{t.inversores.titulo}</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <article aria-labelledby="inv-lote7" className={`${TARJETA} ${BORDE}`}>
             <p className="text-sm font-medium text-muted">
-              Por invitación
-              <TerminoLegal clave="circulo" />
+              {t.inversores.porInvitacion}
+              <TerminoLegal clave="circulo" idioma={idioma} />
             </p>
             <h3 id="inv-lote7" className="text-xl font-semibold">
-              Sumarte al proyecto del Lote 7
-              <TerminoLegal clave="sumarte" />
+              {t.inversores.lote7}
+              <TerminoLegal clave="sumarte" idioma={idioma} />
             </h3>
             <p className="text-sm text-muted">
-              Tu aporte va a la caja del proyecto
-              <TerminoLegal clave="caja" /> y aparece en el espejo
-              <TerminoLegal clave="espejo" />. Para el proyecto, no para una chacra.
+              {t.inversores.aporte}
+              <TerminoLegal clave="caja" idioma={idioma} />
+              {t.inversores.aporteY}
+              <TerminoLegal clave="espejo" idioma={idioma} />
+              {t.inversores.aporteFin}
             </p>
-            <Medidor titulo="Lugares en el círculo" actual={EMISION.aportantes + sumaInvitacion} tope={EMISION.cupo} />
-            <Medidor titulo="Lugares para no calificados" actual={EMISION.noCalificados + sumaInvitacion} tope={EMISION.cupoNoCalificados} dorado />
+            <Medidor titulo={t.inversores.medidorCirculo} actual={EMISION.aportantes + sumaInvitacion} tope={EMISION.cupo} />
+            <Medidor titulo={t.inversores.medidorNoCalificados} actual={EMISION.noCalificados + sumaInvitacion} tope={EMISION.cupoNoCalificados} dorado />
             {estado.invitacion ? (
-              <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="invitacion">Invitación pedida (simulado)</p>
+              <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="invitacion">{t.inversores.invitacionPedida} {comunes.simulado}</p>
             ) : (
               <button
                 id="boton-invitacion"
@@ -522,7 +585,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
                   else setDialogoKyc(true);
                 }}
               >
-                Pedir invitación
+                {t.inversores.pedirInvitacion}
               </button>
             )}
             {formulario === "invitacion" && (
@@ -535,21 +598,20 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
               />
             )}
             <p className="text-sm text-muted">
-              Elegibilidad de ejemplo: disponible. Con residencia fiscal en el exterior todavía no se puede entrar
-              <TerminoLegal clave="hacienda" />; el Pase Fundador sí está abierto.
+              {t.inversores.elegibilidad}
+              <TerminoLegal clave="hacienda" idioma={idioma} />
+              {t.inversores.elegibilidadFin}
             </p>
           </article>
           <article aria-labelledby="inv-netx" className={`${TARJETA} ${BORDE}`}>
-            <p className="text-sm font-medium text-muted">Conversación privada</p>
+            <p className="text-sm font-medium text-muted">{t.inversores.conversacion}</p>
             <h3 id="inv-netx" className="text-xl font-semibold">
-              Invertir en NetX como empresa
-              <TerminoLegal clave="safe" />
+              {t.inversores.invertirNetx}
+              <TerminoLegal clave="safe" idioma={idioma} />
             </h3>
-            <p className="text-sm text-muted">
-              Si te interesa la compañía detrás de la plataforma, lo hablamos uno a uno con el equipo.
-            </p>
+            <p className="text-sm text-muted">{t.inversores.siTeInteresa}</p>
             {estado.charla ? (
-              <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="charla">Charla pedida (simulado)</p>
+              <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="charla">{t.inversores.charlaPedida} {comunes.simulado}</p>
             ) : (
               <button
                 id="boton-charla"
@@ -558,7 +620,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
                 className={BOTON_SUAVE}
                 onClick={() => (conSesion ? setFormulario("charla") : entrar())}
               >
-                Pedir una charla
+                {t.inversores.pedirCharla}
               </button>
             )}
             {formulario === "charla" && (
@@ -574,18 +636,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
         </div>
       </section>
 
-      <KycDialogo
-        abierto={dialogoKyc}
-        kyc={kyc.kyc}
-        motivo="Para pedir una invitación a invertir primero necesitamos verificar tu identidad."
-        alCerrar={() => {
-          setDialogoKyc(false);
-          // Con el sello ya obtenido, se sigue con lo que la persona quería hacer.
-          if (kyc.verificada && !estado.invitacion) setFormulario("invitacion");
-        }}
-        alEnviar={kyc.enviar}
-        alAprobar={kyc.aprobar}
-      />
+      {dialogoDeIdentidad}
     </div>
   );
 }

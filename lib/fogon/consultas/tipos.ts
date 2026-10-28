@@ -1,4 +1,8 @@
 import type { Agregado, Reparto } from "@/lib/cuadratico/motor";
+import type { BilingueConOriginal } from "@/lib/idioma/tipos";
+
+/** Un texto de ejemplo en español (original) y en inglés. */
+export type TextoConsulta = BilingueConOriginal & { en: string };
 
 export type Modo = "prioridades" | "presupuesto";
 export type AmbitoConsulta = "equipo" | "tribu" | "asamblea";
@@ -8,7 +12,7 @@ export type Estado = "abierta" | "cerrada";
 
 export type OpcionConsulta = {
   id: string;
-  etiqueta: string;
+  etiqueta: TextoConsulta;
   /** Lo que la opción pide, en centavos (modo presupuesto). */
   topeCentavos?: number;
   pisoCentavos?: number;
@@ -17,8 +21,8 @@ export type OpcionConsulta = {
 export type Consulta = {
   /** Slug de la consulta ("u1"…). */
   id: string;
-  titulo: string;
-  descripcion: string;
+  titulo: TextoConsulta;
+  descripcion: TextoConsulta;
   modo: Modo;
   ambito: AmbitoConsulta;
   /** Fecha de cierre (ISO con huso). */
@@ -31,18 +35,13 @@ export type Consulta = {
     montoCentavos: number | null;
     moneda: "USD" | "ARS";
     /** Texto que acompaña al monto. */
-    nota: string | null;
+    nota: TextoConsulta | null;
   };
   opciones: OpcionConsulta[];
 };
 
 /** Una persona del padrón. En el navegador, "Persona de ejemplo N" y "Vos". */
 export type Persona = { id: string; nombre: string };
-
-export const ETIQUETA_MODO: Record<Modo, string> = { prioridades: "Prioridades", presupuesto: "Presupuesto" };
-export const ETIQUETA_AMBITO: Record<AmbitoConsulta, string> = { equipo: "Equipo", tribu: "Tribu", asamblea: "Asamblea" };
-export const ETIQUETA_VOTO: Record<ReglaVoto, string> = { abierto: "Voto abierto", secreto: "Voto secreto" };
-export const ETIQUETA_ESTADO: Record<Estado, string> = { abierta: "Abierta", cerrada: "Cerrada" };
 
 export type Participantes = { repartieron: number; padron: number };
 

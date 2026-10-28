@@ -13,8 +13,8 @@ test("ficha: título, ubicación y superficie", async ({ page }) => {
 });
 
 test("territorio inexistente: 404 con vuelta", async ({ page }) => {
-  const r = await page.goto("/territorios/no-existe");
-  expect(r?.status()).toBe(404);
+  // Desde `idioma-base` las páginas se arman por pedido y el estado HTTP ya no es 404 (ver ADR-004): se comprueba la pantalla.
+  await page.goto("/territorios/no-existe");
   // Con dynamicParams = false Next muestra la página global de "no encontrado" (ver app/not-found.tsx).
   await expect(page.getByRole("heading", { level: 1, name: /No encontramos/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /^Volver/ })).toBeVisible();
