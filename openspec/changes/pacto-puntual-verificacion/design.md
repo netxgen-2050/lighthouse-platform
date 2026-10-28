@@ -19,6 +19,9 @@
 - `horasPendientes(lista, sesion)`: propuestas de horas no revocadas, sin respuesta, cuyo pacto la persona puede responder (`puedeResponderPostulacion` o `comunidadesQueResponde`). Nadie confirma sus propias horas (J11), con la misma regla `proponeLider` → otra persona o el super admin.
 - **Una confirmación por propuesta de horas**: antes de escribir se relee el registro; si ya tiene respuesta, no se escribe ("Estas horas ya se respondieron").
 - `leerConstancias` valida los dos esquemas nuevos (horas entero 1..200; `mes` `AAAA-MM` si está). Lo mal formado se ignora.
+<!-- arquitecto (28-oct): la constancia base la arma el navegador de la persona al conciliar; si concilia una confirmación cualquiera, cualquiera que escriba en el registro le da Semillas. Y una confirmación que llega a una propuesta de horas que la persona retiró en otra pestaña tiene que tener una sola lectura. -->
+- **Qué confirmación cuenta** (`confirmacionValida`, pura, la usan `conciliar` y `horasPendientes`): una `pacto-confirma-horas` cuenta solo si (a) `apuntaA` es una `pacto-propone-horas` de esa persona que apunta a **su** postulación pre-admitida; (b) `afirma === contraparteDe(postulación)` (el holón que pre-admitió); (c) `por` no es la persona del pacto (J11); (d) `datos.horas` es igual a las horas de la propuesta de horas (el holón confirma o pide revisar, no cambia las horas); (e) no está revocada. Si falla algo, se ignora y la tarea sigue "Hecha · esperando verificación".
+- **Respuesta y retiro, una sola lectura.** Si una propuesta de horas tiene una respuesta que cuenta, un `revoca` posterior sobre ella **se ignora** (gana la respuesta, como en §3 de `pactos-dos-partes`). `retirarHecha` relee el registro antes de escribir: si ya hay respuesta, no escribe el `revoca`, concilia y la persona ve la respuesta.
 
 ### 2. Estado (`lib/pactos/estado.ts`)
 
@@ -61,7 +64,7 @@ function leerConstanciaBase(x: unknown): ConstanciaBase | null;
 - `datos.confirmacion` = id de la `pacto-confirma-horas` (ADR-018: la versión sale de la aceptación; `apunta_a` queda para la cadena base → ajuste de ADR-012).
 - **Congelada**: `leerConstanciaBase` valida tipos y números finitos, pero **no** recalcula. Un test cambia `HOUR_REF_USD` (mock del módulo) y verifica que la constancia leída no cambia.
 - `datos` no lleva email ni nombre (ADR-012: nunca datos personales en una cadena).
-- Si `evaluacion-pares` llega antes a `dev` con su `lib/evaluacion/constancias.ts`, este módulo **reusa su tipo**.
+- Si `evaluacion-pares` llega antes a `dev` con su `lib/evaluacion/constancias.ts`, este módulo **reusa su tipo**. <!-- arquitecto (28-oct): allá `version_pacto` es texto ("v1-ejemplo") y acá número; se unifican en el tipo que quede en `dev` para no tener dos formas de la misma constancia. -->`version_pacto` toma el tipo que tenga ese módulo (texto `"1"` si allá es texto).
 
 ### 4. Pantallas
 
@@ -84,7 +87,8 @@ No suma términos nuevos: el ⚖ `pactopuntual` de `pacto-puntual` ya dice que e
 
 ## Riesgos
 
-- **La verificación es del navegador.** Igual que en `pactos-dos-partes`. En la base, la constancia base la emite **solo el servidor** al registrarse `pacto-confirma-horas` (ADR-020).
+- **La verificación es del navegador.** Igual que en `pactos-dos-partes`. En la base, la constancia base la emite **solo el servidor** al registrarse `pacto-confirma-horas` (ADR-020). <!-- arquitecto (28-oct) --> Y con garantías en la base, no en un `if`: único por `uid`, único por `datos.confirmacion` y una base puntual por persona y necesidad; la tabla es de solo agregar (una corrección revoca y emite otra).
+- **El motivo de "pedir revisar" es un juicio sobre el trabajo de una persona.** En el prototipo vive en `datos` del registro compartido, como el de `pactos-dos-partes`. En la base va en una columna con acceso solo para la persona y quien administra el holón, nunca en lo que se hashea o publica (ADR-018).
 - **Semillas sin ronda.** Una persona puede sumar Semillas solo con tareas sueltas. Es lo que decidió Gus: la verificación del holón es la validación. Las defensas de D13 acotan el abuso.
 - **Tope que cambia.** Si el holón cambia el máximo después de pre-admitir, vale el de la propuesta pre-admitida: se copia ahí (`pacto-puntual`) y de ahí a la constancia. Un tope en Semillas redondea las horas con Semillas hacia abajo (ver `tribu-necesidades`).
 - **Periodo mal puesto.** Cubierto con `mesDe` en hora de Argentina y `creada_en` = momento de la verificación.

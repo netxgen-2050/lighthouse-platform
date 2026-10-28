@@ -99,7 +99,8 @@ No hay revisión legal en el corto plazo (decisión de Gus, 28-oct). El texto se
 
 ## Riesgos
 
-- **La verificación de quién responde es del navegador.** Igual que en `pactos-dos-partes`: aceptable en el prototipo interno; en la base, el servidor verifica que quien responde administra ese holón (P9).
+- **La verificación de quién responde es del navegador.** Igual que en `pactos-dos-partes`: aceptable en el prototipo interno; en la base, el servidor verifica que quien responde administra ese holón (P9). <!-- arquitecto (28-oct) --> En la base, además: `datos.relacion` (miembro o aspirante) y `datos.holon` los **recalcula el servidor** al recibir la postulación, desde la membresía y la necesidad (hoy los pone el navegador de quien se postula); una postulación vigente por persona y necesidad y una respuesta por postulación son `unique` en la tabla, no un `if`; y el motivo de "no pre-admitir" (un juicio sobre una persona) va en una columna con acceso solo para la persona y el holón, nunca en lo que se hashea o publica (ADR-018).
+- **Una pre-admisión cuenta solo si la afirma el holón de la necesidad y `por` no es la persona** (la regla de "acordada" de `pactos-dos-partes` con `contraparteDe`). Lo prueba el test de 1.3: una que afirma otra tribu, otro círculo o cuyo `por` es la persona no deja la postulación pre-admitida.
 - **Quien lidera la tribu responde por sus círculos.** No es lo que dice la holarquía (cada círculo se gobierna), pero en el prototipo los círculos no tienen integrantes reales. Está aislado en una función.
 - **Muchas personas en una tarea.** Sin cupo, el holón podría pre-admitir más gente de la que hace falta; lo controla el holón al responder (ve cuántas pre-admitió) y el máximo por persona acota las Semillas de cada una. Un cupo queda como pregunta.
 - **Aspirantes con postulaciones.** Una persona que solo adhirió al manifiesto ya puede postularse; el filtro es la pre-admisión del holón. Es lo que pidió Gus.
