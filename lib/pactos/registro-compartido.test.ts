@@ -40,7 +40,12 @@ describe("clave compartida", () => {
 describe("registro compartido", () => {
   it("lee null si el navegador no deja y lista vacía si no hay nada", () => {
     expect(leerDelNavegador(null)).toBeNull();
-    expect(leerDelNavegador({ getItem: () => { throw new Error("no"); }, setItem: () => {} })).toBeNull();
+    const roto = {
+      getItem: (): string | null => {
+        throw new Error("no");
+      },
+    };
+    expect(leerDelNavegador(roto)).toBeNull();
     expect(leerDelNavegador(almacenEnMemoria())).toEqual([]);
   });
 

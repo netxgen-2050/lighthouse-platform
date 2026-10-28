@@ -163,6 +163,21 @@ describe("exportar mis datos", () => {
     expect(texto).not.toContain("aprobado");
   });
 
+  it("incluye solo las constancias de los pactos de la persona, y null si el registro no se puede leer", () => {
+    const base = { esquema: "pacto-propone", afirma: "x", por: "x", version: 1, apuntaA: null, cuando: "2026-10-28T10:00:00.000Z", revocable: true, datos: {} };
+    const a = almacen({
+      "compartido:pactos-constancias": JSON.stringify([
+        { ...base, id: "p1-pacto-propone", sobre: "pacto:valle:A" },
+        { ...base, id: "p2-pacto-propone", sobre: "pacto:valle:B" },
+      ]),
+    });
+    const r = exportarMisDatos({ almacen: a, idPersona: "A", email: null, billetera: null });
+    const lista = (r.datos as Record<string, unknown>).pactosConstancias as { sobre: string }[];
+    expect(lista.map((c) => c.sobre)).toEqual(["pacto:valle:A"]);
+    const roto = { getItem: () => { throw new Error("no"); } };
+    expect((exportarMisDatos({ almacen: roto, idPersona: "A", email: null, billetera: null }).datos as Record<string, unknown>).pactosConstancias).toBeNull();
+  });
+
   it("un valor que no es JSON se entrega tal cual", () => {
     const a = almacen({ "u:A:lh-origen": "newsletter" });
     const r = exportarMisDatos({ almacen: a, idPersona: "A", email: null, billetera: null });

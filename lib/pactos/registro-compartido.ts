@@ -22,7 +22,7 @@ function delNavegador(): Almacen | null {
 }
 
 /** Las constancias guardadas, o null si el navegador no deja leer ("sin dato"). Sin nada guardado es una lista vacía. */
-export function leerDelNavegador(almacen: Almacen | null = delNavegador()): ConstanciaPacto[] | null {
+export function leerDelNavegador(almacen: Pick<Storage, "getItem"> | null = delNavegador()): ConstanciaPacto[] | null {
   if (!almacen) return null;
   try {
     return leerConstancias(almacen.getItem(CLAVES_COMPARTIDAS.pactosConstancias));
