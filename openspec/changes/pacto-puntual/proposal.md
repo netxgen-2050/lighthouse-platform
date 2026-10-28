@@ -2,40 +2,43 @@
 
 ## Why
 
-Hoy el único pacto es de horas fijas por mes (`pactos-v2`). Gus mismo lo marcó en la llamada con Don Powa: alguien puede venir, arreglar la tranquera, dar un taller y irse, y eso no es un compromiso mensual (`NS_platform` Backlog **D20**; reunión 2026-10-23, #5). Además, con `tribu-necesidades` cada cosa que busca una tribu ya tiene su ficha de tarea, pero todavía no se puede **ofrecer tomarla** (D18, #2).
+Hoy el único pacto es de horas fijas por mes (`pactos-v2`). Gus mismo lo marcó en la llamada con Don Powa: alguien puede venir, arreglar la tranquera, dar un taller y irse, y eso no es un compromiso mensual (`NS_platform` Backlog **D20**; reunión 2026-10-23, #5). Además, con `tribu-necesidades` cada cosa que busca una tribu ya tiene su ficha de tarea y su holón, pero todavía no se puede **postularse para tomarla** (D18, #2).
 
-Este cambio une las dos cosas: tomar una necesidad abre un **pacto puntual**, de una sola tarea con fecha, y cuando la tribu confirma las horas hechas queda la **constancia base** de Semillas (decisión de Gus del 23-oct, D15; `NS_platform` nota 16 y "Lo que aprendimos de Collabberry").
+El 28-oct Gus definió **quién toma tareas**: solo **miembros o aspirantes** del holón (la tribu o el círculo) pueden postularse. **La gobernanza del holón pre-admite la postulación** y, cuando la tarea está hecha, **verifica** que se completó; recién con esa verificación se otorgan las Semillas. Quien no es miembro **primero se postula como aspirante**. Y fijó el orden: **`pactos-dos-partes` va antes** y estos cambios se apilan encima.
 
-Es el segundo de tres cambios: depende de `tribu-necesidades` y lo sigue `pactos-horas-variables`.
+Es el segundo de cuatro cambios (`tribu-necesidades` → **`pacto-puntual`** → `pacto-puntual-verificacion` → `pactos-horas-variables`). Este cubre de la postulación a la pre-admisión; la tarea hecha, la verificación y las Semillas van en `pacto-puntual-verificacion`, para que cada uno entre en una noche (lo había pedido la revisión de arquitectura).
 
 ## What Changes
 
-- **Formatos por comunidad.** Cada comunidad dice qué formatos de pacto acepta (`lib/pactos/formatos.ts`, datos de ejemplo): todas aceptan el **fijo** de hoy; las tribus activas y en formación aceptan además el **puntual**, salvo Barda Productiva (para mostrar el caso); el Lighthouse, por ahora, solo el fijo.
-- **Ofrecer tomarla.** En la ficha de la tribu, cada necesidad **abierta** de una tribu que acepta pactos puntuales muestra **"Ofrecer tomarla"**, que lleva a `/pactos?comunidad=<tribu>&necesidad=<id>`. Si la tribu no acepta puntuales, se lee "<Tribu> por ahora no toma pactos puntuales".
-- **Pacto puntual en `/pactos`.** Nace como borrador a partir de la necesidad: la tarea, la habilidad como rol, las horas aproximadas y la fecha vienen de la ficha (lo que falta queda vacío, no en 0). La persona cuenta cómo la va a hacer y puede ajustar horas y fecha. Una persona tiene como mucho un pacto puntual por necesidad, y puede tener varios en una misma tribu, además de su pacto fijo.
-- **Pasos:** Borrador → Enviado a la tribu → **Aceptado** (la necesidad pasa a "Tomada por vos") → la persona **marca la tarea como hecha con las horas reales** → la tribu **confirma las horas** (la necesidad pasa a "Hecha por vos") y nace la constancia base. Retirar antes de la respuesta y descartar el borrador, como en el pacto fijo.
-- **La respuesta de la tribu sigue simulada**, como hoy en `pactos-v2` ("Simular: <tribu> acepta", "Simular: <tribu> confirma tus horas", "Simular: <tribu> pide revisar las horas"). Las respuestas viven en dos acciones del reductor para que `pactos-dos-partes` las pase a quien lidera sin tocar la pantalla de la persona.
-- **Constancia base de Semillas.** Al confirmarse las horas queda guardada, congelada, una constancia con la forma de ADR-012: tarea, horas confirmadas, valor de la hora de referencia, período, versión del pacto y Semillas (`round(horas × valor hora)`, una sola vez, no por mes). Nunca se recalcula ni se edita.
-- **Semillas.** La tarjeta de cada comunidad suma una parte "Pactos puntuales" con el total de sus constancias (o "sin dato" si no hay) y lista cada constancia. El total la incluye.
-- **Mi recorrido:** "Ofreciste tomar <tarea> en <tribu>", "<tribu> aceptó tu pacto puntual", "<tribu> confirmó tus horas de <tarea>".
-- **⚖ "Pacto puntual"** (borrador): es un acuerdo de colaboración para una tarea, no un contrato de trabajo ni un pago.
+- **Formatos por comunidad.** Cada comunidad dice qué formatos de pacto acepta (`lib/pactos/formatos.ts`, datos de ejemplo que Gus aprobó): todas aceptan el **fijo** de hoy; las tribus activas y en formación aceptan además el **puntual**, salvo Barda Productiva (para mostrar el caso); el Lighthouse, por ahora, solo el fijo.
+- **Quién puede postularse.** Solo quien es **miembro** o **aspirante** del holón de la necesidad. En el prototipo los círculos no tienen integrantes propios, así que se toma la membresía de la tribu: **miembro** = membresía aceptada; **aspirante** = pidió sumarse adhiriendo al manifiesto y todavía no lo aceptaron (el estado "pedido" de hoy). Para un círculo transversal vale la membresía en cualquiera de las tribus que participan.
+- **Postularme.** En la ficha de la tribu, cada necesidad **tomable** (abierta y, si es de diseño, con aval) de una tribu que acepta puntuales muestra **"Postularme para tomarla"**, que lleva a `/pactos?comunidad=<tribu>&necesidad=<id>`. Quien no es miembro ni aspirante ve **"Para postularte, primero sumate como aspirante a <tribu>"** con enlace al manifiesto. Si la tribu no acepta puntuales, se lee "<Tribu> por ahora no toma pactos puntuales".
+- **Postulación en `/pactos`.** Nace como borrador a partir de la necesidad: la tarea, la habilidad como rol, las horas aproximadas y la fecha vienen de la ficha (lo que falta queda vacío, no en 0). La persona cuenta cómo la va a hacer y puede ajustar horas y fecha. Una persona tiene como mucho una postulación por necesidad. Las personas aspirantes ven en `/pactos` sus postulaciones aunque todavía no puedan armar un pacto de tiempo.
+- **Pre-admisión por el holón, con las constancias de `pactos-dos-partes`.** Enviar la postulación es una constancia `pacto-propone` de tipo "puntual"; la responde, en `/pactos/responder`, **quien administra el holón**: quien lidera la tribu (por la tribu o por un círculo de esa tribu) o el super admin (por el común o por un círculo transversal). **Pre-admitir** es un `pacto-acepta` que afirma el holón; **no pre-admitir** pide motivo (`pacto-no-acepta`) y la postulación vuelve a borrador. Nadie responde su propia postulación. Una necesidad tiene como mucho una postulación pre-admitida a la vez.
+- **Sin simulación del lado de la persona.** Como en `pactos-dos-partes`, la persona ve "Esperando que <holón> responda" y puede retirarla; no hay botones "Simular…".
+- **La necesidad se ve tomada.** Con una postulación pre-admitida, la necesidad dice "Tomada" para todas las personas de ese navegador (el registro es compartido), y "Pre-admitida: es tuya" para quien se postuló.
+- **Mi recorrido:** "Te postulaste para <tarea> en <tribu>", "<holón> pre-admitió tu postulación a <tarea>" y "<holón> no pre-admitió tu postulación a <tarea>".
+- **⚖ "Pacto puntual"** (borrador, con criterio de la legislación argentina; ver design §9): es un acuerdo voluntario de colaboración para una sola tarea, sin horario impuesto, sin subordinación y sin pago en dinero; no es un contrato de trabajo.
 - Textos es/en, con voseo.
 
 **Fuera de alcance:**
-- **Aceptación y confirmación reales por quien lidera la tribu**: van en `pactos-dos-partes` (spec propuesta, sin implementar). Este cambio lo deja preparado (ver design §6).
+- **Marcar la tarea hecha, la verificación del holón, la constancia base y las Semillas**: van en `pacto-puntual-verificacion`.
+- **Ronda de reconocimiento y evaluación de pares**: un pacto puntual **no** las habilita, ni en este cambio ni después (decisión de Gus, 28-oct). Su validación es la verificación del holón.
+- **Integrantes propios de cada círculo** y que responda quien facilita el círculo: en el prototipo los círculos no tienen personas reales; responde quien administra la tribu o el común (ver preguntas).
+- **Que el holón acepte o rechace a un aspirante.** Ser aspirante es el pedido de adhesión que ya existe; aceptarlo sigue como hoy.
 - **Pacto puntual libre**, sin partir de una necesidad publicada. La oferta libre sigue siendo el pacto fijo de hoy.
-- **Tomar una necesidad sin ser miembro** de la tribu: `/pactos` sigue pidiendo membresía ("Solo miembros"). Tribus abiertas o cerradas y aval para tareas de diseño son **D19**.
-- Que lo que una persona tomó se vea tomado para las demás: en el navegador, cada persona ve solo sus propios pactos.
-- **Ronda de reconocimiento y ajuste por evaluación** (`f_eval`) sobre las horas del puntual: van con `evaluacion-pares`. La ronda sigue habilitándose solo con el pacto fijo aceptado.
-- Cancelar un pacto puntual aceptado, revocar o corregir una constancia, horas que varían por mes (`pactos-horas-variables`), convocatorias de proveedores (D26), registro de cumplimiento (D31), reparto de caja (D23).
+- Varias personas pre-admitidas en una misma tarea; cancelar una postulación ya pre-admitida; horas que varían por mes (`pactos-horas-variables`), convocatorias de proveedores (D26), registro de cumplimiento (D31), reparto de caja (D23).
+- Tribus abiertas, por invitación o cerradas, y el aval de la red (resto de D19).
 
 ## Capabilities
 
 ### New Capabilities
-- `pacto-puntual`: formatos por comunidad, ofrecer tomar una necesidad, pacto de una sola tarea con fecha, confirmación de horas y constancia base de Semillas.
+- `pacto-puntual`: formatos por comunidad, quién puede postularse (miembros y aspirantes del holón), postulación a una necesidad y pre-admisión por el holón con constancias de las dos partes.
 
 ### Modified Capabilities
 
+(`pactos-acuerdo`, de `pactos-dos-partes`, todavía sin archivar: este cambio le suma la contraparte "holón" para los pactos puntuales; ver design §3.)
+
 ## Impact
 
-`lib/pactos/formatos.ts` (nuevo), `lib/pactos/estado.ts` (lista de puntuales por comunidad, acciones nuevas, lectura de lo guardado sin puntuales), `lib/pactos/constancia-base.ts` (nuevo, puro), `lib/semillas/estado.ts` (parte "puntual"), `app/pactos/pactos-cliente.tsx`, `app/semillas/semillas-cliente.tsx`, `app/tribus/[id]/` (componente cliente "Ofrecer tomarla" y estado propio de la necesidad), `lib/actividad/eventos.ts` (tres eventos), `lib/legal/terminos.ts` (`pactopuntual`, borrador), `lib/idioma/textos/` (pactos, semillas, tribus), tests de Vitest y e2e. Todo en `localStorage`, en la misma clave de pactos de la persona (sale en "Mis datos" y se borra con "Borrar datos de la demo"). Sin base, sin integraciones, sin pagos.
+`lib/pactos/formatos.ts` (nuevo), `lib/pactos/postulacion.ts` (nuevo, puro: quién puede postularse y quién responde), `lib/pactos/estado.ts` (lista de puntuales por comunidad, acciones, conciliación de puntuales, lectura), `lib/pactos/constancias.ts` (de `pactos-dos-partes`: `sobre` de puntual, contraparte holón, una pre-admitida por necesidad), `lib/pactos/registro-compartido.ts` (descarga y borrado también de `puntual:`), `app/pactos/pactos-cliente.tsx`, `app/pactos/responder/` (sección "Postulaciones a tareas"), `app/tribus/[id]/` (componente cliente "Postularme para tomarla" y estado de la necesidad), `lib/actividad/eventos.ts` (tres eventos), `lib/legal/terminos.ts` (`pactopuntual`, borrador), `lib/idioma/textos/` (pactos, tribus), tests de Vitest y e2e. Todo en el navegador: la postulación en la clave de pactos de la persona y las constancias en el registro compartido de `pactos-dos-partes`. Sin base, sin integraciones, sin pagos.

@@ -2,10 +2,10 @@
 
 ## Contexto
 
-- `lib/pactos/estado.ts` guarda en `localStorage` (clave de pactos de la persona) un `EstadoPactos` con `comunidades: Record<string, { tiempo: PactoTiempo; aportes: number[] }>`. Un solo pacto de tiempo por comunidad, con `paso` 0/1/2, versión, historial y cambio. Las respuestas de la comunidad son acciones del reductor que hoy dispara la persona con botones "Simular…".
-- `lib/semillas/estado.ts` arma la tarjeta de cada comunidad (`semillasDeComunidad`) con `tiempo`, `plata` y `presencia`, y `totalConDato` (sin dato ≠ 0).
-- `tribu-necesidades` deja `lib/tribus/necesidades.ts` con `buscarNecesidad(id, idioma)` y la ficha plegable en `/tribus/[id]`.
-- Specs propuestas, **sin implementar en `dev`** al 27-oct: `pactos-dos-partes` (constancias de propuesta y aceptación, `/pactos/responder`, conciliación al leer; ADR-018 en su rama) y `evaluacion-pares` (constancias `semillas-base` y `semillas-ajuste`, `lib/evaluacion/`).
+- **Depende de `pactos-dos-partes`** (decisión de Gus, 28-oct: va antes). Ese cambio deja `lib/pactos/constancias.ts` (`ConstanciaPacto` con `id`, `esquema`, `afirma`, `por`, `sobre`, `version`, `apuntaA`, `cuando`, `revocable`, `datos`; esquemas `pacto-propone`, `pacto-acepta`, `pacto-no-acepta`, `revoca`), el registro compartido `compartido:pactos-constancias` (`lib/pactos/registro-compartido.ts`), `comunidadesQueResponde(sesion)`, `conciliar(...)` al leer, `/pactos/responder` y ADR-018. Sus reglas valen acá: ids con `:` sin `split` (§11), lo que vale es lo que la otra parte vio (§9), nombre o iniciales y nunca el email (§1), borrar = quitar lo propio y anonimizar `por` (§7 y §12).
+- `tribu-necesidades` deja `lib/tribus/necesidades.ts` con `buscarNecesidad`, `holonDe`, `idDeHolon`, `avalDe` y `tomable`, y la ficha plegable en `/tribus/[id]`.
+- `lib/membresia/estado.ts`: `EstadoMembresia = "no-miembro" | "pedido" | "miembro"`. "Pedido" nace al adherir al manifiesto (`/tribus/<id>/manifiesto`).
+- `lib/gobernanza/datos.ts`: `circulosDe`, `circulosTransversales` (`tribus` participantes; el transversal cuelga del común).
 
 ## Decisiones
 
@@ -18,99 +18,91 @@ function formatosDe(comunidad: string): FormatoPacto[]; // sin dato → ["fijo"]
 function aceptaFormato(comunidad: string, f: FormatoPacto): boolean;
 ```
 
-Ejemplo: `semilla`, `monte`, `agua`, `valle`, `taller`, `avelan`, `puerto` → `["fijo", "puntual"]`; `barda` → `["fijo"]`; `lighthouse` → `["fijo"]`. Los formatos son de la comunidad, no de la tribu como dato descriptivo: por eso no van en `TribuBilingue` (no hay que tocar los tests de campos bilingües).
+Ejemplo (aprobado por Gus el 28-oct): `semilla`, `monte`, `agua`, `valle`, `taller`, `avelan`, `puerto` → `["fijo", "puntual"]`; `barda` → `["fijo"]`; `lighthouse` → `["fijo"]`. Los formatos son de la comunidad, no un dato descriptivo de la tribu: no van en `TribuBilingue`.
 
-### 2. Estado (`lib/pactos/estado.ts`)
+### 2. Quién se postula y quién responde (`lib/pactos/postulacion.ts`, puro)
 
 ```ts
-type PasoPuntual = "borrador" | "enviado" | "aceptado" | "hecha" | "confirmado";
+type Relacion = "miembro" | "aspirante";
+function tribusDelHolon(h: Holon): string[];          // círculo de tribu → [tribu]; transversal → sus `tribus`; tribu → [id]; común → []
+function relacionConHolon(m: Membresias, h: Holon): Relacion | null; // la mejor entre sus tribus: miembro > aspirante > null
+function comunidadQueResponde(h: Holon): string;       // tribu o círculo de tribu → id de la tribu; transversal o común → "lighthouse"
+function puedeResponderPostulacion(sesion, propuesta): boolean;
+```
+
+- **Miembros y aspirantes del holón** (decisión de Gus, 28-oct). En el prototipo los círculos no tienen integrantes reales (`fogon-gobernanza-holarquia` usa personas de ejemplo), así que la relación con un círculo sale de la membresía en su tribu (o en alguna de las tribus de un transversal). **Aspirante = membresía "pedido"**: quien adhirió al manifiesto y todavía no fue aceptado. No se inventa otro estado.
+- **Quién administra el holón** (patrón de la holarquía: decide el holón más chico; lo que no tiene a nadie que lo administre en el prototipo, lo responde el nivel de arriba):
+  - tribu, o círculo de una tribu → quien lidera esa tribu (`comunidadesQueResponde(sesion)` incluye el id de la tribu), **actuando por el círculo**: la constancia afirma `circulo:<id>` y `por` es quien lidera;
+  - círculo transversal o común → el super admin (`"lighthouse"` en `comunidadesQueResponde`), actuando por el círculo o por el común.
+  Cuando los círculos tengan integrantes, quien facilita el círculo pasa a responder: se cambia solo `comunidadQueResponde` / `puedeResponderPostulacion`.
+- **Nadie responde su propia postulación** (J11). Si quien se postula administra ese holón, la propuesta lleva `datos.proponeLider = "1"` y la responde otra persona que lo administre o el super admin, igual que §10 de `pactos-dos-partes`.
+
+### 3. Constancias de la postulación (sobre lo de `pactos-dos-partes`)
+
+- **Enviar** → `pacto-propone` con `afirma: persona:<idPersona>`, `sobre: puntual:<necesidadId>:<idPersona>`, `version: 1`, `datos`: `tipo: "puntual"`, `comunidad`, `necesidad`, `holon` (`idDeHolon`), `relacion` (`miembro` | `aspirante`, calculada al enviar), `rol`, `rolOtro`, `descripcion`, `horas`, `fecha`, `nombre` o `iniciales`, `proponeLider`.
+- **Pre-admitir** → `pacto-acepta`, `afirma: idDeHolon(holon)`, `por: <idPersona de quien administra>`, `apuntaA` la propuesta. **No pre-admitir** → `pacto-no-acepta` con `datos.motivo` (obligatorio, hasta 500 caracteres). **Retirar** → `revoca`, solo si sigue pendiente.
+- **Contraparte.** En `pactos-dos-partes` una propuesta está acordada si la acepta "la tribu". Se generaliza con `contraparteDe(propuesta)`: para `datos.tipo === "puntual"` es `datos.holon`; para el resto, como hoy. `pendientes` y `/pactos/responder` usan `puedeResponderPostulacion` para los puntuales.
+- **Una pre-admitida por necesidad.** `preadmitidaDe(lista, necesidadId)`: la `pacto-acepta` no revocada sobre una propuesta puntual de esa necesidad. Antes de escribir una pre-admisión se relee el registro (como §6 de `pactos-dos-partes`); si ya hay otra, no se escribe y quien responde ve "Esta tarea ya está tomada por otra persona".
+- **`sobre` sin `split`**: se arma completo (`puntual:${necesidadId}:${idPersona}`) y para "lo de esta persona" se usa `startsWith("puntual:") && endsWith(":" + idPersona)` (ids con `:`; §11 de `pactos-dos-partes`). Lo mismo en `quitarConstanciasDe` y en la descarga de "Mis datos", que ahora también miran `puntual:`.
+
+### 4. Estado de la persona (`lib/pactos/estado.ts`)
+
+```ts
+type PasoPuntual = "borrador" | "enviado" | "preadmitido"; // `pacto-puntual-verificacion` suma "hecha" | "verificado"
 type PactoPuntual = {
   necesidadId: string;
   rol: ClaveRol | ""; rolOtro: string; descripcion: string;
   horas: number | null;          // pactadas; null = la persona todavía no las puso
   fecha: string | null;          // "AAAA-MM-DD"
   paso: PasoPuntual;
-  horasReales?: number;          // desde "hecha"
-  avisoRevisar?: boolean;        // la tribu pidió revisar las horas
-  constancia?: ConstanciaBase;   // solo en "confirmado"
+  noPreadmitida?: { motivo: string; cuando: string }; // último "no", para el aviso
 };
 type PactosDeComunidad = { tiempo: PactoTiempo; aportes: number[]; puntuales: PactoPuntual[] };
 ```
 
 - `HORAS_PUNTUAL = { min: 1, max: 200, paso: 1 }` en `lib/pactos/datos.ts`.
-- Acciones nuevas (puras; `ahora` lo pone quien llama): `nuevoPuntual { comunidad, necesidad }` (recibe la necesidad ya resuelta, para no importar datos de tribus en el reductor), `editarPuntual { comunidad, necesidadId, cambios }` (solo en borrador), `enviarPuntual`, `retirarPuntual`, `descartarPuntual`, `marcarHecha { horasReales }`, y las **dos respuestas de la tribu**: `aceptarPuntual` y `responderHoras { confirma: boolean, ahora }`.
-- `nuevoPuntual` no hace nada si ya hay un puntual con esa `necesidadId` en la comunidad (unicidad).
-<!-- arquitecto: "responde dos veces" — un doble clic o dos pestañas no pueden emitir dos constancias ni dos eventos. -->
-- **Cada acción vale solo en su paso; fuera de él no cambia nada** (devuelve el mismo estado): `editarPuntual` y `enviarPuntual` solo en `borrador`; `retirarPuntual` y `aceptarPuntual` solo en `enviado`; `marcarHecha` solo en `aceptado`; `responderHoras` solo en `hecha`. Así, confirmar dos veces deja **una** constancia (la primera, con su `creada_en`) y un solo evento. Un test despacha `responderHoras { confirma: true }` dos veces seguidas y compara.
-- `puntualCompleto(p)`: rol (y `rolOtro` si es "otro"), descripción, `horas` entera en rango y `fecha` válida.
-- `leer` agrega `puntuales: []` cuando falta y valida cada puntual (paso conocido, campos en rango; un `enviado`/`aceptado` incompleto vuelve a borrador; `hecha` sin `horasReales` válidas vuelve a `aceptado`; `confirmado` sin constancia válida vuelve a `hecha`). Ids `__proto__` se ignoran como hoy.
-- `pactosAceptados` **no cambia** (solo el fijo): la ronda y el cálculo de tiempo de hoy siguen igual.
+- Acciones de la persona (puras): `nuevoPuntual { comunidad, necesidad }` (recibe la necesidad ya resuelta), `editarPuntual` (solo en borrador), `enviarPuntual` (solo en borrador y completo), `retirarPuntual` (solo en enviado), `descartarPuntual` (solo en borrador). `nuevoPuntual` no hace nada si ya hay uno con esa `necesidadId`.
+- **Respuestas del holón, solo por conciliación**: `preadmitirPuntual` (enviado → preadmitido) y `noPreadmitirPuntual { motivo, cuando }` (enviado → borrador con el aviso). Las llama `conciliar` cuando encuentra la respuesta en el registro compartido; la pantalla de la persona nunca. <!-- arquitecto (27-oct, se mantiene): cada acción vale solo en su paso; fuera de él devuelve el mismo estado, así una respuesta leída dos veces no aplica dos veces. -->
+- Lo que vale es lo que el holón vio: al conciliar una pre-admisión, rol, descripción, horas y fecha se toman de los `datos` de la propuesta aceptada.
+- `leer` agrega `puntuales: []` cuando falta y valida cada puntual (paso conocido, campos en rango; un `enviado`/`preadmitido` incompleto vuelve a borrador). Ids `__proto__` se ignoran como hoy.
+- `pactosAceptados` **no cambia** (solo el fijo).
 
-### 3. Constancia base (`lib/pactos/constancia-base.ts`)
+### 5. Pantalla `/pactos`
 
-Misma forma que el design de `evaluacion-pares` §5 (ADR-012), para que después se unifiquen sin migrar:
+<!-- arquitecto (27-oct, se mantiene): la membresía se carga en un efecto; el borrador se crea recién cuando ya se leyó. -->
+- El parámetro `necesidad` se procesa **una sola vez y recién cuando la membresía ya se leyó**. Se despacha `nuevoPuntual` solo si: la necesidad existe y es de esa comunidad, `tomable(n)` (abierta y, si es de diseño, con aval), `aceptaFormato(comunidad, "puntual")`, `relacionConHolon(membresias, holonDe(n))` no es null y no hay otra postulación pre-admitida para esa necesidad. Si falla la relación: "Para postularte, primero sumate como aspirante a <tribu>" con enlace al manifiesto; si falla otra cosa: "Esa necesidad no se puede tomar". Los dos en una región `role="status"`. Después `router.replace` sin `necesidad`.
+- **Aspirantes en `/pactos`.** Hoy `/pactos` muestra "Solo miembros" para una comunidad donde la persona no es miembro. Se cambia solo esto: si la persona tiene puntuales en esa comunidad (o acaba de crear uno), se ve la sección "Mis postulaciones a tareas" con el texto "Sos aspirante a <tribu>: podés postularte a sus tareas; el pacto de tiempo es para miembros". El pacto fijo sigue pidiendo membresía.
+- Sección "Mis postulaciones a tareas": un `<article>` por puntual con título (enlace a `/tribus/<id>#necesidad-<nid>`), holón ("Responde: círculo Energía solar"), paso en texto, campos (rol, descripción, horas, fecha con `<input type="date">` y su `<label>`), "Enviar postulación", "Retirar y editar", "Descartar", y el aviso de no pre-admitida con su motivo.
 
-```ts
-type ConstanciaBase = {
-  uid: string;                    // `base-puntual-<comunidad>-<necesidadId>`
-  schema: "semillas-base";
-  afirma: "netx";
-  sobre: string;                  // `puntual:<comunidad>:<necesidadId>`
-  apunta_a: null;
-  datos: { tipo: "puntual"; pacto: string; necesidad: string; fecha_tarea: string; horas: number;
-           valor_hora_usd: number; periodo: string; version_pacto: 1; semillas: number };
-  creada_en: string;              // ISO, `ahora` de la confirmación
-  revocada_en: null; vence_en: null;
-};
-function constanciaBasePuntual(comunidad, p: PactoPuntual, ahora: string): ConstanciaBase;
-function leerConstanciaBase(x: unknown): ConstanciaBase | null;
-```
+### 6. `/pactos/responder`
 
-- `semillas = Math.round(horas × HOUR_REF_USD)` con el mismo cuidado de coma flotante que `evaluacion-pares` (`Number((x).toFixed(6))` antes de redondear). Con `HOUR_REF_USD = 7049 / 1400`: 10 h → 50; 12 h → 60.
-<!-- arquitecto: `ahora` es ISO en UTC; el 30-nov a las 22 h de Argentina ya es diciembre en UTC y la constancia quedaría en el período equivocado, que después no se corrige. -->
-- `periodo` = mes de `ahora` **en la hora de Argentina** (`America/Argentina/Buenos_Aires`, la misma zona que `lib/fogon/consultas/reglas.ts`), con un helper puro `mesDe(ahora: string): string` ("AAAA-MM") en `lib/pactos/` que también usa `pactos-horas-variables`. No `ahora.slice(0, 7)`. Test: `2026-12-01T01:30:00Z` → `2026-11`. `creada_en` sigue siendo el ISO en UTC.
-- `uid` con prefijo `ejemplo-` (`ejemplo-base-puntual-<comunidad>-<necesidadId>`), como las constancias de ejemplo de `evaluacion-pares`: hoy la "afirma NetX" la genera el navegador y el uid lo tiene que dejar a la vista. <!-- arquitecto -->
-- `version_pacto`: si se reusa el tipo de `evaluacion-pares` (tarea 0.1 c), se usa su misma representación; si no, `1`. Cuando exista `pactos-dos-partes`, ADR-018 pide que la versión salga de la aceptación: ahí la base de un puntual guarda el uid de `pacto-confirma-horas` en `datos.confirmacion` (no en `apunta_a`, que en ADR-012 queda para la cadena base → ajuste). <!-- arquitecto -->
-- **Congelada**: `leerConstanciaBase` valida tipos y que `semillas`, `horas` y `valor_hora_usd` sean números finitos, pero **no** recalcula nada. Un test cambia `HOUR_REF_USD` (con un mock del módulo) y verifica que la constancia leída no cambia.
-- `datos` no lleva email ni nombre de la persona (vive en la clave de la persona; ADR-012: nunca datos personales en una cadena).
-- Si `evaluacion-pares` llega antes a `dev` con su `lib/evaluacion/constancias.ts`, este módulo **reusa su tipo** en vez de declarar otro (ver tarea 0.1).
+- Sección nueva "Postulaciones a tareas", agrupada por holón que la persona puede responder. Cada una: quién se postula (nombre o iniciales; "miembro" o "aspirante"), tarea, horas, fecha, descripción, cuándo. Botones "Pre-admitir" y "No pre-admitir" (con motivo), como los de pactos. Si es la propia: "Es tu propia postulación: la responde otra persona que administre <holón> o el super admin".
+- En la ficha de la tribu, el contador de `pactos-dos-partes` ("Pactos para responder (N)") suma las postulaciones pendientes de esa tribu y de sus círculos.
 
-### 4. Pantalla `/pactos`
+### 7. Ficha de la tribu
 
-<!-- arquitecto: la membresía se carga en un efecto (`miembro` arranca en []); si el borrador se crea antes, quien no es miembro termina con un pacto guardado de una tribu ajena. -->
-- El parámetro `necesidad` se procesa **una sola vez y recién cuando la membresía ya se leyó**, y solo si la persona es miembro de `comunidad` (`comunidadesDondeEsMiembro`). Si no es miembro, no se despacha nada y se ve lo que `/pactos` ya muestra a quien no es miembro; el `router.replace` igual saca el parámetro. Test (e2e): sin membresía en Valle Solar, abrir `/pactos?comunidad=valle&necesidad=valle-solar` no deja ningún puntual en la clave de pactos.
-- `app/pactos/pactos-cliente.tsx` lee `necesidad` de la URL junto a `comunidad`. Si `buscarNecesidad` la encuentra, es de esa comunidad, está `abierta` y `aceptaFormato(comunidad, "puntual")`, despacha `nuevoPuntual`; si no, muestra "Esa necesidad no se puede tomar" en una región `role="status"`. Después hace `router.replace` sin `necesidad`, para que recargar no repita nada.
-- En la pestaña "Pacto de tiempo", debajo del pacto fijo de la comunidad, una sección "Pactos puntuales" con un `<article>` por puntual: título de la necesidad (enlace a `/tribus/<id>#necesidad-<nid>`), pasos en texto, campos (rol, descripción, horas, fecha con `<input type="date">` y su `<label>`), y los botones del paso. Los "Simular…" van agrupados y rotulados como simulación, como hoy.
-- Fecha anterior a hoy: se permite (la tarea pudo hacerse ya); no se valida contra el reloj para que el reductor siga puro.
-
-### 5. Ficha de la tribu
-
-Componente cliente `EstadoNecesidadPropio` dentro de cada `<details>` de `tribu-necesidades`: lee la clave de pactos de la persona (con `leer`) y muestra el estado propio o "Ofrecer tomarla" (`EnlaceConCuenta`), o "<Tribu> por ahora no toma pactos puntuales". Sin sesión o sin `localStorage`, muestra lo de ejemplo y "Ofrecer tomarla" (que pide entrar).
-
-### 6. Preparado para `pactos-dos-partes`
-
-- Las únicas puertas por donde la tribu responde son `aceptarPuntual` y `responderHoras`. Cuando `pactos-dos-partes` se implemente, su conciliación las llama al leer y la pantalla de la persona deja de mostrar los "Simular…", igual que con el pacto fijo.
-- Mapeo previsto a sus constancias: enviar → `pacto-propone` con `datos.tipo = "puntual"`, `necesidad`, `fecha`, `horas`; aceptar → `pacto-acepta`; marcar hecha → una propuesta nueva `pacto-propone-horas` (horas reales) y confirmar → `pacto-confirma-horas` que apunta a ella; pedir revisar → `pacto-no-acepta` con motivo. Los dos esquemas de horas son **nuevos** y los tiene que sumar ese cambio (o uno posterior); acá solo se dejan anotados.
-- Con esto, en la base la constancia base la emite el servidor al registrarse `pacto-confirma-horas` (nunca el navegador).
-
-### 7. Semillas (`lib/semillas/estado.ts`)
-
-<!-- arquitecto: el total mezcla una proyección (fijo: 3 meses de horas pactadas) con horas confirmadas (puntual). -->
-La tarjeta dice en una línea qué es cada parte: "Pacto de tiempo: proyección de 3 meses" y "Pactos puntuales: horas confirmadas". El total no cambia de cuenta (decisión de Gus si se separan; ver preguntas de la revisión).
-
-`SemillasDeComunidad` suma `puntual: Parte` (suma de `constancia.datos.semillas` de los puntuales `confirmado`, o `null`) y `constancias: ConstanciaBase[]`. `total = totalConDato([tiempo, plata, puntual, presencia])`. `pactoAceptado` sigue mirando solo el fijo. La tarjeta lista cada constancia con la tarea (título de la necesidad en el idioma de la página; si la necesidad ya no existe en los datos, el id), horas, fecha (`creada_en`) y Semillas.
+Componente cliente `EstadoNecesidadPropio` dentro de cada `<details>`: lee la membresía, la clave de pactos de la persona y el registro compartido. Muestra, en este orden: "<Tribu> por ahora no toma pactos puntuales"; el estado propio ("Tenés un borrador para postularte", "Te postulaste · esperando a <holón>", "Pre-admitida: es tuya", "<holón> no pre-admitió tu postulación"); "Tomada" si hay otra pre-admitida; "Esperando el aval de <holón>" (de `tribu-necesidades`); "Postularme para tomarla" (`EnlaceConCuenta`) si es miembro o aspirante; o "Para postularte, primero sumate como aspirante a <tribu>". Sin sesión, sin `localStorage` o con el registro ilegible, muestra lo de ejemplo y "Postularme para tomarla" (que pide entrar).
 
 ### 8. Eventos
 
-En `lib/actividad/eventos.ts`: `ofrecisteTomar(tarea, comunidad, id)`, `puntualAceptado(comunidad, id, necesidadId)` con `clave: puntual-aceptado:<comunidad>:<necesidadId>` y `horasConfirmadas(tarea, comunidad, id, necesidadId)` con `clave: horas-confirmadas:<comunidad>:<necesidadId>`. Tipo `pacto` / `pacto-aceptado`, como los de hoy.
+En `lib/actividad/eventos.ts`: `tePostulaste(tarea, comunidad, id)` con `clave: postulacion:<necesidadId>:<n>` (n = número de envío, para que reenviar después de un "no" registre otro), `postulacionPreadmitida(holon, tarea, id, necesidadId)` con `clave: preadmitida:<necesidadId>` y `postulacionNoPreadmitida(holon, tarea, id, propuestaId)` con `clave: no-preadmitida:<propuestaId>`. El motivo no se copia al texto del evento.
+
+### 9. ⚖ "Pacto puntual" con criterio de la legislación argentina (borrador)
+
+No hay revisión legal en el corto plazo (decisión de Gus, 28-oct). El texto se escribe con lo que se sabe de la legislación argentina, del lado prudente, con `borrador: true`, y la duda queda para el abogado.
+
+- **Lo que se cuida:** la Ley de Contrato de Trabajo (20.744) presume contrato de trabajo cuando alguien presta servicios para otro (art. 23), y lo que lo caracteriza es la **subordinación** (horario, órdenes sobre cómo trabajar, poder de sanción) y la **remuneración** (arts. 21 y 103). La Ley de Voluntariado Social (25.855) describe la actividad voluntaria como **sin remuneración**, por decisión propia, con libertad de dejarla. Por eso el pacto puntual: no impone horario (la persona propone horas y fecha); el holón pre-admite y verifica **el resultado de la tarea**, no dirige a la persona; no hay pago en dinero; la persona puede retirarse.
+- **Texto ⚖ `pactopuntual` (es):** "Es un acuerdo voluntario para colaborar con una sola tarea. No es un contrato de trabajo: no tenés horario impuesto, nadie te da órdenes sobre cómo hacerla y no hay pago en dinero. Vos proponés las horas y la fecha. El círculo o la tribu decide si te la deja tomar y, al final, verifica que la tarea quedó hecha. Tus horas verificadas se reconocen con Semillas, que no son un sueldo: no se compran ni se venden." (en: equivalente.)
+- **Para la lista del abogado** (`NS_platform/Documentation/Desarrollo/Para el abogado - lista viva (plataforma).md`; los agentes no escriben ahí, lo suma Claude al integrar): ampliar **A1** con "pre-admisión y verificación del holón: que se lean como control del resultado y no como poder de dirección (LCT arts. 21-23)" y "¿hace falta un acuerdo escrito de voluntariado (Ley 25.855) y la tribu tiene que ser una organización sin fines de lucro para encuadrarlo ahí?". **[verificar]**
 
 ## Riesgos
 
-- **El estado del pacto vive en el navegador de la persona**: la confirmación "de la tribu" la aprieta la misma persona. Es lo mismo que hoy con el pacto fijo y está rotulado como simulación; la confirmación real llega con `pactos-dos-partes` y, en la base, con P9 (`aprobaciones-pactos`).
-- **Leerse como empleo.** Tareas con horas y fecha, confirmadas por la tribu, pueden parecer trabajo en relación de dependencia. El ⚖ lo aclara (borrador); el riesgo laboral está anotado en D23 **[verificar]** con abogado.
-- **Semillas por tarea suelta.** Sin la ronda, una persona podría sumar Semillas solo con puntuales. Es aceptable en el prototipo; las defensas (D13) y el ajuste (`evaluacion-pares`) lo cubren después.
+- **La verificación de quién responde es del navegador.** Igual que en `pactos-dos-partes`: aceptable en el prototipo interno; en la base, el servidor verifica que quien responde administra ese holón (P9).
+- **Quien lidera la tribu responde por sus círculos.** No es lo que dice la holarquía (cada círculo se gobierna), pero en el prototipo los círculos no tienen integrantes reales. Está aislado en una función.
+- **Aspirantes con postulaciones.** Una persona que solo adhirió al manifiesto ya puede postularse; el filtro es la pre-admisión del holón. Es lo que pidió Gus.
+- **Leerse como empleo o como selección de personal.** Ver §9.
 
 ## Revisión de arquitectura
 
-<!-- arquitecto: revisión hecha el 27-oct-2026. -->
-Hecha el 27-oct-2026. Ajustes incorporados arriba: acciones que valen solo en su paso (§2), período en hora de Argentina y uid `ejemplo-` (§3), borrador solo después de leer la membresía (§4) y rótulo de cada parte en Semillas (§7). La emisión de Semillas por tarea, fuera de la ronda mensual de ADR-012, queda en **ADR-020** (Propuesta).
+<!-- arquitecto: revisión hecha el 27-oct-2026 sobre la versión anterior (con respuestas simuladas). -->
+La revisión del 27-oct se hizo sobre la versión con respuestas simuladas; sus ajustes que siguen valiendo están arriba (acciones solo en su paso, borrador después de leer la membresía). Los que tocaban la constancia base, el período y el uid `ejemplo-` pasaron a `pacto-puntual-verificacion`. **Pide una nueva revisión** del agente arquitecto: este cambio ahora toca permisos (quién responde por un holón, aspirantes) y el registro compartido de constancias de `pactos-dos-partes`.

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Que cada cosa que busca una tribu sea una necesidad con ficha de tarea (qué es, horas, si es de diseño o de campo, para cuándo, qué habilidad pide, su estado y su círculo), visible en la ficha de la tribu (Backlog D18).
+Que cada cosa que busca una tribu sea una necesidad con ficha de tarea (qué es, horas, si es de diseño o de campo, para cuándo, qué habilidad pide, su estado, su círculo y su holón), visible en la ficha de la tribu, y que las tareas de diseño lleven el aval de su holón (Backlog D18 y D19, decisión de Gus del 28-oct).
 
 ## ADDED Requirements
 
@@ -61,6 +61,36 @@ Una necesidad MAY pertenecer a un círculo. Si lo tiene, el círculo MUST ser un
 - **WHEN** un test arma una necesidad de `semilla` con el círculo `valle-3`
 - **THEN** la validación de los datos la rechaza
 
+### Requirement: Holón de la necesidad
+Cada necesidad SHALL tener un holón: su círculo, si tiene, y si no, su tribu. El holón es quien avala, pre-admite y verifica la tarea (el holón más chico que la contiene). El modelo SHALL admitir también el común Lighthouse como holón, aunque este cambio no muestre necesidades del común.
+
+#### Scenario: Con círculo
+- **WHEN** se pide el holón de `semilla-riego`
+- **THEN** es el círculo `semilla-1`
+
+#### Scenario: Sin círculo
+- **WHEN** un test arma una necesidad de `valle` sin círculo y pide su holón
+- **THEN** es la tribu `valle`
+
+### Requirement: Aval de las tareas de diseño
+Toda necesidad de diseño SHALL necesitar el aval de su holón para poder tomarse. El aval SHALL ser una constancia con la forma de los registros de gobernanza (id, esquema "avala-necesidad", quién afirma, sobre qué necesidad, a qué apunta, cuándo y datos), y MUST contar solo si quien afirma es el holón de esa necesidad. Una tarea de diseño con aval SHALL mostrar "Avalada por <holón>" marcado como ejemplo; una sin aval SHALL mostrar "Esperando el aval de <holón>" y MUST NOT considerarse tomable. Las tareas de campo MUST NOT pedir aval. Una necesidad de diseño tomada o hecha MUST tener aval.
+
+#### Scenario: Tarea de diseño avalada
+- **WHEN** se abre en `/tribus/semilla` la necesidad "Riego"
+- **THEN** se lee "Avalada por el círculo Huerta intensiva (ejemplo)"
+
+#### Scenario: Tarea de diseño sin aval
+- **WHEN** se mira en `/tribus/puerto` la necesidad "Marketing"
+- **THEN** junto al título se lee "Abierta · esperando aval", al abrirla "Esperando el aval del círculo Mercado", y no es tomable
+
+#### Scenario: Aval de otro holón
+- **WHEN** un test arma un aval de `semilla-riego` que afirma `tribu:valle`
+- **THEN** el aval no cuenta y la validación de los datos lo rechaza
+
+#### Scenario: Tarea de campo
+- **WHEN** se abre en `/tribus/valle` la necesidad "Energía solar"
+- **THEN** no hay ninguna línea de aval y es tomable
+
 ### Requirement: Ficha de la tribu con las necesidades
 En la ficha de una tribu activa o en formación, la tarjeta "Lo que busca" SHALL listar sus necesidades, cada una como un elemento plegable usable con teclado, con el título, el tipo y el estado a la vista, y el resto de la ficha al abrirla. Cada necesidad SHALL tener el ancla `necesidad-<id>`; al entrar con esa ancla, la necesidad MUST mostrarse abierta. Las áreas de Avelan Kerum SHALL seguir apareciendo debajo, como hoy.
 
@@ -73,7 +103,7 @@ En la ficha de una tribu activa o en formación, la tarjeta "Lo que busca" SHALL
 - **THEN** la necesidad "Tratamiento de aguas" está abierta
 
 ### Requirement: Textos en dos idiomas
-Todos los textos nuevos SHALL existir en español (con voseo) y en inglés, y el inglés de las necesidades de ejemplo SHALL quedar listado para revisión nativa. Con la interfaz en inglés, la ficha MUST mostrar el título, el "qué es", el tipo, el estado, la habilidad y el círculo en inglés, y la fecha con el formato del idioma.
+Todos los textos nuevos SHALL existir en español (con voseo) y en inglés, y el inglés de las necesidades de ejemplo SHALL quedar listado para revisión nativa. Con la interfaz en inglés, la ficha MUST mostrar el título, el "qué es", el tipo, el estado, la habilidad, el círculo y el aval en inglés, y la fecha con el formato del idioma.
 
 #### Scenario: En inglés
 - **WHEN** se abre `/tribus/semilla` con la interfaz en inglés y se despliega "Irrigation"
