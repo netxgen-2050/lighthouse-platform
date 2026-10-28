@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Que los miembros y aspirantes del holón de una necesidad puedan postularse para tomarla con un pacto de una sola tarea con fecha (pacto puntual), y que quien administra ese holón pre-admita o no la postulación con constancias de las dos partes (Backlog D18 y D20; decisiones de Gus del 28-oct).
+Que los miembros y aspirantes del holón de una necesidad puedan postularse para tomarla con un pacto de una sola tarea con fecha (pacto puntual), que una misma tarea la puedan tomar varias personas, y que quien administra ese holón pre-admita o no cada postulación con constancias de las dos partes (Backlog D18 y D20; decisiones de Gus del 28-oct).
 
 ## ADDED Requirements
 
@@ -41,7 +41,7 @@ Solo SHALL poder postularse a una necesidad quien es miembro o aspirante de su h
 - **THEN** ve "Postularme para tomarla"
 
 ### Requirement: Solo se postula a una necesidad tomable
-"Postularme para tomarla" SHALL aparecer solo en necesidades abiertas, de una tribu que acepta pactos puntuales, que no tengan otra postulación pre-admitida y, si son de diseño, con el aval de su holón. Solo SHALL aparecer si `/pactos` figura con `existe: true` en `lib/navegacion.ts`.
+"Postularme para tomarla" SHALL aparecer solo en necesidades abiertas, de una tribu que acepta pactos puntuales y, si son de diseño, con el aval de su holón. Una necesidad puede tomarla más de una persona: que otras personas ya estén pre-admitidas MUST NOT impedir postularse. Solo SHALL aparecer si `/pactos` figura con `existe: true` en `lib/navegacion.ts`.
 
 #### Scenario: Tarea de diseño sin aval
 - **WHEN** una persona miembro de Puerto Trueque despliega "Marketing" en `/tribus/puerto`
@@ -52,11 +52,11 @@ Solo SHALL poder postularse a una necesidad quien es miembro o aspirante de su h
 - **THEN** no hay "Postularme para tomarla"
 
 ### Requirement: La postulación nace de la necesidad
-Al abrir `/pactos` con una `necesidad` tomable de esa comunidad, siendo miembro o aspirante de su holón y sin postulación previa para esa necesidad, SHALL crearse un borrador de pacto puntual con la necesidad, su título, la habilidad como rol (con su texto si es "Otro"), las horas aproximadas y la fecha de la ficha. Lo que la ficha no tiene MUST quedar vacío, nunca en 0 ni con una fecha inventada. La descripción MUST quedar vacía. Si la necesidad no existe, es de otra comunidad o no es tomable, MUST NOT crearse nada y la persona SHALL ver "Esa necesidad no se puede tomar". Si ya existe una postulación para esa necesidad, SHALL mostrarse esa, sin crear otra. Una persona aspirante SHALL ver sus postulaciones en `/pactos` aunque no pueda armar un pacto de tiempo con esa comunidad.
+Al abrir `/pactos` con una `necesidad` tomable de esa comunidad, siendo miembro o aspirante de su holón y sin postulación previa para esa necesidad, SHALL crearse un borrador de pacto puntual con la necesidad, su título, la habilidad como rol (con su texto si es "Otro"), las horas aproximadas, la fecha y el máximo por persona de la ficha. Lo que la ficha no tiene MUST quedar vacío, nunca en 0 ni con una fecha inventada. La descripción MUST quedar vacía. Si la necesidad no existe, es de otra comunidad o no es tomable, MUST NOT crearse nada y la persona SHALL ver "Esa necesidad no se puede tomar". Si ya existe una postulación para esa necesidad, SHALL mostrarse esa, sin crear otra. Una persona aspirante SHALL ver sus postulaciones en `/pactos` aunque no pueda armar un pacto de tiempo con esa comunidad.
 
 #### Scenario: Borrador desde la necesidad
 - **WHEN** una persona miembro de Valle Solar abre `/pactos?comunidad=valle&necesidad=valle-solar`
-- **THEN** ve un borrador de pacto puntual "Energía solar" con 10 h, fecha 21 de noviembre de 2026, rol "Otro: Electricidad", la descripción vacía y "Responde: círculo Energía solar"
+- **THEN** ve un borrador de pacto puntual "Energía solar" con 10 h, fecha 21 de noviembre de 2026, rol "Otro: Electricidad", la descripción vacía, "Máximo por persona: 10 h · las horas de más no generan Semillas" y "Responde: círculo Energía solar"
 
 #### Scenario: Horas que faltan
 - **WHEN** abre `/pactos?comunidad=valle&necesidad=valle-eventos`
@@ -105,7 +105,7 @@ Una postulación SHALL responderla quien administra el holón de la necesidad: q
 - **THEN** la ve sin botones y con "Es tu propia postulación: la responde otra persona que administre el círculo Energía solar o el super admin"
 
 ### Requirement: Pre-admitir o no
-Pre-admitir SHALL dejar la postulación "Pre-admitida" para la persona, con el contenido que vio quien respondió. "No pre-admitir" SHALL pedir un motivo escrito (obligatorio, hasta 500 caracteres); la postulación SHALL volver a Borrador con su contenido y la persona SHALL ver el motivo. Una necesidad MUST tener como mucho una postulación pre-admitida: si ya hay otra, pre-admitir MUST NOT registrarse y quien responde SHALL ver "Esta tarea ya está tomada por otra persona".
+Pre-admitir SHALL dejar la postulación "Pre-admitida" para la persona, con el contenido y el máximo por persona que vio quien respondió. "No pre-admitir" SHALL pedir un motivo escrito (obligatorio, hasta 500 caracteres); la postulación SHALL volver a Borrador con su contenido y la persona SHALL ver el motivo. Una necesidad SHALL poder tener varias postulaciones pre-admitidas, como mucho una por persona; pre-admitir a una persona MUST NOT cambiar las postulaciones de las demás. Una misma postulación MUST tener como mucho una respuesta: si ya la tiene, la segunda MUST NOT registrarse y quien responde SHALL ver "Esta postulación ya se respondió". Al responder, SHALL verse cuántas personas ya pre-admitió ese holón para esa tarea.
 
 #### Scenario: Pre-admitida
 - **WHEN** `admin@prueba.test` pre-admite la postulación de `persona@prueba.test` a "Energía solar" y la persona abre `/pactos`
@@ -115,27 +115,31 @@ Pre-admitir SHALL dejar la postulación "Pre-admitida" para la persona, con el c
 - **WHEN** `admin@prueba.test` no pre-admite con el motivo "Necesitamos a alguien con matrícula de electricista"
 - **THEN** la persona ve su postulación en Borrador y el aviso "El círculo Energía solar no pre-admitió tu postulación: Necesitamos a alguien con matrícula de electricista"
 
-#### Scenario: Dos postulaciones
-- **WHEN** dos personas se postulan a "Energía solar" y `admin@prueba.test` pre-admite a la primera e intenta pre-admitir a la segunda
-- **THEN** la segunda no se registra y ve "Esta tarea ya está tomada por otra persona"
+#### Scenario: Dos personas en la misma tarea
+- **WHEN** dos personas se postulan a "Energía solar" y `admin@prueba.test` pre-admite a la primera y después a la segunda
+- **THEN** las dos quedan "Pre-admitida", y al responder la segunda se lee "Ya pre-admitiste a 1 persona para esta tarea"
+
+#### Scenario: Responder dos veces
+- **WHEN** `admin@prueba.test` pre-admite una postulación en una pestaña y en otra, con la lista vieja, aprieta "Pre-admitir" otra vez
+- **THEN** la segunda no se registra y ve "Esta postulación ya se respondió"
 
 ### Requirement: Constancias de la postulación
-Enviar, pre-admitir, no pre-admitir y retirar SHALL quedar como constancias del registro compartido de `pactos-dos-partes`, con su misma forma: la postulación afirmada por la persona, sobre esa necesidad y esa persona, con el holón, la relación (miembro o aspirante), rol, descripción, horas y fecha, y el nombre o las iniciales (MUST NOT llevar el email); la pre-admisión y la no pre-admisión afirmadas por el holón, con quien actuó por él, apuntando a la postulación. Retirar SHALL ser revocar la postulación con una constancia nueva.
+Enviar, pre-admitir, no pre-admitir y retirar SHALL quedar como constancias del registro compartido de `pactos-dos-partes`, con su misma forma: la postulación afirmada por la persona, sobre esa necesidad y esa persona, con el holón, la relación (miembro o aspirante), rol, descripción, horas, fecha y el máximo por persona de la necesidad (si tiene), y el nombre o las iniciales (MUST NOT llevar el email); la pre-admisión y la no pre-admisión afirmadas por el holón, con quien actuó por él, apuntando a la postulación. Retirar SHALL ser revocar la postulación con una constancia nueva.
 
 #### Scenario: Pre-admisión
 - **WHEN** `admin@prueba.test` pre-admite la postulación a "Energía solar"
 - **THEN** queda una constancia de aceptación que afirma `circulo:valle-3`, con `admin@prueba.test` como quien actuó, que apunta a la postulación
 
 ### Requirement: Estado de la necesidad
-En la ficha de la tribu, una necesidad con una postulación de la persona SHALL mostrar su estado para esa persona en lugar del de ejemplo: "Tenés un borrador para postularte" (con enlace al pacto), "Te postulaste · esperando a <holón>", "Pre-admitida: es tuya" o "<holón> no pre-admitió tu postulación". Con una postulación pre-admitida de otra persona SHALL decir "Tomada". "Postularme para tomarla" MUST NOT aparecer en ninguno de esos casos.
+En la ficha de la tribu, una necesidad con una postulación de la persona SHALL mostrar su estado para esa persona en lugar del de ejemplo: "Tenés un borrador para postularte" (con enlace al pacto), "Te postulaste · esperando a <holón>", "Pre-admitida: la tomaste" o "<holón> no pre-admitió tu postulación"; "Postularme para tomarla" MUST NOT aparecer en esos casos. Con postulaciones pre-admitidas de otras personas SHALL decir "La tomaron <N> personas" (o "La tomó 1 persona") y, si la persona no tiene postulación y la necesidad sigue tomable, SHALL seguir ofreciendo "Postularme para tomarla".
 
-#### Scenario: Tuya
+#### Scenario: La tomaste
 - **WHEN** el círculo pre-admitió la postulación de la persona a "Energía solar" y ella abre `/tribus/valle`
-- **THEN** "Energía solar" dice "Pre-admitida: es tuya"
+- **THEN** "Energía solar" dice "Pre-admitida: la tomaste"
 
-#### Scenario: De otra persona
-- **WHEN** otra persona del mismo navegador abre `/tribus/valle`
-- **THEN** "Energía solar" dice "Tomada" y no ofrece postularse
+#### Scenario: Otra persona se suma
+- **WHEN** otra persona miembro de Valle Solar, en el mismo navegador, abre `/tribus/valle`
+- **THEN** "Energía solar" dice "La tomó 1 persona" y le ofrece "Postularme para tomarla"
 
 ### Requirement: Sin ronda ni evaluación de pares
 Un pacto puntual MUST NOT habilitar la ronda de reconocimiento ni la evaluación de pares, en ningún paso. La ronda SHALL seguir habilitándose solo con un pacto recurrente aceptado.

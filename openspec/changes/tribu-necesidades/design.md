@@ -23,10 +23,29 @@ type NecesidadBilingue = {
   paraCuando: string | null;   // "AAAA-MM-DD"; null = sin dato
   habilidad: ClaveRol;
   habilidadOtra?: BilingueConOriginal; // solo si habilidad === "otro"
-  estado: EstadoNecesidad;     // de ejemplo
+  estado: EstadoNecesidad;     // de ejemplo: "abierta" suma personas; "tomada" ya no suma más
   circuloId?: string;
+  tope: TopePorPersona | null; // lo pone el holón; null = sin máximo
 };
+type TopePorPersona = { unidad: "horas" | "semillas"; valor: number }; // entero positivo
 ```
+
+### 1 ter. Varias personas y máximo por persona (decisión de Gus, 28-oct)
+
+- Una necesidad la pueden tomar **varias personas**. Cada una recibe Semillas **por sus propias horas verificadas** (`pacto-puntual-verificacion`); acá solo se modela el dato.
+- `tope` es el **máximo por persona** que pone quien administra el holón, en horas o en Semillas. Función pura, que usa `pacto-puntual-verificacion`:
+
+```ts
+function aplicarTope(horas: number, tope: TopePorPersona | null, valorHora: number):
+  { horasConSemillas: number; horasSinSemillas: number; semillas: number };
+// sin tope: todas cuentan; semillas = round(horas × valorHora)
+// en horas: horasConSemillas = min(horas, tope.valor); semillas = round(horasConSemillas × valorHora)
+// en Semillas: semillas = min(round(horas × valorHora), tope.valor);
+//              horasConSemillas = min(horas, floor(tope.valor / valorHora)) — entero, del lado prudente
+```
+
+- Ejemplo (con `HOUR_REF_USD = 7049 / 1400`, unas 5,03 por hora): `valle-solar` tope 10 h → con 12 h, 10 h con Semillas (50), 2 h sin Semillas; `agua-plomeria` tope 60 Semillas → con 16 h, 60 Semillas, 11 h con Semillas y 5 h sin Semillas. El resto, sin máximo.
+- La ficha muestra "Máximo por persona: 10 h · las horas de más no generan Semillas" (o "60 Semillas"); sin tope, la línea no aparece (no es "sin dato": no tener máximo es una decisión del holón).
 
 Funciones puras: `necesidadesDe(tribuId, idioma)`, `buscarNecesidad(id, idioma)`, `circuloDeNecesidad(n, idioma)` (nombre del círculo o `undefined`), `holonDe(n)`, `avalDe(n)`, `tomable(n)` y `validarNecesidades(lista, avales)` (devuelve los errores; los tests la usan sobre los datos y sobre casos armados a mano).
 
@@ -72,13 +91,15 @@ function tomable(n, avales = AVALES_DE_EJEMPLO): boolean; // abierta && (campo |
 | `avelan-alimentos` | Producción de alimentos | Diseñar el plan de huerta del núcleo | 20 | diseño · **con aval** | 2027-03-01 | permacultura | abierta | `avelan-area-0` (Nutrición) |
 | `puerto-marketing` | Marketing | Armar la difusión del mercado mensual | 12 | diseño · **sin aval** | 2026-11-28 | comunicacion | abierta | `puerto-1` (Mercado) |
 
+Máximos por persona de ejemplo: `valle-solar` 10 h y `agua-plomeria` 60 Semillas; las demás, sin máximo.
+
 Todas las necesidades de ejemplo tienen círculo, así que su holón es el círculo. `valle-eventos` vive en un círculo transversal (`comunicacion-comun`), que cuelga del común. Los avales de ejemplo afirman `circulo:semilla-1`, `circulo:agua-1` y `circulo:avelan-area-0`; `puerto-marketing` queda sin aval para mostrar "Esperando el aval de Mercado".
 
 El inglés lo escribe quien implementa y se lista en `lib/idioma/revision-nativa.ts`. Los datos son de ejemplo: se pueden ajustar sin tocar la spec, salvo los que usan los escenarios.
 
 ### 3. Pantalla
 
-- En `app/tribus/[id]/page.tsx`, para tribus activas y en formación, `<Etiquetas items={t.busca} />` de "Lo que busca" se reemplaza por una `<ul>` de `<details id="necesidad-<id>">`. El `<summary>` lleva título, tipo ("De diseño" / "De campo") y estado ("Abierta" / "Tomada" / "Hecha"), en texto. Adentro, una `<dl>`: qué es, horas ("~20 h" o "sin dato"), para cuándo (fecha larga con `LOCALES` del idioma, o "sin dato"), habilidad (`textoDeRol`, o `habilidadOtra`), círculo (si hay), y en las de diseño el aval ("Avalada por el círculo <nombre> (ejemplo)" o "Esperando el aval del círculo <nombre>"), y la marca "ejemplo". En el `<summary>` de una tarea de diseño sin aval, el estado dice "Abierta · esperando aval".
+- En `app/tribus/[id]/page.tsx`, para tribus activas y en formación, `<Etiquetas items={t.busca} />` de "Lo que busca" se reemplaza por una `<ul>` de `<details id="necesidad-<id>">`. El `<summary>` lleva título, tipo ("De diseño" / "De campo") y estado ("Abierta" / "Tomada" / "Hecha"), en texto. Adentro, una `<dl>`: qué es, horas ("~20 h" o "sin dato"), para cuándo (fecha larga con `LOCALES` del idioma, o "sin dato"), habilidad (`textoDeRol`, o `habilidadOtra`), círculo (si hay), máximo por persona (si hay), y en las de diseño el aval ("Avalada por el círculo <nombre> (ejemplo)" o "Esperando el aval del círculo <nombre>"), y la marca "ejemplo". En el `<summary>` de una tarea de diseño sin aval, el estado dice "Abierta · esperando aval".
 - La explicación del tipo va en el texto visible de la ficha abierta (no en un `title`).
 - Abrir por ancla: un componente cliente chico que, al montar, lee `location.hash` y pone `open` en el `<details>` que corresponde. Sin JavaScript, el ancla igual lleva a la necesidad.
 - La tarjeta de barrios vacantes no cambia.
@@ -87,4 +108,5 @@ El inglés lo escribe quien implementa y se lista en `lib/idioma/revision-nativa
 
 - **Duplicar "lo que busca".** Hay dos fuentes (etiquetas y necesidades). El test de cobertura lo controla; cuando haya base, las etiquetas se derivan de las necesidades abiertas.
 - **Avales que nadie puede dar todavía.** En el prototipo una tarea de diseño sin aval queda así para siempre (no hay botón "Avalar"). Es a propósito: muestra la regla. El botón llega con la carga de necesidades por la tribu.
+- **Tope en Semillas con horas enteras.** Con un tope en Semillas, `horasConSemillas` se redondea hacia abajo: puede marcar 1 h "sin Semillas" que en parte sí sumó. Es el lado prudente y se ve en la ficha; si Gus prefiere un solo tipo de tope, se borra una rama de `aplicarTope`.
 - **Holón de un círculo transversal.** Lo avala "el común por el círculo". Si Gus prefiere que lo avalen las tribus que participan, cambia `pacto-puntual` (quién responde), no este modelo.

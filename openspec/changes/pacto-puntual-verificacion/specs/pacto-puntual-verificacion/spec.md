@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Que una tarea puntual pre-admitida se pueda marcar hecha con sus horas reales, que el holón verifique que se completó, y que recién con esa verificación nazca la constancia base de Semillas, sin ronda ni evaluación de pares (Backlog D15, D20 y D31; decisiones de Gus del 28-oct).
+Que una tarea puntual pre-admitida se pueda marcar hecha con sus horas reales, que el holón verifique que se completó, y que recién con esa verificación nazca la constancia base de Semillas de cada persona, por sus propias horas y con el máximo por persona, sin ronda ni evaluación de pares (Backlog D15, D20 y D31; decisiones de Gus del 28-oct).
 
 ## ADDED Requirements
 
@@ -44,7 +44,7 @@ Las horas de una tarea SHALL verificarlas, en `/pactos/responder` ("Tareas para 
 - **THEN** la ve sin botones, y la puede verificar `super@prueba.test`
 
 ### Requirement: Constancia base solo con la verificación
-Al conciliar una verificación SHALL guardarse una constancia base con la forma de ADR-012: `schema` "semillas-base", `afirma` "netx", `sobre` el pacto puntual, `apunta_a` nulo, la fecha de la verificación, y en `datos` el tipo "puntual", la necesidad, la fecha de la tarea, las horas verificadas, el valor de la hora de referencia, el período (`AAAA-MM` de la verificación en hora de Argentina), la versión del pacto (1), la constancia de verificación y las Semillas (`round(horas × valor hora)`). Su uid MUST empezar con `ejemplo-`. Las Semillas MUST NOT nacer de nada que haga la persona sola. La constancia MUST quedar congelada: se lee tal como se guardó, MUST NOT recalcularse si cambia el valor de la hora y MUST NOT editarse. Conciliar dos veces MUST dejar una sola constancia. Una constancia guardada mal formada MUST descartarse y la tarea SHALL volver a "Hecha · esperando que <holón> verifique".
+Al conciliar una verificación SHALL guardarse una constancia base con la forma de ADR-012: `schema` "semillas-base", `afirma` "netx", `sobre` el pacto puntual, `apunta_a` nulo, la fecha de la verificación, y en `datos` el tipo "puntual", la postulación pre-admitida de la persona, la necesidad, la fecha de la tarea, las horas verificadas, las horas con y sin Semillas, el máximo por persona aplicado (o nulo), el valor de la hora de referencia, el período (`AAAA-MM` de la verificación en hora de Argentina), la versión del pacto (1), la constancia de verificación y las Semillas (`round(horas con Semillas × valor hora)`, sin superar un máximo en Semillas). Su uid MUST empezar con `ejemplo-`. Las Semillas MUST NOT nacer de nada que haga la persona sola. La constancia MUST quedar congelada: se lee tal como se guardó, MUST NOT recalcularse si cambia el valor de la hora y MUST NOT editarse. Conciliar dos veces MUST dejar una sola constancia. Una constancia guardada mal formada MUST descartarse y la tarea SHALL volver a "Hecha · esperando que <holón> verifique".
 
 #### Scenario: Diez horas verificadas
 - **WHEN** el círculo verifica 10 h de "Energía solar" en noviembre de 2026
@@ -58,6 +58,28 @@ Al conciliar una verificación SHALL guardarse una constancia base con la forma 
 - **WHEN** la constancia guardada no tiene horas
 - **THEN** se descarta, la tarea queda esperando la verificación y la pantalla no se rompe
 
+### Requirement: Semillas por persona y máximo por persona
+Cuando varias personas toman la misma tarea, cada una SHALL marcar hecha sus propias horas, el holón SHALL verificarlas por separado y cada una SHALL recibir una constancia base propia por sus horas verificadas; la verificación de una persona MUST NOT cambiar las horas ni las Semillas de otra. Si la propuesta pre-admitida trae un máximo por persona (en horas o en Semillas), la constancia SHALL guardar las horas verificadas, las horas con Semillas, las horas sin Semillas y el máximo aplicado, y las Semillas MUST calcularse solo con las horas con Semillas (o MUST NOT superar el máximo en Semillas). Las horas por encima del máximo SHALL mostrarse como horas verificadas sin Semillas, nunca borrarse ni mostrarse como 0. El uid de la constancia MUST NOT llevar el email de la persona.
+
+#### Scenario: Más horas que el máximo
+- **WHEN** el círculo verifica 12 h de `persona@prueba.test` en "Energía solar" (máximo por persona: 10 h)
+- **THEN** la constancia base tiene 12 h verificadas, 10 h con Semillas, 2 h sin Semillas y 50 Semillas, y la persona ve "12 h verificadas · 10 h con Semillas · 2 h sin Semillas (máximo por persona: 10 h)"
+
+#### Scenario: Dos personas en la misma tarea
+- **WHEN** el círculo verifica 10 h de una persona y 6 h de otra en "Energía solar"
+- **THEN** hay dos constancias base, una de 50 Semillas y otra de 30, y cada persona ve en `/semillas` solo la suya
+
+#### Scenario: Máximo en Semillas
+- **WHEN** la tribu verifica 16 h en "Plomería" de Agua Clara (máximo por persona: 60 Semillas)
+- **THEN** la constancia tiene 60 Semillas, 11 h con Semillas y 5 h sin Semillas
+
+### Requirement: Las Semillas de un puntual se reciben al verificarse
+Las Semillas de una constancia base puntual SHALL contarse como "Semillas" (recibidas) desde la verificación. MUST NOT mostrarse como "Semillas pendientes": ese estado es solo de los meses de un compromiso recurrente.
+
+#### Scenario: Recibidas
+- **WHEN** la persona tiene una constancia puntual de 50 Semillas y abre `/semillas`
+- **THEN** las 50 figuran como Semillas y no como "Semillas pendientes"
+
 ### Requirement: Semillas de los pactos puntuales, sin ronda
 La tarjeta de Semillas de cada comunidad SHALL mostrar la parte "Pactos puntuales: horas verificadas" con la suma de las Semillas de sus constancias base y, debajo, cada constancia (tarea, horas, fecha de verificación, Semillas). Sin constancias, la parte MUST decir "sin dato", no 0. El total SHALL sumarla. Las Semillas de un puntual MUST contarse una sola vez. Un pacto puntual MUST NOT habilitar la ronda de reconocimiento ni el ajuste por evaluación de pares.
 
@@ -70,11 +92,15 @@ La tarjeta de Semillas de cada comunidad SHALL mostrar la parte "Pactos puntuale
 - **THEN** "Pactos puntuales" dice "sin dato"
 
 ### Requirement: La necesidad hecha
-En la ficha de la tribu, una necesidad cuya tarea está marcada hecha SHALL decir "Hecha · esperando verificación" para quien la hizo; con la verificación, "Hecha por vos" para esa persona y "Hecha" para las demás personas del navegador.
+En la ficha de la tribu, una necesidad cuya tarea está marcada hecha SHALL decir "Hecha · esperando verificación" para quien la hizo; con la verificación, "Hecha por vos" para esa persona y "La hicieron <N> personas" (o "La hizo 1 persona") para las demás personas del navegador. Que otras personas la hayan hecho MUST NOT impedir postularse mientras la necesidad siga tomable.
 
 #### Scenario: Hecha por vos
 - **WHEN** el círculo verificó las horas de "Energía solar" y la persona abre `/tribus/valle`
 - **THEN** "Energía solar" dice "Hecha por vos"
+
+#### Scenario: La hizo otra persona
+- **WHEN** otra persona miembro de Valle Solar, en el mismo navegador, abre `/tribus/valle`
+- **THEN** "Energía solar" dice "La hizo 1 persona" y le ofrece "Postularme para tomarla"
 
 ### Requirement: Eventos en Mi recorrido
 Marcar la tarea hecha, que el holón la verifique y que pida revisar SHALL registrar, una sola vez por hecho, "Marcaste hecha <tarea> en <tribu>", "<holón> verificó tus horas de <tarea>" y "<holón> pidió revisar tus horas de <tarea>" (sin el motivo), con enlace a `/pactos?comunidad=<tribu>`.

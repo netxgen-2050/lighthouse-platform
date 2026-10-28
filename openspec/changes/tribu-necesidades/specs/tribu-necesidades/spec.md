@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Que cada cosa que busca una tribu sea una necesidad con ficha de tarea (qué es, horas, si es de diseño o de campo, para cuándo, qué habilidad pide, su estado, su círculo y su holón), visible en la ficha de la tribu, y que las tareas de diseño lleven el aval de su holón (Backlog D18 y D19, decisión de Gus del 28-oct).
+Que cada cosa que busca una tribu sea una necesidad con ficha de tarea (qué es, horas, si es de diseño o de campo, para cuándo, qué habilidad pide, su estado, su círculo, su holón y el máximo por persona), que pueden tomar varias personas, visible en la ficha de la tribu, y que las tareas de diseño lleven el aval de su holón (Backlog D18 y D19, decisiones de Gus del 28-oct).
 
 ## ADDED Requirements
 
@@ -40,11 +40,30 @@ El tipo SHALL mostrarse con texto ("De diseño" o "De campo") y una explicación
 - **THEN** se lee "De campo" junto al título
 
 ### Requirement: Estado de ejemplo
-El estado SHALL mostrarse con texto ("Abierta", "Tomada" o "Hecha") junto al título y marcado como dato de ejemplo. En este cambio el estado MUST NOT cambiar por nada que haga la persona.
+El estado SHALL mostrarse con texto ("Abierta", "Tomada" o "Hecha") junto al título y marcado como dato de ejemplo. Una necesidad puede tomarla más de una persona: "Abierta" SHALL querer decir que todavía suma personas y "Tomada" que ya no suma más. En este cambio el estado MUST NOT cambiar por nada que haga la persona.
 
 #### Scenario: Una necesidad hecha
 - **WHEN** se abre `/tribus/valle`
 - **THEN** la necesidad "Bioconstrucción" dice "Hecha" y está marcada como ejemplo
+
+### Requirement: Máximo por persona
+Una necesidad MAY tener un máximo por persona, en horas o en Semillas (entero positivo), que pone quien administra su holón; sin máximo, todas las horas verificadas de cada persona generan Semillas. Con máximo, la ficha SHALL mostrar "Máximo por persona: <N> h" o "Máximo por persona: <N> Semillas", con la aclaración "las horas de más no generan Semillas"; sin máximo, MUST NOT mostrar esa línea. El cálculo SHALL ser una función pura que, dadas las horas de una persona, el máximo y el valor de la hora, devuelve las horas con Semillas, las horas sin Semillas y las Semillas: con máximo en horas, las horas con Semillas MUST NOT superarlo; con máximo en Semillas, las Semillas MUST NOT superarlo y las horas con Semillas SHALL redondearse hacia abajo.
+
+#### Scenario: Máximo en horas
+- **WHEN** se calcula el tope de `valle-solar` (10 h) para 12 h
+- **THEN** son 10 h con Semillas, 2 h sin Semillas y 50 Semillas
+
+#### Scenario: Máximo en Semillas
+- **WHEN** se calcula el tope de `agua-plomeria` (60 Semillas) para 16 h
+- **THEN** son 60 Semillas, 11 h con Semillas y 5 h sin Semillas
+
+#### Scenario: Se ve en la ficha
+- **WHEN** se abre en `/tribus/valle` la necesidad "Energía solar"
+- **THEN** se lee "Máximo por persona: 10 h · las horas de más no generan Semillas"
+
+#### Scenario: Sin máximo
+- **WHEN** se abre en `/tribus/valle` la necesidad "Bioconstrucción"
+- **THEN** no hay ninguna línea de máximo por persona
 
 ### Requirement: Necesidad dentro de un círculo
 Una necesidad MAY pertenecer a un círculo. Si lo tiene, el círculo MUST ser uno de los círculos de su tribu (`circulosDe`) o un círculo transversal en cuyas `tribus` figura su tribu, y la ficha SHALL mostrar "Círculo: <nombre>" en el idioma de la página. Si no tiene, la ficha MUST NOT mostrar la línea del círculo.

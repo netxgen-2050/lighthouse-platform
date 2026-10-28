@@ -4,7 +4,7 @@
 
 El pacto de tiempo de hoy fija las horas de cada mes, y cambiarlas pide `pactos-proponer-cambio` (versión nueva que la comunidad acepta). En la llamada con Don Powa, Gus marcó que no es así como colabora la gente: "alguien puede poner 10 h un mes, 25–30 el siguiente y nada el otro" (`NS_platform` Backlog **D20**; reunión 2026-10-23, #5). D20 también dice que **cada tribu elige qué formatos acepta**.
 
-El 28-oct Gus definió cómo es el pacto recurrente de horas por mes: **dura lo que dure, con un compromiso mínimo de 1 a 3 meses** (lo acuerdan quienes administran cada holón o tribu; valor de partida, 3 meses), y **las horas declaradas de cada mes las confirma el holón**. También pidió dejar prevista, como propuesta para decidir, la idea de que las Semillas del compromiso **"brotan"** cada mes confirmado y **"germinan"** al cumplir el mínimo.
+El 28-oct Gus definió cómo es el pacto recurrente de horas por mes: **dura lo que dure, con un compromiso mínimo de 1 a 3 meses** (lo acuerdan quienes administran cada holón o tribu; valor de partida, 3 meses), y **las horas declaradas de cada mes las confirma el holón**. Y el mismo día decidió cómo se reciben sus Semillas: las de cada mes confirmado son **Semillas pendientes**; al **terminar el compromiso** (cumplir el mínimo, contado en **meses confirmados**; un mes con 0 h no cuenta) las pendientes **se reciben** y pasan a ser **Semillas**. Si la persona se va antes avisando, recibe las de los meses confirmados; si se va sin avisar, pierde solo las pendientes del mes en curso.
 
 Es el cuarto de cuatro cambios (`tribu-necesidades` → `pacto-puntual` → `pacto-puntual-verificacion` → **`pactos-horas-variables`**), y se apoya en `pactos-dos-partes`: la comunidad acepta el pacto de verdad y las horas de cada mes usan los esquemas `pacto-propone-horas` / `pacto-confirma-horas` que suma `pacto-puntual-verificacion`.
 
@@ -16,16 +16,16 @@ Es el cuarto de cuatro cambios (`tribu-necesidades` → `pacto-puntual` → `pac
 - **La comunidad confirma cada mes.** Quien administra la comunidad del pacto (quien lidera la tribu, o el super admin para el Lighthouse) ve "Horas del mes para confirmar" en `/pactos/responder`: **confirma** (`pacto-confirma-horas`) o **pide revisar** con motivo; con "pedir revisar", la persona puede volver a declarar ese mes, aunque ya haya pasado.
 - **Salir del rango** sigue pidiendo "Proponer un cambio", que ahora también permite pasar de fija a variable (o al revés) y cambiar el rango. El historial muestra la modalidad de cada versión.
 - **Formatos por comunidad.** Se suma "variable" a `lib/pactos/formatos.ts` (reparto que Gus aprobó): lo aceptan el Lighthouse, Semilla Viva, Agua Clara, Valle Solar, Taller Común, Avelan Kerum y Puerto Trueque; Monte Nuevo y Barda Productiva, solo horas fijas.
-- **Semillas.** Con un pacto variable, la parte de tiempo suma solo lo **confirmado** de los últimos tres meses y muestra cada mes como "confirmado", "declarado · esperando confirmación" (no suma) o "sin dato". Con un pacto fijo, todo sigue igual.
-- **Brotan y germinan: solo descripto, para decidir** (design §7). No se implementa: el modelo queda listo para sumarlo.
+- **Semillas pendientes y Semillas.** Con un pacto variable, solo lo **confirmado** genera Semillas. Mientras no se cumple el compromiso mínimo (en meses confirmados con más de 0 h), las de cada mes confirmado se muestran como **Semillas pendientes** y no suman al total; al cumplirlo, se **reciben**: pasan a **Semillas** y suman. `/semillas` muestra los últimos tres meses como "confirmadas · Semillas pendientes", "confirmadas · Semillas", "declaradas · esperando confirmación" (no generan nada) o "sin dato", y cuántos meses lleva del mínimo ("2 de 3 meses confirmados"). Con un pacto fijo, todo sigue igual.
 - **⚖ "Compromiso mínimo"** (borrador, con criterio de la legislación argentina): es un compromiso voluntario, no un contrato de trabajo ni un período de prueba.
 - **Mi recorrido:** "Declaraste <N> h de <mes> en <comunidad>" (una vez por mes) y "<comunidad> confirmó tus horas de <mes>".
 - Textos es/en, con voseo.
 
 **Fuera de alcance:**
-- **Brotar y germinar** las Semillas, y **terminar un pacto** avisando o sin avisar: quedan como propuesta en el design hasta que Gus decida.
+- **Terminar un pacto** avisando o sin avisar: las reglas ya las decidió Gus (design §7), pero hace falta un "terminar el pacto" y una forma de registrar "se fue sin avisar" (D31); va en otro cambio.
+- **Qué pasa con los meses confirmados después de cumplir el mínimo** (pregunta abierta): mientras Gus no decida, el cálculo los deja como Semillas pendientes.
 - Que la persona elija el compromiso mínimo, o que quien lidera lo edite desde la pantalla: es un dato de ejemplo por comunidad.
-- Constancias base mensuales del pacto recurrente y su ajuste por evaluación: van con `evaluacion-pares` (o con la germinación, si se aprueba).
+- Constancias base mensuales del pacto recurrente y su ajuste por evaluación: van con `evaluacion-pares` (la constancia base se emitiría al recibirse las Semillas pendientes; design §7).
 - Pacto recurrente con un **círculo** (hoy el pacto es con la tribu o el Lighthouse).
 - Declarar meses futuros; corregir un mes ya confirmado.
 - Reparto de caja (D23), convocatorias (D26), registro de cumplimiento (D31).
@@ -33,7 +33,7 @@ Es el cuarto de cuatro cambios (`tribu-necesidades` → `pacto-puntual` → `pac
 ## Capabilities
 
 ### New Capabilities
-- `pactos-horas-variables`: modalidad fija o variable del pacto recurrente, rango por mes, compromiso mínimo por comunidad, declaración mensual confirmada por la comunidad, formato "variable" y su efecto en Semillas.
+- `pactos-horas-variables`: modalidad fija o variable del pacto recurrente, rango por mes, compromiso mínimo por comunidad, declaración mensual confirmada por la comunidad, formato "variable" y su efecto en Semillas (Semillas pendientes hasta cumplir el mínimo en meses confirmados; después, Semillas).
 
 ### Modified Capabilities
 

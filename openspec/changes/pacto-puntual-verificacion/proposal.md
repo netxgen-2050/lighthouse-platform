@@ -13,14 +13,17 @@ Es el tercero de cuatro cambios (`tribu-necesidades` → `pacto-puntual` → **`
 - **Esquemas de horas en las constancias de pactos.** `lib/pactos/constancias.ts` suma `pacto-propone-horas` (afirma la persona; apunta a su propuesta pre-admitida o aceptada; `datos.horas` y, para un mes, `datos.mes`) y `pacto-confirma-horas` (afirma el holón o la tribu, con quien actuó; apunta a la propuesta de horas). Pedir revisar las horas es un `pacto-no-acepta` con motivo que apunta a la propuesta de horas.
 - **Marcar la tarea hecha.** Con la postulación pre-admitida, la persona marca la tarea como hecha con las **horas reales** (enteras, de 1 a 200; pueden ser distintas de las pactadas). Queda "Hecha · esperando que <holón> verifique". Puede retirarla mientras no hubo respuesta.
 - **Verificación por el holón** en `/pactos/responder`, sección "Tareas para verificar": quien administra el holón (el mismo de la pre-admisión) **verifica** las horas o **pide revisarlas** con motivo (la tarea vuelve a "Pre-admitida" con el aviso). Nadie verifica su propia tarea.
-- **Constancia base de Semillas solo con la verificación.** Al conciliar una verificación, queda guardada, congelada, una constancia base con la forma de ADR-012 (uid `ejemplo-…`): tarea, horas verificadas, valor de la hora de referencia, período (mes de la verificación en hora de Argentina), versión 1, el uid de la verificación y Semillas (`round(horas × valor hora)`, una sola vez). Nunca se recalcula ni se edita. Detalle en ADR-020.
+- **Constancia base de Semillas solo con la verificación, una por persona.** Una tarea la pueden tomar varias personas (decisión de Gus, 28-oct): cada una marca hecha **sus propias horas**, el holón verifica las de cada una por separado y cada una recibe Semillas **por sus horas verificadas**. Al conciliar una verificación, queda guardada, congelada, una constancia base con la forma de ADR-012 (uid `ejemplo-…`, una por persona y tarea): tarea, horas verificadas, horas con Semillas y sin Semillas, el máximo por persona que se aplicó, valor de la hora de referencia, período (mes de la verificación en hora de Argentina), versión 1, el uid de la verificación y Semillas, una sola vez. Nunca se recalcula ni se edita. Detalle en ADR-020.
+- **Máximo por persona.** Si la necesidad tiene un máximo (en horas o en Semillas, el que vio el holón al pre-admitir), las horas por encima no generan Semillas y se muestran como tales: "12 h verificadas · 10 h con Semillas · 2 h sin Semillas (máximo por persona: 10 h)".
+- **Se reciben directo.** Las Semillas de un pacto puntual verificado son **Semillas** (recibidas) desde la verificación: no pasan por "Semillas pendientes", que son solo de los compromisos recurrentes (`pactos-horas-variables`).
 - **Semillas.** La tarjeta de cada comunidad suma "Pactos puntuales: horas verificadas" con el total de sus constancias (o "sin dato") y lista cada una. El total la incluye. **Sin ronda ni evaluación de pares** por un puntual.
-- **La necesidad queda hecha.** "Hecha por vos" para la persona y "Hecha" para las demás personas del navegador.
+- **Tu parte, hecha.** "Hecha por vos" para la persona y "La hicieron <N> personas" para las demás personas del navegador, que pueden seguir sumándose mientras la necesidad esté abierta.
 - **Mi recorrido:** "Marcaste hecha <tarea> en <tribu>", "<holón> verificó tus horas de <tarea>" y "<holón> pidió revisar tus horas de <tarea>".
 - Textos es/en, con voseo.
 
 **Fuera de alcance:**
 - **Ronda de reconocimiento y ajuste por evaluación de pares (`f_eval`) sobre un puntual**: no se aplican (decisión de Gus, 28-oct), ni ahora ni con `evaluacion-pares`.
+- Un máximo total de horas o Semillas por tarea (sumando a todas las personas): Gus pidió el máximo **por persona**; el total queda como pregunta.
 - Revocar o corregir una constancia base ya emitida; cancelar una tarea pre-admitida que no se hizo; registro de cumplimiento con "se fue avisando / sin avisar" para tareas puntuales (D31).
 - Firmar o publicar las constancias (etapas 2 y 3 de ADR-012); emitir la constancia en el servidor (llega con la base, P9).
 - Separar en la tarjeta la proyección del pacto fijo de lo verificado de los puntuales (pregunta abierta de la revisión anterior).
@@ -28,7 +31,7 @@ Es el tercero de cuatro cambios (`tribu-necesidades` → `pacto-puntual` → **`
 ## Capabilities
 
 ### New Capabilities
-- `pacto-puntual-verificacion`: tarea hecha con horas reales, verificación por el holón, esquemas de horas en las constancias de pactos, constancia base de Semillas por tarea y su parte en Semillas.
+- `pacto-puntual-verificacion`: tarea hecha con horas reales, verificación por el holón, esquemas de horas en las constancias de pactos, constancia base de Semillas por persona y por tarea con el máximo por persona, y su parte en Semillas.
 
 ### Modified Capabilities
 

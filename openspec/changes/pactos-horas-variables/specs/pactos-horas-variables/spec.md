@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Que un pacto de tiempo recurrente pueda tener horas que varían de un mes a otro dentro de un rango acordado, con un compromiso mínimo de 1 a 3 meses que fija cada comunidad, que la comunidad confirme las horas de cada mes, y que cada comunidad diga si acepta ese formato (Backlog D20; decisiones de Gus del 28-oct).
+Que un pacto de tiempo recurrente pueda tener horas que varían de un mes a otro dentro de un rango acordado, con un compromiso mínimo de 1 a 3 meses que fija cada comunidad, que la comunidad confirme las horas de cada mes, que sus Semillas queden pendientes hasta cumplir el mínimo en meses confirmados, y que cada comunidad diga si acepta ese formato (Backlog D20; decisiones de Gus del 28-oct).
 
 ## ADDED Requirements
 
@@ -80,16 +80,24 @@ Las horas declaradas de un mes SHALL confirmarlas quien administra la comunidad 
 - **WHEN** una persona con un pacto fijo de 10 h/mes en versión 1 propone pasar a variable de 0 a 30 h y la comunidad lo acepta
 - **THEN** el pacto queda en versión 2 "entre 0 y 30 h/mes", con el compromiso de la comunidad, y el historial muestra "10 h/mes" en la versión 1
 
-### Requirement: Semillas de un pacto variable
-Con un pacto variable vigente, la parte de tiempo de Semillas SHALL sumar `round(h × valor hora)` solo de los meses **confirmados** entre el mes en curso y los dos anteriores, y SHALL listar los tres meses con su estado ("confirmadas", "esperando confirmación", "a revisar" o "sin dato"). Un mes declarado y no confirmado MUST NOT sumar. Si ningún mes está confirmado, la parte de tiempo MUST ser "sin dato", no 0. Con un pacto fijo, el cálculo MUST quedar como hoy. La ronda de reconocimiento SHALL habilitarse con un pacto variable aceptado igual que con uno fijo.
+### Requirement: Semillas pendientes y Semillas de un pacto variable
+Con un pacto variable vigente, solo los meses **confirmados** SHALL generar Semillas (`round(h × valor hora)`); un mes declarado y no confirmado MUST NOT generar nada. Las Semillas de cada mes confirmado SHALL ser "Semillas pendientes" mientras la persona no haya cumplido el compromiso mínimo, contado en meses confirmados con más de 0 h; un mes confirmado con 0 h MUST NOT contar para el mínimo. Al cumplirlo, las Semillas pendientes de esos meses SHALL recibirse y pasar a ser "Semillas". Solo las Semillas recibidas SHALL sumar al total; las pendientes SHALL mostrarse aparte. `/semillas` SHALL mostrar cuántos meses lleva del mínimo ("<N> de <M> meses confirmados") y listar los tres últimos meses con su estado en texto ("confirmadas · Semillas pendientes", "confirmadas · Semillas", "esperando confirmación", "a revisar" o "sin dato"). Sin Semillas recibidas o sin pendientes, cada valor MUST decir "sin dato", no 0. Los meses confirmados después de cumplir el mínimo SHALL quedar como pendientes hasta que se decida otra cosa. MUST NOT usarse otros nombres para estos estados. Con un pacto fijo, el cálculo MUST quedar como hoy. La ronda de reconocimiento SHALL habilitarse con un pacto variable aceptado igual que con uno fijo.
 
-#### Scenario: Dos meses confirmados
-- **WHEN** en diciembre de 2026 la tribu confirmó 24 h de noviembre y 10 h de diciembre, y octubre no se declaró
-- **THEN** Semillas muestra octubre "sin dato", noviembre 121 y diciembre 50, y la parte de tiempo suma 171
+#### Scenario: Antes del mínimo
+- **WHEN** en diciembre de 2026 Valle Solar (compromiso mínimo de 3 meses) confirmó 24 h de noviembre y 10 h de diciembre, y octubre no se declaró
+- **THEN** Semillas muestra octubre "sin dato", noviembre "121 Semillas pendientes" y diciembre "50 Semillas pendientes", "Semillas pendientes: 171", "Semillas: sin dato" y "2 de 3 meses confirmados"
+
+#### Scenario: Al cumplir el mínimo
+- **WHEN** en noviembre de 2026 Taller Común (compromiso mínimo de 1 mes) confirmó 24 h de noviembre
+- **THEN** noviembre dice "24 h · confirmadas · 121 Semillas", "Semillas: 121" suma al total y "Semillas pendientes" dice "sin dato"
+
+#### Scenario: Un mes con 0 h no cuenta
+- **WHEN** en diciembre de 2026 Valle Solar confirmó 0 h de octubre, 24 h de noviembre y 10 h de diciembre
+- **THEN** se lee "2 de 3 meses confirmados" y las Semillas de noviembre y diciembre siguen pendientes
 
 #### Scenario: Declarado sin confirmar
 - **WHEN** la persona declaró 24 h de noviembre y la tribu todavía no respondió
-- **THEN** noviembre dice "24 h · esperando confirmación", no suma, y la parte de tiempo dice "sin dato"
+- **THEN** noviembre dice "24 h · esperando confirmación", no genera Semillas ni pendientes, y las dos dicen "sin dato"
 
 ### Requirement: Otras pantallas
 Donde hoy se muestran las horas por mes del pacto (Perfil, Mi recorrido, panel), un pacto variable SHALL mostrarse como "entre <mín> y <máx> h/mes", nunca con un número inventado.
@@ -113,7 +121,7 @@ Un pacto guardado sin modalidad SHALL leerse como "Horas fijas" con sus horas, v
 - **THEN** lo ve como "Horas fijas · 10 h/mes" y Semillas calcula como antes
 
 ### Requirement: Término legal, textos y accesibilidad
-"Compromiso mínimo" SHALL llevar el ⚖ con el texto `compromisominimo` del catálogo (`borrador: true`, con su inglés): un compromiso voluntario, de palabra, que no es un contrato de trabajo ni un período de prueba, sin horario impuesto ni pago en dinero, que se puede dejar antes avisando, y cuyas horas confirmadas se reconocen con Semillas que no son un sueldo. Todos los textos nuevos SHALL existir en español (voseo) y en inglés, con los meses en el formato del idioma. La modalidad MUST elegirse con controles rotulados y usables con teclado, cada declaración y cada respuesta SHALL anunciarse en una región `aria-live`, y axe MUST pasar sin violaciones `serious` ni `critical` en `/pactos`, `/pactos/responder` y `/semillas` con un pacto variable.
+"Compromiso mínimo" SHALL llevar el ⚖ con el texto `compromisominimo` del catálogo (`borrador: true`, con su inglés): un compromiso voluntario, de palabra, que no es un contrato de trabajo ni un período de prueba, sin horario impuesto ni pago en dinero, que se puede dejar antes avisando, y cuyas horas confirmadas generan Semillas pendientes que se reciben al cumplir el compromiso (o las de los meses confirmados, si se deja antes avisando), y que las Semillas no son un sueldo. Todos los textos nuevos SHALL existir en español (voseo) y en inglés, con los meses en el formato del idioma. La modalidad MUST elegirse con controles rotulados y usables con teclado, cada declaración y cada respuesta SHALL anunciarse en una región `aria-live`, y axe MUST pasar sin violaciones `serious` ni `critical` en `/pactos`, `/pactos/responder` y `/semillas` con un pacto variable.
 
 #### Scenario: ⚖ con teclado
 - **WHEN** en `/pactos` se llega con Tab al ⚖ de "Compromiso mínimo"

@@ -52,49 +52,62 @@ type PactoTiempo = ... & { declaradas: Record<string, DeclaracionMes> }; // "AAA
 
 ### 4. Semillas
 
-- `semillasVariables(declaradas, mesActual): { meses: { mes; horas: number | null; estado: "confirmada" | "declarada" | "a-revisar" | null; semillas: number | null }[]; total: number | null }` sobre `[mes−2, mes−1, mes]`. **Solo `confirmada` suma**: `semillas = Math.round(Number((h × HOUR_REF_USD).toFixed(6)))`; `declarada` y `a-revisar` muestran las horas pero `semillas: null`. `total = totalConDato(...)`.
-- `semillasDeComunidad` recibe `ahora` y, si la versión vigente es variable, usa `semillasVariables` para `tiempo`; `horas` queda `null` y se agregan `rango` y `compromisoMeses`. Con "fija", igual que hoy.
+Decisión de Gus (28-oct): las Semillas de cada mes confirmado son **Semillas pendientes**; al cumplir el compromiso mínimo **en meses confirmados** se **reciben** y pasan a ser **Semillas**. Un mes confirmado con 0 h **no cuenta** para el mínimo (y no genera Semillas).
+
+```ts
+type EstadoSemillasMes = "pendientes" | "recibidas";
+function mesesCumplidos(declaradas): number;   // meses "confirmada" con horas > 0, de todo el pacto
+function semillasVariables(declaradas, mesActual, compromisoMeses): {
+  meses: { mes; horas: number | null; estado: "confirmada" | "declarada" | "a-revisar" | null;
+           semillas: number | null; semillasEstado: EstadoSemillasMes | null }[]; // la lista: [mes−2, mes−1, mes]
+  cumplidos: number; compromisoMeses: 1 | 2 | 3;
+  recibidas: number | null; pendientes: number | null; // sobre todas las declaraciones, no solo la lista
+};
+```
+
+- **Solo `confirmada` genera Semillas**: `semillas = Math.round(Number((h × HOUR_REF_USD).toFixed(6)))`; `declarada` y `a-revisar` muestran las horas pero `semillas: null`.
+- **Pendientes o recibidas.** Se recorren los meses confirmados con horas > 0 en orden; mientras `cumplidos < compromisoMeses`, todos son `pendientes`. Al llegar a `compromisoMeses`, esos meses (los que completaron el mínimo) pasan a `recibidas`. Los meses confirmados **después** del mínimo quedan `pendientes` hasta que Gus decida qué pasa con ellos (pregunta abierta; cambiarlo es tocar solo esta función).
+- `recibidas` y `pendientes` = `totalConDato(...)` de cada grupo (sin meses, "sin dato", nunca 0).
+- `semillasDeComunidad` recibe `ahora` y, si la versión vigente es variable, usa `semillasVariables`: `tiempo` = `recibidas` (lo único que suma al total) y se agregan `pendientes`, `cumplidos`, `rango` y `compromisoMeses`; `horas` queda `null`. Con "fija", igual que hoy.
 - `pactosAceptados` agrega `modalidad`, `rango` y `compromisoMeses`; la ronda sigue mirando solo que haya un pacto recurrente aceptado.
-- Este cambio **no emite constancias base**: las Semillas del variable se calculan en el render a partir de lo confirmado. La constancia base mensual queda para `evaluacion-pares` o para la germinación (§7).
+- Este cambio **no emite constancias base**: las Semillas del variable (pendientes y recibidas) se calculan en el render a partir de lo confirmado. La constancia base mensual queda para `evaluacion-pares`, que la emitiría al recibirse (§7).
 
 ### 5. Pantallas
 
 - `/pactos`: un `<fieldset>` "Cómo vas a poner tus horas" con dos radios (solo si la comunidad acepta "variable"); con "variable", dos campos numéricos rotulados ("Mínimo por mes", "Máximo por mes") y la línea "Compromiso mínimo: <N> meses · después dura lo que quieras sostenerlo" con ⚖ `compromisominimo`. Con el pacto variable aceptado, bloque "Horas de <mes en curso>" con un campo y "Declarar" (o "Corregir"), el estado del mes en texto, y la lista de los dos meses anteriores (solo lectura, salvo un mes "a revisar"). Mensajes en `role="status"`.
-- `/semillas`: con pacto variable, la parte de tiempo lista los tres meses con su estado.
+- `/semillas`: con pacto variable, la parte de tiempo dice "Semillas: <recibidas>" y "Semillas pendientes: <pendientes>" (cada una con "sin dato" si no hay), "<cumplidos> de <N> meses confirmados del compromiso mínimo", y lista los tres meses con su estado en texto ("24 h · confirmadas · 121 Semillas pendientes", "24 h · confirmadas · 121 Semillas", "24 h · esperando confirmación", "sin dato"). Una línea explica: "Las Semillas pendientes se reciben al cumplir el compromiso mínimo. Un mes con 0 h no cuenta."
 - `/perfil`, panel y Mi recorrido: `textoHorasDelPacto(contenido, idioma)` ("10 h/mes" o "entre 0 y 30 h/mes") en `lib/pactos/`.
 
 ### 6. Eventos
 
 `declarasteHoras(horas, mes, comunidad, id)` con `clave: horas-declaradas:<comunidad>:<mes>` (corregir no duplica; el texto queda con la primera declaración) y `horasDelMesConfirmadas(mes, comunidad, id)` con `clave: horas-confirmadas:<comunidad>:<mes>`.
 
-### 7. Propuesta para decidir: las Semillas del compromiso brotan y germinan
+### 7. Semillas pendientes y Semillas (decisión de Gus, 28-oct)
 
-Gus pidió dejarla prevista, marcada para decidir. Referencia: el boceto de Gus en `https://claude.ai/artifact/H4uDTiruaXpSK4BJZ5AYfW` (versión 2). **Este agente no pudo abrir el boceto desde la corrida**: lo que sigue sale de la descripción de Gus del 28-oct y hay que contrastarlo con el boceto antes de aprobar.
-
-- **El concepto.** Una semilla primero brota y recién después germina. Aplicado al compromiso:
-  - **Brotan:** cada mes cuyas horas confirma la comunidad, sus Semillas **brotan**. Se ven en `/semillas` ("brotadas"), pero todavía no están firmes.
-  - **Germinan:** al cumplir el compromiso mínimo (por ejemplo, 3 meses), las brotadas **germinan** y quedan firmes.
-  - **Si la persona se va avisando:** germinan los meses cumplidos (los confirmados), aunque no haya llegado al mínimo.
-  - **Si se va sin avisar:** el mes en curso no germina (los anteriores confirmados sí).
-- **Cómo encaja con las constancias (propuesta técnica).** El brote ya existe en este cambio: es la `pacto-confirma-horas` del mes. La germinación sería el momento de emitir la **constancia base mensual** (`semillas-base`, ADR-012), congelada. Así nada congelado hay que revocar si la persona se va sin avisar: lo que no germina nunca llegó a ser constancia base. La germinación sería una función pura, `estadoDelMes(confirmaciones, compromisoMeses, salida)` → `"brotada" | "germinada" | "no-germina"`, sin estado guardado nuevo.
-- **Lo que hace falta para implementarla** (otro cambio): un "terminar el pacto" con "aviso" (constancia de la persona) y una forma de registrar "se fue sin avisar" (lo marca la comunidad, como en D31). Las dos cosas están fuera de este cambio.
-- **Dudas para decidir** (ver preguntas abiertas): si el mínimo se cuenta en meses confirmados o en meses de calendario desde la aceptación; qué pasa después del mínimo (¿cada mes germina al confirmarse, o se repite el ciclo?); si las brotadas cuentan para algo (voz, acceso) antes de germinar; si un mes con 0 h declaradas y confirmadas cuenta para el mínimo.
+- **Nombres.** "**Semillas pendientes**": las de cada mes confirmado de un compromiso. "**Semillas**": las que se reciben. No se usa otra metáfora.
+- **Cuándo se reciben.** Al **terminar el compromiso**, es decir, al cumplir el mínimo, las Semillas pendientes se reciben y pasan a ser Semillas. El mínimo se cuenta en **meses confirmados**; un mes con 0 h **no cuenta**. Esto lo implementa este cambio (§4).
+- **Si la persona se va antes avisando:** recibe las de los meses confirmados, aunque no haya llegado al mínimo.
+- **Si se va sin avisar:** pierde solo las Semillas pendientes del mes en curso; las de los meses anteriores confirmados se reciben.
+- **Cómo encaja con las constancias.** Las Semillas pendientes salen de la `pacto-confirma-horas` de cada mes y se calculan en el render, sin guardar nada nuevo. Recibirlas sería el momento de emitir la **constancia base mensual** (`semillas-base`, ADR-012), congelada: así no hay que revocar nada si la persona se va sin avisar, porque lo que se pierde nunca llegó a ser constancia base. Emitirla queda para `evaluacion-pares`.
+- **Lo que hace falta para las salidas** (otro cambio): un "terminar el pacto" con aviso (constancia de la persona) y una forma de registrar "se fue sin avisar" (lo marca la comunidad, como en D31). Con eso, `semillasVariables` suma un parámetro `salida` y no cambia nada más.
+- **Pregunta abierta:** qué pasa con los meses confirmados **después** de cumplir el mínimo (¿se reciben al confirmarse, o empieza otro ciclo de mínimo?). Hasta que Gus decida, quedan como Semillas pendientes.
 
 ### 8. ⚖ "Compromiso mínimo" con criterio de la legislación argentina (borrador)
 
 No hay revisión legal en el corto plazo (decisión de Gus, 28-oct).
 
-- **Lo que se cuida:** un mínimo de 3 meses se parece al **período de prueba** de la Ley de Contrato de Trabajo (art. 92 bis, hoy de hasta 6 meses según la reforma vigente **[verificar]**), y "si te vas sin avisar, el mes no germina" podría leerse como una sanción o una retención. Por eso el texto dice que es un compromiso de palabra y voluntario, que se puede dejar avisando, que no hay horario impuesto ni pago en dinero, y que lo único que pasa si no se cumple es que esas horas no se reconocen como Semillas firmes (no hay multa ni deuda).
-- **Texto ⚖ `compromisominimo` (es):** "Es el tiempo mínimo que te comprometés a sostener este pacto (de 1 a 3 meses, lo fija la tribu). Es un compromiso voluntario, de palabra: no es un contrato de trabajo ni un período de prueba, no hay horario impuesto ni pago en dinero, y podés dejarlo antes avisando. Las horas de cada mes las confirma la tribu y se reconocen con Semillas, que no son un sueldo." `borrador: true`, con su inglés.
-- **Para la lista del abogado** (la suma Claude al integrar en `NS_platform`): ampliar **A1** con "compromiso mínimo de 1 a 3 meses: que no se lea como período de prueba (LCT art. 92 bis)" y "Semillas que no germinan si la persona se va sin avisar: que no se lean como sanción ni como retención de una remuneración en especie (LCT art. 103 y 105)". **[verificar]**
+- **Lo que se cuida:** un mínimo de 3 meses se parece al **período de prueba** de la Ley de Contrato de Trabajo (art. 92 bis, hoy de hasta 6 meses según la reforma vigente **[verificar]**), y "si te vas sin avisar, perdés las Semillas pendientes del mes en curso" podría leerse como una sanción o una retención. Por eso el texto dice que es un compromiso de palabra y voluntario, que se puede dejar avisando (y ahí se reciben las de los meses confirmados), que no hay horario impuesto ni pago en dinero, y que lo único que pasa si no se avisa es que las Semillas pendientes de ese mes no se reciben (no hay multa ni deuda).
+- **Texto ⚖ `compromisominimo` (es):** "Es el tiempo mínimo que te comprometés a sostener este pacto (de 1 a 3 meses, lo fija la tribu). Es un compromiso voluntario, de palabra: no es un contrato de trabajo ni un período de prueba, no hay horario impuesto ni pago en dinero, y podés dejarlo antes avisando. Las horas de cada mes las confirma la tribu y generan Semillas pendientes, que recibís al cumplir el compromiso (o, si lo dejás antes avisando, las de los meses confirmados). Las Semillas no son un sueldo." `borrador: true`, con su inglés.
+- **Para la lista del abogado** (la suma Claude al integrar en `NS_platform`): ampliar **A1** con "compromiso mínimo de 1 a 3 meses: que no se lea como período de prueba (LCT art. 92 bis)" y "Semillas pendientes del mes en curso que no se reciben si la persona se va sin avisar: que no se lean como sanción ni como retención de una remuneración en especie (LCT art. 103 y 105)". **[verificar]**
 
 ## Riesgos
 
-- **Más pasos para la tribu.** Cada persona con pacto variable suma una confirmación por mes. Es lo que pidió Gus; si molesta, la germinación podría confirmar en bloque.
+- **Más pasos para la tribu.** Cada persona con pacto variable suma una confirmación por mes. Es lo que pidió Gus; si molesta, se podría confirmar en bloque al cumplir el mínimo.
+- **Semillas pendientes que no suman.** Hasta cumplir el mínimo, el total de Semillas de un pacto variable puede decir "sin dato" aunque haya meses confirmados. La pantalla muestra las pendientes al lado, para que no parezca que no se reconoció nada.
 - **Mes pasado sin confirmar.** Una declaración puede quedar "esperando confirmación" para siempre si la comunidad no responde. Se ve así, sin sumar, nunca como 0.
 - **Dos semánticas de "tiempo" en Semillas**: el fijo proyecta 3 meses, el variable suma lo confirmado. La pantalla lo dice en una línea para cada caso.
 
 ## Revisión de arquitectura
 
 <!-- arquitecto: revisión hecha el 27-oct-2026 sobre la versión anterior (sin confirmación mensual). -->
-La revisión del 27-oct (mes en hora de Argentina; "lo autodeclarado no emite Semillas") sigue incorporada: ahora lo autodeclarado ni siquiera suma hasta que la comunidad lo confirma. **Pide una nueva revisión** del agente arquitecto: este cambio ahora escribe constancias en el registro compartido (horas de cada mes) y suma la propuesta de germinación, que decidiría cuándo se emite la constancia base mensual.
+La revisión del 27-oct (mes en hora de Argentina; "lo autodeclarado no emite Semillas") sigue incorporada: ahora lo autodeclarado ni siquiera suma hasta que la comunidad lo confirma. **Pide una nueva revisión** del agente arquitecto: este cambio ahora escribe constancias en el registro compartido (horas de cada mes) y define cuándo se reciben las Semillas pendientes, que es cuándo se emitiría la constancia base mensual.

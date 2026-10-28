@@ -20,9 +20,12 @@ Es el primero de cuatro cambios chicos que bajan D18, D19 (tareas de diseño) y 
 - **Ficha de la tribu.** La tarjeta "Lo que busca" de `/tribus/<id>` muestra cada necesidad como un elemento plegable (título, tipo y estado a la vista; el resto al abrirlo), con un ancla `#necesidad-<id>` para poder enlazarla.
 - **Holarquía.** Una necesidad puede pertenecer a un círculo de su tribu o a un círculo transversal en el que su tribu participa (`lib/gobernanza/datos.ts`). Se muestra el nombre del círculo en el idioma de la página. El **holón** de una necesidad es su círculo, si tiene, y si no, su tribu: es el que la avala, pre-admite y verifica (subsidiariedad: decide el holón más chico que la contiene).
 - **Aval de las tareas de diseño (D19).** Cada necesidad de diseño puede tener un **aval**: una constancia con la forma de los registros de gobernanza (`lib/gobernanza/tipos.ts`, forma EAS de ADR-012) que afirma el holón de la necesidad. Una tarea de diseño **sin aval** se muestra "Esperando el aval de <holón>" y no se puede tomar (lo usa `pacto-puntual`). Las de campo no necesitan aval. Los avales son **de ejemplo**, en el código: tres de las cuatro tareas de diseño lo tienen y una no, para mostrar el caso.
+- **Varias personas por tarea y máximo por persona** (decisión de Gus, 28-oct). Una necesidad puede tomarla más de una persona: los estados quieren decir **abierta** (suma personas), **tomada** (ya no suma más: la tomaron las que hacían falta) y **hecha**. Quien administra el holón puede poner un **máximo por persona**, en horas o en Semillas (`tope`, o "sin máximo"). Las horas por encima del máximo no generan Semillas: la ficha lo dice ("Máximo por persona: 10 h · las horas de más no generan Semillas"). Los máximos son de ejemplo, en el código: uno en horas (`valle-solar`, 10 h) y uno en Semillas (`agua-plomeria`, 60 Semillas).
 - **Textos** en español (voseo) y en inglés.
 
 **Fuera de alcance:**
+- **Poner o cambiar el máximo desde la pantalla**: es un dato de ejemplo, como los avales.
+- **Un cupo de personas por tarea** (cuántas pueden tomarla a la vez): no lo pidió Gus; queda como pregunta.
 - **Postularse para tomar una necesidad** y el pacto puntual: van en `pacto-puntual`. En este cambio el estado de cada necesidad es el de ejemplo y no cambia.
 - **Dar o retirar un aval desde la pantalla.** Quien administra el holón todavía no tiene un botón "Avalar": los avales son de ejemplo. Avalar de verdad va junto con la carga de necesidades por la tribu.
 - **Que la tribu cargue, edite o cierre sus necesidades.** Son datos de ejemplo en el código; la carga por quien lidera queda para cuando haya base.
@@ -35,7 +38,7 @@ Es el primero de cuatro cambios chicos que bajan D18, D19 (tareas de diseño) y 
 ## Capabilities
 
 ### New Capabilities
-- `tribu-necesidades`: necesidades de una tribu como tareas con ficha (qué, horas, diseño o campo, fecha, habilidad, estado, círculo y holón), con el aval del holón para las de diseño, visibles en la ficha de la tribu.
+- `tribu-necesidades`: necesidades de una tribu como tareas con ficha (qué, horas, diseño o campo, fecha, habilidad, estado, círculo, holón y máximo por persona), con el aval del holón para las de diseño, visibles en la ficha de la tribu.
 
 ### Modified Capabilities
 

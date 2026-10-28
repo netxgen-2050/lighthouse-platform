@@ -36,12 +36,15 @@ Misma forma que el design de `evaluacion-pares` §5 (ADR-012), para que después
 
 ```ts
 type ConstanciaBase = {
-  uid: string;                    // `ejemplo-base-puntual-<comunidad>-<necesidadId>`
+  uid: string;                    // `ejemplo-base-puntual-<id de la postulación pre-admitida>`: una por persona y tarea
   schema: "semillas-base";
   afirma: "netx";
-  sobre: string;                  // `puntual:<comunidad>:<necesidadId>`
+  sobre: string;                  // `puntual:<comunidad>:<necesidadId>` (la tarea; la persona la da `datos.pacto`)
   apunta_a: null;
-  datos: { tipo: "puntual"; pacto: string; necesidad: string; fecha_tarea: string; horas: number;
+  datos: { tipo: "puntual"; pacto: string; necesidad: string; fecha_tarea: string;
+           horas: number;                       // verificadas
+           horas_con_semillas: number; horas_sin_semillas: number;
+           tope_unidad: "horas" | "semillas" | null; tope_valor: number | null; // el de la propuesta pre-admitida
            valor_hora_usd: number; periodo: string; version_pacto: 1; confirmacion: string; semillas: number };
   creada_en: string;              // ISO: el `cuando` de la verificación (no el reloj de quien concilia)
   revocada_en: null; vence_en: null;
@@ -50,7 +53,8 @@ function constanciaBasePuntual(comunidad, p: PactoPuntual, confirmacion: Constan
 function leerConstanciaBase(x: unknown): ConstanciaBase | null;
 ```
 
-- `semillas = Math.round(Number((horas × HOUR_REF_USD).toFixed(6)))`. Con `HOUR_REF_USD = 7049 / 1400`: 10 h → 50; 12 h → 60.
+- **Varias personas, una constancia cada una** (decisión de Gus, 28-oct). `datos.pacto` es el id de la postulación pre-admitida de **esa** persona, y el uid sale de ahí: dos personas en la misma tarea tienen dos constancias, cada una con sus horas. El uid no lleva el `idPersona` (en el prototipo puede tener un email).
+- `semillas`, `horas_con_semillas` y `horas_sin_semillas` salen de `aplicarTope(horas, tope, HOUR_REF_USD)` de `tribu-necesidades`, con el tope de la propuesta pre-admitida (lo que vio el holón); sin tope, `semillas = Math.round(Number((horas × HOUR_REF_USD).toFixed(6)))`. Con `HOUR_REF_USD = 7049 / 1400`: 10 h → 50; 12 h sin tope → 60; 12 h con tope 10 h (`valle-solar`) → 10 con Semillas, 2 sin, 50 Semillas.
 <!-- arquitecto (27-oct, se mantiene): `cuando` es ISO en UTC; el 30-nov a las 22 h de Argentina ya es diciembre en UTC y la constancia quedaría en el período equivocado, que después no se corrige. -->
 - `periodo = mesDe(confirmacion.cuando)`: helper puro `mesDe(ahora: string): string` ("AAAA-MM") en `lib/pactos/mes.ts`, **en la hora de Argentina** (`America/Argentina/Buenos_Aires`, la misma zona que `lib/fogon/consultas/reglas.ts`). Nunca `slice(0, 7)`. Test: `2026-12-01T01:30:00Z` → `2026-11`. Lo reusa `pactos-horas-variables`.
 - `uid` con prefijo `ejemplo-`: hoy la "afirma NetX" la arma el navegador al conciliar. <!-- arquitecto -->
@@ -61,14 +65,14 @@ function leerConstanciaBase(x: unknown): ConstanciaBase | null;
 
 ### 4. Pantallas
 
-- `/pactos`, en cada postulación pre-admitida: campo "Horas que te llevó" (`<input type="number">` con `<label>`) y "Marcar hecha". En `hecha`: "Hecha · esperando que <holón> verifique" y "Retirar". En `verificado`: "Horas verificadas por <holón>: N h · S Semillas". El aviso de "pidió revisar" con su motivo. Todo en `aria-live`.
-- `/pactos/responder`, sección "Tareas para verificar": tarea, persona (nombre o iniciales), horas pactadas y horas que dice, cuándo. "Verificar" y "Pedir revisar" (con motivo). El texto aclara qué se verifica: "Confirmás que la tarea quedó hecha y las horas que lleva".
-- Ficha de la tribu: `EstadoNecesidadPropio` suma "Hecha · esperando verificación", "Hecha por vos" y "Hecha" (otra persona, con verificación en el registro).
+- `/pactos`, en cada postulación pre-admitida: campo "Horas que te llevó" (`<input type="number">` con `<label>`) y "Marcar hecha". En `hecha`: "Hecha · esperando que <holón> verifique" y "Retirar". En `verificado`: "Horas verificadas por <holón>: N h · S Semillas"; si se aplicó un máximo, además "<C> h con Semillas · <X> h sin Semillas (máximo por persona: <tope>)". Las horas sin Semillas se muestran como horas verificadas, nunca se borran ni se muestran como 0. El aviso de "pidió revisar" con su motivo. Todo en `aria-live`.
+- `/pactos/responder`, sección "Tareas para verificar": una fila por persona (cada una verifica sus propias horas), con tarea, persona (nombre o iniciales), horas pactadas y horas que dice, el máximo por persona si hay ("Con el máximo de 10 h, 2 h no generan Semillas"), cuándo. "Verificar" y "Pedir revisar" (con motivo). El texto aclara qué se verifica: "Confirmás que la tarea quedó hecha y las horas que lleva".
+- Ficha de la tribu: `EstadoNecesidadPropio` suma "Hecha · esperando verificación" y "Hecha por vos" para la persona, y "La hicieron <N> personas" (o "La hizo 1 persona") con las verificaciones de otras personas en el registro. Eso no cierra la necesidad: si sigue abierta, otra persona se puede postular.
 
 ### 5. Semillas (`lib/semillas/estado.ts`)
 
 <!-- arquitecto (27-oct, se mantiene): el total mezcla una proyección (fijo) con horas verificadas (puntual). -->
-`SemillasDeComunidad` suma `puntual: Parte` (suma de `constancia.datos.semillas` de los puntuales `verificado`, o `null`) y `constancias: ConstanciaBase[]`. `total = totalConDato([tiempo, plata, puntual, presencia])`. La tarjeta rotula cada parte: "Pacto de tiempo: proyección de 3 meses" y "Pactos puntuales: horas verificadas por el holón". `pactoAceptado` sigue mirando solo el pacto recurrente: **un puntual nunca habilita la ronda** (decisión de Gus). Cada constancia se lista con la tarea (título en el idioma de la página; si la necesidad ya no existe, el id), horas, fecha (`creada_en`) y Semillas.
+`SemillasDeComunidad` suma `puntual: Parte` (suma de `constancia.datos.semillas` de los puntuales `verificado`, o `null`) y `constancias: ConstanciaBase[]`. `total = totalConDato([tiempo, plata, puntual, presencia])`. La tarjeta rotula cada parte: "Pacto de tiempo: proyección de 3 meses" y "Pactos puntuales: horas verificadas por el holón". `pactoAceptado` sigue mirando solo el pacto recurrente: **un puntual nunca habilita la ronda** (decisión de Gus). Cada constancia se lista con la tarea (título en el idioma de la página; si la necesidad ya no existe, el id), horas, las horas sin Semillas si las hay, fecha (`creada_en`) y Semillas. Son **Semillas** (recibidas): un puntual verificado no pasa por "Semillas pendientes", que son solo del compromiso recurrente (`pactos-horas-variables`). Cada persona ve solo sus propias constancias.
 
 ### 6. Eventos
 
@@ -82,6 +86,7 @@ No suma términos nuevos: el ⚖ `pactopuntual` de `pacto-puntual` ya dice que e
 
 - **La verificación es del navegador.** Igual que en `pactos-dos-partes`. En la base, la constancia base la emite **solo el servidor** al registrarse `pacto-confirma-horas` (ADR-020).
 - **Semillas sin ronda.** Una persona puede sumar Semillas solo con tareas sueltas. Es lo que decidió Gus: la verificación del holón es la validación. Las defensas de D13 acotan el abuso.
+- **Tope que cambia.** Si el holón cambia el máximo después de pre-admitir, vale el de la propuesta pre-admitida: se copia ahí (`pacto-puntual`) y de ahí a la constancia. Un tope en Semillas redondea las horas con Semillas hacia abajo (ver `tribu-necesidades`).
 - **Periodo mal puesto.** Cubierto con `mesDe` en hora de Argentina y `creada_en` = momento de la verificación.
 
 ## Revisión de arquitectura

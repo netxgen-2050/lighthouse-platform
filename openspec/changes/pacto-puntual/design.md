@@ -39,10 +39,11 @@ function puedeResponderPostulacion(sesion, propuesta): boolean;
 
 ### 3. Constancias de la postulación (sobre lo de `pactos-dos-partes`)
 
-- **Enviar** → `pacto-propone` con `afirma: persona:<idPersona>`, `sobre: puntual:<necesidadId>:<idPersona>`, `version: 1`, `datos`: `tipo: "puntual"`, `comunidad`, `necesidad`, `holon` (`idDeHolon`), `relacion` (`miembro` | `aspirante`, calculada al enviar), `rol`, `rolOtro`, `descripcion`, `horas`, `fecha`, `nombre` o `iniciales`, `proponeLider`.
+- **Enviar** → `pacto-propone` con `afirma: persona:<idPersona>`, `sobre: puntual:<necesidadId>:<idPersona>`, `version: 1`, `datos`: `tipo: "puntual"`, `comunidad`, `necesidad`, `holon` (`idDeHolon`), `relacion` (`miembro` | `aspirante`, calculada al enviar), `rol`, `rolOtro`, `descripcion`, `horas`, `fecha`, `topeUnidad` y `topeValor` (el máximo por persona de la necesidad al enviar, o vacíos si no tiene), `nombre` o `iniciales`, `proponeLider`.
 - **Pre-admitir** → `pacto-acepta`, `afirma: idDeHolon(holon)`, `por: <idPersona de quien administra>`, `apuntaA` la propuesta. **No pre-admitir** → `pacto-no-acepta` con `datos.motivo` (obligatorio, hasta 500 caracteres). **Retirar** → `revoca`, solo si sigue pendiente.
 - **Contraparte.** En `pactos-dos-partes` una propuesta está acordada si la acepta "la tribu". Se generaliza con `contraparteDe(propuesta)`: para `datos.tipo === "puntual"` es `datos.holon`; para el resto, como hoy. `pendientes` y `/pactos/responder` usan `puedeResponderPostulacion` para los puntuales.
-- **Una pre-admitida por necesidad.** `preadmitidaDe(lista, necesidadId)`: la `pacto-acepta` no revocada sobre una propuesta puntual de esa necesidad. Antes de escribir una pre-admisión se relee el registro (como §6 de `pactos-dos-partes`); si ya hay otra, no se escribe y quien responde ve "Esta tarea ya está tomada por otra persona".
+- **Varias pre-admitidas por necesidad** (decisión de Gus, 28-oct: una tarea la puede tomar más de una persona). `preadmitidasDe(lista, necesidadId)`: las `pacto-acepta` no revocadas sobre propuestas puntuales de esa necesidad, **una por persona** (el `sobre` ya es por persona). Antes de escribir una pre-admisión se relee el registro (como §6 de `pactos-dos-partes`); si **esa misma propuesta** ya tiene respuesta, no se escribe y quien responde ve "Esta postulación ya se respondió". Pre-admitir a una persona no toca las postulaciones de las demás.
+- **Máximo por persona.** El `tope` de la necesidad se copia a la propuesta al enviar (`datos.topeUnidad`, `datos.topeValor`); lo que vale después es el de la propuesta pre-admitida (lo que vio el holón), aunque el dato de ejemplo cambie.
 - **`sobre` sin `split`**: se arma completo (`puntual:${necesidadId}:${idPersona}`) y para "lo de esta persona" se usa `startsWith("puntual:") && endsWith(":" + idPersona)` (ids con `:`; §11 de `pactos-dos-partes`). Lo mismo en `quitarConstanciasDe` y en la descarga de "Mis datos", que ahora también miran `puntual:`.
 
 ### 4. Estado de la persona (`lib/pactos/estado.ts`)
@@ -54,6 +55,7 @@ type PactoPuntual = {
   rol: ClaveRol | ""; rolOtro: string; descripcion: string;
   horas: number | null;          // pactadas; null = la persona todavía no las puso
   fecha: string | null;          // "AAAA-MM-DD"
+  tope: TopePorPersona | null;   // de la necesidad al crear; al conciliar, el de la propuesta pre-admitida
   paso: PasoPuntual;
   noPreadmitida?: { motivo: string; cuando: string }; // último "no", para el aviso
 };
@@ -63,25 +65,25 @@ type PactosDeComunidad = { tiempo: PactoTiempo; aportes: number[]; puntuales: Pa
 - `HORAS_PUNTUAL = { min: 1, max: 200, paso: 1 }` en `lib/pactos/datos.ts`.
 - Acciones de la persona (puras): `nuevoPuntual { comunidad, necesidad }` (recibe la necesidad ya resuelta), `editarPuntual` (solo en borrador), `enviarPuntual` (solo en borrador y completo), `retirarPuntual` (solo en enviado), `descartarPuntual` (solo en borrador). `nuevoPuntual` no hace nada si ya hay uno con esa `necesidadId`.
 - **Respuestas del holón, solo por conciliación**: `preadmitirPuntual` (enviado → preadmitido) y `noPreadmitirPuntual { motivo, cuando }` (enviado → borrador con el aviso). Las llama `conciliar` cuando encuentra la respuesta en el registro compartido; la pantalla de la persona nunca. <!-- arquitecto (27-oct, se mantiene): cada acción vale solo en su paso; fuera de él devuelve el mismo estado, así una respuesta leída dos veces no aplica dos veces. -->
-- Lo que vale es lo que el holón vio: al conciliar una pre-admisión, rol, descripción, horas y fecha se toman de los `datos` de la propuesta aceptada.
+- Lo que vale es lo que el holón vio: al conciliar una pre-admisión, rol, descripción, horas, fecha y máximo por persona se toman de los `datos` de la propuesta aceptada.
 - `leer` agrega `puntuales: []` cuando falta y valida cada puntual (paso conocido, campos en rango; un `enviado`/`preadmitido` incompleto vuelve a borrador). Ids `__proto__` se ignoran como hoy.
 - `pactosAceptados` **no cambia** (solo el fijo).
 
 ### 5. Pantalla `/pactos`
 
 <!-- arquitecto (27-oct, se mantiene): la membresía se carga en un efecto; el borrador se crea recién cuando ya se leyó. -->
-- El parámetro `necesidad` se procesa **una sola vez y recién cuando la membresía ya se leyó**. Se despacha `nuevoPuntual` solo si: la necesidad existe y es de esa comunidad, `tomable(n)` (abierta y, si es de diseño, con aval), `aceptaFormato(comunidad, "puntual")`, `relacionConHolon(membresias, holonDe(n))` no es null y no hay otra postulación pre-admitida para esa necesidad. Si falla la relación: "Para postularte, primero sumate como aspirante a <tribu>" con enlace al manifiesto; si falla otra cosa: "Esa necesidad no se puede tomar". Los dos en una región `role="status"`. Después `router.replace` sin `necesidad`.
+- El parámetro `necesidad` se procesa **una sola vez y recién cuando la membresía ya se leyó**. Se despacha `nuevoPuntual` solo si: la necesidad existe y es de esa comunidad, `tomable(n)` (abierta y, si es de diseño, con aval), `aceptaFormato(comunidad, "puntual")`, `relacionConHolon(membresias, holonDe(n))` no es null. Que otras personas ya estén pre-admitidas no impide postularse. Si falla la relación: "Para postularte, primero sumate como aspirante a <tribu>" con enlace al manifiesto; si falla otra cosa: "Esa necesidad no se puede tomar". Los dos en una región `role="status"`. Después `router.replace` sin `necesidad`.
 - **Aspirantes en `/pactos`.** Hoy `/pactos` muestra "Solo miembros" para una comunidad donde la persona no es miembro. Se cambia solo esto: si la persona tiene puntuales en esa comunidad (o acaba de crear uno), se ve la sección "Mis postulaciones a tareas" con el texto "Sos aspirante a <tribu>: podés postularte a sus tareas; el pacto de tiempo es para miembros". El pacto fijo sigue pidiendo membresía.
-- Sección "Mis postulaciones a tareas": un `<article>` por puntual con título (enlace a `/tribus/<id>#necesidad-<nid>`), holón ("Responde: círculo Energía solar"), paso en texto, campos (rol, descripción, horas, fecha con `<input type="date">` y su `<label>`), "Enviar postulación", "Retirar y editar", "Descartar", y el aviso de no pre-admitida con su motivo.
+- Sección "Mis postulaciones a tareas": un `<article>` por puntual con título (enlace a `/tribus/<id>#necesidad-<nid>`), holón ("Responde: círculo Energía solar"), paso en texto, campos (rol, descripción, horas, fecha con `<input type="date">` y su `<label>`), el máximo por persona si la necesidad lo tiene ("Máximo por persona: 10 h · las horas de más no generan Semillas"), "Enviar postulación", "Retirar y editar", "Descartar", y el aviso de no pre-admitida con su motivo.
 
 ### 6. `/pactos/responder`
 
-- Sección nueva "Postulaciones a tareas", agrupada por holón que la persona puede responder. Cada una: quién se postula (nombre o iniciales; "miembro" o "aspirante"), tarea, horas, fecha, descripción, cuándo. Botones "Pre-admitir" y "No pre-admitir" (con motivo), como los de pactos. Si es la propia: "Es tu propia postulación: la responde otra persona que administre <holón> o el super admin".
+- Sección nueva "Postulaciones a tareas", agrupada por holón que la persona puede responder. Cada una: quién se postula (nombre o iniciales; "miembro" o "aspirante"), tarea, horas, fecha, descripción, cuándo, y cuántas personas ya pre-admitió ese holón para esa tarea ("Ya pre-admitiste a 1 persona para esta tarea"). Botones "Pre-admitir" y "No pre-admitir" (con motivo), como los de pactos. Si es la propia: "Es tu propia postulación: la responde otra persona que administre <holón> o el super admin".
 - En la ficha de la tribu, el contador de `pactos-dos-partes` ("Pactos para responder (N)") suma las postulaciones pendientes de esa tribu y de sus círculos.
 
 ### 7. Ficha de la tribu
 
-Componente cliente `EstadoNecesidadPropio` dentro de cada `<details>`: lee la membresía, la clave de pactos de la persona y el registro compartido. Muestra, en este orden: "<Tribu> por ahora no toma pactos puntuales"; el estado propio ("Tenés un borrador para postularte", "Te postulaste · esperando a <holón>", "Pre-admitida: es tuya", "<holón> no pre-admitió tu postulación"); "Tomada" si hay otra pre-admitida; "Esperando el aval de <holón>" (de `tribu-necesidades`); "Postularme para tomarla" (`EnlaceConCuenta`) si es miembro o aspirante; o "Para postularte, primero sumate como aspirante a <tribu>". Sin sesión, sin `localStorage` o con el registro ilegible, muestra lo de ejemplo y "Postularme para tomarla" (que pide entrar).
+Componente cliente `EstadoNecesidadPropio` dentro de cada `<details>`: lee la membresía, la clave de pactos de la persona y el registro compartido. Muestra, en este orden: "<Tribu> por ahora no toma pactos puntuales"; el estado propio ("Tenés un borrador para postularte", "Te postulaste · esperando a <holón>", "Pre-admitida: la tomaste", "<holón> no pre-admitió tu postulación"); "La tomaron <N> personas" si hay pre-admitidas de otras personas (junto con lo que sigue, no en su lugar); "Esperando el aval de <holón>" (de `tribu-necesidades`); "Postularme para tomarla" (`EnlaceConCuenta`) si es miembro o aspirante; o "Para postularte, primero sumate como aspirante a <tribu>". Sin sesión, sin `localStorage` o con el registro ilegible, muestra lo de ejemplo y "Postularme para tomarla" (que pide entrar).
 
 ### 8. Eventos
 
@@ -99,6 +101,7 @@ No hay revisión legal en el corto plazo (decisión de Gus, 28-oct). El texto se
 
 - **La verificación de quién responde es del navegador.** Igual que en `pactos-dos-partes`: aceptable en el prototipo interno; en la base, el servidor verifica que quien responde administra ese holón (P9).
 - **Quien lidera la tribu responde por sus círculos.** No es lo que dice la holarquía (cada círculo se gobierna), pero en el prototipo los círculos no tienen integrantes reales. Está aislado en una función.
+- **Muchas personas en una tarea.** Sin cupo, el holón podría pre-admitir más gente de la que hace falta; lo controla el holón al responder (ve cuántas pre-admitió) y el máximo por persona acota las Semillas de cada una. Un cupo queda como pregunta.
 - **Aspirantes con postulaciones.** Una persona que solo adhirió al manifiesto ya puede postularse; el filtro es la pre-admisión del holón. Es lo que pidió Gus.
 - **Leerse como empleo o como selección de personal.** Ver §9.
 
