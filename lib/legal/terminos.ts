@@ -351,6 +351,29 @@ export const TERMINOS = {
         "A statement that the commons (Lighthouse) recognizes a tribe, and that a tribe recognizes a person. It is kept as a record that is never edited: if it is withdrawn, another record is added that cancels it and the original stays visible. In the prototype it lives only in this browser and has no legal value; what effects a validation has is set by the legal design, which still has to be confirmed with the legal team.",
     },
   },
+  // Textos nuevos de la holarquía de la gobernanza, no vienen del mock-up: borradores a revisar antes de cualquier uso real.
+  dobleenlace: {
+    titulo: "Doble enlace",
+    texto:
+      "Cada tribu manda un enlace al consejo y el común manda un enlace a cada tribu, así lo que se decide arriba y lo que se decide abajo se conectan en las dos direcciones. En el prototipo nadie fue elegido: los enlaces que ves son de ejemplo. Cómo se eligen y qué pueden hacer lo define el reglamento, que todavía no existe.",
+    borrador: true,
+    en: {
+      titulo: "Double link",
+      texto:
+        "Each tribe sends a link to the council and the commons sends a link to each tribe, so what is decided above and what is decided below are connected in both directions. In the prototype nobody was elected: the links you see are examples. How they are chosen and what they can do is set by the rules, which do not exist yet.",
+    },
+  },
+  dominio: {
+    titulo: "Decide sobre (dominio)",
+    texto:
+      "Lo que un círculo decide sin pedir permiso arriba. Los temas que figuran en esta página son de ejemplo: el reglamento real lo define el diseño legal, que todavía hay que confirmar con el equipo legal.",
+    borrador: true,
+    en: {
+      titulo: "Decides about (domain)",
+      texto:
+        "What a circle decides without asking for permission above. The topics on this page are examples: the real rules are set by the legal design, which still has to be confirmed with the legal team.",
+    },
+  },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
   seriemadre: {
     titulo: "Serie Madre",

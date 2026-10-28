@@ -21,8 +21,10 @@ import {
   votosDe,
 } from "@/lib/fogon/consultas/reparto";
 import { costo } from "@/lib/cuadratico/motor";
-import { ETIQUETA_AMBITO, ETIQUETA_ESTADO, ETIQUETA_MODO, ETIQUETA_VOTO, type VistaConsulta } from "@/lib/fogon/consultas/tipos";
-import { Acta, QuienFalta, ResultadoDelGrupo, TablaDeRepartos } from "./resultado-grupo";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
+import { textoEn } from "@/lib/idioma/tipos";
+import type { VistaConsulta } from "@/lib/fogon/consultas/tipos";
+import { Acta, QuienFalta, ResultadoDelGrupo, TablaDeRepartos, useTextosDonut } from "./resultado-grupo";
 
 // El reparto guardado queda solo en este navegador: no hay pedidos de red.
 
@@ -35,6 +37,11 @@ const CHIP = "rounded-full border border-faint px-3 py-0.5 text-sm";
 const CAJA = "grid gap-3 rounded-xl border border-faint bg-surface p-4";
 
 export function ConsultaCliente({ id }: { id: string }) {
+  const idioma = useIdioma();
+  const t = useTextos("fogonConsultas");
+  const c = t.consulta;
+  const comunes = useTextos("comunes");
+  const textosDonut = useTextosDonut();
   const repo = useMemo(() => repositorioConsultas(), []);
   const [lectura, setLectura] = useState<Lectura<VistaConsulta> | null>(null);
   const [reparto, setReparto] = useState<Reparto>({});
@@ -76,8 +83,8 @@ export function ConsultaCliente({ id }: { id: string }) {
   if (!lectura) {
     return (
       <>
-        <h1 className="text-3xl font-semibold">Consulta</h1>
-        <p className="mt-2 text-muted">Cargando la consulta…</p>
+        <h1 className="text-3xl font-semibold">{t.pagina.tituloConsulta}</h1>
+        <p className="mt-2 text-muted">{c.cargando}</p>
         {region}
       </>
     );
@@ -85,7 +92,7 @@ export function ConsultaCliente({ id }: { id: string }) {
   if (!lectura.ok) {
     return (
       <>
-        <h1 className="text-3xl font-semibold">Consulta</h1>
+        <h1 className="text-3xl font-semibold">{t.pagina.tituloConsulta}</h1>
         <div className="mt-3">
           <ErrorDeLectura error={lectura.error} />
         </div>
@@ -100,15 +107,16 @@ export function ConsultaCliente({ id }: { id: string }) {
   const sinGuardar = !mismoReparto(reparto, vista.miReparto ?? {});
   const enPlata = repartoEnPlata(consulta, reparto);
   const restantes = creditosRestantes(reparto);
+  const traducido = idioma !== (consulta.titulo.original ?? "es");
 
   function cambiar(opcionId: string, delta: 1 | -1) {
     const siguiente = mover(consulta, reparto, opcionId, delta);
     if (siguiente === reparto) return;
     setReparto(siguiente);
     setErrorGuardar(null);
-    const etiqueta = consulta.opciones.find((o) => o.id === opcionId)!.etiqueta;
+    const etiqueta = textoEn(consulta.opciones.find((o) => o.id === opcionId)!.etiqueta, idioma);
     const v = votosDe(siguiente, opcionId);
-    anunciar(`${etiqueta}: ${textoVotos(v)}, ${textoCreditos(costo(v))}. Te quedan ${creditosRestantes(siguiente)}.`);
+    anunciar(t.anuncios.voto(etiqueta, textoVotos(v, idioma), textoCreditos(costo(v), idioma), creditosRestantes(siguiente)));
   }
 
   async function guardar() {
@@ -116,17 +124,18 @@ export function ConsultaCliente({ id }: { id: string }) {
     if (r.ok) {
       setErrorGuardar(null);
       await recargar(true);
-      anunciar("Tu reparto quedó guardado (simulado).");
+      anunciar(t.anuncios.guardado);
       return;
     }
+    const e = t.errorGuardar;
     const texto =
       r.error === "cerrada"
-        ? "La consulta ya cerró: no se puede guardar el reparto."
+        ? e.cerrada
         : r.error === "sin-sesion"
-          ? "Entrá para guardar tu reparto."
+          ? e.sinSesion
           : r.error === "invalido"
-            ? `Tu reparto no es válido: ${(r.motivos ?? []).join(", ") || "revisalo"}.`
-            : "No pudimos guardar tu reparto. Probá de nuevo.";
+            ? e.invalido((r.motivos ?? []).map((m) => t.motivos[m]).join(", ") || e.revisalo)
+            : e.falla;
     setErrorGuardar(texto);
     if (r.error === "cerrada") await recargar(false);
   }
@@ -134,18 +143,18 @@ export function ConsultaCliente({ id }: { id: string }) {
   async function cerrar() {
     const r = await repo.cerrar(id);
     await recargar(true);
-    anunciar(r.ok ? "Consulta cerrada (simulado)." : "No se pudo cerrar la consulta.");
+    anunciar(r.ok ? t.anuncios.cerrado : t.anuncios.noCerro);
   }
 
   async function reabrir() {
     const r = await repo.reabrir?.(id);
     await recargar(true);
-    anunciar(r?.ok ? "Consulta abierta de nuevo (simulado)." : "No se pudo volver a abrir la consulta.");
+    anunciar(r?.ok ? t.anuncios.reabierto : t.anuncios.noReabrio);
   }
 
   const porciones = consulta.opciones.map((o) => ({
     id: o.id,
-    etiqueta: o.etiqueta,
+    etiqueta: textoEn(o.etiqueta, idioma),
     valor: costo(votosDe(reparto, o.id)),
   }));
   const usados = creditosUsados(reparto);
@@ -155,75 +164,75 @@ export function ConsultaCliente({ id }: { id: string }) {
   return (
     <div className="grid gap-5">
       <header className="grid gap-2">
-        <p className="text-sm font-medium text-muted">Fogón · consulta</p>
-        <h1 className="text-3xl font-semibold">{consulta.titulo}</h1>
-        <p className="max-w-2xl text-muted">{consulta.descripcion}</p>
+        <p className="text-sm font-medium text-muted">{c.sobretitulo}</p>
+        <div>
+          <h1 className="text-3xl font-semibold">{textoEn(consulta.titulo, idioma)}</h1>
+          {traducido && <p className="text-xs text-muted">{comunes.traducidoDelOriginal}</p>}
+        </div>
+        <p className="max-w-2xl text-muted">{textoEn(consulta.descripcion, idioma)}</p>
         <p className="flex flex-wrap gap-2">
-          <span className={CHIP}>{ETIQUETA_MODO[consulta.modo]}</span>
-          <span className={CHIP}>{ETIQUETA_AMBITO[consulta.ambito]}</span>
-          <span className={CHIP}>{ETIQUETA_VOTO[consulta.voto]}</span>
-          <span className={`${CHIP} ${cerrada ? "text-muted" : "border-deep text-deep"}`}>{ETIQUETA_ESTADO[vista.estado]}</span>
+          <span className={CHIP}>{t.modo[consulta.modo]}</span>
+          <span className={CHIP}>{t.ambito[consulta.ambito]}</span>
+          <span className={CHIP}>{t.voto[consulta.voto]}</span>
+          <span className={`${CHIP} ${cerrada ? "text-muted" : "border-deep text-deep"}`}>{t.estado[vista.estado]}</span>
         </p>
-        <p className="text-sm">{textoCierre(consulta, vista.estado)}</p>
+        <p className="text-sm">{textoCierre(consulta, vista.estado, idioma)}</p>
         {monto && (
           <p className="text-sm">
-            <span className="font-medium">Monto a repartir: {formatoPlata(monto.montoCentavos, monto.moneda)}</span>
-            {monto.nota && <span className="block text-muted">{monto.nota}</span>}
+            <span className="font-medium">{c.monto(formatoPlata(monto.montoCentavos, monto.moneda, idioma))}</span>
+            {monto.nota && <span className="block text-muted">{textoEn(monto.nota, idioma)}</span>}
           </p>
         )}
-        <p className="text-sm text-muted">{textoVoto(consulta)}</p>
+        <p className="text-sm text-muted">{textoVoto(consulta, idioma)}</p>
       </header>
 
       <section aria-labelledby="h-mi-reparto" className={CAJA}>
-        <h2 id="h-mi-reparto" className="font-semibold">Mi reparto</h2>
+        <h2 id="h-mi-reparto" className="font-semibold">{c.miReparto}</h2>
 
         {cerrada ? (
           <p className="text-sm">
-            La consulta está cerrada: tu reparto se ve solo para leer.
-            {!vista.miReparto && " No repartiste en esta consulta."}
+            {c.cerradaSoloLeer}
+            {!vista.miReparto && ` ${c.noRepartiste}`}
           </p>
         ) : (
           <>
             {consulta.voto === "abierto" ? (
               <p id={idAviso} className="rounded-lg border border-gold bg-warn-bg px-3 py-2 text-sm text-warn-ink">
                 <span aria-hidden="true">ⓘ </span>
-                <strong>Tu reparto lo va a ver todo el padrón</strong>{" "}
-                {consulta.resultadoVisible === "al-votar" ? "en cuanto lo guardes." : "cuando cierre la consulta."}
+                <strong>{c.abiertoNegrita}</strong>{" "}
+                {consulta.resultadoVisible === "al-votar" ? c.abiertoAlVotar : c.abiertoAlCierre}
               </p>
             ) : (
               <p id={idAviso} className="rounded-lg border border-faint bg-surface-2 px-3 py-2 text-sm">
                 <span aria-hidden="true">ⓘ </span>
-                Voto secreto: nadie ve tu reparto, solo el resultado del grupo.
+                {c.secretoAviso}
               </p>
             )}
-            <p className="text-sm text-muted">
-              Poner n votos en una opción cuesta n² créditos: el primero cuesta 1, el segundo 3, el tercero 5.
-            </p>
+            <p className="text-sm text-muted">{c.costoCuadratico}</p>
           </>
         )}
 
-        <Medidor titulo="Créditos usados" actual={usados} tope={CREDITOS_POR_PERSONA} />
-        <p className="font-medium">
-          Te quedan {restantes} de {CREDITOS_POR_PERSONA} créditos
-        </p>
+        <Medidor titulo={c.creditosUsados} actual={usados} tope={CREDITOS_POR_PERSONA} />
+        <p className="font-medium">{c.quedan(restantes, CREDITOS_POR_PERSONA)}</p>
 
         <ul className="grid gap-3">
           {consulta.opciones.map((o) => {
             const v = votosDe(reparto, o.id);
-            const bloqueoMas = motivoNoSumar(reparto, o.id);
-            const bloqueoMenos = motivoNoQuitar(consulta, reparto, o.id);
+            const bloqueoMas = motivoNoSumar(reparto, o.id, idioma);
+            const bloqueoMenos = motivoNoQuitar(consulta, reparto, o.id, idioma);
             const idMas = `mas-${o.id}`;
             const idMenos = `menos-${o.id}`;
             const plata = enPlata[o.id];
+            const etiqueta = textoEn(o.etiqueta, idioma);
             return (
               <li key={o.id} className="grid gap-1 border-t border-faint pt-3 first:border-t-0 first:pt-0">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <span className="font-medium">{o.etiqueta}</span>
+                  <span className="font-medium">{etiqueta}</span>
                   <span className="flex items-center gap-2">
                     {!cerrada && (
                       <button
                         type="button"
-                        aria-label={`Quitar un voto a ${o.etiqueta}`}
+                        aria-label={c.quitar(etiqueta)}
                         aria-disabled={bloqueoMenos ? "true" : undefined}
                         aria-describedby={bloqueoMenos ? idMenos : undefined}
                         onClick={() => cambiar(o.id, -1)}
@@ -233,12 +242,12 @@ export function ConsultaCliente({ id }: { id: string }) {
                       </button>
                     )}
                     <span className="min-w-36 text-center">
-                      {textoVotos(v)} · {textoCreditos(costo(v))}
+                      {textoVotos(v, idioma)} · {textoCreditos(costo(v), idioma)}
                     </span>
                     {!cerrada && (
                       <button
                         type="button"
-                        aria-label={`Sumar un voto a ${o.etiqueta}`}
+                        aria-label={c.sumar(etiqueta)}
                         aria-disabled={bloqueoMas ? "true" : undefined}
                         aria-describedby={bloqueoMas ? idMas : undefined}
                         onClick={() => cambiar(o.id, 1)}
@@ -262,8 +271,7 @@ export function ConsultaCliente({ id }: { id: string }) {
                 )}
                 {consulta.modo === "presupuesto" && monto && (
                   <p className="text-sm text-muted">
-                    Con tu reparto irían{plata === null || plata === undefined ? ": " : " "}
-                    {formatoPlata(plata ?? null, monto.moneda)}
+                    {plata === null || plata === undefined ? c.irianSinDato : c.irianConDato(formatoPlata(plata, monto.moneda, idioma))}
                   </p>
                 )}
               </li>
@@ -272,25 +280,28 @@ export function ConsultaCliente({ id }: { id: string }) {
         </ul>
 
         <Donut
-          titulo="Mis créditos"
+          titulo={c.misCreditos}
           porciones={porciones}
-          resto={{ etiqueta: "Sin usar", valor: restantes }}
-          formatoValor={(n) => textoCreditos(n)}
+          resto={{ etiqueta: c.sinUsar, valor: restantes }}
+          formatoValor={(n) => textoCreditos(n, idioma)}
+          sinDato={t.donut.sinDato}
+          columnaEtiqueta={t.donut.opcion}
+          textos={textosDonut}
         />
 
         {!cerrada && (
           <div className="flex flex-wrap items-center gap-3">
             <button type="button" onClick={guardar} aria-describedby={idAviso} className={BOTON_PRINCIPAL}>
-              Guardar mi reparto
+              {c.guardar}
             </button>
             {sinGuardar && (
               <span className={`${CHIP} border-gold text-warn-ink`}>
-                <span aria-hidden="true">● </span>Sin guardar
+                <span aria-hidden="true">● </span>{c.sinGuardar}
               </span>
             )}
             {!sinGuardar && vista.miReparto && (
               <span className="text-sm text-muted">
-                <span aria-hidden="true">✓ </span>Guardado
+                <span aria-hidden="true">✓ </span>{c.guardado}
               </span>
             )}
           </div>
@@ -310,13 +321,13 @@ export function ConsultaCliente({ id }: { id: string }) {
 
       {(vista.puedeCerrar || (cerrada && vista.cierreManual && repo.reabrir)) && (
         <section aria-labelledby="h-simulacion" className={CAJA}>
-          <h2 id="h-simulacion" className="font-semibold">Simulación</h2>
-          <p className="text-sm text-muted">Solo para probar el prototipo: el cierre queda en este navegador.</p>
+          <h2 id="h-simulacion" className="font-semibold">{c.simulacion}</h2>
+          <p className="text-sm text-muted">{c.simulacionTexto}</p>
           <div>
             {vista.puedeCerrar ? (
-              <button type="button" onClick={cerrar} className={BOTON_SUAVE}>Simular el cierre</button>
+              <button type="button" onClick={cerrar} className={BOTON_SUAVE}>{c.simularCierre}</button>
             ) : (
-              <button type="button" onClick={reabrir} className={BOTON_SUAVE}>Volver a abrir (simulado)</button>
+              <button type="button" onClick={reabrir} className={BOTON_SUAVE}>{c.reabrir}</button>
             )}
           </div>
         </section>

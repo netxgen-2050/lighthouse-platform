@@ -55,10 +55,10 @@ test.describe("Fogón en inglés", () => {
   test("sin residencia cargada no pide el dato en inglés", async ({ page }) => {
     await page.goto("/fogon");
     await expect(page.getByText("No data on your residency")).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Vote" })).toHaveCount(7);
+    await expect(page.getByRole("button", { name: "Vote" })).toHaveCount(9);
   });
 
-  const cisterna = (page: Page) => decision(page, /cistern/);
+  const cisterna = (page: Page) => decision(page, /Ask the Common Fund for a cistern/);
 
   test("quien no lidera Valle Solar no ve Take to the council", async ({ page }) => {
     await page.goto("/fogon");
@@ -115,6 +115,7 @@ test.describe("Compromisos y Mercado en inglés", () => {
 
   test("la validación se lee en inglés, queda asociada al campo y el foco va a ese campo", async ({ page }) => {
     await expect(page.getByRole("heading", { level: 1, name: "Commitments" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Commitments" })).toHaveCount(0);
     await page.getByRole("button", { name: "Register" }).click();
     const campo = page.getByLabel("Description");
     await expect(page.getByText("Error: Write a description.")).toBeVisible();

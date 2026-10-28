@@ -12,6 +12,7 @@ import {
   type Almacen,
 } from "./consentimiento";
 import { exportarMisDatos, nombreArchivoDatos } from "./exportar";
+import { DATOS_POR_PANTALLA, FINALIDADES, RESUMEN } from "./politica";
 
 function almacen(inicial: Record<string, string> = {}): Almacen & { datos: Map<string, string> } {
   const datos = new Map(Object.entries(inicial));
@@ -170,5 +171,16 @@ describe("exportar mis datos", () => {
 
   it("el nombre del archivo lleva la fecha", () => {
     expect(nombreArchivoDatos(AHORA)).toBe("mis-datos-lighthouse-2026-10-14.json");
+  });
+});
+
+describe("la política sin Compromisos", () => {
+  it("ni el resumen, ni la tabla, ni las finalidades nombran los compromisos", () => {
+    const textos = [...RESUMEN, ...DATOS_POR_PANTALLA.flatMap((d) => [d.pantalla, d.datos, d.donde]), ...FINALIDADES];
+    expect(textos.filter((t) => /compromiso/i.test(t))).toEqual([]);
+  });
+
+  it("la versión no cambia: la edición solo redujo lo descrito", () => {
+    expect(VERSION_POLITICA).toBe("2026-10-14-borrador");
   });
 });

@@ -51,7 +51,7 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "lib/gobernanza/datos.ts": {
     estado: "pendiente",
-    que: "Nombres de los círculos de ejemplo de cada tribu y del círculo transversal, con su inglés",
+    que: "Nombres, propósitos y 'Decide sobre' de los círculos de ejemplo del común, de cada tribu y del círculo transversal, con su inglés",
   },
   "lib/tribus/datos.ts": {
     estado: "pendiente",
@@ -88,6 +88,14 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   "textos/fogon": {
     estado: "pendiente",
     que: "Fogón: encabezado, enlace a Cómo decidimos, filtros por ámbito (Círculo, Tribu, común, Consejo, Fideicomiso), opciones de voto, motivos para no votar, llevar al consejo, acta de ejemplo y ayudas (\"Fideicomiso\" = Trust)",
+  },
+  "textos/fogonConsultas": {
+    estado: "pendiente",
+    que: "Consultas del Fogón: lista, reparto de créditos con voto cuadrático, voto abierto o secreto, padrón, resultado por grupo, acta de ejemplo, gráfico de dona y errores de lectura",
+  },
+  "lib/fogon/consultas/ejemplo.ts": {
+    estado: "pendiente",
+    que: "Consultas de ejemplo del Fogón (título, descripción, opciones y nota del monto) con su inglés, traducidas del español",
   },
   "textos/compromisos": {
     estado: "pendiente",
@@ -163,6 +171,7 @@ export function fuentesObligatorias(): string[] {
     "lib/semillas/datos.ts",
     "lib/pactos/datos.ts",
     "lib/fogon/datos.ts",
+    "lib/fogon/consultas/ejemplo.ts",
     "lib/compromisos/mercado.ts",
     "lib/economia/terminos.ts",
   ];

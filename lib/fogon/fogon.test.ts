@@ -128,13 +128,17 @@ describe("filtro", () => {
     expect(filtrar("fideicomiso").map((d) => d.id)).toEqual(["presupuesto"]);
   });
   it("sin filtro están todas", () => {
-    expect(filtrar(null)).toHaveLength(8);
+    expect(filtrar(null)).toHaveLength(10);
   });
   it("cada ámbito deja sus decisiones", () => {
     expect(filtrar("circulo").map((d) => d.id)).toEqual(["siembra"]);
     expect(filtrar("tribu").map((d) => d.id)).toEqual(["huerta", "facilitador", "cisterna"]);
-    expect(filtrar("comun").map((d) => d.id)).toEqual(["bomba", "animales"]);
-    expect(filtrar("consejo").map((d) => d.id)).toEqual(["consejo-bomba"]);
+    expect(filtrar("comun").map((d) => d.id)).toEqual(["bomba", "animales", "regalia"]);
+    expect(filtrar("consejo").map((d) => d.id)).toEqual(["consejo-bomba", "cisterna-compartida"]);
+  });
+  it("filtrar por el común incluye la regalía y por el consejo la cisterna compartida", () => {
+    expect(filtrar("comun").map((d) => d.titulo.es)).toContain("Parámetros de la regalía de regeneración");
+    expect(filtrar("consejo").map((d) => d.titulo.es)).toContain("Cisterna compartida entre Agua Clara y Valle Solar");
   });
   it("el común trae las dos decisiones del mock-up, cada una con su regla y su ⚖", () => {
     for (const d of filtrar("comun")) {

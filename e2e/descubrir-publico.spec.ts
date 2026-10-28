@@ -83,7 +83,9 @@ test.describe("navegación sin sesión", () => {
     for (const nombre of ["Inicio", "Territorio", "Tribus", "Sumarte"]) {
       await expect(rail(page).getByRole("link", { name: nombre, exact: true })).toBeVisible();
     }
-    for (const nombre of ["Pactos", "Semillas", "Fogón", "Compromisos"]) {
+    await expect(rail(page).getByRole("link", { name: "Compromisos", exact: true })).toHaveCount(0);
+    await expect(rail(page).getByRole("link", { name: "Sumate para participar: Compromisos" })).toHaveCount(0);
+    for (const nombre of ["Pactos", "Semillas", "Fogón"]) {
       const bloqueado = rail(page).getByRole("link", { name: nombre, exact: true });
       await expect(bloqueado).toHaveAttribute("aria-disabled", "true");
       await expect(bloqueado).not.toHaveAttribute("href", /.*/);
