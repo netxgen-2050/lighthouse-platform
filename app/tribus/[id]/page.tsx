@@ -16,6 +16,7 @@ import { destinosDisponibles } from "@/lib/navegacion";
 import { buscarTribu, buscarTribuBilingue, listarTribus, rutaProponerComunidad } from "@/lib/tribus/datos";
 import { MembresiaAcciones } from "@/components/membresia-acciones";
 import { VerBarrio } from "./acciones";
+import { Necesidades } from "./necesidades";
 
 export const dynamicParams = false;
 
@@ -157,7 +158,7 @@ export default async function TribuPage({ params }: Props) {
         </section>
         <section className={tarjeta}>
           <h2 className="text-lg font-semibold">{f.loQueBusca}</h2>
-          <Etiquetas items={t.busca} />
+          <Necesidades tribuId={t.id} tribuNombre={t.nombre} idioma={idioma} />
           {t.areas && (
             <>
               <h3 className="text-sm font-medium">{f.areas}</h3>

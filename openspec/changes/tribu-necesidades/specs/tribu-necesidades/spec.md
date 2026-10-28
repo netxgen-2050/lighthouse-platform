@@ -65,6 +65,43 @@ Una necesidad MAY tener un máximo por persona, en horas o en Semillas (entero p
 - **WHEN** se abre en `/tribus/valle` la necesidad "Bioconstrucción"
 - **THEN** no hay ninguna línea de máximo por persona
 
+### Requirement: Máximo total de la tarea
+Una necesidad MAY tener además un máximo total, en horas o en Semillas (entero positivo), que suma a todas las personas y que pone quien administra su holón (decisión de Gus, 28-oct). Con máximo total, la ficha SHALL mostrar "Máximo total de la tarea: <N> h" o "Máximo total de la tarea: <N> Semillas" con la aclaración de que lo que pasa del total no genera Semillas; sin máximo total, MUST NOT mostrar esa línea. El cálculo SHALL ser una función pura que, dadas las horas de cada persona en el orden en que se verificaron, el máximo por persona, el máximo total y el valor de la hora, aplica primero el máximo de cada persona y después lo que queda del total; el total MUST NOT superarse. Un máximo por persona mayor que el total, en la misma unidad, MUST rechazarse en la validación de los datos.
+
+#### Scenario: Máximo total en horas
+- **WHEN** se reparten 12 h, 10 h y 6 h entre tres personas en `valle-solar` (10 h por persona, 20 h en total)
+- **THEN** reciben Semillas por 10 h, 10 h y 0 h, y 2 h, 0 h y 6 h quedan sin Semillas
+
+#### Scenario: Máximo total en Semillas
+- **WHEN** se reparten 16 h a cada una de tres personas en `agua-plomeria` (60 Semillas por persona, 150 en total)
+- **THEN** reciben 60, 60 y 30 Semillas
+
+#### Scenario: Se ve en la ficha
+- **WHEN** se abre en `/tribus/valle` la necesidad "Energía solar"
+- **THEN** se lee "Máximo total de la tarea: 20 h"
+
+#### Scenario: Sin máximo total
+- **WHEN** se abre en `/tribus/semilla` la necesidad "Riego"
+- **THEN** no hay ninguna línea de máximo total
+
+### Requirement: Quién administra un círculo transversal
+Los círculos transversales SHALL ser administrados y facilitados por Hifa (la IA), según la decisión de Gus del 28-oct. En el prototipo esto SHALL ser simulado y estar marcado como experimental: la ficha de una necesidad de un círculo transversal MUST mostrar "Lo administra y facilita Hifa (experimental, ejemplo)" y que, si Hifa no está disponible, responde el super admin como respaldo humano. Los demás holones los administran personas. La decisión definitiva depende de probar que Hifa sea estable y fiable; hasta entonces MUST NOT presentarse como definitiva.
+
+#### Scenario: Círculo transversal
+- **WHEN** se abre en `/tribus/valle` la necesidad "Eventos y comunidad"
+- **THEN** se lee que la administra y facilita Hifa (experimental, ejemplo) y que, si no está disponible, responde el super admin
+
+#### Scenario: Círculo de la tribu
+- **WHEN** se abre en `/tribus/valle` la necesidad "Energía solar"
+- **THEN** no se nombra a Hifa
+
+### Requirement: Nombres de las Semillas
+Los textos nuevos SHALL llamar a lo pendiente "Semillas pendientes" y a lo recibido "Semillas"; MUST NOT usar "brotes" ni "germinar". En inglés "Semillas" no se traduce.
+
+#### Scenario: Sin otros nombres
+- **WHEN** se abre cualquier necesidad con máximo
+- **THEN** el texto dice "Semillas" y no aparece "brotes" ni "germinar"
+
 ### Requirement: Necesidad dentro de un círculo
 Una necesidad MAY pertenecer a un círculo. Si lo tiene, el círculo MUST ser uno de los círculos de su tribu (`circulosDe`) o un círculo transversal en cuyas `tribus` figura su tribu, y la ficha SHALL mostrar "Círculo: <nombre>" en el idioma de la página. Si no tiene, la ficha MUST NOT mostrar la línea del círculo.
 

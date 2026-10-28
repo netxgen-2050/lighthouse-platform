@@ -37,7 +37,7 @@ test.describe("tribus en inglés", () => {
     await expect(page.getByRole("heading", { level: 2, name: "What it has" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: "What it is looking for" })).toBeVisible();
     await expect(page.getByText("Vegetable garden")).toBeVisible();
-    await expect(page.getByText("Solar energy", { exact: true })).toBeVisible();
+    await expect(page.locator("summary", { hasText: "Solar energy" })).toBeVisible();
     await expect(page.getByText("Two calls, a weekend living together and the consent of the group.")).toBeVisible();
     await expect(page.getByText("Civil association")).toBeVisible();
     await expect(page.getByText("Funds pledged")).toBeVisible();
