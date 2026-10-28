@@ -12,6 +12,46 @@ export async function conIdentidadVerificada(page: Page) {
 }
 
 /**
+ * SIEMBRA DE TEST (no es un flujo de la app): escribe en `compartido:pactos-constancias` la respuesta de la tribu a la
+ * última propuesta pendiente y recarga la página, como si quien lidera hubiera respondido desde `/pactos/responder`.
+ * Los tests que solo necesitan "un pacto aceptado" (Semillas, Mi recorrido, axe) la usan para no repetir el cambio de persona;
+ * el flujo real de las dos personas se prueba en `e2e/pactos-dos-partes.spec.ts`.
+ */
+export async function sembrarRespuestaDeLaTribu(
+  page: Page,
+  respuesta: "acepta" | "no-acepta",
+  motivo = "Por ahora no puede ser",
+) {
+  await page.evaluate(
+    ([esquema, texto]) => {
+      type C = { id: string; esquema: string; sobre: string; version: number; apuntaA: string | null };
+      const clave = "compartido:pactos-constancias";
+      const lista = JSON.parse(window.localStorage.getItem(clave) ?? "[]") as C[];
+      const respondida = (c: C) => lista.some((r) => (r.esquema === "pacto-acepta" || r.esquema === "pacto-no-acepta") && r.apuntaA === c.id);
+      const revocada = (c: C) => lista.some((r) => r.esquema === "revoca" && r.apuntaA === c.id);
+      const propuesta = [...lista].reverse().find((c) => c.esquema === "pacto-propone" && !respondida(c) && !revocada(c));
+      if (!propuesta) throw new Error("No hay una propuesta pendiente para responder");
+      const comunidad = propuesta.sobre.slice("pacto:".length).split(":")[0];
+      lista.push({
+        id: `p${lista.length + 1}-${esquema}`,
+        esquema,
+        afirma: comunidad === "lighthouse" ? "comunidad:lighthouse" : `tribu:${comunidad}`,
+        por: "prueba:tribu-de-prueba@prueba.test",
+        sobre: propuesta.sobre,
+        version: propuesta.version,
+        apuntaA: propuesta.id,
+        cuando: new Date().toISOString(),
+        revocable: esquema === "pacto-acepta",
+        datos: esquema === "pacto-no-acepta" ? { motivo: texto } : {},
+      } as C & Record<string, unknown>);
+      window.localStorage.setItem(clave, JSON.stringify(lista));
+    },
+    [`pacto-${respuesta}`, motivo] as const,
+  );
+  await page.reload();
+}
+
+/**
  * Pedidos de infraestructura de terceros que no son la app ni llevan datos de la persona:
  * la barra de Vercel en los previews (vercel.live) y el SDK de login (Privy y WalletConnect).
  * Los tests de "sin pedidos de red" los ignoran.

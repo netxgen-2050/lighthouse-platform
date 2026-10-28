@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "./fixtura";
-import { conIdentidadVerificada, ignorarEnSinRed } from "./ayudas";
+import { conIdentidadVerificada, ignorarEnSinRed, sembrarRespuestaDeLaTribu } from "./ayudas";
 
 async function comoMiembro(page: Page, comunidades: string[] = ["lighthouse"]) {
   await page.addInitScript((ids) => {
@@ -87,15 +87,19 @@ test("no se puede enviar sin rol y descripción", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Enviar a la comunidad" })).toBeEnabled();
 });
 
-test("enviar, aceptar y seguir aceptado al recargar", async ({ page }) => {
+test("enviar, esperar a la tribu, ver el pacto aceptado y seguir aceptado al recargar", async ({ page }) => {
   await comoMiembro(page);
   await page.goto("/pactos");
   await expect(page.getByText("Pacto aceptado")).toHaveCount(0);
   await llenarPacto(page);
   await page.getByRole("button", { name: "Enviar a la comunidad" }).click();
   await expect(page.getByRole("listitem").filter({ hasText: "Enviado a la comunidad" })).toHaveAttribute("aria-current", "step");
-  await page.getByRole("button", { name: "Simular: la comunidad acepta" }).click();
+  // La persona ya no se acepta a sí misma: espera la respuesta de la comunidad.
+  await expect(page.getByText("Esperando la respuesta de Lighthouse")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Simular/ })).toHaveCount(0);
+  await sembrarRespuestaDeLaTribu(page, "acepta");
   await expect(page.getByText("Pacto aceptado")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Qué significa legalmente: Pacto aceptado por las dos partes/ })).toBeVisible();
   await expect(page.getByRole("listitem").filter({ hasText: "Aceptado por quien administra la comunidad" })).toHaveAttribute(
     "aria-current",
     "step",
@@ -123,7 +127,7 @@ async function pactoAceptado(page: Page) {
   await page.goto("/pactos");
   await llenarPacto(page);
   await page.getByRole("button", { name: "Enviar a la comunidad" }).click();
-  await page.getByRole("button", { name: "Simular: la comunidad acepta" }).click();
+  await sembrarRespuestaDeLaTribu(page, "acepta");
   await expect(page.getByText("Pacto aceptado")).toBeVisible();
 }
 
@@ -148,14 +152,15 @@ test("proponer un cambio: la versión vigente sigue en Semillas hasta que se ace
     "aria-current",
     "step",
   );
-  await expect(cambio.getByRole("button", { name: "Simular: la comunidad acepta el cambio" })).toBeFocused();
+  await expect(cambio.getByText("Esperando la respuesta de Lighthouse")).toBeFocused();
+  await expect(page.getByRole("button", { name: /Simular/ })).toHaveCount(0);
   // Mientras tanto, Semillas sigue con 10 h/mes.
   await expect(page.getByText("Compromiso mensual: 10 h/mes")).toBeVisible();
   await expect(page.getByTestId("semillas-mes")).toHaveText("50 semillas");
   await page.goto("/semillas");
   await expect(page.getByTestId("total-lighthouse")).toHaveText("150 semillas");
   await page.goto("/pactos");
-  await page.getByRole("button", { name: "Simular: la comunidad acepta el cambio" }).click();
+  await sembrarRespuestaDeLaTribu(page, "acepta");
   await expect(page.getByTestId("version-pacto")).toHaveText("Versión 2");
   await expect(page.getByRole("region", { name: "Cambio propuesto" })).toHaveCount(0);
   await expect(page.getByTestId("semillas-mes")).toHaveText("101 semillas");
@@ -183,16 +188,17 @@ test("si la comunidad no acepta el cambio, sigue la versión vigente y se avisa"
   await page.getByRole("button", { name: "Proponer un cambio" }).click();
   await page.getByLabel(/Compromiso mensual propuesto/).fill("30");
   await page.getByRole("button", { name: "Enviar cambio a la comunidad" }).click();
-  await page.getByRole("button", { name: "Simular: la comunidad no lo acepta" }).click();
-  const aviso = page.getByText("no aceptó el cambio. Sigue vigente la versión 1.");
+  await sembrarRespuestaDeLaTribu(page, "no-acepta", "Por ahora 10 h/mes");
+  const aviso = page.getByText("Lighthouse no aceptó tu pacto: Por ahora 10 h/mes");
   // Una copia es visible y otra va a la región viva siempre montada (que se anuncia).
   await expect(aviso).toHaveCount(2);
-  await expect(page.getByRole("status").filter({ hasText: "no aceptó el cambio. Sigue vigente la versión 1." })).toHaveCount(1);
+  await expect(page.getByRole("status").filter({ hasText: "Lighthouse no aceptó tu pacto: Por ahora 10 h/mes" })).toHaveCount(1);
   // El aviso visible es de la pestaña de tiempo: no queda en la de plata.
   await page.getByRole("tab", { name: "Sumarte con plata" }).click();
   await expect(aviso).toHaveCount(1);
   await page.getByRole("tab", { name: "Pacto de tiempo" }).click();
-  await expect(aviso).toHaveCount(1);
+  // El aviso con el motivo se queda hasta que la persona vuelve a enviar.
+  await expect(aviso).toHaveCount(2);
   await expect(page.getByRole("region", { name: "Cambio propuesto" })).toHaveCount(0);
   await expect(page.getByTestId("version-pacto")).toHaveText("Versión 1");
   await expect(page.getByText("Compromiso mensual: 10 h/mes")).toBeVisible();
@@ -245,13 +251,17 @@ test("al recargar con el pacto enviado o aceptado no se anuncia nada", async ({ 
   await page.getByRole("button", { name: "Enviar a la comunidad" }).click();
   await expect(page.getByRole("status").filter({ hasText: "Pacto enviado" })).toHaveCount(1);
   await page.reload();
-  await expect(page.getByRole("button", { name: "Simular: la comunidad acepta" })).toBeVisible();
+  await expect(page.getByText("Esperando la respuesta de Lighthouse")).toBeVisible();
   await expect(page.getByRole("status").filter({ hasText: /Pacto enviado|aceptó el pacto/ })).toHaveCount(0);
-  await page.getByRole("button", { name: "Simular: la comunidad acepta" }).click();
+  // La respuesta de la tribu se anuncia una sola vez, cuando la persona vuelve y se aplica.
+  await sembrarRespuestaDeLaTribu(page, "acepta");
   await expect(page.getByRole("status").filter({ hasText: "aceptó el pacto" })).toHaveCount(1);
   await page.reload();
   await expect(page.getByText("Pacto aceptado")).toBeVisible();
   await expect(page.getByRole("status").filter({ hasText: /Pacto enviado|aceptó el pacto/ })).toHaveCount(0);
+  // Y en Mi recorrido queda un solo aviso.
+  await page.goto("/panel");
+  await expect(page.getByText(/aceptó tu pacto/)).toHaveCount(1);
 });
 
 test("la pestaña de plata no muestra los pasos ni la versión del pacto de tiempo", async ({ page }) => {
@@ -259,7 +269,7 @@ test("la pestaña de plata no muestra los pasos ni la versión del pacto de tiem
   await page.goto("/pactos");
   await llenarPacto(page);
   await page.getByRole("button", { name: "Enviar a la comunidad" }).click();
-  await page.getByRole("button", { name: "Simular: la comunidad acepta" }).click();
+  await sembrarRespuestaDeLaTribu(page, "acepta");
   await expect(page.getByRole("list", { name: "Pasos del pacto" })).toBeVisible();
   await expect(page.getByTestId("version-pacto")).toHaveText("Versión 1");
   await page.getByRole("tab", { name: "Sumarte con plata" }).click();
@@ -272,7 +282,7 @@ test("el pacto aceptado se guarda por comunidad y suma en /semillas", async ({ p
   await page.goto("/pactos?comunidad=semilla");
   await llenarPacto(page);
   await page.getByRole("button", { name: "Enviar a la comunidad" }).click();
-  await page.getByRole("button", { name: "Simular: la comunidad acepta" }).click();
+  await sembrarRespuestaDeLaTribu(page, "acepta");
   await expect(page.getByText("Pacto aceptado")).toBeVisible();
   await page.getByLabel("¿En qué comunidad es el pacto?").selectOption("lighthouse");
   await expect(page.getByText("Pacto aceptado")).toHaveCount(0);
@@ -365,7 +375,7 @@ test("no manda datos a un servidor", async ({ page }) => {
   await page.goto("/pactos");
   await llenarPacto(page);
   await page.getByRole("button", { name: "Enviar a la comunidad" }).click();
-  await expect(page.getByRole("button", { name: "Simular: la comunidad acepta" })).toBeVisible();
+  await expect(page.getByText("Esperando la respuesta de Lighthouse")).toBeVisible();
   expect(pedidos).toEqual([]);
 });
 
