@@ -400,6 +400,27 @@ test("axe sin violaciones serias o críticas: /netx/financiamiento con todos los
   expect(await graves(page)).toEqual([]);
 });
 
+for (const lente of ["Estructura", "Propósitos", "Decisiones que suben", "Desde mí"]) {
+  test(`axe sin violaciones serias o críticas: /fogon/gobernanza con la lente ${lente}`, async ({ page }) => {
+    await page.goto("/fogon/gobernanza");
+    await page.getByRole("button", { name: lente, exact: true }).click();
+    await expect(page.getByRole("button", { name: lente, exact: true })).toHaveAttribute("aria-pressed", "true");
+    if (lente === "Decisiones que suben") {
+      await page.getByRole("button", { name: "Pedido de Valle Solar al Fondo Común para la bomba solar" }).click();
+      await expect(page.getByTestId("camino-texto")).toBeVisible();
+    }
+    expect(await graves(page)).toEqual([]);
+  });
+}
+
+test("axe sin violaciones serias o críticas: /fogon/gobernanza con Ana seleccionada y la lista abierta", async ({ page }) => {
+  await page.goto("/fogon/gobernanza");
+  await page.getByText("Ver toda la estructura como lista").click();
+  await page.locator("details").getByRole("button", { name: "Ana (ejemplo) · Miembro" }).click();
+  await expect(page.getByRole("heading", { name: "Todos los roles de Ana (ejemplo)" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
 for (const ruta of rutas) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);

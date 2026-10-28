@@ -242,6 +242,8 @@ test.describe("Configuración en inglés", () => {
     await expect(page.getByRole("checkbox", { name: "Reduce animations" })).toBeVisible();
     await expect(page.getByRole("link", { name: "your inbox" })).toHaveAttribute("href", "/bandeja");
     await expect(page.getByRole("checkbox", { name: /Recognition rounds/ })).toBeChecked();
+    // El aviso de Market está en pausa (27-oct-2026): no hay casilla.
+    await expect(page.getByRole("checkbox", { name: /Market/ })).toHaveCount(0);
     await expect(page.getByRole("checkbox", { name: /Show Hifa/ })).toBeVisible();
     await expect(page.getByText("Sample exchange rate: 1 USD = 1,400 ARS. This is not a real quote.")).toBeVisible();
     await expect(page.getByRole("radio", { name: "English" })).toBeChecked();

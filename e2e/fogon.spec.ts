@@ -2,13 +2,13 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
 import { ignorarEnSinRed } from "./ayudas";
 
-test("lista las ocho decisiones con dónde, regla y ⚖, y el aviso de prototipo", async ({ page }) => {
+test("lista las diez decisiones con dónde, regla y ⚖, y el aviso de prototipo", async ({ page }) => {
   const respuesta = await page.goto("/fogon");
   expect(respuesta?.status()).toBe(200);
   await expect(page.getByRole("heading", { level: 1, name: "Lo que se está decidiendo" })).toBeVisible();
   await expect(page.getByText("Prototipo interno · datos de ejemplo")).toBeVisible();
   await expect(page.locator("main")).toHaveCount(1);
-  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(8);
+  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(10);
   const huerta = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Plan de huerta comunitaria 2027" }) });
   await expect(huerta).toContainText("Círculo de Tierra");
   await expect(huerta).toContainText("Consentimiento");
@@ -25,7 +25,9 @@ test("sin eventos: el Fogón solo lista decisiones, no encuentros ni jornadas", 
     "Pedir al Fondo Común una cisterna para la huerta de Valle Solar",
     "Usar el fondo común para la bomba solar",
     "Permitir animales de granja en las chacras",
+    "Parámetros de la regalía de regeneración",
     "Pedido de Valle Solar al Fondo Común para la bomba solar",
+    "Cisterna compartida entre Agua Clara y Valle Solar",
   ]);
   await expect(page.getByRole("list").getByText(/encuentro|jornada|convocatoria/i)).toHaveCount(0);
 });
@@ -39,12 +41,13 @@ test("los filtros son Todas, Círculo, Tribu, Lighthouse (el común), Consejo y 
   await expect(page.getByText(/residencia fiscal/)).toHaveCount(0);
 });
 
-test("filtrar por Lighthouse (el común) muestra la bomba solar y los animales, cada uno con su regla y su ⚖", async ({ page }) => {
+test("filtrar por Lighthouse (el común) muestra la bomba solar, los animales y la regalía, cada uno con su regla y su ⚖", async ({ page }) => {
   await page.goto("/fogon");
   await page.getByRole("button", { name: "Lighthouse (el común)" }).click();
   await expect(page.getByRole("heading", { level: 2 })).toHaveText([
     "Usar el fondo común para la bomba solar",
     "Permitir animales de granja en las chacras",
+    "Parámetros de la regalía de regeneración",
   ]);
   const bomba = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Usar el fondo común para la bomba solar" }) });
   await expect(bomba).toContainText("Consenso");
@@ -58,9 +61,12 @@ test("filtrar por Círculo y por Consejo deja la decisión de ejemplo de cada un
   await page.getByRole("button", { name: "Círculo", exact: true }).click();
   await expect(page.getByRole("heading", { level: 2 })).toHaveText(["Calendario de siembra de otoño"]);
   await page.getByRole("button", { name: "Consejo", exact: true }).click();
-  await expect(page.getByRole("heading", { level: 2 })).toHaveText(["Pedido de Valle Solar al Fondo Común para la bomba solar"]);
+  await expect(page.getByRole("heading", { level: 2 })).toHaveText([
+    "Pedido de Valle Solar al Fondo Común para la bomba solar",
+    "Cisterna compartida entre Agua Clara y Valle Solar",
+  ]);
   await expect(page.getByText("Viene de Valle Solar (aprobada en la tribu)")).toBeVisible();
-  await expect(page.getByText("En la versión real votan los representantes.")).toBeVisible();
+  await expect(page.getByText("En la versión real votan los representantes.").first()).toBeVisible();
 });
 
 test("hay un enlace Cómo decidimos que lleva a la estructura", async ({ page }) => {
@@ -111,7 +117,7 @@ test.describe("Llevar al consejo", () => {
     expect(pedidos).toEqual([]);
     await page.reload();
     await page.getByRole("button", { name: "Consejo", exact: true }).click();
-    await expect(page.getByRole("heading", { level: 2 })).toHaveCount(2);
+    await expect(page.getByRole("heading", { level: 2 })).toHaveCount(3);
     await expect(page.getByText("Viene de Valle Solar (aprobada en la tribu)")).toHaveCount(2);
     // El registro con forma de attestation quedó en el navegador.
     const registros = await page.evaluate(() => JSON.parse(window.localStorage.getItem("lh-gobernanza") ?? "[]"));
@@ -129,7 +135,7 @@ function cargarResidencia(page: Page, residencia: "argentina" | "exterior") {
 test("sin residencia cargada no pide el dato y no hay personas de ejemplo", async ({ page }) => {
   await page.goto("/fogon");
   await expect(page.getByText("Sin dato de tu residencia")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(7);
+  await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(9);
   await expect(page.getByRole("link", { name: "Cargala en Tus datos" })).toHaveCount(0);
   await expect(page.getByLabel("Persona de ejemplo")).toHaveCount(0);
   await expect(page.getByText(/Lucía|Lucas/)).toHaveCount(0);
@@ -149,7 +155,7 @@ test("con residencia en el exterior no aparece \"Solo residentes\"; el fideicomi
   await page.goto("/fogon");
   await expect(page.getByText("Solo residentes")).toHaveCount(0);
   await expect(page.getByText("Votan quienes tienen el Pase Fundador")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(7);
+  await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(9);
 });
 
 test("filtrar por Fideicomiso deja solo el presupuesto de obra", async ({ page }) => {
@@ -158,7 +164,7 @@ test("filtrar por Fideicomiso deja solo el presupuesto de obra", async ({ page }
   await expect(page.getByRole("button", { name: "Fideicomiso" })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByRole("heading", { level: 2 })).toHaveText(["Presupuesto de obra 2027 del macrolote"]);
   await page.getByRole("button", { name: "Todas" }).click();
-  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(8);
+  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(10);
 });
 
 test("votar a favor en la huerta actualiza el conteo, sin red, y sobrevive a la recarga", async ({ page }) => {
@@ -189,7 +195,7 @@ test("votar a favor en la huerta actualiza el conteo, sin red, y sobrevive a la 
 test("con residencia en Argentina el fideicomiso sigue pidiendo el Pase", async ({ page }) => {
   await cargarResidencia(page, "argentina");
   await page.goto("/fogon");
-  await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(7);
+  await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(9);
   await expect(page.getByText("Solo residentes")).toHaveCount(0);
   await expect(page.getByText("Votan quienes tienen el Pase Fundador")).toBeVisible();
 });
@@ -201,7 +207,7 @@ test("un voto guardado en una decisión que no existe no rompe el Fogón y se ig
   await page.goto("/fogon");
   const huerta = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Plan de huerta comunitaria 2027" }) });
   const bomba = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Usar el fondo común para la bomba solar" }) });
-  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(8);
+  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(10);
   await expect(huerta).toContainText("Tu voto: A favor (simulado)");
   await expect(bomba).toContainText("Tu voto: A favor (simulado)");
 });
@@ -316,5 +322,51 @@ test.describe("Fideicomiso y Pase Fundador", () => {
       const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
       expect(r.violations.filter((v) => v.impact === "serious" || v.impact === "critical")).toEqual([]);
     });
+  });
+});
+
+test.describe("Parámetros opcionales de una decisión", () => {
+  // La zona horaria de Argentina (UTC−3): una fecha AAAA-MM-DD mal leída se vería un día antes.
+  test.use({ timezoneId: "America/Argentina/Buenos_Aires" });
+  const tarjeta = (page: Page, titulo: string | RegExp) =>
+    page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: titulo }) });
+
+  test("el pedido para la bomba solar muestra el monto, que sale del Fondo Común, y la fecha de cierre, con plata simulada", async ({ page }) => {
+    await page.goto("/fogon");
+    const bomba = tarjeta(page, "Pedido de Valle Solar al Fondo Común para la bomba solar");
+    await expect(bomba).toContainText("Cierra el: 15 de noviembre de 2026");
+    await expect(bomba).toContainText(/Monto pedido: .*4\.?800.* \(simulado\)/);
+    await expect(bomba).toContainText("Fuente: Fondo Común");
+    await expect(bomba).toContainText("Plata simulada: nadie paga ni cobra.");
+    await expect(bomba).not.toContainText("Se apoya en:");
+  });
+
+  test("una decisión sin parámetros no muestra filas de plazo, acuerdo ni monto", async ({ page }) => {
+    await page.goto("/fogon");
+    const d = tarjeta(page, "Elegir facilitador/a de Valle Solar");
+    await expect(d).not.toContainText("Cierra el:");
+    await expect(d).not.toContainText("Se apoya en:");
+    await expect(d).not.toContainText("Monto pedido:");
+  });
+
+  test("un monto sin cifra dice sin dato y nunca 0", async ({ page }) => {
+    await page.goto("/fogon");
+    const d = tarjeta(page, "Cisterna compartida entre Agua Clara y Valle Solar");
+    await expect(d).toContainText("Monto pedido: sin dato");
+    await expect(d).not.toContainText("(simulado)");
+    await expect(d).not.toContainText(/Monto pedido:\s*(US\$\s*|\$\s*)?0/);
+    await expect(d).toContainText("Se apoya en: Norma: Norma de uso compartido del agua (ejemplo)");
+  });
+});
+
+test.describe("Decisiones de ejemplo con camino", () => {
+  test("la regalía está en el común y la cisterna compartida en el consejo, con su regla y su ⚖", async ({ page }) => {
+    await page.goto("/fogon");
+    await page.getByRole("button", { name: "Lighthouse (el común)" }).click();
+    const regalia = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Parámetros de la regalía de regeneración" }) });
+    await expect(regalia).toContainText("Se apoya en: Pacto: Pacto de regalía regenerativa (ejemplo)");
+    await expect(regalia.getByRole("button", { name: /Qué significa legalmente/ })).toBeVisible();
+    await page.getByRole("button", { name: "Consejo", exact: true }).click();
+    await expect(page.getByRole("heading", { level: 2, name: "Cisterna compartida entre Agua Clara y Valle Solar" })).toBeVisible();
   });
 });

@@ -179,6 +179,13 @@ export function registrar(lista: EventoActividad[], nuevo: NuevoEvento, ahora: D
   return [...lista, evento].slice(-MAX_EVENTOS);
 }
 
+/**
+ * Tipos de evento que se guardan pero no se muestran ni se cuentan (bandeja, campanita, Mi recorrido): llevan a
+ * /compromisos, que está en pausa por decisión de Gus del 27-oct-2026. No cambia qué se guarda; para volver,
+ * vaciar esta lista (ver docs/notas/compromisos-en-pausa.md).
+ */
+export const TIPOS_EN_PAUSA: readonly string[] = ["mercado", "interes-oferta"];
+
 function fechaVisible(e: EventoActividad): number {
   return Date.parse(e.visibleDesde ?? e.fecha);
 }
@@ -201,22 +208,24 @@ export function listarNotificaciones(
   tiposOcultos: readonly string[] = [],
 ): EventoActividad[] {
   return lista
-    .filter((e) => e.notificacion && yaSeVe(e, ahora) && !tiposOcultos.includes(e.tipo))
+    .filter((e) => e.notificacion && yaSeVe(e, ahora) && !tiposOcultos.includes(e.tipo) && !TIPOS_EN_PAUSA.includes(e.tipo))
     .sort(masNuevoPrimero);
 }
 
 /** Todo lo que hizo o le pasó a la persona, de lo más nuevo a lo más viejo (para Mi recorrido). */
 export function listarActividad(lista: EventoActividad[], ahora: Date): EventoActividad[] {
-  return lista.filter((e) => yaSeVe(e, ahora)).sort(masNuevoPrimero);
+  return lista.filter((e) => yaSeVe(e, ahora) && !TIPOS_EN_PAUSA.includes(e.tipo)).sort(masNuevoPrimero);
 }
 
 export function contarNoLeidas(lista: EventoActividad[], ahora: Date, tiposOcultos: readonly string[] = []): number {
   return listarNotificaciones(lista, ahora, tiposOcultos).filter((e) => !e.leida).length;
 }
 
-/** Marca como leídas las notificaciones que ya se ven. Las que todavía no llegaron siguen sin leer. */
+/** Marca como leídas las notificaciones que ya se ven. Las que todavía no llegaron, o están en pausa, siguen sin leer. */
 export function marcarTodasLeidas(lista: EventoActividad[], ahora: Date): EventoActividad[] {
-  return lista.map((e) => (e.notificacion && !e.leida && yaSeVe(e, ahora) ? { ...e, leida: true } : e));
+  return lista.map((e) =>
+    e.notificacion && !e.leida && yaSeVe(e, ahora) && !TIPOS_EN_PAUSA.includes(e.tipo) ? { ...e, leida: true } : e,
+  );
 }
 
 /** Texto accesible de la campanita. */

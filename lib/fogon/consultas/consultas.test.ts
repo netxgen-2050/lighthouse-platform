@@ -34,8 +34,9 @@ describe("datos de ejemplo", () => {
     const p = buscarConsulta("u4")!.presupuesto!;
     expect(p.montoCentavos).toBe(2_000_000);
     expect(p.moneda).toBe("USD");
-    expect(p.nota).toBe("Sugerencia del equipo: lo decide Franz");
-    expect(buscarConsulta("u4")!.opciones.map((o) => o.etiqueta)).toEqual([
+    expect(p.nota?.es).toBe("Sugerencia del equipo: lo decide Franz");
+    expect(p.nota?.en).toBe("Team suggestion: Franz decides");
+    expect(buscarConsulta("u4")!.opciones.map((o) => o.etiqueta.es)).toEqual([
       "Estudio hidrológico",
       "Obras de piedra a mano en el cauce",
       "Vivero de nativas",
@@ -72,5 +73,25 @@ describe("reglas", () => {
     expect(formatoPlata(533_333, "USD")).toBe("USD 5.333,33");
     expect(formatoPlata(0, "USD")).toBe("USD 0");
     expect(formatoPlata(null, "USD")).toBe("sin dato");
+  });
+});
+
+describe("en inglés", () => {
+  test("las consultas de ejemplo traen su inglés, con el español como original", () => {
+    for (const c of CONSULTAS) {
+      for (const texto of [c.titulo, c.descripcion, ...c.opciones.map((o) => o.etiqueta)]) {
+        expect(texto.en.trim(), texto.es).not.toBe("");
+        expect(texto.original).toBe("es");
+      }
+    }
+  });
+  test("cierre, regla de voto y plata con formato en-US", () => {
+    expect(textoCierre(u1, "abierta", "en")).toBe("Closes on November 15, 2026");
+    expect(textoCierre(u1, "cerrada", "en")).toBe("Planned closing: November 15, 2026");
+    expect(textoVoto(u1, "en")).toContain("Open vote");
+    expect(textoVoto(buscarConsulta("u3")!, "en")).toContain("Secret vote");
+    expect(formatoPlata(1_500_000, "USD", "en")).toBe("USD 15,000");
+    expect(formatoPlata(533_333, "USD", "en")).toBe("USD 5,333.33");
+    expect(formatoPlata(null, "USD", "en")).toBe("no data");
   });
 });

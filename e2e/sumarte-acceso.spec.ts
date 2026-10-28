@@ -7,9 +7,12 @@ const SIN_PRIVY = "Con Privy, elegir un plan abre el modal de Privy; este caso u
 
 const rail = (page: Page) => page.getByRole("navigation", { name: "Principal" });
 const barra = (page: Page) => page.getByRole("banner");
-const PARTICIPAR = ["Pactos", "Semillas", "Fogón", "Compromisos"];
+const PARTICIPAR = ["Pactos", "Semillas", "Fogón"];
 
 async function deshabilitados(page: Page, nombres: string[]) {
+  // Compromisos está en pausa (27-oct-2026): ni el enlace ni su ayuda aparecen.
+  await expect(rail(page).getByRole("link", { name: "Compromisos", exact: true })).toHaveCount(0);
+  await expect(rail(page).getByRole("link", { name: "Sumate para participar: Compromisos" })).toHaveCount(0);
   for (const nombre of nombres) {
     const destino = rail(page).getByRole("link", { name: nombre, exact: true });
     await expect(destino).toHaveAttribute("aria-disabled", "true");

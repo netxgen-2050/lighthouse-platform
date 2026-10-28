@@ -44,7 +44,7 @@ test("los grupos del rail y del menú de la persona salen de la lista única", (
   const etiquetas = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "es"));
   expect(GRUPOS_RAIL.map((g) => tituloDeGrupo(g.id, "es"))).toEqual(["Descubrir", "Participar", "Sumarte"]);
   expect(etiquetas("descubrir")).toEqual(["Inicio", "Territorio", "Tribus"]);
-  expect(etiquetas("participar")).toEqual(["Pactos", "Semillas", "Fogón", "Compromisos", "Congreso"]);
+  expect(etiquetas("participar")).toEqual(["Pactos", "Semillas", "Fogón", "Congreso"]);
   expect(etiquetas("sumarte")).toEqual(["Sumarte"]);
   expect(etiquetas("persona")).toEqual(["Perfil", "Pasaporte", "Mi recorrido", "Configuración", "Mis datos"]);
   expect(etiquetas("interno")).toEqual(["NetX", "Admin"]);
@@ -54,8 +54,20 @@ test("en inglés el rail dice lo que fija el glosario, y Semillas no se traduce"
   const ingles = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "en"));
   expect(GRUPOS_RAIL.map((g) => tituloDeGrupo(g.id, "en"))).toEqual(["Discover", "Take part", "Join"]);
   expect(ingles("descubrir")).toEqual(["Home", "Territory", "Tribes"]);
-  expect(ingles("participar")).toEqual(["Pacts", "Semillas", "Fireside", "Commitments", "Congress"]);
+  expect(ingles("participar")).toEqual(["Pacts", "Semillas", "Fireside", "Congress"]);
   expect(ingles("persona")).toEqual(["Profile", "Passport", "My journey", "Settings", "My data"]);
+});
+
+test("Compromisos existe pero no aparece en ningún grupo", () => {
+  const compromisos = DESTINOS.find((d) => d.href === "/compromisos");
+  expect(compromisos?.existe).toBe(true);
+  expect(compromisos?.oculto).toBe(true);
+  const grupos = ["descubrir", "participar", "sumarte", "persona", "interno"] as const;
+  expect(grupos.flatMap((g) => destinosDeGrupo(g)).some((d) => d.href === "/compromisos")).toBe(false);
+});
+
+test("todo destino oculto existe", () => {
+  expect(DESTINOS.filter((d) => d.oculto).every((d) => d.existe)).toBe(true);
 });
 
 test("ningún destino apunta a /canales", () => {

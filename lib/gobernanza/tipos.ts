@@ -20,6 +20,9 @@ export type Circulo = {
   nombre: BilingueConOriginal;
   tribus: string[];
   zona?: string;
+  /** Razón de ser y "Decide sobre" (ejemplo). Si faltan, el panel dice "sin dato". */
+  proposito?: Proposito;
+  decide?: BilingueConOriginal[];
 };
 
 /** Un lugar del consejo. `representante: null` significa "Sin representante elegido": nunca se inventa un nombre. */
@@ -40,3 +43,12 @@ export type Registro = {
   cuando: string;
   datos: Record<string, string>;
 };
+
+/** La razón de ser de un círculo (lente Propósitos). */
+export type Proposito = "tierra" | "agua" | "economia" | "comunidad" | "conocimiento" | "gobierno";
+
+/** Los roles de un círculo. Son de ejemplo y no tienen que ver con los permisos de la plataforma. */
+export type Rol = "facilita" | "enlace-arriba" | "enlace-de-arriba" | "memoria" | "miembro";
+
+/** Una persona de ejemplo, con id estable: los roles apuntan al id y nunca al nombre. */
+export type PersonaDeEjemplo = { id: string; nombre: BilingueConOriginal };
