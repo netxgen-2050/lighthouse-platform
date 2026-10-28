@@ -36,7 +36,7 @@ Viven en `lib/fogon/propuestas/reglas.ts` como constantes con nombre y comentari
 | **C2** (propuesta, a confirmar por Gus) | Bloquear exige razón y un principio de `PRINCIPIOS` (borrador a ratificar por el común) | `PRINCIPIOS`, `validarBloqueo` |
 | **C3** (propuesta, a confirmar por Gus) | La legitimidad de un bloqueo la decide el grupo del ámbito; quien facilita y Hifa solo preguntan | matriz, fila "Decidir si un concern es legítimo" |
 | **C4** (propuesta, a confirmar por Gus) | Quien presenta no levanta concerns, no se suma, no bloquea, no se hace a un lado; edita con historial | `RESTRICCIONES_DE_QUIEN_PRESENTA` |
-| **D1** (propuesta, a confirmar por Gus) | Sin consenso al vencer: pausa y vuelve con cambios; si es urgente sube al nivel de arriba (círculo → tribu → consejo); en el común, pausa | `alVencer()` |
+| **D1** (propuesta, a confirmar por Gus) | Sin consenso al vencer: pausa y vuelve con cambios; si es urgente sube al nivel de arriba (círculo → tribu → consejo); en el común **y en el consejo**, pausa <!-- arquitecto: el consejo urgente no estaba definido; se propone pausa (no escalar sin regla), a confirmar por Gus --> | `alVencer()` |
 | **D2** (propuesta, a confirmar por Gus) | Voto cuadrático solo como señal, nunca decide. **No se construye acá** | comentario en `reglas.ts` |
 | **D3** (propuesta, a confirmar por Gus) | Reabrir solo con un nuevo consenso: una propuesta cerrada no se edita | `accionesDisponibles` con fase cierre |
 | **E1** (propuesta, a confirmar por Gus) | Hifa resume, sugiere grupos de concerns, recuerda reglas y plazos y propone pasar de fase; una persona de proceso confirma; nunca decide, cierra ni juzga un bloqueo | puerto `Facilitador` (§6) |
@@ -89,7 +89,12 @@ function permiso(accion, niveles: readonly NivelImplicacion[], ctx: { ambito: Am
 
 ### 3. Nivel inicial y selector
 
-- `nivelInicial(propuesta, { membresias, tribuLider })`: si la propuesta es de una tribu o de un círculo de una tribu (`tribuId`) y la persona es miembro aceptada o lidera esa tribu → `ambito`; si no → `red`. Se calcula **después de montar** (lee `localStorage` como `fogon-cliente.tsx`); en el servidor y antes de montar, `red`. Si falla la lectura, `red`.
+- `nivelInicial(propuesta, { membresias, tribuLider })`: si el `holonId` de la propuesta es una tribu o un círculo de una tribu (la tribu sale de `caminoHasta(raiz, holonId)` en la holarquía, **no** de `Decision.tribuId`, que casi ninguna decisión tiene) y la persona es miembro aceptada o lidera esa tribu → `ambito`; si no → `red`. Se calcula **después de montar** (lee `localStorage` como `fogon-cliente.tsx`); en el servidor y antes de montar, `red`. Si falla la lectura, `red`.
+  <!-- arquitecto: con `tribuId` ninguna de las cinco propuestas daba "ámbito"; se deriva del holón. -->
+- **Consejo:** el ámbito de una decisión del consejo son sus representantes, y en el prototipo ningún lugar tiene representante elegido (`representante: null`). Por eso en `consejo-bomba` y `cisterna-compartida` el nivel inicial es `red` aunque la persona sea de Valle Solar o Agua Clara (ser de la tribu que pide **no** te hace del ámbito que decide; F3). Se simula con el selector. <!-- arquitecto: propuesta, a confirmar por Gus -->
+- **Del común:** en `regalia` (holón `comun`) toda persona con sesión arranca como `comun`.
+- **Sin holón:** `holonId: null` (la huerta: "Círculo de Tierra" no existe en la holarquía de ejemplo) → `red`, plazos por defecto y D1 según `Decision.ambito`. <!-- arquitecto -->
+- **La identidad es la de la sesión del navegador**, no una persona nueva: la persona del navegador es `"vos"` (como `VOS` en `lib/fogon/consultas/ejemplo.ts`; la holarquía usa `"yo"` y no se toca).
 - Selector `<select>` con etiqueta "Mirá la propuesta como…" y los 7 niveles; el calculado lleva "(tu nivel)". Aviso: "Simulación: en el prototipo podés ver la propuesta desde cada nivel".
 - Una declaración de afectada vigente (A1) suma `afectada` a los niveles de la persona en esa propuesta.
 - **Visita (A2):** decisión del común → título y resultado (o "En curso" si no cerró); otra → "Esta propuesta se ve con sesión", sin título ni contenido. La ruta sigue pidiendo sesión (fuera de alcance).
@@ -100,7 +105,9 @@ function permiso(accion, niveles: readonly NivelImplicacion[], ctx: { ambito: Am
 type Recorrido = "simple" | "importante";
 type Fase = "borrador" | "presentacion" | "preguntas" | "discusion" | "concerns" | "resolver" | "llamado" | "objetar" | "cierre";
 type Propuesta = {                       // datos de ejemplo, bilingües
-  decisionId: string; recorrido: Recorrido; holonId: string /* nodo de la holarquía */;
+  decisionId: string; recorrido: Recorrido;
+  holonId: string | null /* nodo de la holarquía que decide; null si no existe en la de ejemplo */;
+  origenHolonId?: string /* círculo de donde viene (F1): "valle-0" en la bomba, aunque decida el consejo */;
   presenta: { personaId: string; desde: Bi }; problema: Bi; propone: Bi;
   inicio: string /* AAAA-MM-DD, empieza la primera fase con plazo */; urgente: boolean;
   tema?: "cuidado-conflicto"; principios: PrincipioId[]; tamanoAmbito: number | null;
@@ -124,7 +131,9 @@ function derivarEstado(p: Propuesta, extra: readonly Registro[], ahora: Date): E
 
 - **La fase no se guarda: se deriva** del último registro `fase` (o `recorrido`), y `alVencer` se aplica con `ahora` (inyectado en los tests; en la página, `new Date()` después de montar). Así un cambio de plazos (B2) recalcula todo sin migrar nada.
 - Estado del concern: el último registro que lo apunta (`agrupar` → agrupado; `resolucion` aceptada → resuelto; `retiro` → retirado; `a-un-lado`; `bloqueo`). Un bloqueo con `legitimidad: false` vuelve a verse como concern abierto con la marca "El grupo no lo consideró bloqueo".
-- **Ids:** `crypto.randomUUID()` en el navegador para los registros nuevos; los de ejemplo, fijos. La persona del navegador es `"vos"` (como en la holarquía), con su nivel simulado registrado en cada registro.
+- **Ids:** `crypto.randomUUID()` en el navegador para los registros nuevos; los de ejemplo, fijos. La persona del navegador es `"vos"` (ver §3), con su nivel simulado registrado en cada registro.
+- **`nivel` en el registro es el nivel simulado**, una declaración del navegador. Cuando esto pase a la base, el nivel lo **calcula el servidor** (membresía, rol de proceso, declaración de afectada vigente) y nunca se acepta del pedido; el selector desaparece (ADR-022). <!-- arquitecto -->
+- **Registros por persona:** la clave lleva el prefijo de la persona en sesión, así que otra persona en el mismo navegador ve solo los de ejemplo, no los registros de "vos". Es distinto del registro compartido de los pactos (ADR-018) y está bien para una simulación individual. <!-- arquitecto -->
 - **Guardado:** clave nueva `fogonPropuestas: "lh-fogon-propuestas"` en `lib/demo/claves.ts` (con el prefijo de la persona, como las demás), un objeto `{ [propuestaId]: Registro[] }`. Lectura defensiva: si el JSON no se puede leer o un registro no tiene la forma, se descarta ese registro y se muestran los de ejemplo. Lo de ejemplo nunca se escribe en `localStorage`.
 - Fechas con `timeZone: "UTC"` (como `ParametrosDecision`) para no correr un día.
 
@@ -171,7 +180,9 @@ Cinco propuestas, todas sobre decisiones que ya existen en `lib/fogon/datos.ts`,
 - `regalia` — importante, en "Discusión abierta", del común, no pide plata.
 - `siembra` — importante, cerrada por consenso; Paz se hizo a un lado; acta de Memoria. (El boceto la pone en Semilla Viva; en `dev` es de Valle Solar: manda `dev`.)
 - `cisterna-compartida` — importante, en "Preguntas para aclarar"; monto `null` → "sin dato" (el boceto decía USD 9.000; manda `dev`); `tema: "cuidado-conflicto"` (dos tribus quieren la misma ubicación), así se puede levantar un concern sin nombre cuando llegue a la fase de concerns.
-- `huerta` — simple, en "Plazo para objetar" (Círculo de Tierra, tribu), sin plata.
+- `huerta` — simple, en "Plazo para objetar" (Círculo de Tierra, tribu), sin plata. `holonId: null`: "Círculo de Tierra" no es una tribu de `lib/tribus/datos.ts` ni un nodo de la holarquía. <!-- arquitecto -->
+- Holones: `consejo-bomba` → `consejo` (origen `valle-0`, Cuidado de la tierra, propósito tierra: de ahí sale la guardiana, F1); `regalia` → `comun`; `siembra` → `valle-0`; `cisterna-compartida` → `consejo` (origen `agua-0`, Toma y cisterna, propósito agua). <!-- arquitecto -->
+- **Plata coherente:** `plata.pide === true` si y solo si la decisión tiene `monto` (bomba y cisterna-compartida); el monto y la fuente nunca se copian en la propuesta. <!-- arquitecto -->
 - Tamaños de ámbito de ejemplo: Valle Solar 12, consejo 7, común 40, Círculo de Tierra 4. Fechas de inicio relativas a fines de octubre de 2026.
 
 ### 9. Términos ⚖ nuevos (`lib/legal/terminos.ts`, todos `borrador: true`, con `en`)
@@ -194,7 +205,7 @@ Sin base. Clave nueva en el navegador; "Borrar todo" la borra. Para revertir: qu
 
 Toca **permisos** (dentro de una decisión, de ejemplo) y **plata simulada** (monto pedido). No toca la base, ni integraciones, ni datos personales nuevos (personas de ejemplo; la persona del navegador es "vos"). **Pide revisión del agente `arquitecto`** con el id `fogon-propuestas` antes de aprobarlo. Puntos a mirar: que la matriz no se confunda con `lib/permisos/`; que nada salga por la red; el concern sin nombre cuando haya base; si hace falta un ADR para "estado derivado de registros de propuestas" (este diseño cree que no: sigue ADR-001 y ADR-012).
 
-**Veredicto del arquitecto:** pendiente (no se pudo invocar al agente en esta sesión).
+**Veredicto del arquitecto (28-oct-2026):** ⚠️ aprobar con ajustes, ya incorporados en este design (marcas `<!-- arquitecto -->`) y en tasks: nivel inicial desde el holón y no desde `tribuId`; el consejo arranca en `red`; huerta con `holonId: null`; `origenHolonId` para el guardián; D1 en el consejo; coherencia de plata; `nivel` simulado que en la base calcula el servidor. Decisión nueva escrita en **ADR-022** (Propuesta): permisos dentro de una propuesta por nivel de implicación, como datos, separados de `lib/permisos/`. Para cuando haya base (no ahora): el concern sin nombre guarda la autoría en un registro aparte que solo ve la facilitación, y la evaluación del proceso se muestra solo agregada.
 
 ## Open Questions
 
@@ -204,3 +215,5 @@ Toca **permisos** (dentro de una decisión, de ejemplo) y **plata simulada** (mo
 - ¿Se suma "Guardián de la tierra" como rol de la holarquía (`lib/gobernanza/`)? Hoy vive solo en los datos de la propuesta.
 - Lista de principios: completarla con los de TDF y definir cómo la ratifica el común.
 - ¿La página de una propuesta del común se abre sin sesión (A2 de verdad)? Pide cambiar las rutas públicas (ADR-006).
+- <!-- arquitecto --> En una decisión del consejo, ¿quién es "del ámbito" mientras no haya representantes elegidos? Este diseño propone: nadie arranca ahí (nivel inicial `red`) y se simula con el selector.
+- <!-- arquitecto --> Una propuesta urgente del consejo que vence sin consenso: ¿se pausa (lo que propone este diseño) o sube al común?
