@@ -81,6 +81,18 @@ test.describe("Consultas del Fogón en inglés", () => {
     await axeSinGraves(page);
   });
 
+  test("modo presupuesto (U4): monto, sugerencia del equipo y monto del resultado salen en inglés", async ({ page }) => {
+    await page.goto("/fogon/consultas/u4");
+    await expect(page.getByText("Amount to split: USD 20,000")).toBeVisible();
+    await expect(page.getByText("Team suggestion: Franz decides")).toBeVisible();
+    await page.getByRole("button", { name: "Simulate the closing" }).click();
+    const resultado = page.getByRole("region", { name: "Group result" });
+    await expect(resultado).toBeVisible();
+    await expect(resultado).toContainText("Amount: USD 5,555.56");
+    await expect(page.getByRole("region", { name: "Minutes (sample)" })).toContainText("Native plant nursery");
+    expect(await textosEnEspanol(page, "main")).toEqual([]);
+  });
+
 });
 
 test.describe("Consultas del Fogón en español", () => {
