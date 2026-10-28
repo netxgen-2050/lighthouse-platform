@@ -363,7 +363,8 @@ function contenidoDeDatos(d: Record<string, string>): ContenidoPacto | null {
   return pactoCompleto(c) ? c : null;
 }
 
-function ultimaPropuesta(constancias: readonly ConstanciaPacto[], idPersona: string, comunidad: string, tipo: "nuevo" | "cambio") {
+/** La última propuesta no revocada de esa persona, comunidad y tipo (pacto nuevo o cambio), o null. */
+export function ultimaPropuesta(constancias: readonly ConstanciaPacto[], idPersona: string, comunidad: string, tipo: "nuevo" | "cambio") {
   const sobre = sobreDe(comunidad, idPersona);
   const propias = constancias.filter(
     (c) =>

@@ -244,6 +244,14 @@ describe("eventos de cambio a un pacto, en los dos idiomas", () => {
     expect(textoDeEvento(e, "en").texto).toBe("Valle Solar did not accept the change to your pact");
   });
 
+  it("el pacto no aceptado dice solo la comunidad, sin el motivo", () => {
+    const e = guardado(EVENTOS.pactoNoAceptado("Valle Solar", "valle-solar", "p1-pacto-propone"), "n");
+    expect(e.mensaje).toBe("pactoNoAceptado");
+    expect(e.datos).toEqual({ comunidad: "Valle Solar" });
+    expect(textoDeEvento(e, "es").texto).toBe("Valle Solar no aceptó tu pacto");
+    expect(textoDeEvento(e, "en").texto).toBe("Valle Solar did not accept your pact");
+  });
+
   it("la propuesta de cambio dice 'tu comunidad' / 'your community' sin nombre", () => {
     const e = guardado(EVENTOS.propusisteCambioDePacto("", "valle-solar"), "c");
     expect(textoDeEvento(e, "es").texto).toContain("tu comunidad");

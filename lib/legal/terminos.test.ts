@@ -50,6 +50,7 @@ describe("catálogo legal", () => {
         "notasverdes",
         "obra",
         "ordenanza173",
+        "pactoDosPartes",
         "pacto",
         "pase",
         "pasaporte",
@@ -96,6 +97,12 @@ describe("catálogo legal", () => {
       expect(TERMINOS[clave].texto, clave).toMatch(/todavía|no existe/);
     }
   });
+  it("pactoDosPartes es borrador, tiene inglés y aclara que no es un contrato de trabajo ni de inversión", () => {
+    expect(esBorrador("pactoDosPartes")).toBe(true);
+    expect(terminoEn("pactoDosPartes")?.titulo).toBe("Pact accepted by both parties");
+    expect(TERMINOS.pactoDosPartes.texto).toMatch(/no es un contrato de trabajo ni de inversión/i);
+  });
+
   it("ordenanza173 es borrador y dice que se verifica con abogado", () => {
     expect(esBorrador("ordenanza173")).toBe(true);
     expect(TERMINOS.ordenanza173.texto).toContain("en el Juego B");

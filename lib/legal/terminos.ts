@@ -395,6 +395,18 @@ export const TERMINOS = {
       "Hasta que el municipio apruebe un loteo, nadie puede ofrecer, vender, reservar ni dar prioridad sobre esos lotes. Por eso NetX no se financia vendiendo lotes: no puede, y en el Juego B la tierra del Lighthouse queda en una Fundación que no la vende. A verificar con abogado.",
     borrador: true,
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  pactoDosPartes: {
+    titulo: "Pacto aceptado por las dos partes",
+    texto:
+      "Un acuerdo social entre vos y tu tribu, registrado en la plataforma: vos lo propusiste y quien lidera la tribu lo aceptó. No es un contrato de trabajo ni de inversión, y cada tribu lo revisa según su estatuto. En el prototipo la constancia queda solo en este navegador.",
+    en: {
+      titulo: "Pact accepted by both parties",
+      texto:
+        "A social agreement between you and your tribe, recorded on the platform: you proposed it and whoever leads the tribe accepted it. It is not an employment or investment contract, and each tribe reviews it according to its own bylaws. In the prototype the record stays only in this browser.",
+    },
+    borrador: true,
+  },
 } as const;
 
 /** Claves de los textos que son borrador (no vienen del mock-up). */

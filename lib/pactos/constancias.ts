@@ -124,6 +124,12 @@ function esPropuestaPendiente(lista: readonly ConstanciaPacto[], c: ConstanciaPa
   );
 }
 
+/** ¿Esta propuesta sigue esperando respuesta? (existe, no está revocada y nadie respondió). */
+export function estaPendiente(lista: readonly ConstanciaPacto[], propuestaId: string): boolean {
+  const c = lista.find((x) => x.id === propuestaId);
+  return c !== undefined && esPropuestaPendiente(lista, c);
+}
+
 /** Propuestas de personas, sin revocar y sin respuesta, de las comunidades dadas. */
 export function pendientes(lista: readonly ConstanciaPacto[], comunidades: readonly string[]): ConstanciaPacto[] {
   return lista.filter((c) => {

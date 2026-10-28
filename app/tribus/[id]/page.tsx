@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
 import { EnlaceConCuenta } from "@/components/sesion/entrar-para";
 import { MarcaAdmin } from "@/components/sesion/marca-admin";
+import { PactosParaResponder } from "@/components/sesion/pactos-para-responder";
 import { SelloTribu } from "@/components/sello-tribu";
 import { TerminoLegal } from "@/components/termino-legal";
 import { TextoBilingue } from "@/components/texto-bilingue";
@@ -137,6 +138,7 @@ export default async function TribuPage({ params }: Props) {
       <AvisoEjemplo />
       {prototipo}
       <MarcaAdmin tribu={t.id} nombre={t.nombre} />
+      <PactosParaResponder tribu={t.id} />
       {t.estado === "formacion" && (
         <p
           role="note"
