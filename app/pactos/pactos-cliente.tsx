@@ -75,7 +75,7 @@ function anuncioDe(aplicadas: RespuestaAplicada[], tx: TextosPactos): string {
   if (!a) return "";
   const donde = nombreComunidad(a.comunidad);
   if (a.tipo === "acepta") return a.esCambio ? tx.anuncios.cambioAceptado(donde, a.version) : tx.anuncios.pactoAceptado(donde);
-  return tx.anuncios.pactoNoAceptado(donde, a.motivo ?? "");
+  return a.esCambio ? tx.avisoCambioNoAceptado(donde, a.motivo ?? "") : tx.anuncios.pactoNoAceptado(donde, a.motivo ?? "");
 }
 
 /** Mi recorrido: una sola vez por respuesta (los eventos llevan clave, salvo el rechazo de un cambio, que solo ocurre al aplicarse). */
@@ -88,7 +88,7 @@ function registrarEventosDe(aplicadas: RespuestaAplicada[]): void {
         registrarEvento(EVENTOS.pactoAceptado(donde, a.comunidad));
         registrarEvento(EVENTOS.rondaAbierta(donde, a.comunidad));
       }
-    } else if (a.esCambio) registrarEvento(EVENTOS.cambioDePactoRechazado(donde, a.comunidad));
+    } else if (a.esCambio) registrarEvento(EVENTOS.cambioDePactoRechazado(donde, a.comunidad, a.propuestaId));
     else registrarEvento(EVENTOS.pactoNoAceptado(donde, a.comunidad, a.propuestaId));
   }
 }
@@ -212,7 +212,10 @@ export function PactosCliente() {
             setEstado(r.estado);
             return;
           }
-          revocarEnNavegador(propuesta.id, idPersona, ahora);
+          // Si no se pudo escribir, no se retira: la tribu seguiría viendo la propuesta pendiente.
+          const ok = revocarEnNavegador(propuesta.id, idPersona, ahora);
+          setFalloPublicar(ok === null);
+          if (ok === null) return;
         }
       }
     }
@@ -750,7 +753,11 @@ export function PactosCliente() {
 
         {estado.pestana === "tiempo" && estado.ultimaRespuesta && estado.ultimaRespuesta.comunidad === comunidad && (
           <p className={AVISO} data-testid="aviso-no-aceptado">
-            <span lang={langTexto}>{tx.avisoNoAceptado(nombre, estado.ultimaRespuesta.motivo)}</span>
+            <span lang={langTexto}>
+              {estado.ultimaRespuesta.esCambio
+                ? tx.avisoCambioNoAceptado(nombre, estado.ultimaRespuesta.motivo)
+                : tx.avisoNoAceptado(nombre, estado.ultimaRespuesta.motivo)}
+            </span>
           </p>
         )}
         {falloPublicar && (

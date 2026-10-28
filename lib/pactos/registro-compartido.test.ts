@@ -6,6 +6,7 @@ import {
   constanciasDe,
   leerDelNavegador,
   quitarConstanciasDe,
+  revocarEnNavegador,
   type Almacen,
 } from "./registro-compartido";
 
@@ -61,6 +62,20 @@ describe("registro compartido", () => {
     agregarEnNavegador(propone(A), T, a);
     agregarEnNavegador(propone(B), T, a);
     expect(leerDelNavegador(a)?.map((c) => c.id)).toEqual(["p1-pacto-propone", "p2-pacto-propone"]);
+  });
+
+  it("después de borrar las de una persona, lo nuevo no repite ids ni se confunde con lo de otra", () => {
+    const a = almacenEnMemoria();
+    agregarEnNavegador(propone(A), T, a);
+    agregarEnNavegador(propone(B), T, a);
+    quitarConstanciasDe(A, a);
+    agregarEnNavegador(propone(A), T, a);
+    const ids = (leerDelNavegador(a) ?? []).map((c) => c.id);
+    expect(ids).toEqual(["p2-pacto-propone", "p3-pacto-propone"]);
+    // Retirar lo nuevo de A no toca la propuesta de B.
+    revocarEnNavegador("p3-pacto-propone", A, T, a);
+    const lista = leerDelNavegador(a) ?? [];
+    expect(lista.filter((c) => c.esquema === "revoca").map((c) => c.apuntaA)).toEqual(["p3-pacto-propone"]);
   });
 
   it("quitarConstanciasDe saca solo las de una persona y anonimiza al que respondió", () => {

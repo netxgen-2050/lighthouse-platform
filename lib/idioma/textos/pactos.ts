@@ -121,6 +121,9 @@ const es = {
   },
   /** Aviso visible cuando la comunidad no aceptó el pacto, con el motivo que escribió. */
   avisoNoAceptado: (donde: string, motivo: string) => `${donde} no aceptó tu pacto: ${motivo}`,
+  /** Igual, cuando lo que no aceptó es un cambio: el pacto sigue aceptado en su versión vigente. */
+  avisoCambioNoAceptado: (donde: string, motivo: string) =>
+    `${donde} no aceptó el cambio a tu pacto: ${motivo}. Tu pacto sigue aceptado en su versión vigente.`,
   /** La vista de la tribu (`/pactos/responder`) y el enlace de la ficha de la tribu. */
   responder: {
     titulo: "Pactos para responder",
@@ -276,6 +279,8 @@ const en: Textos<typeof es> = {
     noSePudoPublicar: "Your submission could not be recorded in this browser: the community will not see it.",
   },
   avisoNoAceptado: (donde: string, motivo: string) => `${donde} did not accept your pact: ${motivo}`,
+  avisoCambioNoAceptado: (donde: string, motivo: string) =>
+    `${donde} did not accept the change to your pact: ${motivo}. Your pact stays accepted in its current version.`,
   responder: {
     titulo: "Pacts to answer",
     volverInicio: `← ${G.inicio.en}`,

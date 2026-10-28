@@ -125,7 +125,9 @@ test("un cambio no aceptado con motivo: sigue la versión 1 y la persona ve el m
   await entrarComo(page, context, baseURL, PERSONA, "/pactos?comunidad=valle");
   await expect(page.getByTestId("version-pacto")).toHaveText("Versión 1");
   await expect(page.getByText("Compromiso mensual: 10 h/mes")).toBeVisible();
-  await expect(page.getByTestId("aviso-no-aceptado")).toContainText("Valle Solar no aceptó tu pacto: Por ahora necesitamos 10 h/mes");
+  await expect(page.getByTestId("aviso-no-aceptado")).toContainText(
+    "Valle Solar no aceptó el cambio a tu pacto: Por ahora necesitamos 10 h/mes. Tu pacto sigue aceptado en su versión vigente.",
+  );
   await expect(page.getByRole("region", { name: "Cambio propuesto" })).toHaveCount(0);
 });
 

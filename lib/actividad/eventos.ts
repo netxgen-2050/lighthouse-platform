@@ -52,11 +52,13 @@ export const EVENTOS = {
       notificacion: true,
       clave: `cambio-pacto-aceptado:${idComunidad}:${version}`,
     }),
-  cambioDePactoRechazado: (comunidad: string, idComunidad: string): NuevoEvento =>
+  /** `propuestaId` evita registrarlo dos veces (fallo de guardado, dos pestañas). */
+  cambioDePactoRechazado: (comunidad: string, idComunidad: string, propuestaId: string): NuevoEvento =>
     evento("cambioDePactoRechazado", { comunidad }, {
       tipo: "pacto",
       enlace: `/pactos?comunidad=${idComunidad}`,
       notificacion: true,
+      clave: `cambio-pacto-rechazado:${idComunidad}:${propuestaId}`,
     }),
   rondaAbierta: (comunidad: string, idComunidad: string): NuevoEvento =>
     evento("rondaAbierta", { comunidad }, {

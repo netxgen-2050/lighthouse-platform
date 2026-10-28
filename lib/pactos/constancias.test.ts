@@ -43,6 +43,18 @@ describe("constancias de pactos", () => {
     expect(b[1].revocable).toBe(true);
   });
 
+  it("borrar y después agregar no repite ids", () => {
+    const otra = "prueba:otra@prueba.test";
+    let lista = propone(propone([], "valle", PERSONA), "valle", otra);
+    expect(lista.map((c) => c.id)).toEqual(["p1-pacto-propone", "p2-pacto-propone"]);
+    // Se quita la primera (p. ej. borrar los datos de esa persona): queda solo p2.
+    lista = lista.filter((c) => c.id !== "p1-pacto-propone");
+    const nueva = propone(lista, "valle", PERSONA);
+    const ids = nueva.map((c) => c.id);
+    expect(ids).toEqual(["p2-pacto-propone", "p3-pacto-propone"]);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
   it("una propuesta sin respuesta está pendiente", () => {
     const lista = propone([]);
     expect(pendientes(lista, ["valle"])).toHaveLength(1);

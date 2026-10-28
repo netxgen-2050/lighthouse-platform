@@ -6,7 +6,7 @@ import type { ContenidoPacto } from "./estado";
 export type EsquemaPacto = "pacto-propone" | "pacto-acepta" | "pacto-no-acepta" | "revoca";
 
 export type ConstanciaPacto = {
-  /** `p<n>-<esquema>`, n = largo de la lista + 1. */
+  /** `p<n>-<esquema>`, n = el número más alto existente + 1. */
   id: string;
   esquema: EsquemaPacto;
   /** "persona:<idPersona>" | "tribu:<id>" | "comunidad:lighthouse". */
@@ -74,10 +74,20 @@ export function personaDeAfirma(afirma: string): string | null {
   return afirma.startsWith("persona:") && afirma.length > "persona:".length ? afirma.slice("persona:".length) : null;
 }
 
+/** El número más alto que ya usó algún id `p<n>-…` (0 si no hay). Así un id nunca se repite aunque la lista se achique. */
+function numeroMasAlto(lista: readonly ConstanciaPacto[]): number {
+  let max = 0;
+  for (const c of lista) {
+    const m = /^p(\d+)-/.exec(c.id);
+    if (m) max = Math.max(max, Number(m[1]));
+  }
+  return max;
+}
+
 /** Agrega una constancia al final. No toca las anteriores. */
 export function agregar(lista: readonly ConstanciaPacto[], nueva: Nueva, cuando: string): ConstanciaPacto[] {
   const c: ConstanciaPacto = {
-    id: `p${lista.length + 1}-${nueva.esquema}`,
+    id: `p${Math.max(numeroMasAlto(lista), lista.length) + 1}-${nueva.esquema}`,
     esquema: nueva.esquema,
     afirma: nueva.afirma,
     por: nueva.por,

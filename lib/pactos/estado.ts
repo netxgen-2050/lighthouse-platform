@@ -54,7 +54,7 @@ export type PactoTiempo = ContenidoPacto & {
 export type PactosDeComunidad = { tiempo: PactoTiempo; aportes: number[] };
 
 /** La última vez que una comunidad no aceptó un pacto o un cambio: la pantalla muestra el motivo hasta que se vuelva a enviar. */
-export type UltimaRespuesta = { tipo: "no-acepta"; motivo: string; comunidad: string; cuando: string };
+export type UltimaRespuesta = { tipo: "no-acepta"; motivo: string; comunidad: string; cuando: string; esCambio?: boolean };
 
 export type EstadoPactos = {
   pestana: Pestana;
@@ -328,6 +328,7 @@ export function leer(crudo: string | null): EstadoPactos {
         typeof x.cuando === "string"
       ) {
         estado.ultimaRespuesta = { tipo: "no-acepta", motivo: x.motivo.slice(0, 500), comunidad: x.comunidad, cuando: x.cuando };
+        if (x.esCambio === true) estado.ultimaRespuesta.esCambio = true;
       }
     }
     return estado;
@@ -418,7 +419,7 @@ export function conciliar(
       const siguiente = reducir(actual, esCambio ? { tipo: "rechazarCambio", comunidad } : { tipo: "retirar", comunidad });
       if (siguiente === actual) continue;
       const motivo = texto(r.datos.motivo, 500);
-      actual = { ...siguiente, ultimaRespuesta: { tipo: "no-acepta", motivo, comunidad, cuando: r.cuando } };
+      actual = { ...siguiente, ultimaRespuesta: { tipo: "no-acepta", motivo, comunidad, cuando: r.cuando, ...(esCambio ? { esCambio: true } : {}) } };
       aplicadas.push({ tipo: "no-acepta", comunidad, esCambio, version: t.version, cuando: r.cuando, propuestaId: propuesta.id, motivo });
     }
   }
@@ -469,14 +470,4 @@ export function leerPactosConciliados(
 ): EstadoPactos {
   const estado = leer(crudo);
   return idPersona ? conciliar(estado, registro, idPersona).estado : estado;
-}
-
-/** Igual que `leerPactosConciliados` pero como el texto que lee `leer` (para quien recibe el crudo). */
-export function pactosConciliadosCrudo(
-  crudo: string | null,
-  idPersona: string | null = personaEnSesion(),
-  registro: readonly ConstanciaPacto[] | null = leerDelNavegador(),
-): string | null {
-  if (!idPersona || registro === null) return crudo;
-  return JSON.stringify(leerPactosConciliados(crudo, idPersona, registro));
 }

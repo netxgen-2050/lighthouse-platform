@@ -237,7 +237,9 @@ describe("eventos de cambio a un pacto, en los dos idiomas", () => {
   });
 
   it("el cambio rechazado también", () => {
-    const e = guardado(EVENTOS.cambioDePactoRechazado("Valle Solar", "valle-solar"), "b");
+    const nuevo = EVENTOS.cambioDePactoRechazado("Valle Solar", "valle-solar", "p3-pacto-propone");
+    expect(nuevo.clave).toBe("cambio-pacto-rechazado:valle-solar:p3-pacto-propone");
+    const e = guardado(nuevo, "b");
     expect(e.mensaje).toBe("cambioDePactoRechazado");
     expect(e.datos).toEqual({ comunidad: "Valle Solar" });
     expect(textoDeEvento(e, "es").texto).toBe("Valle Solar no aceptó el cambio a tu pacto");
