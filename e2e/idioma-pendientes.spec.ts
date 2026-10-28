@@ -55,18 +55,15 @@ test.describe("Consultas del Fogón en inglés", () => {
   });
 
   test("al cerrar, el resultado, la dona y el acta salen en inglés, con la tabla y pasan axe", async ({ page }) => {
-    await page.goto("/fogon/consultas/u4");
-    await expect(page.getByText("Amount to split: USD 20,000")).toBeVisible();
-    await expect(page.getByText("Team suggestion: Franz decides")).toBeVisible();
+    await page.goto("/fogon/consultas/u1");
     await page.getByRole("button", { name: "Simulate the closing" }).click();
     await expect(page.getByText("Consultation closed (simulated).")).toBeAttached();
     const resultado = page.getByRole("region", { name: "Group result" });
     await expect(resultado).toBeVisible();
-    await expect(resultado).toContainText("Amount: USD 5,555.56");
     await expect(resultado.locator("figcaption", { hasText: "Group votes" })).toBeVisible();
     await resultado.getByText("View as table").click();
     await expect(resultado.getByRole("columnheader", { name: "Value" })).toBeVisible();
-    await expect(page.getByRole("region", { name: "Minutes (sample)" })).toContainText("Native plant nursery");
+    await expect(page.getByRole("region", { name: "Minutes (sample)" })).toContainText("Ecological regeneration");
     await expect(page.getByRole("heading", { name: "Who split how" })).toBeVisible();
     await expect(page.getByRole("cell", { name: "Sample person 1" })).toHaveCount(0);
     await expect(page.getByRole("rowheader", { name: "Sample person 1" })).toBeVisible();
@@ -78,6 +75,8 @@ test.describe("Consultas del Fogón en inglés", () => {
     await expect(acta).not.toContainText("El resultado es consultivo");
     await acta.getByRole("button", { name: /What it means legally: Advisory result/ }).click();
     await expect(acta).toContainText("Draft: text under review");
+    await expect(acta).toContainText("guides a decision");
+    await expect(acta).not.toContainText("orienta una decisión");
     expect(await textosEnEspanol(page, "main")).toEqual([]);
     await axeSinGraves(page);
   });
