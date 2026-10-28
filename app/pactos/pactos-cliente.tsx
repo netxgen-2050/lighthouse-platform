@@ -78,7 +78,7 @@ function anuncioDe(aplicadas: RespuestaAplicada[], tx: TextosPactos): string {
   return a.esCambio ? tx.avisoCambioNoAceptado(donde, a.motivo ?? "") : tx.anuncios.pactoNoAceptado(donde, a.motivo ?? "");
 }
 
-/** Mi recorrido: una sola vez por respuesta (los eventos llevan clave, salvo el rechazo de un cambio, que solo ocurre al aplicarse). */
+/** Mi recorrido: una sola vez por respuesta (todos los eventos llevan clave, también el rechazo de un cambio). */
 function registrarEventosDe(aplicadas: RespuestaAplicada[]): void {
   for (const a of aplicadas) {
     const donde = nombreComunidad(a.comunidad);
@@ -120,7 +120,7 @@ export function PactosCliente() {
   const foco = useRef(false);
   const [anuncio, setAnuncio] = useState("");
   // La propuesta no llegó al registro compartido (el navegador no dejó): la tribu no la va a ver.
-  const [falloPublicar, setFalloPublicar] = useState(false);
+  const [falloPublicar, setFalloPublicar] = useState<"envio" | "retiro" | null>(null);
   // Lo que la persona cargó en "Tus datos"; lo que no cargó queda sin dato.
   const [datos, setDatos] = useState<DatosPersona>(DATOS_VACIOS);
   // Comunidades donde la persona es miembro: solo ahí puede proponer un pacto.
@@ -188,7 +188,7 @@ export function PactosCliente() {
       if (accion.tipo === "avanzar" && antes.paso === 0) {
         // Enviar escribe la propuesta en el registro compartido; si el navegador no deja, no se envía.
         const ok = publicarPropuesta({ comunidad: comunidadId, tipo: "nuevo", contenido: antes, version: antes.version + 1 }, persona, ahora);
-        setFalloPublicar(ok === null);
+        setFalloPublicar(ok === null ? "envio" : null);
         if (ok === null) return;
       } else if (accion.tipo === "enviarCambio" && antes.cambio) {
         const ok = publicarPropuesta(
@@ -196,7 +196,7 @@ export function PactosCliente() {
           persona,
           ahora,
         );
-        setFalloPublicar(ok === null);
+        setFalloPublicar(ok === null ? "envio" : null);
         if (ok === null) return;
       } else if (accion.tipo === "retirar" || accion.tipo === "retirarCambio") {
         const registro = leerDelNavegador();
@@ -214,7 +214,7 @@ export function PactosCliente() {
           }
           // Si no se pudo escribir, no se retira: la tribu seguiría viendo la propuesta pendiente.
           const ok = revocarEnNavegador(propuesta.id, idPersona, ahora);
-          setFalloPublicar(ok === null);
+          setFalloPublicar(ok === null ? "retiro" : null);
           if (ok === null) return;
         }
       }
@@ -762,7 +762,7 @@ export function PactosCliente() {
         )}
         {falloPublicar && (
           <p role="alert" className="text-sm font-medium text-danger">
-            {tx.anuncios.noSePudoPublicar}
+            {falloPublicar === "retiro" ? tx.anuncios.noSePudoRetirar : tx.anuncios.noSePudoPublicar}
           </p>
         )}
 

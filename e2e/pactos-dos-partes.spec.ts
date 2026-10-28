@@ -264,6 +264,20 @@ test("borrar los datos de la demo saca solo las constancias de quien borra", asy
   expect(restantes.map((c) => c.sobre)).toEqual([`pacto:valle:prueba:${PERSONA}`]);
 });
 
+test("si el navegador no deja escribir al retirar, el aviso dice que la comunidad todavía lo ve", async ({ page }) => {
+  await enviarPacto(page, "valle", "Valle Solar");
+  await page.evaluate(() => {
+    Storage.prototype.setItem = () => {
+      throw new DOMException("lleno", "QuotaExceededError");
+    };
+  });
+  await page.getByRole("button", { name: "Retirar y editar" }).click();
+  const alerta = page.getByRole("alert").filter({ hasText: "No se pudo retirar" });
+  await expect(alerta).toContainText("la comunidad todavía lo ve");
+  await expect(page.getByText("la comunidad no lo va a ver")).toHaveCount(0);
+  await expect(page.getByText("Esperando la respuesta de Valle Solar")).toBeVisible();
+});
+
 test.describe("en inglés", () => {
   test.use({ locale: "en-US" });
 

@@ -189,10 +189,10 @@ test("si la comunidad no acepta el cambio, sigue la versión vigente y se avisa"
   await page.getByLabel(/Compromiso mensual propuesto/).fill("30");
   await page.getByRole("button", { name: "Enviar cambio a la comunidad" }).click();
   await sembrarRespuestaDeLaTribu(page, "no-acepta", "Por ahora 10 h/mes");
-  const aviso = page.getByText("Lighthouse no aceptó tu pacto: Por ahora 10 h/mes");
+  const aviso = page.getByText(/Lighthouse no aceptó el cambio a tu pacto: Por ahora 10 h\/mes/);
   // Una copia es visible y otra va a la región viva siempre montada (que se anuncia).
   await expect(aviso).toHaveCount(2);
-  await expect(page.getByRole("status").filter({ hasText: "Lighthouse no aceptó tu pacto: Por ahora 10 h/mes" })).toHaveCount(1);
+  await expect(page.getByRole("status").filter({ hasText: "Lighthouse no aceptó el cambio a tu pacto: Por ahora 10 h/mes" })).toHaveCount(1);
   // El aviso visible es de la pestaña de tiempo: no queda en la de plata.
   await page.getByRole("tab", { name: "Sumarte con plata" }).click();
   await expect(aviso).toHaveCount(1);

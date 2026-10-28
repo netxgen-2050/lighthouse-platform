@@ -118,6 +118,7 @@ const es = {
     pactoNoAceptado: (donde: string, motivo: string) => `${donde} no aceptó tu pacto: ${motivo}`,
     cambioRetirado: (donde: string) => `Retiraste el cambio enviado a ${donde}: volvió a borrador.`,
     noSePudoPublicar: "No se pudo registrar tu envío en este navegador: la comunidad no lo va a ver.",
+    noSePudoRetirar: "No se pudo retirar tu envío en este navegador: la comunidad todavía lo ve. Probá de nuevo.",
   },
   /** Aviso visible cuando la comunidad no aceptó el pacto, con el motivo que escribió. */
   avisoNoAceptado: (donde: string, motivo: string) => `${donde} no aceptó tu pacto: ${motivo}`,
@@ -277,6 +278,7 @@ const en: Textos<typeof es> = {
     pactoNoAceptado: (donde: string, motivo: string) => `${donde} did not accept your pact: ${motivo}`,
     cambioRetirado: (donde: string) => `You withdrew the change sent to ${donde}: it went back to draft.`,
     noSePudoPublicar: "Your submission could not be recorded in this browser: the community will not see it.",
+    noSePudoRetirar: "Your submission could not be withdrawn in this browser: the community can still see it. Try again.",
   },
   avisoNoAceptado: (donde: string, motivo: string) => `${donde} did not accept your pact: ${motivo}`,
   avisoCambioNoAceptado: (donde: string, motivo: string) =>
