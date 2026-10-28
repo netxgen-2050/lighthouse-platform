@@ -261,8 +261,18 @@ export const TERMINOS = {
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
   consultivo: {
     titulo: "Resultado consultivo",
-    texto: "El resultado es consultivo: no reemplaza las decisiones que reservan el contrato o el estatuto.",
+    // La frase es la que se ve en el acta (aprobada por Gus); `texto` es la explicación del ⚖.
+    frase: "El resultado es consultivo: no reemplaza las decisiones que reservan el contrato o el estatuto.",
+    texto:
+      "Consultivo quiere decir que el resultado orienta una decisión, pero no obliga a nadie a seguirlo. Muestra qué le importa más al grupo; la decisión la toma después quien tiene esa facultad según el contrato o el estatuto, y puede decidir otra cosa. Votar no te cuesta plata: los créditos no se compran ni se cobran, y la consulta no mueve fondos por sí sola.",
     borrador: true,
+    // Traducción nueva: borrador a revisar antes de cualquier uso real.
+    en: {
+      titulo: "Advisory result",
+      frase: "The result is advisory: it does not replace the decisions reserved by the contract or the statute.",
+      texto:
+        "Advisory means the result guides a decision, but does not bind anyone to follow it. It shows what matters most to the group; the decision is then made by whoever holds that power under the contract or the statute, and they may decide something else. Voting costs you no money: credits are not bought or charged, and the consultation does not move funds by itself.",
+    },
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
   avisosimulador: {

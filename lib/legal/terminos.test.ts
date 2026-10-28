@@ -114,6 +114,15 @@ describe("catálogo legal", () => {
   });
   it("consultivo es borrador", () => {
     expect(esBorrador("consultivo")).toBe(true);
+    expect(TERMINOS.consultivo.frase).toBe(
+      "El resultado es consultivo: no reemplaza las decisiones que reservan el contrato o el estatuto.",
+    );
+    expect(TERMINOS.consultivo.texto).not.toBe(TERMINOS.consultivo.frase);
+    expect(TERMINOS.consultivo.texto).toContain("no obliga");
+    expect(TERMINOS.consultivo.texto).toContain("contrato o el estatuto");
+    expect(TERMINOS.consultivo.texto).toContain("no te cuesta plata");
+    expect(terminoEn("consultivo")).toBeDefined();
+    expect(terminoEn("consultivo")?.texto).not.toBe(TERMINOS.consultivo.en.frase);
   });
   it("agencia es borrador", () => {
     expect(esBorrador("agencia")).toBe(true);
