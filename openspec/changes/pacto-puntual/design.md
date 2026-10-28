@@ -40,6 +40,8 @@ type PactosDeComunidad = { tiempo: PactoTiempo; aportes: number[]; puntuales: Pa
 - `HORAS_PUNTUAL = { min: 1, max: 200, paso: 1 }` en `lib/pactos/datos.ts`.
 - Acciones nuevas (puras; `ahora` lo pone quien llama): `nuevoPuntual { comunidad, necesidad }` (recibe la necesidad ya resuelta, para no importar datos de tribus en el reductor), `editarPuntual { comunidad, necesidadId, cambios }` (solo en borrador), `enviarPuntual`, `retirarPuntual`, `descartarPuntual`, `marcarHecha { horasReales }`, y las **dos respuestas de la tribu**: `aceptarPuntual` y `responderHoras { confirma: boolean, ahora }`.
 - `nuevoPuntual` no hace nada si ya hay un puntual con esa `necesidadId` en la comunidad (unicidad).
+<!-- arquitecto: "responde dos veces" — un doble clic o dos pestañas no pueden emitir dos constancias ni dos eventos. -->
+- **Cada acción vale solo en su paso; fuera de él no cambia nada** (devuelve el mismo estado): `editarPuntual` y `enviarPuntual` solo en `borrador`; `retirarPuntual` y `aceptarPuntual` solo en `enviado`; `marcarHecha` solo en `aceptado`; `responderHoras` solo en `hecha`. Así, confirmar dos veces deja **una** constancia (la primera, con su `creada_en`) y un solo evento. Un test despacha `responderHoras { confirma: true }` dos veces seguidas y compara.
 - `puntualCompleto(p)`: rol (y `rolOtro` si es "otro"), descripción, `horas` entera en rango y `fecha` válida.
 - `leer` agrega `puntuales: []` cuando falta y valida cada puntual (paso conocido, campos en rango; un `enviado`/`aceptado` incompleto vuelve a borrador; `hecha` sin `horasReales` válidas vuelve a `aceptado`; `confirmado` sin constancia válida vuelve a `hecha`). Ids `__proto__` se ignoran como hoy.
 - `pactosAceptados` **no cambia** (solo el fijo): la ronda y el cálculo de tiempo de hoy siguen igual.
@@ -65,13 +67,18 @@ function leerConstanciaBase(x: unknown): ConstanciaBase | null;
 ```
 
 - `semillas = Math.round(horas × HOUR_REF_USD)` con el mismo cuidado de coma flotante que `evaluacion-pares` (`Number((x).toFixed(6))` antes de redondear). Con `HOUR_REF_USD = 7049 / 1400`: 10 h → 50; 12 h → 60.
-- `periodo = ahora.slice(0, 7)`.
+<!-- arquitecto: `ahora` es ISO en UTC; el 30-nov a las 22 h de Argentina ya es diciembre en UTC y la constancia quedaría en el período equivocado, que después no se corrige. -->
+- `periodo` = mes de `ahora` **en la hora de Argentina** (`America/Argentina/Buenos_Aires`, la misma zona que `lib/fogon/consultas/reglas.ts`), con un helper puro `mesDe(ahora: string): string` ("AAAA-MM") en `lib/pactos/` que también usa `pactos-horas-variables`. No `ahora.slice(0, 7)`. Test: `2026-12-01T01:30:00Z` → `2026-11`. `creada_en` sigue siendo el ISO en UTC.
+- `uid` con prefijo `ejemplo-` (`ejemplo-base-puntual-<comunidad>-<necesidadId>`), como las constancias de ejemplo de `evaluacion-pares`: hoy la "afirma NetX" la genera el navegador y el uid lo tiene que dejar a la vista. <!-- arquitecto -->
+- `version_pacto`: si se reusa el tipo de `evaluacion-pares` (tarea 0.1 c), se usa su misma representación; si no, `1`. Cuando exista `pactos-dos-partes`, ADR-018 pide que la versión salga de la aceptación: ahí la base de un puntual guarda el uid de `pacto-confirma-horas` en `datos.confirmacion` (no en `apunta_a`, que en ADR-012 queda para la cadena base → ajuste). <!-- arquitecto -->
 - **Congelada**: `leerConstanciaBase` valida tipos y que `semillas`, `horas` y `valor_hora_usd` sean números finitos, pero **no** recalcula nada. Un test cambia `HOUR_REF_USD` (con un mock del módulo) y verifica que la constancia leída no cambia.
 - `datos` no lleva email ni nombre de la persona (vive en la clave de la persona; ADR-012: nunca datos personales en una cadena).
 - Si `evaluacion-pares` llega antes a `dev` con su `lib/evaluacion/constancias.ts`, este módulo **reusa su tipo** en vez de declarar otro (ver tarea 0.1).
 
 ### 4. Pantalla `/pactos`
 
+<!-- arquitecto: la membresía se carga en un efecto (`miembro` arranca en []); si el borrador se crea antes, quien no es miembro termina con un pacto guardado de una tribu ajena. -->
+- El parámetro `necesidad` se procesa **una sola vez y recién cuando la membresía ya se leyó**, y solo si la persona es miembro de `comunidad` (`comunidadesDondeEsMiembro`). Si no es miembro, no se despacha nada y se ve lo que `/pactos` ya muestra a quien no es miembro; el `router.replace` igual saca el parámetro. Test (e2e): sin membresía en Valle Solar, abrir `/pactos?comunidad=valle&necesidad=valle-solar` no deja ningún puntual en la clave de pactos.
 - `app/pactos/pactos-cliente.tsx` lee `necesidad` de la URL junto a `comunidad`. Si `buscarNecesidad` la encuentra, es de esa comunidad, está `abierta` y `aceptaFormato(comunidad, "puntual")`, despacha `nuevoPuntual`; si no, muestra "Esa necesidad no se puede tomar" en una región `role="status"`. Después hace `router.replace` sin `necesidad`, para que recargar no repita nada.
 - En la pestaña "Pacto de tiempo", debajo del pacto fijo de la comunidad, una sección "Pactos puntuales" con un `<article>` por puntual: título de la necesidad (enlace a `/tribus/<id>#necesidad-<nid>`), pasos en texto, campos (rol, descripción, horas, fecha con `<input type="date">` y su `<label>`), y los botones del paso. Los "Simular…" van agrupados y rotulados como simulación, como hoy.
 - Fecha anterior a hoy: se permite (la tarea pudo hacerse ya); no se valida contra el reloj para que el reductor siga puro.
@@ -88,6 +95,9 @@ Componente cliente `EstadoNecesidadPropio` dentro de cada `<details>` de `tribu-
 
 ### 7. Semillas (`lib/semillas/estado.ts`)
 
+<!-- arquitecto: el total mezcla una proyección (fijo: 3 meses de horas pactadas) con horas confirmadas (puntual). -->
+La tarjeta dice en una línea qué es cada parte: "Pacto de tiempo: proyección de 3 meses" y "Pactos puntuales: horas confirmadas". El total no cambia de cuenta (decisión de Gus si se separan; ver preguntas de la revisión).
+
 `SemillasDeComunidad` suma `puntual: Parte` (suma de `constancia.datos.semillas` de los puntuales `confirmado`, o `null`) y `constancias: ConstanciaBase[]`. `total = totalConDato([tiempo, plata, puntual, presencia])`. `pactoAceptado` sigue mirando solo el fijo. La tarjeta lista cada constancia con la tarea (título de la necesidad en el idioma de la página; si la necesidad ya no existe en los datos, el id), horas, fecha (`creada_en`) y Semillas.
 
 ### 8. Eventos
@@ -102,4 +112,5 @@ En `lib/actividad/eventos.ts`: `ofrecisteTomar(tarea, comunidad, id)`, `puntualA
 
 ## Revisión de arquitectura
 
-Pendiente. Este cambio agrega un registro con forma de constancia (ADR-012) y define quién responde por la tribu (permisos, aunque simulados). Hay que pedírsela al agente arquitecto con el id `pacto-puntual` antes de aprobarlo.
+<!-- arquitecto: revisión hecha el 27-oct-2026. -->
+Hecha el 27-oct-2026. Ajustes incorporados arriba: acciones que valen solo en su paso (§2), período en hora de Argentina y uid `ejemplo-` (§3), borrador solo después de leer la membresía (§4) y rótulo de cada parte en Semillas (§7). La emisión de Semillas por tarea, fuera de la ronda mensual de ADR-012, queda en **ADR-020** (Propuesta).

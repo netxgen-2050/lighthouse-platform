@@ -32,7 +32,9 @@ type PactoTiempo = ... & { declaradas: Record<string, number> }; // "AAAA-MM" �
 
 ### 3. Declarar
 
-- Acción `declarar { comunidad, mes, horas, ahora }`. Solo si el pacto está aceptado, la versión vigente es "variable", `mes === ahora.slice(0, 7)` (mes en curso) y `horas` está en `[rango.min, rango.max]`, entera y en pasos de 2. Si no, no cambia nada y la pantalla dice por qué (fuera del rango → texto de la spec).
+<!-- arquitecto: `ahora` es ISO en UTC; el último día del mes después de las 21 h de Argentina, `slice(0, 7)` ya da el mes siguiente: la persona no podría corregir su mes y la declaración caería en otro, que después queda cerrado. -->
+- "Mes en curso" = `mesDe(ahora)`, el helper en hora de Argentina (`America/Argentina/Buenos_Aires`) de `lib/pactos/mes.ts`. Si `pacto-puntual` no está en `dev`, este cambio lo crea con la misma firma. Nunca `ahora.slice(0, 7)`. Lo usan `declarar`, `leer` (meses futuros) y `semillasVariables` (`mesActual`).
+- Acción `declarar { comunidad, mes, horas, ahora }`. Solo si el pacto está aceptado, la versión vigente es "variable", `mes === mesDe(ahora)` (mes en curso) y `horas` está en `[rango.min, rango.max]`, entera y en pasos de 2. Si no, no cambia nada y la pantalla dice por qué (fuera del rango → texto de la spec).
 - `mes` y `ahora` los pone quien llama: el reductor sigue puro y los tests fijan el reloj.
 - `leer`: descarta claves que no son `AAAA-MM` válidas, valores no enteros o fuera de `RANGO_VARIABLE` (no del rango vigente: un cambio de rango no borra lo declarado antes) y meses posteriores al mes en que se lee (lo pasa quien llama; sin reloj, no se descartan por fecha).
 
@@ -55,4 +57,5 @@ type PactoTiempo = ... & { declaradas: Record<string, number> }; // "AAAA-MM" �
 ## Riesgos
 
 - **La declaración cuenta sin que la comunidad la vea.** Es igual que hoy con el pacto fijo (Semillas proyecta horas que nadie confirmó), pero acá la persona elige el número cada mes. El rango acordado lo acota; la confirmación queda como pregunta para Gus.
+- **Las declaraciones no son constancias.** <!-- arquitecto: para que el prototipo no enseñe que lo autodeclarado emite Semillas. --> Este cambio no emite constancias base: las Semillas del pacto variable se calculan en el render a partir de lo declarado, y la pantalla lo dice ("declarado por vos, sin confirmar"). Con la base, cada mes declarado necesita la confirmación de la tribu (`pactos-dos-partes` / D31) antes de emitir la constancia base mensual de ADR-012.
 - **Dos semánticas de "tiempo" en Semillas**: el fijo proyecta 3 meses, el variable suma lo declarado. La pantalla lo dice en una línea para cada caso. Se unifican cuando las Semillas salgan de constancias por ronda (`evaluacion-pares`).
