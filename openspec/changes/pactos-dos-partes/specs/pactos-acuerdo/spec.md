@@ -7,7 +7,7 @@ Define cómo un pacto de tiempo, y cada cambio a un pacto aceptado, se acuerda e
 ## ADDED Requirements
 
 ### Requirement: Quién responde por la comunidad
-Un pacto enviado a una tribu SHALL poder responderlo solo quien lidera esa tribu en la sesión (Plan Tribu de esa tribu o el nivel asignado de antemano, como `admin@prueba.test` para Valle Solar). Un pacto con el Lighthouse SHALL responderlo solo el super admin. Nadie MUST poder responder un pacto propio.
+Un pacto enviado a una tribu SHALL poder responderlo solo quien lidera esa tribu en la sesión (la tribu propia creada al elegir el Plan Tribu en Sumarte, que se lidera sin aprobación de nadie, o el nivel asignado de antemano, como `admin@prueba.test` para Valle Solar). Un pacto con el Lighthouse SHALL responderlo solo el super admin. Nadie MUST poder responder un pacto propio: el pacto que propone quien lidera una tribu SHALL poder responderlo otra persona que lidere esa tribu o el super admin, que es quien responde cuando no hay otra.
 
 #### Scenario: Responde quien lidera
 - **WHEN** `persona@prueba.test` envía un pacto a Valle Solar y entra `admin@prueba.test`
@@ -23,7 +23,19 @@ Un pacto enviado a una tribu SHALL poder responderlo solo quien lidera esa tribu
 
 #### Scenario: Su propio pacto
 - **WHEN** quien lidera Valle Solar envía un pacto propio a Valle Solar y abre `/pactos/responder`
-- **THEN** lo ve sin botones para responder y con el texto "Es tu propio pacto: lo tiene que responder otra persona de la tribu"
+- **THEN** lo ve sin botones para responder y con el texto "Es tu propio pacto: lo responde otra persona que lidere la tribu o, si no hay, el super admin"
+
+#### Scenario: El super admin responde el pacto de quien lidera
+- **WHEN** quien lidera Valle Solar envía un pacto propio a Valle Solar y entra `super@prueba.test`
+- **THEN** el super admin lo ve en `/pactos/responder` como "Lo propone quien lidera Valle Solar", con "Aceptar" y "No aceptar", y al aceptarlo la constancia afirma la tribu Valle Solar con el super admin como quien actuó
+
+#### Scenario: El super admin no responde por la tribu lo común
+- **WHEN** `persona@prueba.test` (que no lidera ninguna tribu) envía un pacto a Valle Solar y entra `super@prueba.test`
+- **THEN** el super admin no lo ve para responder: lo responde quien lidera Valle Solar
+
+#### Scenario: Plan Tribu
+- **WHEN** una persona elige el Plan Tribu en Sumarte y crea su tribu, y otra persona le envía un pacto a esa tribu
+- **THEN** quien la creó lo ve en `/pactos/responder` y lo puede responder, sin que nadie haya aprobado su liderazgo
 
 #### Scenario: Sin permiso
 - **WHEN** una persona que no lidera ninguna tribu ni es super admin abre `/pactos/responder`
@@ -93,11 +105,19 @@ Cada propuesta, aceptación, no aceptación y retiro SHALL quedar como una const
 - **THEN** esa entrada se ignora, el resto se lee y la pantalla no se rompe
 
 ### Requirement: Vista de la tribu
-`/pactos/responder` SHALL listar, por comunidad que la persona puede responder, los pactos y cambios pendientes con: quién lo propone (su email de la sesión), rol, horas por mes, descripción, versión que propone, si es un pacto nuevo o un cambio (y, si es un cambio, las horas vigentes) y cuándo se envió. Sin pendientes SHALL decir "No hay pactos esperando tu respuesta". En la ficha de la tribu, quien la lidera SHALL ver "Pactos para responder (N)" con enlace a esa página.
+`/pactos/responder` SHALL listar, por comunidad que la persona puede responder, los pactos y cambios pendientes con: quién lo propone (el nombre de su perfil o, si no tiene nombre, sus iniciales; MUST NOT mostrar el email ni copiarlo a los datos de la constancia), rol, horas por mes, descripción, versión que propone, si es un pacto nuevo o un cambio (y, si es un cambio, las horas vigentes) y cuándo se envió. Sin pendientes SHALL decir "No hay pactos esperando tu respuesta". En la ficha de la tribu, quien la lidera SHALL ver "Pactos para responder (N)" con enlace a esa página.
 
 #### Scenario: Pendiente de un cambio
 - **WHEN** hay un cambio a 20 h/mes sobre un pacto vigente de 10 h/mes en Valle Solar
 - **THEN** `admin@prueba.test` lo ve como "Cambio · de 10 a 20 h/mes · propone la versión 2"
+
+#### Scenario: Nombre, no email
+- **WHEN** `persona@prueba.test`, con "Ana Pérez" como nombre en su perfil, envía un pacto a Valle Solar
+- **THEN** `admin@prueba.test` ve "Ana Pérez" como quien propone, la pantalla no muestra `persona@prueba.test` y los `datos` de la propuesta no llevan el email
+
+#### Scenario: Perfil sin nombre
+- **WHEN** quien propone no tiene nombre en su perfil
+- **THEN** la tribu ve sus iniciales, nunca el email
 
 #### Scenario: Enlace en la ficha
 - **WHEN** `admin@prueba.test` abre `/tribus/valle` con dos pactos pendientes

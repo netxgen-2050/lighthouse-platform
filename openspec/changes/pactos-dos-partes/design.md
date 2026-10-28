@@ -5,7 +5,7 @@
 - `lib/pactos/estado.ts` guarda, por persona (`u:<id>:lh-pactos`), el pacto de tiempo de cada comunidad: contenido vigente, `paso` (0 borrador, 1 enviado, 2 aceptado), `version`, `historial` y un `cambio` opcional (paso 0 o 1). Hoy las acciones `avanzar` (1 → 2), `aceptarCambio` y `rechazarCambio` las dispara la misma persona con botones "Simular…".
 - Todo lo de la demo se guarda con el prefijo de la persona (`lib/demo/claves.ts`): la otra parte **no puede leerlo**. Por eso hace falta un registro compartido.
 - `lib/gobernanza/registros.ts` ya tiene una lista de solo agregar con forma de attestation (`id`, `esquema`, `afirma`, `sobre`, `apuntaA`, `cuando`, `datos`; revocar = agregar un `revoca`). Se copia la forma, no el módulo (sus esquemas son otros).
-- Quién lidera sale de `useSesion().tribuLider` (Plan Tribu o `admin-tribu` con `tribuAdmin`); el super admin de `sesion.rol === "superadmin"`. El id estable de la persona es `sesion.idPersona` (en prueba, `prueba:<email>`).
+- Quién lidera sale de `useSesion().tribuLider` (Plan Tribu o `admin-tribu` con `tribuAdmin`); el super admin de `sesion.rol === "superadmin"`. Elegir el Plan Tribu en Sumarte crea la **tribu propia y nueva** de la persona, que la lidera sin aprobación de nadie (decisión de Gus, 28-oct; es lo que ya hace `calcularNivel`). A futuro el consejo del Lighthouse podría cambiar a quien lidera una tribu: **solo se anota**, no se diseña acá (ver §15). El id estable de la persona es `sesion.idPersona` (en prueba, `prueba:<email>`).
 
 ## Decisiones
 
@@ -23,7 +23,8 @@ type ConstanciaPacto = {
   apuntaA: string | null;   // acepta / no-acepta / revoca → la propuesta
   cuando: string;           // ISO
   revocable: boolean;       // true en propone y acepta; false en no-acepta y revoca
-  datos: Record<string, string>; // propone: tipo ("nuevo"|"cambio"), rol, rolOtro, descripcion, horas, horasVigentes, email
+  datos: Record<string, string>; // propone: tipo ("nuevo"|"cambio"), rol, rolOtro, descripcion, horas, horasVigentes,
+                                  //          nombre (del perfil) o iniciales, proponeLider ("1" si quien propone lidera esa tribu)
                                   // no-acepta: motivo
 };
 ```
@@ -31,7 +32,7 @@ type ConstanciaPacto = {
 - `revocada` se **calcula** (existe un `revoca` que apunta a ella), nunca se guarda.
 - Una propuesta está **pendiente** si no está revocada y no tiene `acepta` ni `no-acepta` que la apunte. Está **acordada** si tiene un `acepta` no revocado cuyo `afirma` es la contraparte (persona ↔ tribu) y cuyo `por` no es la persona del pacto.
 - Funciones puras en `lib/pactos/constancias.ts`: `agregar`, `revocar`, `estaRevocada`, `pendientes(lista, comunidades)`, `respuestaDe(lista, propuestaId)`, `puedeResponder(sesion, comunidad, propuesta)`, `leerConstancias(crudo)`. Las fechas y los ids de persona vienen de afuera (sin `Date.now()` adentro).
-- `datos.email` va solo para que la tribu sepa quién propone (es lo que el prototipo tiene). Antes de firmar o publicar (etapas 2 y 3 de ADR-012) `datos` se reemplaza por un hash: nunca datos personales en la cadena.
+- Para que la tribu sepa quién propone, la propuesta lleva `datos.nombre` = nombre del perfil (`cargarPerfil(...).nombre`, recortado) o, si está vacío, `datos.iniciales` = `inicialesDeEmail(sesion.email)` (`lib/sesion/iniciales.ts`). **El email nunca se copia a `datos` ni se muestra a la tribu** (decisión de Gus, 28-oct). Ojo: con personas de prueba el id interno es `prueba:<email>` y va en `sobre` y `por`; es un id técnico que la pantalla nunca muestra (con Privy es `did:privy:…`). Si no hay ni nombre ni iniciales, la vista dice "sin dato". Antes de firmar o publicar (etapas 2 y 3 de ADR-012) `datos` se reemplaza por un hash: nunca datos personales en la cadena.
 
 ### 2. Registro compartido en el navegador
 
@@ -73,7 +74,7 @@ type ConstanciaPacto = {
 ## Riesgos
 
 - **La verificación es del navegador.** Cualquiera con las herramientas del navegador puede escribir una aceptación. Aceptable en el prototipo interno; en la base, el servidor verifica quién responde y sobre qué tribu (P9).
-- **Datos de una persona visibles para otra en el mismo navegador** (email, rol, descripción del pacto). Es lo que pide el flujo; solo se comparte lo enviado, y el borrado lo quita.
+- **Datos de una persona visibles para otra en el mismo navegador** (nombre o iniciales, rol, descripción del pacto; el email no). Es lo que pide el flujo; solo se comparte lo enviado, y el borrado lo quita.
 - **Solo funciona en un mismo navegador.** Para mostrarlo entre dos computadoras hace falta la base.
 
 ## Revisión de arquitectura
@@ -87,6 +88,7 @@ Hecha el 27-oct-2026 (agente arquitecto). Decisión en ADR-018 (Propuesta). Ajus
 
 ### 10. Quién puede responder, en un solo lugar
 - `comunidadesQueResponde(sesion): string[]` en `lib/pactos/constancias.ts` es el **único** lugar que traduce la sesión en comunidades (hoy `[tribuLider]` más `lighthouse` si es super admin). `/pactos/responder`, la ficha de la tribu y `puedeResponder` la usan. Cuando entre `liderar-varias-tribus` (`tribusLider` como lista) se cambia solo esa función.
+- **El pacto propio de quien lidera** (decisión de Gus, 28-oct): al enviar, si `comunidadesQueResponde(sesion)` de quien propone incluye esa comunidad, la propuesta lleva `datos.proponeLider = "1"`. Esa propuesta la puede responder otra persona que lidere esa tribu (como cualquier pacto de la tribu, nunca la misma persona) **y además el super admin**, que es quien responde cuando no hay otra. En el navegador no se puede saber si existe otra persona que lidere, así que el super admin la ve siempre; vale la primera respuesta (el re-chequeo de §6 evita la doble). En `/pactos/responder` del super admin aparece en la sección de esa tribu con "Lo propone quien lidera <tribu>", y la constancia afirma `tribu:<id>` con `por` = el super admin. El super admin **no** ve los pactos de personas que no lideran: esos los responde la tribu.
 - `pendientes` solo cuenta propuestas cuyo `afirma` empieza con `persona:` (las de la tribu, que trae `pactos-pedir-cambios`, no le aparecen a la tribu misma).
 
 ### 11. Ids con dos puntos
@@ -100,4 +102,7 @@ Hecha el 27-oct-2026 (agente arquitecto). Decisión en ADR-018 (Propuesta). Ajus
 - La publicación de §8 solo ocurre si el registro compartido se pudo leer (no `null`) y no hay ninguna propuesta de esa persona y comunidad, revocada o no. Con el registro ilegible no se publica nada.
 
 ### 14. Lo que la base hereda
-- El email en `datos.email` es solo del prototipo. En la base (P9) la constancia guarda el id de la persona y la vista de la tribu resuelve el nombre o email con permiso; el email no se copia a la tabla de constancias. Queda anotado para `aprobaciones-pactos`.
+- El nombre o las iniciales en `datos` son solo del prototipo (la tribu no puede leer el perfil de otra persona en el navegador). En la base (P9) la constancia guarda el id de la persona y la vista de la tribu resuelve el nombre del perfil con permiso; ni el nombre ni el email se copian a la tabla de constancias. Queda anotado para `aprobaciones-pactos`.
+
+### 15. Cambio de liderazgo (solo anotado, no se diseña)
+- A futuro el consejo del Lighthouse podría cambiar a quien lidera una tribu (incluida la creada con el Plan Tribu). No entra en este cambio. Lo que este diseño ya deja listo: la parte que acepta es la tribu (`afirma = tribu:<id>`), no la persona; `por` es solo auditoría, y quién responde sale de un único lugar (`comunidadesQueResponde`). Así, cambiar de líder no invalida los pactos acordados ni obliga a tocar las pantallas.

@@ -6,8 +6,9 @@ Hoy un pacto de tiempo pasa a "Aceptado" con un botón "Simular: la comunidad ac
 
 ## What Changes
 
-- **Dos partes de verdad (simuladas con personas de prueba en el mismo navegador).** La persona propone; responde **quien lidera la tribu** de ese pacto (hoy `admin@prueba.test` para Valle Solar, o quien eligió el Plan Tribu de esa tribu en Sumarte). Los pactos con el Lighthouse los responde el super admin (`super@prueba.test`). Se cambia de persona con "Entrar como…".
-- **La tribu responde:** **acepta** o **rechaza con motivo** (obligatorio). Nadie responde su propio pacto.
+- **Dos partes de verdad (simuladas con personas de prueba en el mismo navegador).** La persona propone; responde **quien lidera la tribu** de ese pacto (hoy `admin@prueba.test` para Valle Solar). Elegir el Plan Tribu en Sumarte crea **la tribu propia y nueva** de esa persona, que pasa a liderarla sin aprobación de nadie (decisión de Gus, 28-oct): responde los pactos de su tribu. Los pactos con el Lighthouse los responde el super admin (`super@prueba.test`). Se cambia de persona con "Entrar como…".
+- **La tribu responde:** **acepta** o **rechaza con motivo** (obligatorio). Nadie responde su propio pacto: el pacto que propone quien lidera lo responde **otra persona que lidere esa tribu o, si no hay, el super admin**.
+- **La tribu ve el nombre del perfil** de quien propone (o sus iniciales si el perfil no tiene nombre), **nunca el email**.
 - **Se quitan los botones simulados** "Simular: la comunidad acepta", "Simular: la comunidad acepta el cambio" y "Simular: la comunidad no lo acepta". La persona ve "Esperando la respuesta de <tribu>" y puede **retirar** su pacto (como hoy).
 - **Los cambios a un pacto aceptado** (lo que ya hace `pactos-proponer-cambio`) siguen el mismo camino: los acepta o rechaza la tribu, no la persona. Versión e historial no cambian: se reutilizan.
 - **Constancias con forma de EAS** (ADR-012): cada propuesta, aceptación, rechazo y retiro queda como un registro de solo agregar: quién afirma (la persona o la tribu, y quién actuó por la tribu), sobre qué pacto y qué versión, cuándo, y si se puede revocar. Retirar es revocar la propuesta: nada se edita ni se borra. Viven en un registro **compartido en el navegador** (no por persona), porque la otra parte tiene que poder leerlo.
@@ -25,6 +26,7 @@ Hoy un pacto de tiempo pasa a "Aceptado" con un botón "Simular: la comunidad ac
 - Revocar desde la pantalla una aceptación ya hecha o dar de baja un pacto aceptado (consecuencias en Semillas sin decidir).
 - La ronda de evaluación de pares y `f_eval` (cambio `evaluacion-pares`).
 - Aportes en plata: siguen como hoy (no son pactos de dos partes).
+- Cambiar a quien lidera una tribu. **Solo se anota, no se diseña:** en el futuro el consejo del Lighthouse podría cambiar a quien lidera una tribu (por ejemplo, la creada con el Plan Tribu). Como quién responde sale de un solo lugar (`comunidadesQueResponde`, design §10) y la constancia guarda la tribu como parte (no a la persona), un cambio de liderazgo no debería invalidar los pactos ya acordados.
 
 ## Capabilities
 
