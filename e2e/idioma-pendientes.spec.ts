@@ -71,7 +71,13 @@ test.describe("Consultas del Fogón en inglés", () => {
     await expect(page.getByRole("cell", { name: "Sample person 1" })).toHaveCount(0);
     await expect(page.getByRole("rowheader", { name: "Sample person 1" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Did not split" })).toBeVisible();
-    // La frase consultiva todavía no tiene inglés (idioma-legal): va marcada como español.
+    const acta = page.getByRole("region", { name: "Minutes (sample)" });
+    await expect(acta).toContainText(
+      "The result is advisory: it does not replace the decisions reserved by the contract or the statute.",
+    );
+    await expect(acta).not.toContainText("El resultado es consultivo");
+    await acta.getByRole("button", { name: /What it means legally: Advisory result/ }).click();
+    await expect(acta).toContainText("Draft: text under review");
     expect(await textosEnEspanol(page, "main")).toEqual([]);
     await axeSinGraves(page);
   });
