@@ -242,11 +242,17 @@ export function aplicarTope(horas: number, tope: TopePorPersona | null, valorHor
   return { horasConSemillas: horasCon, horasSinSemillas: horas - horasCon, semillas };
 }
 
+/**
+ * Horas verificadas de una persona. No lleva la fecha de verificación: quien llama debe pasar la lista YA ORDENADA
+ * de la primera a la última verificación, porque con un máximo total el orden decide quién se queda con las horas
+ * que entran y a quién le quedan sin Semillas.
+ */
 export type HorasDePersona = { persona: string; horas: number };
 export type ResultadoPersona = ResultadoTope & { persona: string };
 
 /**
- * Máximo por persona y máximo total de la tarea. Las personas se recorren en el orden en que se verificaron sus horas:
+ * Máximo por persona y máximo total de la tarea. Las personas se recorren en el orden de la lista recibida (que debe
+ * ser el orden en que se verificaron sus horas; la función no lo comprueba ni reordena, y otro orden da otro reparto):
  * primero se aplica el máximo de cada una y después lo que queda del total. Lo que supera el total no genera Semillas.
  */
 export function repartirConTopeTotal(

@@ -13,4 +13,4 @@
 
 ## Integración
 
-- [ ] F.1 `pnpm verificar` y `pnpm build` en verde. PR desde `agente/tribu-necesidades` hacia `agente/pactos-dos-partes` con guion de prueba: abrir `/tribus/valle`, desplegar las tres necesidades con el teclado, mirar el máximo por persona y total y la línea de Hifa, abrir `/tribus/semilla` (Riego avalada) y `/tribus/puerto` (Marketing esperando aval), cambiar a inglés, abrir `/tribus/grano`.
+- [x] F.1 `pnpm verificar` y `pnpm build` en verde. PR desde `agente/tribu-necesidades` hacia `agente/pactos-dos-partes` con guion de prueba: abrir `/tribus/valle`, desplegar las tres necesidades con el teclado, mirar el máximo por persona y total y la línea de Hifa, abrir `/tribus/semilla` (Riego avalada) y `/tribus/puerto` (Marketing esperando aval), cambiar a inglés, abrir `/tribus/grano`.

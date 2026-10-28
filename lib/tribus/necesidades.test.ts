@@ -112,6 +112,17 @@ describe("máximo total de la tarea", () => {
     expect(buscarNecesidad("agua-plomeria")!.topeTotal).toEqual({ unidad: "semillas", valor: 150 });
     expect(buscarNecesidad("semilla-riego")!.topeTotal).toBeNull();
   });
+  it("el orden de la lista cambia quién se queda con el total", () => {
+    const a = { persona: "a", horas: 12 };
+    const b = { persona: "b", horas: 6 };
+    const total = { unidad: "horas", valor: 15 } as const;
+    const ab = repartirConTopeTotal([a, b], null, total, V);
+    const ba = repartirConTopeTotal([b, a], null, total, V);
+    expect(ab.personas.map((p) => [p.persona, p.horasConSemillas])).toEqual([["a", 12], ["b", 3]]);
+    expect(ba.personas.map((p) => [p.persona, p.horasConSemillas])).toEqual([["b", 6], ["a", 9]]);
+    expect(ab.horasConSemillas).toBe(15);
+    expect(ba.horasConSemillas).toBe(15);
+  });
   it("sin máximo total, cada persona suma lo suyo", () => {
     const r = repartirConTopeTotal([{ persona: "a", horas: 8 }, { persona: "b", horas: 8 }], null, null, V);
     expect(r.horasConSemillas).toBe(16);
@@ -153,7 +164,8 @@ describe("máximo total de la tarea", () => {
 describe("nombres de las Semillas", () => {
   it("el módulo no usa 'brotes' ni 'germinar'", async () => {
     const { readFileSync } = await import("node:fs");
-    const src = readFileSync(`${__dirname}/necesidades.ts`, "utf8");
-    expect(src).not.toMatch(/brotes|germin/i);
+    for (const ruta of [`${__dirname}/necesidades.ts`, `${__dirname}/../idioma/textos/tribus.ts`]) {
+      expect(readFileSync(ruta, "utf8")).not.toMatch(/brotes|germin/i);
+    }
   });
 });

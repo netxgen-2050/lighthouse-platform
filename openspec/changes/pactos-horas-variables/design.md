@@ -92,7 +92,7 @@ function semillasVariables(declaradas, mesActual, compromisoMeses): {
 - **Si se va sin avisar:** pierde solo las Semillas pendientes del mes en curso; las de los meses anteriores confirmados se reciben.
 - **Cómo encaja con las constancias** (ADR-021, Propuesta <!-- arquitecto (28-oct) -->). Las Semillas pendientes salen de la `pacto-confirma-horas` de cada mes y se calculan en el render, sin guardar nada nuevo. Recibirlas sería el momento de emitir la **constancia base mensual** (`semillas-base`, ADR-012), congelada: así no hay que revocar nada si la persona se va sin avisar, porque lo que se pierde nunca llegó a ser constancia base. Emitirla queda para `evaluacion-pares`.
 - **Lo que hace falta para las salidas** (otro cambio): un "terminar el pacto" con aviso (constancia de la persona) y una forma de registrar "se fue sin avisar" (lo marca la comunidad, como en D31). Con eso, `semillasVariables` suma un parámetro `salida` y no cambia nada más.
-- **Pregunta abierta:** qué pasa con los meses confirmados **después** de cumplir el mínimo (¿se reciben al confirmarse, o empieza otro ciclo de mínimo?). Hasta que Gus decida, quedan como Semillas pendientes.
+- **Decidido por Gus (28-oct):** los meses confirmados **después** de cumplir el mínimo se reciben al confirmarse.
 
 ### 8. ⚖ "Compromiso mínimo" con criterio de la legislación argentina (borrador)
 

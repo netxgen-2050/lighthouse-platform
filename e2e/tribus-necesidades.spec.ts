@@ -65,9 +65,44 @@ test("Marketing de Puerto espera el aval", async ({ page }) => {
 
 test("teclado: Tab hasta Plomería y Enter la abre", async ({ page }) => {
   await page.goto("/tribus/agua");
-  await necesidad(page, "agua-plomeria").locator("summary").focus();
+  const resumen = necesidad(page, "agua-plomeria").locator("summary");
+  let llego = false;
+  for (let i = 0; i < 80 && !llego; i++) {
+    await page.keyboard.press("Tab");
+    llego = await resumen.evaluate((el) => el === document.activeElement);
+  }
+  expect(llego).toBe(true);
   await page.keyboard.press("Enter");
-  await expect(necesidad(page, "agua-plomeria")).toContainText("Conectar la cisterna nueva con la red del núcleo común");
+  const n = necesidad(page, "agua-plomeria");
+  await expect(n).toContainText("Conectar la cisterna nueva con la red del núcleo común");
+  await expect(n).toContainText("~16 h");
+  await expect(n).toContainText("5 de diciembre de 2026");
+  await expect(n).toContainText("Habilidad: Plomería");
+  await expect(n).toContainText("Círculo:");
+});
+
+test("de campo junto al título sin abrir la necesidad", async ({ page }) => {
+  await page.goto("/tribus/barda");
+  await expect(necesidad(page, "barda-riego").locator("summary")).toContainText("De campo");
+});
+
+test("Riego de Semilla Viva no tiene máximo total", async ({ page }) => {
+  await page.goto("/tribus/semilla");
+  const n = await abrir(page, "semilla-riego");
+  await expect(n).not.toContainText("Máximo total");
+});
+
+test("Energía solar no nombra a Hifa", async ({ page }) => {
+  await page.goto("/tribus/valle");
+  const n = await abrir(page, "valle-solar");
+  await expect(n).not.toContainText("Hifa");
+});
+
+test("Bioconstrucción hecha está marcada como ejemplo", async ({ page }) => {
+  await page.goto("/tribus/valle");
+  const resumen = necesidad(page, "valle-bioconstruccion").locator("summary");
+  await expect(resumen).toContainText("Hecha");
+  await expect(resumen).toContainText("ejemplo");
 });
 
 test("el ancla abre la necesidad", async ({ page }) => {
