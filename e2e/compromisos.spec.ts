@@ -251,8 +251,10 @@ test("al recargar con datos no se muestra el estado vacío", async ({ page }) =>
   await expect(page.getByText("Todavía no registraste compromisos.")).toHaveCount(0);
 });
 
-test("exactamente un main y Compromisos marcado en el encabezado", async ({ page }) => {
+test("entrando por la URL: un solo main y ningún enlace del rail marcado (Compromisos está fuera de la navegación)", async ({ page }) => {
+  await page.goto("/compromisos");
   await expect(page.getByRole("main")).toHaveCount(1);
   const nav = page.getByRole("navigation", { name: "Principal" });
-  await expect(nav.getByRole("link", { name: "Compromisos" })).toHaveAttribute("aria-current", "page");
+  await expect(nav.getByRole("link", { name: "Compromisos" })).toHaveCount(0);
+  await expect(nav.locator('a[aria-current="page"]')).toHaveCount(0);
 });

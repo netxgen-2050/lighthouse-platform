@@ -33,6 +33,12 @@ export type Destino = {
   grupo: IdGrupo;
   /** ¿Existe la página en app/? Se mantiene a mano y lo vigila lib/navegacion.test.ts contra el disco. */
   existe: boolean;
+  /**
+   * Solo saca el destino de los menús (rail, barra superior, menú del avatar): la página sigue con su URL y su permiso.
+   * Compromisos se oculta por decisión de Gus del 27-oct-2026 (el Mercado se lleva fuera de la plataforma);
+   * para volver, ver docs/notas/compromisos-en-pausa.md.
+   */
+  oculto?: true;
 };
 
 // Única lista de destinos, en el orden del rail. El rail muestra solo los que existen.
@@ -45,7 +51,7 @@ export const DESTINOS: readonly Destino[] = [
   { href: "/pactos", clave: "pactos", icono: FileSignature, grupo: "participar", existe: true },
   { href: "/semillas", clave: "semillas", icono: Leaf, grupo: "participar", existe: true },
   { href: "/fogon", clave: "fogon", icono: Flame, grupo: "participar", existe: true },
-  { href: "/compromisos", clave: "compromisos", icono: Handshake, grupo: "participar", existe: true },
+  { href: "/compromisos", clave: "compromisos", icono: Handshake, grupo: "participar", existe: true, oculto: true },
   { href: "/congreso", clave: "congreso", icono: CalendarDays, grupo: "participar", existe: true },
   { href: "/sumarte", clave: "sumarte", icono: Sprout, grupo: "sumarte", existe: true },
   { href: "/perfil", clave: "perfil", icono: UserRound, grupo: "persona", existe: true },
@@ -84,5 +90,5 @@ export function tituloDeGrupo(id: (typeof GRUPOS_RAIL)[number]["id"], idioma: Id
 }
 
 export function destinosDeGrupo(grupo: IdGrupo) {
-  return destinosDisponibles().filter((d) => d.grupo === grupo);
+  return destinosDisponibles().filter((d) => d.grupo === grupo && !d.oculto);
 }

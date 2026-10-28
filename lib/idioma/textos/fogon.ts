@@ -68,6 +68,20 @@ const es = {
     con: "Con tu Pase Fundador (simulado) votás en las decisiones del Fideicomiso.",
     sin: "Para votar en el Fideicomiso hace falta el Pase Fundador.",
   },
+  /** Parámetros opcionales de una decisión: cada fila se muestra solo si el dato existe. */
+  parametros: {
+    titulo: "Parámetros",
+    cierra: "Cierra el:",
+    acuerdo: "Se apoya en:",
+    pacto: "Pacto",
+    norma: "Norma",
+    monto: "Monto pedido:",
+    fuente: "Fuente:",
+    fuentes: { "fondo-comun": "Fondo Común", tribu: "Fondo de la tribu", fideicomiso: "Fideicomiso" },
+    sinDato: "sin dato",
+    simulado: "(simulado)",
+    aviso: "Plata simulada: nadie paga ni cobra.",
+  },
 };
 
 const en: Textos<typeof es> = {
@@ -128,6 +142,19 @@ const en: Textos<typeof es> = {
   pase: {
     con: "With your Founder Pass (simulated) you vote on the Trust decisions.",
     sin: "Voting in the Trust requires the Founder Pass.",
+  },
+  parametros: {
+    titulo: "Parameters",
+    cierra: "Closes on:",
+    acuerdo: "Rests on:",
+    pacto: "Pact",
+    norma: "Rule",
+    monto: "Amount requested:",
+    fuente: "Source:",
+    fuentes: { "fondo-comun": "Common Fund", tribu: "Tribe fund", fideicomiso: "Trust" },
+    sinDato: "no data",
+    simulado: "(simulated)",
+    aviso: "Simulated money: nobody pays or collects.",
   },
 };
 

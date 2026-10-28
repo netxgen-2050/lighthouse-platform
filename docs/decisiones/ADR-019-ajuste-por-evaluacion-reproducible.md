@@ -1,4 +1,4 @@
-# ADR-018 · El ajuste por evaluación entre pares se calcula en el servidor con una función pura con versión, y la constancia de ajuste guarda los parámetros que usó
+# ADR-019 · El ajuste por evaluación entre pares se calcula en el servidor con una función pura con versión, y la constancia de ajuste guarda los parámetros que usó
 
 - **Estado:** Propuesta
 - **Fecha:** 2026-10-27

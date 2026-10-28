@@ -1,15 +1,19 @@
 import { costo, costoReparto, CREDITOS_POR_PERSONA, repartirPresupuesto, type Reparto } from "@/lib/cuadratico/motor";
+import { textos } from "@/lib/idioma/textos";
+import type { Idioma } from "@/lib/idioma/tipos";
 import type { Consulta } from "./tipos";
 
 // Cuentas puras de la pantalla "Mi reparto" (sin React): cuánto suma o resta cada voto y qué le toca a cada opción en plata.
 
-/** "1 voto", "3 votos" (con el singular donde corresponde). */
-export function textoVotos(n: number): string {
-  return `${n} ${Math.abs(n) === 1 ? "voto" : "votos"}`;
+const u = (idioma: Idioma) => textos("fogonConsultas", idioma).unidades;
+
+/** "1 voto", "3 votos" ("1 vote", "3 votes"; con el singular donde corresponde). */
+export function textoVotos(n: number, idioma: Idioma = "es"): string {
+  return `${n} ${Math.abs(n) === 1 ? u(idioma).voto : u(idioma).votos}`;
 }
 
-export function textoCreditos(n: number): string {
-  return `${n} ${Math.abs(n) === 1 ? "crédito" : "créditos"}`;
+export function textoCreditos(n: number, idioma: Idioma = "es"): string {
+  return `${n} ${Math.abs(n) === 1 ? u(idioma).credito : u(idioma).creditos}`;
 }
 
 export function votosDe(reparto: Reparto, opcion: string): number {
@@ -31,16 +35,16 @@ export function costoDelProximoVoto(reparto: Reparto, opcion: string): number {
 }
 
 /** `null` si se puede sumar un voto; si no, el motivo en texto. */
-export function motivoNoSumar(reparto: Reparto, opcion: string): string | null {
+export function motivoNoSumar(reparto: Reparto, opcion: string, idioma: Idioma = "es"): string | null {
   const suma = costoDelProximoVoto(reparto, opcion);
   const quedan = creditosRestantes(reparto);
   if (suma <= quedan) return null;
-  return `No te alcanzan los créditos: el próximo voto en esta opción suma ${suma} y te quedan ${quedan}`;
+  return textos("fogonConsultas", idioma).consulta.noAlcanza(suma, quedan);
 }
 
 /** `null` si se puede quitar un voto; si no, el motivo ("−" no baja de 0 si la consulta no admite votos en contra). */
-export function motivoNoQuitar(consulta: Consulta, reparto: Reparto, opcion: string): string | null {
-  if (!consulta.votosEnContra && votosDe(reparto, opcion) <= 0) return "Esta opción ya está en 0 votos";
+export function motivoNoQuitar(consulta: Consulta, reparto: Reparto, opcion: string, idioma: Idioma = "es"): string | null {
+  if (!consulta.votosEnContra && votosDe(reparto, opcion) <= 0) return textos("fogonConsultas", idioma).consulta.yaEnCero;
   return null;
 }
 

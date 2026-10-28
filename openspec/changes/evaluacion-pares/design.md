@@ -30,7 +30,7 @@ El 28-oct-2026 Gus respondió las preguntas del PR #127:
 Separado de `lib/semillas/` porque la evaluación entre pares también va a servir para círculos, convocatorias (D31) y el pacto en dos partes. Archivos:
 - `tipos.ts`: `Dimension = "rol" | "cultura"`, `Evaluacion = { de: string; a: string; dimension: Dimension; nota: number; motivo: string }`, `Parametros`, `Resultado`, `MotivoDescarte = "autoevaluacion" | "fuera-del-equipo" | "sin-motivo" | "nota-invalida" | "reciprocidad"`.
 - `parametros.ts`: `PARAMETROS_DE_PARTIDA = { agregado: "mediana", reciprocidadActiva: false, umbralReciprocidad: 1.5, topePorEvaluador: 1, minimoEvaluadores: 3, pesoRol: 0.5, fuerza: 0.2 }` y `FUERZAS = [0, 0.05, 0.1, 0.15, 0.2]`. Comentario: "valores de partida, se calibran con simulación (NS_Tokenomics 29 K11). Partimos de que todos son honestos: la reciprocidad está apagada hasta que la comunidad la active o K11 lo pida. El peso 50/50 lo podrán cambiar los admins por gobernanza más adelante".
-  <!-- arquitecto: versión del algoritmo para que cada ajuste sea reproducible (ADR-018, como ADR-010 con los modelos de tokenomics). -->
+  <!-- arquitecto: versión del algoritmo para que cada ajuste sea reproducible (ADR-019, como ADR-010 con los modelos de tokenomics). -->
   También `VERSION_EVALUACION = 1`: se sube con cada cambio del orden del cálculo o de los parámetros de partida.
 - `calculo.ts`: `calcularFactorEvaluacion(equipo: string[], evaluaciones: Evaluacion[], persona: string, parametros?: Partial<Parametros>): Resultado` y helpers puros (`mediana`, `mediaRecortada`, `redondearFactor`).
 - `guia.ts`: guía por dimensión y nivel, es/en.
@@ -68,7 +68,7 @@ Que quede **fija al abrir la ronda** quiere decir que la comunidad la elige **an
 - Todos puntúan sabiendo cuánto pesa su nota.
 - Nadie puede subirla o bajarla después de ver los resultados para favorecer o perjudicar a alguien.
 - Si la comunidad quiere otra fuerza, la decide ahora y **vale desde la ronda siguiente**. Las constancias de ajuste ya emitidas no se tocan, así que no hace falta revocar ni volver a emitir las de todo el equipo.
-- La constancia de ajuste guarda la fuerza con que se calculó (ADR-018), así que siempre se puede ver con qué regla salió.
+- La constancia de ajuste guarda la fuerza con que se calculó (ADR-019), así que siempre se puede ver con qué regla salió.
 
 En el prototipo el selector **no cambia la fuerza de la ronda**: muestra "cómo habría dado con otra fuerza". Por eso cada fuerza simulada arma una constancia de ajuste con otro `uid` (nunca se edita una constancia) que apunta a la misma base, y la pantalla lo aclara.
 
@@ -113,9 +113,9 @@ type Constancia = { uid: string; schema: "semillas-base" | "semillas-ajuste"; af
 ```
 - Base: `uid = ejemplo-base-<comunidad>-<periodo>`, `datos = { pacto, horas, valor_hora_usd: HOUR_REF_USD, periodo, version_pacto: "v1-ejemplo", semillas: Math.round(horas × HOUR_REF_USD) }` (una ronda = un mes; 10 h → 50).
 - Ajuste: `uid = ejemplo-ajuste-<comunidad>-<periodo>-f<fuerza × 100>`, `apunta_a = uid de la base`, `datos = { f_eval, semillas, version_evaluacion, fuerza, agregado, reciprocidad_activa, umbral_reciprocidad, tope_por_evaluador, minimo_evaluadores, peso_rol, evaluadores_rol, evaluadores_cultura }` (50 × 1,08 → 54; con reciprocidad activa, 50 × 1,05 = 52,5 → 53). `reciprocidad_activa` va como `"si"`/`"no"` porque `datos` solo admite texto o número.
-<!-- arquitecto: ADR-012 dice "nunca se edita"; con el mismo uid y otra fuerza el ejemplo enseñaría a editar. Parámetros congelados por ADR-018. -->
+<!-- arquitecto: ADR-012 dice "nunca se edita"; con el mismo uid y otra fuerza el ejemplo enseñaría a editar. Parámetros congelados por ADR-019. -->
   - El `uid` del ajuste cambia con la fuerza: otra fuerza es **otra** constancia que apunta a la misma base. Como en la versión real la fuerza queda fija al abrir la ronda (§2 bis), eso solo pasa en la simulación. La pantalla lo dice en una línea ("simulación: con otra fuerza sería otra constancia que apunta a la misma base; en una comunidad real la fuerza se fija al abrir la ronda").
-  - `datos` guarda los parámetros con que se calculó (ADR-018) y solo conteos agregados: **nunca** ids de evaluadores ni motivos. Test: `JSON.stringify(constancias)` no contiene ningún id de evaluador.
+  - `datos` guarda los parámetros con que se calculó (ADR-019) y solo conteos agregados: **nunca** ids de evaluadores ni motivos. Test: `JSON.stringify(constancias)` no contiene ningún id de evaluador.
   - `semillas` del ajuste = `Math.round(semillasBase × f_eval)` sobre la base **entera** ya emitida (no sobre las horas), con el mismo cuidado de coma flotante que `redondearFactor` (50 × 1,05 = 52,5 está justo en el medio).
   - Las Semillas base salen de una sola función mensual reutilizada (la misma cuenta que `semillasTiempo` sin el × `MESES`), para que el bloque de constancias y el panel no diverjan. El bloque aclara que la constancia es **por ronda (un mes)**, porque el panel muestra 3 meses (150).
 - `creada_en` fija (`2026-10-31T00:00:00Z`) para que sea determinista. `afirma` siempre `"netx"` (ADR-012: nunca la billetera de una persona).
@@ -132,7 +132,7 @@ type Constancia = { uid: string; schema: "semillas-base" | "semillas-ajuste"; af
 - `lib/legal/terminos.ts`: `evaluacionPares` ("Evaluación entre pares": quién evalúa, que es privada y agregada, que lo escrito no se muestra tal cual sino resumido, que las Semillas no son plata ni se transfieren y que los parámetros son de prueba) y `constanciaSemillas` ("Constancia de Semillas": registro que no se edita, se revoca y se vuelve a emitir; hoy vive en el navegador como ejemplo; nunca datos personales en una cadena). Ambos `borrador: true` y con `en`.
 
 ### 8. Camino a la versión real (no se construye ahora)
-<!-- arquitecto: para que el prototipo no fije un patrón que con datos reales filtraría quién evaluó a quién (ADR-018, ADR-015). -->
+<!-- arquitecto: para que el prototipo no fije un patrón que con datos reales filtraría quién evaluó a quién (ADR-019, ADR-015). -->
 - `calcularFactorEvaluacion` es pura y se puede importar desde el servidor tal cual. En la versión real corre **solo en el servidor**; al navegador llega únicamente el `Resultado`. Las evaluaciones con `de` nunca viajan al navegador de otra persona.
 - El `equipo` lo arma el servidor desde la membresía del pacto o círculo en el período, nunca desde lo que mande el navegador.
 - Las evaluaciones van a una tabla propia (`evaluaciones`, skill `base-de-datos`), de solo agregar, nunca en `jsonb` ni en logs, y entran en "Mis datos" (lo que la persona **dio**; lo recibido, solo agregado).
@@ -152,4 +152,4 @@ type Constancia = { uid: string; schema: "semillas-base" | "semillas-ajuste"; af
 - **Semillas de pactos puntuales (D20):** el ajuste las alcanza, pero ¿cuánto pesa? Opciones: (1) la misma fórmula con una fuerza menor para puntuales (por ejemplo, tope 0,1); (2) sin notas de pares: solo la confirmación de quien recibe la tarea, que da 1,0 o retiene la constancia; (3) ajuste solo si la tarea tuvo 3 personas o más en el equipo, y si no, 1,0. Decide Gus.
 - ¿El ajuste cambia el saldo del panel de Semillas en este prototipo? Hoy queda solo en el bloque de ejemplo.
 - ¿Quién fija la fuerza al abrir la ronda (admin, consulta del Fogón o consenso) y qué fuerza usa una comunidad nueva? Hoy, 0,2.
-- ¿Gus acepta ADR-018 junto con ADR-012?
+- ¿Gus acepta ADR-019 junto con ADR-012?

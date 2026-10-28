@@ -1,6 +1,9 @@
 /**
  * Contenido de la política de privacidad (BORRADOR: lo revisa Gabriel antes de cualquier uso real, pendiente R14).
  * Vive acá, y no en la página, para que la pantalla de consentimiento y `/privacidad` digan lo mismo.
+ *
+ * 27-oct-2026: se quitaron los compromisos del resumen, de la tabla y de las finalidades sin subir `VERSION_POLITICA`
+ * (solo reduce lo descrito; cambio `rail-sin-compromisos`, ADR-017).
  */
 
 export const RESPONSABLE = {
@@ -15,7 +18,7 @@ export const UBICACION_DATOS = "Estados Unidos";
 /** Resumen en palabras simples, el mismo en la pantalla de consentimiento y al principio de `/privacidad`. */
 export const RESUMEN: readonly string[] = [
   "Quién se ocupa de tus datos: NetXGen, una entidad registrada en Honduras.",
-  "Qué guardamos: tu email y tu billetera (por el login), y lo que cargues en la plataforma: perfil, comunidades, pactos, Semillas, votos, compromisos, contactos, verificación de identidad y reportes.",
+  "Qué guardamos: tu email y tu billetera (por el login), y lo que cargues en la plataforma: perfil, comunidades, pactos, Semillas, votos, contactos, verificación de identidad y reportes.",
   "Para qué: para que la plataforma funcione y para conectar tu presencia con tu perfil. Nada más.",
   "Dónde: los servicios que usamos (Privy, Vercel, Neon y GitHub) están en Estados Unidos. Es una transferencia internacional de datos.",
   "Tus derechos: podés ver y descargar tus datos, borrarlos y retirar tu consentimiento cuando quieras desde Mis datos, y corregirlos desde tu Perfil.",
@@ -46,8 +49,8 @@ export const DATOS_POR_PANTALLA: readonly DatosDePantalla[] = [
     donde: "Hoy, solo en tu navegador. Con la base, en Neon.",
   },
   {
-    pantalla: "Votos y Compromisos",
-    datos: "Cómo votás en las rondas y los compromisos que asumís.",
+    pantalla: "Votos",
+    datos: "Cómo votás en las rondas.",
     donde: "Hoy, solo en tu navegador. Con la base, en Neon.",
   },
   {
@@ -79,7 +82,7 @@ export const DATOS_POR_PANTALLA: readonly DatosDePantalla[] = [
 export const FINALIDADES: readonly string[] = [
   "Reconocerte y que cada persona vea solo lo suyo.",
   "Mostrarte el territorio, las comunidades y lo que podés hacer según tu plan.",
-  "Registrar tus pactos, Semillas, votos y compromisos.",
+  "Registrar tus pactos, Semillas y votos.",
   "Responder a tus pedidos de contacto y a tus reportes.",
   "Cuando exista la versión real: verificar tu identidad antes de que aportes, como exige la prevención de lavado de activos.",
 ];

@@ -21,8 +21,10 @@ test("el rail trae solo la navegación, en orden", async ({ page }) => {
   await expect(nav).toBeVisible();
   const textos = (await nav.getByRole("link").allInnerTexts()).map((t) => t.trim().split("\n")[0]);
   // "Admin" va al final, en el grupo "Interno", y solo lo ve el super admin (el rol por defecto de estas pruebas).
-  const orden = ["Inicio", "Territorio", "Tribus", "Pactos", "Semillas", "Fogón", "Compromisos", "Congreso", "Sumarte", "Admin"];
+  const orden = ["Inicio", "Territorio", "Tribus", "Pactos", "Semillas", "Fogón", "Congreso", "Sumarte", "Admin"];
   expect(textos).toEqual(orden.filter((o) => textos.includes(o)));
+  // Compromisos está en pausa (27-oct-2026): no aparece en el rail.
+  await expect(nav.getByRole("link", { name: "Compromisos" })).toHaveCount(0);
   expect(textos).toEqual(expect.arrayContaining(["Inicio", "Tribus", "Congreso", "Sumarte"]));
   // Perfil, Pasaporte, Mi recorrido y Configuración viven en el menú del avatar; NetX y la campanita, en la barra superior.
   await expect(nav.getByRole("link", { name: "Perfil" })).toHaveCount(0);
@@ -84,7 +86,8 @@ test("el rail muestra los grupos Descubrir y Participar en la computadora", asyn
   await expect(nav.getByText("Descubrir", { exact: true })).toBeVisible();
   await expect(nav.getByText("Participar", { exact: true })).toBeVisible();
   await expect(nav.getByRole("list", { name: "Descubrir" }).getByRole("link")).toHaveCount(3);
-  await expect(nav.getByRole("list", { name: "Participar" }).getByRole("link")).toHaveCount(5);
+  await expect(nav.getByRole("list", { name: "Participar" }).getByRole("link")).toHaveCount(4);
+  await expect(nav.getByRole("link", { name: "Compromisos" })).toHaveCount(0);
 });
 
 test("menú de la persona: se abre con Enter, trae Perfil, Pasaporte, Mi recorrido y Configuración, y Escape lo cierra", async ({ page }) => {
@@ -159,6 +162,7 @@ test("celular 390 x 844: rail a la izquierda, 72 px o menos, sin scroll horizont
     expect(caja!.x).toBe(0);
     expect(caja!.width).toBeLessThanOrEqual(72);
     await expect(nav.getByRole("link", { name: "Inicio" })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Compromisos" })).toHaveCount(0);
     const desborde = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     expect(desborde, `scroll horizontal en ${ruta}`).toBe(false);
   }
