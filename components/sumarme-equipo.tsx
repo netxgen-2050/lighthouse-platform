@@ -54,6 +54,7 @@ export function SumarmeEquipo({ circuloId, nombreEquipo }: { circuloId: string; 
     setPedidos(leerPedidosDelNavegador());
     setAdhirio(puedeParticiparEnGobernanza(leerMembresiaDelNavegador()));
     setAbierto(false);
+    setFalloAlmacen(false);
     setAviso({ n: 0, texto: "" });
     setCargado(true);
   }, [conSesion, idPersona]);
