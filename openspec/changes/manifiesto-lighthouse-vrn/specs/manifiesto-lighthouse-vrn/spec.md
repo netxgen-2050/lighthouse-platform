@@ -26,12 +26,12 @@ The principles of Lighthouse VRN SHALL be read from a single source with stable 
 - **WHEN** se busca un id que no está en la lista vigente
 - **THEN** la búsqueda no devuelve nada y no da error
 
-### Requirement: Ficha de Lighthouse VRN Commons en Tribus
-`/tribus/lighthouse` SHALL show the sheet of the común with its provisional public name ("Lighthouse VRN Commons"), stating that it is the meta-tribe all tribes belong to. The sheet MUST show the purpose, the principles grouped under their five headings, the rights of the land, the transversal teams, the person's adhesion state in text, and the actions to read and adhere to the manifesto. The provisional name MUST come from a single constant. `/tribus` MUST show a highlighted card that links to this sheet before the list of tribes.
+### Requirement: Ficha de Lighthouse VRN Procomún en Tribus
+`/tribus/lighthouse` SHALL show the sheet of the común with its public name ("Lighthouse VRN Procomún" in Spanish and "Lighthouse VRN Commons" in English, decided by Gus), stating that it is the meta-tribe all tribes belong to. The sheet MUST show the purpose, the principles grouped under their five headings, the rights of the land, the transversal teams, the person's adhesion state in text, and the actions to read and adhere to the manifesto. The name MUST come from a single bilingual constant. `/tribus` MUST show a highlighted card that links to this sheet before the list of tribes.
 
 #### Scenario: Llegar desde Tribus
-- **WHEN** una persona activa la tarjeta "Lighthouse VRN Commons" en `/tribus` con el teclado
-- **THEN** llega a `/tribus/lighthouse`, con "Lighthouse VRN Commons" como encabezado y el propósito debajo
+- **WHEN** una persona activa la tarjeta "Lighthouse VRN Procomún" en `/tribus` con el teclado
+- **THEN** llega a `/tribus/lighthouse`, con "Lighthouse VRN Procomún" como encabezado (en inglés, "Lighthouse VRN Commons") y el propósito debajo
 
 #### Scenario: Principios agrupados
 - **WHEN** la persona mira la ficha
@@ -72,7 +72,7 @@ The transversal teams of Lighthouse VRN SHALL be the circles of the común of th
 
 #### Scenario: Raíz de la holarquía
 - **WHEN** la persona abre `/fogon/gobernanza`
-- **THEN** la raíz de la estructura se llama "Lighthouse VRN Commons"
+- **THEN** la raíz de la estructura se llama "Lighthouse VRN Procomún" (en inglés, "Lighthouse VRN Commons")
 
 ### Requirement: Las tribus suman principios sin contradecir
 A tribe's manifesto SHALL be able to add its own principles to those of Lighthouse VRN and MUST NOT contradict, replace, relax or remove them. The rule MUST be written in the Lighthouse VRN manifesto. The data of tribe principles MUST pass a validation that rejects: an id equal to a Lighthouse VRN principle id, a principle that declares itself an exception to a Lighthouse VRN principle, a principle that cites as deepened a principle that does not exist, and an empty text. The reading of a tribe's manifesto MUST show its own principles under "Suma a los principios de Lighthouse VRN", with a link to the Lighthouse VRN manifesto, or say in text that the tribe has not added any yet.

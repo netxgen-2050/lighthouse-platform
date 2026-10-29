@@ -40,7 +40,7 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 34 rutas auditadas", () => {
+test("hay 36 rutas auditadas", () => {
   expect(rutas).toHaveLength(36);
 });
 

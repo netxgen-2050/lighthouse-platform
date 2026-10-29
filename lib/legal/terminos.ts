@@ -207,7 +207,7 @@ export const TERMINOS = {
   adhesion: {
     titulo: "Adherir a un manifiesto",
     texto:
-      "Adherir es aceptar por escrito los principios y las reglas de convivencia de una comunidad. No te hace dueño de nada ni te obliga a pagar: te compromete a cuidar esos acuerdos. En Lighthouse VRN, adherir al manifiesto es lo que te permite participar en las decisiones; la adhesión vale desde que adherís, y si el manifiesto cambia de versión tenés que volver a adherir. Podés retirarte siguiendo lo que diga el propio manifiesto. En el prototipo todo es simulado y queda solo en este navegador.",
+      "Adherir es aceptar por escrito los principios y las reglas de convivencia de una comunidad. No te hace dueño de nada ni te obliga a pagar: te compromete a cuidar esos acuerdos, y en una tribu la comunidad decide si te acepta. En Lighthouse VRN, adherir al manifiesto es lo que te permite participar en las decisiones; la adhesión vale desde que adherís, y si el manifiesto cambia de versión tenés que volver a adherir. Podés retirarte siguiendo lo que diga el propio manifiesto. En el prototipo todo es simulado y queda solo en este navegador.",
     borrador: true,
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.

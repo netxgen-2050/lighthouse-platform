@@ -6,7 +6,7 @@ import { EntrarPara } from "@/components/sesion/entrar-para";
 import { useSesion } from "@/components/sesion/contexto";
 import { puedeCapacidad } from "@/lib/permisos/niveles";
 import { TerminoLegal } from "@/components/termino-legal";
-import { useTextos } from "@/lib/idioma/cliente";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
 import { useMembresia } from "@/lib/membresia/usar-membresia";
 
@@ -36,6 +36,7 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
   // Adherir es de Miembro en adelante; Explorador y sin cuenta ven "Sumate para adherir".
   const puedeAdherir = conSesion && puedeCapacidad(nivel, "adherir");
   const { estado, cargado, falloAlmacen, aceptar, desactualizada } = useMembresia(comunidad, conSesion);
+  const idioma = useIdioma();
   const t = useTextos("tribus").membresia;
   const [mensaje, setMensaje] = useState("");
   const aviso = useRef<HTMLParagraphElement>(null);
@@ -105,7 +106,7 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
                 <Link className={DORADO} href={manifiesto}>
                   {t.adherirManifiesto(esLighthouse)}
                 </Link>
-                <TerminoLegal clave="adhesion" />
+                <TerminoLegal clave="adhesion" idioma={idioma} />
               </span>
             ) : (
               <button

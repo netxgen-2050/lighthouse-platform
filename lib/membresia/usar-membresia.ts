@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { CLAVES } from "@/lib/demo/claves";
+import { adhesionDesactualizada } from "@/lib/gobernanza/participar";
 import { VERSION_MANIFIESTO_VRN } from "@/lib/manifiestos/lighthouse-vrn";
 import {
   COMUNIDAD_LIGHTHOUSE,
@@ -13,7 +14,7 @@ import {
   type EstadoMembresia,
   type Membresias,
 } from "./estado";
-import { SIN_VERSIONES, conVersion, leerVersiones, versionAdheridaDe, type VersionesAdheridas } from "./versiones";
+import { SIN_VERSIONES, conVersion, leerVersiones, type VersionesAdheridas } from "./versiones";
 
 /**
  * Membresía simulada de una comunidad, guardada en el navegador. `cargado` es falso hasta leer lo guardado.
@@ -68,8 +69,7 @@ export function useMembresia(comunidad: string, activo = true) {
   const estado: EstadoMembresia = estadoDe(todas, comunidad);
   const esLighthouse = comunidad === COMUNIDAD_LIGHTHOUSE;
   // Solo el manifiesto del Lighthouse tiene versión que seguir; las tribus no.
-  const desactualizada =
-    esLighthouse && estado !== "no-miembro" && versionAdheridaDe(versiones, comunidad) !== VERSION_MANIFIESTO_VRN;
+  const desactualizada = esLighthouse && adhesionDesactualizada(todas, versiones);
   return {
     estado,
     cargado,

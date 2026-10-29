@@ -147,6 +147,7 @@ export async function FichaComun() {
       <section aria-labelledby="vrn-adhesion" className={`${tarjeta} mt-6`}>
         <h2 id="vrn-adhesion" className="text-lg font-semibold">
           {f.adhesion}
+          <TerminoLegal clave="adhesiongobernanza" idioma={idioma} />
         </h2>
         <EstadoAdhesionVrn />
         <MembresiaAcciones

@@ -56,14 +56,3 @@ export function leerAdhesionDelNavegador(): Adhesion {
   }
 }
 
-/** Escribe en el navegador la versión a la que adhirió una comunidad. Devuelve false si no se pudo guardar. */
-export function guardarVersionAdherida(comunidad: string, version: string): boolean {
-  try {
-    const actual = leerVersiones(window.localStorage.getItem(CLAVES.adhesionVersion));
-    window.localStorage.setItem(CLAVES.adhesionVersion, JSON.stringify(conVersion(actual, comunidad, version)));
-    return true;
-  } catch {
-    return false;
-  }
-}
-
