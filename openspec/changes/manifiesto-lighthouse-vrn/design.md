@@ -211,6 +211,11 @@ export function puedeParticiparEnGobernanza(m: Membresias): boolean; // hoy = ad
 - **Holarquía:** hoy no tiene acciones de participación (solo navegar), así que no cambia.
 - **`fogon-propuestas`:** cuando se implemente, sin adhesión la persona queda como máximo en el nivel "red" (puede leer, no puede participar). Hay que anotarlo en su design.
 - **e2e existentes** que votan en `/fogon` o reparten en `/fogon/consultas`: tienen que adherir antes. Se agrega un helper que escribe la membresía `lighthouse: "pedido"` en el navegador.
+<!-- arquitecto: la regla tiene que poder usarse en el servidor y frenar también la acción, no solo el botón (ADR-023) -->
+- **La regla es pura.** `participar.ts` no importa nada del navegador (`window`, `localStorage`, `leerMembresiaDelNavegador`): recibe `Membresias` como dato y la pantalla le pasa lo que leyó. Así la misma función sirve en el servidor cuando la adhesión esté en la base.
+- **El motivo `"manifiesto"` va primero de todo**, también antes de `requisito === "ninguno"` (hoy `motivoSinVoto` devuelve `null` en esa primera línea; si el chequeo nuevo va después, la huerta y las demás decisiones sin requisito se podrían votar sin adhesión). `Condicion` suma `adhirio: boolean` **obligatorio** y `SIN_CONDICION.adhirio = false`: si falta el dato, no se asume que adhirió. Los tests existentes de `motivoSinVoto` pasan a armar la condición con `adhirio: true`.
+- **Se frena la acción, no solo el botón:** `votar` y `llevarAlConsejo` ya pasan por `motivoSinVoto` y heredan el freno (test: sin adhesión, `votar` devuelve el mismo estado). En las consultas, `guardar()` de `consulta-cliente.tsx` no llama a `repo.guardarReparto` si `puedeParticiparEnGobernanza` da `false`.
+- **Cuando las consultas pasen a la base** (`fogon-cuadratico-en-la-base`), ocultar en la pantalla deja de alcanzar: la ruta `POST …/reparto` tiene que verificar la adhesión en el servidor, con la adhesión guardada en la base y su versión del manifiesto (ADR-023). Este cambio no lo implementa; deja la nota en el PR para que Gus la sume a ese cambio y a `fogon-propuestas`.
 
 ### 8. Pregunta de diseño abierta (no se implementa): un nivel más en Explorar el territorio y en Tribus
 
@@ -236,6 +241,7 @@ Recomendación [criterio]: empezar por **B** (barata y honesta con los datos) y 
 - [La validación de "no contradecir" es superficial] → se dice en el ⚖ y en el design. La revisión de fondo es del común; acá solo se impide lo que el modelo puede expresar (excepciones e ids pisados).
 - [Renombrar círculos rompe tests y textos] → mismos ids y lista de archivos en el proposal.
 - [Quien ya había adherido al "Pacto de convivencia" queda adherida al manifiesto nuevo sin haberlo leído] → es un prototipo con datos de ejemplo. Guardar la versión adherida queda fuera de alcance (pregunta abierta).
+- <!-- arquitecto --> [El requisito de adhesión es solo de pantalla y se puede saltear escribiendo la membresía a mano en el navegador] → aceptable mientras los votos también vivan en el navegador. Deja de serlo el día que un voto se guarde en la base: ahí lo verifica el servidor (ADR-023, Propuesta).
 
 ## Migration Plan
 
