@@ -104,7 +104,15 @@ const es = {
     titulo: "Discusión",
     vacia: "Todavía no hay nada en la discusión",
     sinPermiso: "Tu nivel no puede leer la discusión de esta decisión.",
-    relacion: "como",
+    relaciones: {
+      visita: "como visita (sin cuenta)",
+      red: "como parte de la red",
+      comun: "como parte del común",
+      ambito: "como parte del ámbito",
+      afectada: "como persona afectada",
+      proceso: "con rol de proceso",
+      presenta: "como quien presenta",
+    },
     aria: "Entradas de la discusión",
     tipos: {
       pregunta: "Pregunta",
@@ -183,7 +191,7 @@ const es = {
     enRevision: "Medida provisoria en revisión: sigue aplicándose hasta que la revisión decida",
     obligan: "Concerns que obligan a revisarla",
     aunNo: "Todavía no hay resultado: la propuesta sigue su recorrido.",
-    reabrir: "Una propuesta cerrada no se edita: reabrirla pide un nuevo consenso.",
+    reabrir: "Una propuesta cerrada no se edita: reabrirla pide un nuevo consenso, a través de una propuesta nueva.",
   },
   afectadas: {
     titulo: "Personas afectadas",
@@ -387,7 +395,15 @@ const en: Textos<typeof es> = {
     titulo: "Discussion",
     vacia: "Nothing in the discussion yet",
     sinPermiso: "Your level cannot read the discussion of this decision.",
-    relacion: "as",
+    relaciones: {
+      visita: "as a visitor (no account)",
+      red: "as part of the network",
+      comun: "as part of the common",
+      ambito: "as part of the circle",
+      afectada: "as an affected person",
+      proceso: "in a process role",
+      presenta: "as the presenter",
+    },
     aria: "Discussion entries",
     tipos: {
       pregunta: "Question",
@@ -466,7 +482,7 @@ const en: Textos<typeof es> = {
     enRevision: "Provisional measure under review: it keeps applying until the review decides",
     obligan: "Concerns that require reviewing it",
     aunNo: "No outcome yet: the proposal follows its path.",
-    reabrir: "A closed proposal is not edited: reopening it takes a new consensus.",
+    reabrir: "A closed proposal is not edited: reopening it takes a new consensus, through a new proposal.",
   },
   afectadas: {
     titulo: "Affected people",

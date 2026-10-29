@@ -158,7 +158,7 @@ export function PropuestaCliente({ id }: { id: string }) {
         </p>
         <p className="flex flex-wrap items-center gap-2 text-sm text-muted">
           <span>
-            {c.sinNombre ? t.discusion.sinNombre : t.discusion.por(persona(c.quien))} · {t.discusion.relacion} {t.niveles[c.nivel].toLowerCase()}
+            {c.sinNombre ? t.discusion.sinNombre : t.discusion.por(persona(c.quien))} · {t.discusion.relaciones[c.nivel]}
           </span>
           <span className={CHIP}>{t.discusion.estados[c.estado]}</span>
           {c.bloqueoNoLegitimo && <span>{t.discusion.bloqueoNoLegitimo}</span>}
@@ -243,7 +243,7 @@ export function PropuestaCliente({ id }: { id: string }) {
           {t.discusion.tipos[e.tipo]}
           {e.tipo === "a-un-lado" && <TerminoLegal clave="aunlado" idioma={idioma} />}
           <span className="font-normal text-muted">
-            {t.discusion.por(persona(e.quien))} · {t.discusion.relacion} {t.niveles[e.nivel].toLowerCase()}
+            {t.discusion.por(persona(e.quien))} · {t.discusion.relaciones[e.nivel]}
           </span>
         </p>
         <p>{txt(e.texto)}</p>
@@ -499,6 +499,7 @@ export function PropuestaCliente({ id }: { id: string }) {
         )}
       </section>
 
+      {puedeLeerDiscusion && (
       <section aria-labelledby="h-mecanismos" className={CAJA}>
         <h2 id="h-mecanismos" className="text-xl font-semibold">{t.mecanismos.titulo}</h2>
         {sugerenciasPropuesta.length === 0 ? (
@@ -514,6 +515,7 @@ export function PropuestaCliente({ id }: { id: string }) {
         )}
         <p className="text-sm text-muted">{t.mecanismos.nota}</p>
       </section>
+      )}
 
       <section aria-labelledby="h-discusion" className="grid gap-3">
         <h2 id="h-discusion" className="text-xl font-semibold">{t.discusion.titulo}</h2>

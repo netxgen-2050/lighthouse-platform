@@ -196,7 +196,15 @@ test.describe("correcciones de la revisión", () => {
     await page.goto("/fogon/propuestas/consejo-bomba");
     await page.getByLabel(NIVEL).selectOption("ambito");
     const pregunta = page.getByRole("article").filter({ hasText: "¿Cuántas horas por día" });
-    await expect(pregunta).toContainText("como del ámbito");
+    await expect(pregunta).toContainText("como parte del ámbito");
+  });
+
+  test("la sección de mecanismos solo se ve si el nivel puede leer la discusión", async ({ page }) => {
+    await page.goto("/fogon/propuestas/huerta");
+    await expect(page.getByLabel(NIVEL)).toHaveValue("red");
+    await expect(page.getByRole("heading", { level: 2, name: /Mecanismos/ })).toHaveCount(0);
+    await page.getByLabel(NIVEL).selectOption("ambito");
+    await expect(page.getByRole("heading", { level: 2, name: /Mecanismos/ })).toBeVisible();
   });
 });
 
@@ -227,6 +235,8 @@ test.describe("quórum, ámbito y urgencia", () => {
     await page.goto("/fogon/propuestas/siembra");
     await page.getByLabel(NIVEL).selectOption("presenta");
     const hacer = page.getByRole("region", { name: "Qué podés hacer" });
+    await expect(page.getByLabel(NIVEL)).toHaveValue("presenta");
+    await expect(hacer).toContainText("Leer la propuesta");
     await expect(hacer).not.toContainText("Editar la propuesta");
     await expect(hacer).not.toContainText("Pasar de fase");
     await expect(hacer).not.toContainText("Abrir la revisión");
@@ -254,5 +264,11 @@ test.describe("inglés", () => {
     await page.goto("/fogon/propuestas/huerta");
     await expect(page.getByRole("heading", { name: "Phases" })).toBeVisible();
     await expect(page.getByLabel("See the proposal as…")).toBeVisible();
+  });
+
+  test("la relación de cada entrada es gramatical", async ({ page }) => {
+    await page.goto("/fogon/propuestas/consejo-bomba");
+    await page.getByLabel("See the proposal as…").selectOption("ambito");
+    await expect(page.getByText("as part of the circle").first()).toBeVisible();
   });
 });
