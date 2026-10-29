@@ -131,6 +131,14 @@ describe("qué rutas piden el consentimiento", () => {
 });
 
 describe("exportar mis datos", () => {
+  it("incluye los equipos a los que la persona pidió sumarse", () => {
+    const a = almacen({ "u:A:lh-equipos": JSON.stringify({ "comun-agua": "pedido" }) });
+    const datos = exportarMisDatos({ almacen: a, idPersona: "A", email: null, billetera: null }).datos as Record<string, unknown>;
+    expect(datos.equipos).toEqual({ "comun-agua": "pedido" });
+    const sin = exportarMisDatos({ almacen: almacen({}), idPersona: "A", email: null, billetera: null }).datos as Record<string, unknown>;
+    expect(sin.equipos).toBeNull();
+  });
+
   it("incluye los datos de la persona, el consentimiento y marca lo que falta como null", () => {
     const a = almacen({
       "u:A:lh-perfil": JSON.stringify({ nombre: "Ana" }),

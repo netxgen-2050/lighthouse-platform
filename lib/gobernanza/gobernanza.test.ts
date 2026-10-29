@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { listarTribusBilingues } from "@/lib/tribus/datos";
-import { circulosDe, circulosTransversales, COMUN_ID, nodoDe, padreDe, todosLosCirculos } from "./datos";
+import { CIRCULOS_DEL_COMUN, circulosDe,circulosTransversales, COMUN_ID, nodoDe, padreDe, todosLosCirculos } from "./datos";
 import {
   agregar,
   estaRevocado,
@@ -16,6 +16,13 @@ const AHORA = "2026-10-27T10:00:00.000Z";
 const vacantes = listarTribusBilingues().filter((t) => t.estado === "vacante");
 
 describe("círculos de ejemplo", () => {
+  it("comun-contratistas existe, con propósito economia", () => {
+    const c = CIRCULOS_DEL_COMUN.find((x) => x.id === "comun-contratistas");
+    expect(c?.nombre.es).toBe("Gestión de contratistas");
+    expect(c?.proposito).toBe("economia");
+    expect(c?.decide?.map((x) => x.es)).toEqual(["Convocatorias y contratos de obra", "Seguimiento de entregas"]);
+  });
+
   it("hay doce tribus y cuatro buscan tribu", () => {
     expect(listarTribusBilingues()).toHaveLength(12);
     expect(vacantes.map((t) => t.nombre)).toEqual(["Barrio 3", "Barrio 8", "Barrio 9", "Barrio 12"]);

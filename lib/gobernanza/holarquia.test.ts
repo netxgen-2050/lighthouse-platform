@@ -54,7 +54,7 @@ describe("datos de ejemplo de roles", () => {
 });
 
 describe("construirHolarquia", () => {
-  it("el común contiene sus 7 círculos, el consejo, el transversal y las 12 tribus", () => {
+  it("el común contiene sus 8 círculos, el consejo, el transversal y las 12 tribus", () => {
     const h = hijosDe(raiz);
     expect(h.filter((x) => x.id.startsWith("comun-"))).toHaveLength(CIRCULOS_DEL_COMUN.length);
     expect(h.filter((x) => x.tipo === "consejo")).toHaveLength(1);

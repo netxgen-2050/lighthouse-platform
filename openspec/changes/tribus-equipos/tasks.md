@@ -4,20 +4,20 @@ Una noche. Va antes de `territorio-vistas`. Rama `agente/tribus-equipos` desde `
 
 ## 1. Datos
 
-- [ ] 1.1 `lib/territorios/fases.ts`: `Fase`, `FASES` (es/en), `FASE_ACTUAL = 0`, `esFase` y `vigenteEn` (design §1). La fase 2 no lleva año.
+- [x] 1.1 `lib/territorios/fases.ts`: `Fase`, `FASES` (es/en), `FASE_ACTUAL = 0`, `esFase` y `vigenteEn` (design §1). La fase 2 no lleva año.
   - **Verifica:** `fases.test.ts` cubre que la fase actual es 0, que `vigenteEn({desde:1}, 0)` da `false`, que `vigenteEn({desde:1}, 2)` da `true` y que `esFase(3)` da `false`.
-- [ ] 1.2 Si `comun-contratistas` no está en `CIRCULOS_DEL_COMUN`, agregarlo con los datos de `manifiesto-lighthouse-vrn` design §6, y ajustar los tests de la holarquía que cuentan los círculos del común.
+- [x] 1.2 Si `comun-contratistas` no está en `CIRCULOS_DEL_COMUN`, agregarlo con los datos de `manifiesto-lighthouse-vrn` design §6, y ajustar los tests de la holarquía que cuentan los círculos del común.
   - **Verifica:** un test afirma que `comun-contratistas` existe con propósito `economia`, y `pnpm verificar` pasa en verde.
-- [ ] 1.3 Punto-en-polígono puro (en `lib/territorios/`, si no existe ya).
+- [x] 1.3 Punto-en-polígono puro (en `lib/territorios/`, si no existe ya).
   - **Verifica:** un test con un cuadrado da un punto adentro, uno afuera y uno sobre el borde, con un resultado definido y documentado.
-- [ ] 1.4 `lib/equipos/frentes.ts`: los 8 frentes de la tabla del design §2, con sus 6 puntos elegidos dentro del Macrolote 7, más `frentesDe` y `validarFrentes`. El inglés de los datos va a `lib/idioma/revision-nativa.ts`.
+- [x] 1.4 `lib/equipos/frentes.ts`: los 8 frentes de la tabla del design §2, con sus 6 puntos elegidos dentro del Macrolote 7, más `frentesDe` y `validarFrentes`. El inglés de los datos va a `lib/idioma/revision-nativa.ts`.
   - **Verifica:** `frentes.test.ts` comprueba que `validarFrentes()` devuelve `[]`. Con listas armadas a mano, también reporta cada error por separado: círculo inexistente, id repetido, punto fuera, texto vacío en `faltan` y puntos a menos de ~300 m.
-- [ ] 1.5 `lib/equipos/equipos.ts`: `listarEquipos`, `leerPedidos`, `pedir` y `estadoSumarme` (design §3).
+- [x] 1.5 `lib/equipos/equipos.ts`: `listarEquipos`, `leerPedidos`, `pedir` y `estadoSumarme` (design §3).
   - **Verifica:** el test comprueba que Agua, Permacultura y Contratistas van antes que Tokenomics. También que `pedir` es idempotente y descarta `valle` y `__proto__`, y que `leerPedidos` tolera JSON roto. `estadoSumarme` se prueba en sus cinco ramas, en el orden del design.
   <!-- arquitecto: regla única de adhesión y freno en la acción -->
   - Además: `estadoSumarme` recibe `adhirio` calculado con `puedeParticiparEnGobernanza` (si `lib/gobernanza/participar.ts` no existe en `dev`, crearlo solo con esa función pura, design §3), y `confirmarPedido` devuelve `null` sin escribir si el estado no es `puede`.
   - **Verifica:** un test comprueba que `confirmarPedido` sin sesión, sin capacidad o sin adhesión devuelve `null`, y que con `puede` devuelve el pedido. `lib/equipos/equipos.ts` no lee `membresia.lighthouse` por su cuenta.
-- [ ] 1.6 `lib/demo/claves.ts`: `equipos: "lh-equipos"`.
+- [x] 1.6 `lib/demo/claves.ts`: `equipos: "lh-equipos"`.
   - **Verifica:** pasan `claves.test.ts` y un test de `exportar` que incluye `equipos`. <!-- arquitecto --> Un test de `borrarDemo` comprueba que también quita `lh-equipos` con el prefijo de la persona.
 
 ## 2. Pantalla

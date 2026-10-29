@@ -80,7 +80,7 @@ const delComun = (id: string, x: Def): Circulo => ({
   decide: x.decide,
 });
 
-/** Los siete círculos del común (de ejemplo, del boceto aprobado). Su id lleva prefijo `comun-` para no chocar con una tribu. */
+/** Los círculos del común (de ejemplo, del boceto aprobado). Su id lleva prefijo `comun-` para no chocar con una tribu. */
 export const CIRCULOS_DEL_COMUN: Circulo[] = [
   delComun("permacultura", d(b("Permacultura y suelo", "Permaculture and soil"), "tierra", b("Diseño del paisaje", "Landscape design"), b("Suelo y compost del común", "Soil and compost of the commons"))),
   delComun("agua", d(b("Agua del Lighthouse", "Lighthouse water"), "agua", b("Cuenca y riego", "Watershed and irrigation"), b("Cisternas compartidas", "Shared cisterns"))),
@@ -89,6 +89,8 @@ export const CIRCULOS_DEL_COMUN: Circulo[] = [
   delComun("marketing", d(b("Comunicación y marketing", "Communications and marketing"), "comunidad", b("Relato público", "Public story"), b("Bienvenida a quien llega", "Welcoming newcomers"))),
   delComun("cuidado", d(b("Cuidado y conflictos", "Care and conflicts"), "comunidad", b("Acuerdos de convivencia", "Coexistence agreements"), b("Mediación", "Mediation"))),
   delComun("plataforma", d(b("Plataforma y datos", "Platform and data"), "conocimiento", b("NetX", "NetX"), b("Privacidad", "Privacy"))),
+  // Mismo id y mismos datos que define `manifiesto-lighthouse-vrn` (design §6): si ese cambio entra después, no lo duplica.
+  delComun("contratistas", d(b("Gestión de contratistas", "Contractor management"), "economia", b("Convocatorias y contratos de obra", "Calls and contracts for works"), b("Seguimiento de entregas", "Follow-up of deliveries"))),
 ];
 
 /** Lo que decide el común, el consejo y cada tribu (ejemplo). Una tribu que busca tribu no decide nada todavía. */
