@@ -6,12 +6,12 @@ Las preguntas abiertas no frenan la implementación: se usan los valores por def
 
 ## 1. Datos del manifiesto y fuente de principios (noche 1)
 
-- [ ] 1.1 Crear `lib/manifiestos/lighthouse-vrn.ts` con los tipos y el texto del design §1 y §3: propósito, 15 principios, 7 derechos, 6 compromisos, cómo se cambia, regla de las tribus, versión, `estado: "borrador"` y `ejemplo: true`, en es/en con `original: "es"`. Verificar con tests en `lib/manifiestos/lighthouse-vrn.test.ts`: hay entre 10 y 15 principios, los cinco grupos tienen al menos uno, los ids son únicos, hay siete derechos y cada uno remite a principios que existen, y hay entre 5 y 7 compromisos.
-- [ ] 1.2 Agregar `NOMBRE_META_TRIBU` y `NOMBRE_DEL_COMUN` (design §2). Verificar con un test que ningún archivo de `app/` ni `components/` escribe "Lighthouse VRN Commons" a mano (lo hace con `git ls-files` o leyendo los archivos, como `sin-colores-sueltos.test.ts`).
-- [ ] 1.3 Exponer `principiosLighthouseVrn`, `principioVrnPorId` y `principiosDelManifiesto` (design §4). Verificar con tests: un id desconocido devuelve `null`, el adaptador tiene `estado: "borrador"` y `origen: "manifiesto"`, y se conservan los 13 ids del mapeo del §4.
-- [ ] 1.4 Agregar un test que recorre todos los textos del manifiesto en los dos idiomas y verifica que no nombran a las comunidades de referencia. Verificar que el test falla si se agrega a mano uno de esos nombres y que pasa sin él.
-- [ ] 1.5 En `lib/manifiestos/datos.ts`, armar la entrada `lighthouse` desde el manifiesto nuevo (`titulo` "Manifiesto de Lighthouse VRN", `introduccion` = propósito, `compromisos`) con el campo `vrn`, y quitar el "Pacto de convivencia". Actualizar `lib/manifiestos/manifiestos.test.ts`. Verificar con `pnpm test` que `buscarManifiesto("lighthouse")?.titulo` es el título nuevo.
-- [ ] 1.6 Si `lib/fogon/propuestas/principios.ts` existe en `dev`, cambiar `fuentePrincipios` por `principiosDelManifiesto` y correr sus tests. Si no existe, no crearlo y anotarlo en el PR. Verificar con `pnpm test`, o con la nota en la descripción del PR.
+- [x] 1.1 Crear `lib/manifiestos/lighthouse-vrn.ts` con los tipos y el texto del design §1 y §3: propósito, 15 principios, 7 derechos, 6 compromisos, cómo se cambia, regla de las tribus, versión, `estado: "borrador"` y `ejemplo: true`, en es/en con `original: "es"`. Verificar con tests en `lib/manifiestos/lighthouse-vrn.test.ts`: hay entre 10 y 15 principios, los cinco grupos tienen al menos uno, los ids son únicos, hay siete derechos y cada uno remite a principios que existen, y hay entre 5 y 7 compromisos.
+- [x] 1.2 Agregar `NOMBRE_META_TRIBU` y `NOMBRE_DEL_COMUN` (design §2). Verificar con un test que ningún archivo de `app/` ni `components/` escribe "Lighthouse VRN Commons" a mano (lo hace con `git ls-files` o leyendo los archivos, como `sin-colores-sueltos.test.ts`).
+- [x] 1.3 Exponer `principiosLighthouseVrn`, `principioVrnPorId` y `principiosDelManifiesto` (design §4). Verificar con tests: un id desconocido devuelve `null`, el adaptador tiene `estado: "borrador"` y `origen: "manifiesto"`, y se conservan los 13 ids del mapeo del §4.
+- [x] 1.4 Agregar un test que recorre todos los textos del manifiesto en los dos idiomas y verifica que no nombran a las comunidades de referencia. Verificar que el test falla si se agrega a mano uno de esos nombres y que pasa sin él.
+- [x] 1.5 En `lib/manifiestos/datos.ts`, armar la entrada `lighthouse` desde el manifiesto nuevo (`titulo` "Manifiesto de Lighthouse VRN", `introduccion` = propósito, `compromisos`) con el campo `vrn`, y quitar el "Pacto de convivencia". Actualizar `lib/manifiestos/manifiestos.test.ts`. Verificar con `pnpm test` que `buscarManifiesto("lighthouse")?.titulo` es el título nuevo.
+- [x] 1.6 Si `lib/fogon/propuestas/principios.ts` existe en `dev`, cambiar `fuentePrincipios` por `principiosDelManifiesto` y correr sus tests. Si no existe, no crearlo y anotarlo en el PR. Verificar con `pnpm test`, o con la nota en la descripción del PR.
 
 ## 2. Equipos transversales en la holarquía (noche 1)
 
@@ -46,8 +46,8 @@ Las preguntas abiertas no frenan la implementación: se usan los valores por def
 
 ## 5. Principios propios de las tribus (noche 2)
 
-- [ ] 5.1 Crear `lib/manifiestos/principios-tribu.ts` con `validarPrincipiosDeTribu` (design §5). Verificar con tests de cada error: id de Lighthouse VRN, excepción ("contradice un principio de Lighthouse VRN"), principio profundizado inexistente, texto vacío e id repetido.
-- [ ] 5.2 Sumar `principiosPropios` de ejemplo a Semilla Viva y Agua Clara (design §5). Agregar un test que valida todas las tribus de ejemplo y busca "excepto", "salvo" y "except" en sus textos. Verificar con `pnpm test` en verde.
+- [x] 5.1 Crear `lib/manifiestos/principios-tribu.ts` con `validarPrincipiosDeTribu` (design §5). Verificar con tests de cada error: id de Lighthouse VRN, excepción ("contradice un principio de Lighthouse VRN"), principio profundizado inexistente, texto vacío e id repetido.
+- [x] 5.2 Sumar `principiosPropios` de ejemplo a Semilla Viva y Agua Clara (design §5). Agregar un test que valida todas las tribus de ejemplo y busca "excepto", "salvo" y "except" en sus textos. Verificar con `pnpm test` en verde.
 - [ ] 5.3 En la lectura del manifiesto de una tribu, mostrar "Suma a los principios de Lighthouse VRN" con sus principios, el principio de Lighthouse VRN que profundiza cada uno y el enlace al manifiesto del común, o "Esta tribu todavía no sumó principios propios". Agregar escenarios para Semilla Viva y Taller Común al e2e de 3.6. Verificar con `pnpm test:e2e` en verde.
 
 ## 6. Vista NetX (noche 2)
