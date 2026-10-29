@@ -1,6 +1,7 @@
 // Constancias de los pactos (forma de EAS, ADR-012 y ADR-018), solo en este navegador.
 // Lista de solo agregar: una constancia no se edita; retirar es agregar un `revoca` que apunta a la propuesta.
 // Las fechas y los ids de persona vienen de afuera: nada acá llama a Date.now().
+import { buscarNecesidad, holonDe, idDeHolon, type Tope } from "@/lib/tribus/necesidades";
 import type { ContenidoPacto } from "./estado";
 
 export type EsquemaPacto = "pacto-propone" | "pacto-acepta" | "pacto-no-acepta" | "revoca";
@@ -54,10 +55,27 @@ export function comunidadDeSobre(sobre: string): string | null {
   return i > 0 ? resto.slice(0, i) : null;
 }
 
-/** ¿Este `sobre` es un pacto de esa persona? Compara el string completo, sin partirlo. */
+const PREFIJO_PUNTUAL = "puntual:";
+
+/** `puntual:<necesidadId>:<idPersona>`: la postulación de una persona a una necesidad (pacto-puntual, design §3). */
+export function sobrePuntual(necesidadId: string, idPersona: string): string {
+  return `${PREFIJO_PUNTUAL}${necesidadId}:${idPersona}`;
+}
+
+/** La necesidad de un `sobre` puntual. Los ids de necesidad no llevan dos puntos; el de la persona sí puede. */
+export function necesidadDeSobre(sobre: string): string | null {
+  if (!sobre.startsWith(PREFIJO_PUNTUAL)) return null;
+  const resto = sobre.slice(PREFIJO_PUNTUAL.length);
+  const i = resto.indexOf(":");
+  return i > 0 ? resto.slice(0, i) : null;
+}
+
+/** ¿Este `sobre` es un pacto o una postulación de esa persona? Compara el string completo, sin partirlo. */
 export function sobreEsDe(sobre: string, idPersona: string): boolean {
   const comunidad = comunidadDeSobre(sobre);
-  return comunidad !== null && sobre === sobreDe(comunidad, idPersona);
+  if (comunidad !== null && sobre === sobreDe(comunidad, idPersona)) return true;
+  const necesidad = necesidadDeSobre(sobre);
+  return necesidad !== null && sobre === sobrePuntual(necesidad, idPersona);
 }
 
 export function afirmaPersona(idPersona: string): string {
@@ -267,4 +285,97 @@ export function datosDePropuesta(entrada: {
   if (entrada.proponeLider) datos.proponeLider = "1";
   if (entrada.migrada) datos.migrada = "1";
   return datos;
+}
+
+/**
+ * El holón de una postulación, RECALCULADO desde la necesidad de su `sobre` (nunca de `datos.holon`, que escribe la propia
+ * persona): así nadie puede saltarse a quien administra un círculo transversal. null si la necesidad no existe.
+ */
+export function holonIdDePostulacion(c: ConstanciaPacto): string | null {
+  const id = necesidadDeSobre(c.sobre);
+  const n = id ? buscarNecesidad(id) : undefined;
+  return n ? idDeHolon(holonDe(n)) : null;
+}
+
+/**
+ * Quién tiene que afirmar la aceptación de una propuesta: en un pacto de tiempo, la comunidad; en una postulación a una
+ * tarea (`datos.tipo === "puntual"`), el holón de la necesidad recalculado desde el `sobre` (p. ej. `circulo:valle-3`),
+ * no el `datos.holon` que escribió la persona.
+ */
+export function contraparteDe(propuesta: ConstanciaPacto): string | null {
+  if (propuesta.datos.tipo === "puntual") return holonIdDePostulacion(propuesta);
+  const comunidad = comunidadDeSobre(propuesta.sobre);
+  return comunidad === null ? null : afirmaComunidad(comunidad);
+}
+
+/** ¿Esta propuesta es una postulación a una tarea? */
+export function esPostulacion(c: ConstanciaPacto): boolean {
+  return c.esquema === "pacto-propone" && c.datos.tipo === "puntual" && necesidadDeSobre(c.sobre) !== null;
+}
+
+/** ¿La respuesta es válida? La afirma la contraparte y no la da la misma persona que propuso. */
+export function respuestaValida(propuesta: ConstanciaPacto, r: ConstanciaPacto): boolean {
+  return r.afirma === contraparteDe(propuesta) && r.por !== personaDeAfirma(propuesta.afirma) && r.sobre === propuesta.sobre;
+}
+
+/**
+ * Las postulaciones de esa necesidad que el holón pre-admitió: propuestas puntuales sin revocar con una aceptación válida
+ * (de su holón, sin revocar y de otra persona), una por persona. Una tarea la pueden tomar varias personas.
+ */
+export function preadmitidasDe(lista: readonly ConstanciaPacto[], necesidadId: string): ConstanciaPacto[] {
+  const porPersona = new Map<string, ConstanciaPacto>();
+  for (const p of lista) {
+    if (!esPostulacion(p) || necesidadDeSobre(p.sobre) !== necesidadId || estaRevocada(lista, p.id)) continue;
+    const r = respuestaDe(lista, p.id);
+    if (!r || r.esquema !== "pacto-acepta" || estaRevocada(lista, r.id) || !respuestaValida(p, r)) continue;
+    porPersona.set(p.sobre, p);
+  }
+  return [...porPersona.values()];
+}
+
+/** Lo que lleva `datos` de una postulación: la necesidad, el holón, lo que la persona completó y los máximos que vio el holón. Nunca el email. */
+export function datosDePostulacion(entrada: {
+  comunidad: string;
+  necesidad: string;
+  holon: string;
+  relacion: "miembro" | "aspirante";
+  rol: string;
+  rolOtro: string;
+  descripcion: string;
+  horas: number;
+  fecha: string;
+  tope: Tope | null;
+  topeTotal: Tope | null;
+  nombre: string;
+  iniciales: string;
+  proponeLider: boolean;
+}): Record<string, string> {
+  const datos: Record<string, string> = {
+    tipo: "puntual",
+    comunidad: entrada.comunidad,
+    necesidad: entrada.necesidad,
+    holon: entrada.holon,
+    relacion: entrada.relacion,
+    rol: entrada.rol,
+    rolOtro: entrada.rolOtro,
+    descripcion: entrada.descripcion,
+    horas: String(entrada.horas),
+    fecha: entrada.fecha,
+    topeUnidad: entrada.tope?.unidad ?? "",
+    topeValor: entrada.tope ? String(entrada.tope.valor) : "",
+    topeTotalUnidad: entrada.topeTotal?.unidad ?? "",
+    topeTotalValor: entrada.topeTotal ? String(entrada.topeTotal.valor) : "",
+  };
+  const nombre = entrada.nombre.trim().slice(0, 80);
+  if (nombre) datos.nombre = nombre;
+  else if (entrada.iniciales.trim()) datos.iniciales = entrada.iniciales.trim().slice(0, 4);
+  if (entrada.proponeLider) datos.proponeLider = "1";
+  return datos;
+}
+
+/** Lee un máximo (por persona o total) de los `datos` de una postulación; null si falta o no es un entero positivo. */
+export function topeDeDatos(unidad: string | undefined, valor: string | undefined): Tope | null {
+  const n = Number(valor);
+  if ((unidad !== "horas" && unidad !== "semillas") || !Number.isInteger(n) || n <= 0) return null;
+  return { unidad, valor: n };
 }

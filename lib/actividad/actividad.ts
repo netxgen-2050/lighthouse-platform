@@ -6,7 +6,10 @@ import type { Idioma } from "@/lib/idioma/tipos";
 export type ClaveMensaje = keyof (typeof bandeja)["es"]["eventos"];
 
 /** Lo que el mensaje necesita para armarse: el nombre de la comunidad o la descripción que escribió la persona (no se traducen). */
-export type DatosEvento = { comunidad?: string; descripcion?: string };
+export type DatosEvento = { comunidad?: string; descripcion?: string; tarea?: string };
+
+/** Mensajes que usan además el nombre de una tarea (la tarea no se traduce): el segundo dato, después de `comunidad`. */
+const CON_TAREA: readonly string[] = ["tePostulaste", "postulacionPreadmitida", "postulacionNoPreadmitida"];
 
 /** Qué dato usa cada mensaje: `null` = ninguno. */
 const DATO_DEL_MENSAJE: Record<ClaveMensaje, keyof DatosEvento | null> = {
@@ -25,6 +28,9 @@ const DATO_DEL_MENSAJE: Record<ClaveMensaje, keyof DatosEvento | null> = {
   postulacionRecibida: null,
   registrasteTicket: null,
   enviasteRonda: "comunidad",
+  tePostulaste: "comunidad",
+  postulacionPreadmitida: "comunidad",
+  postulacionNoPreadmitida: "comunidad",
 };
 
 function esClaveMensaje(x: unknown): x is ClaveMensaje {
@@ -90,7 +96,10 @@ function mensajeValido(e: Record<string, unknown>): { mensaje: ClaveMensaje; dat
   const usado = DATO_DEL_MENSAJE[e.mensaje];
   if (usado === null) return { mensaje: e.mensaje, datos: {} };
   const valor = (crudos as Record<string, unknown>)[usado];
-  return typeof valor === "string" ? { mensaje: e.mensaje, datos: { [usado]: valor } } : null;
+  if (typeof valor !== "string") return null;
+  if (!CON_TAREA.includes(e.mensaje)) return { mensaje: e.mensaje, datos: { [usado]: valor } };
+  const tarea = (crudos as Record<string, unknown>).tarea;
+  return typeof tarea === "string" ? { mensaje: e.mensaje, datos: { [usado]: valor, tarea } } : null;
 }
 
 /** Lee lo guardado. Ante datos dañados o ausentes devuelve una lista vacía y descarta lo que no sirve. */
@@ -131,7 +140,7 @@ export function armarTexto(mensaje: ClaveMensaje, datos: DatosEvento, idioma: Id
   const usado = DATO_DEL_MENSAJE[mensaje];
   const valor = usado === null ? "" : (datos[usado] ?? "");
   const dato = usado === "comunidad" && valor.trim() === "" ? t.tuComunidad : valor;
-  return (t.eventos[mensaje] as (dato: string) => string)(dato);
+  return (t.eventos[mensaje] as (dato: string, tarea?: string) => string)(dato, datos.tarea ?? "");
 }
 
 const MARCA = "\u0001";
@@ -148,7 +157,10 @@ export function partesDeTexto(
 ): { antes: string; dato: string | null; despues: string } {
   const usado = DATO_DEL_MENSAJE[mensaje];
   const valor = usado === null ? "" : (datos[usado] ?? "");
-  const partes = valor.trim() === "" ? [] : (bandeja[idioma].eventos[mensaje] as (d: string) => string)(MARCA).split(MARCA);
+  const partes =
+    valor.trim() === ""
+      ? []
+      : (bandeja[idioma].eventos[mensaje] as (d: string, tarea?: string) => string)(MARCA, datos.tarea ?? "").split(MARCA);
   if (partes.length !== 2) return { antes: armarTexto(mensaje, datos, idioma), dato: null, despues: "" };
   return { antes: partes[0], dato: valor, despues: partes[1] };
 }
