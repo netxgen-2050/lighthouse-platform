@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   afirmaPersona,
   agregar,
+  contraparteDe,
   datosDePostulacion,
   sobrePuntual,
   type ConstanciaPacto,
@@ -130,10 +131,27 @@ describe("quién responde", () => {
     expect(puedeResponderPostulacion(superAdmin, sinMarca)).toBe(false);
   });
 
-  it("una postulación sin holón conocido no la responde nadie", () => {
-    const rota = postula([], { holon: "circulo:no-existe" }).slice(-1)[0];
+  it("una postulación a una necesidad que no existe no la responde nadie", () => {
+    const rota = postula([], { necesidad: "no-existe" }).slice(-1)[0];
     expect(puedeResponderPostulacion(lider, rota)).toBe(false);
     expect(puedeResponderPostulacion(superAdmin, rota)).toBe(false);
+  });
+
+  it("el holón sale de la necesidad, no de lo que escribió la persona: no se puede saltar al super admin en un transversal", () => {
+    // Pide el círculo de Valle Solar en una necesidad del círculo transversal.
+    const falsa = postula([], { necesidad: "valle-eventos", holon: "circulo:valle-3" }).slice(-1)[0];
+    expect(contraparteDe(falsa)).toBe("circulo:comunicacion-comun");
+    expect(puedeResponderPostulacion(lider, falsa)).toBe(false);
+    expect(puedeResponderPostulacion(superAdmin, falsa)).toBe(true);
+    const lista = [falsa];
+    expect(responderPostulacion(lista, { propuestaId: falsa.id, acepta: true, sesion: lider }, T).resultado).toBe("sin-permiso");
+    const r = responderPostulacion(lista, { propuestaId: falsa.id, acepta: true, sesion: superAdmin }, T);
+    expect(r.lista[r.lista.length - 1]).toMatchObject({ afirma: "circulo:comunicacion-comun" });
+    expect(r.lista[r.lista.length - 1].datos.respaldoDeHifa).toBe("1");
+    // Y al revés: aparentar un transversal en una necesidad común no agrega la marca de Hifa.
+    const otra = postula([], { necesidad: "valle-solar", holon: "circulo:comunicacion-comun" }).slice(-1)[0];
+    const r2 = responderPostulacion([otra], { propuestaId: otra.id, acepta: true, sesion: lider }, T);
+    expect(r2.lista[r2.lista.length - 1].datos.respaldoDeHifa).toBeUndefined();
   });
 
   it("cada sesión ve lo que le toca y la ficha cuenta las de su tribu y sus círculos", () => {

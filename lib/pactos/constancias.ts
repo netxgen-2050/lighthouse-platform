@@ -1,7 +1,7 @@
 // Constancias de los pactos (forma de EAS, ADR-012 y ADR-018), solo en este navegador.
 // Lista de solo agregar: una constancia no se edita; retirar es agregar un `revoca` que apunta a la propuesta.
 // Las fechas y los ids de persona vienen de afuera: nada acá llama a Date.now().
-import type { Tope } from "@/lib/tribus/necesidades";
+import { buscarNecesidad, holonDe, idDeHolon, type Tope } from "@/lib/tribus/necesidades";
 import type { ContenidoPacto } from "./estado";
 
 export type EsquemaPacto = "pacto-propone" | "pacto-acepta" | "pacto-no-acepta" | "revoca";
@@ -288,11 +288,21 @@ export function datosDePropuesta(entrada: {
 }
 
 /**
+ * El holón de una postulación, RECALCULADO desde la necesidad de su `sobre` (nunca de `datos.holon`, que escribe la propia
+ * persona): así nadie puede saltarse a quien administra un círculo transversal. null si la necesidad no existe.
+ */
+export function holonIdDePostulacion(c: ConstanciaPacto): string | null {
+  const id = necesidadDeSobre(c.sobre);
+  const n = id ? buscarNecesidad(id) : undefined;
+  return n ? idDeHolon(holonDe(n)) : null;
+}
+
+/**
  * Quién tiene que afirmar la aceptación de una propuesta: en un pacto de tiempo, la comunidad; en una postulación a una
  * tarea (`datos.tipo === "puntual"`), el holón de la necesidad (`datos.holon`, p. ej. `circulo:valle-3`).
  */
 export function contraparteDe(propuesta: ConstanciaPacto): string | null {
-  if (propuesta.datos.tipo === "puntual") return propuesta.datos.holon || null;
+  if (propuesta.datos.tipo === "puntual") return holonIdDePostulacion(propuesta);
   const comunidad = comunidadDeSobre(propuesta.sobre);
   return comunidad === null ? null : afirmaComunidad(comunidad);
 }

@@ -150,7 +150,7 @@ export function PostulacionesATareas({ comunidad, puntuales, alEditar, alEnviar,
             {maximos(p)}
             {p.paso === "borrador" && p.noPreadmitida && (
               <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink" data-testid="aviso-no-preadmitida">
-                <span lang={langTexto}>{t.noPreadmitida(holonTexto[0].toUpperCase() + holonTexto.slice(1), p.noPreadmitida.motivo)}</span>
+                {t.noPreadmitida(holonTexto[0].toUpperCase() + holonTexto.slice(1))} <span lang={langTexto}>{p.noPreadmitida.motivo}</span>
               </p>
             )}
             {p.paso === "enviado" && <p className="text-sm font-medium" data-testid="esperando-respuesta-puntual">{t.esperando(holonTexto)}</p>}

@@ -12,6 +12,7 @@ import {
   comunidadDeSobre,
   comunidadesQueResponde,
   estaPendiente,
+  holonIdDePostulacion,
   pendientesParaVer,
   personaDeAfirma,
   proponeLider,
@@ -90,7 +91,7 @@ export function ResponderCliente() {
   const comunidades = [...new Set(visibles.map((c) => comunidadDeSobre(c.sobre) ?? ""))].filter(Boolean);
   // Postulaciones a tareas, agrupadas por holón (pacto-puntual, design §6).
   const postulaciones = lista === null ? [] : postulacionesParaVer(lista, q);
-  const holones = [...new Set(postulaciones.map((c) => c.datos.holon ?? ""))].filter(Boolean);
+  const holones = [...new Set(postulaciones.map((c) => holonIdDePostulacion(c) ?? ""))].filter(Boolean);
 
   function responderAPostulacion(c: ConstanciaPacto, acepta: boolean) {
     if (!q) return;
@@ -118,7 +119,11 @@ export function ResponderCliente() {
     const quien = quienPropone(c);
     const tarea = buscarNecesidad(c.datos.necesidad ?? "", idioma)?.titulo ?? comunes.sinDato;
     setResultado((r) =>
-      resultado !== "ok"
+      resultado === "sin-permiso"
+        ? { n: r.n + 1, texto: p.sinPermiso, error: true }
+        : resultado === "sin-motivo"
+          ? { n: r.n + 1, texto: p.motivoVacio, error: true }
+          : resultado !== "ok"
         ? { n: r.n + 1, texto: p.yaRespondida, error: true }
         : { n: r.n + 1, texto: acepta ? p.preadmitiste(quien, tarea) : p.noPreadmitiste(quien, tarea), error: false },
     );
@@ -311,7 +316,7 @@ export function ResponderCliente() {
                   </h3>
                   {hifa && <p className="text-sm text-muted">{p.respaldoHifa}</p>}
                   {postulaciones
-                    .filter((c) => c.datos.holon === holonId)
+                    .filter((c) => holonIdDePostulacion(c) === holonId)
                     .map((c) => {
                       const puede = puedeResponderPostulacion(q, c);
                       const propio = personaDeAfirma(c.afirma) === q.idPersona;

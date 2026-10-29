@@ -40,6 +40,10 @@ Solo SHALL poder postularse a una necesidad quien es miembro o aspirante de su h
 - **WHEN** una persona miembro de Taller Común (que participa en el círculo "Comunicación del común") despliega "Eventos y comunidad" en `/tribus/valle`
 - **THEN** ve "Postularme para tomarla"
 
+#### Scenario: Miembro de otra tribu del círculo transversal en Pactos
+- **WHEN** una persona miembro de Taller Común (y sin relación con Valle Solar) abre `/pactos?comunidad=valle&necesidad=valle-eventos`
+- **THEN** ve su borrador de postulación y el texto "Estas tareas son de Valle Solar, pero las compartís con otra tribu tuya. El pacto de tiempo es para miembros", no el de aspirante, y no puede armar un pacto de tiempo con Valle Solar
+
 ### Requirement: Solo se postula a una necesidad tomable
 "Postularme para tomarla" SHALL aparecer solo en necesidades abiertas, de una tribu que acepta pactos puntuales y, si son de diseño, con el aval de su holón. Una necesidad puede tomarla más de una persona: que otras personas ya estén pre-admitidas MUST NOT impedir postularse. Solo SHALL aparecer si `/pactos` figura con `existe: true` en `lib/navegacion.ts`.
 

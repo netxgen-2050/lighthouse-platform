@@ -139,8 +139,19 @@ test("miembro de Taller Común se postula al círculo transversal de Valle Solar
   await membresia(page, { taller: "miembro" });
   await page.goto("/tribus/valle");
   const eventos = await abrirNecesidad(page, "valle-eventos");
-  await expect(eventos.getByText(/Hifa \(experimental, ejemplo\)/)).toBeVisible();
+  await expect(eventos.getByText(/Hifa \(experimental, simulado\)/)).toBeVisible();
   await expect(eventos.getByRole("link", { name: "Postularme para tomarla" })).toBeVisible();
+});
+
+test("miembro de Taller Común ve en Pactos que las tareas de Valle Solar le llegan por otra tribu", async ({ page }) => {
+  await page.goto("/tribus/valle");
+  await membresia(page, { taller: "miembro" });
+  await page.goto("/pactos?comunidad=valle&necesidad=valle-eventos");
+  await expect(page.getByTestId("nota-aspirante")).toHaveText(
+    "Estas tareas son de Valle Solar, pero las compartís con otra tribu tuya. El pacto de tiempo es para miembros",
+  );
+  await expect(page.getByRole("article").filter({ hasText: "Eventos y comunidad" })).toBeVisible();
+  await expect(page.getByLabel(/Rol que asumís/)).toHaveCount(0);
 });
 
 test("Marketing sin aval, tarea tomada y Barda Productiva no ofrecen postularse", async ({ page }) => {
@@ -167,12 +178,19 @@ test("una necesidad que no se puede tomar no crea nada", async ({ page }) => {
   await expect(page.getByRole("article").filter({ hasText: "Bioconstrucción" })).toHaveCount(0);
 });
 
-test("envía, retira y vuelve a enviar; sin botones para responder por el holón", async ({ page }) => {
+test("envía, retira y vuelve a enviar; sin botones para responder por el holón", async ({ page, context, baseURL }) => {
   await postularEnergiaSolar(page);
   await expect(page.getByRole("button", { name: /Simular/ })).toHaveCount(0);
   await expect(page.locator("[data-estado-puntual]")).toHaveText("Enviada");
+  // Un círculo de la tribu no nombra a Hifa.
+  await expect(page.getByRole("article")).not.toContainText("Hifa");
   await page.getByRole("button", { name: "Retirar y editar" }).click();
   await expect(page.locator("[data-estado-puntual]")).toHaveText("Borrador");
+  // Retirada, quien administra el círculo ya no la ve pendiente.
+  await entrarComo(page, context, baseURL, ADMIN, "/pactos/responder");
+  await expect(page.getByRole("article")).toHaveCount(0);
+  await expect(page.getByText("No hay pactos esperando tu respuesta")).toBeVisible();
+  await entrarComo(page, context, baseURL, PERSONA, "/pactos?comunidad=valle");
   await expect(page.getByLabel("Contá cómo la vas a hacer")).toHaveValue("Lo hago con mi equipo");
   await expect(page.getByLabel(/Horas aproximadas/)).toHaveValue("10");
   await page.getByRole("button", { name: "Enviar postulación" }).click();
@@ -192,6 +210,7 @@ test("quien administra el círculo pre-admite, la persona lo ve en Pactos, la fi
   await expect(articulo).toContainText("Máximo por persona: 10 h");
   await expect(articulo).toContainText("Máximo total de la tarea: 20 h");
   await expect(page.locator("body")).not.toContainText(PERSONA);
+  await expect(page.locator("body")).not.toContainText(/brotes|germinar|Semillas pendientes/i);
   await articulo.getByRole("button", { name: "Pre-admitir", exact: true }).click();
   await expect(page.getByRole("status").filter({ hasText: "Pre-admitiste a Ana Pérez para Energía solar." })).toBeFocused();
 

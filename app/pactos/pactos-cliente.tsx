@@ -367,17 +367,25 @@ export function PactosCliente() {
       setFocoPuntual(necesidadId);
     } else if (accion.tipo === "retirarPuntual" && idPersona) {
       const registro = leerDelNavegador();
-      const propuesta = registro ? ultimaPostulacion(registro, idPersona, necesidadId) : null;
-      if (registro && propuesta) {
+      // Con el registro ilegible no se puede retirar: el holón seguiría viendo la postulación (se avisa y sigue Enviada).
+      if (!registro) {
+        setFalloPublicar("retiro");
+        return;
+      }
+      const propuesta = ultimaPostulacion(registro, idPersona, necesidadId);
+      if (propuesta) {
         if (respuestaDe(registro, propuesta.id)) {
           // El holón ya respondió: se aplica su respuesta y no se retira nada.
           const r = conciliarYGuardar(estado, registro, idPersona);
-          if (!r.guardado) setFalloAlmacen(true);
-          setAnuncio(anuncioDe(r.aplicadas, tx, idioma));
-          registrarEventosDe(r.aplicadas, idioma, tx);
-          setEstado(r.estado);
-          setFocoPuntual(necesidadId);
-          return;
+          if (r.aplicadas.length > 0) {
+            if (!r.guardado) setFalloAlmacen(true);
+            setAnuncio(anuncioDe(r.aplicadas, tx, idioma));
+            registrarEventosDe(r.aplicadas, idioma, tx);
+            setEstado(r.estado);
+            setFocoPuntual(necesidadId);
+            return;
+          }
+          // La respuesta no vale (p. ej. la dio la misma persona): la postulación sigue pendiente y se puede retirar.
         }
         // Si no se pudo escribir, no se retira: el holón seguiría viendo la postulación pendiente.
         const ok = revocarEnNavegador(propuesta.id, idPersona, ahora);
@@ -461,6 +469,11 @@ export function PactosCliente() {
       {falloAlmacen && (
         <p role="alert" className="text-sm font-medium text-danger">
           {tx.errorAlmacenamiento}
+        </p>
+      )}
+      {falloPublicar && (
+        <p role="alert" className="text-sm font-medium text-danger">
+          {falloPublicar === "retiro" ? tx.anuncios.noSePudoRetirar : tx.anuncios.noSePudoPublicar}
         </p>
       )}
       {avisoNecesidad}
@@ -931,11 +944,6 @@ export function PactosCliente() {
                 ? tx.avisoCambioNoAceptado(nombre, estado.ultimaRespuesta.motivo)
                 : tx.avisoNoAceptado(nombre, estado.ultimaRespuesta.motivo)}
             </span>
-          </p>
-        )}
-        {falloPublicar && (
-          <p role="alert" className="text-sm font-medium text-danger">
-            {falloPublicar === "retiro" ? tx.anuncios.noSePudoRetirar : tx.anuncios.noSePudoPublicar}
           </p>
         )}
 

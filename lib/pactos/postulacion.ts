@@ -10,7 +10,9 @@ import {
   afirmaPersona,
   agregar,
   comunidadesQueResponde,
+  contraparteDe,
   esPostulacion,
+  holonIdDePostulacion,
   estaPendiente,
   estaRevocada,
   personaDeAfirma,
@@ -31,6 +33,12 @@ export function holonDeId(id: string): Holon | null {
     return c ? { tipo: "circulo", id: c.id, transversal: c.tribus.length !== 1 } : null;
   }
   return null;
+}
+
+/** El holón de una postulación, recalculado desde su necesidad (no de lo que escribió la persona). */
+export function holonDePostulacion(c: ConstanciaPacto): Holon | null {
+  const id = holonIdDePostulacion(c);
+  return id ? holonDeId(id) : null;
 }
 
 /** Las tribus cuya membresía cuenta para ese holón: la tribu, la del círculo, las que participan en un transversal; ninguna para el común. */
@@ -77,7 +85,7 @@ export function puedeResponderPostulacion(sesion: QuienResponde, propuesta: Cons
   if (!esPostulacion(propuesta)) return false;
   const autor = personaDeAfirma(propuesta.afirma);
   if (autor === null || autor === sesion.idPersona) return false;
-  const holon = holonDeId(propuesta.datos.holon ?? "");
+  const holon = holonDePostulacion(propuesta);
   if (!holon) return false;
   if (comunidadesQueResponde(sesion).includes(comunidadQueResponde(holon))) return true;
   return sesion.esSuperAdmin && proponeLider(propuesta);
@@ -92,7 +100,7 @@ export function postulacionesParaVer(lista: readonly ConstanciaPacto[], sesion: 
   const propias = comunidadesQueResponde(sesion);
   return lista.filter((c) => {
     if (!esPendiente(lista, c)) return false;
-    const holon = holonDeId(c.datos.holon ?? "");
+    const holon = holonDePostulacion(c);
     if (!holon) return false;
     return propias.includes(comunidadQueResponde(holon)) || (sesion.esSuperAdmin && proponeLider(c));
   });
@@ -101,7 +109,7 @@ export function postulacionesParaVer(lista: readonly ConstanciaPacto[], sesion: 
 /** Las postulaciones pendientes de una tribu (y de sus círculos) que la sesión puede responder: lo que cuenta la ficha. */
 export function postulacionesDeLaTribu(lista: readonly ConstanciaPacto[], sesion: QuienResponde, tribu: string): ConstanciaPacto[] {
   return postulacionesParaVer(lista, sesion).filter((c) => {
-    const holon = holonDeId(c.datos.holon ?? "");
+    const holon = holonDePostulacion(c);
     return holon !== null && puedeResponderPostulacion(sesion, c) && tribusDelHolon(holon).includes(tribu);
   });
 }
@@ -144,7 +152,7 @@ export function responderPostulacion(
   if (!puedeResponderPostulacion(pedido.sesion, propuesta)) return { lista: igual, resultado: "sin-permiso" };
   const motivo = (pedido.motivo ?? "").trim();
   if (!pedido.acepta && motivo.length === 0) return { lista: igual, resultado: "sin-motivo" };
-  const holon = holonDeId(propuesta.datos.holon ?? "");
+  const holon = holonDePostulacion(propuesta);
   const datos: Record<string, string> = pedido.acepta ? {} : { motivo: motivo.slice(0, MAX_MOTIVO) };
   // Si el holón lo administra Hifa (simulada), responde el super admin de respaldo y la constancia lo dice.
   if (holon && loAdministraHifa(holon)) datos.respaldoDeHifa = "1";
@@ -153,7 +161,7 @@ export function responderPostulacion(
       lista,
       {
         esquema: pedido.acepta ? "pacto-acepta" : "pacto-no-acepta",
-        afirma: propuesta.datos.holon,
+        afirma: contraparteDe(propuesta) ?? "",
         por: pedido.sesion.idPersona,
         sobre: propuesta.sobre,
         version: propuesta.version,

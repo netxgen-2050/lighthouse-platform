@@ -169,7 +169,8 @@ const es = {
     retirar: "Retirar y editar",
     descartar: "Descartar",
     preadmitida: (holon: string) => `Pre-admitida por ${holon}: tomaste esta tarea.`,
-    noPreadmitida: (holon: string, motivo: string) => `${holon} no pre-admitió tu postulación: ${motivo}`,
+    /** Sin el motivo: la pantalla lo agrega aparte, para marcarlo como texto de la persona. */
+    noPreadmitida: (holon: string) => `${holon} no pre-admitió tu postulación:`,
     sinSemillasTodavia:
       "Las Semillas llegan cuando el holón verifique que la tarea quedó hecha. Un pacto puntual no abre la ronda de reconocimiento.",
     anuncios: {
@@ -202,6 +203,7 @@ const es = {
       respaldoHifa:
         "Lo administra y facilita Hifa (experimental, simulado). Como Hifa no está disponible en el prototipo, respondés como su respaldo.",
       yaRespondida: "Esta postulación ya se respondió",
+      sinPermiso: "No podés responder esta postulación",
       preadmitiste: (quien: string, tarea: string) => `Pre-admitiste a ${quien} para ${tarea}.`,
       noPreadmitiste: (quien: string, tarea: string) => `No pre-admitiste la postulación de ${quien} a ${tarea}.`,
       motivoVacio: "Contá por qué, así la persona puede ajustarla",
@@ -405,7 +407,7 @@ const en: Textos<typeof es> = {
     retirar: "Withdraw and edit",
     descartar: "Discard",
     preadmitida: (holon: string) => `Pre-admitted by ${holon}: you took this task.`,
-    noPreadmitida: (holon: string, motivo: string) => `${holon} did not pre-admit your application: ${motivo}`,
+    noPreadmitida: (holon: string) => `${holon} did not pre-admit your application:`,
     sinSemillasTodavia:
       "Semillas arrive when the holon verifies the task is done. A one-off pact does not open the recognition round.",
     anuncios: {
@@ -437,6 +439,7 @@ const en: Textos<typeof es> = {
       respaldoHifa:
         "Managed and facilitated by Hifa (experimental, simulated). Since Hifa is not available in the prototype, you answer as its backup.",
       yaRespondida: "This application was already answered",
+      sinPermiso: "You cannot answer this application",
       preadmitiste: (quien: string, tarea: string) => `You pre-admitted ${quien} for ${tarea}.`,
       noPreadmitiste: (quien: string, tarea: string) => `You did not pre-admit the application of ${quien} for ${tarea}.`,
       motivoVacio: "Tell us why, so the person can adjust it",
