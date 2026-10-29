@@ -15,8 +15,8 @@ Las preguntas abiertas no frenan la implementación: se usan los valores por def
 
 ## 2. Equipos transversales en la holarquía (noche 1)
 
-- [ ] 2.1 En `lib/gobernanza/datos.ts`, renombrar los círculos del común y sumar `comun-contratistas` y `comun-gobernanza` con su propósito para todo el Lighthouse (design §6), conservando los ids existentes. La raíz se llama `NOMBRE_DEL_COMUN`. Verificar con `pnpm test`: se actualizan `holarquia.test.ts` y `gobernanza.test.ts`, y un test nuevo comprueba que están los ocho nombres de la lista de Gus.
-- [ ] 2.2 Actualizar `e2e/fogon-gobernanza.spec.ts` ("Permacultura y suelo" pasa a ser "Permacultura y regeneración"). Verificar con `pnpm test:e2e e2e/fogon-gobernanza.spec.ts` en verde.
+- [x] 2.1 En `lib/gobernanza/datos.ts`, renombrar los círculos del común y sumar `comun-contratistas` y `comun-gobernanza` con su propósito para todo el Lighthouse (design §6), conservando los ids existentes. La raíz se llama `NOMBRE_DEL_COMUN`. Verificar con `pnpm test`: se actualizan `holarquia.test.ts` y `gobernanza.test.ts`, y un test nuevo comprueba que están los ocho nombres de la lista de Gus.
+- [x] 2.2 Actualizar `e2e/fogon-gobernanza.spec.ts` ("Permacultura y suelo" pasa a ser "Permacultura y regeneración"). Verificar con `pnpm test:e2e e2e/fogon-gobernanza.spec.ts` en verde.
 
 ## 3. Ficha del común y lectura del manifiesto (noche 1)
 

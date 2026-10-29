@@ -54,13 +54,13 @@ describe("datos de ejemplo de roles", () => {
 });
 
 describe("construirHolarquia", () => {
-  it("el común contiene sus 7 círculos, el consejo, el transversal y las 12 tribus", () => {
+  it("el común contiene sus 9 círculos, el consejo, el transversal y las 12 tribus", () => {
     const h = hijosDe(raiz);
     expect(h.filter((x) => x.id.startsWith("comun-"))).toHaveLength(CIRCULOS_DEL_COMUN.length);
     expect(h.filter((x) => x.tipo === "consejo")).toHaveLength(1);
     expect(h.filter((x) => x.tipo === "circulo" && comun(x).clase === "transversal")).toHaveLength(1);
     expect(h.filter((x) => x.tipo === "tribu")).toHaveLength(12);
-    expect(nombres(raiz)).toContain("Agua del Lighthouse");
+    expect(nombres(raiz)).toContain("Agua");
     expect(nombres(raiz)).toContain("Tokenomics y Semillas");
   });
 
@@ -94,7 +94,7 @@ describe("construirHolarquia", () => {
 
   it("el camino hasta Cuidado de la tierra es común › Valle Solar › Cuidado de la tierra", () => {
     expect(caminoHasta(raiz, "valle-0").map((n) => ("nombre" in n ? n.nombre : n.id))).toEqual([
-      "Lighthouse",
+      "Lighthouse VRN Procomún",
       "Valle Solar",
       "Cuidado de la tierra",
     ]);
@@ -141,11 +141,11 @@ describe("construirHolarquia", () => {
 });
 
 describe("rolesDe", () => {
-  it("Ana: Facilita en Huerta intensiva (Semilla Viva) y Miembro en Agua del Lighthouse (el común)", () => {
+  it("Ana: Facilita en Huerta intensiva (Semilla Viva) y Miembro en Agua (el común)", () => {
     const r = rolesDe(raiz, "ana");
     expect(r).toHaveLength(2);
     expect(r.map((x) => [x.rol, x.circulo])).toEqual([
-      ["miembro", "Agua del Lighthouse"],
+      ["miembro", "Agua"],
       ["facilita", "Huerta intensiva"],
     ]);
     expect(r[0].lugar).toEqual({ tipo: "comun" });
@@ -155,7 +155,7 @@ describe("rolesDe", () => {
   it("Bruno tiene tres roles: común, Agua Clara y Valle Solar", () => {
     const r = rolesDe(raiz, "bruno");
     expect(r.map((x) => [x.rol, x.circulo, x.lugar.tipo === "tribu" ? x.lugar.nombre : "el común"])).toEqual([
-      ["facilita", "Agua del Lighthouse", "el común"],
+      ["facilita", "Agua", "el común"],
       ["enlace-arriba", "Toma y cisterna", "Agua Clara"],
       ["memoria", "Energía solar", "Valle Solar"],
     ]);
