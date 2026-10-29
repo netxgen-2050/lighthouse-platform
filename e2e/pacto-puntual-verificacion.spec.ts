@@ -181,6 +181,44 @@ test("pedir revisar exige motivo, devuelve la tarea a Pre-admitida y no hay cons
   await expect(fila).toContainText("8 h");
 });
 
+test("retirar después de que el holón pidió revisar aplica su respuesta, con aviso y evento", async ({ page, context, baseURL }) => {
+  await preadmitir(page, context, baseURL, PERSONA);
+  await marcarHecha(page, 10);
+  // La pantalla de la persona queda abierta en "Hecha" mientras el holón pide revisar desde otra pestaña.
+  const otra = await context.newPage();
+  await entrarComo(otra, context, baseURL, ADMIN, "/pactos/responder");
+  await otra.getByRole("button", { name: "Pedir revisar" }).click();
+  await otra.getByLabel(/Motivo/).fill("Faltó conectar el inversor");
+  await otra.getByRole("button", { name: "Confirmar el pedido de revisar" }).click();
+  await expect(otra.getByText("No hay pactos esperando tu respuesta")).toBeVisible();
+  await otra.close();
+  await context.addCookies([{ name: COOKIE_PRUEBA, value: encodeURIComponent(PERSONA), url: baseURL! }]);
+
+  const retirar = page.getByRole("button", { name: "Retirar", exact: true });
+  if (await retirar.isVisible()) await retirar.click();
+  await expect(page.locator("[data-estado-puntual]")).toHaveText("Pre-admitida");
+  await page.reload();
+  await expect(page.getByTestId("aviso-revisar-horas")).toContainText("Faltó conectar el inversor");
+  await page.goto("/panel");
+  await expect(page.getByText("El círculo Energía solar pidió revisar tus horas de Energía solar")).toHaveCount(1);
+  // No se escribió un retiro encima de la respuesta del holón.
+  expect((await registro(page)).filter((c) => c.esquema === "pacto-propone-horas")).toHaveLength(1);
+});
+
+test("marcar hecha con el estado local atrasado concilia en vez de dar error", async ({ page, context, baseURL }) => {
+  await preadmitir(page, context, baseURL, PERSONA);
+  const atrasada = await context.newPage();
+  await atrasada.goto("/pactos?comunidad=valle");
+  await expect(atrasada.locator("[data-estado-puntual]")).toHaveText("Pre-admitida");
+  await marcarHecha(page, 10);
+  // La otra pestaña no se enteró: su estado local sigue en Pre-admitida y el registro ya tiene la propuesta.
+  await atrasada.getByLabel(/Horas que te llevó/).fill("10");
+  await atrasada.getByRole("button", { name: "Marcar hecha" }).click();
+  await expect(atrasada.getByTestId("esperando-verificacion")).toBeVisible();
+  await expect(atrasada.getByText("No se pudo registrar tu tarea hecha")).toHaveCount(0);
+  expect((await registro(atrasada)).filter((c) => c.esquema === "pacto-propone-horas")).toHaveLength(1);
+});
+
 test("12 h con el máximo de 10 h: 2 h quedan sin Semillas y se muestran, no se borran", async ({ page, context, baseURL }) => {
   await preadmitir(page, context, baseURL, PERSONA);
   await marcarHecha(page, 12);

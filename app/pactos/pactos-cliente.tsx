@@ -7,7 +7,7 @@ import { KycDialogo } from "@/components/kyc-dialogo";
 import { MarcaSemillas } from "@/components/marca-semillas";
 import { useSesion } from "@/components/sesion/contexto";
 import { comunidadesQueResponde, respuestaDe, sobrePuntual } from "@/lib/pactos/constancias";
-import { horasDePostulacion, marcarHecha, retirarHecha } from "@/lib/pactos/horas";
+import { horasDePostulacion, horasParaConciliar, marcarHecha, retirarHecha } from "@/lib/pactos/horas";
 import { conciliarYGuardar, publicarLoQueFalta, publicarPostulacion, publicarPropuesta, quienRespondeDe } from "@/lib/pactos/navegador";
 import {
   aperturaDePostulacion,
@@ -385,6 +385,18 @@ export function PactosCliente() {
       propuestaHorasId = r.id ?? "";
       return r.resultado === "ok" ? r.lista : null;
     });
+    if (resultado === "ya-marcada") {
+      // El registro ya tiene la propuesta (otra pestaña, o el estado local quedó atrás): se concilia el estado local, no es error.
+      const registro = leerDelNavegador();
+      const post = registro ? ultimaPostulacion(registro, idPersona, necesidadId) : null;
+      const viva = registro && post ? horasDePostulacion(registro, post.id) : null;
+      const horasViva = viva ? Number(viva.datos.horas) : horas;
+      setFalloPublicar(null);
+      setAnuncio(tx.puntual.anunciosHecha.marcada(n.titulo));
+      guardarEstado(reducirPuntual(estado, { tipo: "marcarHecha", comunidad: comunidadId, necesidadId, horasReales: Number.isInteger(horasViva) ? horasViva : horas }));
+      setFocoPuntual(necesidadId);
+      return;
+    }
     if (nueva === null || resultado !== "ok") {
       setFalloPublicar("envio");
       setAnuncio(tx.puntual.anunciosHecha.noSePudo);
@@ -406,7 +418,7 @@ export function PactosCliente() {
       return;
     }
     const post = ultimaPostulacion(registro, idPersona, necesidadId);
-    const h = post ? horasDePostulacion(registro, post.id) : null;
+    const h = post ? horasParaConciliar(registro, post.id) : null;
     if (h) {
       let resultado = "";
       const nueva = actualizarEnNavegador((lista) => {
