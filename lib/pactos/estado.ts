@@ -8,12 +8,15 @@ import {
   esPostulacion,
   estaRevocada,
   respuestaDe,
+  respuestaDeHoras,
   respuestaValida,
   sobreDe,
   sobrePuntual,
   topeDeDatos,
   type ConstanciaPacto,
 } from "./constancias";
+import { constanciaBasePuntual, leerConstanciaBase, type ConstanciaBase } from "./constancia-base";
+import { horasParaConciliar, repartidoAntesDe } from "./horas";
 import { leerDelNavegador } from "./registro-compartido";
 
 /*
@@ -56,8 +59,8 @@ export type PactoTiempo = ContenidoPacto & {
   historial: VersionAceptada[];
 };
 
-/** Pasos de una postulación a una tarea. `pacto-puntual-verificacion` suma "hecha" y "verificado". */
-export type PasoPuntual = "borrador" | "enviado" | "preadmitido";
+/** Pasos de una postulación a una tarea: `hecha` = marcada hecha, esperando la verificación; `verificado` = el holón verificó las horas. */
+export type PasoPuntual = "borrador" | "enviado" | "preadmitido" | "hecha" | "verificado";
 
 /**
  * La postulación de una persona a una necesidad (pacto puntual). Lo que falta (horas, fecha) es null, nunca 0.
@@ -76,6 +79,12 @@ export type PactoPuntual = {
   paso: PasoPuntual;
   /** El último "no pre-admitió", para el aviso. */
   noPreadmitida?: { motivo: string; cuando: string };
+  /** Horas reales que marcó la persona (desde `hecha`); en `verificado`, las que vio el holón. */
+  horasReales?: number;
+  /** El último "pidió revisar las horas", para el aviso (con la tarea vuelta a "pre-admitida"). */
+  avisoRevisar?: { motivo: string; cuando: string };
+  /** La constancia base de Semillas (solo en `verificado`). */
+  constancia?: ConstanciaBase;
 };
 
 /** Lo que una persona tiene en una comunidad: su pacto de tiempo, los aportes en plata (USD) y sus postulaciones a tareas. */
@@ -301,7 +310,11 @@ export type AccionPuntual =
   | { tipo: "retirarPuntual"; comunidad: string; necesidadId: string }
   | { tipo: "descartarPuntual"; comunidad: string; necesidadId: string }
   | { tipo: "preadmitirPuntual"; comunidad: string; necesidadId: string; contenido: ContenidoPuntual }
-  | { tipo: "noPreadmitirPuntual"; comunidad: string; necesidadId: string; motivo: string; cuando: string };
+  | { tipo: "noPreadmitirPuntual"; comunidad: string; necesidadId: string; motivo: string; cuando: string }
+  | { tipo: "marcarHecha"; comunidad: string; necesidadId: string; horasReales: number }
+  | { tipo: "retirarHecha"; comunidad: string; necesidadId: string }
+  | { tipo: "verificarHoras"; comunidad: string; necesidadId: string; constancia: ConstanciaBase }
+  | { tipo: "pedirRevisarHoras"; comunidad: string; necesidadId: string; motivo: string; cuando: string };
 
 /** Lo que el holón vio al pre-admitir. */
 export type ContenidoPuntual = Pick<PactoPuntual, "rol" | "rolOtro" | "descripcion" | "horas" | "fecha" | "tope" | "topeTotal">;
@@ -382,6 +395,31 @@ export function reducirPuntual(e: EstadoPactos, a: AccionPuntual): EstadoPactos 
         paso: "borrador",
         noPreadmitida: { motivo: a.motivo.slice(0, 500), cuando: a.cuando },
       }));
+    case "marcarHecha":
+      return cambiarPuntual(e, a.comunidad, a.necesidadId, "preadmitido", (p) => {
+        if (!horasPuntualValidas(a.horasReales)) return p;
+        const { avisoRevisar: _a, ...resto } = p;
+        void _a;
+        return { ...resto, paso: "hecha", horasReales: a.horasReales };
+      });
+    case "retirarHecha":
+      return cambiarPuntual(e, a.comunidad, a.necesidadId, "hecha", (p) => {
+        const { horasReales: _h, ...resto } = p;
+        void _h;
+        return { ...resto, paso: "preadmitido" };
+      });
+    case "verificarHoras":
+      return cambiarPuntual(e, a.comunidad, a.necesidadId, "hecha", (p) => {
+        const c = leerConstanciaBase(a.constancia);
+        if (!c) return p;
+        return { ...p, paso: "verificado", horasReales: c.datos.horas, constancia: c };
+      });
+    case "pedirRevisarHoras":
+      return cambiarPuntual(e, a.comunidad, a.necesidadId, "hecha", (p) => {
+        const { horasReales: _h, ...resto } = p;
+        void _h;
+        return { ...resto, paso: "preadmitido", avisoRevisar: { motivo: a.motivo.slice(0, 500), cuando: a.cuando } };
+      });
   }
 }
 
@@ -496,7 +534,27 @@ function leerPuntuales(x: unknown): PactoPuntual[] {
       const m = n as Record<string, unknown>;
       if (typeof m.motivo === "string" && typeof m.cuando === "string") p.noPreadmitida = { motivo: m.motivo.slice(0, 500), cuando: m.cuando };
     }
-    if ((o.paso === "enviado" || o.paso === "preadmitido") && puntualCompleto(p)) p.paso = o.paso;
+    const av = o.avisoRevisar;
+    if (typeof av === "object" && av !== null) {
+      const m = av as Record<string, unknown>;
+      if (typeof m.motivo === "string" && typeof m.cuando === "string") p.avisoRevisar = { motivo: m.motivo.slice(0, 500), cuando: m.cuando };
+    }
+    if (puntualCompleto(p)) {
+      if (o.paso === "enviado" || o.paso === "preadmitido") p.paso = o.paso;
+      else if (o.paso === "hecha" || o.paso === "verificado") {
+        // Hecha sin horas válidas vuelve a pre-admitida; verificada sin constancia válida vuelve a hecha.
+        if (horasPuntualValidas(o.horasReales)) {
+          p.paso = "hecha";
+          p.horasReales = o.horasReales;
+          const c = o.paso === "verificado" ? leerConstanciaBase(o.constancia) : null;
+          if (c && c.datos.necesidad === id) {
+            p.paso = "verificado";
+            p.horasReales = c.datos.horas;
+            p.constancia = c;
+          }
+        } else p.paso = "preadmitido";
+      }
+    }
     salida.push(p);
   }
   return salida;
@@ -542,7 +600,11 @@ export function leer(crudo: string | null): EstadoPactos {
 /** Una respuesta de la tribu ya aplicada al pacto de la persona: sirve para anunciar y registrar el evento una sola vez. */
 export type RespuestaAplicada = {
   /** "preadmite" y "no-preadmite" son las del holón a una postulación (`necesidadId` y `holon` vienen en ese caso). */
-  tipo: "acepta" | "no-acepta" | "preadmite" | "no-preadmite";
+  tipo: "acepta" | "no-acepta" | "preadmite" | "no-preadmite" | "verifica" | "pide-revisar";
+  /** Verifica y pide revisar: el id de la respuesta del holón (para registrar el evento una sola vez). */
+  respuestaId?: string;
+  /** Verifica: las Semillas de la constancia base. */
+  semillas?: number;
   /** Postulación: la necesidad y el holón (`circulo:valle-3`) que respondió. */
   necesidadId?: string;
   holon?: string;
@@ -668,6 +730,33 @@ function conciliarPuntuales(
   const aplicadas: RespuestaAplicada[] = [];
   for (const [comunidad, c] of Object.entries(estado.comunidades)) {
     for (const p of c.puntuales) {
+      if (p.paso === "hecha") {
+        const post = ultimaPostulacion(constancias, idPersona, p.necesidadId);
+        const h = post ? horasParaConciliar(constancias, post.id) : null;
+        const resp = h ? respuestaDeHoras(constancias, h) : null;
+        if (!post || !h || !resp) continue;
+        const holon = contraparteDe(post) ?? "";
+        if (resp.esquema === "pacto-confirma-horas") {
+          const conf = constanciaBasePuntual(
+            comunidad,
+            { necesidadId: p.necesidadId, postulacionId: post.id, fecha: p.fecha ?? "", tope: p.tope, topeTotal: p.topeTotal },
+            resp,
+            repartidoAntesDe(constancias, p.necesidadId, resp.id, p.topeTotal),
+          );
+          if (!conf) continue;
+          const siguiente = reducirPuntual(actual, { tipo: "verificarHoras", comunidad, necesidadId: p.necesidadId, constancia: conf });
+          if (siguiente === actual) continue;
+          actual = siguiente;
+          aplicadas.push({ tipo: "verifica", comunidad, esCambio: false, version: resp.version, cuando: resp.cuando, propuestaId: h.id, respuestaId: resp.id, necesidadId: p.necesidadId, holon, semillas: conf.datos.semillas });
+        } else {
+          const motivo = texto(resp.datos.motivo, 500);
+          const siguiente = reducirPuntual(actual, { tipo: "pedirRevisarHoras", comunidad, necesidadId: p.necesidadId, motivo, cuando: resp.cuando });
+          if (siguiente === actual) continue;
+          actual = siguiente;
+          aplicadas.push({ tipo: "pide-revisar", comunidad, esCambio: false, version: resp.version, cuando: resp.cuando, propuestaId: h.id, respuestaId: resp.id, necesidadId: p.necesidadId, holon, motivo });
+        }
+        continue;
+      }
       if (p.paso !== "enviado") continue;
       const propuesta = ultimaPostulacion(constancias, idPersona, p.necesidadId);
       if (!propuesta) continue;

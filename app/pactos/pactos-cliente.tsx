@@ -6,7 +6,8 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { KycDialogo } from "@/components/kyc-dialogo";
 import { MarcaSemillas } from "@/components/marca-semillas";
 import { useSesion } from "@/components/sesion/contexto";
-import { comunidadesQueResponde, respuestaDe } from "@/lib/pactos/constancias";
+import { comunidadesQueResponde, respuestaDe, sobrePuntual } from "@/lib/pactos/constancias";
+import { horasDePostulacion, horasParaConciliar, marcarHecha, retirarHecha } from "@/lib/pactos/horas";
 import { conciliarYGuardar, publicarLoQueFalta, publicarPostulacion, publicarPropuesta, quienRespondeDe } from "@/lib/pactos/navegador";
 import {
   aperturaDePostulacion,
@@ -18,7 +19,7 @@ import {
 import { buscarNecesidad, holonDe, idDeHolon } from "@/lib/tribus/necesidades";
 import type { Idioma } from "@/lib/idioma/tipos";
 import { PostulacionesATareas } from "./postulaciones";
-import { leerDelNavegador, revocarEnNavegador } from "@/lib/pactos/registro-compartido";
+import { actualizarEnNavegador, leerDelNavegador, revocarEnNavegador } from "@/lib/pactos/registro-compartido";
 import { CLAVES } from "@/lib/demo/claves";
 import { TerminoEconomico } from "@/components/termino-economico";
 import { TerminoLegal } from "@/components/termino-legal";
@@ -27,6 +28,7 @@ import {
   HORAS,
   HOUR_REF_ARS,
   HOUR_REF_USD,
+  HORAS_PUNTUAL,
   MONTO_USD,
   PESTANAS,
   ROLES,
@@ -92,6 +94,10 @@ function anuncioDe(aplicadas: RespuestaAplicada[], tx: TextosPactos, idioma: Idi
   if (!a) return "";
   const donde = nombreComunidad(a.comunidad);
   if (a.tipo === "preadmite") return tx.puntual.anuncios.preadmitida(holonConArticulo(a.holon, idioma, tx), tareaDe(a.necesidadId, idioma));
+  if (a.tipo === "verifica")
+    return tx.puntual.anunciosHecha.verificada(holonConArticulo(a.holon, idioma, tx), tareaDe(a.necesidadId, idioma), a.semillas ?? 0);
+  if (a.tipo === "pide-revisar")
+    return tx.puntual.anunciosHecha.pidioRevisar(holonConArticulo(a.holon, idioma, tx), tareaDe(a.necesidadId, idioma), a.motivo ?? "");
   if (a.tipo === "no-preadmite")
     return tx.puntual.anuncios.noPreadmitida(holonConArticulo(a.holon, idioma, tx), tareaDe(a.necesidadId, idioma), a.motivo ?? "");
   if (a.tipo === "acepta") return a.esCambio ? tx.anuncios.cambioAceptado(donde, a.version) : tx.anuncios.pactoAceptado(donde);
@@ -115,7 +121,15 @@ function tareaDe(necesidadId: string | undefined, idioma: Idioma): string {
 function registrarEventosDe(aplicadas: RespuestaAplicada[], idioma: Idioma, tx: TextosPactos): void {
   for (const a of aplicadas) {
     const donde = nombreComunidad(a.comunidad);
-    if (a.necesidadId && (a.tipo === "preadmite" || a.tipo === "no-preadmite")) {
+    if (a.necesidadId && (a.tipo === "verifica" || a.tipo === "pide-revisar")) {
+      const holon = holonConArticulo(a.holon, idioma, tx);
+      const tarea = tareaDe(a.necesidadId, idioma);
+      registrarEvento(
+        a.tipo === "verifica"
+          ? EVENTOS.horasVerificadas(holon, tarea, a.comunidad, a.necesidadId)
+          : EVENTOS.horasARevisar(holon, tarea, a.comunidad, a.respuestaId ?? a.propuestaId),
+      );
+    } else if (a.necesidadId && (a.tipo === "preadmite" || a.tipo === "no-preadmite")) {
       const holon = holonConArticulo(a.holon, idioma, tx);
       const tarea = tareaDe(a.necesidadId, idioma);
       registrarEvento(
@@ -168,6 +182,7 @@ export function PactosCliente() {
     document.getElementById(`estado-puntual-${focoPuntual}`)?.focus();
     setFocoPuntual(null);
   }, [focoPuntual, estado]);
+  const [errorHoras, setErrorHoras] = useState<{ necesidadId: string; texto: string } | null>(null);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [listo, setListo] = useState(false);
   const foco = useRef(false);
@@ -339,6 +354,108 @@ export function PactosCliente() {
       if (paso === 1 && antes === 0) registrarEvento(EVENTOS.propusistePacto(donde, accion.comunidad));
     }
     setEstado(siguiente);
+  }
+
+  function guardarEstado(siguiente: EstadoPactos) {
+    try {
+      window.localStorage.setItem(CLAVES.pactos, JSON.stringify(siguiente));
+      setFalloAlmacen(false);
+    } catch {
+      setFalloAlmacen(true);
+    }
+    setEstado(siguiente);
+  }
+
+  /** Marcar la tarea hecha: escribe la propuesta de horas en el registro (releído) y recién después cambia el estado. */
+  function marcarHechaDe(comunidadId: string, necesidadId: string, horas: number) {
+    if (!idPersona) return;
+    if (!Number.isInteger(horas) || horas < HORAS_PUNTUAL.min || horas > HORAS_PUNTUAL.max) {
+      setErrorHoras({ necesidadId, texto: tx.puntual.horasFuera });
+      return;
+    }
+    setErrorHoras(null);
+    const puntual = puntualDe(estado, comunidadId, necesidadId);
+    const n = buscarNecesidad(necesidadId, idioma);
+    if (!puntual || puntual.paso !== "preadmitido" || !n) return;
+    let resultado = "";
+    let propuestaHorasId = "";
+    const nueva = actualizarEnNavegador((lista) => {
+      const r = marcarHecha(lista, { idPersona, necesidadId, sobre: sobrePuntual(necesidadId, idPersona), horas }, new Date().toISOString());
+      resultado = r.resultado;
+      propuestaHorasId = r.id ?? "";
+      return r.resultado === "ok" ? r.lista : null;
+    });
+    if (resultado === "ya-marcada") {
+      // El registro ya tiene la propuesta (otra pestaña, o el estado local quedó atrás): se concilia el estado local, no es error.
+      const registro = leerDelNavegador();
+      const post = registro ? ultimaPostulacion(registro, idPersona, necesidadId) : null;
+      const viva = registro && post ? horasDePostulacion(registro, post.id) : null;
+      const horasViva = viva ? Number(viva.datos.horas) : horas;
+      setFalloPublicar(null);
+      setAnuncio(tx.puntual.anunciosHecha.marcada(n.titulo));
+      const marcado = reducirPuntual(estado, { tipo: "marcarHecha", comunidad: comunidadId, necesidadId, horasReales: Number.isInteger(horasViva) ? horasViva : horas });
+      if (registro) {
+        // Si el holón ya respondió esas horas, se aplica su respuesta sobre el estado marcado (y se anuncia una sola vez).
+        const r = conciliarYGuardar(marcado, registro, idPersona);
+        if (!r.guardado) setFalloAlmacen(true);
+        if (r.aplicadas.length > 0) {
+          setAnuncio(anuncioDe(r.aplicadas, tx, idioma));
+          registrarEventosDe(r.aplicadas, idioma, tx);
+        }
+        setEstado(r.estado);
+      } else {
+        guardarEstado(marcado);
+      }
+      setFocoPuntual(necesidadId);
+      return;
+    }
+    if (nueva === null || resultado !== "ok") {
+      setFalloPublicar("envio");
+      setAnuncio(tx.puntual.anunciosHecha.noSePudo);
+      return;
+    }
+    setFalloPublicar(null);
+    if (resultado === "ok") registrarEvento(EVENTOS.marcasteHecha(n.titulo, nombreComunidad(n.tribuId), comunidadId, necesidadId, propuestaHorasId));
+    setAnuncio(tx.puntual.anunciosHecha.marcada(n.titulo));
+    guardarEstado(reducirPuntual(estado, { tipo: "marcarHecha", comunidad: comunidadId, necesidadId, horasReales: horas }));
+    setFocoPuntual(necesidadId);
+  }
+
+  /** Retirar lo hecho: relee el registro; si el holón ya respondió, no escribe el `revoca` y se aplica su respuesta. */
+  function retirarHechaDe(comunidadId: string, necesidadId: string) {
+    if (!idPersona) return;
+    const registro = leerDelNavegador();
+    if (!registro) {
+      setFalloPublicar("retiro");
+      return;
+    }
+    const post = ultimaPostulacion(registro, idPersona, necesidadId);
+    const h = post ? horasParaConciliar(registro, post.id) : null;
+    if (h) {
+      let resultado = "";
+      const nueva = actualizarEnNavegador((lista) => {
+        const r = retirarHecha(lista, { idPersona, propuestaHorasId: h.id }, new Date().toISOString());
+        resultado = r.resultado;
+        return r.resultado === "ok" ? r.lista : null;
+      });
+      if (nueva === null) {
+        setFalloPublicar("retiro");
+        return;
+      }
+      if (resultado === "ya-respondida") {
+        const r = conciliarYGuardar(estado, nueva, idPersona);
+        if (!r.guardado) setFalloAlmacen(true);
+        setAnuncio(r.aplicadas.length > 0 ? anuncioDe(r.aplicadas, tx, idioma) : tx.puntual.anunciosHecha.yaRespondidas);
+        registrarEventosDe(r.aplicadas, idioma, tx);
+        setEstado(r.estado);
+        setFocoPuntual(necesidadId);
+        return;
+      }
+    }
+    setFalloPublicar(null);
+    setAnuncio(tx.puntual.anunciosHecha.retirada);
+    guardarEstado(reducirPuntual(estado, { tipo: "retirarHecha", comunidad: comunidadId, necesidadId }));
+    setFocoPuntual(necesidadId);
   }
 
   /** Las postulaciones a tareas: enviar y retirar escriben en el registro compartido; las respuestas del holón solo llegan por conciliación. */
@@ -988,6 +1105,9 @@ export function PactosCliente() {
           alEnviar={(necesidadId) => accionPuntual({ tipo: "enviarPuntual", comunidad, necesidadId })}
           alRetirar={(necesidadId) => accionPuntual({ tipo: "retirarPuntual", comunidad, necesidadId })}
           alDescartar={(necesidadId) => accionPuntual({ tipo: "descartarPuntual", comunidad, necesidadId })}
+          alMarcarHecha={(necesidadId, horas) => marcarHechaDe(comunidad, necesidadId, horas)}
+          alRetirarHecha={(necesidadId) => retirarHechaDe(comunidad, necesidadId)}
+          errorHoras={errorHoras}
         />
       )}
       <KycDialogo

@@ -1,4 +1,5 @@
 import type { ConstanciaPacto } from "@/lib/pactos/constancias";
+import type { ConstanciaBase } from "@/lib/pactos/constancia-base";
 import { deComunidad, leerPactosConciliados, pactosAceptados, totalAportes } from "@/lib/pactos/estado";
 import { semillasDePlata } from "@/lib/pactos/calculo";
 import { clave, rondaCompleta, semillasTiempo, totalConDato, type Notas, type Parte, type Razones } from "./calculo";
@@ -80,6 +81,10 @@ export type SemillasDeComunidad = {
   tiempo: Parte;
   plata: Parte;
   presencia: Parte;
+  /** Semillas de los pactos puntuales verificados por el holón (se reciben al verificarse), o null si no hay ("sin dato"). */
+  puntual: Parte;
+  /** Las constancias base de los puntuales verificados de esta persona en esta comunidad (solo las suyas). */
+  constancias: ConstanciaBase[];
   total: number | null;
   /** ¿Hay un pacto de tiempo aceptado? Habilita la ronda de reconocimiento. */
   pactoAceptado: boolean;
@@ -101,12 +106,17 @@ export function semillasDeComunidad(
   const aceptado = pactosAceptados(guardados).some((a) => a.comunidad === comunidad);
   const tiempo = aceptado ? semillasTiempo(p.tiempo.horas, 100) : null;
   const plata = p.aportes.length > 0 ? semillasDePlata(totalAportes(p)) : null;
+  // Un puntual verificado se recibe directo: no pasa por "Semillas pendientes" y nunca habilita la ronda (`pactoAceptado`).
+  const constancias = p.puntuales.flatMap((x) => (x.paso === "verificado" && x.constancia ? [x.constancia] : []));
+  const puntual = constancias.length > 0 ? constancias.reduce((s, c) => s + c.datos.semillas, 0) : null;
   return {
     horas: aceptado ? p.tiempo.horas : null,
     tiempo,
     plata,
     presencia: null,
-    total: totalConDato([tiempo, plata, null]),
+    puntual,
+    constancias,
+    total: totalConDato([tiempo, plata, puntual, null]),
     pactoAceptado: aceptado,
   };
 }

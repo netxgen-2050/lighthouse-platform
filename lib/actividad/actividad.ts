@@ -9,7 +9,14 @@ export type ClaveMensaje = keyof (typeof bandeja)["es"]["eventos"];
 export type DatosEvento = { comunidad?: string; descripcion?: string; tarea?: string };
 
 /** Mensajes que usan además el nombre de una tarea (la tarea no se traduce): el segundo dato, después de `comunidad`. */
-const CON_TAREA: readonly string[] = ["tePostulaste", "postulacionPreadmitida", "postulacionNoPreadmitida"];
+const CON_TAREA: readonly string[] = [
+  "tePostulaste",
+  "postulacionPreadmitida",
+  "postulacionNoPreadmitida",
+  "marcasteHecha",
+  "horasVerificadas",
+  "horasARevisar",
+];
 
 /** Qué dato usa cada mensaje: `null` = ninguno. */
 const DATO_DEL_MENSAJE: Record<ClaveMensaje, keyof DatosEvento | null> = {
@@ -31,6 +38,9 @@ const DATO_DEL_MENSAJE: Record<ClaveMensaje, keyof DatosEvento | null> = {
   tePostulaste: "comunidad",
   postulacionPreadmitida: "comunidad",
   postulacionNoPreadmitida: "comunidad",
+  marcasteHecha: "comunidad",
+  horasVerificadas: "comunidad",
+  horasARevisar: "comunidad",
 };
 
 function esClaveMensaje(x: unknown): x is ClaveMensaje {
