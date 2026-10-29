@@ -147,7 +147,16 @@ type Constancia = { uid: string; schema: "semillas-base" | "semillas-ajuste"; af
 - [Un resumen de IA podría citar frases textuales y delatar a quien escribió] → En el prototipo el resumen es fijo y no copia ninguna frase; en la versión real es un requisito del cambio que integre el modelo.
 - [Los e2e actuales esperan "1,0" y "De Martina"] → Se actualizan en las tareas.
 
+### 9. Decisiones de Gus del 28-oct sobre Semillas pendientes, máximos y Hifa
+- **Solo se ajusta lo recibido.** Las "Semillas pendientes" de un pacto variable no se ajustan ni suman. Los meses confirmados tras cumplir el mínimo se reciben al confirmarse; al pasar a fijas, las pendientes se reciben solo si el círculo las valida y si no se pierden (la lógica vive en `pactos-horas-variables`). Aquí el bloque de constancias cubre un mes de un pacto fijo y con pacto variable dice "sin dato".
+- **Máximos de la tarea.** El máximo por persona y el máximo total (los fija quien administra el holón) son de las tareas. Un pacto puntual no habilita ronda ni ajuste, así que este cambio no los toca.
+- **Hifa.** Los círculos transversales los administra y facilita Hifa, simulada y experimental, con el super admin de respaldo humano. La ronda de ejemplo es de un pacto, no de un círculo transversal, así que no hay aviso en pantalla; queda anotado para cuando haya rondas de círculos.
+- **Nombres:** "Semillas pendientes" y "Semillas"; nunca "brotes" ni "germinar".
+
 ## Open Questions
+
+- **Ajuste de meses de horas variables:** ¿el ajuste de un mes recibido se calcula por mes o al cumplir el mínimo? Hoy el bloque dice "sin dato" con pacto variable. Decide Gus.
+- **Ajuste y máximos de tarea (D20):** si el ajuste alcanza a tareas, nunca debe superar el máximo por persona ni el total.
 
 - **Semillas de pactos puntuales (D20):** el ajuste las alcanza, pero ¿cuánto pesa? Opciones: (1) la misma fórmula con una fuerza menor para puntuales (por ejemplo, tope 0,1); (2) sin notas de pares: solo la confirmación de quien recibe la tarea, que da 1,0 o retiene la constancia; (3) ajuste solo si la tarea tuvo 3 personas o más en el equipo, y si no, 1,0. Decide Gus.
 - ¿El ajuste cambia el saldo del panel de Semillas en este prototipo? Hoy queda solo en el bloque de ejemplo.

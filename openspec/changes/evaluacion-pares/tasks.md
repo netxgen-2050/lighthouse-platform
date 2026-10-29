@@ -41,3 +41,8 @@ Dos noches como máximo. La **noche 1** cierra los grupos 1 a 3 (todo en `lib/`,
 - [ ] 6.1 Actualizar los e2e que esperaban "1,0" y "De Martina" (`e2e/semillas.spec.ts`, `e2e/idioma-pasaporte-semillas-pactos.spec.ts`) y revisar `e2e/bandeja.spec.ts` (la ronda sigue registrando el evento). Verifica: `pnpm test:e2e` en verde.
 - [ ] 6.2 Auditoría de accesibilidad de `/semillas` con la ronda enviada (axe) y prueba de teclado de punta a punta (puntuar, enviar, cambiar la fuerza, abrir los ⚖). Verifica: `e2e/accesibilidad.spec.ts` en verde; nada se comunica solo con color.
 - [ ] 6.3 `pnpm verificar` y `pnpm build` en verde antes del PR.
+
+## 7. Decisiones del 28-oct (Semillas pendientes, máximos, Hifa, nombres)
+
+- [ ] 7.1 Con pacto de horas variables aceptado, el bloque de constancias dice "sin dato" y no ajusta Semillas pendientes (spec: "El ajuste solo alcanza a Semillas recibidas"). Verifica: e2e con un pacto variable: "sin dato" y sin 50 ni 54.
+- [ ] 7.2 Ningún texto nuevo dice "brotes" ni "germinar". Verifica: e2e en `/semillas` con la ronda enviada: `body` no contiene /brotes|germinar/i.
