@@ -25,6 +25,7 @@ describe("catálogo legal", () => {
         "chacra",
         "circulo",
         "circulotrabajo",
+        "compromisominimo",
         "consejo",
         "representante",
         "validacioncomun",
@@ -113,6 +114,20 @@ describe("catálogo legal", () => {
     expect(texto).toMatch(/no hay pago en dinero/);
     expect(texto).toMatch(/Semillas, que no son un sueldo/);
     expect(texto).not.toMatch(/brote|germin/i);
+  });
+
+  it("compromisominimo es borrador, tiene inglés y aclara que no es un contrato de trabajo ni un período de prueba y que se puede dejar avisando", () => {
+    expect(esBorrador("compromisominimo")).toBe(true);
+    expect(terminoEn("compromisominimo")?.titulo).toBe("Minimum commitment");
+    const texto = TERMINOS.compromisominimo.texto;
+    expect(texto).toMatch(/no es un contrato de trabajo ni un período de prueba/);
+    expect(texto).toMatch(/horario impuesto/);
+    expect(texto).toMatch(/pago en dinero/);
+    expect(texto).toMatch(/dejarlo antes avisando/);
+    expect(texto).toMatch(/Semillas pendientes/);
+    expect(texto).toMatch(/Las Semillas no son un sueldo/);
+    expect(texto + terminoEn("compromisominimo")?.texto).not.toMatch(/brote|germin|sprout/i);
+    expect(terminoEn("compromisominimo")?.texto).toMatch(/not an employment contract or a probationary period/);
   });
 
   it("ordenanza173 es borrador y dice que se verifica con abogado", () => {

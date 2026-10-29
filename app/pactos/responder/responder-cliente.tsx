@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSesion } from "@/components/sesion/contexto";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
-import { formatearFecha, formatearNumero } from "@/lib/idioma/formatos";
+import { conMayuscula, formatearFecha, formatearNumero, nombreDelMes } from "@/lib/idioma/formatos";
 import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
 import {
   MAX_MOTIVO,
@@ -34,6 +34,8 @@ import {
   type ResultadoRespuesta,
 } from "@/lib/pactos/postulacion";
 import { horasEsperando, horasPendientes, repartidoAntesDe, responderHoras, restoDelTotal, textoDeTope, type ResultadoHoras } from "@/lib/pactos/horas";
+import { declaracionesParaVer, propuestaAceptadaDe, quienDeSobre, responderMes, type ResultadoMes } from "@/lib/pactos/mensual";
+import { textoHorasDelPacto } from "@/lib/pactos/texto-horas";
 import { aplicarTope, buscarNecesidad } from "@/lib/tribus/necesidades";
 import { HOUR_REF_USD } from "@/lib/pactos/datos";
 import { quienRespondeDe } from "@/lib/pactos/navegador";
@@ -121,6 +123,55 @@ export function ResponderCliente() {
   // Tareas hechas para verificar (pacto-puntual-verificacion): las que esta sesión puede verificar y las propias de un holón que administra (sin botones).
   const horasVisibles = lista === null ? [] : horasParaVer(lista, q);
   const holonesHoras = [...new Set(horasVisibles.map((x) => holonIdDePostulacion(x.post) ?? ""))].filter(Boolean);
+  // Horas de cada mes de los pactos variables (pactos-horas-variables): las de las comunidades donde esta sesión responde.
+  const mesesVisibles = lista === null ? [] : declaracionesParaVer(lista, q);
+
+  /** Cómo se dice un pacto de tiempo a partir de los `datos` de su propuesta: "Horas variables · entre 0 y 30 h/mes · compromiso mínimo 3 meses". */
+  function contenidoDeDatos(d: Record<string, string>): { variable: boolean; texto: string } {
+    const variable = d.modalidad === "variable";
+    const rango = { min: Number(d.rangoMin), max: Number(d.rangoMax) };
+    const horas = Number(d.horas);
+    if (!variable) return { variable, texto: Number.isFinite(horas) ? t.horas(formatearNumero(horas, idioma)) : comunes.sinDato };
+    if (!Number.isFinite(rango.min) || !Number.isFinite(rango.max)) return { variable, texto: comunes.sinDato };
+    const compromiso = Number(d.compromisoMeses);
+    return { variable, texto: t.variable(textoHorasDelPacto({ modalidad: "variable", horas: 0, rango }, idioma), Number.isFinite(compromiso) ? compromiso : null) };
+  }
+
+  /** Confirmar o pedir revisar las horas de un mes: se relee el registro y se comprueba, justo antes de escribir, que no tengan respuesta. */
+  function responderAMes(h: ConstanciaPacto, confirma: boolean) {
+    if (!q) return;
+    const texto = motivo.trim();
+    if (!confirma && texto.length === 0) {
+      setErrorMotivo(t.mes.motivoVacio);
+      campoMotivo.current?.focus();
+      return;
+    }
+    setErrorMotivo("");
+    let resultado: ResultadoMes = "ya-respondida";
+    const nueva = actualizarEnNavegador((actual) => {
+      const r = responderMes(actual, { declaracionId: h.id, confirma, motivo: texto, sesion: q }, new Date().toISOString());
+      resultado = r.resultado;
+      return r.resultado === "ok" ? r.lista : null;
+    });
+    setAbierta(null);
+    setMotivo("");
+    if (nueva === null) {
+      setResultado((r) => ({ n: r.n + 1, texto: t.errorGuardar, error: true }));
+      return;
+    }
+    setLista(nueva);
+    const quien = quienDeSobre(nueva, h.sobre) ?? t.quienSinDato;
+    const mes = conMayuscula(nombreDelMes(h.datos.mes ?? "", idioma));
+    setResultado((r) =>
+      resultado === "sin-permiso"
+        ? { n: r.n + 1, texto: t.mes.sinPermiso, error: true }
+        : resultado === "sin-motivo"
+          ? { n: r.n + 1, texto: t.mes.motivoVacio, error: true }
+          : resultado !== "ok"
+            ? { n: r.n + 1, texto: t.mes.yaRespondida, error: true }
+            : { n: r.n + 1, texto: confirma ? t.mes.confirmaste(quien, mes) : t.mes.pediste(quien, mes), error: false },
+    );
+  }
 
   function responderAPostulacion(c: ConstanciaPacto, acepta: boolean) {
     if (!q) return;
@@ -260,7 +311,7 @@ export function ResponderCliente() {
         <p className="rounded-xl border border-faint bg-surface p-4">{t.sinPermiso}</p>
       ) : lista === null ? (
         <p className="rounded-xl border border-faint bg-surface p-4">{t.registroSinDato}</p>
-      ) : comunidades.length === 0 && postulaciones.length === 0 && horasVisibles.length === 0 ? (
+      ) : comunidades.length === 0 && postulaciones.length === 0 && horasVisibles.length === 0 && mesesVisibles.length === 0 ? (
         <p className="rounded-xl border border-faint bg-surface p-4">{t.sinPendientes}</p>
       ) : (
         <>
@@ -277,8 +328,16 @@ export function ResponderCliente() {
                 const rolClave = buscarRol(c.datos.rol);
                 const nombreRol = c.datos.rol === "otro" ? c.datos.rolOtro : rolClave ? textoDeRol(rolClave, idioma).nombre : comunes.sinDato;
                 const horas = Number(c.datos.horas);
-                const horasTexto = Number.isFinite(horas) ? t.horas(formatearNumero(horas, idioma)) : comunes.sinDato;
+                const contenido = contenidoDeDatos(c.datos);
+                const horasTexto = contenido.texto;
                 const esCambio = c.datos.tipo === "cambio";
+                const rangoDe = (min: string | undefined, max: string | undefined) =>
+                  textoHorasDelPacto({ modalidad: "variable", horas: 0, rango: { min: Number(min), max: Number(max) } }, idioma);
+                const cambiaModalidad = esCambio && (contenido.variable || c.datos.modalidadVigente === "variable");
+                const textoVigente =
+                  c.datos.modalidadVigente === "variable"
+                    ? rangoDe(c.datos.rangoVigenteMin, c.datos.rangoVigenteMax)
+                    : textoHorasDelPacto({ modalidad: "fija", horas: Number(c.datos.horasVigentes), rango: { min: 0, max: 0 } }, idioma);
                 const fecha = Number.isNaN(Date.parse(c.cuando)) ? t.fechaSinDato : formatearFecha(c.cuando, idioma);
                 return (
                   <article key={c.id} aria-labelledby={`art-${c.id}`} className="grid gap-2 rounded-xl border border-faint bg-surface p-4">
@@ -287,7 +346,15 @@ export function ResponderCliente() {
                     </h3>
                     {puede && proponeLider(c) && <p className="text-sm text-muted">{t.loProponeLider(nombreComunidad(comunidad))}</p>}
                     <p className="text-sm font-medium">
-                      {esCambio
+                      {cambiaModalidad
+                        ? t.cambioModalidad(
+                            c.datos.horasVigentes || c.datos.modalidadVigente ? textoVigente : comunes.sinDato,
+                            contenido.variable
+                              ? rangoDe(c.datos.rangoMin, c.datos.rangoMax)
+                              : textoHorasDelPacto({ modalidad: "fija", horas, rango: { min: 0, max: 0 } }, idioma),
+                            c.version,
+                          )
+                        : esCambio
                         ? t.cambio(
                             c.datos.horasVigentes ? formatearNumero(Number(c.datos.horasVigentes), idioma) : comunes.sinDato,
                             Number.isFinite(horas) ? formatearNumero(horas, idioma) : comunes.sinDato,
@@ -602,6 +669,94 @@ export function ResponderCliente() {
                       );
                     })}
                 </section>
+              );
+            })}
+          </section>
+        )}
+        {mesesVisibles.length > 0 && lista && (
+          <section aria-labelledby="titulo-horas-mes" className="grid gap-4" data-testid="horas-del-mes-para-confirmar">
+            <h2 id="titulo-horas-mes" className="text-xl font-semibold">
+              {t.mes.titulo}
+            </h2>
+            <p className="text-sm text-muted">{t.mes.aclaracion}</p>
+            {mesesVisibles.map(({ h, comunidad, puede }) => {
+              const quien = quienDeSobre(lista, h.sobre) ?? t.quienSinDato;
+              const mes = conMayuscula(nombreDelMes(h.datos.mes ?? "", idioma));
+              const vigente = propuestaAceptadaDe(lista, h.sobre);
+              const rango = vigente && vigente.datos.modalidad === "variable"
+                ? textoHorasDelPacto({ modalidad: "variable", horas: 0, rango: { min: Number(vigente.datos.rangoMin), max: Number(vigente.datos.rangoMax) } }, idioma)
+                : comunes.sinDato;
+              const fecha = Number.isNaN(Date.parse(h.cuando)) ? t.fechaSinDato : formatearFecha(h.cuando, idioma);
+              return (
+                <article key={h.id} aria-labelledby={`art-${h.id}`} className="grid gap-2 rounded-xl border border-faint bg-surface p-4" data-testid="horas-mes">
+                  <h3 id={`art-${h.id}`} className="text-lg font-semibold">
+                    <span translate="no">{quien}</span> · {mes}
+                  </h3>
+                  <p className="text-sm text-muted">{t.deComunidad(nombreComunidad(comunidad))}</p>
+                  <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+                    <dt className="text-muted">{t.mes.declara}</dt>
+                    <dd>{`${formatearNumero(Number(h.datos.horas), idioma)} h`}</dd>
+                    <dt className="text-muted">{t.mes.rangoVigente}</dt>
+                    <dd>{rango}</dd>
+                  </dl>
+                  <p className="text-sm text-muted">{t.enviado(fecha)}</p>
+                  {!puede && <p className="rounded-lg bg-surface-2 px-3 py-2 text-sm">{t.mes.propias}</p>}
+                  {puede && abierta !== h.id && (
+                    <div className="flex flex-wrap gap-3">
+                      <button type="button" className={BOTON_PRIMARIO} onClick={() => responderAMes(h, true)}>
+                        {t.mes.confirmar}
+                      </button>
+                      <button
+                        type="button"
+                        className={BOTON_SECUNDARIO}
+                        onClick={() => {
+                          setAbierta(h.id);
+                          setMotivo("");
+                          setErrorMotivo("");
+                        }}
+                      >
+                        {t.mes.pedirRevisar}
+                      </button>
+                    </div>
+                  )}
+                  {puede && abierta === h.id && (
+                    <div className="grid gap-2">
+                      <label className="grid gap-1 text-sm">
+                        <span className="font-medium">{t.motivo}</span>
+                        <textarea
+                          ref={campoMotivo}
+                          rows={3}
+                          maxLength={MAX_MOTIVO}
+                          value={motivo}
+                          onChange={(e) => setMotivo(e.target.value)}
+                          aria-describedby={errorMotivo ? `error-${h.id}` : undefined}
+                          aria-invalid={errorMotivo ? true : undefined}
+                          className={CAMPO}
+                        />
+                      </label>
+                      {errorMotivo && (
+                        <p id={`error-${h.id}`} role="alert" className="text-sm font-medium text-danger">
+                          {errorMotivo}
+                        </p>
+                      )}
+                      <div className="flex flex-wrap gap-3">
+                        <button type="button" className={BOTON_PRIMARIO} onClick={() => responderAMes(h, false)}>
+                          {t.mes.confirmarRevisar}
+                        </button>
+                        <button
+                          type="button"
+                          className={BOTON_SECUNDARIO}
+                          onClick={() => {
+                            setAbierta(null);
+                            setErrorMotivo("");
+                          }}
+                        >
+                          {t.cancelar}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </article>
               );
             })}
           </section>

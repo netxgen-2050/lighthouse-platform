@@ -1,10 +1,18 @@
 // Textos de la Bandeja (`/bandeja`) y de cada evento de la actividad. Cada evento nuevo guarda su clave y sus datos
 // (`lib/actividad/actividad.ts`) y el texto se arma acá, al mostrarlo, en el idioma actual. Cada función recibe el único dato
 // que usa: el nombre de la comunidad o la descripción de lo que publicó la persona (no se traducen).
+import { nombreDelMes } from "../formatos";
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
 
 const G = GLOSARIO;
+
+/** "<horas>|<AAAA-MM>" → [horas, mes]. */
+function detalleDeHoras(detalle: string): [string, string] {
+  const d = String(detalle);
+  const i = d.indexOf("|");
+  return i < 0 ? [d, ""] : [d.slice(0, i), d.slice(i + 1)];
+}
 
 const es = {
   pagina: {
@@ -45,6 +53,12 @@ const es = {
     marcasteHecha: (comunidad: string, tarea = "") => `Marcaste hecha ${tarea} en ${comunidad}`,
     horasVerificadas: (holon: string, tarea = "") => `${holon} verificó tus horas de ${tarea}`,
     horasARevisar: (holon: string, tarea = "") => `${holon} pidió revisar tus horas de ${tarea}`,
+    /** `detalle` = "<horas>|<AAAA-MM>" (pactos-horas-variables): el mes se escribe en el idioma de quien lo lee. */
+    declarasteHoras: (comunidad: string, detalle = "") => {
+      const [h, mes] = detalleDeHoras(detalle);
+      return `Declaraste ${h} h de ${nombreDelMes(mes, "es")} en ${comunidad}`;
+    },
+    horasDelMesConfirmadas: (comunidad: string, detalle = "") => `${comunidad} confirmó tus horas de ${nombreDelMes(detalleDeHoras(detalle)[1], "es")}`,
   },
 };
 
@@ -86,6 +100,11 @@ const en: Textos<typeof es> = {
     marcasteHecha: (comunidad: string, tarea = "") => `You marked ${tarea} as done in ${comunidad}`,
     horasVerificadas: (holon: string, tarea = "") => `${holon} verified your hours for ${tarea}`,
     horasARevisar: (holon: string, tarea = "") => `${holon} asked to review your hours for ${tarea}`,
+    declarasteHoras: (comunidad: string, detalle = "") => {
+      const [h, mes] = detalleDeHoras(detalle);
+      return `You declared ${h} h for ${nombreDelMes(mes, "en")} in ${comunidad}`;
+    },
+    horasDelMesConfirmadas: (comunidad: string, detalle = "") => `${comunidad} confirmed your hours for ${nombreDelMes(detalleDeHoras(detalle)[1], "en")}`,
   },
 };
 

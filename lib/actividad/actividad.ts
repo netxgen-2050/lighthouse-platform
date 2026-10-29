@@ -16,6 +16,8 @@ const CON_TAREA: readonly string[] = [
   "marcasteHecha",
   "horasVerificadas",
   "horasARevisar",
+  "declarasteHoras",
+  "horasDelMesConfirmadas",
 ];
 
 /** Qué dato usa cada mensaje: `null` = ninguno. */
@@ -41,6 +43,8 @@ const DATO_DEL_MENSAJE: Record<ClaveMensaje, keyof DatosEvento | null> = {
   marcasteHecha: "comunidad",
   horasVerificadas: "comunidad",
   horasARevisar: "comunidad",
+  declarasteHoras: "comunidad",
+  horasDelMesConfirmadas: "comunidad",
 };
 
 function esClaveMensaje(x: unknown): x is ClaveMensaje {

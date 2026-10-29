@@ -14,6 +14,7 @@ import {
   estaRevocada,
   horasDelMes,
   personaDeAfirma,
+  respuestaDe,
   revocar,
   sobreDe,
   type ConstanciaPacto,
@@ -146,7 +147,24 @@ export function declaracionesParaVer(lista: readonly ConstanciaPacto[], sesion: 
   return salida;
 }
 
-export type ResultadoMes = "ok" | "ya-respondida" | "sin-permiso" | "sin-motivo";
+/** La última propuesta del pacto de esa persona y comunidad (`sobre`) que la comunidad aceptó (sin revocar), o null: es la versión vigente. */
+export function propuestaAceptadaDe(lista: readonly ConstanciaPacto[], sobre: string): ConstanciaPacto | null {
+  const aceptadas = lista.filter(
+    (c) => c.esquema === "pacto-propone" && c.sobre === sobre && !estaRevocada(lista, c.id) && respuestaDe(lista, c.id)?.esquema === "pacto-acepta",
+  );
+  return aceptadas.length > 0 ? aceptadas[aceptadas.length - 1] : null;
+}
+
+/** El nombre (o las iniciales) con que la persona se presentó en su pacto de esa comunidad; null si no hay. */
+export function quienDeSobre(lista: readonly ConstanciaPacto[], sobre: string): string | null {
+  for (let i = lista.length - 1; i >= 0; i--) {
+    const c = lista[i];
+    if (c.esquema === "pacto-propone" && c.sobre === sobre && (c.datos.nombre || c.datos.iniciales)) return c.datos.nombre || c.datos.iniciales;
+  }
+  return null;
+}
+
+export type ResultadoMes ="ok" | "ya-respondida" | "sin-permiso" | "sin-motivo";
 
 /** Confirma o pide revisar unas horas de un mes sobre la lista RELEÍDA. Una sola respuesta por declaración. */
 export function responderMes(
