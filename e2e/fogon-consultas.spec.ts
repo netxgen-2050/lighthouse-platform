@@ -96,7 +96,11 @@ test("(e) U1 con resultado al cierre: oculto al guardar, visible al simular el c
   await expect(resultado).toContainText("personas la apoyaron");
   await expect(resultado).toContainText("Tu voto: 2 votos");
   const acta = page.getByRole("region", { name: "Acta (ejemplo)" });
-  await expect(acta).toContainText("El resultado es consultivo");
+  await expect(acta).toContainText("El resultado es consultivo: no reemplaza las decisiones que reservan el contrato o el estatuto.");
+  await acta.getByRole("button", { name: /Qué significa legalmente: Resultado consultivo/ }).click();
+  await expect(acta).toContainText("orienta una decisión");
+  await expect(acta).toContainText("Borrador: texto a revisar");
+  await expect(acta).toContainText("El resultado es consultivo: no reemplaza las decisiones que reservan el contrato o el estatuto.");
   await expect(page.getByRole("button", { name: /Sumar un voto/ })).toHaveCount(0);
   await expect(guardar(page)).toHaveCount(0);
   await page.getByRole("button", { name: "Volver a abrir (simulado)" }).click();
@@ -115,16 +119,21 @@ test("(f) U2 con resultado al votar: tras guardar se ve el resultado y la tabla 
   await expect(tabla.getByRole("rowheader", { name: "Persona de ejemplo 1" })).toBeVisible();
 });
 
-test("(g) U4: monto sugerido y 'Con tu reparto irían' en plata, sin dato sin votos propios", async ({ page }) => {
+test("(g) U4: monto sugerido y 'Con tu reparto irían': sin dato hasta empezar a repartir, USD 0 después", async ({ page }) => {
   await irA(page, "u4", "Primer presupuesto de regeneración");
   await expect(page.getByText("Monto a repartir: USD 20.000")).toBeVisible();
   await expect(page.getByText("Sugerencia del equipo: lo decide Franz")).toBeVisible();
   await expect(opcion(page, "Vivero de nativas")).toContainText("Con tu reparto irían: sin dato");
+  await expect(opcion(page, "Línea de base y monitoreo")).toContainText("Con tu reparto irían: sin dato");
+  await expect(page.getByText("USD 0", { exact: false })).toHaveCount(0);
   await sumar(page, "Vivero de nativas", 3);
   await sumar(page, "Estudio hidrológico", 1);
   await expect(opcion(page, "Vivero de nativas")).toContainText("Con tu reparto irían USD 15.000");
   await expect(opcion(page, "Estudio hidrológico")).toContainText("Con tu reparto irían USD 5.000");
   await expect(opcion(page, "Línea de base y monitoreo")).toContainText("Con tu reparto irían USD 0");
+  await menos(page, "Vivero de nativas").click({ clickCount: 3 });
+  await menos(page, "Estudio hidrológico").click();
+  await expect(opcion(page, "Vivero de nativas")).toContainText("Con tu reparto irían: sin dato");
 });
 
 test("(g2) voto abierto en U1: aviso, quién falta votar y tabla de repartos solo al cierre", async ({ page }) => {

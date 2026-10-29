@@ -65,11 +65,16 @@ export function mismoReparto(a: Reparto, b: Reparto): boolean {
 
 /**
  * Lo que le tocaría a cada opción si el presupuesto se repartiera solo con estos votos.
- * `null` por opción = sin dato (monto desconocido o ningún voto a favor); vacío si la consulta no es de presupuesto.
+ * `null` por opción = sin dato: el monto es desconocido o la persona todavía no empezó a repartir (sin votos, la
+ * votación no empezó). Desde el primer voto (a favor o en contra) las opciones sin parte dan 0.
+ * Vacío si la consulta no es de presupuesto.
  */
 export function repartoEnPlata(consulta: Consulta, reparto: Reparto): Record<string, number | null> {
   if (consulta.modo !== "presupuesto" || !consulta.presupuesto) return {};
-  return repartirPresupuesto({
+  const sinDato = (): Record<string, number | null> => Object.fromEntries(consulta.opciones.map((o) => [o.id, null]));
+  if (consulta.presupuesto.montoCentavos === null) return sinDato();
+  if (!consulta.opciones.some((o) => votosDe(reparto, o.id) !== 0)) return sinDato();
+  const partes = repartirPresupuesto({
     montoCentavos: consulta.presupuesto.montoCentavos,
     opciones: consulta.opciones.map((o) => ({
       id: o.id,
@@ -78,4 +83,6 @@ export function repartoEnPlata(consulta: Consulta, reparto: Reparto): Record<str
       pisoCentavos: o.pisoCentavos,
     })),
   }).partes;
+  // La persona ya empezó: lo que el motor deja sin dato (sin votos a favor) es 0.
+  return Object.fromEntries(Object.entries(partes).map(([id, p]) => [id, p ?? 0]));
 }
