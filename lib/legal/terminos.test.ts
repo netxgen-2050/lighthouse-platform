@@ -30,6 +30,8 @@ describe("catálogo legal", () => {
         "representante",
         "validacioncomun",
         "consultivo",
+        "constanciaSemillas",
+        "evaluacionPares",
         "contacto",
         "creditos",
         "datos",
@@ -148,6 +150,12 @@ describe("catálogo legal", () => {
   });
   it("consultivo es borrador", () => {
     expect(esBorrador("consultivo")).toBe(true);
+  });
+  it("evaluacionPares y constanciaSemillas son borrador y tienen inglés", () => {
+    for (const k of ["evaluacionPares", "constanciaSemillas"] as const) {
+      expect(esBorrador(k)).toBe(true);
+      expect(terminoEn(k)).toBeDefined();
+    }
   });
   it("agencia es borrador", () => {
     expect(esBorrador("agencia")).toBe(true);
