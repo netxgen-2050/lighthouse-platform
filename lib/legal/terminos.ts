@@ -434,6 +434,30 @@ export const TERMINOS = {
     },
     borrador: true,
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  evaluacionPares: {
+    titulo: "Evaluación entre pares",
+    texto:
+      "Las personas de tu equipo te puntúan de 1 a 5, siempre con un motivo. Lo que ves es privado y agregado: no sabés quién puso cada nota, y lo que escribieron no se muestra tal cual sino resumido. Ajusta tus Semillas entre un 20 % menos y un 20 % más. Las Semillas no son plata ni se transfieren. Los parámetros son de prueba.",
+    en: {
+      titulo: "Peer evaluation",
+      texto:
+        "The people on your team score you from 1 to 5, always with a reason. What you see is private and aggregated: you do not know who gave each score, and what they wrote is not shown as is but summarized. It adjusts your Semillas between 20% less and 20% more. Semillas are not money and cannot be transferred. The parameters are for testing.",
+    },
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  constanciaSemillas: {
+    titulo: "Constancia de Semillas",
+    texto:
+      "Un registro que afirma NetX sobre tus Semillas. No se edita: si hay un error, se revoca y se vuelve a emitir. Hoy es solo un ejemplo que vive en tu navegador; nunca se guardan datos personales en una cadena de bloques.",
+    en: {
+      titulo: "Semillas attestation",
+      texto:
+        "A record NetX asserts about your Semillas. It is never edited: if there is a mistake it is revoked and issued again. Today it is only an example that lives in your browser; personal data is never stored on a blockchain.",
+    },
+    borrador: true,
+  },
 } as const;
 
 /** Claves de los textos que son borrador (no vienen del mock-up). */

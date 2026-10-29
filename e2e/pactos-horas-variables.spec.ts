@@ -227,6 +227,9 @@ test("Semillas recibidas en Taller Común (1 mes), un mes con 0 h no cuenta, y l
   await expect(page.getByTestId("semillas-tiempo")).toHaveText("Semillas: sin dato");
   // El pacto variable aceptado habilita la ronda igual que uno fijo.
   await expect(page.getByText("La ronda es solo para quienes tienen un pacto aceptado")).toHaveCount(0);
+  // evaluacion-pares: con horas variables las constancias dicen "sin dato" y las pendientes no se ajustan.
+  await expect(page.getByTestId("constancias")).toContainText(/sin dato/i);
+  await expect(page.getByTestId("constancia-base")).toHaveCount(0);
 });
 
 test("pasa a horas fijas con Semillas pendientes: se ven aparte con el aviso y no suman", async ({ page }) => {

@@ -113,9 +113,11 @@ const es = {
     enviada: "Ronda enviada (simulado)",
     factorEvaluacion: "Factor de evaluación:",
     enviar: "Enviar ronda",
-    factorFijo: (factor: string) => `Factor de evaluación: ${factor}.`,
-    pie: (factor: string) =>
-      `El factor de evaluación entre pares es ${factor} fijo, como en el mock-up: la ronda se envía de forma simulada y no cambia tus semillas.`,
+    antesDeEnviar: "El ajuste de tus Semillas se calcula al cerrar la ronda.",
+    pie: "El factor de evaluación se calcula con una ronda de ejemplo (equipo y notas de ejemplo). El panel de Semillas sigue con factor 1,0: el ajuste solo se ve en esta ronda de ejemplo.",
+    guiaNivel: (nivel: number, texto: string) => `Nivel ${nivel}: ${texto}`,
+    guiaResumen: "Ver la guía de los 5 niveles",
+    guiaDe: (criterio: string, nivel: number, texto: string) => `${criterio}, ${nivel} de 5: ${texto}`,
     faltante: {
       mensaje: (partes: string, uno: boolean) => `Error: la ronda no se envió. ${uno ? "Falta" : "Faltan"} ${partes}.`,
       puntuaciones: (n: number) => (n === 1 ? "1 puntuación" : `${n} puntuaciones`),
@@ -126,8 +128,43 @@ const es = {
   recibido: {
     titulo: "Cómo te reconocieron",
     ejemplo: "Ejemplo · no es de personas reales",
-    de: (nombre: string) => `De ${nombre}`,
-    puntuacion: (criterio: string, nota: number) => `${criterio}: ${nota} de 5`,
+    puntuacion: (criterio: string, nota: string, evaluadores: number) =>
+      `${criterio}: ${nota} de 5 (${evaluadores} evaluaciones)`,
+    sinResultado: "Todavía no hay resultado: se calcula al cerrar la ronda.",
+    resumenEtiqueta: "Resumen de ejemplo (simulado) · en la versión real lo arma una IA con lo que escribieron todas las personas",
+    sinResumen: "Todavía no hay resumen: hacen falta 3 evaluaciones o más en cada dimensión.",
+  },
+  resultado: {
+    titulo: "Tu resultado de esta ronda (ejemplo)",
+    factor: "Factor de evaluación",
+    rango: (r: string) => `Rango posible: ${r}`,
+    contaron: (n: number) => `${n} evaluaciones contaron`,
+    pocas: "Menos de 3 evaluaciones: el factor queda en 1,0.",
+    descartes: "Evaluaciones que no contaron",
+    motivos: {
+      autoevaluacion: "autoevaluación",
+      "fuera-del-equipo": "fuera del equipo",
+      "sin-motivo": "sin motivo",
+      "nota-invalida": "nota inválida",
+      reciprocidad: "reciprocidad",
+    },
+    ninguna: "ninguna",
+  },
+  fuerza: {
+    titulo: "Fuerza del ajuste de esta comunidad",
+    aviso:
+      "Simulación: no se guarda. En una comunidad real la decide la comunidad, queda fija al abrir la ronda y un cambio vale desde la ronda siguiente.",
+    opcion: (f: string) => `Fuerza ${f}`,
+  },
+  constancias: {
+    titulo: "Tus Semillas como constancias (ejemplo)",
+    porRonda: "Es por ronda (un mes); el panel muestra 3 meses.",
+    simulacion:
+      "Simulación: con otra fuerza sería otra constancia de ajuste que apunta a la misma base; en una comunidad real la fuerza se fija al abrir la ronda.",
+    sinDato: "Sin dato: las constancias de ejemplo son para un pacto de horas fijas. Con horas variables, las Semillas pendientes no se ajustan.",
+    base: (uid: string, semillas: string) => `Constancia base ${uid}: ${semillas} Semillas`,
+    ajuste: (uid: string, base: string, factor: string, semillas: string) =>
+      `Constancia de ajuste ${uid}: apunta a ${base}, factor ${factor}, ${semillas} Semillas`,
   },
 };
 
@@ -233,9 +270,11 @@ const en: Textos<typeof es> = {
     enviada: "Round sent (simulated)",
     factorEvaluacion: "Evaluation factor:",
     enviar: "Send round",
-    factorFijo: (factor: string) => `Evaluation factor: ${factor}.`,
-    pie: (factor: string) =>
-      `The peer evaluation factor is fixed at ${factor}, as in the mock-up: the round is sent in a simulated way and does not change your ${G.semillas.en}.`,
+    antesDeEnviar: `The adjustment to your ${G.semillas.en} is computed when the round closes.`,
+    pie: `The evaluation factor is computed with an example round (example team and scores). The ${G.semillas.en} panel still uses factor 1.0: the adjustment is only seen in this example round.`,
+    guiaNivel: (nivel: number, texto: string) => `Level ${nivel}: ${texto}`,
+    guiaResumen: "See the guide for the 5 levels",
+    guiaDe: (criterio: string, nivel: number, texto: string) => `${criterio}, ${nivel} of 5: ${texto}`,
     faltante: {
       mensaje: (partes: string) => `Error: the round was not sent. Missing: ${partes}.`,
       puntuaciones: (n: number) => (n === 1 ? "1 score" : `${n} scores`),
@@ -246,8 +285,43 @@ const en: Textos<typeof es> = {
   recibido: {
     titulo: "How you were recognized",
     ejemplo: "Example · not from real people",
-    de: (nombre: string) => `From ${nombre}`,
-    puntuacion: (criterio: string, nota: number) => `${criterio}: ${nota} of 5`,
+    puntuacion: (criterio: string, nota: string, evaluadores: number) =>
+      `${criterio}: ${nota} of 5 (${evaluadores} evaluations)`,
+    sinResultado: "No result yet: it is computed when the round closes.",
+    resumenEtiqueta: "Example summary (simulated) · in the real version an AI writes it from what everyone wrote",
+    sinResumen: "No summary yet: 3 or more evaluations are needed in each dimension.",
+  },
+  resultado: {
+    titulo: "Your result for this round (example)",
+    factor: "Evaluation factor",
+    rango: (r: string) => `Possible range: ${r}`,
+    contaron: (n: number) => `${n} evaluations counted`,
+    pocas: "Fewer than 3 evaluations: the factor stays at 1.0.",
+    descartes: "Evaluations that did not count",
+    motivos: {
+      autoevaluacion: "self-evaluation",
+      "fuera-del-equipo": "outside the team",
+      "sin-motivo": "no reason",
+      "nota-invalida": "invalid score",
+      reciprocidad: "reciprocity",
+    },
+    ninguna: "none",
+  },
+  fuerza: {
+    titulo: "Adjustment strength of this community",
+    aviso:
+      "Simulation: it is not saved. In a real community the community decides it, it stays fixed when the round opens and a change applies from the next round.",
+    opcion: (f: string) => `Strength ${f}`,
+  },
+  constancias: {
+    titulo: `Your ${G.semillas.en} as attestations (example)`,
+    porRonda: "It is per round (one month); the panel shows 3 months.",
+    simulacion:
+      "Simulation: with another strength it would be another adjustment attestation pointing to the same base; in a real community the strength is fixed when the round opens.",
+    sinDato: "No data: the example attestations are for a fixed-hours pact. With variable hours, pending Semillas are not adjusted.",
+    base: (uid: string, semillas: string) => `Base attestation ${uid}: ${semillas} Semillas`,
+    ajuste: (uid: string, base: string, factor: string, semillas: string) =>
+      `Adjustment attestation ${uid}: points to ${base}, factor ${factor}, ${semillas} Semillas`,
   },
 };
 
