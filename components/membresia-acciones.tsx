@@ -35,7 +35,7 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
   const conSesion = estadoSesion === "ok";
   // Adherir es de Miembro en adelante; Explorador y sin cuenta ven "Sumate para adherir".
   const puedeAdherir = conSesion && puedeCapacidad(nivel, "adherir");
-  const { estado, cargado, falloAlmacen, aceptar } = useMembresia(comunidad, conSesion);
+  const { estado, cargado, falloAlmacen, aceptar, desactualizada } = useMembresia(comunidad, conSesion);
   const t = useTextos("tribus").membresia;
   const [mensaje, setMensaje] = useState("");
   const aviso = useRef<HTMLParagraphElement>(null);
@@ -78,9 +78,9 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
       <p ref={aviso} tabIndex={-1} role="status" className="text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
         {mensaje}
       </p>
-      {estado === "pedido" && !mensaje && <p className="text-sm font-medium">{textoPedido}</p>}
+      {estado === "pedido" && !desactualizada && !mensaje && <p className="text-sm font-medium">{textoPedido}</p>}
       <div className="flex flex-wrap gap-3">
-        {estado === "miembro" ? (
+        {estado === "miembro" && !desactualizada ? (
           <>
             {pactos && (
               <Link className={PRIMARIO} href={`/pactos?comunidad=${comunidad}`}>
@@ -100,7 +100,7 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
             <Link className={SUAVE} href={manifiesto}>
               {t.leerManifiesto(esLighthouse)}
             </Link>
-            {estado === "no-miembro" ? (
+            {estado === "no-miembro" || desactualizada ? (
               <span className="inline-flex items-center">
                 <Link className={DORADO} href={manifiesto}>
                   {t.adherirManifiesto(esLighthouse)}
@@ -124,7 +124,7 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
         )}
         {extra}
       </div>
-      {estado === "no-miembro" && <p className="text-sm text-muted">{t.antesDeAdherir}</p>}
+      {(estado === "no-miembro" || desactualizada) && <p className="text-sm text-muted">{t.antesDeAdherir}</p>}
       {falloAlmacen && (
         <p role="alert" className="text-sm font-medium">
           {t.falloAlmacen}

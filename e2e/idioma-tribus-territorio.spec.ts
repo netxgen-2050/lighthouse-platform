@@ -117,7 +117,7 @@ test.describe("manifiesto en inglés", () => {
 
   test("el manifiesto del Lighthouse también está traducido", async ({ page }) => {
     await page.goto("/tribus/lighthouse/manifiesto");
-    await expect(page.getByRole("heading", { level: 1, name: "Lighthouse Coexistence Pact" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Lighthouse VRN Manifesto" })).toBeVisible();
     await expect(page.getByText(NOTA)).toBeVisible();
   });
 });

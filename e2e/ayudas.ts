@@ -1,4 +1,20 @@
 import type { Page } from "@playwright/test";
+import { VERSION_MANIFIESTO_VRN } from "../lib/manifiestos/lighthouse-vrn";
+
+/**
+ * SIEMBRA DE TEST (no es un flujo de la app): deja a la persona con la adhesión al manifiesto de Lighthouse VRN ya
+ * registrada ("pedido", en la versión vigente), que es lo que hace falta para votar en el Fogón y repartir créditos en
+ * las consultas. Solo la primera vez, para que recargar no pise lo que la pantalla guardó. Pasando `version` se siembra
+ * una adhesión a otra versión (para probar que hay que volver a adherir).
+ */
+export async function conAdhesionAlManifiesto(page: Page, version: string = VERSION_MANIFIESTO_VRN) {
+  await page.addInitScript((v) => {
+    if (window.localStorage.getItem("lh-adhesion-version")) return;
+    const membresias = JSON.parse(window.localStorage.getItem("lh-membresia") ?? "{}") as Record<string, string>;
+    window.localStorage.setItem("lh-membresia", JSON.stringify({ ...membresias, lighthouse: membresias.lighthouse ?? "pedido" }));
+    window.localStorage.setItem("lh-adhesion-version", JSON.stringify({ lighthouse: v }));
+  }, version);
+}
 
 /** Deja el sello de identidad ya obtenido (solo la primera vez, para que recargar no pise lo que la pantalla guardó). */
 export async function conIdentidadVerificada(page: Page) {

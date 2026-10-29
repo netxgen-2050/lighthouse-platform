@@ -207,7 +207,43 @@ export const TERMINOS = {
   adhesion: {
     titulo: "Adherir a un manifiesto",
     texto:
-      "Adherir es aceptar por escrito las reglas de convivencia de una comunidad. No te hace dueño de nada ni te obliga a pagar: te compromete a cuidar esos acuerdos, y la comunidad decide si te acepta. Podés retirarte siguiendo lo que diga el propio manifiesto. En el prototipo todo es simulado y queda solo en este navegador.",
+      "Adherir es aceptar por escrito los principios y las reglas de convivencia de una comunidad. No te hace dueño de nada ni te obliga a pagar: te compromete a cuidar esos acuerdos. En Lighthouse VRN, adherir al manifiesto es lo que te permite participar en las decisiones; la adhesión vale desde que adherís, y si el manifiesto cambia de versión tenés que volver a adherir. Podés retirarte siguiendo lo que diga el propio manifiesto. En el prototipo todo es simulado y queda solo en este navegador.",
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  manifiestovrn: {
+    titulo: "Manifiesto de Lighthouse VRN",
+    texto:
+      "Es el texto donde Lighthouse VRN, la meta-tribu de la que forman parte todas las tribus, dice qué cuida y cómo decide: propósito, principios, derechos de la tierra y compromisos. Hoy es un borrador escrito por un agente: el común todavía no lo ratificó, y solo vale como ejemplo. No es un contrato ni un reglamento legal.",
+    en: {
+      titulo: "Lighthouse VRN manifesto",
+      texto:
+        "This is the text where Lighthouse VRN, the meta-tribe all tribes belong to, says what it looks after and how it decides: purpose, principles, rights of the land and commitments. Today it is a draft written by an agent: the commons has not ratified it yet, and it only counts as an example. It is not a contract or a legal rulebook.",
+    },
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  derechostierra: {
+    titulo: "Derechos de la tierra",
+    texto:
+      "Son lo que el común se compromete a respetar con la tierra, el agua y los seres que viven en ella. Se inspiran en la Declaración Universal de los Derechos de la Madre Tierra, pero no son un texto jurídico y no te dan derechos ante un juez. Es un borrador para revisar antes de cualquier uso real.",
+    en: {
+      titulo: "Rights of the land",
+      texto:
+        "These are what the commons commits to respect regarding the land, the water and the beings that live in it. They draw on the Universal Declaration of the Rights of Mother Earth, but they are not a legal text and they do not give you rights before a judge. It is a draft to be reviewed before any real use.",
+    },
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  adhesiongobernanza: {
+    titulo: "Adherir para participar",
+    texto:
+      "Para votar, repartir créditos o llevar una decisión al consejo hace falta haber adherido al manifiesto de Lighthouse VRN: es el compromiso de cuidar la vida en cada decisión. Sin adherir podés mirar todo, pero no participar. Si el manifiesto cambia de versión, volvés a adherir. En el prototipo la adhesión queda en este navegador y es un borrador a revisar antes de cualquier uso real.",
+    en: {
+      titulo: "Sign on to take part",
+      texto:
+        "To vote, distribute credits or take a decision to the council you must have signed on to the Lighthouse VRN manifesto: it is the commitment to look after life in every decision. Without signing on you can look at everything, but not take part. If the manifesto changes version, you sign on again. In the prototype the sign-on stays in this browser and it is a draft to be reviewed before any real use.",
+    },
     borrador: true,
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
