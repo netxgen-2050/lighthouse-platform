@@ -41,7 +41,7 @@ The proposal page SHALL show its scope and a sheet with: who presents, the probl
 - **THEN** la fila de plata dice que no pide plata
 
 ### Requirement: Dos recorridos de fases
-Each proposal SHALL follow one of two routes, chosen by whoever facilitates: a simple decision (presentation, a period to object, closing) or an important decision (draft, presentation, clarifying questions, open discussion, concerns: name and classify by theme, resolve concerns, call for consensus, closing). The page MUST show the ordered list of phases of its route, mark done phases and the current one with text (not only color) and `aria-current="step"`. People in the scope or affected MUST be able to ask for the important route while a simple one is open.
+Each proposal SHALL follow one of two routes, chosen by whoever facilitates: a simple decision (presentation, a period to object, closing) or an important decision (draft, presentation, clarifying questions, open discussion, concerns: name and group them, resolve concerns, call for consensus, closing). The page MUST show the ordered list of phases of its route, mark done phases and the current one with text (not only color) and `aria-current="step"`. People in the scope or affected MUST be able to ask for the important route while a simple one is open.
 
 #### Scenario: Recorrido importante
 - **WHEN** la persona abre la propuesta de la bomba solar
@@ -67,14 +67,14 @@ Each phase SHALL have a deadline. By default an important decision lasts 7 days 
 - **THEN** sus propuestas usan 5 días para esa fase y el resto, los valores por defecto
 
 ### Requirement: Discusión con tipos
-The discussion SHALL list entries in order, each with its type in text: clarifying question, answer, comment, concern, resolution proposal (counter-proposal), Guardián suggestion or closing, plus its author (example person marked as example, or the simulated AI marked as such) and their relation to the decision. A concern MUST show its author's name, its principle (if any), its theme (if classified) and its state.
+The discussion SHALL list entries in order, each with its type in text: clarifying question, answer, comment, concern, resolution proposal (counter-proposal), Guardián suggestion or closing, plus its author (example person marked as example, or the simulated AI marked as such) and their relation to the decision. A concern MUST show its author's name, its principle (if any), the group it belongs to (if grouped) and its state.
 
 #### Scenario: Leer la discusión
 - **WHEN** la persona abre la propuesta de la bomba solar
-- **THEN** ve una pregunta, su respuesta, un comentario, dos concerns clasificados en el tema "Uso compartido" con su principio, una sugerencia del Guardián respaldada como concern y una propuesta de resolución, cada una con su tipo escrito
+- **THEN** ve una pregunta, su respuesta, un comentario, el grupo de concerns "Uso compartido" con los concerns de Ramiro y de Paz y sus principios, una sugerencia del Guardián respaldada como concern y una propuesta de resolución, cada una con su tipo escrito
 
 ### Requirement: Concerns con estado
-A concern SHALL have a written reason, an optional principle from the Lighthouse principles list, an optional theme and a state: open, classified (with the theme), being resolved, resolved, withdrawn, standing aside, or block. People who can raise concerns MUST be able to join someone else's concern instead of repeating it. A person MUST have at most one open concern per proposal version.
+A concern SHALL have a written reason, an optional principle from the Lighthouse principles list and a state: open, grouped (with the group's name), being resolved, resolved, withdrawn, standing aside, or block. People who can raise concerns MUST be able to join someone else's concern instead of repeating it. A person MUST have at most one open concern per proposal version.
 
 #### Scenario: Concern sin razón
 - **WHEN** una persona intenta levantar un concern sin escribir la razón
@@ -88,16 +88,20 @@ A concern SHALL have a written reason, an optional principle from the Lighthouse
 - **WHEN** una persona con un concern abierto en la versión 1 intenta levantar otro
 - **THEN** el sistema le propone editar, retirar o sumarse en lugar de abrir otro
 
-### Requirement: Clasificar los concerns por tema
-In the concerns phase of an important decision (and in the objection period of a simple one) concerns SHALL be named and classified by theme. Whoever raises a concern MAY pick an existing theme or leave it unclassified; a person with a process role MUST be able to create a theme, rename it and move concerns between themes; Hifa (simulated) MAY suggest themes, which only apply when a person with a process role confirms. The discussion MUST show concerns grouped under their theme, with an "Sin clasificar" group for the rest. Classifying MUST NOT change a concern's reason, author or principle, and MUST NOT be possible outside those phases.
+### Requirement: Agrupar concerns
+In the concerns phase of an important decision (and in the objection period of a simple one) concerns SHALL be named (each one with its author) and MAY be grouped: several concerns from different people that say the same thing can end up grouped in a single concern with a short name. A person with a process role MUST be able to group two or more concerns, name the group, and take a concern out of a group; Hifa (simulated) MAY suggest which concerns to group, which only applies when a person with a process role confirms. A grouped concern MUST list all its authors (those of the grouped concerns and those who joined), and each original concern MUST keep its reason, author and principle, visible inside the group. Grouping MUST NOT be possible outside those phases. Classifying concerns by theme is not part of this change.
 
-#### Scenario: Clasificar en la fase de concerns
-- **WHEN** una persona con rol de proceso mueve un concern de la cisterna al tema nuevo "Ubicación" durante "Concerns"
-- **THEN** el concern aparece bajo "Ubicación", conserva su razón y su autora, y la clasificación queda en el historial con quién la hizo
+#### Scenario: Agrupar en la fase de concerns
+- **WHEN** una persona con rol de proceso agrupa dos concerns de distintas personas sobre la cisterna con el nombre "Ubicación" durante "Concerns"
+- **THEN** aparece un solo concern "Ubicación" que nombra a las dos autoras, cada razón original se sigue viendo dentro del grupo, y la agrupación queda en el historial con quién la hizo
+
+#### Scenario: Sacar un concern del grupo
+- **WHEN** la persona con rol de proceso saca un concern del grupo "Ubicación"
+- **THEN** ese concern vuelve a verse solo, con su autora, y el grupo deja de nombrarla
 
 #### Scenario: Fuera de la fase
 - **WHEN** una persona con rol de proceso mira la propuesta de la bomba, que está en "Resolver concerns"
-- **THEN** ve los temas pero no la acción de clasificar
+- **THEN** ve el grupo "Uso compartido" pero no la acción de agrupar
 
 ### Requirement: Concerns con nombre
 Concerns SHALL be shown with the author's name by default. Only in proposals marked as a care or conflict topic, and with facilitation, a person MAY raise a concern without a visible name; it MUST be shown as "Sin nombre (con facilitación)".
@@ -137,11 +141,15 @@ A block SHALL require a written reason and a principle from the Lighthouse list;
 - **THEN** ve "Preguntarle al grupo si el bloqueo es legítimo" y no ve un botón para decidirlo
 
 ### Requirement: Quien presenta
-Whoever presents SHALL be able to raise concerns, join concerns and block their own proposal, because they can change their mind after listening to others; a block by the presenter follows the same rules (reason, principle, legitimacy decided by the group). They SHALL NOT take part in deciding whether a concern or block about their own proposal is legitimate, even if they also belong to the scope. They MUST be able to edit the proposal; every edit MUST create a new version, and earlier versions with their concerns MUST stay visible in the history.
+Whoever presents SHALL be able to raise concerns, join concerns and block their own proposal, because they can change their mind after listening to others; a block by the presenter follows the same rules (reason, principle, legitimacy decided by the group). They MUST NOT stand aside from their own proposal. They SHALL NOT take part in deciding whether a concern or block about their own proposal is legitimate, even if they also belong to the scope. They MUST be able to edit the proposal; every edit MUST create a new version, and earlier versions with their concerns MUST stay visible in the history.
 
 #### Scenario: Cambia de opinión
 - **WHEN** quien presenta la propuesta de la huerta levanta un concern durante el plazo para objetar
 - **THEN** el concern queda registrado con su nombre y la marca "quien presenta"
+
+#### Scenario: No se hace a un lado
+- **WHEN** quien presenta la propuesta de la huerta, que también es del ámbito, mira sus acciones durante el plazo para objetar
+- **THEN** no ve "Hacerse a un lado" y sí ve "Levantar un concern" y "Bloquear citando un principio"
 
 #### Scenario: Conflicto de interés en un pedido de plata
 - **WHEN** quien presenta la propuesta de la bomba solar también es del ámbito y hay un bloqueo pendiente
@@ -167,7 +175,7 @@ What a person can do in a proposal SHALL depend on their level of involvement in
 - **THEN** ve una tabla con las 15 acciones y los 7 niveles, con encabezados de fila y columna, donde cada celda dice sí, no o la condición en texto, no solo con un símbolo o un color
 
 ### Requirement: Ver la propuesta como cada nivel
-The page SHALL let the person simulate each level with a "Mirá la propuesta como…" control, starting at the level computed from what the browser knows (member of the tribe of the scope → del ámbito; otherwise → de la red), marked as "tu nivel". The available actions MUST update to that level and the current phase. When there is no action, the page MUST say so in text. Without an account nothing of a proposal is visible: the visit level MUST show only an invitation to open an account.
+The page SHALL let the person simulate each level with a "Mirá la propuesta como…" control, starting at the level computed from what the browser knows (member of the tribe of the scope → del ámbito; in a council decision, being on the scope list defined for the board of NetXGen → del ámbito; otherwise → de la red), marked as "tu nivel". The available actions MUST update to that level and the current phase. When there is no action, the page MUST say so in text. Without an account nothing of a proposal is visible: the visit level MUST show only an invitation to open an account.
 
 #### Scenario: Cambiar de nivel
 - **WHEN** la persona elige "Afectada por la decisión" en "Mirá la propuesta como…"
@@ -203,16 +211,46 @@ A person who is not in the scope SHALL be able to declare themselves affected wi
 - **WHEN** una persona del ámbito objeta esa declaración
 - **THEN** la persona vuelve a su nivel anterior y la declaración y la objeción quedan en el historial
 
-### Requirement: Participación mínima
-An important decision SHALL NOT close by consensus unless the number of people of the scope or affected who took part reaches the minimum: half of the scope, or 3 people when half is less than 3 (never more than the scope's size). The page MUST show the participation and the minimum; when the scope size is unknown it MUST show "sin dato" and MUST NOT allow closing by consensus.
+### Requirement: Quórum de participación
+A proposal SHALL NOT close by consensus, and a simple decision SHALL NOT be adopted at its deadline, unless the number of people of the scope or affected who took part reaches the quorum: half of the scope, or 3 people when half is less than 3 (never more than the scope's size). Taking part MUST mean having written something in the discussion (question, answer, comment, concern, joining a concern, resolution proposal, standing aside or block) or having signed the acknowledgment of conformity; opening the proposal without doing anything MUST NOT count, and each person MUST count once. The page MUST show the participation, how many signed the acknowledgment and the quorum; when the scope size is unknown it MUST show "sin dato" and MUST NOT allow closing by consensus nor adopting at the deadline.
 
 #### Scenario: Grupo chico
 - **WHEN** el ámbito tiene 4 personas
-- **THEN** el mínimo para cerrar es 3 personas
+- **THEN** el quórum para cerrar es 3 personas
 
 #### Scenario: Participación insuficiente
-- **WHEN** quien facilita intenta cerrar por consenso con menos participación que el mínimo
+- **WHEN** quien facilita intenta cerrar por consenso con menos participación que el quórum
 - **THEN** el sistema no lo permite y dice cuánta participación falta
+
+#### Scenario: Abrir no es participar
+- **WHEN** una persona del ámbito abre la propuesta de la huerta y no escribe ni firma nada
+- **THEN** la participación no cambia
+
+### Requirement: Acuse de conformidad
+Each person of the scope SHALL be able to sign, once per proposal version, "Entiendo la propuesta y no tengo ningún concern" (acknowledgment of conformity), recorded with the shape of an EAS attestation (ADR-012) and marked as simulated. It MUST be available from presentation until the deadline (never in draft or after closing). A person with an open concern in that version MUST NOT sign it; if a person who signed later raises a concern, the acknowledgment MUST show as replaced by that concern, and it keeps counting as participation. After a new version, earlier acknowledgments MUST show which version they referred to. The acknowledgment counts toward the quorum like writing in the discussion, and MUST NOT by itself close or adopt anything.
+
+#### Scenario: Firmar el acuse
+- **WHEN** una persona del ámbito firma el acuse en la propuesta de la huerta
+- **THEN** aparece "Entiende la propuesta y no tiene ningún concern" con su nombre y la versión, y la participación sube en uno
+
+#### Scenario: Acuse con un concern abierto
+- **WHEN** una persona con un concern abierto en la versión actual intenta firmar el acuse
+- **THEN** el sistema le explica que primero tiene que retirar o resolver su concern y no registra nada
+
+#### Scenario: Concern después del acuse
+- **WHEN** una persona que firmó el acuse levanta después un concern
+- **THEN** su acuse se ve como "reemplazado por un concern" y la persona sigue contando una sola vez en la participación
+
+### Requirement: Ámbito del consejo
+While the council has no elected representatives, who is "del ámbito" in a council decision SHALL be defined by the board of NetXGen. In the prototype the super admin (platform level `superadmin` of the session) MUST be able to mark it on the board's behalf, adding or removing example people and themself from the scope list of a council proposal; every change MUST be recorded and shown as "Definido por el super admin en nombre del board de NetXGen (simulado)". The scope size of a council proposal MUST be the length of that list. People without the super admin level MUST NOT see the control. Proposals that are not of the council MUST NOT show it.
+
+#### Scenario: El super admin marca el ámbito
+- **WHEN** el super admin agrega a "vos" al ámbito de la propuesta de la bomba solar
+- **THEN** la página dice que el ámbito lo definió el super admin en nombre del board de NetXGen (simulado), el tamaño del ámbito se actualiza y el nivel inicial de "vos" en esa propuesta pasa a "del ámbito"
+
+#### Scenario: Sin super admin
+- **WHEN** una persona con nivel de miembro abre la propuesta de la bomba solar
+- **THEN** ve quién es del ámbito y que lo definió el board de NetXGen, pero no el control para cambiarlo
 
 ### Requirement: Cierre
 Closing SHALL record one of: consensus, consensus with people standing aside (their reasons in the record), blocked (not adopted), or no consensus. Only a person with a process role (who facilitates) MUST be able to close; neither Hifa nor the Guardián ever close. A closed proposal MUST show its outcome and the record ("acta"), written by the Memoria role, and MUST NOT offer any action except reading and the process evaluation.
@@ -226,7 +264,7 @@ Closing SHALL record one of: consensus, consensus with people standing aside (th
 - **THEN** el resultado es "Bloqueada: no se adopta" y el bloqueo con su principio queda en el acta
 
 ### Requirement: Sin consenso al vencer
-When the deadline of a proposal ends without consensus, it SHALL be paused, to come back with changes. If it is marked urgent, it MUST instead go up to the level above (circle → tribe → council); a decision of the común that is urgent MUST be paused, because there is no level above. A simple decision with no open concern at its deadline MUST be adopted.
+When the deadline of a proposal ends without consensus, it SHALL be paused, to come back with changes. If it is marked urgent, it MUST instead go up to the level above (circle → tribe → council); a decision of the común that is urgent MUST be paused, because there is no level above. A simple decision MUST be adopted at its deadline only if nobody objected (no open concern and no block) and the participation quorum was reached; if nobody objected but the quorum was not reached, it MUST be paused saying that the minimum participation was not reached.
 
 #### Scenario: Vence sin consenso
 - **WHEN** vence el plazo de una propuesta importante sin cerrar por consenso
@@ -236,9 +274,13 @@ When the deadline of a proposal ends without consensus, it SHALL be paused, to c
 - **WHEN** vence sin consenso una propuesta urgente de un círculo de Valle Solar
 - **THEN** la propuesta dice que sube a Valle Solar
 
-#### Scenario: Simple sin objeciones
-- **WHEN** vence el plazo para objetar de la propuesta de la huerta sin concerns abiertos
-- **THEN** la propuesta dice "Adoptada: nadie objetó en el plazo"
+#### Scenario: Simple sin objeciones y con quórum
+- **WHEN** vence el plazo para objetar de la propuesta de la huerta sin concerns abiertos y con 3 de 4 personas que participaron (dos acuses de ejemplo y el acuse de "vos")
+- **THEN** la propuesta dice "Adoptada: nadie objetó en el plazo y hubo quórum"
+
+#### Scenario: Simple sin quórum
+- **WHEN** vence el plazo para objetar de la propuesta de la huerta sin concerns abiertos y solo con los dos acuses de ejemplo
+- **THEN** la propuesta dice "Pausada: no se alcanzó la participación mínima" y no se adopta
 
 ### Requirement: Reabrir solo con nuevo consenso
 A closed proposal SHALL NOT be edited or reopened from its page; the page MUST explain that reopening needs a new consensus through a new proposal.
@@ -259,7 +301,7 @@ After closing, people who took part SHALL be able to answer an optional, two-que
 - **THEN** la propuesta se ve igual, sin avisos pendientes
 
 ### Requirement: Sugerir un mecanismo para priorizar o repartir
-The proposal and each resolution proposal (counter-proposal) SHALL have a place to suggest a mechanism to prioritize or distribute resources, attention or priorities: quadratic voting, dot voting, conviction voting or another one named in text, with a required one-line purpose. Participants who can comment MAY suggest one in the phases where commenting is available; Hifa (simulated) MAY suggest one too. Every suggestion MUST show who suggested it and the fixed note "Sirve para priorizar o repartir; no reemplaza al consenso". A suggestion MUST NOT change the phase, the participation or the outcome. Quadratic voting MUST link to the existing consultations (`/fogon/consultas`); the other mechanisms MUST say they are not in the prototype yet.
+The proposal and each resolution proposal (counter-proposal) SHALL have a place to suggest a mechanism to prioritize or distribute resources, attention or priorities: quadratic voting, dot voting, conviction voting or another one named in text, with a required one-line purpose. The people who can comment MAY suggest one in the phases where commenting is available, with the same permissions as commenting; Hifa (simulated) facilitates the choice: it MUST explain each mechanism in simple words and MAY suggest the one that best fits the decision, saying why. Every suggestion MUST show who suggested it and the fixed note "Sirve para priorizar o repartir; no reemplaza al consenso". A suggestion MUST NOT change the phase, the participation or the outcome. Quadratic voting MUST link to the existing consultations (`/fogon/consultas`); the other mechanisms MUST say they are not in the prototype yet.
 
 #### Scenario: Sugerir en una contrapropuesta
 - **WHEN** una persona del ámbito sugiere "Voto cuadrático" en la propuesta de resolución de Gala sobre la bomba, con el fin "Repartir los días de riego entre los círculos"
@@ -267,14 +309,22 @@ The proposal and each resolution proposal (counter-proposal) SHALL have a place 
 
 #### Scenario: Mecanismo que no está
 - **WHEN** la persona mira la sugerencia de Hifa de usar puntos para priorizar las ubicaciones de la cisterna
-- **THEN** lee que la sugirió Hifa (simulada) y que ese mecanismo todavía no está en el prototipo
+- **THEN** lee que la sugirió Hifa (simulada), por qué cree que se alinea con la decisión, y que ese mecanismo todavía no está en el prototipo
+
+#### Scenario: Hifa explica los mecanismos
+- **WHEN** la persona abre "¿Qué mecanismo conviene?" en el panel de facilitación de la propuesta de la cisterna
+- **THEN** lee una explicación simple de voto cuadrático, puntos y voto por convicción, cuál sugiere Hifa para esta decisión y por qué, y que elegir o no un mecanismo lo deciden las personas
+
+#### Scenario: Del común sugiere en una decisión del común
+- **WHEN** una persona del común mira la propuesta de la regalía en "Discusión abierta"
+- **THEN** ve "Sugerir un mecanismo" con la condición "solo decisiones del común", igual que "Comentar"
 
 #### Scenario: Sugerencia sin fin
 - **WHEN** una persona intenta sugerir un mecanismo sin escribir para qué
 - **THEN** el sistema pide el fin y no registra nada
 
 ### Requirement: Facilitación de Hifa simulada
-The page SHALL show a "Facilitación (Hifa, simulada)" panel that summarizes the discussion, suggests themes to classify concerns, reminds the rules and deadlines, proposes moving to the next phase and MAY suggest a mechanism to prioritize or distribute. Its texts MUST be scripted and marked as simulated. Any change it proposes MUST be confirmed by a person with a process role. It MUST NOT decide, close, block, judge a block, or hide anyone's contribution.
+The page SHALL show a "Facilitación (Hifa, simulada)" panel that summarizes the discussion, suggests which concerns to group, reminds the rules, the deadlines and how much participation is missing for the quorum, proposes moving to the next phase, and explains and MAY suggest a mechanism to prioritize or distribute. Its texts MUST be scripted and marked as simulated. Any change it proposes MUST be confirmed by a person with a process role. It MUST NOT decide, close, block, judge a block, or hide anyone's contribution.
 
 #### Scenario: Proponer pasar de fase
 - **WHEN** Hifa propone pasar la propuesta de la cisterna a "Discusión abierta"
@@ -304,7 +354,7 @@ The page SHALL show the suggestions of the "Guardián", an AI archetype (not a h
 - **THEN** ninguno afirma que una propuesta o un bloqueo es ilegítimo; todos hablan de un posible impacto o una posible contradicción
 
 ### Requirement: Registros de solo agregar y sin red
-Questions, answers, comments, concerns, joins, withdrawals, classifications, versions, phase changes, affected declarations and objections, stand-asides, blocks, legitimacy decisions, mechanism suggestions, backings of Guardián suggestions, closings and evaluations SHALL be append-only records with the shape of an EAS attestation (ADR-012). They MUST live only in the browser, be cleared by "Borrar todo", and no deliberation text MUST be sent to any server, AI provider or blockchain.
+Questions, answers, comments, concerns, joins, withdrawals, groupings, acknowledgments of conformity, council scope changes, versions, phase changes, affected declarations and objections, stand-asides, blocks, legitimacy decisions, mechanism suggestions, backings of Guardián suggestions, closings and evaluations SHALL be append-only records with the shape of an EAS attestation (ADR-012). They MUST live only in the browser, be cleared by "Borrar todo", and no deliberation text MUST be sent to any server, AI provider or blockchain.
 
 #### Scenario: Retirar un concern
 - **WHEN** una persona retira su concern
@@ -319,7 +369,7 @@ Questions, answers, comments, concerns, joins, withdrawals, classifications, ver
 - **THEN** ve solo la discusión de ejemplo
 
 ### Requirement: Prototipo
-The proposal pages SHALL show the prototype notice and a notice that proposals and people are example data, take their texts from the es/en dictionaries, mark new legal-weight terms (concern, block, standing aside, affected, Lighthouse principles, Guardián) with ⚖ and draft status, use only theme tokens, keep the single `<main>` from the layout and the report button, be fully usable with the keyboard and pass the axe audit.
+The proposal pages SHALL show the prototype notice and a notice that proposals and people are example data, take their texts from the es/en dictionaries, mark new legal-weight terms (concern, block, standing aside, affected, acknowledgment of conformity, quorum, Lighthouse principles, Guardián) with ⚖ and draft status, use only theme tokens, keep the single `<main>` from the layout and the report button, be fully usable with the keyboard and pass the axe audit.
 
 #### Scenario: En inglés
 - **WHEN** una persona abre `/fogon/propuestas/consejo-bomba?lang=en`
