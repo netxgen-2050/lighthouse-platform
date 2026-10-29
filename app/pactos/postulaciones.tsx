@@ -6,6 +6,7 @@ import { TerminoLegal } from "@/components/termino-legal";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { HORAS_PUNTUAL, ROLES, textoDeRol, type ClaveRol } from "@/lib/pactos/datos";
 import { MAX_DESCRIPCION, MAX_ROL_OTRO, faltaDelPuntual, type EdicionPuntual, type PactoPuntual } from "@/lib/pactos/estado";
+import { limitesAplicados } from "@/lib/pactos/constancia-base";
 import { textoDeTope } from "@/lib/pactos/horas";
 import { loAdministraHifa, nombreDeHolon } from "@/lib/pactos/postulacion";
 import { buscarNecesidad, holonDe, type Tope } from "@/lib/tribus/necesidades";
@@ -234,11 +235,11 @@ export function PostulacionesATareas({ comunidad, puntuales, alEditar, alEnviar,
                       p.constancia.datos.horas_con_semillas,
                       p.constancia.datos.horas_sin_semillas,
                       [
-                        p.constancia.datos.tope_unidad && p.constancia.datos.tope_valor !== null
-                          ? t.limitePersona(textoDeTope(p.constancia.datos.tope_unidad, p.constancia.datos.tope_valor))
+                        limitesAplicados(p.constancia).persona
+                          ? t.limitePersona(textoDeTope(limitesAplicados(p.constancia).persona!.unidad, limitesAplicados(p.constancia).persona!.valor))
                           : null,
-                        p.constancia.datos.tope_total_unidad && p.constancia.datos.tope_total_valor !== null
-                          ? t.limiteTotal(textoDeTope(p.constancia.datos.tope_total_unidad, p.constancia.datos.tope_total_valor))
+                        limitesAplicados(p.constancia).total
+                          ? t.limiteTotal(textoDeTope(limitesAplicados(p.constancia).total!.unidad, limitesAplicados(p.constancia).total!.valor))
                           : null,
                       ]
                         .filter(Boolean)

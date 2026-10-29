@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { semillasDeComunidad } from "@/lib/semillas/estado";
-import { constanciaBasePuntual, leerConstanciaBase, type ConstanciaBase } from "./constancia-base";
+import { constanciaBasePuntual, leerConstanciaBase, limitesAplicados, type ConstanciaBase } from "./constancia-base";
 import {
   afirmaPersona,
   agregar,
@@ -253,6 +253,15 @@ describe("constancia base", () => {
     expect([c.datos.horas_con_semillas, c.datos.horas_sin_semillas, c.datos.semillas, c.datos.tope_total_valor]).toEqual([10, 2, 50, 20]);
     const llena = constanciaBasePuntual("valle", visto(["horas", 10], ["horas", 20]), conf(6), { horasConSemillas: 20, semillas: 100 })!;
     expect([llena.datos.horas_con_semillas, llena.datos.horas_sin_semillas, llena.datos.semillas]).toEqual([0, 6, 0]);
+  });
+
+  it("solo se nombran los máximos que recortaron horas", () => {
+    const solo = constanciaBasePuntual("valle", visto(["horas", 10], ["horas", 20]), conf(12))!;
+    expect(limitesAplicados(solo)).toEqual({ persona: { unidad: "horas", valor: 10 }, total: null });
+    const total = constanciaBasePuntual("valle", visto(["horas", 10], ["horas", 20]), conf(6), { horasConSemillas: 20, semillas: 100 })!;
+    expect(limitesAplicados(total)).toEqual({ persona: null, total: { unidad: "horas", valor: 20 } });
+    const ninguno = constanciaBasePuntual("valle", visto(["horas", 10], ["horas", 20]), conf(8))!;
+    expect(limitesAplicados(ninguno)).toEqual({ persona: null, total: null });
   });
 
   it("dos postulaciones de la misma necesidad dan dos uid", () => {

@@ -1,6 +1,6 @@
 // Constancia base de Semillas de un pacto puntual verificado (forma de ADR-012; ADR-020; design §3 de
 // pacto-puntual-verificacion). Se guarda congelada: nunca se recalcula ni se edita. Sin email ni nombre.
-import { repartirConTopeTotal, type Tope } from "@/lib/tribus/necesidades";
+import { aplicarTope, repartirConTopeTotal, type Tope } from "@/lib/tribus/necesidades";
 import { type ConstanciaPacto, horasDeConstancia } from "./constancias";
 import { HOUR_REF_USD } from "./datos";
 import type { YaRepartido } from "./horas";
@@ -95,6 +95,21 @@ export function constanciaBasePuntual(
     creada_en: confirmacion.cuando,
     revocada_en: null,
     vence_en: null,
+  };
+}
+
+/**
+ * Qué máximos recortaron de verdad las horas de esta constancia (para mostrarlos): el de la persona si dejó horas sin Semillas por
+ * sí solo, y el total solo si recortó más de lo que ya recortaba el de la persona.
+ */
+export function limitesAplicados(c: ConstanciaBase): { persona: Tope | null; total: Tope | null } {
+  const d = c.datos;
+  const tope: Tope | null = d.tope_unidad && d.tope_valor !== null ? { unidad: d.tope_unidad, valor: d.tope_valor } : null;
+  const total: Tope | null = d.tope_total_unidad && d.tope_total_valor !== null ? { unidad: d.tope_total_unidad, valor: d.tope_total_valor } : null;
+  const base = aplicarTope(d.horas, tope, d.valor_hora_usd);
+  return {
+    persona: tope && base.horasSinSemillas > 0 ? tope : null,
+    total: total && (d.horas_con_semillas < base.horasConSemillas || d.semillas < base.semillas) ? total : null,
   };
 }
 
