@@ -261,6 +261,37 @@ test("pasa a horas fijas con Semillas pendientes: se ven aparte con el aviso y n
   await expect(page.getByTestId("total-valle")).toHaveText("150 semillas");
 });
 
+test("pasa a horas fijas con el mínimo ya cumplido: las Semillas recibidas siguen sumando y no hay aviso", async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2026-12-10T15:00:00Z"));
+  const v1 = { rol: "jardineria", rolOtro: "", descripcion: "Cuido la huerta", modalidad: "variable", horas: 10, rango: { min: 0, max: 30 }, compromisoMeses: 1, version: 1, aceptado: null };
+  const conf = (horas: number, mes: string) => ({ horas, estado: "confirmada", propuestaId: `p-${mes}` });
+  await sembrarDe(page, PERSONA, "lh-pactos", {
+    pestana: "tiempo",
+    comunidades: {
+      valle: {
+        tiempo: {
+          ...v1,
+          modalidad: "fija",
+          compromisoMeses: null,
+          paso: 2,
+          version: 2,
+          historial: [v1, { ...v1, modalidad: "fija", compromisoMeses: null, version: 2 }],
+          declaradas: { "2026-11": conf(24, "2026-11"), "2026-12": conf(10, "2026-12") },
+        },
+        aportes: [],
+        puntuales: [],
+      },
+    },
+  });
+  await page.goto("/semillas?comunidad=valle");
+  const anterior = page.getByTestId("semillas-anterior");
+  await expect(anterior).toContainText("Semillas: 171");
+  await expect(anterior).toContainText("Semillas pendientes: sin dato");
+  await expect(anterior).not.toContainText("se reciben solo si se valida");
+  // Las recibidas suman al total junto con la proyección del pacto fijo (150).
+  await expect(page.getByTestId("total-valle")).toHaveText("321 semillas");
+});
+
 test("el máximo y el mínimo del rango se acotan al salir del campo (29 → 30, 90 → 80)", async ({ page }) => {
   await page.goto("/pactos?comunidad=valle");
   await page.getByRole("radio", { name: /Horas variables/ }).check();
@@ -268,15 +299,13 @@ test("el máximo y el mínimo del rango se acotan al salir del campo (29 → 30,
   await maximo.fill("29");
   await maximo.blur();
   await expect(maximo).toHaveValue("30");
-  await maximo.fill("29");
-  await maximo.blur();
-  await expect(maximo).toHaveValue("30");
   await maximo.fill("90");
   await maximo.blur();
   await expect(maximo).toHaveValue("80");
-  await maximo.fill("90");
-  await maximo.blur();
-  await expect(maximo).toHaveValue("80");
+  const minimo = page.getByLabel("Mínimo por mes (h)");
+  await minimo.fill("90");
+  await minimo.blur();
+  await expect(minimo).toHaveValue("80");
 });
 
 test("Monte Nuevo no ofrece horas variables y Taller Común muestra 1 mes de compromiso", async ({ page }) => {
