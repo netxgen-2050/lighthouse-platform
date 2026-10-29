@@ -189,7 +189,7 @@ export function SemillasCliente() {
           <h2 className="text-xl font-semibold">{t.detalle.titulo(nombreComunidad(elegida))}</h2>
           <section aria-label={t.detalle.aria} className="grid gap-4 md:grid-cols-3">
             <div className={TARJETA}>
-              <p className={ETIQUETA}>{t.detalle.tiempo3}</p>
+              <p className={ETIQUETA}>{semillas.variable ? t.detalle.variable.etiquetaTiempo : t.detalle.tiempo3}</p>
               {semillas.variable ? (
                 <>
                   <p className={GRANDE} data-testid="semillas-tiempo"><MarcaSemillas texto={t.detalle.variable.recibidas(numero(semillas.variable.recibidas))} /></p>

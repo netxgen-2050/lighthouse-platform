@@ -135,13 +135,22 @@ export function declaracionesEsperando(lista: readonly ConstanciaPacto[]): Const
   });
 }
 
+/**
+ * ¿La versión vigente (la última propuesta que la comunidad aceptó) de ese pacto es variable? Interino: tras pasar a fija no se
+ * ofrecen ni se aplican confirmaciones de meses, para que no se cumpla el mínimo sin que nadie valide las Semillas pendientes
+ * (la validación sigue pendiente de decisión de Gus, tarea P.1).
+ */
+export function pactoVigenteEsVariable(lista: readonly ConstanciaPacto[], sobre: string): boolean {
+  return propuestaAceptadaDe(lista, sobre)?.datos.modalidad === "variable";
+}
+
 /** Las que esperan a la comunidad y esta sesión ve: las de las comunidades donde responde (con `puede` false si son sus propias horas). */
 export function declaracionesParaVer(lista: readonly ConstanciaPacto[], sesion: QuienResponde): { h: ConstanciaPacto; comunidad: string; puede: boolean }[] {
   const propias = comunidadesQueResponde(sesion);
   const salida: { h: ConstanciaPacto; comunidad: string; puede: boolean }[] = [];
   for (const h of declaracionesEsperando(lista)) {
     const comunidad = comunidadDeSobre(h.sobre);
-    if (comunidad === null || !propias.includes(comunidad)) continue;
+    if (comunidad === null || !propias.includes(comunidad) || !pactoVigenteEsVariable(lista, h.sobre)) continue;
     salida.push({ h, comunidad, puede: personaDeAfirma(h.afirma) !== sesion.idPersona });
   }
   return salida;
@@ -174,7 +183,9 @@ export function responderMes(
 ): { lista: ConstanciaPacto[]; resultado: ResultadoMes } {
   const igual = [...lista];
   const h = lista.find((c) => c.id === pedido.declaracionId);
-  if (!h || !esDeclaracionDeMes(h) || declaracionRetirada(lista, h) || respuestaDeMes(lista, h) !== null) return { lista: igual, resultado: "ya-respondida" };
+  if (!h || !esDeclaracionDeMes(h) || declaracionRetirada(lista, h) || respuestaDeMes(lista, h) !== null || !pactoVigenteEsVariable(lista, h.sobre)) {
+    return { lista: igual, resultado: "ya-respondida" };
+  }
   const persona = personaDeAfirma(h.afirma);
   const comunidad = comunidadDeSobre(h.sobre);
   if (persona === null || comunidad === null || declaracionVigente(lista, persona, comunidad, h.datos.mes)?.id !== h.id) {

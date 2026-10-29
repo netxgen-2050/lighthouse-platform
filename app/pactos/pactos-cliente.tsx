@@ -124,7 +124,12 @@ function CampoHoras({ etiqueta, valor, alCambiar, descritoPor, invalido }: { eti
         onBlur={() => {
           const n = Number(texto);
           if (texto.trim() === "" || !Number.isFinite(n)) setTexto(String(valor));
-          else alCambiar(n);
+          else {
+            // El texto queda con el valor acotado (29 → 30, 90 → 80) aunque coincida con el anterior y el estado no cambie.
+            const acotado = Math.round(Math.min(RANGO_VARIABLE.max, Math.max(RANGO_VARIABLE.min, n)) / RANGO_VARIABLE.paso) * RANGO_VARIABLE.paso;
+            setTexto(String(acotado));
+            alCambiar(acotado);
+          }
         }}
         className={`${CAMPO} w-28`}
       />

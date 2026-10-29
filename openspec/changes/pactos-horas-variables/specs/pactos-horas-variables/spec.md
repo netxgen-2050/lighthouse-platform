@@ -105,7 +105,11 @@ Con un pacto variable vigente, solo los meses **confirmados** SHALL generar Semi
 
 #### Scenario: Pasa a horas fijas con Semillas pendientes
 - **WHEN** una persona con Semillas pendientes (no llegó al mínimo) propone pasar a horas fijas y la comunidad lo acepta
-- **THEN** `/semillas` muestra esas Semillas pendientes aparte ("Horas variables confirmadas antes del cambio"), con el aviso de que se reciben solo si el círculo las valida y, si no, se pierden, y NO suman al total; las ya recibidas siguen sumando
+- **THEN** `/semillas` muestra esas Semillas pendientes aparte ("Horas variables confirmadas antes del cambio"), con el aviso (en palabras neutras, sin decir quién valida) de que se reciben solo si se valida y, si no, se pierden, y NO suman al total; las ya recibidas siguen sumando
+
+#### Scenario: Tras pasar a fija no se confirman más meses (interino)
+- **WHEN** la versión vigente ya es de horas fijas y quedan meses declarados sin confirmar
+- **THEN** `/pactos/responder` no los ofrece, no se pueden confirmar y una confirmación ya escrita no se aplica, así el mínimo no se cumple sin que nadie valide las Semillas pendientes. **La validación sigue pendiente de decisión de Gus (tarea P.1).**
 
 ### Requirement: Alcance de las decisiones de Gus del 28-oct sobre tareas
 El máximo total de una tarea (horas o Semillas sumando a todas las personas, que fija quien administra el holón) y los círculos transversales administrados y facilitados por Hifa (simulada, experimental, con el super admin como respaldo humano) pertenecen a las tareas (`pacto-puntual` y `pacto-puntual-verificacion`) y MUST NOT aplicarse al pacto recurrente de horas variables, que es con la tribu o el Lighthouse y no con un círculo. Los nombres MUST ser "Semillas pendientes" y "Semillas"; MUST NOT usarse otros.

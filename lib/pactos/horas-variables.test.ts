@@ -45,6 +45,29 @@ function aceptadoVariable(comunidad = COM, min = 0, max = 30): EstadoPactos {
   return aplicar(borradorVariable(comunidad, min, max), { tipo: "avanzar", comunidad }, { tipo: "avanzar", comunidad, ahora: "2026-10-30T12:00:00.000Z" });
 }
 
+/** Agrega al registro el pacto variable de la persona ya aceptado por la comunidad (la versión vigente), sin tocar lo anterior. */
+function conPactoAceptado(lista: ConstanciaPacto[], comunidad = COM, modalidad: "variable" | "fija" = "variable"): ConstanciaPacto[] {
+  const t = deComunidad(aceptadoVariable(comunidad), comunidad).tiempo;
+  const contenido = { ...t, modalidad, compromisoMeses: modalidad === "variable" ? t.compromisoMeses : null };
+  const con = agregar(
+    lista,
+    {
+      esquema: "pacto-propone",
+      afirma: afirmaPersona(PERSONA),
+      por: PERSONA,
+      sobre: sobreDe(comunidad, PERSONA),
+      version: 1,
+      datos: datosDePropuesta({ tipo: "nuevo", contenido, nombre: "Ana", iniciales: "A", proponeLider: false }),
+    },
+    NOV,
+  );
+  return agregar(
+    con,
+    { esquema: "pacto-acepta", afirma: afirmaComunidad(comunidad), por: LIDER, sobre: sobreDe(comunidad, PERSONA), version: 1, apuntaA: con[con.length - 1].id },
+    NOV,
+  );
+}
+
 function conDeclaracion(e: EstadoPactos, mes: string, horas: number, propuestaId: string, ahora: string): EstadoPactos {
   return reducir(e, { tipo: "declarar", comunidad: COM, mes, horas, propuestaId, ahora });
 }
@@ -154,12 +177,16 @@ describe("declarar las horas del mes", () => {
 });
 
 describe("el registro de las horas de cada mes", () => {
-  const declara = (lista: ConstanciaPacto[], mes = "2026-11", horas = 24, cuando = NOV) => declararMes(lista, { idPersona: PERSONA, comunidad: COM, mes, horas }, cuando);
+  const declara = (lista: ConstanciaPacto[], mes = "2026-11", horas = 24, cuando = NOV) => {
+    const r = declararMes(lista, { idPersona: PERSONA, comunidad: COM, mes, horas }, cuando);
+    // La declaración queda primero; el pacto aceptado (versión vigente) se suma al final del registro.
+    return lista.length === 0 && r.resultado === "ok" ? { ...r, lista: conPactoAceptado(r.lista) } : r;
+  };
 
   it("declarar escribe una pacto-propone-horas con el mes sobre el pacto de la comunidad", () => {
     const r = declara([]);
     expect(r.resultado).toBe("ok");
-    expect(r.lista).toHaveLength(1);
+    expect(r.lista.filter((c) => c.esquema === "pacto-propone-horas")).toHaveLength(1);
     expect(r.lista[0]).toMatchObject({ esquema: "pacto-propone-horas", sobre: sobreDe(COM, PERSONA), afirma: afirmaPersona(PERSONA), datos: { mes: "2026-11", horas: "24" } });
   });
   it("horas inválidas o mes inválido no escriben nada", () => {
@@ -208,7 +235,7 @@ describe("el registro de las horas de cada mes", () => {
   });
   it("el super admin responde en el Lighthouse", () => {
     const sup: QuienResponde = { idPersona: SUPER, esSuperAdmin: true, tribuLider: null };
-    const a = declararMes([], { idPersona: PERSONA, comunidad: "lighthouse", mes: "2026-11", horas: 10 }, NOV).lista;
+    const a = conPactoAceptado(declararMes([], { idPersona: PERSONA, comunidad: "lighthouse", mes: "2026-11", horas: 10 }, NOV).lista, "lighthouse");
     expect(responderMes(a, { declaracionId: a[0].id, confirma: true, sesion: sup }, DIC).resultado).toBe("ok");
     expect(responderMes(a, { declaracionId: a[0].id, confirma: true, sesion: sesionLider }, DIC).resultado).toBe("sin-permiso");
   });
@@ -267,7 +294,7 @@ describe("el registro de las horas de cada mes", () => {
 describe("conciliar las horas de cada mes", () => {
   function escenario() {
     let e = aceptadoVariable();
-    const r = declararMes([], { idPersona: PERSONA, comunidad: COM, mes: "2026-11", horas: 24 }, NOV);
+    const r = declararMes([], { idPersona: PERSONA, comunidad: COM, mes: "2026-11", horas: 24 }, NOV); r.lista = conPactoAceptado(r.lista);
     e = conDeclaracion(e, "2026-11", 24, r.id!, NOV);
     return { e, lista: r.lista, id: r.id! };
   }
@@ -367,6 +394,33 @@ describe("cambiar de modalidad o de rango", () => {
     expect(t).toMatchObject({ modalidad: "fija", compromisoMeses: null, version: 2 });
     expect(t.declaradas["2026-11"]).toMatchObject({ estado: "confirmada", horas: 24 });
     expect(t.historial[0]).toMatchObject({ modalidad: "variable", compromisoMeses: 3 });
+  });
+});
+
+describe("tras pasar a horas fijas (interino, P.1: la validación sigue pendiente de Gus)", () => {
+  const declaracion = () => declararMes([], { idPersona: PERSONA, comunidad: COM, mes: "2026-12", horas: 20 }, DIC);
+
+  it("la tribu no ve ni puede confirmar los meses cuando la versión vigente ya no es variable", () => {
+    const d = declaracion();
+    const variable = conPactoAceptado(d.lista);
+    expect(declaracionesParaVer(variable, sesionLider)).toHaveLength(1);
+    const fija = conPactoAceptado(d.lista, COM, "fija");
+    expect(declaracionesParaVer(fija, sesionLider)).toEqual([]);
+    const r = responderMes(fija, { declaracionId: d.id!, confirma: true, sesion: sesionLider }, DIC);
+    expect(r.resultado).toBe("ya-respondida");
+    expect(r.lista).toHaveLength(fija.length);
+  });
+  it("una confirmación que ya estaba escrita no se aplica al pacto que pasó a fija: el mínimo no se cumple solo", () => {
+    let e = aceptadoVariable();
+    e = conDeclaracion(e, "2026-12", 20, "p-dic", DIC);
+    const d = declaracion();
+    const conf = responderMes(conPactoAceptado(d.lista), { declaracionId: d.id!, confirma: true, sesion: sesionLider }, DIC).lista;
+    e = { ...e, comunidades: { [COM]: { ...e.comunidades[COM], tiempo: { ...e.comunidades[COM].tiempo, declaradas: { ...e.comunidades[COM].tiempo.declaradas, "2026-12": { horas: 20, estado: "declarada", propuestaId: d.id! } } } } } };
+    expect(deComunidad(conciliar(e, conf, PERSONA).estado, COM).tiempo.declaradas["2026-12"].estado).toBe("confirmada");
+    const aFija = aplicar(e, { tipo: "proponerCambio", comunidad: COM }, { tipo: "editarCambio", comunidad: COM, cambios: { modalidad: "fija", horas: 10 } }, { tipo: "enviarCambio", comunidad: COM }, { tipo: "aceptarCambio", comunidad: COM, ahora: DIC });
+    const r = conciliar(aFija, conf, PERSONA);
+    expect(deComunidad(r.estado, COM).tiempo.declaradas["2026-12"].estado).toBe("declarada");
+    expect(r.aplicadas).toEqual([]);
   });
 });
 

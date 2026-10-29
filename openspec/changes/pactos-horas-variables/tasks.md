@@ -21,4 +21,4 @@
 
 ## Pendiente (fuera de esta entrega)
 
-- [ ] P.1 Validación del círculo de las Semillas pendientes al pasar a fija (decisión de Gus, 28-oct): definir quién valida (el pacto es con la tribu o el Lighthouse, no con un círculo) y cómo se registra; hasta entonces quedan pendientes y no suman.
+- [ ] P.1 Validación de las Semillas pendientes al pasar a fija (decisión de Gus, 28-oct): definir quién valida (el pacto es con la tribu o el Lighthouse, no con un círculo) y cómo se registra. **Sigue pendiente de decisión de Gus.** Interino: hasta entonces quedan pendientes y no suman, y tras pasar a fija no se ofrecen ni se aplican confirmaciones de meses (`pactoVigenteEsVariable`, `conciliarMeses`), con tests.

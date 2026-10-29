@@ -911,6 +911,8 @@ function conciliarMeses(
   let actual = estado;
   const aplicadas: RespuestaAplicada[] = [];
   for (const [comunidad, c] of Object.entries(estado.comunidades)) {
+    // Interino: con la versión vigente ya no variable, no se aplican confirmaciones (P.1: la validación sigue pendiente de Gus).
+    if (c.tiempo.paso !== 2 || c.tiempo.modalidad !== "variable") continue;
     for (const [mes, d] of Object.entries(c.tiempo.declaradas)) {
       if (d.estado !== "declarada") continue;
       const h = constancias.find((x) => x.id === d.propuestaId);
