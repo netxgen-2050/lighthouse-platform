@@ -104,6 +104,10 @@ describe("Resultado y acta en inglés", () => {
     expect(html).toContain("Minutes (sample)");
     expect(html).toContain("Closed by hand on October 20, 2026 (simulated)");
     expect(html).toContain("What does the Lighthouse optimize for?");
+    expect(html).toContain(
+      "The result is advisory: it does not replace the decisions reserved by the contract or the statute.",
+    );
+    expect(html).not.toContain("El resultado es consultivo");
   });
 
   test("quienes faltan se nombran en inglés", () => {

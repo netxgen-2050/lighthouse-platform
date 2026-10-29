@@ -261,8 +261,18 @@ export const TERMINOS = {
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
   consultivo: {
     titulo: "Resultado consultivo",
-    texto: "El resultado es consultivo: no reemplaza las decisiones que reservan el contrato o el estatuto.",
+    // La frase es la que se ve en el acta (aprobada por Gus); `texto` es la explicación del ⚖.
+    frase: "El resultado es consultivo: no reemplaza las decisiones que reservan el contrato o el estatuto.",
+    texto:
+      "Consultivo quiere decir que el resultado orienta una decisión, pero no obliga a nadie a seguirlo. Muestra qué le importa más al grupo; la decisión la toma después quien tiene esa facultad según el contrato o el estatuto, y puede decidir otra cosa. Votar no te cuesta plata: los créditos no se compran ni se cobran, y la consulta no mueve fondos por sí sola.",
     borrador: true,
+    // Traducción nueva: borrador a revisar antes de cualquier uso real.
+    en: {
+      titulo: "Advisory result",
+      frase: "The result is advisory: it does not replace the decisions reserved by the contract or the statute.",
+      texto:
+        "Advisory means the result guides a decision, but does not bind anyone to follow it. It shows what matters most to the group; the decision is then made by whoever holds that power under the contract or the statute, and they may decide something else. Voting costs you no money: credits are not bought or charged, and the consultation does not move funds by itself.",
+    },
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
   avisosimulador: {
@@ -393,6 +403,69 @@ export const TERMINOS = {
     titulo: "Ordenanza 173/2026 de Mainqué",
     texto:
       "Hasta que el municipio apruebe un loteo, nadie puede ofrecer, vender, reservar ni dar prioridad sobre esos lotes. Por eso NetX no se financia vendiendo lotes: no puede, y en el Juego B la tierra del Lighthouse queda en una Fundación que no la vende. A verificar con abogado.",
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  pactoDosPartes: {
+    titulo: "Pacto aceptado por las dos partes",
+    texto:
+      "Un acuerdo social entre vos y tu tribu, registrado en la plataforma: vos lo propusiste y quien lidera la tribu lo aceptó. No es un contrato de trabajo ni de inversión, y cada tribu lo revisa según su estatuto. En el prototipo la constancia queda solo en este navegador.",
+    en: {
+      titulo: "Pact accepted by both parties",
+      texto:
+        "A social agreement between you and your tribe, recorded on the platform: you proposed it and whoever leads the tribe accepted it. It is not an employment or investment contract, and each tribe reviews it according to its own bylaws. In the prototype the record stays only in this browser.",
+    },
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar (con abogado) antes de cualquier uso real. Escrito con criterio de
+  // la legislación argentina (LCT 20.744 arts. 21-23 y 103; Ley de Voluntariado Social 25.855): sin subordinación ni sueldo.
+  pactopuntual: {
+    titulo: "Pacto puntual",
+    texto:
+      "Es un acuerdo voluntario para colaborar con una sola tarea. No es un contrato de trabajo: no tenés horario impuesto, nadie te da órdenes sobre cómo hacerla y no hay pago en dinero. Vos proponés las horas y la fecha. El círculo o la tribu decide si te la deja tomar y, al final, verifica que la tarea quedó hecha. Tus horas verificadas se reconocen con Semillas, que no son un sueldo: no se compran ni se venden.",
+    en: {
+      titulo: "One-off pact",
+      texto:
+        "It is a voluntary agreement to help with a single task. It is not an employment contract: you have no imposed schedule, nobody gives you orders on how to do it and there is no payment in money. You propose the hours and the date. The circle or the tribe decides whether to let you take it and, at the end, checks that the task was done. Your verified hours are recognized with Semillas, which are not a salary: they cannot be bought or sold.",
+    },
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar (con abogado) antes de cualquier uso real. Escrito con criterio de
+  // la legislación argentina (LCT 20.744: período de prueba art. 92 bis [verificar]; sanciones y retenciones arts. 67, 131 y
+  // 132 [verificar]; Ley de Voluntariado Social 25.855): un compromiso voluntario, sin subordinación ni sueldo.
+  compromisominimo: {
+    titulo: "Compromiso mínimo",
+    texto:
+      "Es el tiempo mínimo que te comprometés a sostener este pacto (de 1 a 3 meses, lo fija la tribu). Es un compromiso voluntario, de palabra: no es un contrato de trabajo ni un período de prueba, no hay horario impuesto ni pago en dinero, y podés dejarlo antes avisando. Las horas de cada mes las confirma la tribu y generan Semillas pendientes, que recibís al cumplir el compromiso (o, si lo dejás antes avisando, las de los meses confirmados). Las Semillas no son un sueldo.",
+    en: {
+      titulo: "Minimum commitment",
+      texto:
+        "It is the minimum time you commit to sustaining this pact (1 to 3 months, set by the tribe). It is a voluntary commitment, by word: it is not an employment contract or a probationary period, there is no imposed schedule or payment in money, and you can leave earlier by giving notice. The tribe confirms the hours of each month and they generate pending Semillas, which you receive when you complete the commitment (or, if you leave earlier giving notice, those of the confirmed months). Semillas are not a salary.",
+    },
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  evaluacionPares: {
+    titulo: "Evaluación entre pares",
+    texto:
+      "Las personas de tu equipo te puntúan de 1 a 5, siempre con un motivo. Lo que ves es privado y agregado: no sabés quién puso cada nota, y lo que escribieron no se muestra tal cual sino resumido. Ajusta tus Semillas entre un 20 % menos y un 20 % más. Las Semillas no son plata ni se transfieren. Los parámetros son de prueba.",
+    en: {
+      titulo: "Peer evaluation",
+      texto:
+        "The people on your team score you from 1 to 5, always with a reason. What you see is private and aggregated: you do not know who gave each score, and what they wrote is not shown as is but summarized. It adjusts your Semillas between 20% less and 20% more. Semillas are not money and cannot be transferred. The parameters are for testing.",
+    },
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  constanciaSemillas: {
+    titulo: "Constancia de Semillas",
+    texto:
+      "Un registro que afirma NetX sobre tus Semillas. No se edita: si hay un error, se revoca y se vuelve a emitir. Hoy es solo un ejemplo que vive en tu navegador; nunca se guardan datos personales en una cadena de bloques.",
+    en: {
+      titulo: "Semillas attestation",
+      texto:
+        "A record NetX asserts about your Semillas. It is never edited: if there is a mistake it is revoked and issued again. Today it is only an example that lives in your browser; personal data is never stored on a blockchain.",
+    },
     borrador: true,
   },
 } as const;

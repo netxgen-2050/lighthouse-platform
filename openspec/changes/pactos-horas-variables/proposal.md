@@ -23,7 +23,9 @@ Es el cuarto de cuatro cambios (`tribu-necesidades` → `pacto-puntual` → `pac
 
 **Fuera de alcance:**
 - **Terminar un pacto** avisando o sin avisar: las reglas ya las decidió Gus (design §7), pero hace falta un "terminar el pacto" y una forma de registrar "se fue sin avisar" (D31); va en otro cambio.
-- **Qué pasa con los meses confirmados después de cumplir el mínimo** (pregunta abierta): mientras Gus no decida, el cálculo los deja como Semillas pendientes.
+- **Qué pasa con los meses confirmados después de cumplir el mínimo:** decidido por Gus (28-oct): esos meses se reciben al confirmarse (ver la spec).
+- **Pasar de variable a fija con Semillas pendientes:** decidido por Gus (28-oct): se reciben solo si el círculo las valida; si no, se pierden. Este cambio las deja pendientes y avisa; el mecanismo de validación (quién y cómo) va en otro cambio.
+- **Máximo total por tarea y Hifa en círculos transversales** (decisiones del 28-oct): son de las tareas y ya están en `pacto-puntual-verificacion`; no aplican al pacto recurrente.
 - Que la persona elija el compromiso mínimo, o que quien lidera lo edite desde la pantalla: es un dato de ejemplo por comunidad.
 - Constancias base mensuales del pacto recurrente y su ajuste por evaluación: van con `evaluacion-pares` (la constancia base se emitiría al recibirse las Semillas pendientes; design §7).
 - Pacto recurrente con un **círculo** (hoy el pacto es con la tribu o el Lighthouse).

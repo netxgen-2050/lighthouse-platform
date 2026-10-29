@@ -35,6 +35,14 @@ export const EVENTOS = {
       notificacion: true,
       clave: `pacto-aceptado:${idComunidad}`,
     }),
+  /** El motivo no se copia al evento: queda en el pacto. `propuestaId` evita registrarlo dos veces. */
+  pactoNoAceptado: (comunidad: string, idComunidad: string, propuestaId: string): NuevoEvento =>
+    evento("pactoNoAceptado", { comunidad }, {
+      tipo: "pacto",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      notificacion: true,
+      clave: `pacto-no-aceptado:${idComunidad}:${propuestaId}`,
+    }),
   propusisteCambioDePacto: (comunidad: string, idComunidad: string): NuevoEvento =>
     evento("propusisteCambioDePacto", { comunidad }, { tipo: "pacto", enlace: `/pactos?comunidad=${idComunidad}` }),
   cambioDePactoAceptado: (comunidad: string, idComunidad: string, version: number): NuevoEvento =>
@@ -44,11 +52,13 @@ export const EVENTOS = {
       notificacion: true,
       clave: `cambio-pacto-aceptado:${idComunidad}:${version}`,
     }),
-  cambioDePactoRechazado: (comunidad: string, idComunidad: string): NuevoEvento =>
+  /** `propuestaId` evita registrarlo dos veces (fallo de guardado, dos pestañas). */
+  cambioDePactoRechazado: (comunidad: string, idComunidad: string, propuestaId: string): NuevoEvento =>
     evento("cambioDePactoRechazado", { comunidad }, {
       tipo: "pacto",
       enlace: `/pactos?comunidad=${idComunidad}`,
       notificacion: true,
+      clave: `cambio-pacto-rechazado:${idComunidad}:${propuestaId}`,
     }),
   rondaAbierta: (comunidad: string, idComunidad: string): NuevoEvento =>
     evento("rondaAbierta", { comunidad }, {
@@ -76,6 +86,67 @@ export const EVENTOS = {
       enlace: "/tribus",
       notificacion: true,
       clave: `postulacion-recibida:${idPostulacion}`,
+    }),
+  /** `n` = número de envío de esa persona a esa tarea: reenviar después de un "no" registra otro. */
+  tePostulaste: (tarea: string, comunidad: string, idComunidad: string, necesidadId: string, n: number): NuevoEvento =>
+    evento("tePostulaste", { comunidad, tarea }, {
+      tipo: "pacto",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      clave: `postulacion:${necesidadId}:${n}`,
+    }),
+  postulacionPreadmitida: (holon: string, tarea: string, idComunidad: string, necesidadId: string): NuevoEvento =>
+    evento("postulacionPreadmitida", { comunidad: holon, tarea }, {
+      tipo: "pacto-aceptado",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      notificacion: true,
+      clave: `preadmitida:${necesidadId}`,
+    }),
+  /** El motivo no se copia al evento: queda en la postulación. `propuestaId` evita registrarlo dos veces. */
+  postulacionNoPreadmitida: (holon: string, tarea: string, idComunidad: string, propuestaId: string): NuevoEvento =>
+    evento("postulacionNoPreadmitida", { comunidad: holon, tarea }, {
+      tipo: "pacto",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      notificacion: true,
+      clave: `no-preadmitida:${propuestaId}`,
+    }),
+  /** `propuestaHorasId` evita registrarlo dos veces; marcar de nuevo después de "pidió revisar" registra otro. */
+  marcasteHecha: (tarea: string, comunidad: string, idComunidad: string, necesidadId: string, propuestaHorasId: string): NuevoEvento =>
+    evento("marcasteHecha", { comunidad, tarea }, {
+      tipo: "pacto",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      clave: `hecha:${necesidadId}:${propuestaHorasId}`,
+    }),
+  horasVerificadas: (holon: string, tarea: string, idComunidad: string, necesidadId: string): NuevoEvento =>
+    evento("horasVerificadas", { comunidad: holon, tarea }, {
+      tipo: "pacto-aceptado",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      notificacion: true,
+      clave: `verificada:${necesidadId}`,
+    }),
+  /** El motivo no se copia al evento: queda en la tarea. `respuestaId` evita registrarlo dos veces. */
+  horasARevisar: (holon: string, tarea: string, idComunidad: string, respuestaId: string): NuevoEvento =>
+    evento("horasARevisar", { comunidad: holon, tarea }, {
+      tipo: "pacto",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      notificacion: true,
+      clave: `revisar:${respuestaId}`,
+    }),
+  /**
+   * Horas de un mes de un pacto variable. Corregir no duplica: la clave es una por comunidad y mes, y el texto queda con la
+   * primera declaración. El dato `tarea` lleva "<horas>|<AAAA-MM>" para armar el mes en el idioma de quien lo lee.
+   */
+  declarasteHoras: (horas: number, mes: string, comunidad: string, idComunidad: string): NuevoEvento =>
+    evento("declarasteHoras", { comunidad, tarea: `${horas}|${mes}` }, {
+      tipo: "pacto",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      clave: `horas-declaradas:${idComunidad}:${mes}`,
+    }),
+  horasDelMesConfirmadas: (mes: string, comunidad: string, idComunidad: string): NuevoEvento =>
+    evento("horasDelMesConfirmadas", { comunidad, tarea: `|${mes}` }, {
+      tipo: "pacto-aceptado",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      notificacion: true,
+      clave: `horas-confirmadas:${idComunidad}:${mes}`,
     }),
   registrasteTicket: (): NuevoEvento => evento("registrasteTicket", {}, { tipo: "ticket", enlace: "/congreso" }),
   enviasteRonda: (comunidad: string, idComunidad: string): NuevoEvento =>

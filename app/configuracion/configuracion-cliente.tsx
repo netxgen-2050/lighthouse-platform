@@ -13,6 +13,8 @@ import {
   type Tema,
 } from "@/lib/configuracion/preferencias";
 import { borrarDemo } from "@/lib/demo/borrar";
+import { CLAVES_COMPARTIDAS, personaEnSesion } from "@/lib/demo/claves";
+import { quitarConstanciasDe } from "@/lib/pactos/registro-compartido";
 import { useCambiarIdioma, useIdioma, useIdiomaDePlataforma, useTextos } from "@/lib/idioma/cliente";
 import type { Idioma } from "@/lib/idioma/tipos";
 
@@ -59,6 +61,9 @@ export function ConfiguracionCliente() {
   function borrar() {
     if (!window.confirm(t.datos.confirmar)) return;
     const fallidas = borrarDemo((c) => window.localStorage.removeItem(c));
+    // Sus pactos también salen del registro compartido: si no, la tribu vería pendiente un pacto que ya no existe.
+    const persona = personaEnSesion();
+    if (persona && !quitarConstanciasDe(persona)) fallidas.push(CLAVES_COMPARTIDAS.pactosConstancias);
     // Para que la campanita, la bandeja y la apariencia se enteren.
     window.dispatchEvent(new Event(EVENTO_CAMBIO));
     window.dispatchEvent(new Event(EVENTO_PREFERENCIAS));

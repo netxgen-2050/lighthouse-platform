@@ -125,7 +125,36 @@ test("axe sin violaciones serias o críticas: /pactos con un cambio enviado y el
   });
   await page.goto("/pactos");
   await page.getByText(/Historial de versiones/).click();
-  await expect(page.getByRole("button", { name: "Simular: la comunidad acepta el cambio" })).toBeVisible();
+  await expect(page.getByTestId("esperando-respuesta-cambio")).toBeVisible();
+  const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /pactos/responder con un pendiente de otra persona", async ({ page }) => {
+  // El super admin responde los pactos del Lighthouse; la propuesta es de otra persona (siembra de test en el registro compartido).
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      "compartido:pactos-constancias",
+      JSON.stringify([
+        {
+          id: "p1-pacto-propone",
+          esquema: "pacto-propone",
+          afirma: "persona:prueba:persona@prueba.test",
+          por: "prueba:persona@prueba.test",
+          sobre: "pacto:lighthouse:prueba:persona@prueba.test",
+          version: 1,
+          apuntaA: null,
+          cuando: "2026-10-28T10:00:00.000Z",
+          revocable: true,
+          datos: { tipo: "nuevo", rol: "facilitacion", rolOtro: "", descripcion: "Facilito", horas: "10", nombre: "Ana Pérez" },
+        },
+      ]),
+    );
+  });
+  await page.goto("/pactos/responder");
+  await expect(page.getByRole("article")).toHaveCount(1);
+  await page.getByRole("button", { name: "No aceptar" }).click();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);

@@ -50,40 +50,4 @@ export function preguntaPorque(idioma: Idioma): string {
   return idioma === "en" ? "Why are you giving this score?" : PREGUNTA_PORQUE;
 }
 
-/** Reconocimiento recibido de ejemplo (no es de nadie real): quién lo dio, sus puntuaciones y por qué. */
-export const RECONOCIMIENTO_RECIBIDO = [
-  {
-    de: "Martina",
-    rol: { nota: 4, porque: "Siempre llega a las jornadas de huerta y avisa con tiempo cuando no puede." },
-    aporte: { nota: 5, porque: "Trae energía a las reuniones y ayuda a que las decisiones se tomen con cuidado." },
-  },
-  {
-    de: "Joaquín",
-    rol: { nota: 4, porque: "Cumplió con lo que se comprometió en la carpintería del espacio común." },
-    aporte: { nota: 4, porque: "Es abierto a las ideas de otras personas, aunque a veces tarda en responder." },
-  },
-] as const;
-
-const RECONOCIMIENTO_EN = [
-  {
-    rol: "She always shows up to the garden days and gives notice in advance when she can't.",
-    aporte: "She brings energy to the meetings and helps decisions get made with care.",
-  },
-  {
-    rol: "He did what he committed to in the carpentry of the shared space.",
-    aporte: "He is open to other people's ideas, although he is sometimes slow to answer.",
-  },
-] as const;
-
-/** El reconocimiento recibido de ejemplo con el texto en el idioma de la página (la nota y quién lo dio no cambian). */
-export function reconocimientoRecibido(idioma: Idioma) {
-  return RECONOCIMIENTO_RECIBIDO.map((r, i) =>
-    idioma === "en"
-      ? {
-          de: r.de,
-          rol: { nota: r.rol.nota, porque: RECONOCIMIENTO_EN[i].rol },
-          aporte: { nota: r.aporte.nota, porque: RECONOCIMIENTO_EN[i].aporte },
-        }
-      : r,
-  );
-}
+/* Lo recibido ya no se guarda como ejemplo con nombres: se calcula con `lib/evaluacion/` (defensa g: solo agregado). */

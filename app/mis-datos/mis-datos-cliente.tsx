@@ -3,6 +3,8 @@
 import { useRef, useState, type ReactNode } from "react";
 import { useSesion } from "@/components/sesion/contexto";
 import { borrarDemo } from "@/lib/demo/borrar";
+import { CLAVES_COMPARTIDAS } from "@/lib/demo/claves";
+import { quitarConstanciasDe } from "@/lib/pactos/registro-compartido";
 import { retirarConsentimiento } from "@/lib/privacidad/consentimiento";
 import { exportarMisDatos, nombreArchivoDatos } from "@/lib/privacidad/exportar";
 import { RESPONSABLE } from "@/lib/privacidad/politica";
@@ -74,6 +76,8 @@ export function MisDatosCliente() {
   async function retirar() {
     // Primero se borra (con la persona todavía en sesión: las claves llevan su prefijo) y recién después se sale.
     const fallidas = borrarDemo((c) => window.localStorage.removeItem(c));
+    // Sus constancias de pactos también salen del registro compartido (las de otras personas quedan).
+    if (sesion && !quitarConstanciasDe(sesion.idPersona)) fallidas.push(CLAVES_COMPARTIDAS.pactosConstancias);
     const consentimientoQuitado = retirarConsentimiento(window.localStorage);
     if (fallidas.length > 0 || !consentimientoQuitado) {
       setFalloRetiro(true);

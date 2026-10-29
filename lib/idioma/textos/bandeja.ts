@@ -1,10 +1,18 @@
 // Textos de la Bandeja (`/bandeja`) y de cada evento de la actividad. Cada evento nuevo guarda su clave y sus datos
 // (`lib/actividad/actividad.ts`) y el texto se arma acá, al mostrarlo, en el idioma actual. Cada función recibe el único dato
 // que usa: el nombre de la comunidad o la descripción de lo que publicó la persona (no se traducen).
+import { nombreDelMes } from "../formatos";
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
 
 const G = GLOSARIO;
+
+/** "<horas>|<AAAA-MM>" → [horas, mes]. */
+function detalleDeHoras(detalle: string): [string, string] {
+  const d = String(detalle);
+  const i = d.indexOf("|");
+  return i < 0 ? [d, ""] : [d.slice(0, i), d.slice(i + 1)];
+}
 
 const es = {
   pagina: {
@@ -28,6 +36,7 @@ const es = {
     adhesionAceptada: (comunidad: string) => `${comunidad} aceptó tu adhesión`,
     propusistePacto: (comunidad: string) => `Propusiste un pacto en ${comunidad}`,
     pactoAceptado: (comunidad: string) => `${comunidad} aceptó tu pacto`,
+    pactoNoAceptado: (comunidad: string) => `${comunidad} no aceptó tu pacto`,
     propusisteCambioDePacto: (comunidad: string) => `Propusiste un cambio a tu pacto en ${comunidad}`,
     cambioDePactoAceptado: (comunidad: string) => `${comunidad} aceptó el cambio a tu pacto`,
     cambioDePactoRechazado: (comunidad: string) => `${comunidad} no aceptó el cambio a tu pacto`,
@@ -38,6 +47,18 @@ const es = {
     postulacionRecibida: () => "Recibimos tu postulación",
     registrasteTicket: () => "Registraste tu ticket del Congreso",
     enviasteRonda: (comunidad: string) => `Enviaste tu ronda de reconocimiento en ${comunidad}`,
+    tePostulaste: (comunidad: string, tarea = "") => `Te postulaste para ${tarea} en ${comunidad}`,
+    postulacionPreadmitida: (holon: string, tarea = "") => `${holon} pre-admitió tu postulación a ${tarea}`,
+    postulacionNoPreadmitida: (holon: string, tarea = "") => `${holon} no pre-admitió tu postulación a ${tarea}`,
+    marcasteHecha: (comunidad: string, tarea = "") => `Marcaste hecha ${tarea} en ${comunidad}`,
+    horasVerificadas: (holon: string, tarea = "") => `${holon} verificó tus horas de ${tarea}`,
+    horasARevisar: (holon: string, tarea = "") => `${holon} pidió revisar tus horas de ${tarea}`,
+    /** `detalle` = "<horas>|<AAAA-MM>" (pactos-horas-variables): el mes se escribe en el idioma de quien lo lee. */
+    declarasteHoras: (comunidad: string, detalle = "") => {
+      const [h, mes] = detalleDeHoras(detalle);
+      return `Declaraste ${h} h de ${nombreDelMes(mes, "es")} en ${comunidad}`;
+    },
+    horasDelMesConfirmadas: (comunidad: string, detalle = "") => `${comunidad} confirmó tus horas de ${nombreDelMes(detalleDeHoras(detalle)[1], "es")}`,
   },
 };
 
@@ -62,6 +83,7 @@ const en: Textos<typeof es> = {
     adhesionAceptada: (comunidad: string) => `${comunidad} accepted your membership`,
     propusistePacto: (comunidad: string) => `You proposed a pact in ${comunidad}`,
     pactoAceptado: (comunidad: string) => `${comunidad} accepted your pact`,
+    pactoNoAceptado: (comunidad: string) => `${comunidad} did not accept your pact`,
     propusisteCambioDePacto: (comunidad: string) => `You proposed a change to your pact in ${comunidad}`,
     cambioDePactoAceptado: (comunidad: string) => `${comunidad} accepted the change to your pact`,
     cambioDePactoRechazado: (comunidad: string) => `${comunidad} did not accept the change to your pact`,
@@ -72,6 +94,17 @@ const en: Textos<typeof es> = {
     postulacionRecibida: () => "We received your application",
     registrasteTicket: () => "You registered your Congress ticket",
     enviasteRonda: (comunidad: string) => `You sent your recognition round in ${comunidad}`,
+    tePostulaste: (comunidad: string, tarea = "") => `You applied for ${tarea} in ${comunidad}`,
+    postulacionPreadmitida: (holon: string, tarea = "") => `${holon} pre-admitted your application for ${tarea}`,
+    postulacionNoPreadmitida: (holon: string, tarea = "") => `${holon} did not pre-admit your application for ${tarea}`,
+    marcasteHecha: (comunidad: string, tarea = "") => `You marked ${tarea} as done in ${comunidad}`,
+    horasVerificadas: (holon: string, tarea = "") => `${holon} verified your hours for ${tarea}`,
+    horasARevisar: (holon: string, tarea = "") => `${holon} asked to review your hours for ${tarea}`,
+    declarasteHoras: (comunidad: string, detalle = "") => {
+      const [h, mes] = detalleDeHoras(detalle);
+      return `You declared ${h} h for ${nombreDelMes(mes, "en")} in ${comunidad}`;
+    },
+    horasDelMesConfirmadas: (comunidad: string, detalle = "") => `${comunidad} confirmed your hours for ${nombreDelMes(detalleDeHoras(detalle)[1], "en")}`,
   },
 };
 

@@ -92,6 +92,8 @@ export function capacidadDeRuta(ruta: string): Capacidad {
   if (esPublica(r)) return "descubrir";
   if (dentroDe(r, "/netx")) return "vista-netx";
   if (dentroDe(r, "/admin")) return "admin";
+  // La vista de la tribu la abre cualquiera con cuenta: quien no tiene pactos para responder ve un aviso, no se lo manda a Sumarte.
+  if (dentroDe(r, "/pactos/responder")) return "personal";
   if (PARTICIPAR.some((p) => dentroDe(r, p))) return "participar";
   if (dentroDe(r, "/congreso")) return "congreso";
   return "personal";

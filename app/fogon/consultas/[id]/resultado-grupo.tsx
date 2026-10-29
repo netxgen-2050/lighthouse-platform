@@ -7,7 +7,7 @@ import { fechaCierre, fechaDe, formatoPlata, textoCuandoSeVe } from "@/lib/fogon
 import { nombreDePersona } from "@/lib/fogon/consultas/personas";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { textoEn, type Idioma } from "@/lib/idioma/tipos";
-import { terminoMostrado } from "@/lib/legal/mostrar-termino";
+import { fraseConsultiva } from "@/lib/legal/mostrar-termino";
 import { textoVotos, votosDe } from "@/lib/fogon/consultas/reparto";
 import type { PadronVista, VistaConsulta } from "@/lib/fogon/consultas/tipos";
 
@@ -212,7 +212,6 @@ export function Acta({ vista }: { vista: VistaConsulta }) {
   const a = t.acta;
   const { consulta, resultado, cierreManual } = vista;
   const calculo = filasDelResultado(vista, idioma);
-  const consultivo = terminoMostrado("consultivo", idioma);
   const sinDato = t.resultado.sinDato;
   return (
     <section aria-labelledby="h-acta" className={CAJA}>
@@ -245,7 +244,7 @@ export function Acta({ vista }: { vista: VistaConsulta }) {
         </dd>
       </dl>
       <p className="text-sm">
-        <span lang={consultivo.langTexto}>{consultivo.texto}</span> <TerminoLegal clave="consultivo" idioma={idioma} />
+        <span>{fraseConsultiva(idioma)}</span> <TerminoLegal clave="consultivo" idioma={idioma} />
       </p>
     </section>
   );

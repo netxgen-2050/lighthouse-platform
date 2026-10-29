@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
 import { textosEnEspanol } from "./ayudas-idioma";
+import { sembrarRespuestaDeLaTribu } from "./ayudas";
 
 // idioma-pendientes: consultas del Fogón y cambios a un pacto con la plataforma en inglés.
 
@@ -55,25 +56,42 @@ test.describe("Consultas del Fogón en inglés", () => {
   });
 
   test("al cerrar, el resultado, la dona y el acta salen en inglés, con la tabla y pasan axe", async ({ page }) => {
-    await page.goto("/fogon/consultas/u4");
-    await expect(page.getByText("Amount to split: USD 20,000")).toBeVisible();
-    await expect(page.getByText("Team suggestion: Franz decides")).toBeVisible();
+    await page.goto("/fogon/consultas/u1");
     await page.getByRole("button", { name: "Simulate the closing" }).click();
     await expect(page.getByText("Consultation closed (simulated).")).toBeAttached();
     const resultado = page.getByRole("region", { name: "Group result" });
     await expect(resultado).toBeVisible();
-    await expect(resultado).toContainText("Amount: USD 5,555.56");
     await expect(resultado.locator("figcaption", { hasText: "Group votes" })).toBeVisible();
     await resultado.getByText("View as table").click();
     await expect(resultado.getByRole("columnheader", { name: "Value" })).toBeVisible();
-    await expect(page.getByRole("region", { name: "Minutes (sample)" })).toContainText("Native plant nursery");
+    await expect(page.getByRole("region", { name: "Minutes (sample)" })).toContainText("Ecological regeneration");
     await expect(page.getByRole("heading", { name: "Who split how" })).toBeVisible();
     await expect(page.getByRole("cell", { name: "Sample person 1" })).toHaveCount(0);
     await expect(page.getByRole("rowheader", { name: "Sample person 1" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Did not split" })).toBeVisible();
-    // La frase consultiva todavía no tiene inglés (idioma-legal): va marcada como español.
+    const acta = page.getByRole("region", { name: "Minutes (sample)" });
+    await expect(acta).toContainText(
+      "The result is advisory: it does not replace the decisions reserved by the contract or the statute.",
+    );
+    await expect(acta).not.toContainText("El resultado es consultivo");
+    await acta.getByRole("button", { name: /What it means legally: Advisory result/ }).click();
+    await expect(acta).toContainText("Draft: text under review");
+    await expect(acta).toContainText("guides a decision");
+    await expect(acta).not.toContainText("orienta una decisión");
     expect(await textosEnEspanol(page, "main")).toEqual([]);
     await axeSinGraves(page);
+  });
+
+  test("modo presupuesto (U4): monto, sugerencia del equipo y monto del resultado salen en inglés", async ({ page }) => {
+    await page.goto("/fogon/consultas/u4");
+    await expect(page.getByText("Amount to split: USD 20,000")).toBeVisible();
+    await expect(page.getByText("Team suggestion: Franz decides")).toBeVisible();
+    await page.getByRole("button", { name: "Simulate the closing" }).click();
+    const resultado = page.getByRole("region", { name: "Group result" });
+    await expect(resultado).toBeVisible();
+    await expect(resultado).toContainText("Amount: USD 5,555.56");
+    await expect(page.getByRole("region", { name: "Minutes (sample)" })).toContainText("Native plant nursery");
+    expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
 
 });
@@ -107,8 +125,10 @@ test.describe("Cambios a un pacto en inglés", () => {
     await page.getByRole("button", { name: "Propose a change" }).click();
     await page.getByLabel(/Proposed monthly commitment/).fill("30");
     await page.getByRole("button", { name: "Send change to the community" }).click();
-    await page.getByRole("button", { name: "Simulate: the community does not accept it" }).click();
-    const frase = /did not accept the change\. Version 1 stays in force\./;
+    await expect(page.getByTestId("esperando-respuesta-cambio")).toHaveText("Waiting for the answer from Lighthouse");
+    await sembrarRespuestaDeLaTribu(page, "no-acepta", "Not for now");
+    // Es un cambio a un pacto ya aceptado: el aviso es el del cambio (no el del pacto nuevo) y lleva el motivo de la comunidad.
+    const frase = /did not accept the change to your pact: Not for now/;
     // Una copia es visible y otra va a la región viva (que se anuncia).
     await expect(page.getByText(frase)).toHaveCount(2);
     await expect(page.getByRole("status").filter({ hasText: frase })).toHaveCount(1);
@@ -125,7 +145,7 @@ test.describe("Cambios a un pacto en inglés", () => {
     await page.getByRole("button", { name: "Propose a change" }).click();
     await page.getByLabel(/Proposed monthly commitment/).fill("20");
     await page.getByRole("button", { name: "Send change to the community" }).click();
-    await page.getByRole("button", { name: "Simulate: the community accepts the change" }).click();
+    await sembrarRespuestaDeLaTribu(page, "acepta");
     await expect(page.getByTestId("version-pacto")).toHaveText("Version 2");
     await page.getByText(/Version history \(2\)/).click();
     const versiones = page.getByRole("list", { name: "Accepted versions" }).getByRole("listitem");
