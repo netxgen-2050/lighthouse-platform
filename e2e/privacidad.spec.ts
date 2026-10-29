@@ -376,4 +376,44 @@ test.describe("retirar el consentimiento", () => {
     // La cookie de prueba ya no está: no hay sesión.
     expect((await page.context().cookies()).find((c) => c.name === "lh-auth-prueba")).toBeUndefined();
   });
+
+  test("saca del registro compartido las constancias de pactos de la persona y deja las de otra", async ({ page }) => {
+    const clave = "compartido:pactos-constancias";
+    const otra = "prueba:otra@prueba.test";
+    const constancia = (id: string, persona: string) => ({
+      id,
+      esquema: "pacto-propone",
+      afirma: `persona:${persona}`,
+      por: persona,
+      sobre: `pacto:valle:${persona}`,
+      version: 1,
+      apuntaA: null,
+      cuando: "2026-10-28T10:00:00.000Z",
+      revocable: true,
+      datos: {},
+    });
+    await page.addInitScript(
+      ([consentimiento, version, k, lista]) => {
+        if (window.sessionStorage.getItem("sembrado")) return;
+        window.sessionStorage.setItem("sembrado", "1");
+        window.localStorage.setItem(
+          consentimiento,
+          JSON.stringify({ version, aceptadoEn: new Date().toISOString(), aceptado: { politica: true, terminos: true }, sensibles: null }),
+        );
+        window.localStorage.setItem(k, lista);
+      },
+      [
+        CLAVE_CONSENTIMIENTO,
+        VERSION_PRUEBA,
+        clave,
+        JSON.stringify([constancia("p1-pacto-propone", `prueba:${EMAILS.persona}`), constancia("p2-pacto-propone", otra)]),
+      ] as const,
+    );
+    await page.goto("/mis-datos");
+    await page.getByRole("button", { name: "Retirar mi consentimiento" }).click();
+    await page.getByRole("button", { name: "Sí, retirar y borrar mis datos" }).click();
+    await expect(page).toHaveURL(/\/$/);
+    const restantes = JSON.parse(await page.evaluate((k) => window.localStorage.getItem(k) ?? "[]", clave)) as { sobre: string }[];
+    expect(restantes.map((c) => c.sobre)).toEqual([`pacto:valle:${otra}`]);
+  });
 });

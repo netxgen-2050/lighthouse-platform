@@ -1,4 +1,5 @@
-import { deComunidad, leer as leerPactos, pactosAceptados, totalAportes } from "@/lib/pactos/estado";
+import type { ConstanciaPacto } from "@/lib/pactos/constancias";
+import { deComunidad, leerPactosConciliados, pactosAceptados, totalAportes } from "@/lib/pactos/estado";
 import { semillasDePlata } from "@/lib/pactos/calculo";
 import { clave, rondaCompleta, semillasTiempo, totalConDato, type Notas, type Parte, type Razones } from "./calculo";
 import { MAX_RAZON } from "./datos";
@@ -88,8 +89,14 @@ export type SemillasDeComunidad = {
  * Semillas de una comunidad a partir de lo guardado por /pactos.
  * Tiempo: solo con pacto aceptado. Plata: aportes registrados. Presencia: todavía no suma Semillas (sin dato).
  */
-export function semillasDeComunidad(pactosCrudo: string | null, comunidad: string): SemillasDeComunidad {
-  const guardados = leerPactos(pactosCrudo);
+export function semillasDeComunidad(
+  pactosCrudo: string | null,
+  comunidad: string,
+  idPersona?: string | null,
+  registro?: readonly ConstanciaPacto[] | null,
+): SemillasDeComunidad {
+  // Con las respuestas de la tribu ya aplicadas (en memoria, sin guardar): un pacto aceptado en el registro cuenta.
+  const guardados = leerPactosConciliados(pactosCrudo, idPersona, registro);
   const p = deComunidad(guardados, comunidad);
   const aceptado = pactosAceptados(guardados).some((a) => a.comunidad === comunidad);
   const tiempo = aceptado ? semillasTiempo(p.tiempo.horas, 100) : null;

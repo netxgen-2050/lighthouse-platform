@@ -35,6 +35,14 @@ export const EVENTOS = {
       notificacion: true,
       clave: `pacto-aceptado:${idComunidad}`,
     }),
+  /** El motivo no se copia al evento: queda en el pacto. `propuestaId` evita registrarlo dos veces. */
+  pactoNoAceptado: (comunidad: string, idComunidad: string, propuestaId: string): NuevoEvento =>
+    evento("pactoNoAceptado", { comunidad }, {
+      tipo: "pacto",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      notificacion: true,
+      clave: `pacto-no-aceptado:${idComunidad}:${propuestaId}`,
+    }),
   propusisteCambioDePacto: (comunidad: string, idComunidad: string): NuevoEvento =>
     evento("propusisteCambioDePacto", { comunidad }, { tipo: "pacto", enlace: `/pactos?comunidad=${idComunidad}` }),
   cambioDePactoAceptado: (comunidad: string, idComunidad: string, version: number): NuevoEvento =>
@@ -44,11 +52,13 @@ export const EVENTOS = {
       notificacion: true,
       clave: `cambio-pacto-aceptado:${idComunidad}:${version}`,
     }),
-  cambioDePactoRechazado: (comunidad: string, idComunidad: string): NuevoEvento =>
+  /** `propuestaId` evita registrarlo dos veces (fallo de guardado, dos pestañas). */
+  cambioDePactoRechazado: (comunidad: string, idComunidad: string, propuestaId: string): NuevoEvento =>
     evento("cambioDePactoRechazado", { comunidad }, {
       tipo: "pacto",
       enlace: `/pactos?comunidad=${idComunidad}`,
       notificacion: true,
+      clave: `cambio-pacto-rechazado:${idComunidad}:${propuestaId}`,
     }),
   rondaAbierta: (comunidad: string, idComunidad: string): NuevoEvento =>
     evento("rondaAbierta", { comunidad }, {

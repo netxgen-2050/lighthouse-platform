@@ -7,7 +7,7 @@ import { CLAVES } from "@/lib/demo/claves";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { COMUNIDAD_LIGHTHOUSE, leer as leerMembresia, type Membresias } from "@/lib/membresia/estado";
 import { ROLES, buscarRol, textoDeRol } from "@/lib/pactos/datos";
-import { leer as leerPactos, pactosAceptados } from "@/lib/pactos/estado";
+import { leerPactosConciliados, pactosAceptados } from "@/lib/pactos/estado";
 import {
   PERFIL_VACIO,
   borradorInicial,
@@ -37,7 +37,8 @@ type Resumen = { pactos: number | null; semillas: number | null };
 type Comunidad = { id: string; nombre: string; href: string; estado: "miembro" | "pedido" };
 
 function resumir(pactosCrudo: string | null): Resumen {
-  const estado = leerPactos(pactosCrudo);
+  // Con las respuestas de la tribu aplicadas en memoria (no se guarda nada).
+  const estado = leerPactosConciliados(pactosCrudo);
   const semillas = totalConDato(Object.keys(estado.comunidades).map((id) => semillasDeComunidad(pactosCrudo, id).total));
   // Sin ningún pacto guardado no hay dato (no es un 0 inventado).
   const hayPactos = Object.keys(estado.comunidades).length > 0;

@@ -4,6 +4,10 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { KycDialogo } from "@/components/kyc-dialogo";
 import { MarcaSemillas } from "@/components/marca-semillas";
+import { useSesion } from "@/components/sesion/contexto";
+import { comunidadesQueResponde, respuestaDe } from "@/lib/pactos/constancias";
+import { conciliarYGuardar, publicarLoQueFalta, publicarPropuesta, quienRespondeDe } from "@/lib/pactos/navegador";
+import { leerDelNavegador, revocarEnNavegador } from "@/lib/pactos/registro-compartido";
 import { CLAVES } from "@/lib/demo/claves";
 import { TerminoEconomico } from "@/components/termino-economico";
 import { TerminoLegal } from "@/components/termino-legal";
@@ -30,8 +34,10 @@ import {
   pactoCompleto,
   reducir,
   totalAportes,
+  ultimaPropuesta,
   type Accion,
   type EstadoPactos,
+  type RespuestaAplicada,
 } from "@/lib/pactos/estado";
 import { registrarEvento } from "@/lib/actividad/almacen";
 import { usePreferencias } from "@/lib/configuracion/almacen";
@@ -49,7 +55,6 @@ import { buscarTribu } from "@/lib/tribus/datos";
 const BOTON =
   "w-fit rounded-lg px-4 py-1.5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep disabled:cursor-not-allowed disabled:opacity-60 aria-disabled:cursor-not-allowed aria-disabled:opacity-60";
 const BOTON_PRIMARIO = `${BOTON} bg-deep text-on-deep hover:bg-deep-2`;
-const BOTON_DORADO = `${BOTON} bg-gold text-ink hover:bg-gold-soft`;
 const AVISO = "rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink";
 const PANEL_LATERAL = "grid content-start gap-3 rounded-xl bg-surface-2 p-4";
 const CAMPO = "rounded-lg border border-muted bg-surface px-3 py-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
@@ -62,9 +67,45 @@ function nombreComunidad(id: string): string {
   return id === COMUNIDAD_LIGHTHOUSE ? "Lighthouse" : (buscarTribu(id)?.nombre ?? id);
 }
 
+type TextosPactos = ReturnType<typeof useTextos<"pactos">>;
+
+/** El texto que se anuncia (y queda en pantalla) cuando se aplican respuestas de la tribu; vacío si no hubo ninguna. */
+function anuncioDe(aplicadas: RespuestaAplicada[], tx: TextosPactos): string {
+  const a = aplicadas[aplicadas.length - 1];
+  if (!a) return "";
+  const donde = nombreComunidad(a.comunidad);
+  if (a.tipo === "acepta") return a.esCambio ? tx.anuncios.cambioAceptado(donde, a.version) : tx.anuncios.pactoAceptado(donde);
+  return a.esCambio ? tx.avisoCambioNoAceptado(donde, a.motivo ?? "") : tx.anuncios.pactoNoAceptado(donde, a.motivo ?? "");
+}
+
+/** Mi recorrido: una sola vez por respuesta (todos los eventos llevan clave, también el rechazo de un cambio). */
+function registrarEventosDe(aplicadas: RespuestaAplicada[]): void {
+  for (const a of aplicadas) {
+    const donde = nombreComunidad(a.comunidad);
+    if (a.tipo === "acepta") {
+      if (a.esCambio) registrarEvento(EVENTOS.cambioDePactoAceptado(donde, a.comunidad, a.version));
+      else {
+        registrarEvento(EVENTOS.pactoAceptado(donde, a.comunidad));
+        registrarEvento(EVENTOS.rondaAbierta(donde, a.comunidad));
+      }
+    } else if (a.esCambio) registrarEvento(EVENTOS.cambioDePactoRechazado(donde, a.comunidad, a.propuestaId));
+    else registrarEvento(EVENTOS.pactoNoAceptado(donde, a.comunidad, a.propuestaId));
+  }
+}
+
 export function PactosCliente() {
   const idioma = useIdioma();
   const tx = useTextos("pactos");
+  const { sesion, tribuLider } = useSesion();
+  const idPersona = sesion?.idPersona ?? null;
+  const email = sesion?.email ?? null;
+  const rolSesion = sesion?.rol ?? null;
+  const quien = quienRespondeDe(idPersona && rolSesion ? { idPersona, rol: rolSesion } : null, tribuLider);
+  // Lo que la carga inicial necesita de la sesión, sin volver a cargar cuando cambia (p. ej. al terminar de calcular el nivel).
+  const contexto = useRef({ tx, quien, email });
+  useEffect(() => {
+    contexto.current = { tx, quien, email };
+  });
   const pasaporte = useTextos("pasaporte");
   const comunes = useTextos("comunes");
   const textoSemillas = useTextos("semillas");
@@ -78,8 +119,8 @@ export function PactosCliente() {
   const [listo, setListo] = useState(false);
   const foco = useRef(false);
   const [anuncio, setAnuncio] = useState("");
-  // Aviso visible (y anunciado) cuando la comunidad no aceptó un cambio.
-  const [avisoRechazo, setAvisoRechazo] = useState("");
+  // La propuesta no llegó al registro compartido (el navegador no dejó): la tribu no la va a ver.
+  const [falloPublicar, setFalloPublicar] = useState<"envio" | "retiro" | null>(null);
   // Lo que la persona cargó en "Tus datos"; lo que no cargó queda sin dato.
   const [datos, setDatos] = useState<DatosPersona>(DATOS_VACIOS);
   // Comunidades donde la persona es miembro: solo ahí puede proponer un pacto.
@@ -97,13 +138,33 @@ export function PactosCliente() {
     setMiembro(comunidades);
     const pedida = new URLSearchParams(window.location.search).get("comunidad");
     setElegida(pedida && comunidades.includes(pedida) ? pedida : (comunidades[0] ?? ""));
+    let leido: EstadoPactos = INICIAL;
     try {
-      setEstado(leer(window.localStorage.getItem(CLAVES.pactos)));
+      leido = leer(window.localStorage.getItem(CLAVES.pactos));
     } catch {
       setFalloAlmacen(true);
     }
+    if (idPersona) {
+      const { tx: t, quien: q, email: correo } = contexto.current;
+      // Un pacto enviado antes de este cambio se publica una vez (design §8); con el registro ilegible no se publica nada.
+      const registro = publicarLoQueFalta(
+        leido,
+        leerDelNavegador(),
+        { idPersona, email: correo, comunidadesQueResponde: q ? comunidadesQueResponde(q) : [] },
+        new Date().toISOString(),
+      );
+      // Las respuestas de la tribu se aplican, se guardan, se anuncian y se registran una sola vez.
+      const r = conciliarYGuardar(leido, registro, idPersona);
+      if (!r.guardado) setFalloAlmacen(true);
+      if (r.aplicadas.length > 0) {
+        setAnuncio(anuncioDe(r.aplicadas, t));
+        registrarEventosDe(r.aplicadas);
+      }
+      leido = r.estado;
+    }
+    setEstado(leido);
     setListo(true);
-  }, []);
+  }, [idPersona]);
 
   // El botón de paso desaparece al apretarlo: el foco pasa al estado nuevo.
   const tiempoActual = elegida ? deComunidad(estado, elegida).tiempo : null;
@@ -116,15 +177,55 @@ export function PactosCliente() {
 
   function dispatch(original: Accion) {
     // Las fechas las pone la pantalla: el reductor es puro.
-    const accion: Accion =
-      original.tipo === "avanzar" || original.tipo === "aceptarCambio" ? { ...original, ahora: new Date().toISOString() } : original;
+    const ahora = new Date().toISOString();
+    const accion: Accion = original;
     const siguiente = reducir(estado, accion);
     const comunidadId = "comunidad" in accion ? accion.comunidad : null;
-    setAvisoRechazo("");
+    if (comunidadId !== null && siguiente !== estado && idPersona) {
+      const antes = deComunidad(estado, comunidadId).tiempo;
+      const lidera = quien ? comunidadesQueResponde(quien).includes(comunidadId) : false;
+      const persona = { idPersona, email, lidera };
+      if (accion.tipo === "avanzar" && antes.paso === 0) {
+        // Enviar escribe la propuesta en el registro compartido; si el navegador no deja, no se envía.
+        const ok = publicarPropuesta({ comunidad: comunidadId, tipo: "nuevo", contenido: antes, version: antes.version + 1 }, persona, ahora);
+        setFalloPublicar(ok === null ? "envio" : null);
+        if (ok === null) return;
+      } else if (accion.tipo === "enviarCambio" && antes.cambio) {
+        const ok = publicarPropuesta(
+          { comunidad: comunidadId, tipo: "cambio", contenido: antes.cambio, version: antes.version + 1, horasVigentes: antes.horas },
+          persona,
+          ahora,
+        );
+        setFalloPublicar(ok === null ? "envio" : null);
+        if (ok === null) return;
+      } else if (accion.tipo === "retirar" || accion.tipo === "retirarCambio") {
+        const registro = leerDelNavegador();
+        const propuesta = registro ? ultimaPropuesta(registro, idPersona, comunidadId, accion.tipo === "retirar" ? "nuevo" : "cambio") : null;
+        if (registro && propuesta) {
+          if (respuestaDe(registro, propuesta.id)) {
+            // La tribu ya respondió: se aplica su respuesta y no se retira nada.
+            const r = conciliarYGuardar(estado, registro, idPersona);
+            if (!r.guardado) setFalloAlmacen(true);
+            foco.current = true;
+            setAnuncio(anuncioDe(r.aplicadas, tx));
+            registrarEventosDe(r.aplicadas);
+            setEstado(r.estado);
+            return;
+          }
+          // Si no se pudo escribir, no se retira: la tribu seguiría viendo la propuesta pendiente.
+          const ok = revocarEnNavegador(propuesta.id, idPersona, ahora);
+          setFalloPublicar(ok === null ? "retiro" : null);
+          if (ok === null) return;
+        }
+      }
+    }
     if (comunidadId !== null && siguiente !== estado) {
       const despuesT = deComunidad(siguiente, comunidadId).tiempo;
       const donde = nombreComunidad(comunidadId);
-      if (accion.tipo === "retirar") {
+      if (accion.tipo === "retirarCambio") {
+        foco.current = true;
+        setAnuncio(tx.anuncios.cambioRetirado(donde));
+      } else if (accion.tipo === "retirar") {
         foco.current = true;
         setAnuncio(tx.anuncios.retiraste(donde));
       } else if (accion.tipo === "proponerCambio") {
@@ -134,17 +235,6 @@ export function PactosCliente() {
         foco.current = true;
         setAnuncio(tx.anuncios.cambioEnviado(donde));
         registrarEvento(EVENTOS.propusisteCambioDePacto(donde, comunidadId));
-      } else if (accion.tipo === "aceptarCambio") {
-        foco.current = true;
-        setAnuncio(tx.anuncios.cambioAceptado(donde, despuesT.version));
-        registrarEvento(EVENTOS.cambioDePactoAceptado(donde, comunidadId, despuesT.version));
-      } else if (accion.tipo === "rechazarCambio") {
-        foco.current = true;
-        // El texto va a la región viva siempre montada (se anuncia) y también al aviso visible.
-        const aviso = tx.anuncios.cambioRechazado(donde, despuesT.version);
-        setAnuncio(aviso);
-        setAvisoRechazo(aviso);
-        registrarEvento(EVENTOS.cambioDePactoRechazado(donde, comunidadId));
       } else if (accion.tipo === "descartarCambio") {
         foco.current = true;
         setAnuncio(tx.anuncios.cambioDescartado(despuesT.version));
@@ -162,13 +252,9 @@ export function PactosCliente() {
       // Solo se anuncia lo que provoca la persona en esta sesión, no lo que ya estaba guardado.
       const paso = deComunidad(siguiente, accion.comunidad).tiempo.paso;
       const donde = nombreComunidad(accion.comunidad);
-      setAnuncio(paso === 1 ? tx.anuncios.pactoEnviado(donde) : paso === 2 ? tx.anuncios.pactoAceptado(donde) : "");
+      setAnuncio(paso === 1 ? tx.anuncios.pactoEnviado(donde) : "");
       const antes = deComunidad(estado, accion.comunidad).tiempo.paso;
       if (paso === 1 && antes === 0) registrarEvento(EVENTOS.propusistePacto(donde, accion.comunidad));
-      if (paso === 2 && antes === 1) {
-        registrarEvento(EVENTOS.pactoAceptado(donde, accion.comunidad));
-        registrarEvento(EVENTOS.rondaAbierta(donde, accion.comunidad));
-      }
     }
     setEstado(siguiente);
   }
@@ -223,7 +309,6 @@ export function PactosCliente() {
             value={comunidad}
             onChange={(e) => {
               setAnuncio("");
-              setAvisoRechazo("");
               setElegida(e.target.value);
             }}
             className={`${CAMPO} w-fit`}
@@ -490,9 +575,14 @@ export function PactosCliente() {
             )}
             {t.paso === 1 && (
               <>
-                <button type="button" data-foco-paso className={BOTON_DORADO} onClick={() => dispatch({ tipo: "avanzar", comunidad })}>
-                  {tx.pasos.simularAcepta}
-                </button>
+                <span
+                  tabIndex={-1}
+                  data-foco-paso
+                  data-testid="esperando-respuesta"
+                  className="rounded-full border border-dashed border-deep px-3 py-1 text-sm font-medium text-deep"
+                >
+                  {tx.pasos.esperando(nombre)}
+                </span>
                 <button
                   type="button"
                   className={`${BOTON} border border-muted hover:bg-surface-2`}
@@ -511,6 +601,7 @@ export function PactosCliente() {
                 >
                   {tx.pasos.aceptado}
                 </span>
+                <TerminoLegal clave="pactoDosPartes" idioma={idioma} />
                 <span className="text-sm text-muted"><MarcaSemillas texto={tx.pasos.verLibro(nombre)} /></span>
                 {!t.cambio && (
                   <button
@@ -639,15 +730,20 @@ export function PactosCliente() {
                 </>
               ) : (
                 <>
-                  <button type="button" data-foco-paso className={BOTON_DORADO} onClick={() => dispatch({ tipo: "aceptarCambio", comunidad })}>
-                    {tx.cambio.simularAcepta}
-                  </button>
+                  <span
+                    tabIndex={-1}
+                    data-foco-paso
+                    data-testid="esperando-respuesta-cambio"
+                    className="rounded-full border border-dashed border-deep px-3 py-1 text-sm font-medium text-deep"
+                  >
+                    {tx.pasos.esperando(nombre)}
+                  </span>
                   <button
                     type="button"
                     className={`${BOTON} border border-muted hover:bg-surface-2`}
-                    onClick={() => dispatch({ tipo: "rechazarCambio", comunidad })}
+                    onClick={() => dispatch({ tipo: "retirarCambio", comunidad })}
                   >
-                    {tx.cambio.simularRechaza}
+                    {tx.cambio.retirar}
                   </button>
                 </>
               )}
@@ -655,9 +751,18 @@ export function PactosCliente() {
           </section>
         )}
 
-        {estado.pestana === "tiempo" && avisoRechazo && (
-          <p className={AVISO}>
-            {avisoRechazo}
+        {estado.pestana === "tiempo" && estado.ultimaRespuesta && estado.ultimaRespuesta.comunidad === comunidad && (
+          <p className={AVISO} data-testid="aviso-no-aceptado">
+            <span lang={langTexto}>
+              {estado.ultimaRespuesta.esCambio
+                ? tx.avisoCambioNoAceptado(nombre, estado.ultimaRespuesta.motivo)
+                : tx.avisoNoAceptado(nombre, estado.ultimaRespuesta.motivo)}
+            </span>
+          </p>
+        )}
+        {falloPublicar && (
+          <p role="alert" className="text-sm font-medium text-danger">
+            {falloPublicar === "retiro" ? tx.anuncios.noSePudoRetirar : tx.anuncios.noSePudoPublicar}
           </p>
         )}
 

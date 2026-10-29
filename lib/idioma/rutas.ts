@@ -23,6 +23,8 @@ export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   /^\/pasaporte$/,
   /^\/semillas$/,
   /^\/pactos$/,
+  // La tribu responde los pactos (pactos-dos-partes).
+  /^\/pactos\/responder$/,
   // Fogón, Compromisos con su Mercado y Canales (idioma-fogon-mercado).
   /^\/fogon$/,
   // Consultas del Fogón: la lista y cada consulta (idioma-pendientes).

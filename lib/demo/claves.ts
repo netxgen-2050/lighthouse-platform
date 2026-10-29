@@ -35,6 +35,15 @@ export const NOMBRES_BASE = {
   gobernanza: "lh-gobernanza",
 } as const;
 
+/**
+ * Claves compartidas entre las personas de un mismo navegador: NUNCA llevan el prefijo de una persona (no pasan por `clave`).
+ * Su nombre no empieza con `lh-` a propósito: la fixtura de e2e prefija todo lo `lh-*`.
+ */
+export const CLAVES_COMPARTIDAS = {
+  /** Constancias de los pactos (propuestas, respuestas, retiros), de solo agregar. Ver `lib/pactos/constancias.ts`. */
+  pactosConstancias: "compartido:pactos-constancias",
+} as const;
+
 /** Guarda, sin prefijo, cuál fue la última persona: lo necesita el script que aplica el tema antes de hidratar. */
 export const CLAVE_ULTIMA_PERSONA = "lh-ultima-persona";
 

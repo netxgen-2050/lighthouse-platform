@@ -14,6 +14,7 @@ const DATO_DEL_MENSAJE: Record<ClaveMensaje, keyof DatosEvento | null> = {
   adhesionAceptada: "comunidad",
   propusistePacto: "comunidad",
   pactoAceptado: "comunidad",
+  pactoNoAceptado: "comunidad",
   propusisteCambioDePacto: "comunidad",
   cambioDePactoAceptado: "comunidad",
   cambioDePactoRechazado: "comunidad",

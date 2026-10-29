@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
 import { textosEnEspanol } from "./ayudas-idioma";
+import { sembrarRespuestaDeLaTribu } from "./ayudas";
 
 // idioma-pendientes: consultas del Fogón y cambios a un pacto con la plataforma en inglés.
 
@@ -107,8 +108,9 @@ test.describe("Cambios a un pacto en inglés", () => {
     await page.getByRole("button", { name: "Propose a change" }).click();
     await page.getByLabel(/Proposed monthly commitment/).fill("30");
     await page.getByRole("button", { name: "Send change to the community" }).click();
-    await page.getByRole("button", { name: "Simulate: the community does not accept it" }).click();
-    const frase = /did not accept the change\. Version 1 stays in force\./;
+    await expect(page.getByTestId("esperando-respuesta-cambio")).toHaveText("Waiting for the answer from Lighthouse");
+    await sembrarRespuestaDeLaTribu(page, "no-acepta", "Not for now");
+    const frase = /did not accept your pact: Not for now/;
     // Una copia es visible y otra va a la región viva (que se anuncia).
     await expect(page.getByText(frase)).toHaveCount(2);
     await expect(page.getByRole("status").filter({ hasText: frase })).toHaveCount(1);
@@ -125,7 +127,7 @@ test.describe("Cambios a un pacto en inglés", () => {
     await page.getByRole("button", { name: "Propose a change" }).click();
     await page.getByLabel(/Proposed monthly commitment/).fill("20");
     await page.getByRole("button", { name: "Send change to the community" }).click();
-    await page.getByRole("button", { name: "Simulate: the community accepts the change" }).click();
+    await sembrarRespuestaDeLaTribu(page, "acepta");
     await expect(page.getByTestId("version-pacto")).toHaveText("Version 2");
     await page.getByText(/Version history \(2\)/).click();
     const versiones = page.getByRole("list", { name: "Accepted versions" }).getByRole("listitem");
