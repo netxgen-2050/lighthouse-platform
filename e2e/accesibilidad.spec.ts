@@ -6,6 +6,7 @@ import { conIdentidadVerificada } from "./ayudas";
 const rutas = [
   "/",
   "/tribus",
+  "/tribus?ver=tribus",
   "/compromisos",
   "/panel",
   "/pactos",
@@ -38,8 +39,8 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 34 rutas auditadas", () => {
-  expect(rutas).toHaveLength(34);
+test("hay 35 rutas auditadas", () => {
+  expect(rutas).toHaveLength(35);
 });
 
 async function graves(page: Page) {
@@ -299,6 +300,7 @@ test.describe("la plataforma en inglés", () => {
     "/",
     "/sumarte",
     "/tribus",
+    "/tribus?ver=tribus",
     "/tribus/valle",
     "/tribus/valle/manifiesto",
     "/tribus/grano/postular",

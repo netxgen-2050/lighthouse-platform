@@ -53,6 +53,10 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Nombres, propósitos y 'Decide sobre' de los círculos de ejemplo del común, de cada tribu y del círculo transversal, con su inglés",
   },
+  "lib/equipos/frentes.ts": {
+    estado: "pendiente",
+    que: "Los 8 frentes de trabajo de ejemplo de los equipos (nombre, necesidad, quién falta y para cuándo) con su inglés, traducidos del español",
+  },
   "lib/tribus/datos.ts": {
     estado: "pendiente",
     que: "Datos de ejemplo de las 12 tribus con su inglés (foco, qué tiene, qué busca, ritual, forma jurídica…) y la declaración de cada tribu, traducida del español",

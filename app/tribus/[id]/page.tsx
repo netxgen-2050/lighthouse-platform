@@ -83,6 +83,7 @@ export default async function TribuPage({ params }: Props) {
       <div className="mx-auto max-w-4xl p-6 sm:p-10">
         {volver}
         <h1 className="text-3xl font-semibold">{tx.barrioBuscaTribu(t.barrio)}</h1>
+        <p className="mt-1 w-fit rounded-full border border-dashed border-muted px-2 py-0.5 text-xs font-medium">{tx.equipos.marca}</p>
         <p className="mt-2 mb-4 text-muted">
           {v.introAntes}<strong>{t.foco}</strong>
           {v.introConHogares}{t.hogares}{v.introLicencia}
@@ -126,6 +127,7 @@ export default async function TribuPage({ params }: Props) {
         <SelloTribu iniciales={t.iniciales} estado={t.estado} grande />
         <div>
           <h1 className="text-3xl font-semibold" translate="no">{t.nombre}</h1>
+          <p className="mt-1 w-fit rounded-full border border-dashed border-muted px-2 py-0.5 text-xs font-medium">{tx.equipos.marca}</p>
           {/* La declaración es la voz de la tribu: en inglés se muestra traducida, con la nota del idioma original. */}
           {original.declaracion && (
             <p className="mt-1 text-muted">

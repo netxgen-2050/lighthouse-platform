@@ -12,6 +12,17 @@ export async function conIdentidadVerificada(page: Page) {
 }
 
 /**
+ * SIEMBRA DE TEST (no es un flujo de la app): deja a la persona con `lighthouse: "pedido"`, como si ya hubiera
+ * adherido al manifiesto del Lighthouse. Solo la primera vez, para que recargar no pise lo que la pantalla guardó.
+ */
+export async function conAdhesionAlLighthouse(page: Page) {
+  await page.addInitScript(() => {
+    if (window.localStorage.getItem("lh-membresia")) return;
+    window.localStorage.setItem("lh-membresia", JSON.stringify({ lighthouse: "pedido" }));
+  });
+}
+
+/**
  * SIEMBRA DE TEST (no es un flujo de la app): escribe en `compartido:pactos-constancias` la respuesta de la tribu a la
  * última propuesta pendiente y recarga la página, como si quien lidera hubiera respondido desde `/pactos/responder`.
  * Los tests que solo necesitan "un pacto aceptado" (Semillas, Mi recorrido, axe) la usan para no repetir el cambio de persona;
