@@ -88,7 +88,19 @@ function estadoHecha(c: Caso, horas: number): EstadoPactos {
   };
 }
 function leerTiempoInicial() {
-  return { rol: "" as const, rolOtro: "", descripcion: "", horas: 8, paso: 0 as const, version: 0, historial: [] };
+  return {
+    rol: "" as const,
+    rolOtro: "",
+    descripcion: "",
+    modalidad: "fija" as const,
+    horas: 8,
+    rango: { min: 0, max: 20 },
+    compromisoMeses: null,
+    paso: 0 as const,
+    version: 0,
+    historial: [],
+    declaradas: {},
+  };
 }
 
 describe("mes en hora de Argentina", () => {

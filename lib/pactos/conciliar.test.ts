@@ -52,7 +52,15 @@ function propone(lista: ConstanciaPacto[], estado: EstadoPactos, tipo: "nuevo" |
       version,
       datos: datosDePropuesta({
         tipo,
-        contenido: { rol: c.rol, rolOtro: c.rolOtro, descripcion: c.descripcion, horas: c.horas },
+        contenido: {
+          rol: c.rol,
+          rolOtro: c.rolOtro,
+          descripcion: c.descripcion,
+          modalidad: c.modalidad,
+          horas: c.horas,
+          rango: c.rango,
+          compromisoMeses: c.compromisoMeses,
+        },
         nombre: "Ana",
         iniciales: "A",
         proponeLider: false,

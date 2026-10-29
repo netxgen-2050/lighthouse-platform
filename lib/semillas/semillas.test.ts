@@ -144,6 +144,8 @@ describe("semillas por comunidad, desde lo guardado por /pactos", () => {
     expect(semillasDeComunidad(null, "lighthouse")).toEqual({
       horas: null,
       tiempo: null,
+      variable: null,
+      variableAnterior: null,
       plata: null,
       presencia: null,
       puntual: null,

@@ -1,8 +1,27 @@
 import type { ConstanciaPacto } from "@/lib/pactos/constancias";
 import type { ConstanciaBase } from "@/lib/pactos/constancia-base";
-import { deComunidad, leerPactosConciliados, pactosAceptados, totalAportes } from "@/lib/pactos/estado";
+import {
+  compromisoAnterior,
+  compromisoDelPacto,
+  deComunidad,
+  leerPactosConciliados,
+  pactosAceptados,
+  totalAportes,
+  type RangoHoras,
+} from "@/lib/pactos/estado";
 import { semillasDePlata } from "@/lib/pactos/calculo";
-import { clave, rondaCompleta, semillasTiempo, totalConDato, type Notas, type Parte, type Razones } from "./calculo";
+import { mesDe } from "@/lib/pactos/mes";
+import {
+  clave,
+  rondaCompleta,
+  semillasTiempo,
+  semillasVariables,
+  totalConDato,
+  type Notas,
+  type Parte,
+  type Razones,
+  type SemillasVariables,
+} from "./calculo";
 import { MAX_RAZON } from "./datos";
 
 /** Ronda de una comunidad: puntuaciones, explicaciones y si ya se envió (simulado). */
@@ -76,9 +95,17 @@ export function guardarRondas(r: Rondas): string {
 
 /** Lo que la persona tiene en una comunidad, para el panel: null es "sin dato", nunca 0. */
 export type SemillasDeComunidad = {
-  /** Horas por mes del pacto de tiempo aceptado, o null si no hay uno aceptado. */
+  /** Horas por mes del pacto de tiempo aceptado, o null si no hay uno aceptado (o si es de horas variables). */
   horas: number | null;
+  /** Pacto de tiempo: con horas fijas, la proyección a 3 meses; con horas variables, las Semillas recibidas (lo único que suma). */
   tiempo: Parte;
+  /** Pacto de horas variables vigente: el rango, el compromiso, los meses y las Semillas pendientes (que no suman). null si no es variable. */
+  variable: (SemillasVariables & { rango: RangoHoras }) | null;
+  /**
+   * Meses confirmados de una etapa de horas variables anterior (el pacto pasó a fija): las recibidas suman; las pendientes NO suman y
+   * quedan esperando que el círculo las valide (si no, se pierden: decisión de Gus, 28-oct). null si no hubo meses confirmados.
+   */
+  variableAnterior: { recibidas: Parte; pendientes: Parte; cumplidos: number; compromisoMeses: number } | null;
   plata: Parte;
   presencia: Parte;
   /** Semillas de los pactos puntuales verificados por el holón (se reciben al verificarse), o null si no hay ("sin dato"). */
@@ -99,26 +126,48 @@ export function semillasDeComunidad(
   comunidad: string,
   idPersona?: string | null,
   registro?: readonly ConstanciaPacto[] | null,
+  ahora: string = new Date().toISOString(),
 ): SemillasDeComunidad {
   // Con las respuestas de la tribu ya aplicadas (en memoria, sin guardar): un pacto aceptado en el registro cuenta.
-  const guardados = leerPactosConciliados(pactosCrudo, idPersona, registro);
+  const guardados = leerPactosConciliados(pactosCrudo, idPersona, registro, ahora);
   const p = deComunidad(guardados, comunidad);
   const aceptado = pactosAceptados(guardados).some((a) => a.comunidad === comunidad);
-  const tiempo = aceptado ? semillasTiempo(p.tiempo.horas, 100) : null;
+  const t = p.tiempo;
+  const esVariable = aceptado && t.modalidad === "variable";
+  const mesActual = mesDe(ahora);
+  // Horas variables: solo lo confirmado genera Semillas; hasta cumplir el compromiso mínimo son pendientes y no suman.
+  const variable =
+    esVariable && mesActual !== ""
+      ? { ...semillasVariables(t.declaradas, mesActual, compromisoDelPacto(t, comunidad, true)), rango: t.rango }
+      : null;
+  // Si el pacto pasó a fija con meses confirmados de una etapa variable: lo recibido no desaparece; lo pendiente espera al círculo.
+  const compromisoViejo = aceptado && !esVariable && mesesConfirmados(t.declaradas) ? compromisoAnterior(t) : null;
+  const anterior =
+    compromisoViejo !== null && mesActual !== "" ? semillasVariables(t.declaradas, mesActual, compromisoViejo) : null;
+  const variableAnterior = anterior
+    ? { recibidas: anterior.recibidas, pendientes: anterior.pendientes, cumplidos: anterior.cumplidos, compromisoMeses: anterior.compromisoMeses }
+    : null;
+  const tiempo = !aceptado ? null : esVariable ? (variable?.recibidas ?? null) : semillasTiempo(t.horas, 100);
   const plata = p.aportes.length > 0 ? semillasDePlata(totalAportes(p)) : null;
   // Un puntual verificado se recibe directo: no pasa por "Semillas pendientes" y nunca habilita la ronda (`pactoAceptado`).
   const constancias = p.puntuales.flatMap((x) => (x.paso === "verificado" && x.constancia ? [x.constancia] : []));
   const puntual = constancias.length > 0 ? constancias.reduce((s, c) => s + c.datos.semillas, 0) : null;
   return {
-    horas: aceptado ? p.tiempo.horas : null,
+    horas: aceptado && !esVariable ? t.horas : null,
     tiempo,
+    variable,
+    variableAnterior,
     plata,
     presencia: null,
     puntual,
     constancias,
-    total: totalConDato([tiempo, plata, puntual, null]),
+    total: totalConDato([tiempo, plata, puntual, variableAnterior?.recibidas ?? null]),
     pactoAceptado: aceptado,
   };
+}
+
+function mesesConfirmados(declaradas: Record<string, { estado: string }>): boolean {
+  return Object.values(declaradas).some((d) => d.estado === "confirmada");
 }
 
 /** Nivel del Pase activo guardado por /sumarte, o null. */

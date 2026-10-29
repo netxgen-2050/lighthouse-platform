@@ -289,7 +289,7 @@ export function PactosCliente() {
         if (ok === null) return;
       } else if (accion.tipo === "enviarCambio" && antes.cambio) {
         const ok = publicarPropuesta(
-          { comunidad: comunidadId, tipo: "cambio", contenido: antes.cambio, version: antes.version + 1, horasVigentes: antes.horas },
+          { comunidad: comunidadId, tipo: "cambio", contenido: antes.cambio, version: antes.version + 1, vigente: { modalidad: antes.modalidad, horas: antes.horas, rango: antes.rango } },
           persona,
           ahora,
         );
