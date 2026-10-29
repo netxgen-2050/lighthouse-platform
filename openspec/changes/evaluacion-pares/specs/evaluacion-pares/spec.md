@@ -194,6 +194,34 @@ After the round closes, the system SHALL build a base attestation (pact, confirm
 - **WHEN** la persona no tiene un pacto aceptado en la comunidad
 - **THEN** no ve constancias y ve "sin dato"
 
+### Requirement: El ajuste solo alcanza a Semillas recibidas
+The peer-evaluation adjustment SHALL apply only to Semillas that were received. "Semillas pendientes" of a variable-hours pact MUST NOT be adjusted nor added to any total while they are pending. Months confirmed after the minimum commitment is met are received when confirmed (Gus, 28-oct), so they can be adjusted from then on. If a person moves from variable to fixed hours with Semillas pendientes, those are received only if the circle validates them and otherwise are lost (Gus, 28-oct); lost Semillas MUST NOT get an attestation nor an adjustment. In this prototype the constancias block covers one month of a fixed-hours pact; with a variable pact it SHALL say "sin dato". Adjusting variable-hours months is left open (see design, Open Questions).
+
+#### Scenario: Pacto de horas variables
+- **WHEN** la persona tiene un pacto de horas variables aceptado
+- **THEN** el bloque de constancias dice "sin dato" y las Semillas pendientes no se ajustan ni suman
+
+### Requirement: Límites de las tareas no se tocan
+A per-person maximum and a total maximum of a task (hours or Semillas adding up all people, set by whoever administers the holon, Gus 28-oct) belong to tasks (`pacto-puntual` and `pacto-puntual-verificacion`). A puntual pact MUST NOT enable the round nor the adjustment, so this change MUST NOT apply or change those maximums. If the adjustment is later extended to tasks (D20), the adjusted Semillas MUST NOT exceed either maximum.
+
+#### Scenario: Pacto puntual
+- **WHEN** la persona solo tiene un pacto puntual con máximo total
+- **THEN** no ve la ronda ni el ajuste, y el máximo total no cambia
+
+### Requirement: Rondas de círculos transversales facilitadas por Hifa
+Transversal circles are administered and facilitated by Hifa (the AI). In the prototype this SHALL be simulated and marked as experimental, and as a human fallback the super admin SHALL be able to respond if Hifa is not available. The final decision depends on testing that it is stable and reliable. The example round of this change belongs to a pact, not to a transversal circle, so the screen does not show this notice yet.
+
+#### Scenario: Ronda de ejemplo
+- **WHEN** la persona abre la ronda de ejemplo de un pacto
+- **THEN** no ve ningún aviso de Hifa
+
+### Requirement: Nombres de las Semillas
+Texts of this change MUST use "Semillas pendientes" and "Semillas"; they MUST NOT use "brotes" nor "germinar" for them.
+
+#### Scenario: Textos del bloque
+- **WHEN** la persona ve la ronda y las constancias
+- **THEN** ningún texto dice "brotes" ni "germinar"
+
 ### Requirement: Términos legales en borrador
 The screen SHALL explain peer evaluation and Semillas attestations with ⚖ terms from the single legal catalog, marked as draft, in Spanish and English.
 

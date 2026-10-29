@@ -85,6 +85,14 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Datos de ejemplo de la ronda de reconocimiento con su inglés (compañeros, criterios y reconocimiento recibido)",
   },
+  "lib/evaluacion/guia.ts": {
+    estado: "pendiente",
+    que: "Guía por nivel de estrellas (1 a 5) de la evaluación entre pares, rol y cultura",
+  },
+  "lib/evaluacion/ejemplo.ts": {
+    estado: "pendiente",
+    que: "Motivos de ejemplo y resumen de ejemplo del feedback de la evaluación entre pares",
+  },
   "lib/pactos/datos.ts": {
     estado: "pendiente",
     que: "Roles de ejemplo (nombre y descripción), pestañas y pasos de un pacto, con su inglés",
@@ -174,6 +182,8 @@ export function fuentesObligatorias(): string[] {
     "lib/manifiestos/datos.ts",
     "lib/territorios/textos.ts",
     "lib/semillas/datos.ts",
+    "lib/evaluacion/guia.ts",
+    "lib/evaluacion/ejemplo.ts",
     "lib/pactos/datos.ts",
     "lib/fogon/datos.ts",
     "lib/fogon/consultas/ejemplo.ts",
