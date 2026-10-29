@@ -74,7 +74,7 @@ The discussion SHALL list entries in order, each with its type in text: clarifyi
 - **THEN** ve una pregunta, su respuesta, un comentario, el grupo de concerns "Uso compartido" con los concerns de Ramiro y de Paz y sus principios, una sugerencia del Guardián respaldada como concern y una propuesta de resolución, cada una con su tipo escrito
 
 ### Requirement: Concerns con estado
-A concern SHALL have a written reason, an optional principle from the Lighthouse principles list and a state: open, grouped (with the group's name), being resolved, resolved, withdrawn, standing aside, or block. People who can raise concerns MUST be able to join someone else's concern instead of repeating it. A person MUST have at most one open concern per proposal version.
+A concern SHALL have a written reason, an optional principle from the Lighthouse principles list and a state: open, grouped (with the group's name), being resolved, resolved, withdrawn, standing aside, or block. People who can raise concerns MUST be able to join someone else's concern instead of repeating it. A person MUST have at most one open concern per proposal version; a concern about the urgency (see "Urgencia validada") does not count for this limit.
 
 #### Scenario: Concern sin razón
 - **WHEN** una persona intenta levantar un concern sin escribir la razón
@@ -280,7 +280,7 @@ Closing SHALL record one of: consensus, consensus with people standing aside (th
 - **THEN** el resultado es "Bloqueada: no se adopta" y el bloqueo con su principio queda en el acta
 
 ### Requirement: Sin consenso al vencer
-When the deadline of a proposal ends without consensus, it SHALL be paused, to come back with changes. If its urgency was validated (see "Urgencia validada"), what the majority supports MUST be applied only as a provisional measure (see "Medida provisoria con revisión obligatoria"). If the urgency was validated but there is no majority, no quorum, or the group judged a block legitimate, it MUST instead go up to the level above (circle → tribe → council); an urgent decision of the común or of the council MUST be paused, because there is no level above. An urgency that was only requested (not validated) or that fell MUST be treated as not urgent. A simple decision MUST be adopted at its deadline only if nobody objected (no open concern and no block) and the participation quorum was reached; if nobody objected but the quorum was not reached, it MUST be paused saying that the minimum participation was not reached.
+When the deadline of a proposal ends without consensus, it SHALL be paused, to come back with changes. If its urgency was validated (see "Urgencia validada"), what the majority supports MUST be applied only as a provisional measure (see "Medida provisoria con revisión obligatoria"). If the urgency was validated but there is no majority, no quorum, or the group judged a block legitimate, it MUST instead go up to the level above (circle → tribe → council → común; a council decision goes up to the común); an urgent decision of the común MUST be paused, because there is no level above. An urgency that was only requested (not validated) or that fell MUST be treated as not urgent. A simple decision MUST be adopted at its deadline only if nobody objected (no open concern and no block) and the participation quorum was reached; if nobody objected but the quorum was not reached, it MUST be paused saying that the minimum participation was not reached.
 
 #### Scenario: Vence sin consenso
 - **WHEN** vence el plazo de una propuesta importante sin cerrar por consenso
@@ -289,6 +289,10 @@ When the deadline of a proposal ends without consensus, it SHALL be paused, to c
 #### Scenario: Urgente sin mayoría
 - **WHEN** vence sin consenso una propuesta de un círculo de Valle Solar con la urgencia validada y sin mayoría que la apoye
 - **THEN** la propuesta dice que sube a Valle Solar
+
+#### Scenario: Urgente del consejo sin mayoría
+- **WHEN** vence sin consenso una propuesta del consejo con la urgencia validada y sin mayoría que la apoye
+- **THEN** la propuesta dice que sube al común
 
 #### Scenario: Urgencia pedida que no se validó
 - **WHEN** vence sin consenso una propuesta marcada urgente con un solo respaldo
@@ -303,11 +307,27 @@ When the deadline of a proposal ends without consensus, it SHALL be paused, to c
 - **THEN** la propuesta dice "Pausada: no se alcanzó la participación mínima" y no se adopta
 
 ### Requirement: Urgencia validada
-Only whoever presents SHALL be able to mark a proposal as urgent, and only by giving three required pieces of data: what is lost by waiting, the real deadline (a valid date) and why the measure is reversible, plus one criterion: risk to life (people, animals, plants, water), irreversible harm if one waits, or an external deadline (weather, law, contract). Proposals about selling or committing land, or about changing rules or the manifesto, MUST NOT be marked urgent. The urgency MUST count as validated only with two backings from different people of the scope who are not the presenter (at most one of them may be whoever facilitates); until then it MUST show as requested, with how many backings are missing. The Guardián (simulated) MAY suggest that the urgency does not look urgent or does not look reversible, citing the data it questions. Anyone who can raise a concern MAY raise a concern about the urgency itself, in any phase before closing; if the group of the scope sustains it, the urgency falls and the proposal goes back to its normal route, saying so in the history. The page MUST show how many urgencies each holon had (marked, validated and fallen), and "sin dato" for a proposal without a holon. This rule is Claude's proposal and is pending Gus's confirmation.
+Only whoever presents SHALL be able to mark a proposal as urgent, and only by giving three required pieces of data: what is lost by waiting, the real deadline (a valid date) and why the measure is reversible, plus one criterion: risk to life (people, animals, plants, water), irreversible harm if one waits, or an external deadline (weather, law, contract). Proposals about selling or committing land, or about changing rules or the manifesto, MUST NOT be marked urgent. A proposal that asks for money MAY be marked urgent only if the amount is known and does not exceed the urgency cap of its holon (USD 5,000 by default, configurable per holon), and only for something that can be resold or reused (for example pumps, tools or materials), which the presenter MUST state together with what is bought; a request without an amount ("sin dato") or above the cap MUST NOT be marked urgent, and the page MUST show the cap as simulated. The urgency MUST count as validated only with two backings from different people of the scope who are not the presenter (at most one of them may be whoever facilitates); until then it MUST show as requested, with how many backings are missing. The Guardián (simulated) MAY suggest that the urgency does not look urgent or does not look reversible, citing the data it questions. Anyone who can raise a concern MAY raise a concern about the urgency itself, in any phase before closing; if the group of the scope sustains it, the urgency falls and the proposal goes back to its normal route, saying so in the history. A concern about the urgency MUST NOT count as opposition to the proposal: it only questions that it is urgent, so it MUST NOT take the person's one open concern per version, MUST NOT prevent their acknowledgment of conformity and MUST NOT count against the majority. The page MUST show how many urgencies each holon had (marked, validated and fallen), and "sin dato" for a proposal without a holon.
 
 #### Scenario: Marcar sin los tres datos
-- **WHEN** quien presenta intenta marcar urgente la propuesta de la cisterna sin escribir por qué es reversible
+- **WHEN** quien presenta intenta marcar urgente la propuesta de la huerta sin escribir por qué es reversible
 - **THEN** el sistema pide ese dato y no registra la urgencia
+
+#### Scenario: Pedido de plata dentro del tope
+- **WHEN** la persona abre la propuesta de la bomba solar, que pide USD 4.800 para una bomba que se puede revender
+- **THEN** el bloque de urgencia muestra lo que se compra, que se puede revender y "Tope de urgencia: USD 5.000 (simulado)"
+
+#### Scenario: Pedido de plata sin monto
+- **WHEN** quien presenta mira sus acciones en la propuesta de la cisterna, cuyo monto es "sin dato"
+- **THEN** no ve "Marcar urgente" y, si el registro llega igual, se rechaza diciendo que sin el monto no se puede saber si entra en el tope
+
+#### Scenario: Pedido de plata sobre el tope
+- **WHEN** llega un registro de urgencia para un pedido de plata mayor al tope de su holón
+- **THEN** se rechaza diciendo cuál es el tope de urgencia de ese holón
+
+#### Scenario: Concern sobre la urgencia no es oposición
+- **WHEN** una persona del ámbito sin otro concern levanta un concern sobre la urgencia de la bomba
+- **THEN** puede firmar igual el acuse de conformidad y puede levantar además un concern sobre la propuesta
 
 #### Scenario: Materia que no puede ser urgente
 - **WHEN** quien presenta intenta marcar urgente una propuesta sobre comprometer tierra
@@ -330,7 +350,7 @@ Only whoever presents SHALL be able to mark a proposal as urgent, and only by gi
 - **THEN** ve cuántas urgencias tuvo el consejo, cuántas se validaron y cuántas cayeron, y la sugerencia del Guardián de que la medida podría no ser reversible, sin respaldo
 
 ### Requirement: Medida provisoria con revisión obligatoria
-When a proposal with a validated urgency reaches its deadline without consensus, with the quorum reached, a majority of the people who took part in the current version without an open concern or block, and no block the group judged legitimate, the current version SHALL be applied only as a provisional measure, with a mandatory review date (by default 30 days after the deadline, configurable per holon). The page MUST show "Medida provisoria", the review date and the open concerns that oblige the review. When the review date is reached, the page MUST say that the review is overdue. A person with a process role MUST be able to open the review, which creates a new version in "Resolver concerns" with those concerns still open; this is the only way to reopen a closed proposal without a new one. A review that ends without consensus MUST NOT renew the provisional measure by itself: it is paused.
+When a proposal with a validated urgency reaches its deadline without consensus, with the quorum reached, a majority of the people who took part in the current version without an open concern or block, and no block the group judged legitimate, the current version SHALL be applied only as a provisional measure, with a mandatory review date (by default 30 days after the deadline, configurable per holon). The page MUST show "Medida provisoria", the review date and the open concerns that oblige the review. When the review date is reached, the page MUST say that the review is overdue. A person with a process role MUST be able to open the review, which creates a new version in "Resolver concerns" with those concerns still open; this is the only way to reopen a closed proposal without a new one. While the review is open, the provisional measure MUST keep applying until the review decides, and the page MUST say so. A review that ends without consensus MUST NOT renew the provisional measure by itself: it is paused.
 
 #### Scenario: Se aplica como provisoria
 - **WHEN** vence sin consenso una propuesta con la urgencia validada, con quórum, mayoría que la apoya y un concern abierto
@@ -343,6 +363,10 @@ When a proposal with a validated urgency reaches its deadline without consensus,
 #### Scenario: Abrir la revisión
 - **WHEN** quien facilita abre la revisión de una medida provisoria
 - **THEN** aparece una versión nueva en "Resolver concerns" con los concerns que obligaban a revisar todavía abiertos, y el historial lo registra
+
+#### Scenario: Sigue aplicándose durante la revisión
+- **WHEN** la persona mira una medida provisoria con la revisión abierta y todavía sin decidir
+- **THEN** lee "Medida provisoria en revisión: sigue aplicándose hasta que la revisión decida"
 
 ### Requirement: Reabrir solo con nuevo consenso
 A closed proposal SHALL NOT be edited or reopened from its page, except for the mandatory review of a provisional measure; the page MUST explain that reopening needs a new consensus through a new proposal.
