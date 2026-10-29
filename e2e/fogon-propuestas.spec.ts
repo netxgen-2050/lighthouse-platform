@@ -78,6 +78,8 @@ test.describe("fases y discusión", () => {
 
   test("la discusión muestra el tipo de cada entrada en texto y el grupo de concerns con sus autoras", async ({ page }) => {
     await page.goto("/fogon/propuestas/consejo-bomba");
+    // En el consejo la gente de la red no lee la discusión: se mira como del ámbito.
+    await page.getByLabel(NIVEL).selectOption("ambito");
     const discusion = page.getByRole("list", { name: "Entradas de la discusión" });
     await expect(discusion.getByRole("article").filter({ hasText: "Pregunta" }).first()).toBeVisible();
     const grupo = discusion.getByRole("article").filter({ has: page.getByRole("heading", { name: "Uso compartido" }) });
@@ -137,6 +139,64 @@ test.describe("permisos y niveles", () => {
     await expect(page.getByRole("link", { name: "Abrir una cuenta" })).toHaveAttribute("href", "/sumarte");
     await expect(page.getByRole("region", { name: "Ficha" })).toHaveCount(0);
     await expect(page.getByRole("list", { name: "Entradas de la discusión" })).toHaveCount(0);
+  });
+});
+
+test.describe("correcciones de la revisión", () => {
+  test("la visita no ve el título ni en las migas ni en la pestaña", async ({ page }) => {
+    await page.goto("/fogon/propuestas/consejo-bomba");
+    const titulo = "Pedido de Valle Solar al Fondo Común para la bomba solar";
+    await expect(page.getByRole("navigation", { name: "Camino de la propuesta" })).toContainText(titulo);
+    await page.getByLabel(NIVEL).selectOption("visita");
+    await expect(page.getByRole("navigation", { name: "Camino de la propuesta" })).not.toContainText(titulo);
+    await expect(page.getByRole("navigation", { name: "Camino de la propuesta" })).toContainText("Fogón");
+    await expect(page).toHaveTitle(/Propuesta del Fogón/);
+    await expect(page).not.toHaveTitle(new RegExp(titulo));
+  });
+
+  test("una persona de la red no lee la discusión de una decisión de tribu", async ({ page }) => {
+    await page.goto("/fogon/propuestas/huerta");
+    await expect(page.getByLabel(NIVEL)).toHaveValue("red");
+    await expect(page.getByText("Tu nivel no puede leer la discusión de esta decisión.")).toBeVisible();
+    await expect(page.getByRole("list", { name: "Entradas de la discusión" })).toHaveCount(0);
+    await page.getByLabel(NIVEL).selectOption("ambito");
+    await expect(page.getByText("Tu nivel no puede leer la discusión de esta decisión.")).toHaveCount(0);
+  });
+
+  test("solo-comun: Comentar sale con su condición y la tabla no dice solo Sí", async ({ page }) => {
+    await page.goto("/fogon/propuestas/regalia");
+    await expect(page.getByRole("region", { name: "Qué podés hacer" })).toContainText("Comentar en la discusión abierta (solo decisiones del común)");
+    await page.getByText("Ver la tabla de permisos por nivel").click();
+    const fila = page.getByRole("row").filter({ has: page.getByRole("rowheader", { name: "Comentar en la discusión abierta" }) });
+    await expect(fila.getByRole("cell").nth(1)).toHaveText("No puede");
+    await expect(fila.getByRole("cell").nth(2)).toHaveText("Sí (solo decisiones del común)");
+    // Y en una decisión que no es del común, la misma condición se escribe con el "no".
+    await page.goto("/fogon/propuestas/siembra");
+    await page.getByText("Ver la tabla de permisos por nivel").click();
+    const lee = page.getByRole("row").filter({ has: page.getByRole("rowheader", { name: "Leer la discusión" }) });
+    await expect(lee.getByRole("cell").nth(1)).toHaveText("No puede (solo decisiones del común)");
+  });
+
+  test("una propuesta cerrada dice que reabrirla pide un nuevo consenso", async ({ page }) => {
+    await page.goto("/fogon/propuestas/siembra");
+    await expect(page.getByRole("region", { name: "Resultado" })).toContainText("reabrirla pide un nuevo consenso");
+  });
+
+  test("la ficha trae el acuerdo o norma (o sin dato) y la nota de principios en borrador", async ({ page }) => {
+    await page.goto("/fogon/propuestas/regalia");
+    const ficha = page.getByRole("region", { name: "Ficha" });
+    await expect(ficha).toContainText("Acuerdo o norma en que se apoya");
+    await expect(ficha).toContainText("Pacto de regalía regenerativa (ejemplo) (pacto)");
+    await expect(ficha).toContainText("Lista en borrador, a ratificar por el común");
+    await page.goto("/fogon/propuestas/siembra");
+    await expect(page.getByRole("region", { name: "Ficha" }).locator("dd").filter({ hasText: /^sin dato$/ })).toHaveCount(1);
+  });
+
+  test("cada entrada de la discusión dice cómo se relaciona con la decisión quien la escribió", async ({ page }) => {
+    await page.goto("/fogon/propuestas/consejo-bomba");
+    await page.getByLabel(NIVEL).selectOption("ambito");
+    const pregunta = page.getByRole("article").filter({ hasText: "¿Cuántas horas por día" });
+    await expect(pregunta).toContainText("como del ámbito");
   });
 });
 

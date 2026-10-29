@@ -52,6 +52,9 @@ const es = {
     fuente: "Sale de",
     fuentes: { "fondo-comun": "el Fondo Común", tribu: "la tribu", fideicomiso: "el Fideicomiso" },
     principios: "Principios en juego",
+    principiosBorrador: "Lista en borrador, a ratificar por el común",
+    acuerdo: "Acuerdo o norma en que se apoya",
+    acuerdoTipos: { pacto: "pacto", norma: "norma" },
     ambitoTamano: "Personas del ámbito",
     version: "Versión",
     sinHolon: "sin holón en la holarquía de ejemplo",
@@ -100,6 +103,8 @@ const es = {
   discusion: {
     titulo: "Discusión",
     vacia: "Todavía no hay nada en la discusión",
+    sinPermiso: "Tu nivel no puede leer la discusión de esta decisión.",
+    relacion: "como",
     aria: "Entradas de la discusión",
     tipos: {
       pregunta: "Pregunta",
@@ -178,6 +183,7 @@ const es = {
     enRevision: "Medida provisoria en revisión: sigue aplicándose hasta que la revisión decida",
     obligan: "Concerns que obligan a revisarla",
     aunNo: "Todavía no hay resultado: la propuesta sigue su recorrido.",
+    reabrir: "Una propuesta cerrada no se edita: reabrirla pide un nuevo consenso.",
   },
   afectadas: {
     titulo: "Personas afectadas",
@@ -263,7 +269,7 @@ const es = {
     "abrir-revision": "Abrir la revisión",
   },
   condiciones: {
-    "solo-comun": "solo en decisiones del común",
+    "solo-comun": "solo decisiones del común",
     "solo-forma": "solo la forma, no el fondo",
     "quien-facilita": "solo quien facilita",
     "solo-como-miembro": "solo como miembro del ámbito",
@@ -329,6 +335,9 @@ const en: Textos<typeof es> = {
     fuente: "Comes from",
     fuentes: { "fondo-comun": "the Common Fund", tribu: "the tribe", fideicomiso: "the Trust" },
     principios: "Principles at stake",
+    principiosBorrador: "Draft list, to be ratified by the common",
+    acuerdo: "Agreement or rule it relies on",
+    acuerdoTipos: { pacto: "pact", norma: "rule" },
     ambitoTamano: "People in the circle",
     version: "Version",
     sinHolon: "no node in the sample holarchy",
@@ -377,6 +386,8 @@ const en: Textos<typeof es> = {
   discusion: {
     titulo: "Discussion",
     vacia: "Nothing in the discussion yet",
+    sinPermiso: "Your level cannot read the discussion of this decision.",
+    relacion: "as",
     aria: "Discussion entries",
     tipos: {
       pregunta: "Question",
@@ -455,6 +466,7 @@ const en: Textos<typeof es> = {
     enRevision: "Provisional measure under review: it keeps applying until the review decides",
     obligan: "Concerns that require reviewing it",
     aunNo: "No outcome yet: the proposal follows its path.",
+    reabrir: "A closed proposal is not edited: reopening it takes a new consensus.",
   },
   afectadas: {
     titulo: "Affected people",
@@ -540,7 +552,7 @@ const en: Textos<typeof es> = {
     "abrir-revision": "Open the review",
   },
   condiciones: {
-    "solo-comun": "only in decisions of the common",
+    "solo-comun": "only decisions of the common",
     "solo-forma": "form only, not substance",
     "quien-facilita": "only whoever facilitates",
     "solo-como-miembro": "only as a member of the circle",

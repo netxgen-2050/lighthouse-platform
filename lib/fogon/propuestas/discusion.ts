@@ -1,6 +1,6 @@
 // La discusión de una propuesta como lista de entradas, en orden. Un grupo de concerns es UNA entrada; las sugerencias del
 // Guardián van donde empezó su fase. Módulo puro: lo que se muestra sale de los registros y del estado derivado.
-import type { Bi, ConcernVista, EstadoPropuesta, GrupoVista, Propuesta, Registro, SugerenciaVista } from "./tipos";
+import type { Bi, ConcernVista, EstadoPropuesta, GrupoVista, NivelImplicacion, Propuesta, Registro, SugerenciaVista } from "./tipos";
 
 export type EntradaDiscusion =
   | {
@@ -8,6 +8,8 @@ export type EntradaDiscusion =
       cuando: string;
       tipo: "pregunta" | "respuesta" | "comentario" | "resolucion" | "a-un-lado";
       quien: string;
+      /** Cómo se relaciona con la decisión quien lo escribió (del ámbito, afectada, de la red…). */
+      nivel: NivelImplicacion;
       texto: Bi | string;
       apuntaA?: string;
     }
@@ -31,6 +33,7 @@ export function entradasDeDiscusion(p: Propuesta, estado: EstadoPropuesta, regis
         cuando: r.cuando,
         tipo: r.tipo as "pregunta" | "respuesta" | "comentario" | "resolucion" | "a-un-lado",
         quien: r.quien,
+        nivel: r.nivel,
         texto: r.texto ?? "",
         apuntaA: r.apuntaA,
       });

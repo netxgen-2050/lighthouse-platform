@@ -31,6 +31,7 @@ export function PropuestaCliente({ id }: { id: string }) {
   const idioma = useIdioma();
   const t = useTextos("fogonPropuestas");
   const tf = useTextos("fogon");
+  const textosMarco = useTextos("marco");
   const { estado: estadoSesion, sesion, tribuLider } = useSesion();
   const p = useMemo(() => propuestaDe(id), [id]);
   const decision = useMemo(() => DECISIONES_BASE.find((d) => d.id === id), [id]);
@@ -58,11 +59,36 @@ export function PropuestaCliente({ id }: { id: string }) {
   );
 
   if (!p || !decision) return null;
+
+  // Migas y avisos van acá (no en `page.tsx`) porque el título de la decisión no se muestra a la visita (A2): depende del nivel.
+  const cabecera = (mostrarTitulo: boolean) => (
+    <>
+      <nav aria-label={t.pagina.migas} className="mb-2 text-sm">
+        <ol className="flex flex-wrap gap-2">
+          <li>
+            <Link className="underline" href="/fogon">{t.pagina.migaFogon}</Link>
+            {mostrarTitulo && <span aria-hidden="true"> ›</span>}
+          </li>
+          {mostrarTitulo && <li aria-current="page">{textoEn(decision.titulo, idioma)}</li>}
+        </ol>
+      </nav>
+      <p className="mb-2 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+        {textosMarco.aviso}
+      </p>
+      <p className="mb-4 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+        {t.pagina.avisoProceso}
+      </p>
+    </>
+  );
+
   if (!estado) {
     return (
-      <p role="status" className="text-muted">
-        {t.pagina.cargando}
-      </p>
+      <>
+        {cabecera(true)}
+        <p role="status" className="text-muted">
+          {t.pagina.cargando}
+        </p>
+      </>
     );
   }
 
@@ -108,9 +134,11 @@ export function PropuestaCliente({ id }: { id: string }) {
 
   function etiquetaCelda(accion: Accion, n: NivelImplicacion): string {
     const r = permiso(accion, [n], { ambito: decision!.ambito });
-    if (r.estado === "si") return t.permisos.si;
-    if (r.estado === "no") return r.condiciones.includes("solo-comun") ? `${t.permisos.no} (${t.condiciones["solo-comun"]})` : t.permisos.no;
-    return r.condiciones.map((c) => t.condiciones[c]).join(", ");
+    const condicion = r.condiciones.map((c) => t.condiciones[c]).join(", ");
+    if (r.estado === "condicion") return condicion;
+    const base = r.estado === "si" ? t.permisos.si : t.permisos.no;
+    // `solo-comun` se evalúa con el ámbito de la decisión, pero la condición se escribe igual (sí o no).
+    return condicion ? `${base} (${condicion})` : base;
   }
 
   function Principio({ id: pid }: { id: string }) {
@@ -129,7 +157,9 @@ export function PropuestaCliente({ id }: { id: string }) {
           <span className="font-medium">{t.discusion.razon}:</span> {txt(c.razon)}
         </p>
         <p className="flex flex-wrap items-center gap-2 text-sm text-muted">
-          <span>{c.sinNombre ? t.discusion.sinNombre : t.discusion.por(persona(c.quien))}</span>
+          <span>
+            {c.sinNombre ? t.discusion.sinNombre : t.discusion.por(persona(c.quien))} · {t.discusion.relacion} {t.niveles[c.nivel].toLowerCase()}
+          </span>
           <span className={CHIP}>{t.discusion.estados[c.estado]}</span>
           {c.bloqueoNoLegitimo && <span>{t.discusion.bloqueoNoLegitimo}</span>}
           {c.principio && <Principio id={c.principio} />}
@@ -212,7 +242,9 @@ export function PropuestaCliente({ id }: { id: string }) {
         <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">
           {t.discusion.tipos[e.tipo]}
           {e.tipo === "a-un-lado" && <TerminoLegal clave="aunlado" idioma={idioma} />}
-          <span className="font-normal text-muted">{t.discusion.por(persona(e.quien))}</span>
+          <span className="font-normal text-muted">
+            {t.discusion.por(persona(e.quien))} · {t.discusion.relacion} {t.niveles[e.nivel].toLowerCase()}
+          </span>
         </p>
         <p>{txt(e.texto)}</p>
         {sugerencias.length > 0 && (
@@ -262,14 +294,17 @@ export function PropuestaCliente({ id }: { id: string }) {
 
   if (nivel === "visita") {
     return (
-      <div className="grid gap-4">
-        <h1 className="text-2xl font-semibold">{t.sinCuenta.titulo}</h1>
-        <p className="text-muted">{t.sinCuenta.texto}</p>
-        <p>
-          <Link className="underline" href="/sumarte">{t.sinCuenta.enlace}</Link>
-        </p>
-        {selector}
-      </div>
+      <>
+        {cabecera(false)}
+        <div className="grid gap-4">
+          <h1 className="text-2xl font-semibold">{t.sinCuenta.titulo}</h1>
+          <p className="text-muted">{t.sinCuenta.texto}</p>
+          <p>
+            <Link className="underline" href="/sumarte">{t.sinCuenta.enlace}</Link>
+          </p>
+          {selector}
+        </div>
+      </>
     );
   }
 
@@ -277,7 +312,11 @@ export function PropuestaCliente({ id }: { id: string }) {
   const part = estado.participacion;
   const filaAcciones: Accion[] = [...(Object.keys(MATRIZ) as Accion[]), ...(Object.keys(ACCIONES_DE_PROCESO) as Accion[])];
 
+  const puedeLeerDiscusion = permiso("leer-discusion", niveles, { ambito: decision.ambito }).estado !== "no";
+
   return (
+    <>
+    {cabecera(true)}
     <div className="grid gap-6">
       <header className="grid gap-2">
         <p className="text-sm font-medium text-muted">
@@ -327,6 +366,9 @@ export function PropuestaCliente({ id }: { id: string }) {
         ) : (
           <p className="text-muted">{t.resultado.aunNo}</p>
         )}
+        {estado.fase === "cierre" && estado.resultado?.tipo !== "provisoria" && (
+          <p className="text-sm text-muted">{t.resultado.reabrir}</p>
+        )}
       </section>
 
       <section aria-labelledby="h-ficha" className={CAJA}>
@@ -358,10 +400,19 @@ export function PropuestaCliente({ id }: { id: string }) {
           <dt className="font-medium">
             {t.ficha.principios} <TerminoLegal clave="principios" idioma={idioma} />
           </dt>
-          <dd className="flex flex-wrap gap-2">
-            {p.principios.map((pid) => (
-              <Principio key={pid} id={pid} />
-            ))}
+          <dd className="grid gap-1">
+            <span className="flex flex-wrap gap-2">
+              {p.principios.map((pid) => (
+                <Principio key={pid} id={pid} />
+              ))}
+            </span>
+            <span className="text-sm text-muted">{t.ficha.principiosBorrador}</span>
+          </dd>
+          <dt className="font-medium">{t.ficha.acuerdo}</dt>
+          <dd>
+            {decision.acuerdo
+              ? `${textoEn(decision.acuerdo.nombre, idioma)} (${t.ficha.acuerdoTipos[decision.acuerdo.tipo]})`
+              : t.pagina.sinDato}
           </dd>
         </dl>
       </section>
@@ -466,7 +517,9 @@ export function PropuestaCliente({ id }: { id: string }) {
 
       <section aria-labelledby="h-discusion" className="grid gap-3">
         <h2 id="h-discusion" className="text-xl font-semibold">{t.discusion.titulo}</h2>
-        {entradas.length === 0 ? (
+        {!puedeLeerDiscusion ? (
+          <p className="text-muted">{t.discusion.sinPermiso}</p>
+        ) : entradas.length === 0 ? (
           <p className="text-muted">{t.discusion.vacia}</p>
         ) : (
           <ol aria-label={t.discusion.aria} className="grid gap-3">
@@ -477,7 +530,7 @@ export function PropuestaCliente({ id }: { id: string }) {
             ))}
           </ol>
         )}
-        {estado.afectadas.length > 0 && (
+        {puedeLeerDiscusion && estado.afectadas.length > 0 && (
           <div className="grid gap-1">
             <h3 className="flex items-center gap-2 font-semibold">
               {t.afectadas.titulo} <TerminoLegal clave="afectada" idioma={idioma} />
@@ -504,7 +557,7 @@ export function PropuestaCliente({ id }: { id: string }) {
               <li key={a.accion}>
                 <span aria-hidden="true">{a.permiso.estado === "si" ? "✓ " : "◐ "}</span>
                 {t.acciones[a.accion]}
-                {a.permiso.estado === "condicion" && (
+                {a.permiso.condiciones.length > 0 && (
                   <span className="text-muted"> ({a.permiso.condiciones.map((c) => t.condiciones[c]).join(", ")})</span>
                 )}
               </li>
@@ -553,5 +606,6 @@ export function PropuestaCliente({ id }: { id: string }) {
         </ul>
       </section>
     </div>
+    </>
   );
 }

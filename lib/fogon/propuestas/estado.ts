@@ -476,9 +476,15 @@ function derivarCon(p: Propuesta, regs: readonly Registro[], ahora: Date, opts: 
       ignorar(c, "cierre-anterior-a-la-revision");
       continue;
     }
-    const pre = derivarCon(p, sinCierres.filter((r) => ms(r.cuando) <= ms(c.cuando)), ahora, opts);
+    // El estado se mira al momento del cierre (no a `ahora`): así la fase es la que había cuando se intentó cerrar.
+    const pre = derivarCon(p, sinCierres.filter((r) => ms(r.cuando) <= ms(c.cuando)), new Date(c.cuando), opts);
     if (pre.participacion.minimo === null || pre.participacion.cuenta < pre.participacion.minimo) {
       ignorar(c, "cierre-sin-quorum");
+      continue;
+    }
+    // Solo se cierra desde el llamado al consenso o el plazo para objetar.
+    if (pre.fase !== "llamado" && pre.fase !== "objetar") {
+      ignorar(c, "cierre-fuera-de-fase");
       continue;
     }
     const abiertos = oposicion(pre.concerns);

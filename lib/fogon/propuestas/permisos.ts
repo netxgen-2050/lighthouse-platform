@@ -88,6 +88,8 @@ export function permiso(accion: Accion, niveles: readonly NivelImplicacion[], ct
     else if (celda.condicion === "solo-comun") actual = { estado: ctx.ambito === "comun" ? "si" : "no", condiciones: ["solo-comun"] };
     else actual = { estado: "condicion", condiciones: [celda.condicion] };
     if (PESO[actual.estado] > PESO[mejor.estado]) mejor = actual;
+    // Un "no" por `solo-comun` conserva la condición, para escribirla ("No puede (solo decisiones del común)").
+    else if (actual.estado === "no" && mejor.estado === "no" && mejor.condiciones.length === 0) mejor = actual;
   }
   return mejor;
 }

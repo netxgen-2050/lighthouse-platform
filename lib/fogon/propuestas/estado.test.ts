@@ -370,6 +370,25 @@ describe("cierre", () => {
   });
 });
 
+describe("cierre · solo desde llamado u objetar", () => {
+  it("un cierre con quórum pero en la fase de concerns se ignora", () => {
+    const base = { ...cisterna, ambitoConsejo: undefined, tamanoAmbito: 2 };
+    const regs = [
+      reg("cisterna-compartida", "fase", "nico", "proceso", "2026-10-29T09:00", { datos: { fase: "concerns" } }),
+      reg("cisterna-compartida", "comentario", "mora", "ambito", "2026-10-29T10:00", { texto: "a" }),
+      reg("cisterna-compartida", "comentario", "ines", "ambito", "2026-10-29T10:01", { texto: "b" }),
+    ];
+    const cierre = reg("cisterna-compartida", "cierre", "nico", "proceso", "2026-10-29T11:00", { datos: { resultado: "consenso" } });
+    const e = derivarEstado(base, [...regs, cierre], AHORA);
+    expect(e.resultado).toBeNull();
+    expect(e.fase).toBe("concerns");
+    expect(e.historial.some((h) => h.clave === "cierre-fuera-de-fase")).toBe(true);
+    const llamado = reg("cisterna-compartida", "fase", "nico", "proceso", "2026-10-29T10:30", { datos: { fase: "llamado" } });
+    const ok = derivarEstado(base, [...regs, llamado, cierre], AHORA);
+    expect(ok.resultado).toMatchObject({ tipo: "consenso" });
+  });
+});
+
 describe("determinismo", () => {
   it("misma salida en dos llamadas", () => {
     const extra = [reg("consejo-bomba", "respaldo-urgencia", "gala", "ambito", "2026-10-30T09:00")];
