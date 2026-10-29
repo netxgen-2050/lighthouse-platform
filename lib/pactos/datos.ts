@@ -7,6 +7,12 @@ export const HOUR_REF_ARS = 7049;
 export const HOUR_REF_USD = HOUR_REF_ARS / USD_ARS;
 
 export const HORAS = { min: 4, max: 80, paso: 2, inicial: 10 } as const;
+/** Rango por mes de un pacto de horas variables (pactos-horas-variables): de 0 a 80 h, en pasos de 2. */
+export const RANGO_VARIABLE = { min: 0, max: 80, paso: 2, inicial: { min: 0, max: 20 } } as const;
+/** Compromiso mínimo del pacto variable, en meses: de 1 a 3 (valor de partida 3). Lo acuerda quien administra cada holón. */
+export const COMPROMISO_MINIMO = { min: 1, max: 3, porDefecto: 3 } as const;
+/** Horas de un pacto puntual (una sola tarea): enteras. */
+export const HORAS_PUNTUAL = { min: 1, max: 200, paso: 1 } as const;
 /** Aporte en plata (USD): se registra como Semillas, 1 USD = 1 Semilla de referencia. */
 export const MONTO_USD = { min: 1, max: 1_000_000, inicial: 200 } as const;
 

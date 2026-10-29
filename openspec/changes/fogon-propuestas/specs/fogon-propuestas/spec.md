@@ -89,7 +89,7 @@ A concern SHALL have a written reason, an optional principle from the Lighthouse
 - **THEN** el sistema le propone editar, retirar o sumarse en lugar de abrir otro
 
 ### Requirement: Agrupar concerns
-In the concerns phase of an important decision (and in the objection period of a simple one) concerns SHALL be named (each one with its author) and MAY be grouped: several concerns from different people that say the same thing can end up grouped in a single concern with a short name. A person with a process role MUST be able to group two or more concerns, name the group, and take a concern out of a group; Hifa (simulated) MAY suggest which concerns to group, which only applies when a person with a process role confirms. A grouped concern MUST list all its authors (those of the grouped concerns and those who joined), and each original concern MUST keep its reason, author and principle, visible inside the group. Grouping MUST NOT be possible outside those phases. Classifying concerns by theme is not part of this change.
+In the concerns phase of an important decision (and in the objection period of a simple one) concerns SHALL be named (each one with its author) and MAY be grouped: several concerns from different people that say the same thing can end up grouped in a single concern with a short name. A person with a process role MUST be able to group two or more concerns, name the group, and take a concern out of a group; Hifa (simulated) MAY suggest which concerns to group, which only applies when a person with a process role confirms. A grouped concern MUST list all its authors (those of the grouped concerns and those who joined), and each original concern MUST keep its reason, author and principle, visible inside the group. Grouping MUST NOT be possible outside those phases. The author of a grouped concern MUST also be able to take her own concern out of the group, in any phase before closing; the history MUST record who took it out. Classifying concerns by theme is not part of this change.
 
 #### Scenario: Agrupar en la fase de concerns
 - **WHEN** una persona con rol de proceso agrupa dos concerns de distintas personas sobre la cisterna con el nombre "Ubicación" durante "Concerns"
@@ -98,6 +98,14 @@ In the concerns phase of an important decision (and in the objection period of a
 #### Scenario: Sacar un concern del grupo
 - **WHEN** la persona con rol de proceso saca un concern del grupo "Ubicación"
 - **THEN** ese concern vuelve a verse solo, con su autora, y el grupo deja de nombrarla
+
+#### Scenario: La autora saca su concern
+- **WHEN** Paz saca su propio concern del grupo "Uso compartido" en la propuesta de la bomba, que está en "Resolver concerns"
+- **THEN** su concern vuelve a verse solo y el historial dice que lo sacó Paz
+
+#### Scenario: Concern ajeno
+- **WHEN** una persona del ámbito que no es autora mira un grupo de concerns
+- **THEN** no ve "Sacar del grupo" en los concerns de otras personas
 
 #### Scenario: Fuera de la fase
 - **WHEN** una persona con rol de proceso mira la propuesta de la bomba, que está en "Resolver concerns"
@@ -212,7 +220,7 @@ A person who is not in the scope SHALL be able to declare themselves affected wi
 - **THEN** la persona vuelve a su nivel anterior y la declaración y la objeción quedan en el historial
 
 ### Requirement: Quórum de participación
-A proposal SHALL NOT close by consensus, and a simple decision SHALL NOT be adopted at its deadline, unless the number of people of the scope or affected who took part reaches the quorum: half of the scope, or 3 people when half is less than 3 (never more than the scope's size). Taking part MUST mean having written something in the discussion (question, answer, comment, concern, joining a concern, resolution proposal, standing aside or block) or having signed the acknowledgment of conformity; opening the proposal without doing anything MUST NOT count, and each person MUST count once. The page MUST show the participation, how many signed the acknowledgment and the quorum; when the scope size is unknown it MUST show "sin dato" and MUST NOT allow closing by consensus nor adopting at the deadline.
+A proposal SHALL NOT close by consensus, and a simple decision SHALL NOT be adopted at its deadline, unless the number of people of the scope or affected who took part reaches the quorum: half of the scope, or 3 people when half is less than 3 (never more than the scope's size). Taking part MUST mean having written something in the discussion (question, answer, comment, concern, joining a concern, resolution proposal, standing aside or block) or having signed the acknowledgment of conformity of the current version; opening the proposal, grouping concerns, suggesting a mechanism, backing an urgency or evaluating MUST NOT count, and each person MUST count once. The page MUST show the participation, how many signed the acknowledgment and the quorum; when the scope size is unknown it MUST show "sin dato" and MUST NOT allow closing by consensus nor adopting at the deadline.
 
 #### Scenario: Grupo chico
 - **WHEN** el ámbito tiene 4 personas
@@ -227,7 +235,7 @@ A proposal SHALL NOT close by consensus, and a simple decision SHALL NOT be adop
 - **THEN** la participación no cambia
 
 ### Requirement: Acuse de conformidad
-Each person of the scope SHALL be able to sign, once per proposal version, "Entiendo la propuesta y no tengo ningún concern" (acknowledgment of conformity), recorded with the shape of an EAS attestation (ADR-012) and marked as simulated. It MUST be available from presentation until the deadline (never in draft or after closing). A person with an open concern in that version MUST NOT sign it; if a person who signed later raises a concern, the acknowledgment MUST show as replaced by that concern, and it keeps counting as participation. After a new version, earlier acknowledgments MUST show which version they referred to. The acknowledgment counts toward the quorum like writing in the discussion, and MUST NOT by itself close or adopt anything.
+Each person of the scope or affected by the decision SHALL be able to sign, once per proposal version, "Entiendo la propuesta y no tengo ningún concern" (acknowledgment of conformity), recorded with the shape of an EAS attestation (ADR-012) and marked as simulated. It MUST be available from presentation until the deadline (never in draft or after closing). A person with an open concern in that version MUST NOT sign it; if a person who signed later raises a concern, the acknowledgment MUST show as replaced by that concern, and it keeps counting as participation in that version. After a new version, earlier acknowledgments MUST NOT count toward the quorum of the new version, MUST show which version they referred to and that they have to be signed again, and the person MUST be able to sign the new version. The acknowledgment counts toward the quorum like writing in the discussion, and MUST NOT by itself close or adopt anything.
 
 #### Scenario: Firmar el acuse
 - **WHEN** una persona del ámbito firma el acuse en la propuesta de la huerta
@@ -241,12 +249,20 @@ Each person of the scope SHALL be able to sign, once per proposal version, "Enti
 - **WHEN** una persona que firmó el acuse levanta después un concern
 - **THEN** su acuse se ve como "reemplazado por un concern" y la persona sigue contando una sola vez en la participación
 
+#### Scenario: Firma una persona afectada
+- **WHEN** una persona de la red que se declaró afectada por la cisterna firma el acuse
+- **THEN** el acuse aparece con su nombre y la marca "afectada", y la participación sube en uno
+
+#### Scenario: Versión nueva
+- **WHEN** una persona firmó el acuse de la versión 1 y quien presenta publica la versión 2
+- **THEN** su acuse dice "sobre la versión 1: hay que volver a firmar", deja de contar para el quórum de la versión 2 y la persona puede firmar la versión 2
+
 ### Requirement: Ámbito del consejo
-While the council has no elected representatives, who is "del ámbito" in a council decision SHALL be defined by the board of NetXGen. In the prototype the super admin (platform level `superadmin` of the session) MUST be able to mark it on the board's behalf, adding or removing example people and themself from the scope list of a council proposal; every change MUST be recorded and shown as "Definido por el super admin en nombre del board de NetXGen (simulado)". The scope size of a council proposal MUST be the length of that list. People without the super admin level MUST NOT see the control. Proposals that are not of the council MUST NOT show it.
+While the council has no elected representatives, who is "del ámbito" in a council decision SHALL be defined by the board of NetXGen. In the prototype the super admin (platform level `superadmin` of the session) MUST be able to mark it on the board's behalf, adding or removing example people and themself from the scope list of a council proposal; every change MUST be recorded with who made it and shown as "Definido por el super admin en nombre del board de NetXGen (simulado)"; when the super admin adds themself, the history MUST say so. In the prototype the changes live only in the super admin's browser. The scope size of a council proposal MUST be the length of that list. People without the super admin level MUST NOT see the control. Proposals that are not of the council MUST NOT show it.
 
 #### Scenario: El super admin marca el ámbito
 - **WHEN** el super admin agrega a "vos" al ámbito de la propuesta de la bomba solar
-- **THEN** la página dice que el ámbito lo definió el super admin en nombre del board de NetXGen (simulado), el tamaño del ámbito se actualiza y el nivel inicial de "vos" en esa propuesta pasa a "del ámbito"
+- **THEN** la página dice que el ámbito lo definió el super admin en nombre del board de NetXGen (simulado), el tamaño del ámbito se actualiza, el nivel inicial de "vos" en esa propuesta pasa a "del ámbito" y el historial dice que el super admin se incluyó a sí mismo
 
 #### Scenario: Sin super admin
 - **WHEN** una persona con nivel de miembro abre la propuesta de la bomba solar
@@ -264,15 +280,19 @@ Closing SHALL record one of: consensus, consensus with people standing aside (th
 - **THEN** el resultado es "Bloqueada: no se adopta" y el bloqueo con su principio queda en el acta
 
 ### Requirement: Sin consenso al vencer
-When the deadline of a proposal ends without consensus, it SHALL be paused, to come back with changes. If it is marked urgent, it MUST instead go up to the level above (circle → tribe → council); a decision of the común that is urgent MUST be paused, because there is no level above. A simple decision MUST be adopted at its deadline only if nobody objected (no open concern and no block) and the participation quorum was reached; if nobody objected but the quorum was not reached, it MUST be paused saying that the minimum participation was not reached.
+When the deadline of a proposal ends without consensus, it SHALL be paused, to come back with changes. If its urgency was validated (see "Urgencia validada"), what the majority supports MUST be applied only as a provisional measure (see "Medida provisoria con revisión obligatoria"). If the urgency was validated but there is no majority, no quorum, or the group judged a block legitimate, it MUST instead go up to the level above (circle → tribe → council); an urgent decision of the común or of the council MUST be paused, because there is no level above. An urgency that was only requested (not validated) or that fell MUST be treated as not urgent. A simple decision MUST be adopted at its deadline only if nobody objected (no open concern and no block) and the participation quorum was reached; if nobody objected but the quorum was not reached, it MUST be paused saying that the minimum participation was not reached.
 
 #### Scenario: Vence sin consenso
 - **WHEN** vence el plazo de una propuesta importante sin cerrar por consenso
 - **THEN** la propuesta dice "Pausada: vuelve con cambios"
 
-#### Scenario: Urgente
-- **WHEN** vence sin consenso una propuesta urgente de un círculo de Valle Solar
+#### Scenario: Urgente sin mayoría
+- **WHEN** vence sin consenso una propuesta de un círculo de Valle Solar con la urgencia validada y sin mayoría que la apoye
 - **THEN** la propuesta dice que sube a Valle Solar
+
+#### Scenario: Urgencia pedida que no se validó
+- **WHEN** vence sin consenso una propuesta marcada urgente con un solo respaldo
+- **THEN** la propuesta dice "Pausada: vuelve con cambios", como una propuesta no urgente
 
 #### Scenario: Simple sin objeciones y con quórum
 - **WHEN** vence el plazo para objetar de la propuesta de la huerta sin concerns abiertos y con 3 de 4 personas que participaron (dos acuses de ejemplo y el acuse de "vos")
@@ -282,8 +302,50 @@ When the deadline of a proposal ends without consensus, it SHALL be paused, to c
 - **WHEN** vence el plazo para objetar de la propuesta de la huerta sin concerns abiertos y solo con los dos acuses de ejemplo
 - **THEN** la propuesta dice "Pausada: no se alcanzó la participación mínima" y no se adopta
 
+### Requirement: Urgencia validada
+Only whoever presents SHALL be able to mark a proposal as urgent, and only by giving three required pieces of data: what is lost by waiting, the real deadline (a valid date) and why the measure is reversible, plus one criterion: risk to life (people, animals, plants, water), irreversible harm if one waits, or an external deadline (weather, law, contract). Proposals about selling or committing land, or about changing rules or the manifesto, MUST NOT be marked urgent. The urgency MUST count as validated only with two backings from different people of the scope who are not the presenter (at most one of them may be whoever facilitates); until then it MUST show as requested, with how many backings are missing. The Guardián (simulated) MAY suggest that the urgency does not look urgent or does not look reversible, citing the data it questions. Anyone who can raise a concern MAY raise a concern about the urgency itself, in any phase before closing; if the group of the scope sustains it, the urgency falls and the proposal goes back to its normal route, saying so in the history. The page MUST show how many urgencies each holon had (marked, validated and fallen), and "sin dato" for a proposal without a holon. This rule is Claude's proposal and is pending Gus's confirmation.
+
+#### Scenario: Marcar sin los tres datos
+- **WHEN** quien presenta intenta marcar urgente la propuesta de la cisterna sin escribir por qué es reversible
+- **THEN** el sistema pide ese dato y no registra la urgencia
+
+#### Scenario: Materia que no puede ser urgente
+- **WHEN** quien presenta intenta marcar urgente una propuesta sobre comprometer tierra
+- **THEN** no ve la acción y, si el registro llega igual, se rechaza con "no pueden ser urgentes"
+
+#### Scenario: Segundo respaldo
+- **WHEN** una persona del ámbito respalda la urgencia de la propuesta de la bomba, que tenía un solo respaldo
+- **THEN** la urgencia pasa de "pedida, falta 1 respaldo" a "validada"
+
+#### Scenario: Quien presenta no respalda su urgencia
+- **WHEN** quien presenta la propuesta de la bomba mira sus acciones
+- **THEN** no ve "Respaldar la urgencia"
+
+#### Scenario: Cae la urgencia
+- **WHEN** una persona levanta un concern sobre la urgencia de la bomba y el grupo del ámbito lo sostiene
+- **THEN** la propuesta dice que la urgencia cayó y sigue su recorrido normal
+
+#### Scenario: Urgencias del holón
+- **WHEN** la persona abre la propuesta de la bomba
+- **THEN** ve cuántas urgencias tuvo el consejo, cuántas se validaron y cuántas cayeron, y la sugerencia del Guardián de que la medida podría no ser reversible, sin respaldo
+
+### Requirement: Medida provisoria con revisión obligatoria
+When a proposal with a validated urgency reaches its deadline without consensus, with the quorum reached, a majority of the people who took part in the current version without an open concern or block, and no block the group judged legitimate, the current version SHALL be applied only as a provisional measure, with a mandatory review date (by default 30 days after the deadline, configurable per holon). The page MUST show "Medida provisoria", the review date and the open concerns that oblige the review. When the review date is reached, the page MUST say that the review is overdue. A person with a process role MUST be able to open the review, which creates a new version in "Resolver concerns" with those concerns still open; this is the only way to reopen a closed proposal without a new one. A review that ends without consensus MUST NOT renew the provisional measure by itself: it is paused.
+
+#### Scenario: Se aplica como provisoria
+- **WHEN** vence sin consenso una propuesta con la urgencia validada, con quórum, mayoría que la apoya y un concern abierto
+- **THEN** la propuesta dice "Medida provisoria: se aplica por urgencia y se revisa antes del" seguido de la fecha 30 días después, y lista el concern abierto como motivo de la revisión
+
+#### Scenario: Revisión vencida
+- **WHEN** llega la fecha de revisión de una medida provisoria
+- **THEN** la propuesta dice "Revisión vencida: hay que revisar esta medida" y quien facilita ve "Abrir la revisión"
+
+#### Scenario: Abrir la revisión
+- **WHEN** quien facilita abre la revisión de una medida provisoria
+- **THEN** aparece una versión nueva en "Resolver concerns" con los concerns que obligaban a revisar todavía abiertos, y el historial lo registra
+
 ### Requirement: Reabrir solo con nuevo consenso
-A closed proposal SHALL NOT be edited or reopened from its page; the page MUST explain that reopening needs a new consensus through a new proposal.
+A closed proposal SHALL NOT be edited or reopened from its page, except for the mandatory review of a provisional measure; the page MUST explain that reopening needs a new consensus through a new proposal.
 
 #### Scenario: Propuesta cerrada
 - **WHEN** la persona mira la propuesta de la siembra como quien presenta
@@ -354,7 +416,7 @@ The page SHALL show the suggestions of the "Guardián", an AI archetype (not a h
 - **THEN** ninguno afirma que una propuesta o un bloqueo es ilegítimo; todos hablan de un posible impacto o una posible contradicción
 
 ### Requirement: Registros de solo agregar y sin red
-Questions, answers, comments, concerns, joins, withdrawals, groupings, acknowledgments of conformity, council scope changes, versions, phase changes, affected declarations and objections, stand-asides, blocks, legitimacy decisions, mechanism suggestions, backings of Guardián suggestions, closings and evaluations SHALL be append-only records with the shape of an EAS attestation (ADR-012). They MUST live only in the browser, be cleared by "Borrar todo", and no deliberation text MUST be sent to any server, AI provider or blockchain.
+Questions, answers, comments, concerns, joins, withdrawals, groupings, acknowledgments of conformity, council scope changes, urgency markings, urgency backings, review openings, versions, phase changes, affected declarations and objections, stand-asides, blocks, legitimacy decisions, mechanism suggestions, backings of Guardián suggestions, closings and evaluations SHALL be append-only records with the shape of an EAS attestation (ADR-012). They MUST live only in the browser, be cleared by "Borrar todo", and no deliberation text MUST be sent to any server, AI provider or blockchain.
 
 #### Scenario: Retirar un concern
 - **WHEN** una persona retira su concern
@@ -369,7 +431,7 @@ Questions, answers, comments, concerns, joins, withdrawals, groupings, acknowled
 - **THEN** ve solo la discusión de ejemplo
 
 ### Requirement: Prototipo
-The proposal pages SHALL show the prototype notice and a notice that proposals and people are example data, take their texts from the es/en dictionaries, mark new legal-weight terms (concern, block, standing aside, affected, acknowledgment of conformity, quorum, Lighthouse principles, Guardián) with ⚖ and draft status, use only theme tokens, keep the single `<main>` from the layout and the report button, be fully usable with the keyboard and pass the axe audit.
+The proposal pages SHALL show the prototype notice and a notice that proposals and people are example data, take their texts from the es/en dictionaries, mark new legal-weight terms (concern, block, standing aside, affected, acknowledgment of conformity, quorum, urgency, provisional measure, Lighthouse principles, Guardián) with ⚖ and draft status, use only theme tokens, keep the single `<main>` from the layout and the report button, be fully usable with the keyboard and pass the axe audit.
 
 #### Scenario: En inglés
 - **WHEN** una persona abre `/fogon/propuestas/consejo-bomba?lang=en`

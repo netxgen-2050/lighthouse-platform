@@ -81,7 +81,7 @@ Las horas declaradas de un mes SHALL confirmarlas quien administra la comunidad 
 - **THEN** el pacto queda en versión 2 "entre 0 y 30 h/mes", con el compromiso de la comunidad, y el historial muestra "10 h/mes" en la versión 1
 
 ### Requirement: Semillas pendientes y Semillas de un pacto variable
-Con un pacto variable vigente, solo los meses **confirmados** SHALL generar Semillas (`round(h × valor hora)`); un mes declarado y no confirmado MUST NOT generar nada. Las Semillas de cada mes confirmado SHALL ser "Semillas pendientes" mientras la persona no haya cumplido el compromiso mínimo, contado en meses confirmados con más de 0 h; un mes confirmado con 0 h MUST NOT contar para el mínimo. Al cumplirlo, las Semillas pendientes de esos meses SHALL recibirse y pasar a ser "Semillas". Solo las Semillas recibidas SHALL sumar al total; las pendientes SHALL mostrarse aparte. `/semillas` SHALL mostrar cuántos meses lleva del mínimo ("<N> de <M> meses confirmados") y listar los tres últimos meses con su estado en texto ("confirmadas · Semillas pendientes", "confirmadas · Semillas", "esperando confirmación", "a revisar" o "sin dato"). Sin Semillas recibidas o sin pendientes, cada valor MUST decir "sin dato", no 0. Los meses confirmados después de cumplir el mínimo SHALL quedar como pendientes hasta que se decida otra cosa. MUST NOT usarse otros nombres para estos estados. Con un pacto fijo, el cálculo MUST quedar como hoy. La ronda de reconocimiento SHALL habilitarse con un pacto variable aceptado igual que con uno fijo.
+Con un pacto variable vigente, solo los meses **confirmados** SHALL generar Semillas (`round(h × valor hora)`); un mes declarado y no confirmado MUST NOT generar nada. Las Semillas de cada mes confirmado SHALL ser "Semillas pendientes" mientras la persona no haya cumplido el compromiso mínimo, contado en meses confirmados con más de 0 h; un mes confirmado con 0 h MUST NOT contar para el mínimo. Al cumplirlo, las Semillas pendientes de esos meses SHALL recibirse y pasar a ser "Semillas". Solo las Semillas recibidas SHALL sumar al total; las pendientes SHALL mostrarse aparte. `/semillas` SHALL mostrar cuántos meses lleva del mínimo ("<N> de <M> meses confirmados") y listar los tres últimos meses con su estado en texto ("confirmadas · Semillas pendientes", "confirmadas · Semillas", "esperando confirmación", "a revisar" o "sin dato"). Sin Semillas recibidas o sin pendientes, cada valor MUST decir "sin dato", no 0. Los meses confirmados después de cumplir el mínimo SHALL recibirse al confirmarse (decisión de Gus, 28-oct). Si la persona pasa de horas variables a fijas con Semillas pendientes, esas Semillas pendientes SHALL recibirse solo si se validan y, si no, perderse (decisión de Gus, 28-oct). MUST NOT usarse otros nombres para estos estados. Con un pacto fijo, el cálculo MUST quedar como hoy. La ronda de reconocimiento SHALL habilitarse con un pacto variable aceptado igual que con uno fijo.
 
 #### Scenario: Antes del mínimo
 - **WHEN** en diciembre de 2026 Valle Solar (compromiso mínimo de 3 meses) confirmó 24 h de noviembre y 10 h de diciembre, y octubre no se declaró
@@ -98,6 +98,25 @@ Con un pacto variable vigente, solo los meses **confirmados** SHALL generar Semi
 #### Scenario: Declarado sin confirmar
 - **WHEN** la persona declaró 24 h de noviembre y la tribu todavía no respondió
 - **THEN** noviembre dice "24 h · esperando confirmación", no genera Semillas ni pendientes, y las dos dicen "sin dato"
+
+#### Scenario: Mes confirmado después del mínimo
+- **WHEN** ya cumplió el compromiso mínimo y la comunidad confirma un mes más
+- **THEN** ese mes dice "confirmadas · <N> Semillas" y suma al total apenas se confirma
+
+#### Scenario: Pasa a horas fijas con Semillas pendientes
+- **WHEN** una persona con Semillas pendientes (no llegó al mínimo) propone pasar a horas fijas y la comunidad lo acepta
+- **THEN** `/semillas` muestra esas Semillas pendientes aparte ("Horas variables confirmadas antes del cambio"), con el aviso (en palabras neutras, sin decir quién valida) de que se reciben solo si se valida y, si no, se pierden, y NO suman al total; las ya recibidas siguen sumando
+
+#### Scenario: Tras pasar a fija no se confirman más meses (interino)
+- **WHEN** la versión vigente ya es de horas fijas y quedan meses declarados sin confirmar
+- **THEN** `/pactos/responder` no los ofrece, no se pueden confirmar y una confirmación ya escrita no se aplica, así el mínimo no se cumple sin que nadie valide las Semillas pendientes. **La validación sigue pendiente de decisión de Gus (tarea P.1).**
+
+### Requirement: Alcance de las decisiones de Gus del 28-oct sobre tareas
+El máximo total de una tarea (horas o Semillas sumando a todas las personas, que fija quien administra el holón) y los círculos transversales administrados y facilitados por Hifa (simulada, experimental, con el super admin como respaldo humano) pertenecen a las tareas (`pacto-puntual` y `pacto-puntual-verificacion`) y MUST NOT aplicarse al pacto recurrente de horas variables, que es con la tribu o el Lighthouse y no con un círculo. Los nombres MUST ser "Semillas pendientes" y "Semillas"; MUST NOT usarse otros.
+
+#### Scenario: El pacto variable no tiene máximo total
+- **WHEN** una persona arma un pacto de horas variables
+- **THEN** solo ve el rango por mes y el compromiso mínimo, sin máximo total ni aviso de Hifa
 
 ### Requirement: Otras pantallas
 Donde hoy se muestran las horas por mes del pacto (Perfil, Mi recorrido, panel), un pacto variable SHALL mostrarse como "entre <mín> y <máx> h/mes", nunca con un número inventado.

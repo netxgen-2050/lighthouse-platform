@@ -44,7 +44,7 @@ Las horas de una tarea SHALL verificarlas, en `/pactos/responder` ("Tareas para 
 - **THEN** la ve sin botones, y la puede verificar `super@prueba.test`
 
 ### Requirement: Constancia base solo con la verificación
-Al conciliar una verificación SHALL guardarse una constancia base con la forma de ADR-012: `schema` "semillas-base", `afirma` "netx", `sobre` el pacto puntual, `apunta_a` nulo, la fecha de la verificación, y en `datos` el tipo "puntual", la postulación pre-admitida de la persona, la necesidad, la fecha de la tarea, las horas verificadas, las horas con y sin Semillas, el máximo por persona aplicado (o nulo), el valor de la hora de referencia, el período (`AAAA-MM` de la verificación en hora de Argentina), la versión del pacto (1), la constancia de verificación y las Semillas (`round(horas con Semillas × valor hora)`, sin superar un máximo en Semillas). Su uid MUST empezar con `ejemplo-`. Las Semillas MUST NOT nacer de nada que haga la persona sola. La constancia MUST quedar congelada: se lee tal como se guardó, MUST NOT recalcularse si cambia el valor de la hora y MUST NOT editarse. Conciliar dos veces MUST dejar una sola constancia. Una constancia guardada mal formada MUST descartarse y la tarea SHALL volver a "Hecha · esperando que <holón> verifique".
+Al conciliar una verificación SHALL guardarse una constancia base con la forma de ADR-012: `schema` "semillas-base", `afirma` "netx", `sobre` el pacto puntual, `apunta_a` nulo, la fecha de la verificación, y en `datos` el tipo "puntual", la postulación pre-admitida de la persona, la necesidad, la fecha de la tarea, las horas verificadas, las horas con y sin Semillas, el máximo por persona y el máximo total aplicados (o nulos), el valor de la hora de referencia, el período (`AAAA-MM` de la verificación en hora de Argentina), la versión del pacto (1), la constancia de verificación y las Semillas (`round(horas con Semillas × valor hora)`, sin superar un máximo en Semillas). Su uid MUST empezar con `ejemplo-`. Las Semillas MUST NOT nacer de nada que haga la persona sola. La constancia MUST quedar congelada: se lee tal como se guardó, MUST NOT recalcularse si cambia el valor de la hora y MUST NOT editarse. Conciliar dos veces MUST dejar una sola constancia. Una constancia guardada mal formada MUST descartarse y la tarea SHALL volver a "Hecha · esperando que <holón> verifique".
 
 #### Scenario: Diez horas verificadas
 - **WHEN** el círculo verifica 10 h de "Energía solar" en noviembre de 2026
@@ -72,6 +72,28 @@ Cuando varias personas toman la misma tarea, cada una SHALL marcar hecha sus pro
 #### Scenario: Máximo en Semillas
 - **WHEN** la tribu verifica 16 h en "Plomería" de Agua Clara (máximo por persona: 60 Semillas)
 - **THEN** la constancia tiene 60 Semillas, 11 h con Semillas y 5 h sin Semillas
+
+### Requirement: Máximo total de la tarea
+Si la propuesta pre-admitida trae un máximo total de la tarea (en horas o en Semillas, sumando a todas las personas, fijado por quien administra el holón), las Semillas SHALL repartirse por orden de verificación: cada constancia recibe lo que permite el máximo por persona y lo que queda del total, y MUST NOT superarlo. Las horas que superan el total SHALL mostrarse como horas verificadas sin Semillas, nunca borrarse ni mostrarse como 0. La constancia SHALL guardar el máximo total aplicado (o nulo). El orden y lo ya repartido MUST salir del registro compartido y no del estado local. Una constancia ya emitida MUST NOT recalcularse cuando se verifica a otra persona.
+
+#### Scenario: Se llena el total en horas
+- **WHEN** en "Energía solar" (máximo por persona 10 h, total 20 h) el círculo verifica 10 h de una persona, después 12 h de otra y después 6 h de una tercera
+- **THEN** las constancias tienen 10 h con Semillas y 50 Semillas; 10 h con Semillas, 2 h sin Semillas y 50 Semillas; y 0 h con Semillas, 6 h sin Semillas y 0 Semillas, y la tercera persona ve "El máximo total de la tarea ya se completó"
+
+#### Scenario: Total en Semillas
+- **WHEN** en "Plomería" (máximo por persona 60 Semillas, total 150 Semillas) el equipo verifica 16 h de tres personas, una tras otra
+- **THEN** reciben 60, 60 y 30 Semillas
+
+#### Scenario: Orden de verificación
+- **WHEN** la persona que se postuló segunda es verificada primera
+- **THEN** recibe primero las Semillas del total
+
+### Requirement: Círculos transversales administrados por Hifa
+La verificación de una tarea de un círculo transversal SHALL decir que lo administra y facilita Hifa (la IA) y que en el prototipo es simulado y experimental. Como Hifa no está disponible, el super admin SHALL poder responder como respaldo humano, y la verificación o el pedido de revisar MUST dejar `respaldoDeHifa`. La decisión definitiva depende de probar que Hifa sea estable y fiable.
+
+#### Scenario: Respaldo del super admin
+- **WHEN** `super@prueba.test` abre `/pactos/responder` con una tarea hecha de un círculo transversal
+- **THEN** ve "Lo administra y facilita Hifa (experimental, simulado)", puede verificar, y la constancia de verificación lleva `respaldoDeHifa`
 
 ### Requirement: Las Semillas de un puntual se reciben al verificarse
 Las Semillas de una constancia base puntual SHALL contarse como "Semillas" (recibidas) desde la verificación. MUST NOT mostrarse como "Semillas pendientes": ese estado es solo de los meses de un compromiso recurrente.
@@ -110,7 +132,7 @@ Marcar la tarea hecha, que el holón la verifique y que pida revisar SHALL regis
 - **THEN** Mi recorrido tiene un solo "El círculo Energía solar verificó tus horas de Energía solar"
 
 ### Requirement: Textos y accesibilidad
-Todos los textos nuevos SHALL existir en español (voseo) y en inglés. "Verificar" SHALL referirse a la tarea ("la tarea quedó hecha"), nunca al desempeño de la persona. Todo el flujo MUST usarse con teclado, cada respuesta SHALL anunciarse en una región `aria-live`, y axe MUST pasar sin violaciones `serious` ni `critical` en `/pactos` con una tarea hecha, en `/pactos/responder` con una tarea para verificar y en `/semillas` con una constancia.
+Todos los textos nuevos SHALL existir en español (voseo) y en inglés. Las Semillas SHALL llamarse "Semillas pendientes" y "Semillas"; MUST NOT aparecer "brotes" ni "germinar". "Verificar" SHALL referirse a la tarea ("la tarea quedó hecha"), nunca al desempeño de la persona. Todo el flujo MUST usarse con teclado, cada respuesta SHALL anunciarse en una región `aria-live`, y axe MUST pasar sin violaciones `serious` ni `critical` en `/pactos` con una tarea hecha, en `/pactos/responder` con una tarea para verificar y en `/semillas` con una constancia.
 
 #### Scenario: En inglés
 - **WHEN** se abre `/pactos` en inglés con una tarea verificada

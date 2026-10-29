@@ -54,6 +54,11 @@ export function terminoMostrado(clave: ClaveTermino, idiomaPagina: IdiomaTermino
   };
 }
 
+/** La frase consultiva que se ve en el acta, en el idioma de la página (la explicación del ⚖ es otro texto). */
+export function fraseConsultiva(idioma: IdiomaTermino = "es"): string {
+  return idioma === "en" ? TERMINOS.consultivo.en.frase : TERMINOS.consultivo.frase;
+}
+
 /** La entrada de bitácora de un ⚖: lo que se mostró de verdad, con su idioma y su huella. */
 export function entradaBitacoraTermino(clave: ClaveTermino, idiomaPagina: IdiomaTermino = "es") {
   const m = terminoMostrado(clave, idiomaPagina);

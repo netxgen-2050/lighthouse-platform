@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { estadoMedidor, FACTOR_EVALUACION, faltantes, mensajeFaltante, rondaCompleta, semillasTiempo, totalConDato } from "./calculo";
-import { COMPANEROS, DIMENSIONES, META_SEMBRADOR, RECONOCIMIENTO_RECIBIDO } from "./datos";
+import { COMPANEROS, DIMENSIONES, META_SEMBRADOR } from "./datos";
 import {
   enviarRonda,
   guardarRondas,
@@ -27,15 +27,6 @@ describe("datos del mock-up", () => {
     expect(DIMENSIONES.map((d) => d[1])).toEqual(["Rol", "Aporte al grupo"]);
     expect(DIMENSIONES[0][2]).toBe("Cómo cumple con las responsabilidades de su trabajo.");
     expect(DIMENSIONES[1][2]).toContain("cultura del grupo");
-  });
-  it("el reconocimiento recibido de ejemplo trae puntuación y explicación", () => {
-    for (const r of RECONOCIMIENTO_RECIBIDO) {
-      for (const x of [r.rol, r.aporte]) {
-        expect(x.nota).toBeGreaterThanOrEqual(1);
-        expect(x.nota).toBeLessThanOrEqual(5);
-        expect(x.porque.length).toBeGreaterThan(0);
-      }
-    }
   });
 });
 
@@ -144,8 +135,12 @@ describe("semillas por comunidad, desde lo guardado por /pactos", () => {
     expect(semillasDeComunidad(null, "lighthouse")).toEqual({
       horas: null,
       tiempo: null,
+      variable: null,
+      variableAnterior: null,
       plata: null,
       presencia: null,
+      puntual: null,
+      constancias: [],
       total: null,
       pactoAceptado: false,
     });

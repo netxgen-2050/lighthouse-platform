@@ -25,10 +25,13 @@ describe("catálogo legal", () => {
         "chacra",
         "circulo",
         "circulotrabajo",
+        "compromisominimo",
         "consejo",
         "representante",
         "validacioncomun",
         "consultivo",
+        "constanciaSemillas",
+        "evaluacionPares",
         "contacto",
         "creditos",
         "datos",
@@ -50,6 +53,8 @@ describe("catálogo legal", () => {
         "notasverdes",
         "obra",
         "ordenanza173",
+        "pactoDosPartes",
+        "pactopuntual",
         "pacto",
         "pase",
         "pasaporte",
@@ -96,6 +101,37 @@ describe("catálogo legal", () => {
       expect(TERMINOS[clave].texto, clave).toMatch(/todavía|no existe/);
     }
   });
+  it("pactoDosPartes es borrador, tiene inglés y aclara que no es un contrato de trabajo ni de inversión", () => {
+    expect(esBorrador("pactoDosPartes")).toBe(true);
+    expect(terminoEn("pactoDosPartes")?.titulo).toBe("Pact accepted by both parties");
+    expect(TERMINOS.pactoDosPartes.texto).toMatch(/no es un contrato de trabajo ni de inversión/i);
+  });
+
+  it("pactopuntual es borrador, tiene inglés y aclara que no es un contrato de trabajo, sin horario impuesto ni pago en dinero", () => {
+    expect(esBorrador("pactopuntual")).toBe(true);
+    expect(terminoEn("pactopuntual")?.titulo).toBe("One-off pact");
+    const texto = TERMINOS.pactopuntual.texto;
+    expect(texto).toMatch(/No es un contrato de trabajo/);
+    expect(texto).toMatch(/horario impuesto/);
+    expect(texto).toMatch(/no hay pago en dinero/);
+    expect(texto).toMatch(/Semillas, que no son un sueldo/);
+    expect(texto).not.toMatch(/brote|germin/i);
+  });
+
+  it("compromisominimo es borrador, tiene inglés y aclara que no es un contrato de trabajo ni un período de prueba y que se puede dejar avisando", () => {
+    expect(esBorrador("compromisominimo")).toBe(true);
+    expect(terminoEn("compromisominimo")?.titulo).toBe("Minimum commitment");
+    const texto = TERMINOS.compromisominimo.texto;
+    expect(texto).toMatch(/no es un contrato de trabajo ni un período de prueba/);
+    expect(texto).toMatch(/horario impuesto/);
+    expect(texto).toMatch(/pago en dinero/);
+    expect(texto).toMatch(/dejarlo antes avisando/);
+    expect(texto).toMatch(/Semillas pendientes/);
+    expect(texto).toMatch(/Las Semillas no son un sueldo/);
+    expect(texto + terminoEn("compromisominimo")?.texto).not.toMatch(/brote|germin|sprout/i);
+    expect(terminoEn("compromisominimo")?.texto).toMatch(/not an employment contract or a probationary period/);
+  });
+
   it("ordenanza173 es borrador y dice que se verifica con abogado", () => {
     expect(esBorrador("ordenanza173")).toBe(true);
     expect(TERMINOS.ordenanza173.texto).toContain("en el Juego B");
@@ -114,6 +150,21 @@ describe("catálogo legal", () => {
   });
   it("consultivo es borrador", () => {
     expect(esBorrador("consultivo")).toBe(true);
+    expect(TERMINOS.consultivo.frase).toBe(
+      "El resultado es consultivo: no reemplaza las decisiones que reservan el contrato o el estatuto.",
+    );
+    expect(TERMINOS.consultivo.texto).not.toBe(TERMINOS.consultivo.frase);
+    expect(TERMINOS.consultivo.texto).toContain("no obliga");
+    expect(TERMINOS.consultivo.texto).toContain("contrato o el estatuto");
+    expect(TERMINOS.consultivo.texto).toContain("no te cuesta plata");
+    expect(terminoEn("consultivo")).toBeDefined();
+    expect(terminoEn("consultivo")?.texto).not.toBe(TERMINOS.consultivo.en.frase);
+  });
+  it("evaluacionPares y constanciaSemillas son borrador y tienen inglés", () => {
+    for (const k of ["evaluacionPares", "constanciaSemillas"] as const) {
+      expect(esBorrador(k)).toBe(true);
+      expect(terminoEn(k)).toBeDefined();
+    }
   });
   it("agencia es borrador", () => {
     expect(esBorrador("agencia")).toBe(true);

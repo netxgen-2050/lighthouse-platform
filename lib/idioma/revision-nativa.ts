@@ -57,6 +57,10 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Datos de ejemplo de las 12 tribus con su inglés (foco, qué tiene, qué busca, ritual, forma jurídica…) y la declaración de cada tribu, traducida del español",
   },
+  "lib/tribus/necesidades.ts": {
+    estado: "pendiente",
+    que: "Necesidades de ejemplo de las tribus como tareas (título, qué es y habilidad extra) con su inglés",
+  },
   "lib/manifiestos/datos.ts": {
     estado: "pendiente",
     que: "Manifiestos de ejemplo (el del Lighthouse y siete de tribus) traducidos del español: voz de la comunidad, a revisar también con quien los escriba de verdad",
@@ -80,6 +84,14 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   "lib/semillas/datos.ts": {
     estado: "pendiente",
     que: "Datos de ejemplo de la ronda de reconocimiento con su inglés (compañeros, criterios y reconocimiento recibido)",
+  },
+  "lib/evaluacion/guia.ts": {
+    estado: "pendiente",
+    que: "Guía por nivel de estrellas (1 a 5) de la evaluación entre pares, rol y cultura",
+  },
+  "lib/evaluacion/ejemplo.ts": {
+    estado: "pendiente",
+    que: "Motivos de ejemplo y resumen de ejemplo del feedback de la evaluación entre pares",
   },
   "lib/pactos/datos.ts": {
     estado: "pendiente",
@@ -165,10 +177,13 @@ export function fuentesObligatorias(): string[] {
     "lib/congreso/evento-ejemplo.ts",
     "lib/sumarte/datos.ts",
     "lib/tribus/datos.ts",
+    "lib/tribus/necesidades.ts",
     "lib/gobernanza/datos.ts",
     "lib/manifiestos/datos.ts",
     "lib/territorios/textos.ts",
     "lib/semillas/datos.ts",
+    "lib/evaluacion/guia.ts",
+    "lib/evaluacion/ejemplo.ts",
     "lib/pactos/datos.ts",
     "lib/fogon/datos.ts",
     "lib/fogon/consultas/ejemplo.ts",

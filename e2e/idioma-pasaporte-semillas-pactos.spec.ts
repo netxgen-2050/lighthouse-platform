@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
 import { textosEnEspanol } from "./ayudas-idioma";
 
@@ -65,6 +66,24 @@ test.describe("Semillas en inglés", () => {
     await page.getByRole("button", { name: "Send round" }).click();
     await expect(page.getByRole("alert").filter({ hasText: "Error: the round was not sent." })).toBeVisible();
     await expect(page.getByTestId("factor")).toHaveCount(0);
+  });
+
+  test("al enviar la ronda: factor 1.08, resumen de ejemplo en inglés, constancias, axe y sin español suelto", async ({ page }) => {
+    await conPactoAceptado(page);
+    await page.goto("/semillas");
+    for (const grupo of ["Role, Martina", "Contribution to the group, Martina", "Role, Joaquín", "Contribution to the group, Joaquín"]) {
+      const g = page.getByRole("group", { name: grupo });
+      await g.getByRole("button", { name: "4 of 5" }).click();
+      await g.getByLabel("Why are you giving this score?").fill(`Because ${grupo}`);
+    }
+    await page.getByRole("button", { name: "Send round" }).click();
+    await expect(page.getByTestId("factor")).toHaveText("1.08");
+    await expect(page.getByRole("heading", { name: "Your result for this round (example)" })).toBeVisible();
+    await expect(page.getByRole("region", { name: "How you were recognized" })).toContainText("Example summary (simulated)");
+    await expect(page.getByTestId("constancia-ajuste")).toContainText("Adjustment attestation");
+    expect(await textosEnEspanol(page, "main")).toEqual([]);
+    const resultados = await new AxeBuilder({ page }).analyze();
+    expect(resultados.violations.filter((v) => v.impact === "serious" || v.impact === "critical")).toEqual([]);
   });
 });
 

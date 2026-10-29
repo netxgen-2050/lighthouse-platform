@@ -3,7 +3,8 @@ import { CLAVES } from "@/lib/demo/claves";
 import { recorrido } from "@/lib/idioma/textos/recorrido";
 import type { Idioma } from "@/lib/idioma/tipos";
 import { leer as leerMembresia } from "@/lib/membresia/estado";
-import { leer as leerPactos } from "@/lib/pactos/estado";
+import type { ConstanciaPacto } from "@/lib/pactos/constancias";
+import { leerPactosConciliados } from "@/lib/pactos/estado";
 import { basicosCompletos, cargarPerfil } from "@/lib/perfil/modelo";
 import { leerKyc } from "@/lib/pasaporte/kyc";
 
@@ -50,10 +51,15 @@ export function proximoPaso(p: Progreso, idioma: Idioma = "es"): ProximoPaso | n
  * El perfil se lee del modelo nuevo (o de la entrevista vieja, migrada). "Quiere invertir" = inició el
  * KYC del Pasaporte; la identidad está verificada cuando el KYC fue aprobado.
  */
-export function leerProgreso(leer: (clave: string) => string | null): Progreso {
+export function leerProgreso(
+  leer: (clave: string) => string | null,
+  idPersona?: string | null,
+  registro?: readonly ConstanciaPacto[] | null,
+): Progreso {
   const perfil = cargarPerfil(leer(CLAVES.perfilDatos), leer(CLAVES.perfil));
   const kyc = leerKyc(leer(CLAVES.kyc));
-  const pactos = leerPactos(leer(CLAVES.pactos));
+  // Con las respuestas de la tribu aplicadas en memoria: un pacto no aceptado vuelve a borrador.
+  const pactos = leerPactosConciliados(leer(CLAVES.pactos), idPersona, registro);
   const membresia = leerMembresia(leer(CLAVES.membresia));
   const crudoTicket = leer(CLAVES.congreso);
   return {

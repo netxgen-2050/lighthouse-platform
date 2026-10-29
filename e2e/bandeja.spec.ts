@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
+import { sembrarRespuestaDeLaTribu } from "./ayudas";
 
 const LEYO = "Leí el manifiesto con atención y entiendo que sumarme es comprometerme con un grupo de personas";
 const CUIDAR = "Me comprometo a cuidar estos acuerdos y a hablar con la comunidad si algún día no puedo cumplirlos";
@@ -65,7 +66,8 @@ test("pactos: proponer, aceptar y abrir ronda registran sus eventos", async ({ p
   await page.getByLabel("Tu descripción: qué vas a hacer").fill("Facilito las asambleas");
   await page.getByRole("button", { name: "Enviar a la comunidad" }).click();
   await expect.poll(async () => (await actividad(page)).map((e) => e.texto)).toEqual([expect.stringContaining("Propusiste un pacto en")]);
-  await page.getByRole("button", { name: "Simular: la comunidad acepta" }).click();
+  // La tribu responde (siembra de test) y la persona lo ve al volver a /pactos.
+  await sembrarRespuestaDeLaTribu(page, "acepta");
   await expect.poll(async () => (await actividad(page)).length).toBe(3);
   const eventos = await actividad(page);
   expect(eventos[1].texto).toContain("aceptó tu pacto");

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
 import { EnlaceConCuenta } from "@/components/sesion/entrar-para";
 import { MarcaAdmin } from "@/components/sesion/marca-admin";
+import { PactosParaResponder } from "@/components/sesion/pactos-para-responder";
 import { SelloTribu } from "@/components/sello-tribu";
 import { TerminoLegal } from "@/components/termino-legal";
 import { TextoBilingue } from "@/components/texto-bilingue";
@@ -15,6 +16,7 @@ import { destinosDisponibles } from "@/lib/navegacion";
 import { buscarTribu, buscarTribuBilingue, listarTribus, rutaProponerComunidad } from "@/lib/tribus/datos";
 import { MembresiaAcciones } from "@/components/membresia-acciones";
 import { VerBarrio } from "./acciones";
+import { Necesidades } from "./necesidades";
 
 export const dynamicParams = false;
 
@@ -137,6 +139,7 @@ export default async function TribuPage({ params }: Props) {
       <AvisoEjemplo />
       {prototipo}
       <MarcaAdmin tribu={t.id} nombre={t.nombre} />
+      <PactosParaResponder tribu={t.id} />
       {t.estado === "formacion" && (
         <p
           role="note"
@@ -155,7 +158,7 @@ export default async function TribuPage({ params }: Props) {
         </section>
         <section className={tarjeta}>
           <h2 className="text-lg font-semibold">{f.loQueBusca}</h2>
-          <Etiquetas items={t.busca} />
+          <Necesidades tribuId={t.id} tribuNombre={t.nombre} idioma={idioma} />
           {t.areas && (
             <>
               <h3 className="text-sm font-medium">{f.areas}</h3>

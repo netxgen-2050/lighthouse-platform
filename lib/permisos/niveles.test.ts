@@ -65,6 +65,7 @@ describe("rutas", () => {
     ["/sumarte", "sumarte"],
     ["/sumarte?volver=/pactos", "sumarte"],
     ["/pactos", "participar"],
+    ["/pactos/responder", "personal"],
     ["/semillas/", "participar"],
     ["/fogon", "participar"],
     ["/compromisos", "participar"],
