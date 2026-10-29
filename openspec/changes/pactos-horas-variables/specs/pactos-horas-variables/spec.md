@@ -99,6 +99,21 @@ Con un pacto variable vigente, solo los meses **confirmados** SHALL generar Semi
 - **WHEN** la persona declaró 24 h de noviembre y la tribu todavía no respondió
 - **THEN** noviembre dice "24 h · esperando confirmación", no genera Semillas ni pendientes, y las dos dicen "sin dato"
 
+#### Scenario: Mes confirmado después del mínimo
+- **WHEN** ya cumplió el compromiso mínimo y la comunidad confirma un mes más
+- **THEN** ese mes dice "confirmadas · <N> Semillas" y suma al total apenas se confirma
+
+#### Scenario: Pasa a horas fijas con Semillas pendientes
+- **WHEN** una persona con Semillas pendientes (no llegó al mínimo) propone pasar a horas fijas y la comunidad lo acepta
+- **THEN** `/semillas` muestra esas Semillas pendientes aparte ("Horas variables confirmadas antes del cambio"), con el aviso de que se reciben solo si el círculo las valida y, si no, se pierden, y NO suman al total; las ya recibidas siguen sumando
+
+### Requirement: Alcance de las decisiones de Gus del 28-oct sobre tareas
+El máximo total de una tarea (horas o Semillas sumando a todas las personas, que fija quien administra el holón) y los círculos transversales administrados y facilitados por Hifa (simulada, experimental, con el super admin como respaldo humano) pertenecen a las tareas (`pacto-puntual` y `pacto-puntual-verificacion`) y MUST NOT aplicarse al pacto recurrente de horas variables, que es con la tribu o el Lighthouse y no con un círculo. Los nombres MUST ser "Semillas pendientes" y "Semillas"; MUST NOT usarse otros.
+
+#### Scenario: El pacto variable no tiene máximo total
+- **WHEN** una persona arma un pacto de horas variables
+- **THEN** solo ve el rango por mes y el compromiso mínimo, sin máximo total ni aviso de Hifa
+
 ### Requirement: Otras pantallas
 Donde hoy se muestran las horas por mes del pacto (Perfil, Mi recorrido, panel), un pacto variable SHALL mostrarse como "entre <mín> y <máx> h/mes", nunca con un número inventado.
 
