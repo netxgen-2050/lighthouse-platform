@@ -49,6 +49,14 @@ async function graves(page: Page) {
     .map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }));
 }
 
+test("axe sin violaciones serias o críticas: una propuesta del Fogón (la bomba) con la tabla de permisos abierta", async ({ page }) => {
+  await page.goto("/fogon/propuestas/consejo-bomba");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await page.getByText("Ver la tabla de permisos por nivel").click();
+  await expect(page.getByRole("table")).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
 test("axe sin violaciones serias o críticas: /pasaporte con sellos obtenidos, en trámite y modalidad cargada", async ({ page }) => {
   await page.addInitScript(() => {
     if (window.localStorage.getItem("lh-membresia")) return;

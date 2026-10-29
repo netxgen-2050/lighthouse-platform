@@ -30,6 +30,8 @@ export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   // Consultas del Fogón: la lista y cada consulta (idioma-pendientes).
   /^\/fogon\/consultas$/,
   /^\/fogon\/consultas\/[^/]+$/,
+  // Propuestas del Fogón (fogon-propuestas).
+  /^\/fogon\/propuestas\/[^/]+$/,
   /^\/compromisos$/,
   /^\/canales$/,
   // Perfil, Mi recorrido, la bandeja de notificaciones y Configuración (idioma-perfil-recorrido).

@@ -91,6 +91,35 @@ describe("acciones por fase", () => {
     expect(acciones(importante, "preguntas", ["presenta"])).toContain("marcar-urgente");
   });
 
+  it("respaldar u objetar la urgencia solo si la propuesta está marcada urgente y no cayó", () => {
+    const urgencia = (estadoU: "pedida" | "validada" | "caida") => ({ id: "u", quien: "x", datos: {}, estado: estadoU, respaldos: [], faltan: 1 });
+    const con = (u: ReturnType<typeof urgencia> | null) =>
+      accionesDisponibles(importante, { ...estado("preguntas"), urgencia: u }, ["ambito"], "consejo").map((a) => a.accion);
+    expect(con(null)).not.toContain("respaldar-urgencia");
+    expect(con(null)).not.toContain("objetar-urgencia");
+    expect(con(urgencia("pedida"))).toEqual(expect.arrayContaining(["respaldar-urgencia", "objetar-urgencia"]));
+    expect(con(urgencia("validada"))).not.toContain("respaldar-urgencia");
+    expect(con(urgencia("caida"))).not.toContain("objetar-urgencia");
+  });
+
+  it("marcar-urgente en un pedido de plata solo con un monto conocido dentro del tope", () => {
+    const plata = { recorrido: "importante" as const, plata: { pide: true as const }, holonId: "consejo" };
+    const ofrece = (monto: number | null) =>
+      accionesDisponibles(plata, estado("preguntas"), ["presenta"], "consejo", { monto }).map((a) => a.accion).includes("marcar-urgente");
+    expect(ofrece(4800)).toBe(true);
+    expect(ofrece(5000)).toBe(true);
+    expect(ofrece(5001)).toBe(false);
+    expect(ofrece(null)).toBe(false);
+  });
+
+  it("sacar-propio-del-grupo solo si la persona tiene un concern en un grupo", () => {
+    const grupo = { id: "g", nombre: "G", autoras: ["vos"], concerns: [{ quien: "vos" }] } as unknown as NonNullable<EstadoPropuesta["grupos"]>[number];
+    const ofrece = (quien: string) =>
+      accionesDisponibles(importante, { ...estado("resolver"), grupos: [grupo] }, ["ambito"], "consejo", { quien }).map((a) => a.accion).includes("sacar-propio-del-grupo");
+    expect(ofrece("vos")).toBe(true);
+    expect(ofrece("otra")).toBe(false);
+  });
+
   it("la visita no tiene ninguna acción, ni leer", () => {
     for (const f of FASES) expect(acciones(importante, f, ["visita"]), f).toEqual([]);
   });

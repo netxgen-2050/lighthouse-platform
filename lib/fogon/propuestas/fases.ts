@@ -1,6 +1,6 @@
 // Fases de cada recorrido y qué acciones se ofrecen en cada una (design §2, "Por fase").
 import type { Ambito } from "@/lib/fogon/datos";
-import { MATERIAS_SIN_URGENCIA } from "./reglas";
+import { MATERIAS_SIN_URGENCIA, topeUrgenciaDe } from "./reglas";
 import { permiso, type ResultadoPermiso } from "./permisos";
 import type { Accion, EstadoPropuesta, Fase, NivelImplicacion, Propuesta, Recorrido } from "./tipos";
 
@@ -74,17 +74,27 @@ export type AccionOfrecida = { accion: Accion; permiso: ResultadoPermiso };
  * En "cierre", quien facilita ve "Abrir la revisión" solo si el resultado es una medida provisoria (D3).
  */
 export function accionesDisponibles(
-  p: Pick<Propuesta, "recorrido" | "materia">,
-  e: Pick<EstadoPropuesta, "fase" | "resultado">,
+  p: Pick<Propuesta, "recorrido" | "materia"> & Partial<Pick<Propuesta, "plata" | "holonId">>,
+  e: Pick<EstadoPropuesta, "fase" | "resultado"> & Partial<Pick<EstadoPropuesta, "urgencia" | "grupos">>,
   niveles: readonly NivelImplicacion[],
   ambito: Ambito,
+  /** `monto`: la cantidad en USD de la decisión (null = sin dato); `quien`: la persona que mira. */
+  ctx: { monto?: number | null; quien?: string } = {},
 ): AccionOfrecida[] {
   const acciones = accionesDeFase(e.fase, p.recorrido);
   if (e.fase === "cierre" && e.resultado?.tipo === "provisoria" && !e.resultado.enRevision) acciones.push("abrir-revision");
   const sinUrgencia = p.materia !== undefined && (MATERIAS_SIN_URGENCIA as readonly string[]).includes(p.materia);
+  // Un pedido de plata solo se puede marcar urgente con un monto conocido dentro del tope del holón (sin dato no es cero).
+  const montoNoEntra = p.plata?.pide === true && !(typeof ctx.monto === "number" && ctx.monto <= topeUrgenciaDe(p.holonId ?? null));
+  const urgenciaViva = e.urgencia != null && e.urgencia.estado !== "caida";
+  const tieneConcernEnGrupo = (e.grupos ?? []).some((g) => g.concerns.some((c) => c.quien === ctx.quien));
   const salida: AccionOfrecida[] = [];
   for (const accion of acciones) {
-    if (accion === "marcar-urgente" && sinUrgencia) continue;
+    if (accion === "marcar-urgente" && (sinUrgencia || montoNoEntra || e.urgencia != null)) continue;
+    // Solo hay algo que respaldar u objetar si la propuesta está marcada urgente (y la urgencia no cayó).
+    if ((accion === "respaldar-urgencia" || accion === "objetar-urgencia") && !urgenciaViva) continue;
+    if (accion === "respaldar-urgencia" && e.urgencia?.estado === "validada") continue;
+    if (accion === "sacar-propio-del-grupo" && !tieneConcernEnGrupo) continue;
     const r = permiso(accion, niveles, { ambito });
     if (r.estado !== "no") salida.push({ accion, permiso: r });
   }

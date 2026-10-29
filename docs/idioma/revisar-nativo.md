@@ -6,7 +6,7 @@ Todo el inglés lo escribió un agente y está pendiente hasta que un hablante n
 **Cómo marcar algo como revisado:** en `lib/idioma/revision-nativa.ts`, cambiá el `estado` de la fuente a `"revisado"`
 y sumá `revisadoPor` y `fecha` (AAAA-MM-DD). Después corré `pnpm idioma:pendientes`.
 
-Fuentes pendientes: 35
+Fuentes pendientes: 38
 
 | Fuente | Qué es | Textos en inglés |
 |---|---|---|
@@ -18,6 +18,8 @@ Fuentes pendientes: 35
 | `lib/evaluacion/guia.ts` | Guía por nivel de estrellas (1 a 5) de la evaluación entre pares, rol y cultura | — |
 | `lib/fogon/consultas/ejemplo.ts` | Consultas de ejemplo del Fogón (título, descripción, opciones y nota del monto) con su inglés, traducidas del español | — |
 | `lib/fogon/datos.ts` | Decisiones de ejemplo del Fogón (título, lugar y regla; incluye las de círculo, tribu, común y consejo) con su inglés, traducidas del español | — |
+| `lib/fogon/propuestas/ejemplos.ts` | Cinco propuestas de ejemplo del Fogón (problema, propuesta, registros, guiones de Hifa y del Guardián) con su inglés | — |
+| `lib/fogon/propuestas/principios.ts` | Lista de ejemplo (borrador) de 16 principios del Lighthouse con su explicación en inglés | — |
 | `lib/gobernanza/datos.ts` | Nombres, propósitos y 'Decide sobre' de los círculos de ejemplo del común, de cada tribu y del círculo transversal, con su inglés | — |
 | `lib/legal/terminos.ts` | Catálogo de términos legales (⚖) con su explicación en inglés; borradores sin revisión legal | — |
 | `lib/manifiestos/datos.ts` | Manifiestos de ejemplo (el del Lighthouse y siete de tribus) traducidos del español: voz de la comunidad, a revisar también con quien los escriba de verdad | — |
@@ -34,6 +36,7 @@ Fuentes pendientes: 35
 | `textos/configuracion` | Configuración: apariencia, avisos por tipo, Hifa, moneda, idioma y borrado de lo guardado en el navegador | 48 |
 | `textos/fogon` | Fogón: encabezado, enlace a Cómo decidimos, filtros por ámbito (Círculo, Tribu, común, Consejo, Fideicomiso), opciones de voto, motivos para no votar, llevar al consejo, acta de ejemplo y ayudas ("Fideicomiso" = Trust) | 57 |
 | `textos/fogonConsultas` | Consultas del Fogón: lista, reparto de créditos con voto cuadrático, voto abierto o secreto, padrón, resultado por grupo, acta de ejemplo, gráfico de dona y errores de lectura | 119 |
+| `textos/fogonPropuestas` | Propuestas del Fogón: fases, discusión, concerns y grupos, acuse y quórum, ámbito del consejo, niveles, acciones, condiciones de la matriz, mecanismos y vista sin cuenta | 235 |
 | `textos/gobernanza` | Gobernanza fractal: página Cómo decidimos (estructura, círculos, consejo), marca de validación de la ficha de tribu y Quiénes te validaron en Mi recorrido | 120 |
 | `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 57 |
 | `textos/pactos` | Pactos: pactos de tiempo y de plata, cambios, historial, avisos y anuncios | 286 |
