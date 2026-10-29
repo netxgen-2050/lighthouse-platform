@@ -420,6 +420,20 @@ export const TERMINOS = {
     },
     borrador: true,
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar (con abogado) antes de cualquier uso real. Escrito con criterio de
+  // la legislación argentina (LCT 20.744: período de prueba art. 92 bis [verificar]; sanciones y retenciones arts. 67, 131 y
+  // 132 [verificar]; Ley de Voluntariado Social 25.855): un compromiso voluntario, sin subordinación ni sueldo.
+  compromisominimo: {
+    titulo: "Compromiso mínimo",
+    texto:
+      "Es el tiempo mínimo que te comprometés a sostener este pacto (de 1 a 3 meses, lo fija la tribu). Es un compromiso voluntario, de palabra: no es un contrato de trabajo ni un período de prueba, no hay horario impuesto ni pago en dinero, y podés dejarlo antes avisando. Las horas de cada mes las confirma la tribu y generan Semillas pendientes, que recibís al cumplir el compromiso (o, si lo dejás antes avisando, las de los meses confirmados). Las Semillas no son un sueldo.",
+    en: {
+      titulo: "Minimum commitment",
+      texto:
+        "It is the minimum time you commit to sustaining this pact (1 to 3 months, set by the tribe). It is a voluntary commitment, by word: it is not an employment contract or a probationary period, there is no imposed schedule or payment in money, and you can leave earlier by giving notice. The tribe confirms the hours of each month and they generate pending Semillas, which you receive when you complete the commitment (or, if you leave earlier giving notice, those of the confirmed months). Semillas are not a salary.",
+    },
+    borrador: true,
+  },
 } as const;
 
 /** Claves de los textos que son borrador (no vienen del mock-up). */

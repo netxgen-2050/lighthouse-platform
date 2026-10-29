@@ -103,10 +103,11 @@ describe("estado del pacto de tiempo", () => {
       { tipo: "horas", comunidad: "agua", horas: 6 },
     ]);
     expect(deComunidad(e, "agua").tiempo.paso).toBe(0);
-    expect(pactosAceptados(e)).toEqual([{ comunidad: C, horas: 10, rol: "facilitacion" }]);
+    expect(pactosAceptados(e)).toEqual([FIJO_ACEPTADO]);
   });
 });
 
+const FIJO_ACEPTADO = { comunidad: C, horas: 10, rol: "facilitacion", modalidad: "fija", rango: { min: 0, max: 20 }, compromisoMeses: null };
 const FECHA_1 = "2026-10-16T10:00:00.000Z";
 const FECHA_2 = "2026-10-17T10:00:00.000Z";
 const ACEPTADO: Accion[] = [
@@ -138,7 +139,9 @@ describe("proponer cambios a un pacto", () => {
   it("la primera aceptación es la versión 1 y entra al historial con su fecha", () => {
     const t = deComunidad(aplicar(ACEPTADO), C).tiempo;
     expect(t.version).toBe(1);
-    expect(t.historial).toEqual([{ version: 1, rol: "facilitacion", rolOtro: "", descripcion: "Facilito las asambleas", horas: 10, aceptado: FECHA_1 }]);
+    expect(t.historial).toEqual([
+      { version: 1, rol: "facilitacion", rolOtro: "", descripcion: "Facilito las asambleas", modalidad: "fija", horas: 10, rango: { min: 0, max: 20 }, compromisoMeses: null, aceptado: FECHA_1 },
+    ]);
   });
   it("un pacto que nunca se aceptó no tiene versión", () => {
     expect(deComunidad(aplicar([...COMPLETO, { tipo: "avanzar", comunidad: C }]), C).tiempo.version).toBe(0);
@@ -147,13 +150,22 @@ describe("proponer cambios a un pacto", () => {
     const sinAceptar = aplicar([...COMPLETO, { tipo: "avanzar", comunidad: C }]);
     expect(reducir(sinAceptar, { tipo: "proponerCambio", comunidad: C })).toBe(sinAceptar);
     const e = aplicar([...ACEPTADO, { tipo: "proponerCambio", comunidad: C }]);
-    expect(deComunidad(e, C).tiempo.cambio).toEqual({ rol: "facilitacion", rolOtro: "", descripcion: "Facilito las asambleas", horas: 10, paso: 0 });
+    expect(deComunidad(e, C).tiempo.cambio).toEqual({
+      rol: "facilitacion",
+      rolOtro: "",
+      descripcion: "Facilito las asambleas",
+      modalidad: "fija",
+      horas: 10,
+      rango: { min: 0, max: 20 },
+      compromisoMeses: null,
+      paso: 0,
+    });
     expect(reducir(e, { tipo: "proponerCambio", comunidad: C })).toBe(e);
   });
   it("el cambio no afecta lo que suma Semillas hasta que se acepta", () => {
     const enviado = aplicar([...ACEPTADO, ...CAMBIO_20H, { tipo: "enviarCambio", comunidad: C }]);
     expect(deComunidad(enviado, C).tiempo.cambio?.paso).toBe(1);
-    expect(pactosAceptados(enviado)).toEqual([{ comunidad: C, horas: 10, rol: "facilitacion" }]);
+    expect(pactosAceptados(enviado)).toEqual([FIJO_ACEPTADO]);
     expect(pactosAceptados(aplicar([...ACEPTADO, ...CAMBIO_20H]))[0].horas).toBe(10);
   });
   it("aceptar el cambio sube la versión, lo vuelve vigente y lo agrega al historial", () => {
@@ -214,7 +226,11 @@ describe("proponer cambios a un pacto", () => {
     const t = deComunidad(leer(crudo), C).tiempo;
     expect(t.version).toBe(1);
     expect(t.cambio).toBeUndefined();
-    expect(t.historial).toEqual([{ version: 1, rol: "facilitacion", rolOtro: "", descripcion: "x", horas: 10, aceptado: null }]);
+    expect(t.historial).toEqual([
+      { version: 1, rol: "facilitacion", rolOtro: "", descripcion: "x", modalidad: "fija", horas: 10, rango: { min: 0, max: 20 }, compromisoMeses: null, aceptado: null },
+    ]);
+    expect(t.modalidad).toBe("fija");
+    expect(t.declaradas).toEqual({});
     expect(pactosAceptados(leer(crudo))).toHaveLength(1);
     expect(reducir(leer(crudo), { tipo: "proponerCambio", comunidad: C })).not.toBe(leer(crudo));
   });

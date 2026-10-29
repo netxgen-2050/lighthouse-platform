@@ -8,7 +8,8 @@ import { MarcaSemillas } from "@/components/marca-semillas";
 import { TerminoLegal } from "@/components/termino-legal";
 import { esCodigoValido } from "@/lib/congreso/ticket";
 import { CLAVES } from "@/lib/demo/claves";
-import { LOCALES, formatearFecha, formatearNumero } from "@/lib/idioma/formatos";
+import { LOCALES, conMayuscula, formatearFecha, formatearNumero, nombreDelMes } from "@/lib/idioma/formatos";
+import { textoHorasDelPacto } from "@/lib/pactos/texto-horas";
 import { buscarNecesidad } from "@/lib/tribus/necesidades";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { textos } from "@/lib/idioma/textos";
@@ -111,6 +112,8 @@ export function SemillasCliente() {
   /** Un valor en Semillas con el número según el idioma; el dato que falta es "sin dato", nunca 0. */
   const valor = (n: number | null): string => (n === null ? comunes.sinDato : t.cantidad(formatearNumero(n, idioma)));
 
+  /** Un número de Semillas sin la palabra ("171"); el dato que falta es "sin dato", nunca 0. */
+  const numero = (n: number | null): string => (n === null ? comunes.sinDato : formatearNumero(n, idioma));
   const hayComunidad = elegida !== "";
   const semillas = hayComunidad ? semillasDeComunidad(datos.pactos, elegida) : null;
   const tiempo = semillas?.tiempo ?? null;
@@ -154,6 +157,12 @@ export function SemillasCliente() {
                     <dd><MarcaSemillas texto={valor(s.plata)} /></dd>
                     <dt className="text-muted">{t.panel.presencia}</dt>
                     <dd><MarcaSemillas texto={valor(s.presencia)} /></dd>
+                    {(s.variable || s.variableAnterior) && (
+                      <>
+                        <dt className="text-muted">{t.panel.pendientes}</dt>
+                        <dd data-testid={`pendientes-${id}`}>{numero(s.variable ? s.variable.pendientes : (s.variableAnterior?.pendientes ?? null))}</dd>
+                      </>
+                    )}
                     <dt className="text-muted">{t.panel.puntual}</dt>
                     <dd data-testid={`puntual-${id}`}><MarcaSemillas texto={valor(s.puntual)} /></dd>
                     <dt className="font-medium">{t.panel.total}</dt>
@@ -180,8 +189,17 @@ export function SemillasCliente() {
           <h2 className="text-xl font-semibold">{t.detalle.titulo(nombreComunidad(elegida))}</h2>
           <section aria-label={t.detalle.aria} className="grid gap-4 md:grid-cols-3">
             <div className={TARJETA}>
-              <p className={ETIQUETA}>{t.detalle.tiempo3}</p>
-              {semillas.horas !== null && tiempo !== null ? (
+              <p className={ETIQUETA}>{semillas.variable ? t.detalle.variable.etiquetaTiempo : t.detalle.tiempo3}</p>
+              {semillas.variable ? (
+                <>
+                  <p className={GRANDE} data-testid="semillas-tiempo"><MarcaSemillas texto={t.detalle.variable.recibidas(numero(semillas.variable.recibidas))} /></p>
+                  <p className="text-sm font-medium" data-testid="semillas-pendientes"><MarcaSemillas texto={t.detalle.variable.pendientes(numero(semillas.variable.pendientes))} /></p>
+                  <p className="text-sm text-muted">{t.detalle.variable.rango(textoHorasDelPacto({ modalidad: "variable", horas: 0, rango: semillas.variable.rango }, idioma))}</p>
+                  <p className="text-sm" data-testid="meses-confirmados">
+                    {t.detalle.variable.mesesConfirmados(Math.min(semillas.variable.cumplidos, semillas.variable.compromisoMeses), semillas.variable.compromisoMeses)}
+                  </p>
+                </>
+              ) : semillas.horas !== null && tiempo !== null ? (
                 <>
                   <p className={GRANDE} data-testid="semillas-tiempo"><MarcaSemillas texto={valor(tiempo)} /></p>
                   <p className="text-sm text-muted">{t.detalle.horasMes(semillas.horas)}</p>
@@ -244,6 +262,40 @@ export function SemillasCliente() {
               </p>
             </div>
           </section>
+          {semillas.variable && (
+            <section aria-labelledby="variable" className={TARJETA} data-testid="semillas-variable">
+              <h3 id="variable" className={ETIQUETA}>{t.detalle.variable.titulo}</h3>
+              <ul className="grid gap-1 text-sm" aria-label={t.detalle.variable.listaAria}>
+                {semillas.variable.meses.map((m) => {
+                  const nombreMes = conMayuscula(nombreDelMes(m.mes, idioma));
+                  const v = t.detalle.variable;
+                  const texto =
+                    m.horas === null || m.estado === null
+                      ? v.sinDato(nombreMes)
+                      : m.estado === "declarada"
+                        ? v.declarada(nombreMes, m.horas)
+                        : m.estado === "a-revisar"
+                          ? v.aRevisar(nombreMes, m.horas)
+                          : m.semillas === null
+                            ? v.cero(nombreMes)
+                            : m.semillasEstado === "recibidas"
+                              ? v.recibida(nombreMes, m.horas, numero(m.semillas))
+                              : v.pendiente(nombreMes, m.horas, numero(m.semillas));
+                  return <li key={m.mes} data-testid={`mes-semillas-${m.mes}`}><MarcaSemillas texto={texto} /></li>;
+                })}
+              </ul>
+              <p className="text-sm text-muted">{t.detalle.variable.explicacion}</p>
+              {semillas.variable.cumplido && <p className="text-sm text-muted">{t.detalle.variable.cumplido}</p>}
+            </section>
+          )}
+          {semillas.variableAnterior && (
+            <section aria-labelledby="anterior" className={TARJETA} data-testid="semillas-anterior">
+              <h3 id="anterior" className={ETIQUETA}>{t.detalle.variable.anteriorTitulo}</h3>
+              <p className="text-sm"><MarcaSemillas texto={t.detalle.variable.anteriorRecibidas(numero(semillas.variableAnterior.recibidas))} /></p>
+              <p className="text-sm"><MarcaSemillas texto={t.detalle.variable.anteriorPendientes(numero(semillas.variableAnterior.pendientes))} /></p>
+              {semillas.variableAnterior.pendientes !== null && <p className="text-sm text-muted"><MarcaSemillas texto={t.detalle.variable.anteriorAviso} /></p>}
+            </section>
+          )}
           <section aria-labelledby="puntuales" className={TARJETA} data-testid="semillas-puntuales">
             <h3 id="puntuales" className={ETIQUETA}>{t.detalle.puntualTitulo}</h3>
             <p className={GRANDE} data-testid="semillas-puntual"><MarcaSemillas texto={valor(semillas.puntual)} /></p>
