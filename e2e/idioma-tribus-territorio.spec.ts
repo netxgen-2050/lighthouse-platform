@@ -14,7 +14,7 @@ test.describe("tribus en inglés", () => {
   test.use({ locale: "en-US" });
 
   test("listado: estados en inglés, nombres de las tribus sin traducir y nada de español suelto", async ({ page }) => {
-    await page.goto("/tribus");
+    await page.goto("/tribus?ver=tribus");
     await expect(html(page)).toHaveAttribute("lang", "en");
     await expect(page.getByRole("heading", { level: 1, name: "Lighthouse tribes" })).toBeVisible();
     await expect(page.getByText("Status: Active").first()).toBeVisible();

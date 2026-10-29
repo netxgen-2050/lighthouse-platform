@@ -27,7 +27,7 @@ test.describe("páginas públicas sin sesión", () => {
   test("Inicio y Tribus se ven sin entrar", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1, name: /Encontrá tu tribu/ })).toBeVisible();
-    await page.goto("/tribus");
+    await page.goto("/tribus?ver=tribus");
     await expect(page.getByRole("heading", { level: 1, name: "Tribus del Lighthouse" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Sumate para proponer una comunidad" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /Proponer una comunidad para el Barrio/ })).toHaveCount(0);
