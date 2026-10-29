@@ -150,7 +150,7 @@ type Constancia = { uid: string; schema: "semillas-base" | "semillas-ajuste"; af
 ### 9. Decisiones de Gus del 28-oct sobre Semillas pendientes, máximos y Hifa
 - **Solo se ajusta lo recibido.** Las "Semillas pendientes" de un pacto variable no se ajustan ni suman. Los meses confirmados tras cumplir el mínimo se reciben al confirmarse; al pasar a fijas, las pendientes se reciben solo si el círculo las valida y si no se pierden (la lógica vive en `pactos-horas-variables`). Aquí el bloque de constancias cubre un mes de un pacto fijo y con pacto variable dice "sin dato".
 - **Máximos de la tarea.** El máximo por persona y el máximo total (los fija quien administra el holón) son de las tareas. Un pacto puntual no habilita ronda ni ajuste, así que este cambio no los toca.
-- **Hifa.** Los círculos transversales los administra y facilita Hifa, simulada y experimental, con el super admin de respaldo humano. La ronda de ejemplo es de un pacto, no de un círculo transversal, así que no hay aviso en pantalla; queda anotado para cuando haya rondas de círculos.
+- **Hifa.** Los círculos transversales los administra y facilita Hifa, simulada y experimental, con el super admin de respaldo humano. La ronda de ejemplo es de un pacto, no de un círculo transversal, así que no hay aviso en pantalla; queda anotado para cuando haya rondas de círculos. **Esta decisión quedó solo en la spec, sin código**, por esa misma razón.
 - **Nombres:** "Semillas pendientes" y "Semillas"; nunca "brotes" ni "germinar".
 
 ## Open Questions

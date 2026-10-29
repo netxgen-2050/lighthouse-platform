@@ -227,9 +227,20 @@ test("Semillas recibidas en Taller Común (1 mes), un mes con 0 h no cuenta, y l
   await expect(page.getByTestId("semillas-tiempo")).toHaveText("Semillas: sin dato");
   // El pacto variable aceptado habilita la ronda igual que uno fijo.
   await expect(page.getByText("La ronda es solo para quienes tienen un pacto aceptado")).toHaveCount(0);
-  // evaluacion-pares: con horas variables las constancias dicen "sin dato" y las pendientes no se ajustan.
+  // evaluacion-pares: con horas variables las constancias dicen "sin dato" y las pendientes no se ajustan,
+  // también después de enviar la ronda (sin 50 ni 54).
+  await expect(page.getByTestId("constancias")).toContainText(/sin dato/i);
+  for (const grupo of ["Rol, Martina", "Aporte al grupo, Martina", "Rol, Joaquín", "Aporte al grupo, Joaquín"]) {
+    const g = page.getByRole("group", { name: grupo });
+    await g.getByRole("button", { name: "4 de 5" }).click();
+    await g.getByLabel("¿Por qué le das esta puntuación?").fill(`Porque sí, ${grupo}`);
+  }
+  await page.getByRole("button", { name: "Enviar ronda" }).click();
+  await expect(page.getByText("Ronda enviada (simulado)")).toBeVisible();
   await expect(page.getByTestId("constancias")).toContainText(/sin dato/i);
   await expect(page.getByTestId("constancia-base")).toHaveCount(0);
+  await expect(page.getByTestId("constancia-ajuste")).toHaveCount(0);
+  await expect(page.getByTestId("constancias")).not.toContainText(/\b(50|54) Semillas/);
 });
 
 test("pasa a horas fijas con Semillas pendientes: se ven aparte con el aviso y no suman", async ({ page }) => {

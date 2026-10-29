@@ -119,11 +119,3 @@ export function calcularFactorEvaluacion(
     resumenDisponible: dimensiones.rol.suficiente && dimensiones.cultura.suficiente,
   };
 }
-
-/** Notas ya acotadas por el tope de una dimensión (para tests de caracterización). */
-export function notasAcotadas(notas: number[], tope: number): number[] {
-  return notas.map((n, i) => {
-    const m = mediana(notas.filter((_, j) => j !== i));
-    return acotar(n, m - tope, m + tope);
-  });
-}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calcularFactorEvaluacion, mediaRecortada, mediana, notasAcotadas, redondearFactor } from "./calculo";
+import { calcularFactorEvaluacion, mediaRecortada, mediana, redondearFactor } from "./calculo";
 import { constanciasDeRonda } from "./constancias";
 import {
   EQUIPO_EJEMPLO,
@@ -138,7 +138,10 @@ describe("colusión", () => {
     ];
     const r = calcularFactorEvaluacion(EQ, e, "b", { reciprocidadActiva: true });
     expect(r.descartes.reciprocidad).toBe(0);
-    expect(notasAcotadas([5, 3, 3, 3], 1)[0]).toBe(4);
+    // El 5 se acota a 4 (mediana de las demás 3 + tope 1); con la mediana como agregado no mueve la nota.
+    expect(r.dimensiones.rol.nota).toBe(3);
+    const media = calcularFactorEvaluacion(EQ, e, "b", { reciprocidadActiva: true, agregado: "media-recortada" });
+    expect(media.dimensiones.rol.nota).toBe(3);
   });
   it("(e) anillo de dos en equipo de 6: ambos en 1,00, con la defensa apagada y activa", () => {
     const eq = ["a", "b", "c", "d", "e", "f"];
@@ -172,30 +175,38 @@ describe("colusión", () => {
 });
 
 describe("tope por evaluador", () => {
+  // Se prueba la implementación real (`calcularFactorEvaluacion`), sin copia de la lógica del tope.
+  const equipo = ["p", "e0", "e1", "e2", "e3", "e4", "e5"];
+  const notaRol = (notas: number[], agregado: "mediana" | "media-recortada") => {
+    const e: Evaluacion[] = notas.map((nota, i) => ({ de: `e${i}`, a: "p", dimension: "rol", nota, motivo: "x" }));
+    const r = calcularFactorEvaluacion(equipo, e, "p", { agregado });
+    return r.dimensiones.rol.nota as number;
+  };
   const conjuntos = [
     [3, 3, 3, 5],
     [3, 4, 4, 5, 2],
     [4, 4, 4, 4, 1],
     [2, 3, 3, 3, 3, 4],
     [1, 2, 3, 4, 5],
+    // equipo polarizado (1, 1, 5, 5) con una quinta nota
+    ...[1, 2, 3, 4, 5].map((q) => [1, 1, 5, 5, q]),
   ];
   for (const agregado of ["mediana", "media-recortada"] as const) {
     it(`reemplazar una nota por la mediana de las demás mueve el agregado como mucho el tope (${agregado})`, () => {
-      const agg = (n: number[]) => (agregado === "mediana" ? mediana(n) : mediaRecortada(n));
       for (const c of conjuntos) {
-        const antes = agg(notasAcotadas(c, 1));
+        const antes = notaRol(c, agregado);
         c.forEach((_, i) => {
           const otros = c.filter((__, j) => j !== i);
           const nuevo = c.map((n, j) => (j === i ? mediana(otros) : n));
-          expect(Math.abs(agg(notasAcotadas(nuevo, 1)) - antes)).toBeLessThanOrEqual(1);
+          expect(Math.abs(notaRol(nuevo, agregado) - antes)).toBeLessThanOrEqual(1);
         });
       }
     });
   }
   it("caracterización de equipos divididos", () => {
-    expect(notasAcotadas([1, 1, 5, 5], 1)).toEqual([4, 4, 2, 2]);
-    expect(mediana(notasAcotadas([1, 1, 5, 5], 1))).toBe(3);
-    expect(notasAcotadas([5, 5, 5, 1, 1], 1)).toEqual([4, 4, 4, 4, 4]);
+    expect(notaRol([1, 1, 5, 5], "mediana")).toBe(3);
+    expect(notaRol([5, 5, 5, 1, 1], "mediana")).toBe(4);
+    expect(notaRol([5, 5, 5, 1, 1], "media-recortada")).toBe(4);
   });
 });
 

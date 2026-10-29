@@ -138,8 +138,7 @@ const es = {
     titulo: "Tu resultado de esta ronda (ejemplo)",
     factor: "Factor de evaluación",
     rango: (r: string) => `Rango posible: ${r}`,
-    contaron: (n: number) => `${n} evaluaciones contaron`,
-    pocas: "Menos de 3 evaluaciones: el factor queda en 1,0.",
+    pocas: "Menos de 3 evaluaciones: esta dimensión cuenta como neutra (3 estrellas).",
     descartes: "Evaluaciones que no contaron",
     motivos: {
       autoevaluacion: "autoevaluación",
@@ -295,8 +294,7 @@ const en: Textos<typeof es> = {
     titulo: "Your result for this round (example)",
     factor: "Evaluation factor",
     rango: (r: string) => `Possible range: ${r}`,
-    contaron: (n: number) => `${n} evaluations counted`,
-    pocas: "Fewer than 3 evaluations: the factor stays at 1.0.",
+    pocas: "Fewer than 3 evaluations: this dimension counts as neutral (3 stars).",
     descartes: "Evaluations that did not count",
     motivos: {
       autoevaluacion: "self-evaluation",
