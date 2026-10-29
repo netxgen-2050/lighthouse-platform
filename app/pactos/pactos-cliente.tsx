@@ -393,7 +393,19 @@ export function PactosCliente() {
       const horasViva = viva ? Number(viva.datos.horas) : horas;
       setFalloPublicar(null);
       setAnuncio(tx.puntual.anunciosHecha.marcada(n.titulo));
-      guardarEstado(reducirPuntual(estado, { tipo: "marcarHecha", comunidad: comunidadId, necesidadId, horasReales: Number.isInteger(horasViva) ? horasViva : horas }));
+      const marcado = reducirPuntual(estado, { tipo: "marcarHecha", comunidad: comunidadId, necesidadId, horasReales: Number.isInteger(horasViva) ? horasViva : horas });
+      if (registro) {
+        // Si el holón ya respondió esas horas, se aplica su respuesta sobre el estado marcado (y se anuncia una sola vez).
+        const r = conciliarYGuardar(marcado, registro, idPersona);
+        if (!r.guardado) setFalloAlmacen(true);
+        if (r.aplicadas.length > 0) {
+          setAnuncio(anuncioDe(r.aplicadas, tx, idioma));
+          registrarEventosDe(r.aplicadas, idioma, tx);
+        }
+        setEstado(r.estado);
+      } else {
+        guardarEstado(marcado);
+      }
       setFocoPuntual(necesidadId);
       return;
     }
