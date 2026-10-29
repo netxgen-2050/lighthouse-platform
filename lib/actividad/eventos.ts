@@ -109,6 +109,28 @@ export const EVENTOS = {
       notificacion: true,
       clave: `no-preadmitida:${propuestaId}`,
     }),
+  /** `propuestaHorasId` evita registrarlo dos veces; marcar de nuevo después de "pidió revisar" registra otro. */
+  marcasteHecha: (tarea: string, comunidad: string, idComunidad: string, necesidadId: string, propuestaHorasId: string): NuevoEvento =>
+    evento("marcasteHecha", { comunidad, tarea }, {
+      tipo: "pacto",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      clave: `hecha:${necesidadId}:${propuestaHorasId}`,
+    }),
+  horasVerificadas: (holon: string, tarea: string, idComunidad: string, necesidadId: string): NuevoEvento =>
+    evento("horasVerificadas", { comunidad: holon, tarea }, {
+      tipo: "pacto-aceptado",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      notificacion: true,
+      clave: `verificada:${necesidadId}`,
+    }),
+  /** El motivo no se copia al evento: queda en la tarea. `respuestaId` evita registrarlo dos veces. */
+  horasARevisar: (holon: string, tarea: string, idComunidad: string, respuestaId: string): NuevoEvento =>
+    evento("horasARevisar", { comunidad: holon, tarea }, {
+      tipo: "pacto",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      notificacion: true,
+      clave: `revisar:${respuestaId}`,
+    }),
   registrasteTicket: (): NuevoEvento => evento("registrasteTicket", {}, { tipo: "ticket", enlace: "/congreso" }),
   enviasteRonda: (comunidad: string, idComunidad: string): NuevoEvento =>
     evento("enviasteRonda", { comunidad }, { tipo: "ronda-enviada", enlace: `/semillas?comunidad=${idComunidad}` }),

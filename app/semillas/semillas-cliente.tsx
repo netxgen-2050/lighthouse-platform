@@ -8,7 +8,8 @@ import { MarcaSemillas } from "@/components/marca-semillas";
 import { TerminoLegal } from "@/components/termino-legal";
 import { esCodigoValido } from "@/lib/congreso/ticket";
 import { CLAVES } from "@/lib/demo/claves";
-import { LOCALES, formatearNumero } from "@/lib/idioma/formatos";
+import { LOCALES, formatearFecha, formatearNumero } from "@/lib/idioma/formatos";
+import { buscarNecesidad } from "@/lib/tribus/necesidades";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { textos } from "@/lib/idioma/textos";
 import type { Idioma } from "@/lib/idioma/tipos";
@@ -153,6 +154,8 @@ export function SemillasCliente() {
                     <dd><MarcaSemillas texto={valor(s.plata)} /></dd>
                     <dt className="text-muted">{t.panel.presencia}</dt>
                     <dd><MarcaSemillas texto={valor(s.presencia)} /></dd>
+                    <dt className="text-muted">{t.panel.puntual}</dt>
+                    <dd data-testid={`puntual-${id}`}><MarcaSemillas texto={valor(s.puntual)} /></dd>
                     <dt className="font-medium">{t.panel.total}</dt>
                     <dd className="font-semibold" data-testid={`total-${id}`}><MarcaSemillas texto={valor(s.total)} /></dd>
                   </dl>
@@ -240,6 +243,30 @@ export function SemillasCliente() {
                 )}
               </p>
             </div>
+          </section>
+          <section aria-labelledby="puntuales" className={TARJETA} data-testid="semillas-puntuales">
+            <h3 id="puntuales" className={ETIQUETA}>{t.detalle.puntualTitulo}</h3>
+            <p className={GRANDE} data-testid="semillas-puntual"><MarcaSemillas texto={valor(semillas.puntual)} /></p>
+            {semillas.constancias.length === 0 ? (
+              <p className="text-sm text-muted">{t.detalle.puntualSinDato}</p>
+            ) : (
+              <>
+                <ul className="grid gap-1 text-sm">
+                  {semillas.constancias.map((c) => (
+                    <li key={c.uid} data-testid="constancia-puntual">
+                      {t.detalle.puntualFila(
+                        buscarNecesidad(c.datos.necesidad, idioma)?.titulo ?? c.datos.necesidad,
+                        c.datos.horas,
+                        formatearFecha(c.creada_en, idioma),
+                        valor(c.datos.semillas),
+                      )}
+                      {c.datos.horas_sin_semillas > 0 && ` · ${t.detalle.puntualSinSemillas(c.datos.horas_sin_semillas)}`}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-sm text-muted">{t.detalle.puntualAyuda}</p>
+              </>
+            )}
           </section>
         </>
       )}

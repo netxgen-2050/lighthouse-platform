@@ -7,7 +7,7 @@ import { useSesion } from "@/components/sesion/contexto";
 import { CLAVES } from "@/lib/demo/claves";
 import { useTextos } from "@/lib/idioma/cliente";
 import { leerMembresiaDelNavegador, type Membresias } from "@/lib/membresia/estado";
-import { personaDeAfirma, preadmitidasDe } from "@/lib/pactos/constancias";
+import { confirmacionesDe, personaDeAfirma, preadmitidasDe, sobrePuntual } from "@/lib/pactos/constancias";
 import { leerPactosConciliados, puntualDe, type PactoPuntual } from "@/lib/pactos/estado";
 import { leerDelNavegador } from "@/lib/pactos/registro-compartido";
 import { relacionConHolon } from "@/lib/pactos/postulacion";
@@ -30,7 +30,7 @@ type Props = {
   tomable: boolean;
 };
 
-type Leido = { membresias: Membresias; propio: PactoPuntual | undefined; otros: number | null };
+type Leido = { membresias: Membresias; propio: PactoPuntual | undefined; otros: number | null; hicieron: number | null };
 
 /**
  * Lo que esta persona puede hacer con la necesidad y cómo está para ella (pacto-puntual, design §7). Lee la membresía, sus
@@ -62,6 +62,8 @@ export function EstadoNecesidadPropio({ necesidadId, tribuId, tribuNombre, circu
       membresias: leerMembresiaDelNavegador(),
       propio: puntualDe(pactos, tribuId, necesidadId),
       otros: ajenas ? ajenas.length : null,
+      // Las verificaciones de otras personas: no cierran la necesidad, otra persona se puede seguir postulando.
+      hicieron: registro ? confirmacionesDe(registro, necesidadId).filter((c) => c.sobre !== sobrePuntual(necesidadId, idPersona)).length : null,
     });
   }, [idPersona, necesidadId, tribuId]);
 
@@ -75,6 +77,8 @@ export function EstadoNecesidadPropio({ necesidadId, tribuId, tribuNombre, circu
 
   let propioTexto: ReactNode = null;
   if (propio?.paso === "preadmitido") propioTexto = <strong>{n.tomaste}</strong>;
+  else if (propio?.paso === "hecha") propioTexto = <strong>{n.hechaEsperando}</strong>;
+  else if (propio?.paso === "verificado") propioTexto = <strong>{n.hechaPorVos}</strong>;
   else if (propio?.paso === "enviado") propioTexto = n.postulaste(holonNombre, holonTipo);
   else if (propio?.paso === "borrador" && propio.noPreadmitida) propioTexto = n.noPreadmitida(holon[0].toUpperCase() + holon.slice(1));
   else if (propio?.paso === "borrador") propioTexto = n.borrador;
@@ -84,7 +88,7 @@ export function EstadoNecesidadPropio({ necesidadId, tribuId, tribuNombre, circu
       {propioTexto && (
         <p>
           {propioTexto}
-          {propio && propio.paso !== "preadmitido" && propio.paso !== "enviado" && (
+          {propio && propio.paso !== "preadmitido" && propio.paso !== "enviado" && propio.paso !== "hecha" && propio.paso !== "verificado" && (
             <>
               {" · "}
               <Link className="underline" href={enlace}>
@@ -95,6 +99,7 @@ export function EstadoNecesidadPropio({ necesidadId, tribuId, tribuNombre, circu
         </p>
       )}
       {leido && leido.otros !== null && leido.otros > 0 && <p>{n.tomaron(leido.otros)}</p>}
+      {leido && leido.hicieron !== null && leido.hicieron > 0 && <p data-testid={`hicieron-${necesidadId}`}>{n.hicieron(leido.hicieron)}</p>}
       {tomable && !propio && (!idPersona || (leido && relacion)) && (
         <EnlaceConCuenta href={`/pactos?comunidad=${tribuId}&necesidad=${necesidadId}`} textoEntrar={n.postularme} clase={ENLACE}>
           {n.postularme}

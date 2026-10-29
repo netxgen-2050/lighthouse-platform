@@ -42,6 +42,9 @@ const es = {
     tePostulaste: (comunidad: string, tarea = "") => `Te postulaste para ${tarea} en ${comunidad}`,
     postulacionPreadmitida: (holon: string, tarea = "") => `${holon} pre-admitió tu postulación a ${tarea}`,
     postulacionNoPreadmitida: (holon: string, tarea = "") => `${holon} no pre-admitió tu postulación a ${tarea}`,
+    marcasteHecha: (comunidad: string, tarea = "") => `Marcaste hecha ${tarea} en ${comunidad}`,
+    horasVerificadas: (holon: string, tarea = "") => `${holon} verificó tus horas de ${tarea}`,
+    horasARevisar: (holon: string, tarea = "") => `${holon} pidió revisar tus horas de ${tarea}`,
   },
 };
 
@@ -80,6 +83,9 @@ const en: Textos<typeof es> = {
     tePostulaste: (comunidad: string, tarea = "") => `You applied for ${tarea} in ${comunidad}`,
     postulacionPreadmitida: (holon: string, tarea = "") => `${holon} pre-admitted your application for ${tarea}`,
     postulacionNoPreadmitida: (holon: string, tarea = "") => `${holon} did not pre-admit your application for ${tarea}`,
+    marcasteHecha: (comunidad: string, tarea = "") => `You marked ${tarea} as done in ${comunidad}`,
+    horasVerificadas: (holon: string, tarea = "") => `${holon} verified your hours for ${tarea}`,
+    horasARevisar: (holon: string, tarea = "") => `${holon} asked to review your hours for ${tarea}`,
   },
 };
 

@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { TerminoLegal } from "@/components/termino-legal";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { HORAS_PUNTUAL, ROLES, textoDeRol, type ClaveRol } from "@/lib/pactos/datos";
 import { MAX_DESCRIPCION, MAX_ROL_OTRO, faltaDelPuntual, type EdicionPuntual, type PactoPuntual } from "@/lib/pactos/estado";
+import { textoDeTope } from "@/lib/pactos/horas";
 import { loAdministraHifa, nombreDeHolon } from "@/lib/pactos/postulacion";
 import { buscarNecesidad, holonDe, type Tope } from "@/lib/tribus/necesidades";
 
@@ -21,11 +23,18 @@ type Props = {
   alEnviar: (necesidadId: string) => void;
   alRetirar: (necesidadId: string) => void;
   alDescartar: (necesidadId: string) => void;
+  /** Marcar la tarea hecha con las horas reales; el estado (y los avisos de horas fuera de rango) los resuelve `PactosCliente`. */
+  alMarcarHecha: (necesidadId: string, horas: number) => void;
+  alRetirarHecha: (necesidadId: string) => void;
+  /** Aviso de horas fuera de rango: de la necesidad que lo provocó. */
+  errorHoras: { necesidadId: string; texto: string } | null;
 };
 
 /** "Mis postulaciones a tareas": un `<article>` por postulación, con su estado en texto. El estado vive en `PactosCliente`. */
-export function PostulacionesATareas({ comunidad, puntuales, alEditar, alEnviar, alRetirar, alDescartar }: Props) {
+export function PostulacionesATareas({ comunidad, puntuales, alEditar, alEnviar, alRetirar, alDescartar, alMarcarHecha, alRetirarHecha, errorHoras }: Props) {
   const idioma = useIdioma();
+  // Las horas reales que se están escribiendo, por necesidad (texto: así se ve "0" o vacío tal cual y se avisa el rango).
+  const [horasEscritas, setHorasEscritas] = useState<Record<string, string>>({});
   const t = useTextos("pactos").puntual;
   const comunes = useTextos("comunes");
   // Lo que escribe la persona nunca se traduce: con la interfaz en inglés se marca como español.
@@ -80,7 +89,15 @@ export function PostulacionesATareas({ comunidad, puntuales, alEditar, alEnviar,
                 data-estado-puntual={p.paso}
                 className={`rounded-full border px-3 py-0.5 font-medium ${FOCO} ${p.paso === "borrador" ? "border-faint" : "border-deep bg-green-soft text-deep"}`}
               >
-                {p.paso === "borrador" ? t.pasoBorrador : p.paso === "enviado" ? t.pasoEnviada : t.pasoPreadmitida}
+                {p.paso === "borrador"
+                  ? t.pasoBorrador
+                  : p.paso === "enviado"
+                    ? t.pasoEnviada
+                    : p.paso === "preadmitido"
+                      ? t.pasoPreadmitida
+                      : p.paso === "hecha"
+                        ? t.pasoHecha
+                        : t.pasoVerificada}
               </span>
             </p>
             <fieldset disabled={!borrador} className="grid content-start gap-3 border-0 p-0">
@@ -158,7 +175,79 @@ export function PostulacionesATareas({ comunidad, puntuales, alEditar, alEnviar,
               <>
                 <p className="text-sm font-medium">{t.preadmitida(holonTexto)}</p>
                 <p className="text-sm text-muted">{t.sinSemillasTodavia}</p>
+                {p.avisoRevisar && (
+                  <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink" data-testid="aviso-revisar-horas">
+                    {t.avisoRevisar(holonTexto[0].toUpperCase() + holonTexto.slice(1))} <span lang={langTexto}>{p.avisoRevisar.motivo}</span>
+                  </p>
+                )}
+                <div className="grid gap-2">
+                  <label className="grid gap-1 text-sm">
+                    <span className="font-medium">{t.horasReales}</span>
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min={HORAS_PUNTUAL.min}
+                      max={HORAS_PUNTUAL.max}
+                      step={HORAS_PUNTUAL.paso}
+                      value={horasEscritas[p.necesidadId] ?? ""}
+                      aria-describedby={errorHoras?.necesidadId === p.necesidadId ? `error-horas-${p.necesidadId}` : undefined}
+                      aria-invalid={errorHoras?.necesidadId === p.necesidadId ? true : undefined}
+                      onChange={(e) => setHorasEscritas((h) => ({ ...h, [p.necesidadId]: e.target.value }))}
+                      className={`${CAMPO} w-40`}
+                    />
+                  </label>
+                  {errorHoras?.necesidadId === p.necesidadId && (
+                    <p id={`error-horas-${p.necesidadId}`} role="alert" className="text-sm font-medium text-danger">
+                      {errorHoras.texto}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    className={BOTON_PRIMARIO}
+                    onClick={() => alMarcarHecha(p.necesidadId, horasEscritas[p.necesidadId]?.trim() === "" || horasEscritas[p.necesidadId] === undefined ? Number.NaN : Number(horasEscritas[p.necesidadId]))}
+                  >
+                    {t.marcarHecha}
+                  </button>
+                </div>
               </>
+            )}
+            {p.paso === "hecha" && (
+              <>
+                <p className="text-sm font-medium" data-testid="esperando-verificacion">
+                  {t.hechaEsperando(holonTexto)}
+                </p>
+                <p className="text-sm text-muted">{p.horasReales !== undefined ? t.hechaHoras(p.horasReales) : comunes.sinDato}</p>
+                <button type="button" className={BOTON_SECUNDARIO} onClick={() => alRetirarHecha(p.necesidadId)}>
+                  {t.retirarHecha}
+                </button>
+              </>
+            )}
+            {p.paso === "verificado" && p.constancia && (
+              <div className="grid gap-1" data-testid="horas-verificadas">
+                <p className="text-sm font-medium">
+                  {t.verificada(holonTexto, p.constancia.datos.horas, p.constancia.datos.semillas)}
+                </p>
+                {p.constancia.datos.horas_sin_semillas > 0 && (
+                  <p className="text-sm">
+                    {t.detalleVerificada(
+                      p.constancia.datos.horas,
+                      p.constancia.datos.horas_con_semillas,
+                      p.constancia.datos.horas_sin_semillas,
+                      [
+                        p.constancia.datos.tope_unidad && p.constancia.datos.tope_valor !== null
+                          ? t.limitePersona(textoDeTope(p.constancia.datos.tope_unidad, p.constancia.datos.tope_valor))
+                          : null,
+                        p.constancia.datos.tope_total_unidad && p.constancia.datos.tope_total_valor !== null
+                          ? t.limiteTotal(textoDeTope(p.constancia.datos.tope_total_unidad, p.constancia.datos.tope_total_valor))
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join("; "),
+                    )}
+                  </p>
+                )}
+                <p className="text-sm text-muted">{t.semillasRecibidas}</p>
+              </div>
             )}
             <div className="flex flex-wrap items-center gap-3">
               {p.paso === "borrador" && (
