@@ -1,7 +1,7 @@
 ---
 name: especificador
 description: Convierte una user story o pedido de Gus en un cambio OpenSpec (proposal, specs, design, tasks). Usar cuando hay que proponer trabajo nuevo, nunca para implementar.
-tools: Read, Grep, Glob, Write, Edit, Bash, Agent
+tools: Read, Grep, Glob, Write, Edit, Bash, Agent(arquitecto)
 model: opus
 ---
 
