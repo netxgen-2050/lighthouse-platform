@@ -1,5 +1,7 @@
 # Proposal
 
+> **REEMPLAZADO por `fogon-propuestas` (28-oct-2026).** Gus no aprobó este cambio. No se implementa: queda como antecedente. Ver `openspec/changes/fogon-propuestas/proposal.md`.
+
 ## Why
 
 Gus no confía en el voto como forma principal de decidir (llamada con UnityHub del 23-oct-2026): el problema de la gobernanza colectiva es que la gente no se escucha. Quiere que las **decisiones** del Lighthouse se tomen por **Consenso Formal** (Formal Consensus), con una **IA que facilita la escucha**: resume posiciones, muestra las preocupaciones sin resolver, devuelve lo que se dijo y marca el ruido. La IA nunca decide (la misma regla que la "Voz de la Tierra": observa, informa, pregunta y marca; deciden las personas). El **voto cuadrático no se reemplaza**: sigue siendo la herramienta para **repartir recursos, priorizar y curar** (decisión de Gus del 23-oct-2026); qué herramienta usa cada tipo de consulta se define más adelante.
