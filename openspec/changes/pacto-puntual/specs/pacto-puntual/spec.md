@@ -56,7 +56,7 @@ Al abrir `/pactos` con una `necesidad` tomable de esa comunidad, siendo miembro 
 
 #### Scenario: Borrador desde la necesidad
 - **WHEN** una persona miembro de Valle Solar abre `/pactos?comunidad=valle&necesidad=valle-solar`
-- **THEN** ve un borrador de pacto puntual "Energía solar" con 10 h, fecha 21 de noviembre de 2026, rol "Otro: Electricidad", la descripción vacía, "Máximo por persona: 10 h · las horas de más no generan Semillas" y "Responde: círculo Energía solar"
+- **THEN** ve un borrador de pacto puntual "Energía solar" con 10 h, fecha 21 de noviembre de 2026, rol "Otro: Electricidad", la descripción vacía, "Máximo por persona: 10 h · las horas de más no generan Semillas", "Máximo total de la tarea: 20 h" y "Responde: círculo Energía solar"
 
 #### Scenario: Horas que faltan
 - **WHEN** abre `/pactos?comunidad=valle&necesidad=valle-eventos`
@@ -90,7 +90,7 @@ Una postulación SHALL poder enviarse solo con rol (y su texto si es "Otro"), de
 - **THEN** vuelve a Borrador con sus horas, fecha, rol y descripción, y quien administra el holón ya no la ve pendiente
 
 ### Requirement: Quién pre-admite
-Una postulación SHALL responderla quien administra el holón de la necesidad: quien lidera la tribu, para la tribu o para un círculo de esa tribu; el super admin, para el común o para un círculo transversal. Nadie MUST poder responder su propia postulación: la de quien administra ese holón SHALL responderla otra persona que lo administre o el super admin.
+Una postulación SHALL responderla quien administra el holón de la necesidad: quien lidera la tribu, para la tribu o para un círculo de esa tribu; el super admin, para el común y, como respaldo humano de Hifa, para un círculo transversal (ver "Círculos transversales administrados por Hifa"). Nadie MUST poder responder su propia postulación: la de quien administra ese holón SHALL responderla otra persona que lo administre o el super admin.
 
 #### Scenario: Círculo de la tribu
 - **WHEN** `persona@prueba.test` envía su postulación a "Energía solar" (círculo de Valle Solar) y entra `admin@prueba.test`
@@ -104,8 +104,23 @@ Una postulación SHALL responderla quien administra el holón de la necesidad: q
 - **WHEN** `admin@prueba.test` se postula a "Energía solar" y abre `/pactos/responder`
 - **THEN** la ve sin botones y con "Es tu propia postulación: la responde otra persona que administre el círculo Energía solar o el super admin"
 
+### Requirement: Círculos transversales administrados por Hifa
+Los círculos transversales SHALL ser administrados y facilitados por Hifa (la IA), según la decisión de Gus del 28-oct. En el prototipo esto SHALL ser simulado y estar marcado como experimental: Hifa MUST NOT responder postulaciones y, como respaldo humano, las SHALL responder el super admin. La postulación a una necesidad de un círculo transversal MUST decir que lo administra Hifa (experimental, simulado) y que, si no está disponible, responde el super admin; `/pactos/responder` MUST decir que se responde como respaldo de Hifa; y la pre-admisión o la no pre-admisión SHALL quedar con la marca `respaldoDeHifa`. Los demás holones MUST NOT nombrar a Hifa. La decisión definitiva depende de probar que Hifa sea estable y fiable.
+
+#### Scenario: Aviso en la postulación
+- **WHEN** la persona abre su postulación a "Eventos y comunidad" (círculo transversal)
+- **THEN** lee que el círculo lo administra y facilita Hifa (experimental, simulado) y que, si Hifa no está disponible, responde el super admin
+
+#### Scenario: Respaldo
+- **WHEN** `super@prueba.test` pre-admite esa postulación
+- **THEN** la constancia de aceptación afirma `circulo:comunicacion-comun`, lleva `respaldoDeHifa` y tiene a `super@prueba.test` como quien actuó
+
+#### Scenario: Un círculo de la tribu no nombra a Hifa
+- **WHEN** la persona abre su postulación a "Energía solar"
+- **THEN** no se nombra a Hifa
+
 ### Requirement: Pre-admitir o no
-Pre-admitir SHALL dejar la postulación "Pre-admitida" para la persona, con el contenido y el máximo por persona que vio quien respondió. "No pre-admitir" SHALL pedir un motivo escrito (obligatorio, hasta 500 caracteres); la postulación SHALL volver a Borrador con su contenido y la persona SHALL ver el motivo. Una necesidad SHALL poder tener varias postulaciones pre-admitidas, como mucho una por persona; pre-admitir a una persona MUST NOT cambiar las postulaciones de las demás. Una misma postulación MUST tener como mucho una respuesta: si ya la tiene, la segunda MUST NOT registrarse y quien responde SHALL ver "Esta postulación ya se respondió". Al responder, SHALL verse cuántas personas ya pre-admitió ese holón para esa tarea.
+Pre-admitir SHALL dejar la postulación "Pre-admitida" para la persona, con el contenido y el máximo por persona que vio quien respondió. "No pre-admitir" SHALL pedir un motivo escrito (obligatorio, hasta 500 caracteres); la postulación SHALL volver a Borrador con su contenido y la persona SHALL ver el motivo. Una necesidad SHALL poder tener varias postulaciones pre-admitidas, como mucho una por persona; pre-admitir a una persona MUST NOT cambiar las postulaciones de las demás. Una misma postulación MUST tener como mucho una respuesta: si ya la tiene, la segunda MUST NOT registrarse y quien responde SHALL ver "Esta postulación ya se respondió". Al responder, SHALL verse cuántas personas ya pre-admitió ese holón para esa tarea y, si la tarea tiene un máximo total en horas, cuántas horas suman las personas pre-admitidas. Pre-admitir MUST NOT bloquearse por el máximo total (el reparto de las Semillas con el total es de `pacto-puntual-verificacion`).
 
 #### Scenario: Pre-admitida
 - **WHEN** `admin@prueba.test` pre-admite la postulación de `persona@prueba.test` a "Energía solar" y la persona abre `/pactos`
@@ -123,8 +138,23 @@ Pre-admitir SHALL dejar la postulación "Pre-admitida" para la persona, con el c
 - **WHEN** `admin@prueba.test` pre-admite una postulación en una pestaña y en otra, con la lista vieja, aprieta "Pre-admitir" otra vez
 - **THEN** la segunda no se registra y ve "Esta postulación ya se respondió"
 
+#### Scenario: Máximo total a la vista
+- **WHEN** `admin@prueba.test` abre `/pactos/responder` con una postulación a "Energía solar" y otra persona ya pre-admitida con 10 h
+- **THEN** lee "Máximo total de la tarea: 20 h" y "Entre todas las personas pre-admitidas suman 10 h de las 20 h del máximo total"
+
+### Requirement: Máximo total de la tarea
+Una necesidad con máximo total (`tribu-necesidades`: horas o Semillas, sumando a todas las personas, que fija quien administra el holón) SHALL mostrarlo en la postulación ("Máximo total de la tarea: 20 h") junto al máximo por persona, y MUST llevarlo en la propuesta para que valga el que vio el holón, aunque el dato de la necesidad cambie después. Una necesidad sin máximo total MUST NOT mostrar ninguna línea de total.
+
+#### Scenario: Con máximo en Semillas
+- **WHEN** la persona abre su postulación a "Plomería" (máximo por persona 60 Semillas, total 150 Semillas)
+- **THEN** lee "Máximo por persona: 60 Semillas" y "Máximo total de la tarea: 150 Semillas"
+
+#### Scenario: Sin máximo total
+- **WHEN** la persona abre su postulación a "Eventos y comunidad"
+- **THEN** no hay ninguna línea de máximo por persona ni de máximo total
+
 ### Requirement: Constancias de la postulación
-Enviar, pre-admitir, no pre-admitir y retirar SHALL quedar como constancias del registro compartido de `pactos-dos-partes`, con su misma forma: la postulación afirmada por la persona, sobre esa necesidad y esa persona, con el holón, la relación (miembro o aspirante), rol, descripción, horas, fecha y el máximo por persona de la necesidad (si tiene), y el nombre o las iniciales (MUST NOT llevar el email); la pre-admisión y la no pre-admisión afirmadas por el holón, con quien actuó por él, apuntando a la postulación. Retirar SHALL ser revocar la postulación con una constancia nueva.
+Enviar, pre-admitir, no pre-admitir y retirar SHALL quedar como constancias del registro compartido de `pactos-dos-partes`, con su misma forma: la postulación afirmada por la persona, sobre esa necesidad y esa persona, con el holón, la relación (miembro o aspirante), rol, descripción, horas, fecha y el máximo por persona y el máximo total de la necesidad (si tiene), y el nombre o las iniciales (MUST NOT llevar el email); la pre-admisión y la no pre-admisión afirmadas por el holón, con quien actuó por él, apuntando a la postulación. Retirar SHALL ser revocar la postulación con una constancia nueva.
 
 #### Scenario: Pre-admisión
 - **WHEN** `admin@prueba.test` pre-admite la postulación a "Energía solar"
@@ -154,6 +184,13 @@ Enviar una postulación, que el holón la pre-admita y que no la pre-admita SHAL
 #### Scenario: Pre-admisión una sola vez
 - **WHEN** el círculo pre-admitió la postulación y la persona abre `/pactos` dos veces
 - **THEN** Mi recorrido tiene un solo "El círculo Energía solar pre-admitió tu postulación a Energía solar"
+
+### Requirement: Nombres de las Semillas
+Los textos nuevos SHALL llamar "Semillas" a lo que se reconoce por las horas verificadas y "Semillas pendientes" solo a lo de los compromisos recurrentes que todavía no se recibió (`pactos-horas-variables`); MUST NOT usar "brotes" ni "germinar". En inglés "Semillas" no se traduce. Un pacto puntual MUST NOT hablar de Semillas pendientes.
+
+#### Scenario: Sin otros nombres
+- **WHEN** se recorren los textos de la postulación y de `/pactos/responder`
+- **THEN** dicen "Semillas" y no aparece "brotes", "germinar" ni "Semillas pendientes"
 
 ### Requirement: Compatibilidad, descarga y borrado
 Lo guardado sin pactos puntuales SHALL leerse igual que antes, con la lista vacía. Una postulación guardada con datos inválidos MUST corregirse o descartarse campo por campo sin romper el resto. La descarga de "Mis datos" SHALL incluir las constancias de las postulaciones de la persona, y borrar sus datos SHALL quitarlas del registro compartido sin tocar las de otras personas.
