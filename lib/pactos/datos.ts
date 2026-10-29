@@ -7,6 +7,8 @@ export const HOUR_REF_ARS = 7049;
 export const HOUR_REF_USD = HOUR_REF_ARS / USD_ARS;
 
 export const HORAS = { min: 4, max: 80, paso: 2, inicial: 10 } as const;
+/** Horas de un pacto puntual (una sola tarea): enteras. */
+export const HORAS_PUNTUAL = { min: 1, max: 200, paso: 1 } as const;
 /** Aporte en plata (USD): se registra como Semillas, 1 USD = 1 Semilla de referencia. */
 export const MONTO_USD = { min: 1, max: 1_000_000, inicial: 200 } as const;
 

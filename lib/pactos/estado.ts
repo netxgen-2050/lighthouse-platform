@@ -1,11 +1,17 @@
 import { personaEnSesion } from "@/lib/demo/claves";
-import { HORAS, MONTO_USD, ROLES, type ClaveRol } from "./datos";
+import type { Necesidad, Tope } from "@/lib/tribus/necesidades";
+import { HORAS, HORAS_PUNTUAL, MONTO_USD, ROLES, type ClaveRol } from "./datos";
 import {
   afirmaComunidad,
   afirmaPersona,
+  contraparteDe,
+  esPostulacion,
   estaRevocada,
   respuestaDe,
+  respuestaValida,
   sobreDe,
+  sobrePuntual,
+  topeDeDatos,
   type ConstanciaPacto,
 } from "./constancias";
 import { leerDelNavegador } from "./registro-compartido";
@@ -50,8 +56,30 @@ export type PactoTiempo = ContenidoPacto & {
   historial: VersionAceptada[];
 };
 
-/** Lo que una persona tiene en una comunidad: su pacto de tiempo y los aportes en plata (USD) registrados. */
-export type PactosDeComunidad = { tiempo: PactoTiempo; aportes: number[] };
+/** Pasos de una postulación a una tarea. `pacto-puntual-verificacion` suma "hecha" y "verificado". */
+export type PasoPuntual = "borrador" | "enviado" | "preadmitido";
+
+/**
+ * La postulación de una persona a una necesidad (pacto puntual). Lo que falta (horas, fecha) es null, nunca 0.
+ * `tope` y `topeTotal` son los de la necesidad al crearla; al conciliar una pre-admisión, los que vio el holón.
+ */
+export type PactoPuntual = {
+  necesidadId: string;
+  rol: ClaveRol | "";
+  rolOtro: string;
+  descripcion: string;
+  horas: number | null;
+  /** "AAAA-MM-DD". */
+  fecha: string | null;
+  tope: Tope | null;
+  topeTotal: Tope | null;
+  paso: PasoPuntual;
+  /** El último "no pre-admitió", para el aviso. */
+  noPreadmitida?: { motivo: string; cuando: string };
+};
+
+/** Lo que una persona tiene en una comunidad: su pacto de tiempo, los aportes en plata (USD) y sus postulaciones a tareas. */
+export type PactosDeComunidad = { tiempo: PactoTiempo; aportes: number[]; puntuales: PactoPuntual[] };
 
 /** La última vez que una comunidad no aceptó un pacto o un cambio: la pantalla muestra el motivo hasta que se vuelva a enviar. */
 export type UltimaRespuesta = { tipo: "no-acepta"; motivo: string; comunidad: string; cuando: string; esCambio?: boolean };
@@ -99,7 +127,7 @@ function acotar(n: number, min: number, max: number, paso: number): number {
 
 /** Lo guardado de una comunidad, o lo inicial si todavía no hay nada. */
 export function deComunidad(e: EstadoPactos, comunidad: string): PactosDeComunidad {
-  return Object.hasOwn(e.comunidades, comunidad) ? e.comunidades[comunidad] : { tiempo: TIEMPO_INICIAL, aportes: [] };
+  return Object.hasOwn(e.comunidades, comunidad) ? e.comunidades[comunidad] : { tiempo: TIEMPO_INICIAL, aportes: [], puntuales: [] };
 }
 
 /** ¿Están el rol (y su texto si es "Otro") y la descripción propia? Sin eso no se puede enviar. */
@@ -227,6 +255,141 @@ export function reducir(e: EstadoPactos, a: Accion): EstadoPactos {
   }
 }
 
+/* ---------- Pactos puntuales (openspec/changes/pacto-puntual) ---------- */
+
+const FECHA = /^\d{4}-\d{2}-\d{2}$/;
+
+/** "AAAA-MM-DD" que existe en el calendario (rechaza 2026-02-31). */
+export function fechaValida(f: unknown): f is string {
+  if (typeof f !== "string" || !FECHA.test(f)) return false;
+  const t = Date.parse(`${f}T00:00:00.000Z`);
+  return !Number.isNaN(t) && new Date(t).toISOString().slice(0, 10) === f;
+}
+
+function horasPuntualValidas(h: unknown): h is number {
+  return typeof h === "number" && Number.isInteger(h) && h >= HORAS_PUNTUAL.min && h <= HORAS_PUNTUAL.max;
+}
+
+/** ¿Están rol (y su texto si es "Otro"), descripción, horas enteras de 1 a 200 y una fecha válida? Sin eso no se envía. */
+export function puntualCompleto(p: Pick<PactoPuntual, "rol" | "rolOtro" | "descripcion" | "horas" | "fecha">): boolean {
+  if (!p.rol) return false;
+  if (p.rol === "otro" && !p.rolOtro.trim()) return false;
+  return p.descripcion.trim().length > 0 && horasPuntualValidas(p.horas) && fechaValida(p.fecha);
+}
+
+/** Qué falta para enviar, en orden, para que la pantalla lo diga. */
+export function faltaDelPuntual(p: Pick<PactoPuntual, "rol" | "rolOtro" | "descripcion" | "horas" | "fecha">): "rol" | "descripcion" | "horas" | "fecha" | null {
+  if (!p.rol || (p.rol === "otro" && !p.rolOtro.trim())) return "rol";
+  if (!p.descripcion.trim()) return "descripcion";
+  if (!horasPuntualValidas(p.horas)) return "horas";
+  if (!fechaValida(p.fecha)) return "fecha";
+  return null;
+}
+
+export type EdicionPuntual = Partial<Pick<PactoPuntual, "rolOtro" | "descripcion">> & {
+  rol?: ClaveRol | "";
+  /** null = la persona vació el campo. */
+  horas?: number | null;
+  fecha?: string | null;
+};
+
+/** Lo que cambia solo una respuesta del holón leída del registro (`conciliar`): la pantalla de la persona nunca las llama. */
+export type AccionPuntual =
+  | { tipo: "nuevoPuntual"; comunidad: string; necesidad: Necesidad }
+  | { tipo: "editarPuntual"; comunidad: string; necesidadId: string; cambios: EdicionPuntual }
+  | { tipo: "enviarPuntual"; comunidad: string; necesidadId: string }
+  | { tipo: "retirarPuntual"; comunidad: string; necesidadId: string }
+  | { tipo: "descartarPuntual"; comunidad: string; necesidadId: string }
+  | { tipo: "preadmitirPuntual"; comunidad: string; necesidadId: string; contenido: ContenidoPuntual }
+  | { tipo: "noPreadmitirPuntual"; comunidad: string; necesidadId: string; motivo: string; cuando: string };
+
+/** Lo que el holón vio al pre-admitir. */
+export type ContenidoPuntual = Pick<PactoPuntual, "rol" | "rolOtro" | "descripcion" | "horas" | "fecha" | "tope" | "topeTotal">;
+
+export function puntualDe(e: EstadoPactos, comunidad: string, necesidadId: string): PactoPuntual | undefined {
+  return deComunidad(e, comunidad).puntuales.find((p) => p.necesidadId === necesidadId);
+}
+
+function conPuntuales(e: EstadoPactos, comunidad: string, puntuales: PactoPuntual[]): EstadoPactos {
+  const actual = deComunidad(e, comunidad);
+  return { ...e, comunidades: { ...e.comunidades, [comunidad]: { ...actual, puntuales } } };
+}
+
+function cambiarPuntual(
+  e: EstadoPactos,
+  comunidad: string,
+  necesidadId: string,
+  desde: PasoPuntual,
+  cambio: (p: PactoPuntual) => PactoPuntual | null,
+): EstadoPactos {
+  const lista = deComunidad(e, comunidad).puntuales;
+  const i = lista.findIndex((p) => p.necesidadId === necesidadId);
+  // Cada acción vale solo en su paso: leer dos veces una respuesta no la aplica dos veces.
+  if (i < 0 || lista[i].paso !== desde) return e;
+  const nuevo = cambio(lista[i]);
+  if (nuevo === lista[i]) return e;
+  if (nuevo === null) return conPuntuales(e, comunidad, lista.filter((_, j) => j !== i));
+  return conPuntuales(e, comunidad, lista.map((p, j) => (j === i ? nuevo : p)));
+}
+
+export function reducirPuntual(e: EstadoPactos, a: AccionPuntual): EstadoPactos {
+  switch (a.tipo) {
+    case "nuevoPuntual": {
+      const n = a.necesidad;
+      if (puntualDe(e, a.comunidad, n.id)) return e;
+      const nuevo: PactoPuntual = {
+        necesidadId: n.id,
+        rol: n.habilidad,
+        rolOtro: (n.habilidadOtra ?? "").slice(0, MAX_ROL_OTRO),
+        descripcion: "",
+        horas: n.horas,
+        fecha: n.paraCuando,
+        tope: n.tope,
+        topeTotal: n.topeTotal,
+        paso: "borrador",
+      };
+      return conPuntuales(e, a.comunidad, [...deComunidad(e, a.comunidad).puntuales, nuevo]);
+    }
+    case "editarPuntual":
+      return cambiarPuntual(e, a.comunidad, a.necesidadId, "borrador", (p) => {
+        const c = a.cambios;
+        const nuevo = { ...p };
+        if (c.rol !== undefined) nuevo.rol = ROLES.find((r) => r.clave === c.rol)?.clave ?? "";
+        if (c.rolOtro !== undefined) nuevo.rolOtro = c.rolOtro.slice(0, MAX_ROL_OTRO);
+        if (c.descripcion !== undefined) nuevo.descripcion = c.descripcion.slice(0, MAX_DESCRIPCION);
+        if (c.horas !== undefined) {
+          nuevo.horas = c.horas === null || !Number.isFinite(c.horas) ? null : acotar(c.horas, HORAS_PUNTUAL.min, HORAS_PUNTUAL.max, HORAS_PUNTUAL.paso);
+        }
+        if (c.fecha !== undefined) nuevo.fecha = fechaValida(c.fecha) ? c.fecha : null;
+        return nuevo;
+      });
+    case "enviarPuntual":
+      return cambiarPuntual(e, a.comunidad, a.necesidadId, "borrador", (p) => {
+        if (!puntualCompleto(p)) return p;
+        const { noPreadmitida: _n, ...resto } = p;
+        void _n;
+        return { ...resto, paso: "enviado" };
+      });
+    case "retirarPuntual":
+      return cambiarPuntual(e, a.comunidad, a.necesidadId, "enviado", (p) => ({ ...p, paso: "borrador" }));
+    case "descartarPuntual":
+      return cambiarPuntual(e, a.comunidad, a.necesidadId, "borrador", () => null);
+    case "preadmitirPuntual":
+      return cambiarPuntual(e, a.comunidad, a.necesidadId, "enviado", (p) => ({ ...p, ...a.contenido, paso: "preadmitido" }));
+    case "noPreadmitirPuntual":
+      return cambiarPuntual(e, a.comunidad, a.necesidadId, "enviado", (p) => ({
+        ...p,
+        paso: "borrador",
+        noPreadmitida: { motivo: a.motivo.slice(0, 500), cuando: a.cuando },
+      }));
+  }
+}
+
+/** Todas las postulaciones de la persona, con su comunidad. */
+export function puntualesDe(e: EstadoPactos): { comunidad: string; puntual: PactoPuntual }[] {
+  return Object.entries(e.comunidades).flatMap(([comunidad, c]) => c.puntuales.map((puntual) => ({ comunidad, puntual })));
+}
+
 /** Pactos de tiempo aceptados, por comunidad: lo que Semillas suma. */
 export function pactosAceptados(e: EstadoPactos): { comunidad: string; horas: number; rol: ClaveRol }[] {
   const salida: { comunidad: string; horas: number; rol: ClaveRol }[] = [];
@@ -302,6 +465,43 @@ function leerAportes(x: unknown): number[] {
   );
 }
 
+function leerTope(x: unknown): Tope | null {
+  if (typeof x !== "object" || x === null) return null;
+  const o = x as Record<string, unknown>;
+  return topeDeDatos(typeof o.unidad === "string" ? o.unidad : undefined, String(o.valor));
+}
+
+/** Lo guardado de las postulaciones: lo inválido se corrige o se descarta campo por campo; lo enviado incompleto vuelve a borrador. */
+function leerPuntuales(x: unknown): PactoPuntual[] {
+  if (!Array.isArray(x)) return [];
+  const salida: PactoPuntual[] = [];
+  for (const v of x) {
+    if (typeof v !== "object" || v === null) continue;
+    const o = v as Record<string, unknown>;
+    const id = o.necesidadId;
+    if (typeof id !== "string" || !id || id === "__proto__" || id.includes(":") || salida.some((p) => p.necesidadId === id)) continue;
+    const p: PactoPuntual = {
+      necesidadId: id,
+      rol: ROLES.find((r) => r.clave === o.rol)?.clave ?? "",
+      rolOtro: texto(o.rolOtro, MAX_ROL_OTRO),
+      descripcion: texto(o.descripcion, MAX_DESCRIPCION),
+      horas: horasPuntualValidas(o.horas) ? o.horas : null,
+      fecha: fechaValida(o.fecha) ? o.fecha : null,
+      tope: leerTope(o.tope),
+      topeTotal: leerTope(o.topeTotal),
+      paso: "borrador",
+    };
+    const n = o.noPreadmitida;
+    if (typeof n === "object" && n !== null) {
+      const m = n as Record<string, unknown>;
+      if (typeof m.motivo === "string" && typeof m.cuando === "string") p.noPreadmitida = { motivo: m.motivo.slice(0, 500), cuando: m.cuando };
+    }
+    if ((o.paso === "enviado" || o.paso === "preadmitido") && puntualCompleto(p)) p.paso = o.paso;
+    salida.push(p);
+  }
+  return salida;
+}
+
 /** Lee lo guardado; cualquier cosa rara se descarta campo por campo. Lo guardado con el formato anterior se ignora. */
 export function leer(crudo: string | null): EstadoPactos {
   if (!crudo) return INICIAL;
@@ -314,7 +514,7 @@ export function leer(crudo: string | null): EstadoPactos {
       for (const [id, v] of Object.entries(r.comunidades)) {
         if (id === "__proto__" || typeof v !== "object" || v === null) continue;
         const c = v as Record<string, unknown>;
-        comunidades[id] = { tiempo: leerTiempo(c.tiempo), aportes: leerAportes(c.aportes) };
+        comunidades[id] = { tiempo: leerTiempo(c.tiempo), aportes: leerAportes(c.aportes), puntuales: leerPuntuales(c.puntuales) };
       }
     }
     const estado: EstadoPactos = { pestana: r.pestana === "plata" ? "plata" : "tiempo", comunidades };
@@ -341,7 +541,11 @@ export function leer(crudo: string | null): EstadoPactos {
 
 /** Una respuesta de la tribu ya aplicada al pacto de la persona: sirve para anunciar y registrar el evento una sola vez. */
 export type RespuestaAplicada = {
-  tipo: "acepta" | "no-acepta";
+  /** "preadmite" y "no-preadmite" son las del holón a una postulación (`necesidadId` y `holon` vienen en ese caso). */
+  tipo: "acepta" | "no-acepta" | "preadmite" | "no-preadmite";
+  /** Postulación: la necesidad y el holón (`circulo:valle-3`) que respondió. */
+  necesidadId?: string;
+  holon?: string;
   comunidad: string;
   esCambio: boolean;
   /** Acepta: la versión nueva. No acepta: la versión que sigue vigente (0 si era un pacto nuevo). */
@@ -421,6 +625,69 @@ export function conciliar(
       const motivo = texto(r.datos.motivo, 500);
       actual = { ...siguiente, ultimaRespuesta: { tipo: "no-acepta", motivo, comunidad, cuando: r.cuando, ...(esCambio ? { esCambio: true } : {}) } };
       aplicadas.push({ tipo: "no-acepta", comunidad, esCambio, version: t.version, cuando: r.cuando, propuestaId: propuesta.id, motivo });
+    }
+  }
+  const p = conciliarPuntuales(actual, constancias, idPersona);
+  return { estado: p.estado, aplicadas: [...aplicadas, ...p.aplicadas] };
+}
+
+/** La última postulación no revocada de esa persona a esa necesidad, o null. */
+export function ultimaPostulacion(constancias: readonly ConstanciaPacto[], idPersona: string, necesidadId: string): ConstanciaPacto | null {
+  const sobre = sobrePuntual(necesidadId, idPersona);
+  const propias = constancias.filter(
+    (c) => esPostulacion(c) && c.sobre === sobre && c.afirma === afirmaPersona(idPersona) && !estaRevocada(constancias, c.id),
+  );
+  return propias.length > 0 ? propias[propias.length - 1] : null;
+}
+
+/** El contenido que el holón vio, leído de los `datos` de la postulación; null si no alcanza para una postulación completa. */
+function contenidoPuntualDeDatos(d: Record<string, string>): ContenidoPuntual | null {
+  const horas = Number(d.horas);
+  const c: ContenidoPuntual = {
+    rol: ROLES.find((r) => r.clave === d.rol)?.clave ?? "",
+    rolOtro: texto(d.rolOtro, MAX_ROL_OTRO),
+    descripcion: texto(d.descripcion, MAX_DESCRIPCION),
+    horas: horasPuntualValidas(horas) ? horas : null,
+    fecha: fechaValida(d.fecha) ? d.fecha : null,
+    tope: topeDeDatos(d.topeUnidad, d.topeValor),
+    topeTotal: topeDeDatos(d.topeTotalUnidad, d.topeTotalValor),
+  };
+  return puntualCompleto(c) ? c : null;
+}
+
+/**
+ * Aplica a las postulaciones enviadas de la persona las respuestas del holón que están en el registro. Solo vale una
+ * respuesta del holón de la postulación (`contraparteDe`) y de otra persona. Lo que vale es lo que el holón vio.
+ */
+function conciliarPuntuales(
+  estado: EstadoPactos,
+  constancias: readonly ConstanciaPacto[],
+  idPersona: string,
+): { estado: EstadoPactos; aplicadas: RespuestaAplicada[] } {
+  let actual = estado;
+  const aplicadas: RespuestaAplicada[] = [];
+  for (const [comunidad, c] of Object.entries(estado.comunidades)) {
+    for (const p of c.puntuales) {
+      if (p.paso !== "enviado") continue;
+      const propuesta = ultimaPostulacion(constancias, idPersona, p.necesidadId);
+      if (!propuesta) continue;
+      const r = respuestaDe(constancias, propuesta.id);
+      if (!r || r.apuntaA !== propuesta.id || r.version !== propuesta.version || !respuestaValida(propuesta, r)) continue;
+      const holon = contraparteDe(propuesta) ?? "";
+      if (r.esquema === "pacto-acepta") {
+        const contenido = contenidoPuntualDeDatos(propuesta.datos);
+        if (!contenido) continue;
+        const siguiente = reducirPuntual(actual, { tipo: "preadmitirPuntual", comunidad, necesidadId: p.necesidadId, contenido });
+        if (siguiente === actual) continue;
+        actual = siguiente;
+        aplicadas.push({ tipo: "preadmite", comunidad, esCambio: false, version: r.version, cuando: r.cuando, propuestaId: propuesta.id, necesidadId: p.necesidadId, holon });
+      } else if (r.esquema === "pacto-no-acepta") {
+        const motivo = texto(r.datos.motivo, 500);
+        const siguiente = reducirPuntual(actual, { tipo: "noPreadmitirPuntual", comunidad, necesidadId: p.necesidadId, motivo, cuando: r.cuando });
+        if (siguiente === actual) continue;
+        actual = siguiente;
+        aplicadas.push({ tipo: "no-preadmite", comunidad, esCambio: false, version: r.version, cuando: r.cuando, propuestaId: propuesta.id, necesidadId: p.necesidadId, holon, motivo });
+      }
     }
   }
   return { estado: actual, aplicadas };

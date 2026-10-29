@@ -43,7 +43,7 @@ test("valle: hecha, círculo de la tribu, transversal con Hifa, máximos y sin m
   await expect(sol).not.toContainText("Esperando el aval");
   const ev = await abrir(page, "valle-eventos");
   await expect(ev).toContainText("Círculo: Comunicación del común");
-  await expect(ev).toContainText("Lo administra y facilita Hifa (experimental, ejemplo)");
+  await expect(ev).toContainText("Lo administra y facilita Hifa (experimental, simulado)");
   await expect(ev).toContainText("responde el super admin");
   await expect(page.locator("main")).toHaveCount(1);
 });

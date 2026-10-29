@@ -39,6 +39,9 @@ const es = {
     postulacionRecibida: () => "Recibimos tu postulación",
     registrasteTicket: () => "Registraste tu ticket del Congreso",
     enviasteRonda: (comunidad: string) => `Enviaste tu ronda de reconocimiento en ${comunidad}`,
+    tePostulaste: (comunidad: string, tarea = "") => `Te postulaste para ${tarea} en ${comunidad}`,
+    postulacionPreadmitida: (holon: string, tarea = "") => `${holon} pre-admitió tu postulación a ${tarea}`,
+    postulacionNoPreadmitida: (holon: string, tarea = "") => `${holon} no pre-admitió tu postulación a ${tarea}`,
   },
 };
 
@@ -74,6 +77,9 @@ const en: Textos<typeof es> = {
     postulacionRecibida: () => "We received your application",
     registrasteTicket: () => "You registered your Congress ticket",
     enviasteRonda: (comunidad: string) => `You sent your recognition round in ${comunidad}`,
+    tePostulaste: (comunidad: string, tarea = "") => `You applied for ${tarea} in ${comunidad}`,
+    postulacionPreadmitida: (holon: string, tarea = "") => `${holon} pre-admitted your application for ${tarea}`,
+    postulacionNoPreadmitida: (holon: string, tarea = "") => `${holon} did not pre-admit your application for ${tarea}`,
   },
 };
 

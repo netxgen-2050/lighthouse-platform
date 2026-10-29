@@ -87,6 +87,28 @@ export const EVENTOS = {
       notificacion: true,
       clave: `postulacion-recibida:${idPostulacion}`,
     }),
+  /** `n` = número de envío de esa persona a esa tarea: reenviar después de un "no" registra otro. */
+  tePostulaste: (tarea: string, comunidad: string, idComunidad: string, necesidadId: string, n: number): NuevoEvento =>
+    evento("tePostulaste", { comunidad, tarea }, {
+      tipo: "pacto",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      clave: `postulacion:${necesidadId}:${n}`,
+    }),
+  postulacionPreadmitida: (holon: string, tarea: string, idComunidad: string, necesidadId: string): NuevoEvento =>
+    evento("postulacionPreadmitida", { comunidad: holon, tarea }, {
+      tipo: "pacto-aceptado",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      notificacion: true,
+      clave: `preadmitida:${necesidadId}`,
+    }),
+  /** El motivo no se copia al evento: queda en la postulación. `propuestaId` evita registrarlo dos veces. */
+  postulacionNoPreadmitida: (holon: string, tarea: string, idComunidad: string, propuestaId: string): NuevoEvento =>
+    evento("postulacionNoPreadmitida", { comunidad: holon, tarea }, {
+      tipo: "pacto",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      notificacion: true,
+      clave: `no-preadmitida:${propuestaId}`,
+    }),
   registrasteTicket: (): NuevoEvento => evento("registrasteTicket", {}, { tipo: "ticket", enlace: "/congreso" }),
   enviasteRonda: (comunidad: string, idComunidad: string): NuevoEvento =>
     evento("enviasteRonda", { comunidad }, { tipo: "ronda-enviada", enlace: `/semillas?comunidad=${idComunidad}` }),

@@ -1,16 +1,20 @@
 import { formatearFecha } from "@/lib/idioma/formatos";
 import type { Idioma } from "@/lib/idioma/tipos";
 import { textos } from "@/lib/idioma/textos";
+import { destinosDisponibles } from "@/lib/navegacion";
 import { buscarRol, textoDeRol } from "@/lib/pactos/datos";
+import { aceptaFormato } from "@/lib/pactos/formatos";
 import {
   administradorDe,
   avalDe,
   circuloDeNecesidad,
   holonDe,
   necesidadesDe,
+  tomable,
   type Necesidad,
 } from "@/lib/tribus/necesidades";
 import { AbrirPorAncla } from "./abrir-por-ancla";
+import { EstadoNecesidadPropio } from "./estado-necesidad-propio";
 
 const marca = "rounded-full border border-faint px-2 py-0.5 text-xs";
 
@@ -19,6 +23,8 @@ export function Necesidades({ tribuId, tribuNombre, idioma }: { tribuId: string;
   const n = tx.ficha.necesidad;
   const lista = necesidadesDe(tribuId, idioma);
   if (lista.length === 0) return null;
+  // "Postularme para tomarla" solo si Pactos está disponible en la navegación.
+  const navegacionPactos = destinosDisponibles().some((d) => d.href === "/pactos");
 
   const esCirculo = (x: Necesidad) => holonDe(x).tipo === "circulo";
   const nombreDelHolon = (x: Necesidad): string => (esCirculo(x) ? (circuloDeNecesidad(x, idioma) ?? "") : tribuNombre);
@@ -75,6 +81,16 @@ export function Necesidades({ tribuId, tribuNombre, idioma }: { tribuId: string;
                     </p>
                   )}
                   {x.tipo === "diseno" && <p>{sinAval ? n.esperandoAval(nombreDelHolon(x), esCirculo(x)) : n.avalada(nombreDelHolon(x), esCirculo(x))}</p>}
+                  <EstadoNecesidadPropio
+                    necesidadId={x.id}
+                    tribuId={tribuId}
+                    tribuNombre={tribuNombre}
+                    circuloId={x.circuloId ?? null}
+                    holonNombre={nombreDelHolon(x)}
+                    holonTipo={esCirculo(x) ? "circulo" : "tribu"}
+                    aceptaPuntuales={aceptaFormato(tribuId, "puntual")}
+                    tomable={tomable(x) && navegacionPactos}
+                  />
                 </div>
               </details>
             </li>

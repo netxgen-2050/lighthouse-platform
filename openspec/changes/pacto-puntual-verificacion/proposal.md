@@ -23,7 +23,7 @@ Es el tercero de cuatro cambios (`tribu-necesidades` → `pacto-puntual` → **`
 
 **Fuera de alcance:**
 - **Ronda de reconocimiento y ajuste por evaluación de pares (`f_eval`) sobre un puntual**: no se aplican (decisión de Gus, 28-oct), ni ahora ni con `evaluacion-pares`.
-- Un máximo total de horas o Semillas por tarea (sumando a todas las personas): Gus pidió el máximo **por persona**; el total queda como pregunta.
+- ~~Un máximo total de horas o Semillas por tarea~~ **Actualizado el 28-oct (decisión de Gus):** el máximo total de la tarea (sumando a todas las personas, que fija quien administra el holón) **sí entra**. Ya existe en `tribu-necesidades` (`topeTotal`, `repartirConTopeTotal`) y `pacto-puntual` lo lleva en la postulación; esta verificación tiene que aplicarlo al repartir las Semillas, por orden de verificación. **Pendiente:** ajustar el diseño, la spec y las tareas de este cambio (`pacto-puntual` no lo hace).
 - Revocar o corregir una constancia base ya emitida; cancelar una tarea pre-admitida que no se hizo; registro de cumplimiento con "se fue avisando / sin avisar" para tareas puntuales (D31).
 - Firmar o publicar las constancias (etapas 2 y 3 de ADR-012); emitir la constancia en el servidor (llega con la base, P9).
 - Separar en la tarjeta la proyección del pacto fijo de lo verificado de los puntuales (pregunta abierta de la revisión anterior).

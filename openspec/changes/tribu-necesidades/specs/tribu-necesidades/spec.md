@@ -89,7 +89,7 @@ Los círculos transversales SHALL ser administrados y facilitados por Hifa (la I
 
 #### Scenario: Círculo transversal
 - **WHEN** se abre en `/tribus/valle` la necesidad "Eventos y comunidad"
-- **THEN** se lee que la administra y facilita Hifa (experimental, ejemplo) y que, si no está disponible, responde el super admin
+- **THEN** se lee que la administra y facilita Hifa (experimental, simulado) y que, si no está disponible, responde el super admin
 
 #### Scenario: Círculo de la tribu
 - **WHEN** se abre en `/tribus/valle` la necesidad "Energía solar"

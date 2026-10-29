@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useTextos } from "@/lib/idioma/cliente";
 import { pendientesParaVer, puedeResponder, comunidadDeSobre } from "@/lib/pactos/constancias";
 import { quienRespondeDe } from "@/lib/pactos/navegador";
+import { postulacionesDeLaTribu } from "@/lib/pactos/postulacion";
 import { leerDelNavegador } from "@/lib/pactos/registro-compartido";
 import { useSesion } from "./contexto";
 
@@ -28,10 +29,12 @@ export function PactosParaResponder({ tribu }: { tribu: string }) {
       return;
     }
     const lista = leerDelNavegador();
+    // Pactos de la tribu más las postulaciones a tareas de la tribu y de sus círculos.
     setCantidad(
       lista === null
         ? null
-        : pendientesParaVer(lista, q).filter((c) => comunidadDeSobre(c.sobre) === tribu && puedeResponder(q, tribu, c)).length,
+        : pendientesParaVer(lista, q).filter((c) => comunidadDeSobre(c.sobre) === tribu && puedeResponder(q, tribu, c)).length +
+            postulacionesDeLaTribu(lista, q, tribu).length,
     );
   }, [idPersona, rol, tribuLider, tribu]);
 

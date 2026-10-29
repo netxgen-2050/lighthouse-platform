@@ -407,6 +407,19 @@ export const TERMINOS = {
     },
     borrador: true,
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar (con abogado) antes de cualquier uso real. Escrito con criterio de
+  // la legislación argentina (LCT 20.744 arts. 21-23 y 103; Ley de Voluntariado Social 25.855): sin subordinación ni sueldo.
+  pactopuntual: {
+    titulo: "Pacto puntual",
+    texto:
+      "Es un acuerdo voluntario para colaborar con una sola tarea. No es un contrato de trabajo: no tenés horario impuesto, nadie te da órdenes sobre cómo hacerla y no hay pago en dinero. Vos proponés las horas y la fecha. El círculo o la tribu decide si te la deja tomar y, al final, verifica que la tarea quedó hecha. Tus horas verificadas se reconocen con Semillas, que no son un sueldo: no se compran ni se venden.",
+    en: {
+      titulo: "One-off pact",
+      texto:
+        "It is a voluntary agreement to help with a single task. It is not an employment contract: you have no imposed schedule, nobody gives you orders on how to do it and there is no payment in money. You propose the hours and the date. The circle or the tribe decides whether to let you take it and, at the end, checks that the task was done. Your verified hours are recognized with Semillas, which are not a salary: they cannot be bought or sold.",
+    },
+    borrador: true,
+  },
 } as const;
 
 /** Claves de los textos que son borrador (no vienen del mock-up). */
