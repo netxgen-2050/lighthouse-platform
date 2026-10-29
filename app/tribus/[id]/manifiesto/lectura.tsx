@@ -305,7 +305,7 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
             <button type="submit" className={PRIMARIO} disabled={!puede} aria-describedby="adherir-ayuda">
               {t.adherir}
             </button>
-            <TerminoLegal clave="adhesion" />
+            <TerminoLegal clave="adhesion" idioma={idioma} />
           </span>
           <p id="adherir-ayuda" className="text-sm text-muted">
             {puede ? t.ayudaPuede : t.ayudaFalta(faltan.join(t.y))}

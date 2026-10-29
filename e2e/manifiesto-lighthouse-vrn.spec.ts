@@ -79,6 +79,7 @@ test.describe("la ficha del común", () => {
     await expect(page.getByText(/Todavía no adheriste al manifiesto\. Sin adhesión podés mirar la gobernanza, pero no participar\./)).toBeVisible();
     await expect(page.getByRole("link", { name: "Leer el manifiesto de Lighthouse VRN" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Adherir al manifiesto de Lighthouse VRN" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Qué significa legalmente: Adherir para participar" })).toBeVisible();
 
     await adherir(page);
     await page.goto("/tribus/lighthouse");
