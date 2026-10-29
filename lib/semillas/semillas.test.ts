@@ -146,6 +146,8 @@ describe("semillas por comunidad, desde lo guardado por /pactos", () => {
       tiempo: null,
       plata: null,
       presencia: null,
+      puntual: null,
+      constancias: [],
       total: null,
       pactoAceptado: false,
     });

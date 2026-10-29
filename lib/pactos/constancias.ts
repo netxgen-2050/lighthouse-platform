@@ -2,9 +2,17 @@
 // Lista de solo agregar: una constancia no se edita; retirar es agregar un `revoca` que apunta a la propuesta.
 // Las fechas y los ids de persona vienen de afuera: nada acá llama a Date.now().
 import { buscarNecesidad, holonDe, idDeHolon, type Tope } from "@/lib/tribus/necesidades";
+import { HORAS_PUNTUAL } from "./datos";
 import type { ContenidoPacto } from "./estado";
+import { mesValido } from "./mes";
 
-export type EsquemaPacto = "pacto-propone" | "pacto-acepta" | "pacto-no-acepta" | "revoca";
+export type EsquemaPacto =
+  | "pacto-propone"
+  | "pacto-acepta"
+  | "pacto-no-acepta"
+  | "revoca"
+  | "pacto-propone-horas"
+  | "pacto-confirma-horas";
 
 export type ConstanciaPacto = {
   /** `p<n>-<esquema>`, n = el número más alto existente + 1. */
@@ -27,7 +35,17 @@ export const COMUNIDAD_LIGHTHOUSE_ID = "lighthouse";
 export const PERSONA_BORRADA = "persona-borrada";
 export const MAX_MOTIVO = 500;
 
-const ESQUEMAS: readonly string[] = ["pacto-propone", "pacto-acepta", "pacto-no-acepta", "revoca"];
+const ESQUEMAS: readonly string[] = [
+  "pacto-propone",
+  "pacto-acepta",
+  "pacto-no-acepta",
+  "revoca",
+  "pacto-propone-horas",
+  "pacto-confirma-horas",
+];
+
+/** Los esquemas que se pueden retirar con un `revoca`. */
+const REVOCABLES: readonly string[] = ["pacto-propone", "pacto-acepta", "pacto-propone-horas", "pacto-confirma-horas"];
 const PREFIJO_SOBRE = "pacto:";
 
 export type Nueva = {
@@ -113,7 +131,7 @@ export function agregar(lista: readonly ConstanciaPacto[], nueva: Nueva, cuando:
     version: nueva.version,
     apuntaA: nueva.apuntaA ?? null,
     cuando,
-    revocable: nueva.esquema === "pacto-propone" || nueva.esquema === "pacto-acepta",
+    revocable: REVOCABLES.includes(nueva.esquema),
     datos: nueva.datos ?? {},
   };
   return [...lista, c];
@@ -141,6 +159,87 @@ export function revocar(lista: readonly ConstanciaPacto[], id: string, por: stri
 /** La primera respuesta (aceptación o no aceptación) a una propuesta, o null si sigue sin respuesta. */
 export function respuestaDe(lista: readonly ConstanciaPacto[], propuestaId: string): ConstanciaPacto | null {
   return lista.find((c) => (c.esquema === "pacto-acepta" || c.esquema === "pacto-no-acepta") && c.apuntaA === propuestaId) ?? null;
+}
+
+/* ---------- Horas de una tarea (pacto-puntual-verificacion, design §1) ---------- */
+
+/** Las horas de una constancia de horas: entero de 1 a 200, o null. */
+export function horasDeConstancia(c: ConstanciaPacto): number | null {
+  const n = Number(c.datos.horas);
+  return c.datos.horas !== undefined && c.datos.horas.trim() !== "" && Number.isInteger(n) && n >= HORAS_PUNTUAL.min && n <= HORAS_PUNTUAL.max ? n : null;
+}
+
+function indiceDe(lista: readonly ConstanciaPacto[], c: ConstanciaPacto): number {
+  return lista.findIndex((x) => x.id === c.id);
+}
+
+/** ¿Es una propuesta de horas bien formada, de la persona, sobre su postulación pre-admitida (no revocada)? */
+export function propuestaDeHorasValida(lista: readonly ConstanciaPacto[], h: ConstanciaPacto): boolean {
+  if (h.esquema !== "pacto-propone-horas" || horasDeConstancia(h) === null || personaDeAfirma(h.afirma) === null) return false;
+  const necesidad = necesidadDeSobre(h.sobre);
+  if (!necesidad || h.apuntaA === null) return false;
+  const post = preadmitidasDe(lista, necesidad).find((p) => p.id === h.apuntaA);
+  return post !== undefined && post.sobre === h.sobre && post.afirma === h.afirma;
+}
+
+/**
+ * ¿Esta respuesta cuenta para esa propuesta de horas? Afirma el holón que pre-admitió (recalculado desde la necesidad), no la da
+ * la misma persona (J11), apunta a la propuesta de horas y no está revocada. Una confirmación copia las horas que vio el holón.
+ */
+function respuestaDeHorasValida(lista: readonly ConstanciaPacto[], h: ConstanciaPacto, r: ConstanciaPacto): boolean {
+  if (r.apuntaA !== h.id || r.sobre !== h.sobre || estaRevocada(lista, r.id)) return false;
+  const post = h.apuntaA === null ? undefined : lista.find((p) => p.id === h.apuntaA);
+  if (!post || r.afirma !== contraparteDe(post) || r.por === personaDeAfirma(h.afirma)) return false;
+  if (r.esquema === "pacto-confirma-horas") return r.datos.horas === h.datos.horas;
+  return r.esquema === "pacto-no-acepta" && (r.datos.motivo ?? "").trim().length > 0;
+}
+
+/**
+ * La respuesta (confirmación o pedido de revisar) que cuenta para una propuesta de horas: la primera válida que está
+ * ANTES de cualquier `revoca` de la propuesta (gana la respuesta, como en `pactos-dos-partes` §3). null si no hay.
+ */
+export function respuestaDeHoras(lista: readonly ConstanciaPacto[], h: ConstanciaPacto): ConstanciaPacto | null {
+  if (!propuestaDeHorasValida(lista, h)) return null;
+  const limite = lista.findIndex((c) => c.esquema === "revoca" && c.apuntaA === h.id);
+  const hasta = limite < 0 ? lista.length : limite;
+  for (let i = 0; i < hasta; i++) {
+    const c = lista[i];
+    if ((c.esquema === "pacto-confirma-horas" || c.esquema === "pacto-no-acepta") && respuestaDeHorasValida(lista, h, c)) return c;
+  }
+  return null;
+}
+
+/** ¿Retirada? Hay un `revoca` y ninguna respuesta que cuente llegó antes. */
+export function propuestaDeHorasRetirada(lista: readonly ConstanciaPacto[], h: ConstanciaPacto): boolean {
+  return lista.some((c) => c.esquema === "revoca" && c.apuntaA === h.id) && respuestaDeHoras(lista, h) === null;
+}
+
+/** Las propuestas de horas vivas (válidas y no retiradas) de una necesidad, de la más vieja a la más nueva. */
+export function propuestasDeHorasDe(lista: readonly ConstanciaPacto[], necesidadId: string): ConstanciaPacto[] {
+  return lista.filter(
+    (h) => h.esquema === "pacto-propone-horas" && necesidadDeSobre(h.sobre) === necesidadId && propuestaDeHorasValida(lista, h) && !propuestaDeHorasRetirada(lista, h),
+  );
+}
+
+/**
+ * ¿Cuenta esta confirmación? (a) apunta a una propuesta de horas de esa persona sobre su postulación pre-admitida; (b) afirma
+ * el holón que pre-admitió; (c) no la da la persona misma; (d) copia las horas de la propuesta; (e) no está revocada; y es la
+ * respuesta que cuenta de esa propuesta (una sola, anterior a cualquier retiro).
+ */
+export function confirmacionValida(lista: readonly ConstanciaPacto[], conf: ConstanciaPacto): boolean {
+  if (conf.esquema !== "pacto-confirma-horas") return false;
+  const h = lista.find((c) => c.id === conf.apuntaA);
+  if (!h) return false;
+  return respuestaDeHoras(lista, h)?.id === conf.id;
+}
+
+/** Las confirmaciones que cuentan de una necesidad, en orden de verificación (`cuando`; a igual `cuando`, el orden del registro). */
+export function confirmacionesDe(lista: readonly ConstanciaPacto[], necesidadId: string): ConstanciaPacto[] {
+  return lista
+    .filter((c) => c.esquema === "pacto-confirma-horas" && necesidadDeSobre(c.sobre) === necesidadId && confirmacionValida(lista, c))
+    .map((c) => ({ c, i: indiceDe(lista, c) }))
+    .sort((a, b) => Date.parse(a.c.cuando) - Date.parse(b.c.cuando) || a.i - b.i)
+    .map((x) => x.c);
 }
 
 function esPropuestaPendiente(lista: readonly ConstanciaPacto[], c: ConstanciaPacto): boolean {
@@ -242,6 +341,11 @@ export function leerConstancias(crudo: string | null): ConstanciaPacto[] {
         }
       }
       const esquema = r.esquema as EsquemaPacto;
+      if (esquema === "pacto-propone-horas" || esquema === "pacto-confirma-horas") {
+        // Horas enteras de 1 a 200; el mes, si está, es AAAA-MM. Lo mal formado se ignora.
+        if (horasDeConstancia({ datos } as ConstanciaPacto) === null) continue;
+        if (datos.mes !== undefined && !mesValido(datos.mes)) continue;
+      }
       salida.push({
         id: r.id,
         esquema,
@@ -251,7 +355,7 @@ export function leerConstancias(crudo: string | null): ConstanciaPacto[] {
         version: r.version,
         apuntaA: typeof r.apuntaA === "string" ? r.apuntaA : null,
         cuando: r.cuando,
-        revocable: typeof r.revocable === "boolean" ? r.revocable : esquema === "pacto-propone" || esquema === "pacto-acepta",
+        revocable: typeof r.revocable === "boolean" ? r.revocable : REVOCABLES.includes(esquema),
         datos,
       });
     }

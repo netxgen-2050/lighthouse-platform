@@ -20,8 +20,11 @@ import {
   puedeResponder,
   topeDeDatos,
   type ConstanciaPacto,
+  type QuienResponde,
 } from "@/lib/pactos/constancias";
 import {
+  comunidadQueResponde,
+  holonDePostulacion,
   holonDeId,
   loAdministraHifa,
   nombreDeHolon,
@@ -30,7 +33,9 @@ import {
   responderPostulacion,
   type ResultadoRespuesta,
 } from "@/lib/pactos/postulacion";
-import { buscarNecesidad } from "@/lib/tribus/necesidades";
+import { horasEsperando, horasPendientes, repartidoAntesDe, responderHoras, restoDelTotal, textoDeTope, type ResultadoHoras } from "@/lib/pactos/horas";
+import { aplicarTope, buscarNecesidad } from "@/lib/tribus/necesidades";
+import { HOUR_REF_USD } from "@/lib/pactos/datos";
 import { quienRespondeDe } from "@/lib/pactos/navegador";
 import { actualizarEnNavegador, leerDelNavegador } from "@/lib/pactos/registro-compartido";
 import { buscarRol, textoDeRol } from "@/lib/pactos/datos";
@@ -42,6 +47,26 @@ const BOTON_PRIMARIO = `${BOTON} bg-deep text-on-deep hover:bg-deep-2`;
 const BOTON_SECUNDARIO = `${BOTON} border border-muted hover:bg-surface-2`;
 const CAMPO = `rounded-lg border border-muted bg-surface px-3 py-1.5 ${FOCO}`;
 
+/** Las propuestas de horas que la sesión puede verificar y las propias de un holón que administra (se ven sin botones). */
+function horasParaVer(lista: readonly ConstanciaPacto[], q: QuienResponde): { h: ConstanciaPacto; post: ConstanciaPacto; puede: boolean }[] {
+  const salida: { h: ConstanciaPacto; post: ConstanciaPacto; puede: boolean }[] = [];
+  const pendientes = horasPendientes(lista, q);
+  for (const h of horasEsperando(lista)) {
+    const post = lista.find((x) => x.id === h.apuntaA);
+    if (!post) continue;
+    const puede = pendientes.some((x) => x.id === h.id);
+    if (puede) {
+      salida.push({ h, post, puede });
+      continue;
+    }
+    // Las propias, mientras esperan: se ven sin botones si la persona administra ese holón.
+    if (personaDeAfirma(h.afirma) !== q.idPersona) continue;
+    const holon = holonDePostulacion(post);
+    if (holon && comunidadesQueResponde(q).includes(comunidadQueResponde(holon))) salida.push({ h, post, puede: false });
+  }
+  return salida;
+}
+
 function nombreComunidad(id: string): string {
   return id === COMUNIDAD_LIGHTHOUSE ? "Lighthouse" : (buscarTribu(id)?.nombre ?? id);
 }
@@ -51,6 +76,7 @@ export function ResponderCliente() {
   const textosPactos = useTextos("pactos");
   const t = textosPactos.responder;
   const p = t.postulaciones;
+  const v = t.verificar;
   const tp = textosPactos.puntual;
   const { estado, sesion, tribuLider } = useSesion();
   const comunes = useTextos("comunes");
@@ -92,6 +118,9 @@ export function ResponderCliente() {
   // Postulaciones a tareas, agrupadas por holón (pacto-puntual, design §6).
   const postulaciones = lista === null ? [] : postulacionesParaVer(lista, q);
   const holones = [...new Set(postulaciones.map((c) => holonIdDePostulacion(c) ?? ""))].filter(Boolean);
+  // Tareas hechas para verificar (pacto-puntual-verificacion): las que esta sesión puede verificar y las propias de un holón que administra (sin botones).
+  const horasVisibles = lista === null ? [] : horasParaVer(lista, q);
+  const holonesHoras = [...new Set(horasVisibles.map((x) => holonIdDePostulacion(x.post) ?? ""))].filter(Boolean);
 
   function responderAPostulacion(c: ConstanciaPacto, acepta: boolean) {
     if (!q) return;
@@ -131,6 +160,42 @@ export function ResponderCliente() {
 
   function quienPropone(c: ConstanciaPacto): string {
     return c.datos.nombre || c.datos.iniciales || t.quienSinDato;
+  }
+
+  /** Verificar o pedir revisar unas horas: se relee el registro y se comprueba, justo antes de escribir, que no tengan respuesta. */
+  function responderAHoras(h: ConstanciaPacto, post: ConstanciaPacto, verifica: boolean) {
+    if (!q) return;
+    const texto = motivo.trim();
+    if (!verifica && texto.length === 0) {
+      setErrorMotivo(v.motivoVacio);
+      campoMotivo.current?.focus();
+      return;
+    }
+    setErrorMotivo("");
+    let resultado: ResultadoHoras = "ya-respondida";
+    const nueva = actualizarEnNavegador((actual) => {
+      const r = responderHoras(actual, { propuestaHorasId: h.id, verifica, motivo: texto, sesion: q }, new Date().toISOString());
+      resultado = r.resultado;
+      return r.resultado === "ok" ? r.lista : null;
+    });
+    setAbierta(null);
+    setMotivo("");
+    if (nueva === null) {
+      setResultado((r) => ({ n: r.n + 1, texto: t.errorGuardar, error: true }));
+      return;
+    }
+    setLista(nueva);
+    const quien = quienPropone(post);
+    const tarea = buscarNecesidad(post.datos.necesidad ?? "", idioma)?.titulo ?? comunes.sinDato;
+    setResultado((r) =>
+      resultado === "sin-permiso"
+        ? { n: r.n + 1, texto: v.sinPermiso, error: true }
+        : resultado === "sin-motivo"
+          ? { n: r.n + 1, texto: v.motivoVacio, error: true }
+          : resultado !== "ok"
+            ? { n: r.n + 1, texto: v.yaRespondida, error: true }
+            : { n: r.n + 1, texto: verifica ? v.verificaste(quien, tarea) : v.pediste(quien, tarea), error: false },
+    );
   }
 
   function responder(c: ConstanciaPacto, acepta: boolean) {
@@ -195,7 +260,7 @@ export function ResponderCliente() {
         <p className="rounded-xl border border-faint bg-surface p-4">{t.sinPermiso}</p>
       ) : lista === null ? (
         <p className="rounded-xl border border-faint bg-surface p-4">{t.registroSinDato}</p>
-      ) : comunidades.length === 0 && postulaciones.length === 0 ? (
+      ) : comunidades.length === 0 && postulaciones.length === 0 && horasVisibles.length === 0 ? (
         <p className="rounded-xl border border-faint bg-surface p-4">{t.sinPendientes}</p>
       ) : (
         <>
@@ -408,6 +473,117 @@ export function ResponderCliente() {
                               <div className="flex flex-wrap gap-3">
                                 <button type="button" className={BOTON_PRIMARIO} onClick={() => responderAPostulacion(c, false)}>
                                   {p.confirmar}
+                                </button>
+                                <button
+                                  type="button"
+                                  className={BOTON_SECUNDARIO}
+                                  onClick={() => {
+                                    setAbierta(null);
+                                    setErrorMotivo("");
+                                  }}
+                                >
+                                  {t.cancelar}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </article>
+                      );
+                    })}
+                </section>
+              );
+            })}
+          </section>
+        )}
+        {horasVisibles.length > 0 && lista && (
+          <section aria-labelledby="titulo-verificar" className="grid gap-4">
+            <h2 id="titulo-verificar" className="text-xl font-semibold">
+              {v.titulo}
+            </h2>
+            <p className="text-sm text-muted">{v.aclaracion}</p>
+            {holonesHoras.map((holonId) => {
+              const holon = holonDeId(holonId);
+              const nombre = holon ? nombreDeHolon(holon, idioma) : null;
+              const hifa = holon ? loAdministraHifa(holon) : false;
+              return (
+                <section key={holonId} aria-labelledby={`verif-${holonId}`} className="grid gap-3">
+                  <h3 id={`verif-${holonId}`} className="text-lg font-semibold">
+                    {v.deHolon(nombre ? tp.holon(nombre.nombre, nombre.tipo) : comunes.sinDato)}
+                  </h3>
+                  {hifa && <p className="text-sm text-muted" data-testid="aviso-hifa-verificar">{p.respaldoHifa}</p>}
+                  {horasVisibles
+                    .filter((x) => holonIdDePostulacion(x.post) === holonId)
+                    .map(({ h, post, puede }) => {
+                      const necesidadId = post.datos.necesidad ?? "";
+                      const tarea = buscarNecesidad(necesidadId, idioma)?.titulo ?? comunes.sinDato;
+                      const horasDice = Number(h.datos.horas);
+                      const horasPactadas = Number(post.datos.horas);
+                      const tope = topeDeDatos(post.datos.topeUnidad, post.datos.topeValor);
+                      const topeTotal = topeDeDatos(post.datos.topeTotalUnidad, post.datos.topeTotalValor);
+                      const conTope = aplicarTope(horasDice, tope, HOUR_REF_USD);
+                      const resto = restoDelTotal(topeTotal, repartidoAntesDe(lista, necesidadId, null, topeTotal));
+                      const textoTope = (x: { unidad: "horas" | "semillas"; valor: number }) => textoDeTope(x.unidad, x.valor);
+                      const propio = personaDeAfirma(h.afirma) === q.idPersona;
+                      const fecha = Number.isNaN(Date.parse(h.cuando)) ? t.fechaSinDato : formatearFecha(h.cuando, idioma);
+                      return (
+                        <article key={h.id} aria-labelledby={`art-${h.id}`} className="grid gap-2 rounded-xl border border-faint bg-surface p-4" data-testid="tarea-para-verificar">
+                          <h4 id={`art-${h.id}`} className="text-lg font-semibold">
+                            <span translate="no">{quienPropone(post)}</span> · {tarea}
+                          </h4>
+                          <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+                            <dt className="text-muted">{v.pactadas}</dt>
+                            <dd>{Number.isFinite(horasPactadas) ? `${formatearNumero(horasPactadas, idioma)} h` : comunes.sinDato}</dd>
+                            <dt className="text-muted">{v.dice}</dt>
+                            <dd>{`${formatearNumero(horasDice, idioma)} h`}</dd>
+                          </dl>
+                          {tope && conTope.horasSinSemillas > 0 && (
+                            <p className="text-sm font-medium">{v.conMaximo(conTope.horasSinSemillas, textoTope(tope))}</p>
+                          )}
+                          {topeTotal && resto !== null && resto > 0 && <p className="text-sm text-muted">{v.maximoTotalQueda(textoTope({ unidad: topeTotal.unidad, valor: resto }), textoTope(topeTotal))}</p>}
+                          {topeTotal && resto === 0 && <p className="text-sm font-medium">{v.totalCompleto}</p>}
+                          <p className="text-sm text-muted">{t.enviado(fecha)}</p>
+                          {propio && nombre && <p className="rounded-lg bg-surface-2 px-3 py-2 text-sm">{v.propia(tp.holon(nombre.nombre, nombre.tipo))}</p>}
+                          {puede && abierta !== h.id && (
+                            <div className="flex flex-wrap gap-3">
+                              <button type="button" className={BOTON_PRIMARIO} onClick={() => responderAHoras(h, post, true)}>
+                                {v.verificar}
+                              </button>
+                              <button
+                                type="button"
+                                className={BOTON_SECUNDARIO}
+                                onClick={() => {
+                                  setAbierta(h.id);
+                                  setMotivo("");
+                                  setErrorMotivo("");
+                                }}
+                              >
+                                {v.pedirRevisar}
+                              </button>
+                            </div>
+                          )}
+                          {puede && abierta === h.id && (
+                            <div className="grid gap-2">
+                              <label className="grid gap-1 text-sm">
+                                <span className="font-medium">{t.motivo}</span>
+                                <textarea
+                                  ref={campoMotivo}
+                                  rows={3}
+                                  maxLength={MAX_MOTIVO}
+                                  value={motivo}
+                                  onChange={(e) => setMotivo(e.target.value)}
+                                  aria-describedby={errorMotivo ? `error-${h.id}` : undefined}
+                                  aria-invalid={errorMotivo ? true : undefined}
+                                  className={CAMPO}
+                                />
+                              </label>
+                              {errorMotivo && (
+                                <p id={`error-${h.id}`} role="alert" className="text-sm font-medium text-danger">
+                                  {errorMotivo}
+                                </p>
+                              )}
+                              <div className="flex flex-wrap gap-3">
+                                <button type="button" className={BOTON_PRIMARIO} onClick={() => responderAHoras(h, post, false)}>
+                                  {v.confirmarRevisar}
                                 </button>
                                 <button
                                   type="button"
