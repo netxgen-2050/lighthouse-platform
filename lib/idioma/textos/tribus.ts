@@ -179,6 +179,7 @@ const es = {
       cancelar: "Cancelar",
       pedido: (equipo: string) => `Pediste sumarte a ${equipo} · aspirante`,
       falloAlmacen: "No se pudo guardar en este navegador: el pedido vale solo hasta que recargues la página.",
+      noSePudo: "No se pudo registrar tu pedido: cambió tu adhesión al Lighthouse. Revisá lo que ves abajo.",
     },
   },
   postulacion: {
@@ -430,6 +431,7 @@ const en: Textos<typeof es> = {
       cancelar: "Cancel",
       pedido: (equipo: string) => `You asked to join ${equipo} · applicant`,
       falloAlmacen: "Could not save in this browser: the request only lasts until you reload the page.",
+      noSePudo: "Your request could not be registered: your sign-on to the Lighthouse changed. Check what you see below.",
     },
   },
   postulacion: {

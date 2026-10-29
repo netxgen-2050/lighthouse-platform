@@ -173,6 +173,10 @@ test.describe("con adhesión al Lighthouse", () => {
     await page.evaluate(() => window.localStorage.removeItem("lh-membresia"));
     await agua.getByRole("button", { name: "Confirmar" }).click();
     await expect(agua.getByText("Para sumarte, primero sumate como aspirante al Lighthouse")).toBeVisible();
+    // El botón desaparece: el foco pasa a la región de aviso, que anuncia que no se pudo.
+    const aviso = agua.locator("[role=status]");
+    await expect(aviso).toBeFocused();
+    await expect(aviso).toContainText("No se pudo registrar tu pedido");
     expect(await page.evaluate(() => window.localStorage.getItem("lh-equipos"))).toBeNull();
   });
 

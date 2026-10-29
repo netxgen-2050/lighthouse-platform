@@ -158,7 +158,9 @@ export function frentesDe(circuloId: string, idioma: Idioma): Frente[] {
   return FRENTES.filter((f) => f.circuloId === circuloId).map((f) => enIdioma(f, idioma));
 }
 
-const vacio = (x: BilingueConOriginal | null): boolean => x !== null && x.es.trim() === "";
+/** Vacío en español o en inglés (un `en` ausente es otra cosa: cae al español). */
+const vacio = (x: BilingueConOriginal | null): boolean =>
+  x !== null && (x.es.trim() === "" || (x.en !== undefined && x.en.trim() === ""));
 
 /**
  * Revisa los frentes y devuelve un mensaje por cada error (lista vacía = todo bien). Cada mensaje nombra el frente.

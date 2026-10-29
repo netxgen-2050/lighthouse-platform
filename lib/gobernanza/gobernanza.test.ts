@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { listarTribusBilingues } from "@/lib/tribus/datos";
-import { CIRCULOS_DEL_COMUN, circulosDe,circulosTransversales, COMUN_ID, nodoDe, padreDe, todosLosCirculos } from "./datos";
+import { CIRCULOS_DEL_COMUN, circulosDe, circulosTransversales, COMUN_ID, nodoDe, padreDe, todosLosCirculos } from "./datos";
 import {
   agregar,
   estaRevocado,

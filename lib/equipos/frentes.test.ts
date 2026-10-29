@@ -79,6 +79,9 @@ describe("validarFrentes", () => {
   it("texto vacío en faltan o en paraCuando", () => {
     expect(validarFrentes([{ ...base, faltan: { es: "  " } }], circulos, contorno)).toHaveLength(1);
     expect(validarFrentes([{ ...base, paraCuando: { es: "" } }], circulos, contorno)).toHaveLength(1);
+    // También en inglés.
+    expect(validarFrentes([{ ...base, faltan: { es: "y", en: " " } }], circulos, contorno)).toHaveLength(1);
+    expect(validarFrentes([{ ...base, paraCuando: { es: "enero", en: "" } }], circulos, contorno)).toHaveLength(1);
   });
 
   it("puntos a menos de 300 m", () => {

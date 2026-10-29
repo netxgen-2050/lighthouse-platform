@@ -33,36 +33,39 @@ export function SumarmeEquipo({ circuloId, nombreEquipo }: { circuloId: string; 
   const tx = useTextos("tribus");
   const t = tx.equipos.sumarme;
   const tm = tx.membresia;
-  const { estado, nivel, nivelListo } = useSesion();
+  const { estado, nivel, nivelListo, sesion } = useSesion();
   const conSesion = estado === "ok";
+  const idPersona = sesion?.idPersona ?? null;
   const [cargado, setCargado] = useState(false);
   const [pedidos, setPedidos] = useState<PedidosEquipos>({});
   const [adhirio, setAdhirio] = useState(false);
   const [abierto, setAbierto] = useState(false);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
+  // Lo que anuncia la región de aviso cuando no es el pedido ya hecho; `n` cuenta los avisos para mover el foco a ella.
+  const [aviso, setAviso] = useState({ n: 0, texto: "" });
   const boton = useRef<HTMLButtonElement>(null);
   const titulo = useRef<HTMLParagraphElement>(null);
   const resultado = useRef<HTMLParagraphElement>(null);
-  const moverAlResultado = useRef(false);
 
   // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor). Sin sesión no se toca.
+  // Se repite si cambia la persona sin cerrar sesión: sus pedidos y su adhesión son otros.
   useEffect(() => {
     if (!conSesion) return;
     setPedidos(leerPedidosDelNavegador());
     setAdhirio(puedeParticiparEnGobernanza(leerMembresiaDelNavegador()));
+    setAbierto(false);
+    setAviso({ n: 0, texto: "" });
     setCargado(true);
-  }, [conSesion]);
+  }, [conSesion, idPersona]);
 
   useEffect(() => {
     if (abierto) titulo.current?.focus();
   }, [abierto]);
 
+  // Tras confirmar (con o sin éxito) el botón desaparece: el foco pasa a la región de aviso.
   useEffect(() => {
-    if (moverAlResultado.current && resultado.current) {
-      moverAlResultado.current = false;
-      resultado.current.focus();
-    }
-  }, [pedidos]);
+    if (aviso.n > 0) resultado.current?.focus();
+  }, [aviso.n]);
 
   const puedeAdherir = conSesion && puedeCapacidad(nivel, "adherir");
   const entrada: EntradaSumarme = { conSesion, puedeAdherir, adhirio, pedidos, circuloId };
@@ -86,6 +89,7 @@ export function SumarmeEquipo({ circuloId, nombreEquipo }: { circuloId: string; 
     setAdhirio(ahora.adhirio);
     if (siguiente === null) {
       setPedidos(ahora.pedidos);
+      setAviso((a) => ({ n: a.n + 1, texto: t.noSePudo }));
       return;
     }
     try {
@@ -94,8 +98,8 @@ export function SumarmeEquipo({ circuloId, nombreEquipo }: { circuloId: string; 
     } catch {
       setFalloAlmacen(true);
     }
-    moverAlResultado.current = true;
     setPedidos(siguiente);
+    setAviso((a) => ({ n: a.n + 1, texto: "" }));
   }
 
   function cancelar() {
@@ -150,11 +154,10 @@ export function SumarmeEquipo({ circuloId, nombreEquipo }: { circuloId: string; 
           )}
         </>
       )}
-      {e.tipo === "pedido" && (
-        <p ref={resultado} role="status" tabIndex={-1} className={`font-medium ${FOCO}`}>
-          {t.pedido(nombreEquipo)}
-        </p>
-      )}
+      {/* Región de aviso siempre montada: se rellena después, así los lectores de pantalla anuncian el cambio. */}
+      <p ref={resultado} role="status" tabIndex={-1} className={`font-medium ${FOCO}`}>
+        {e.tipo === "pedido" ? t.pedido(nombreEquipo) : aviso.texto}
+      </p>
       {falloAlmacen && (
         <p role="alert" className="text-sm font-medium">
           {t.falloAlmacen}
