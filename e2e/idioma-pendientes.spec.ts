@@ -110,7 +110,8 @@ test.describe("Cambios a un pacto en inglés", () => {
     await page.getByRole("button", { name: "Send change to the community" }).click();
     await expect(page.getByTestId("esperando-respuesta-cambio")).toHaveText("Waiting for the answer from Lighthouse");
     await sembrarRespuestaDeLaTribu(page, "no-acepta", "Not for now");
-    const frase = /did not accept your pact: Not for now/;
+    // Es un cambio a un pacto ya aceptado: el aviso es el del cambio (no el del pacto nuevo) y lleva el motivo de la comunidad.
+    const frase = /did not accept the change to your pact: Not for now/;
     // Una copia es visible y otra va a la región viva (que se anuncia).
     await expect(page.getByText(frase)).toHaveCount(2);
     await expect(page.getByRole("status").filter({ hasText: frase })).toHaveCount(1);
