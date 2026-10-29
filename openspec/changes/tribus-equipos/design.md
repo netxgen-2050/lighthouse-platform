@@ -103,6 +103,11 @@ export function estadoSumarme(x: { conSesion: boolean; puedeAdherir: boolean; me
 
 - **El orden de los chequeos** es el de la lista: sesión, capacidad, adhesión, pedido. Con sesión y un pedido ya hecho vale `pedido`, aunque después la persona haya bajado de plan: lo que pidió no se borra.
 - `pedir` solo acepta ids de `CIRCULOS_DEL_COMUN`. Un id de tribu o uno inventado no se guarda.
+<!-- arquitecto: una sola regla de adhesión y freno en la acción (ADR-023) -->
+- **Una sola regla de adhesión.** Sumarse a un círculo del común es participar en la gobernanza, así que vale ADR-023 (Propuesta). `estadoSumarme` no mira `membresia.lighthouse` por su cuenta: recibe `adhirio: boolean`, calculado con `puedeParticiparEnGobernanza(membresias)` de `lib/gobernanza/participar.ts`. Si `manifiesto-lighthouse-vrn` todavía no está en `dev`, este cambio crea ese archivo con esa misma firma y solo esa función (pura, sin `window` ni `localStorage`; hoy = `lighthouse` en `pedido` o `miembro`), y el manifiesto la encuentra hecha. Nunca dos definiciones de "adhirió".
+- **Se frena la acción, no solo el botón.** El "Confirmar" no llama a `pedir` directo: llama a `confirmarPedido(x) → PedidosEquipos | null`, que vuelve a leer sesión, capacidad, membresía y pedidos en ese momento y devuelve `null` (sin escribir) si `estadoSumarme(x).tipo !== "puede"`. Así una membresía retirada en otra pestaña entre abrir y confirmar no deja un pedido escrito.
+- **Sin sesión nunca se escribe.** Sin sesión `clave()` devuelve el nombre sin prefijo, que comparten todas las personas del navegador. El estado `sin-sesion` ya lo impide; `confirmarPedido` lo vuelve a comprobar. Con sesión hay consentimiento vigente (ADR-005), así que no hace falta otro chequeo.
+- **Lo que entra por "Importar" se limpia igual.** `lib/demo/importar.ts` acepta cualquier clave de `NOMBRES_BASE`, así que un archivo importado puede traer `lh-equipos` con basura: `leerPedidos` descarta entrada por entrada lo que no sea un id del común con `"pedido"` (incluidos `__proto__` y `constructor`).
 
 ### 4. Clave `lh-equipos`, aparte de la membresía
 
@@ -110,6 +115,9 @@ export function estadoSumarme(x: { conSesion: boolean; puedeAdherir: boolean; me
 - **Por qué no la membresía:** sus consumidores tratan cada clave como una comunidad (buscan el nombre de la tribu, cuentan dónde sos miembro). Un `comun-agua` ahí aparecería como "comunidad desconocida" o contaría en Pactos.
 - **Alternativa descartada:** prefijar `circulo:` dentro de la membresía. Obliga a filtrar en 8 lugares y es fácil olvidarse de uno.
 - **Cuando haya integrantes de círculo de verdad** (`pacto-puntual` lo dejó afuera), `relacionConHolon` va a leer también esta clave para los círculos del común. Hoy no la lee: tomar tareas está fuera de alcance.
+<!-- arquitecto: dueño del dato y paso a la base -->
+- **Dueño del dato.** El pedido es de NetX y hoy vive solo en el navegador de la persona; nadie más lo ve (ni Hifa ni el super admin, aunque el texto diga que responden: es simulado). Es un dato personal nuevo (a qué equipo quiere sumarse una persona): se agrega como pendiente al inventario de datos del POC (`NS_platform/Documentation/backend/01 - Inventario de datos del POC.md`) desde el cuerpo del PR, porque la noche no ve `NS_platform`.
+- **Cuando el pedido pase a la base** (aceptar o rechazar aspirantes, B6): el servidor verifica la sesión, el consentimiento y la adhesión guardada en la base (ADR-023), y que el `circuloId` sea del común. Lo que haya en `lh-equipos` **no se migra**: cada persona vuelve a pedir. Este cambio no lo implementa; solo no cierra esa puerta.
 
 ### 5. `components/sumarme-equipo.tsx` (cliente)
 

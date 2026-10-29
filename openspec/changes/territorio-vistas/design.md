@@ -63,6 +63,9 @@ export function frentesEn(fase: Fase): { conLugar: Frente[]; sinLugar: Frente[];
 
 - **Un número por frente, fijo entre fases.** El número del sello es el orden del frente entre los que tienen lugar, así que el 5 es siempre "Primer obrador". Si el número cambiara con la fase, la persona perdería la referencia entre el mapa y la lista.
 - **Una selección que no es elegible se limpia.** Pasa al cambiar de vista, al cambiar a una fase donde el elemento ya no está, o con un `?sel=` de otra vista.
+<!-- arquitecto: la regla de compatibilidad solo vale sin ?vista= -->
+- **Cuándo un `?sel=` cambia la vista.** Solo cuando la URL **no** trae `vista`: si el `sel` no es elegible en Ahora, se busca en las otras vistas en el orden de `VISTAS` y se abre la primera donde sí lo sea (con la fase pedida). Si la URL **trae** `vista`, se respeta la vista y el `sel` que no es elegible se limpia. Así `?vista=ahora&sel=barrio-6` abre Ahora sin selección, y un enlace explícito nunca lleva a otra vista. Lo que es elegible en todas (común, fincas, lugares) se queda en la vista pedida o en Ahora.
+- **`leerVista` devuelve solo la vista.** La fuente del plan se lee aparte con `leerFuentePlan(params) → FuentePlanId` (desconocida o no disponible → `"ilustrativa"`); el alias viejo `?vista=permacultura` lo resuelven las dos funciones juntas (vista `plan`, fuente `permacultura` si está disponible).
 - **La vista Red (D28)** se agrega después como una entrada más con `capas: ["red"]`. Va a ser otro mapa a otra escala, y el registro no lo impide.
 - **Paneles y leyendas:** son de React y se registran en `app/territorios/[id]/vistas/` (`panel-ahora.tsx`, `panel-plan.tsx`, `panel-vision.tsx`) con un `Record<VistaId, …>`. Es el mismo patrón que `lib/gobernanza/lentes.ts` con `app/fogon/gobernanza/lentes/`.
 
@@ -75,7 +78,9 @@ export function frentesEn(fase: Fase): { conLugar: Frente[]; sinLugar: Frente[];
   - **qué muestran:** el número;
   - **forma:** círculo de 32 px con borde lleno `deep` si el frente está vigente;
   - **`aria-label`:** "Frente 1: Agua y cuenca · equipo Agua" (`tx.marcador.frente(n, nombre, equipo)`).
-  - **Frentes de fases siguientes:** no se dibujan en el mapa, porque un sello atenuado que no se puede elegir confunde con el teclado. Solo van en la lista "Más adelante". El borde punteado (`mapa-sello-frente-despues`) queda en la leyenda para cuando la persona elige una fase futura: con fase 1, "Primer obrador" ya está vigente y se dibuja con borde lleno.
+  - **Frentes de fases siguientes:** no se dibujan en el mapa, porque un sello atenuado que no se puede elegir confunde con el teclado. Solo van en la lista "Más adelante".
+  <!-- arquitecto: borde punteado = vigente en la fase elegida pero todavía no hoy; antes el design decía borde lleno y la leyenda mostraba un símbolo que nunca aparecía -->
+  - **Borde lleno o punteado.** Con una fase futura elegida, un frente con `desde > FASE_ACTUAL` (por ejemplo "Primer obrador" en fase 1) se dibuja y se elige, pero con borde punteado (`mapa-sello-frente-despues`), su `aria-label` suma "· más adelante, fase N" y el panel dice "Más adelante · fase N" sin "Quiero sumarme". Borde lleno solo para los frentes vigentes hoy. La muestra punteada de la leyenda aparece solo cuando hay alguno dibujado, para que la leyenda no nombre un símbolo que no está en el mapa. La función pura `esDeHoy(frente)` (`desde <= FASE_ACTUAL`, vía `vigenteEn`) decide las dos cosas: borde y "Quiero sumarme".
   - **Ojo, el boceto es distinto:** ahí los frentes que vienen se ven tenues en el mapa. Acá se cambia por la lista "Más adelante" para no tener elementos que no responden.
 - **Nombre accesible del mapa.** El contenedor del mapa lleva `role="region"` y `aria-label={tx.mapa.aria(vista, fase)}`, por ejemplo "Mapa del Macrolote 7 · vista Ahora · fase 0 (hoy). La lista equivalente está al lado". Se actualiza con la vista y la fase.
 - **Colores.** Los nuevos (`deep`, `faint`, `violet` para el común) salen de `token()`. Las muestras de la leyenda son clases en `app/globals.css` con `var(--color-…)`.
@@ -115,6 +120,8 @@ export function frentesEn(fase: Fase): { conLugar: Frente[]; sinLugar: Frente[];
   ```
 
   Hoy hay dos entradas: `ilustrativa` (disponible) y `martin` (pendiente). La lista del panel es un grupo de botones `aria-pressed` con las disponibles. Las pendientes van como texto "Masterplan de Martín: todavía no está".
+  <!-- arquitecto: versión más chica; un grupo de un solo botón no elige nada -->
+  - **Con una sola fuente disponible** (hoy) no se dibuja el grupo de botones: se lee "Fuente: Distribución ilustrativa" en texto, más la línea de Martín. El grupo `aria-pressed` aparece recién con dos o más disponibles (cuando entre el PR #109). El registro y `leerFuentePlan` sí se hacen ya.
 - **Choque de `?vista=`:**
   - **Si este cambio entra primero:** el PR #109 tiene que rebasarse. Su alternativa pasa a ser la fuente `permacultura` de la vista Plan (`?vista=plan&plan=permacultura`), y su selector propio desaparece. Para no romper enlaces ya compartidos, `leerVista("permacultura")` devuelve `"plan"` y la fuente `permacultura` si existe; si no existe, devuelve `"plan"` con la ilustrativa.
   - **Si el PR #109 entra primero:** este cambio absorbe su selector en la lista de fuentes, con el mismo mapeo.

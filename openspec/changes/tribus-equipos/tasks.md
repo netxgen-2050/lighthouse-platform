@@ -14,8 +14,11 @@ Una noche. Va antes de `territorio-vistas`. Rama `agente/tribus-equipos` desde `
   - **Verifica:** `frentes.test.ts` comprueba que `validarFrentes()` devuelve `[]`. Con listas armadas a mano, también reporta cada error por separado: círculo inexistente, id repetido, punto fuera, texto vacío en `faltan` y puntos a menos de ~300 m.
 - [ ] 1.5 `lib/equipos/equipos.ts`: `listarEquipos`, `leerPedidos`, `pedir` y `estadoSumarme` (design §3).
   - **Verifica:** el test comprueba que Agua, Permacultura y Contratistas van antes que Tokenomics. También que `pedir` es idempotente y descarta `valle` y `__proto__`, y que `leerPedidos` tolera JSON roto. `estadoSumarme` se prueba en sus cinco ramas, en el orden del design.
+  <!-- arquitecto: regla única de adhesión y freno en la acción -->
+  - Además: `estadoSumarme` recibe `adhirio` calculado con `puedeParticiparEnGobernanza` (si `lib/gobernanza/participar.ts` no existe en `dev`, crearlo solo con esa función pura, design §3), y `confirmarPedido` devuelve `null` sin escribir si el estado no es `puede`.
+  - **Verifica:** un test comprueba que `confirmarPedido` sin sesión, sin capacidad o sin adhesión devuelve `null`, y que con `puede` devuelve el pedido. `lib/equipos/equipos.ts` no lee `membresia.lighthouse` por su cuenta.
 - [ ] 1.6 `lib/demo/claves.ts`: `equipos: "lh-equipos"`.
-  - **Verifica:** pasan `claves.test.ts` y un test de `exportar` que incluye `equipos`.
+  - **Verifica:** pasan `claves.test.ts` y un test de `exportar` que incluye `equipos`. <!-- arquitecto --> Un test de `borrarDemo` comprueba que también quita `lh-equipos` con el prefijo de la persona.
 
 ## 2. Pantalla
 
@@ -48,5 +51,5 @@ Una noche. Va antes de `territorio-vistas`. Rama `agente/tribus-equipos` desde `
   - **Verifica:** los dos e2e pasan en verde y axe no marca violaciones.
 - [ ] 3.3 Escenario "Mis datos": un e2e o un test unitario de `exportar` con un pedido guardado.
   - **Verifica:** la descarga incluye `equipos`.
-- [ ] 3.4 Cierre: `pnpm verificar` y `pnpm build` en verde. El PR a `dev` se abre con `scripts/pr.sh` y en el cuerpo dice si se agregó `comun-contratistas` o ya estaba.
+- [ ] 3.4 Cierre: `pnpm verificar` y `pnpm build` en verde. El PR a `dev` se abre con `scripts/pr.sh` y en el cuerpo dice si se agregó `comun-contratistas` o ya estaba. <!-- arquitecto --> También dice si se creó `lib/gobernanza/participar.ts` o ya estaba, y deja la línea para el inventario de datos del POC: "`lh-equipos` · a qué círculos del común pidió sumarse la persona · navegador · pendiente".
   - **Verifica:** los comandos salen en verde y el PR está abierto.
