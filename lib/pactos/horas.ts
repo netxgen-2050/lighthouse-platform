@@ -22,8 +22,28 @@ import {
 } from "./constancias";
 import { holonDePostulacion, loAdministraHifa, puedeResponderPostulacion } from "./postulacion";
 
-/** La propuesta de horas viva (válida, sin retirar) de una postulación pre-admitida, la más nueva; o null. */
+/**
+ * La propuesta de horas viva (válida, sin retirar y sin un "no acepta" que cuente) de una postulación pre-admitida, la más
+ * nueva; o null. Tras "Pedir revisar" la persona puede volver a marcar hecha.
+ */
 export function horasDePostulacion(lista: readonly ConstanciaPacto[], postulacionId: string): ConstanciaPacto | null {
+  const hs = lista.filter(
+    (h) =>
+      h.apuntaA === postulacionId &&
+      propuestaDeHorasValida(lista, h) &&
+      !propuestaDeHorasRetirada(lista, h) &&
+      respuestaDeHoras(lista, h)?.esquema !== "pacto-no-acepta",
+  );
+  return hs.length > 0 ? hs[hs.length - 1] : null;
+}
+
+/**
+ * La propuesta de horas que la pantalla de la persona debe mirar al conciliar: la viva si hay; si no, la última válida y no
+ * retirada (la que el holón respondió con "no acepta", para aplicarle el pedido de revisar). Una propuesta nueva tapa a la vieja.
+ */
+export function horasParaConciliar(lista: readonly ConstanciaPacto[], postulacionId: string): ConstanciaPacto | null {
+  const viva = horasDePostulacion(lista, postulacionId);
+  if (viva) return viva;
   const hs = lista.filter((h) => h.apuntaA === postulacionId && propuestaDeHorasValida(lista, h) && !propuestaDeHorasRetirada(lista, h));
   return hs.length > 0 ? hs[hs.length - 1] : null;
 }

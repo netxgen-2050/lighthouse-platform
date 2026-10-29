@@ -16,7 +16,7 @@ import {
   type ConstanciaPacto,
 } from "./constancias";
 import { constanciaBasePuntual, leerConstanciaBase, type ConstanciaBase } from "./constancia-base";
-import { horasDePostulacion, repartidoAntesDe } from "./horas";
+import { horasParaConciliar, repartidoAntesDe } from "./horas";
 import { leerDelNavegador } from "./registro-compartido";
 
 /*
@@ -732,7 +732,7 @@ function conciliarPuntuales(
     for (const p of c.puntuales) {
       if (p.paso === "hecha") {
         const post = ultimaPostulacion(constancias, idPersona, p.necesidadId);
-        const h = post ? horasDePostulacion(constancias, post.id) : null;
+        const h = post ? horasParaConciliar(constancias, post.id) : null;
         const resp = h ? respuestaDeHoras(constancias, h) : null;
         if (!post || !h || !resp) continue;
         const holon = contraparteDe(post) ?? "";

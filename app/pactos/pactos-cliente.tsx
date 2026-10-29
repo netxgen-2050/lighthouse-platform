@@ -385,7 +385,7 @@ export function PactosCliente() {
       propuestaHorasId = r.id ?? "";
       return r.resultado === "ok" ? r.lista : null;
     });
-    if (nueva === null || (resultado !== "ok" && resultado !== "ya-marcada")) {
+    if (nueva === null || resultado !== "ok") {
       setFalloPublicar("envio");
       setAnuncio(tx.puntual.anunciosHecha.noSePudo);
       return;

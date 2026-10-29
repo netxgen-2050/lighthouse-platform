@@ -166,9 +166,19 @@ test("pedir revisar exige motivo, devuelve la tarea a Pre-admitida y no hay cons
   await page.goto("/panel");
   await expect(page.getByText("El círculo Energía solar pidió revisar tus horas de Energía solar")).toHaveCount(1);
   await expect(page.locator("body")).not.toContainText("Faltó conectar el inversor");
-  // Puede volver a marcarla con otras horas.
+  // Puede volver a marcarla con otras horas: la segunda propuesta queda en el registro y sobrevive a recargar.
   await page.goto("/pactos?comunidad=valle");
   await marcarHecha(page, 8);
+  const propuestas = (await registro(page)).filter((c) => c.esquema === "pacto-propone-horas");
+  expect(propuestas.map((c) => c.datos.horas)).toEqual(["10", "8"]);
+  await page.reload();
+  await expect(page.getByTestId("esperando-verificacion")).toHaveText(`Hecha · esperando que ${HOLON} verifique`);
+  await expect(page.locator("[data-estado-puntual]")).not.toHaveText("Pre-admitida");
+  // El holón la ve en "Tareas para verificar" con las horas nuevas.
+  await entrarComo(page, context, baseURL, ADMIN, "/pactos/responder");
+  const fila = page.getByTestId("tarea-para-verificar");
+  await expect(fila).toHaveCount(1);
+  await expect(fila).toContainText("8 h");
 });
 
 test("12 h con el máximo de 10 h: 2 h quedan sin Semillas y se muestran, no se borran", async ({ page, context, baseURL }) => {
@@ -208,7 +218,39 @@ test("dos personas en la misma tarea: una constancia cada una y cada una ve la s
   await expect(page.getByTestId("semillas-puntual")).toContainText("30");
 });
 
-test("otra persona del navegador ve 'La hizo 1 persona' y puede postularse", async ({ page, context, baseURL }) => {
+test("el máximo total de 20 h se llena con la tercera verificación y la tercera persona lo ve", async ({ page, context, baseURL }) => {
+  await preadmitir(page, context, baseURL, PERSONA);
+  await marcarHecha(page, 10);
+  await preadmitir(page, context, baseURL, NUEVA);
+  await marcarHecha(page, 12);
+  await verificar(page, context, baseURL, "Ana Pérez");
+  await verificar(page, context, baseURL, "Bruno Gómez");
+  // La tercera persona (quien administra el círculo) se postula y la pre-admite el super admin; también verifica el super admin.
+  await entrarComo(page, context, baseURL, ADMIN, "/tribus/valle");
+  await postular(page, "valle-solar", HOLON);
+  await entrarComo(page, context, baseURL, SUPER, "/pactos/responder");
+  await page.getByRole("button", { name: "Pre-admitir", exact: true }).click();
+  await entrarComo(page, context, baseURL, ADMIN, "/pactos?comunidad=valle");
+  await marcarHecha(page, 6);
+  await entrarComo(page, context, baseURL, SUPER, "/pactos/responder");
+  await expect(page.getByText(/El máximo total de la tarea ya se completó/)).toBeVisible();
+  await page.getByRole("button", { name: "Verificar", exact: true }).click();
+
+  const confirmaciones = (await registro(page)).filter((c) => c.esquema === "pacto-confirma-horas");
+  expect(confirmaciones.map((c) => c.datos.horas)).toEqual(["10", "12", "6"]);
+
+  await entrarComo(page, context, baseURL, ADMIN, "/pactos?comunidad=valle");
+  const bloque = page.getByTestId("horas-verificadas");
+  await expect(bloque).toContainText(`Horas verificadas por ${HOLON}: 6 h · 0 Semillas`);
+  await expect(bloque).toContainText("6 h verificadas · 0 h con Semillas · 6 h sin Semillas");
+  await expect(page.getByTestId("total-completo")).toHaveText("El máximo total de la tarea ya se completó");
+
+  // Las dos primeras no se recalculan: 50 Semillas cada una.
+  await entrarComo(page, context, baseURL, NUEVA, "/semillas?comunidad=valle");
+  await expect(page.getByTestId("semillas-puntual")).toContainText("50");
+});
+
+test("otra persona del navegador ve 'La hizo 1 persona' y puede postularse",async ({ page, context, baseURL }) => {
   await preadmitir(page, context, baseURL, PERSONA);
   await marcarHecha(page, 10);
   await verificar(page, context, baseURL, "Ana Pérez");

@@ -247,6 +247,11 @@ export function PostulacionesATareas({ comunidad, puntuales, alEditar, alEnviar,
                     )}
                   </p>
                 )}
+                {p.constancia.datos.horas_con_semillas === 0 && limitesAplicados(p.constancia).total && (
+                  <p className="text-sm font-medium" data-testid="total-completo">
+                    {t.totalCompletoPersona}
+                  </p>
+                )}
                 <p className="text-sm text-muted">{t.semillasRecibidas}</p>
               </div>
             )}

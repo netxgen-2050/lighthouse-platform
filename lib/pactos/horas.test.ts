@@ -8,6 +8,7 @@ import {
   confirmacionesDe,
   datosDePostulacion,
   leerConstancias,
+  respuestaDeHoras,
   sobrePuntual,
   type ConstanciaPacto,
   type QuienResponde,
@@ -152,6 +153,23 @@ describe("esquemas de horas", () => {
     const r = responderHoras(lista, { propuestaHorasId: h.id, verifica: false, motivo: "Faltó conectar el inversor", sesion: lider }, T);
     expect(r.resultado).toBe("ok");
     expect(confirmacionesDe(r.lista, "valle-solar")).toEqual([]);
+  });
+
+  it("tras pedir revisar la propuesta vieja deja de estar viva y la persona puede marcar hecha de nuevo", () => {
+    const lista = marcada(preadmitida([], ANA, SOLAR), ANA, SOLAR, 10);
+    const post = lista.find((x) => x.esquema === "pacto-propone")!;
+    const vieja = lista.find((x) => x.esquema === "pacto-propone-horas")!;
+    expect(marcarHecha(lista, { idPersona: ANA, necesidadId: "valle-solar", sobre: vieja.sobre, horas: 8 }, T).resultado).toBe("ya-marcada");
+    const revisar = responderHoras(lista, { propuestaHorasId: vieja.id, verifica: false, motivo: "Faltó conectar el inversor", sesion: lider }, T).lista;
+    expect(horasDePostulacion(revisar, post.id)).toBeNull();
+    const otra = marcarHecha(revisar, { idPersona: ANA, necesidadId: "valle-solar", sobre: vieja.sobre, horas: 8 }, T);
+    expect(otra.resultado).toBe("ok");
+    const nueva = otra.lista.filter((x) => x.esquema === "pacto-propone-horas")[1];
+    expect(horasDePostulacion(otra.lista, post.id)?.id).toBe(nueva.id);
+    expect(nueva.datos.horas).toBe("8");
+    // El holón ve solo la nueva y la respuesta vieja no se vuelve a aplicar a ella.
+    expect(horasPendientes(otra.lista, lider).map((x) => x.id)).toEqual([nueva.id]);
+    expect(respuestaDeHoras(otra.lista, nueva)).toBeNull();
   });
 
   it("horas fuera de rango o mes inválido se ignoran al leer, sin romper el resto", () => {
