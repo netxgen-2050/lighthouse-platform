@@ -59,7 +59,7 @@ export function publicarPropuesta(
       datos: datosDePropuesta({
         tipo: p.tipo,
         contenido: p.contenido,
-        horasVigentes: p.horasVigentes,
+        vigente: p.vigente,
         nombre: quien.nombre,
         iniciales: quien.iniciales,
         proponeLider: persona.lidera,

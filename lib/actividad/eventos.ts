@@ -131,6 +131,23 @@ export const EVENTOS = {
       notificacion: true,
       clave: `revisar:${respuestaId}`,
     }),
+  /**
+   * Horas de un mes de un pacto variable. Corregir no duplica: la clave es una por comunidad y mes, y el texto queda con la
+   * primera declaración. El dato `tarea` lleva "<horas>|<AAAA-MM>" para armar el mes en el idioma de quien lo lee.
+   */
+  declarasteHoras: (horas: number, mes: string, comunidad: string, idComunidad: string): NuevoEvento =>
+    evento("declarasteHoras", { comunidad, tarea: `${horas}|${mes}` }, {
+      tipo: "pacto",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      clave: `horas-declaradas:${idComunidad}:${mes}`,
+    }),
+  horasDelMesConfirmadas: (mes: string, comunidad: string, idComunidad: string): NuevoEvento =>
+    evento("horasDelMesConfirmadas", { comunidad, tarea: `|${mes}` }, {
+      tipo: "pacto-aceptado",
+      enlace: `/pactos?comunidad=${idComunidad}`,
+      notificacion: true,
+      clave: `horas-confirmadas:${idComunidad}:${mes}`,
+    }),
   registrasteTicket: (): NuevoEvento => evento("registrasteTicket", {}, { tipo: "ticket", enlace: "/congreso" }),
   enviasteRonda: (comunidad: string, idComunidad: string): NuevoEvento =>
     evento("enviasteRonda", { comunidad }, { tipo: "ronda-enviada", enlace: `/semillas?comunidad=${idComunidad}` }),

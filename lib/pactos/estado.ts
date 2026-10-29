@@ -1,6 +1,9 @@
 import { personaEnSesion } from "@/lib/demo/claves";
 import type { Necesidad, Tope } from "@/lib/tribus/necesidades";
-import { HORAS, HORAS_PUNTUAL, MONTO_USD, ROLES, type ClaveRol } from "./datos";
+import { HORAS, HORAS_PUNTUAL, MONTO_USD, RANGO_VARIABLE, ROLES, type ClaveRol } from "./datos";
+import { compromisoMinimoDe, esCompromisoValido, type CompromisoMeses } from "./formatos";
+import { mesDe, mesValido } from "./mes";
+import { respuestaDeMes } from "./mensual";
 import {
   afirmaComunidad,
   afirmaPersona,
@@ -32,14 +35,39 @@ export type Paso = 0 | 1 | 2;
 export const MAX_DESCRIPCION = 500;
 export const MAX_ROL_OTRO = 80;
 
-/** Lo que dice un pacto de tiempo: rol, descripción y horas. */
+/** "fija": las horas de cada mes son una sola cifra; "variable": un rango por mes y las horas de cada mes se declaran y confirma la comunidad. */
+export type Modalidad = "fija" | "variable";
+export type RangoHoras = { min: number; max: number };
+
+/** Lo que dice un pacto de tiempo: rol, descripción y horas (o, con "variable", un rango por mes y el compromiso mínimo). */
 export type ContenidoPacto = {
   /** Vacío hasta que la persona elige un rol. */
   rol: ClaveRol | "";
   /** Texto libre cuando el rol es "Otro". */
   rolOtro: string;
   descripcion: string;
+  /** Lo guardado antes de `pactos-horas-variables` no la tiene: se lee como "fija". */
+  modalidad: Modalidad;
+  /** Se usa con "fija". */
   horas: number;
+  /** Se usa con "variable". */
+  rango: RangoHoras;
+  /** Con "variable": el compromiso mínimo de la comunidad, en meses. Con "fija": null. */
+  compromisoMeses: CompromisoMeses | null;
+};
+
+/**
+ * Las horas que la persona declaró de un mes (pacto variable). "declarada": espera a la comunidad; "confirmada": la comunidad la
+ * confirmó (solo esta genera Semillas); "a-revisar": la comunidad pidió revisarla y se puede declarar de nuevo.
+ */
+export type EstadoDeclaracion = "declarada" | "confirmada" | "a-revisar";
+export type DeclaracionMes = {
+  horas: number;
+  estado: EstadoDeclaracion;
+  /** La `pacto-propone-horas` vigente de ese mes. */
+  propuestaId: string;
+  /** Con "a-revisar": lo que escribió la comunidad. */
+  motivo?: string;
 };
 
 /** Un cambio propuesto a un pacto aceptado: 0 = borrador, 1 = enviado a la comunidad. */
@@ -50,13 +78,15 @@ export type VersionAceptada = ContenidoPacto & { version: number; aceptado: stri
 
 /**
  * Los campos de contenido son la versión vigente. `version` es 0 mientras nunca se aceptó; `cambio` solo
- * existe con `paso === 2`; `historial` va en orden cronológico (la pantalla lo muestra al revés).
+ * existe con `paso === 2`; `historial` va en orden cronológico (la pantalla lo muestra al revés). `declaradas` ("AAAA-MM") vive
+ * en el pacto, no en la versión: se conserva al aceptar un cambio.
  */
 export type PactoTiempo = ContenidoPacto & {
   paso: Paso;
   version: number;
   cambio?: CambioPropuesto;
   historial: VersionAceptada[];
+  declaradas: Record<string, DeclaracionMes>;
 };
 
 /** Pasos de una postulación a una tarea: `hecha` = marcada hecha, esperando la verificación; `verificado` = el holón verificó las horas. */
@@ -104,10 +134,14 @@ export const TIEMPO_INICIAL: PactoTiempo = {
   rol: "",
   rolOtro: "",
   descripcion: "",
+  modalidad: "fija",
   horas: HORAS.inicial,
+  rango: { min: RANGO_VARIABLE.inicial.min, max: RANGO_VARIABLE.inicial.max },
+  compromisoMeses: null,
   paso: 0,
   version: 0,
   historial: [],
+  declaradas: {},
 };
 export const INICIAL: EstadoPactos = { pestana: "tiempo", comunidades: {} };
 
@@ -118,6 +152,8 @@ export type Accion =
   | { tipo: "rolOtro"; comunidad: string; texto: string }
   | { tipo: "descripcion"; comunidad: string; texto: string }
   | { tipo: "horas"; comunidad: string; horas: number }
+  | { tipo: "modalidad"; comunidad: string; modalidad: Modalidad }
+  | { tipo: "rango"; comunidad: string; min?: number; max?: number }
   | { tipo: "avanzar"; comunidad: string; ahora?: string }
   | { tipo: "retirar"; comunidad: string }
   | { tipo: "proponerCambio"; comunidad: string }
@@ -127,7 +163,10 @@ export type Accion =
   | { tipo: "aceptarCambio"; comunidad: string; ahora?: string }
   | { tipo: "rechazarCambio"; comunidad: string }
   | { tipo: "descartarCambio"; comunidad: string }
-  | { tipo: "aporte"; comunidad: string; montoUsd: number };
+  | { tipo: "aporte"; comunidad: string; montoUsd: number }
+  | { tipo: "declarar"; comunidad: string; mes: string; horas: number; propuestaId: string; ahora: string }
+  | { tipo: "confirmarMes"; comunidad: string; mes: string; propuestaId: string }
+  | { tipo: "revisarMes"; comunidad: string; mes: string; propuestaId: string; motivo: string };
 
 function acotar(n: number, min: number, max: number, paso: number): number {
   const v = Math.min(max, Math.max(min, n));
@@ -139,15 +178,63 @@ export function deComunidad(e: EstadoPactos, comunidad: string): PactosDeComunid
   return Object.hasOwn(e.comunidades, comunidad) ? e.comunidades[comunidad] : { tiempo: TIEMPO_INICIAL, aportes: [], puntuales: [] };
 }
 
-/** ¿Están el rol (y su texto si es "Otro") y la descripción propia? Sin eso no se puede enviar. */
+/** ¿Es un número del rango variable: entero de 0 a 80, en pasos de 2? */
+function horaDeRango(n: unknown): n is number {
+  return typeof n === "number" && Number.isInteger(n) && n >= RANGO_VARIABLE.min && n <= RANGO_VARIABLE.max && n % RANGO_VARIABLE.paso === 0;
+}
+
+/** ¿Es un rango válido? Los dos extremos en el rango variable y el mínimo menor que el máximo. */
+export function rangoValido(r: RangoHoras): boolean {
+  return horaDeRango(r.min) && horaDeRango(r.max) && r.min < r.max;
+}
+
+/**
+ * ¿Están el rol (y su texto si es "Otro") y la descripción propia? Con "variable", además el rango (mínimo menor que máximo) y
+ * el compromiso mínimo. Sin eso no se puede enviar.
+ */
 export function pactoCompleto(p: ContenidoPacto): boolean {
   if (!p.rol) return false;
   if (p.rol === "otro" && !p.rolOtro.trim()) return false;
-  return p.descripcion.trim().length > 0;
+  if (p.descripcion.trim().length === 0) return false;
+  return p.modalidad !== "variable" || (rangoValido(p.rango) && esCompromisoValido(p.compromisoMeses));
 }
 
 function contenido(p: ContenidoPacto): ContenidoPacto {
-  return { rol: p.rol, rolOtro: p.rolOtro, descripcion: p.descripcion, horas: p.horas };
+  return {
+    rol: p.rol,
+    rolOtro: p.rolOtro,
+    descripcion: p.descripcion,
+    modalidad: p.modalidad,
+    horas: p.horas,
+    rango: { min: p.rango.min, max: p.rango.max },
+    compromisoMeses: p.modalidad === "variable" ? p.compromisoMeses : null,
+  };
+}
+
+/** El compromiso (en meses) de la última versión variable aceptada, para no perderlo si el pacto pasa a fija y vuelve a variable. */
+export function compromisoAnterior(t: PactoTiempo): CompromisoMeses | null {
+  for (let i = t.historial.length - 1; i >= 0; i--) {
+    const c = t.historial[i].compromisoMeses;
+    if (t.historial[i].modalidad === "variable" && esCompromisoValido(c)) return c;
+  }
+  return null;
+}
+
+/**
+ * El compromiso mínimo que lleva un pacto variable. Un cambio NO lo cambia: se copia el de la versión vigente (o el de la última
+ * versión variable). Un pacto nuevo toma el de la comunidad.
+ */
+export function compromisoDelPacto(t: PactoTiempo, comunidad: string, esCambio: boolean): CompromisoMeses {
+  if (esCambio) {
+    if (t.modalidad === "variable" && esCompromisoValido(t.compromisoMeses)) return t.compromisoMeses;
+    return compromisoAnterior(t) ?? compromisoMinimoDe(comunidad);
+  }
+  return esCompromisoValido(t.compromisoMeses) ? t.compromisoMeses : compromisoMinimoDe(comunidad);
+}
+
+/** Pasa el borrador (o el cambio) a la modalidad dada, con su compromiso. */
+function conModalidad<T extends ContenidoPacto>(c: T, modalidad: Modalidad, compromiso: CompromisoMeses): T {
+  return { ...c, modalidad, compromisoMeses: modalidad === "variable" ? compromiso : null };
 }
 
 function sinCambio(t: PactoTiempo): PactoTiempo {
@@ -188,10 +275,16 @@ export function reducir(e: EstadoPactos, a: Accion): EstadoPactos {
       return conTiempo(e, a.comunidad, (t) => ({ ...t, descripcion: a.texto.slice(0, MAX_DESCRIPCION) }));
     case "horas":
       return conTiempo(e, a.comunidad, (t) => ({ ...t, horas: acotar(a.horas, HORAS.min, HORAS.max, HORAS.paso) }));
+    case "modalidad":
+      return conTiempo(e, a.comunidad, (t) => conModalidad(t, a.modalidad, compromisoDelPacto(t, a.comunidad, false)));
+    case "rango":
+      return conTiempo(e, a.comunidad, (t) => ({ ...t, rango: editarRango(t.rango, a.min, a.max) }));
     case "avanzar": {
       const actual = deComunidad(e, a.comunidad);
-      const t = actual.tiempo;
-      if (t.paso >= 2) return e;
+      const t0 = actual.tiempo;
+      if (t0.paso >= 2) return e;
+      // El compromiso del pacto variable es el de la comunidad al enviar (si ya lo trae, el que la comunidad vio).
+      const t: PactoTiempo = t0.paso === 0 ? conModalidad(t0, t0.modalidad, compromisoDelPacto(t0, a.comunidad, false)) : t0;
       // Enviar exige el pacto completo; aceptar solo tiene sentido si ya se envió.
       if (t.paso === 0 && !pactoCompleto(t)) return e;
       const siguiente: PactoTiempo = { ...t, paso: (t.paso + 1) as Paso };
@@ -216,11 +309,14 @@ export function reducir(e: EstadoPactos, a: Accion): EstadoPactos {
       const t = deComunidad(e, a.comunidad).tiempo;
       if (!t.cambio || t.cambio.paso !== 0) return e;
       const c = a.cambios;
-      const nuevo: CambioPropuesto = { ...t.cambio };
+      let nuevo: CambioPropuesto = { ...t.cambio };
       if (c.rol !== undefined) nuevo.rol = ROLES.find((r) => r.clave === c.rol)?.clave ?? "";
       if (c.rolOtro !== undefined) nuevo.rolOtro = c.rolOtro.slice(0, MAX_ROL_OTRO);
       if (c.descripcion !== undefined) nuevo.descripcion = c.descripcion.slice(0, MAX_DESCRIPCION);
       if (c.horas !== undefined && Number.isFinite(c.horas)) nuevo.horas = acotar(c.horas, HORAS.min, HORAS.max, HORAS.paso);
+      // Un cambio no cambia el compromiso: al pasar a variable lleva el de la versión vigente.
+      if (c.modalidad === "fija" || c.modalidad === "variable") nuevo = conModalidad(nuevo, c.modalidad, compromisoDelPacto(t, a.comunidad, true));
+      if (c.rango !== undefined) nuevo.rango = editarRango(nuevo.rango, c.rango.min, c.rango.max);
       return conPacto(e, a.comunidad, { ...t, cambio: nuevo });
     }
     case "enviarCambio": {
@@ -261,7 +357,57 @@ export function reducir(e: EstadoPactos, a: Accion): EstadoPactos {
       const actual = deComunidad(e, a.comunidad);
       return { ...e, comunidades: { ...e.comunidades, [a.comunidad]: { ...actual, aportes: [...actual.aportes, monto] } } };
     }
+    case "declarar": {
+      const t = deComunidad(e, a.comunidad).tiempo;
+      if (motivoNoDeclara(t, a.mes, a.horas, a.ahora) !== null) return e;
+      return conPacto(e, a.comunidad, { ...t, declaradas: { ...t.declaradas, [a.mes]: { horas: a.horas, estado: "declarada", propuestaId: a.propuestaId } } });
+    }
+    case "confirmarMes": {
+      const t = deComunidad(e, a.comunidad).tiempo;
+      const d = Object.hasOwn(t.declaradas, a.mes) ? t.declaradas[a.mes] : undefined;
+      // Cada transición vale solo desde "declarada" y para la declaración vigente: leer dos veces una respuesta no la aplica dos veces.
+      if (!d || d.estado !== "declarada" || d.propuestaId !== a.propuestaId) return e;
+      return conPacto(e, a.comunidad, { ...t, declaradas: { ...t.declaradas, [a.mes]: { horas: d.horas, estado: "confirmada", propuestaId: d.propuestaId } } });
+    }
+    case "revisarMes": {
+      const t = deComunidad(e, a.comunidad).tiempo;
+      const d = Object.hasOwn(t.declaradas, a.mes) ? t.declaradas[a.mes] : undefined;
+      if (!d || d.estado !== "declarada" || d.propuestaId !== a.propuestaId) return e;
+      const motivo = a.motivo.slice(0, 500);
+      return conPacto(e, a.comunidad, {
+        ...t,
+        declaradas: { ...t.declaradas, [a.mes]: { horas: d.horas, estado: "a-revisar", propuestaId: d.propuestaId, motivo } },
+      });
+    }
   }
+}
+
+function editarRango(r: RangoHoras, min?: number, max?: number): RangoHoras {
+  const lim = (n: number) => acotar(n, RANGO_VARIABLE.min, RANGO_VARIABLE.max, RANGO_VARIABLE.paso);
+  return {
+    min: min !== undefined && Number.isFinite(min) ? lim(min) : r.min,
+    max: max !== undefined && Number.isFinite(max) ? lim(max) : r.max,
+  };
+}
+
+/* ---------- Horas de cada mes de un pacto variable (pactos-horas-variables) ---------- */
+
+export type MotivoNoDeclara = "sin-pacto" | "fuera-de-rango" | "mes" | "confirmada";
+
+/**
+ * ¿Se pueden declarar esas horas de ese mes? Solo con el pacto aceptado y la versión vigente "variable"; las horas enteras, en pasos de
+ * 2 y dentro del rango vigente; y el mes en curso (hora de Argentina) que no esté confirmado, o un mes pasado que la comunidad
+ * pidió revisar. Un mes futuro, un mes pasado sin revisar o un mes confirmado no se declaran. null = se puede.
+ */
+export function motivoNoDeclara(t: PactoTiempo, mes: string, horas: number, ahora: string): MotivoNoDeclara | null {
+  if (t.paso !== 2 || t.modalidad !== "variable" || !mesValido(mes)) return "sin-pacto";
+  if (!horaDeRango(horas) || horas < t.rango.min || horas > t.rango.max) return "fuera-de-rango";
+  const enCurso = mesDe(ahora);
+  if (enCurso === "") return "mes";
+  const previa = Object.hasOwn(t.declaradas, mes) ? t.declaradas[mes] : undefined;
+  if (previa?.estado === "confirmada") return "confirmada";
+  if (mes === enCurso) return null;
+  return previa?.estado === "a-revisar" && mes < enCurso ? null : "mes";
 }
 
 /* ---------- Pactos puntuales (openspec/changes/pacto-puntual) ---------- */
@@ -429,10 +575,26 @@ export function puntualesDe(e: EstadoPactos): { comunidad: string; puntual: Pact
 }
 
 /** Pactos de tiempo aceptados, por comunidad: lo que Semillas suma. */
-export function pactosAceptados(e: EstadoPactos): { comunidad: string; horas: number; rol: ClaveRol }[] {
-  const salida: { comunidad: string; horas: number; rol: ClaveRol }[] = [];
+export function pactosAceptados(e: EstadoPactos): {
+  comunidad: string;
+  horas: number;
+  rol: ClaveRol;
+  modalidad: Modalidad;
+  rango: RangoHoras;
+  compromisoMeses: CompromisoMeses | null;
+}[] {
+  const salida: ReturnType<typeof pactosAceptados> = [];
   for (const [comunidad, p] of Object.entries(e.comunidades)) {
-    if (p.tiempo.paso === 2 && p.tiempo.rol) salida.push({ comunidad, horas: p.tiempo.horas, rol: p.tiempo.rol });
+    if (p.tiempo.paso === 2 && p.tiempo.rol) {
+      salida.push({
+        comunidad,
+        horas: p.tiempo.horas,
+        rol: p.tiempo.rol,
+        modalidad: p.tiempo.modalidad,
+        rango: p.tiempo.rango,
+        compromisoMeses: p.tiempo.compromisoMeses,
+      });
+    }
   }
   return salida;
 }
@@ -446,25 +608,56 @@ function texto(x: unknown, max: number): string {
   return typeof x === "string" ? x.slice(0, max) : "";
 }
 
-function leerContenido(o: Record<string, unknown>): ContenidoPacto {
+function leerRango(x: unknown): RangoHoras {
+  const inicial = { min: RANGO_VARIABLE.inicial.min, max: RANGO_VARIABLE.inicial.max };
+  if (typeof x !== "object" || x === null) return inicial;
+  const o = x as Record<string, unknown>;
+  const lim = (n: unknown, otro: number) =>
+    typeof n === "number" && Number.isFinite(n) ? acotar(n, RANGO_VARIABLE.min, RANGO_VARIABLE.max, RANGO_VARIABLE.paso) : otro;
+  return { min: lim(o.min, inicial.min), max: lim(o.max, inicial.max) };
+}
+
+/** Lo guardado sin modalidad (antes de `pactos-horas-variables`) se lee como "fija"; sin compromiso. */
+function leerContenido(o: Record<string, unknown>, comunidad: string): ContenidoPacto {
+  const modalidad: Modalidad = o.modalidad === "variable" ? "variable" : "fija";
   return {
     rol: ROLES.find((r) => r.clave === o.rol)?.clave ?? "",
     rolOtro: texto(o.rolOtro, MAX_ROL_OTRO),
     descripcion: texto(o.descripcion, MAX_DESCRIPCION),
+    modalidad,
     horas:
       typeof o.horas === "number" && Number.isFinite(o.horas)
         ? acotar(o.horas, HORAS.min, HORAS.max, HORAS.paso)
         : HORAS.inicial,
+    rango: leerRango(o.rango),
+    compromisoMeses: modalidad === "variable" ? (esCompromisoValido(o.compromisoMeses) ? o.compromisoMeses : compromisoMinimoDe(comunidad)) : null,
   };
 }
 
-function leerHistorial(x: unknown, vigente: number): VersionAceptada[] {
+/** Las declaraciones guardadas: se descartan las de un mes inválido, horas fuera del rango variable, estado desconocido o un mes posterior al actual. */
+function leerDeclaradas(x: unknown, ahora: string): Record<string, DeclaracionMes> {
+  const salida: Record<string, DeclaracionMes> = {};
+  if (typeof x !== "object" || x === null || Array.isArray(x)) return salida;
+  const enCurso = mesDe(ahora);
+  for (const [mes, v] of Object.entries(x)) {
+    if (!mesValido(mes) || (enCurso !== "" && mes > enCurso) || typeof v !== "object" || v === null) continue;
+    const d = v as Record<string, unknown>;
+    if (!horaDeRango(d.horas) || (d.estado !== "declarada" && d.estado !== "confirmada" && d.estado !== "a-revisar")) continue;
+    if (typeof d.propuestaId !== "string" || !d.propuestaId) continue;
+    const decl: DeclaracionMes = { horas: d.horas, estado: d.estado, propuestaId: d.propuestaId };
+    if (d.estado === "a-revisar") decl.motivo = texto(d.motivo, 500);
+    salida[mes] = decl;
+  }
+  return salida;
+}
+
+function leerHistorial(x: unknown, vigente: number, comunidad: string): VersionAceptada[] {
   if (!Array.isArray(x)) return [];
   const salida: VersionAceptada[] = [];
   for (const v of x) {
     if (typeof v !== "object" || v === null) continue;
     const o = v as Record<string, unknown>;
-    const c = leerContenido(o);
+    const c = leerContenido(o, comunidad);
     if (typeof o.version !== "number" || !Number.isInteger(o.version) || o.version < 1 || !pactoCompleto(c)) continue;
     if (o.version > vigente || salida.some((s) => s.version === o.version)) continue;
     const fecha = typeof o.aceptado === "string" && !Number.isNaN(Date.parse(o.aceptado)) ? o.aceptado : null;
@@ -473,23 +666,23 @@ function leerHistorial(x: unknown, vigente: number): VersionAceptada[] {
   return salida;
 }
 
-function leerTiempo(x: unknown): PactoTiempo {
+function leerTiempo(x: unknown, comunidad: string, ahora: string): PactoTiempo {
   if (typeof x !== "object" || x === null) return TIEMPO_INICIAL;
   const o = x as Record<string, unknown>;
-  const base: PactoTiempo = { ...leerContenido(o), paso: 0, version: 0, historial: [] };
+  const base: PactoTiempo = { ...leerContenido(o, comunidad), paso: 0, version: 0, historial: [], declaradas: {} };
   // Un pacto enviado o aceptado tiene que estar completo; si no, vuelve a borrador.
   const paso = o.paso === 1 || o.paso === 2 ? o.paso : 0;
   if (paso === 0 || !pactoCompleto(base)) return base;
   if (paso === 1) return { ...base, paso };
   // Aceptado. Lo guardado antes de las versiones se lee como versión 1, con fecha sin dato.
   const version = typeof o.version === "number" && Number.isInteger(o.version) && o.version >= 1 ? o.version : 1;
-  const historial = leerHistorial(o.historial, version);
+  const historial = leerHistorial(o.historial, version, comunidad);
   if (!historial.some((h) => h.version === version)) historial.push({ version, ...contenido(base), aceptado: null });
   historial.sort((a, b) => a.version - b.version);
-  const aceptado: PactoTiempo = { ...base, paso, version, historial };
+  const aceptado: PactoTiempo = { ...base, paso, version, historial, declaradas: leerDeclaradas(o.declaradas, ahora) };
   if (typeof o.cambio === "object" && o.cambio !== null) {
     const c = o.cambio as Record<string, unknown>;
-    const contenidoCambio = leerContenido(c);
+    const contenidoCambio = leerContenido(c, comunidad);
     // Un cambio enviado tiene que estar completo; si no, vuelve a borrador.
     aceptado.cambio = { ...contenidoCambio, paso: c.paso === 1 && pactoCompleto(contenidoCambio) ? 1 : 0 };
   }
@@ -561,7 +754,7 @@ function leerPuntuales(x: unknown): PactoPuntual[] {
 }
 
 /** Lee lo guardado; cualquier cosa rara se descarta campo por campo. Lo guardado con el formato anterior se ignora. */
-export function leer(crudo: string | null): EstadoPactos {
+export function leer(crudo: string | null, ahora: string = new Date().toISOString()): EstadoPactos {
   if (!crudo) return INICIAL;
   try {
     const o: unknown = JSON.parse(crudo);
@@ -572,7 +765,7 @@ export function leer(crudo: string | null): EstadoPactos {
       for (const [id, v] of Object.entries(r.comunidades)) {
         if (id === "__proto__" || typeof v !== "object" || v === null) continue;
         const c = v as Record<string, unknown>;
-        comunidades[id] = { tiempo: leerTiempo(c.tiempo), aportes: leerAportes(c.aportes), puntuales: leerPuntuales(c.puntuales) };
+        comunidades[id] = { tiempo: leerTiempo(c.tiempo, id, ahora), aportes: leerAportes(c.aportes), puntuales: leerPuntuales(c.puntuales) };
       }
     }
     const estado: EstadoPactos = { pestana: r.pestana === "plata" ? "plata" : "tiempo", comunidades };
@@ -600,7 +793,10 @@ export function leer(crudo: string | null): EstadoPactos {
 /** Una respuesta de la tribu ya aplicada al pacto de la persona: sirve para anunciar y registrar el evento una sola vez. */
 export type RespuestaAplicada = {
   /** "preadmite" y "no-preadmite" son las del holón a una postulación (`necesidadId` y `holon` vienen en ese caso). */
-  tipo: "acepta" | "no-acepta" | "preadmite" | "no-preadmite" | "verifica" | "pide-revisar";
+  tipo: "acepta" | "no-acepta" | "preadmite" | "no-preadmite" | "verifica" | "pide-revisar" | "confirma-mes" | "revisa-mes";
+  /** Confirma y revisa un mes: el mes ("AAAA-MM") y las horas que declaró la persona. */
+  mes?: string;
+  horas?: number;
   /** Verifica y pide revisar: el id de la respuesta del holón (para registrar el evento una sola vez). */
   respuestaId?: string;
   /** Verifica: las Semillas de la constancia base. */
@@ -618,15 +814,23 @@ export type RespuestaAplicada = {
 };
 
 /** El contenido que la tribu vio, leído de los `datos` de la propuesta; null si no alcanza para un pacto completo. */
-function contenidoDeDatos(d: Record<string, string>): ContenidoPacto | null {
+function contenidoDeDatos(d: Record<string, string>, comunidad: string): ContenidoPacto | null {
   const horas = Number(d.horas);
   if (!Number.isFinite(horas)) return null;
+  // Lo guardado sin modalidad (propuestas de antes de `pactos-horas-variables`) es "fija".
+  const modalidad: Modalidad = d.modalidad === "variable" ? "variable" : "fija";
+  const compromiso = Number(d.compromisoMeses);
   const c: ContenidoPacto = {
     rol: ROLES.find((r) => r.clave === d.rol)?.clave ?? "",
     rolOtro: texto(d.rolOtro, MAX_ROL_OTRO),
     descripcion: texto(d.descripcion, MAX_DESCRIPCION),
+    modalidad,
     horas: acotar(horas, HORAS.min, HORAS.max, HORAS.paso),
+    rango: { min: Number(d.rangoMin), max: Number(d.rangoMax) },
+    compromisoMeses: modalidad === "variable" ? (esCompromisoValido(compromiso) ? compromiso : compromisoMinimoDe(comunidad)) : null,
   };
+  // Lo que la tribu vio manda: un rango que no sirve (o ausente en una variable) no se acepta; en una fija el rango no se usa.
+  if (modalidad === "fija") c.rango = { min: RANGO_VARIABLE.inicial.min, max: RANGO_VARIABLE.inicial.max };
   return pactoCompleto(c) ? c : null;
 }
 
@@ -668,7 +872,7 @@ export function conciliar(
     if (r.afirma !== afirmaComunidad(comunidad) || r.por === idPersona || r.sobre !== propuesta.sobre) continue;
     if (r.version !== t.version + 1 || propuesta.version !== r.version) continue;
     if (r.esquema === "pacto-acepta") {
-      const c = contenidoDeDatos(propuesta.datos);
+      const c = contenidoDeDatos(propuesta.datos, comunidad);
       if (!c) continue;
       let siguiente: EstadoPactos;
       if (esCambio) {
@@ -689,8 +893,48 @@ export function conciliar(
       aplicadas.push({ tipo: "no-acepta", comunidad, esCambio, version: t.version, cuando: r.cuando, propuestaId: propuesta.id, motivo });
     }
   }
-  const p = conciliarPuntuales(actual, constancias, idPersona);
-  return { estado: p.estado, aplicadas: [...aplicadas, ...p.aplicadas] };
+  const m = conciliarMeses(actual, constancias, idPersona);
+  const p = conciliarPuntuales(m.estado, constancias, idPersona);
+  return { estado: p.estado, aplicadas: [...aplicadas, ...m.aplicadas, ...p.aplicadas] };
+}
+
+/**
+ * Aplica a las horas declaradas de cada mes las respuestas de la comunidad que están en el registro (pactos-horas-variables,
+ * design §3). Cada transición vale solo desde "declarada" y para la declaración vigente: leer dos veces una respuesta no la aplica
+ * dos veces, y una respuesta a una declaración ya revocada se ignora. Lo que vale es lo que la comunidad vio.
+ */
+function conciliarMeses(
+  estado: EstadoPactos,
+  constancias: readonly ConstanciaPacto[],
+  idPersona: string,
+): { estado: EstadoPactos; aplicadas: RespuestaAplicada[] } {
+  let actual = estado;
+  const aplicadas: RespuestaAplicada[] = [];
+  for (const [comunidad, c] of Object.entries(estado.comunidades)) {
+    // Interino: con la versión vigente ya no variable, no se aplican confirmaciones (P.1: la validación sigue pendiente de Gus).
+    if (c.tiempo.paso !== 2 || c.tiempo.modalidad !== "variable") continue;
+    for (const [mes, d] of Object.entries(c.tiempo.declaradas)) {
+      if (d.estado !== "declarada") continue;
+      const h = constancias.find((x) => x.id === d.propuestaId);
+      if (!h || h.sobre !== sobreDe(comunidad, idPersona) || h.afirma !== afirmaPersona(idPersona) || h.datos.mes !== mes) continue;
+      const r = respuestaDeMes(constancias, h);
+      if (!r) continue;
+      const base = { comunidad, esCambio: false, version: c.tiempo.version, cuando: r.cuando, propuestaId: h.id, respuestaId: r.id, mes, horas: d.horas };
+      if (r.esquema === "pacto-confirma-horas") {
+        const siguiente = reducir(actual, { tipo: "confirmarMes", comunidad, mes, propuestaId: h.id });
+        if (siguiente === actual) continue;
+        actual = siguiente;
+        aplicadas.push({ ...base, tipo: "confirma-mes" });
+      } else {
+        const motivo = texto(r.datos.motivo, 500);
+        const siguiente = reducir(actual, { tipo: "revisarMes", comunidad, mes, propuestaId: h.id, motivo });
+        if (siguiente === actual) continue;
+        actual = siguiente;
+        aplicadas.push({ ...base, tipo: "revisa-mes", motivo });
+      }
+    }
+  }
+  return { estado: actual, aplicadas };
 }
 
 /** La última postulación no revocada de esa persona a esa necesidad, o null. */
@@ -788,7 +1032,7 @@ export type PorPublicar = {
   tipo: "nuevo" | "cambio";
   contenido: ContenidoPacto;
   version: number;
-  horasVigentes?: number;
+  vigente?: Pick<ContenidoPacto, "modalidad" | "horas" | "rango">;
 };
 
 /**
@@ -810,7 +1054,7 @@ export function propuestasPorPublicar(
     const hay = constancias.some((c) => c.esquema === "pacto-propone" && c.sobre === sobre && c.datos.tipo === tipo);
     if (hay) continue;
     if (tipo === "nuevo") salida.push({ comunidad, tipo, contenido: contenido(t), version: t.version + 1 });
-    else if (t.cambio) salida.push({ comunidad, tipo, contenido: contenido(t.cambio), version: t.version + 1, horasVigentes: t.horas });
+    else if (t.cambio) salida.push({ comunidad, tipo, contenido: contenido(t.cambio), version: t.version + 1, vigente: { modalidad: t.modalidad, horas: t.horas, rango: t.rango } });
   }
   return salida;
 }
@@ -823,7 +1067,8 @@ export function leerPactosConciliados(
   crudo: string | null,
   idPersona: string | null = personaEnSesion(),
   registro: readonly ConstanciaPacto[] | null = leerDelNavegador(),
+  ahora: string = new Date().toISOString(),
 ): EstadoPactos {
-  const estado = leer(crudo);
+  const estado = leer(crudo, ahora);
   return idPersona ? conciliar(estado, registro, idPersona).estado : estado;
 }

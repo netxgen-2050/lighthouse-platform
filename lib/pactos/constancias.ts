@@ -2,7 +2,7 @@
 // Lista de solo agregar: una constancia no se edita; retirar es agregar un `revoca` que apunta a la propuesta.
 // Las fechas y los ids de persona vienen de afuera: nada acá llama a Date.now().
 import { buscarNecesidad, holonDe, idDeHolon, type Tope } from "@/lib/tribus/necesidades";
-import { HORAS_PUNTUAL } from "./datos";
+import { HORAS_PUNTUAL, RANGO_VARIABLE } from "./datos";
 import type { ContenidoPacto } from "./estado";
 import { mesValido } from "./mes";
 
@@ -167,6 +167,13 @@ export function respuestaDe(lista: readonly ConstanciaPacto[], propuestaId: stri
 export function horasDeConstancia(c: ConstanciaPacto): number | null {
   const n = Number(c.datos.horas);
   return c.datos.horas !== undefined && c.datos.horas.trim() !== "" && Number.isInteger(n) && n >= HORAS_PUNTUAL.min && n <= HORAS_PUNTUAL.max ? n : null;
+}
+
+/** Las horas de un mes de un pacto variable: entero de 0 a 80, en pasos de 2 (0 es un dato), o null. */
+export function horasDelMes(c: ConstanciaPacto): number | null {
+  const n = Number(c.datos.horas);
+  if (c.datos.horas === undefined || c.datos.horas.trim() === "" || !Number.isInteger(n)) return null;
+  return n >= RANGO_VARIABLE.min && n <= RANGO_VARIABLE.max && n % RANGO_VARIABLE.paso === 0 ? n : null;
 }
 
 function indiceDe(lista: readonly ConstanciaPacto[], c: ConstanciaPacto): number {
@@ -342,9 +349,14 @@ export function leerConstancias(crudo: string | null): ConstanciaPacto[] {
       }
       const esquema = r.esquema as EsquemaPacto;
       if (esquema === "pacto-propone-horas" || esquema === "pacto-confirma-horas") {
-        // Horas enteras de 1 a 200; el mes, si está, es AAAA-MM. Lo mal formado se ignora.
-        if (horasDeConstancia({ datos } as ConstanciaPacto) === null) continue;
-        if (datos.mes !== undefined && !mesValido(datos.mes)) continue;
+        if (comunidadDeSobre(r.sobre) !== null) {
+          // Horas de un mes de un pacto variable (pactos-horas-variables): enteras de 0 a 80, en pasos de 2, y el mes AAAA-MM obligatorio.
+          if (horasDelMes({ datos } as ConstanciaPacto) === null || !mesValido(datos.mes)) continue;
+        } else {
+          // Horas de una tarea: enteras de 1 a 200; el mes, si está, es AAAA-MM. Lo mal formado se ignora.
+          if (horasDeConstancia({ datos } as ConstanciaPacto) === null) continue;
+          if (datos.mes !== undefined && !mesValido(datos.mes)) continue;
+        }
       }
       salida.push({
         id: r.id,
@@ -369,7 +381,8 @@ export function leerConstancias(crudo: string | null): ConstanciaPacto[] {
 export function datosDePropuesta(entrada: {
   tipo: "nuevo" | "cambio";
   contenido: ContenidoPacto;
-  horasVigentes?: number;
+  /** Cambio: la versión vigente, para que quien responde vea "de ... a ...". */
+  vigente?: Pick<ContenidoPacto, "modalidad" | "horas" | "rango">;
   nombre: string;
   iniciales: string;
   proponeLider: boolean;
@@ -381,8 +394,21 @@ export function datosDePropuesta(entrada: {
     rolOtro: entrada.contenido.rolOtro,
     descripcion: entrada.contenido.descripcion,
     horas: String(entrada.contenido.horas),
+    modalidad: entrada.contenido.modalidad,
   };
-  if (entrada.horasVigentes !== undefined) datos.horasVigentes = String(entrada.horasVigentes);
+  if (entrada.contenido.modalidad === "variable") {
+    datos.rangoMin = String(entrada.contenido.rango.min);
+    datos.rangoMax = String(entrada.contenido.rango.max);
+    if (entrada.contenido.compromisoMeses !== null) datos.compromisoMeses = String(entrada.contenido.compromisoMeses);
+  }
+  if (entrada.vigente) {
+    datos.modalidadVigente = entrada.vigente.modalidad;
+    datos.horasVigentes = String(entrada.vigente.horas);
+    if (entrada.vigente.modalidad === "variable") {
+      datos.rangoVigenteMin = String(entrada.vigente.rango.min);
+      datos.rangoVigenteMax = String(entrada.vigente.rango.max);
+    }
+  }
   const nombre = entrada.nombre.trim().slice(0, 80);
   if (nombre) datos.nombre = nombre;
   else if (entrada.iniciales.trim()) datos.iniciales = entrada.iniciales.trim().slice(0, 4);

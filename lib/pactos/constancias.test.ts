@@ -155,7 +155,15 @@ describe("leerConstancias", () => {
 });
 
 describe("datosDePropuesta", () => {
-  const contenido = { rol: "" as const, rolOtro: "", descripcion: "d", horas: 10 };
+  const contenido = {
+    rol: "" as const,
+    rolOtro: "",
+    descripcion: "d",
+    modalidad: "fija" as const,
+    horas: 10,
+    rango: { min: 0, max: 20 },
+    compromisoMeses: null,
+  };
   it("usa el nombre o, si no hay, las iniciales; nunca otra cosa", () => {
     expect(datosDePropuesta({ tipo: "nuevo", contenido, nombre: "Ana Pérez", iniciales: "AP", proponeLider: false })).toMatchObject({ nombre: "Ana Pérez" });
     const sin = datosDePropuesta({ tipo: "nuevo", contenido, nombre: "  ", iniciales: "AP", proponeLider: true });
