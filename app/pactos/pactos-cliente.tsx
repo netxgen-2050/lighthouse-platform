@@ -1,12 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { KycDialogo } from "@/components/kyc-dialogo";
 import { MarcaSemillas } from "@/components/marca-semillas";
 import { useSesion } from "@/components/sesion/contexto";
 import { comunidadesQueResponde, respuestaDe } from "@/lib/pactos/constancias";
-import { conciliarYGuardar, publicarLoQueFalta, publicarPropuesta, quienRespondeDe } from "@/lib/pactos/navegador";
+import { conciliarYGuardar, publicarLoQueFalta, publicarPostulacion, publicarPropuesta, quienRespondeDe } from "@/lib/pactos/navegador";
+import {
+  aperturaDePostulacion,
+  comunidadQueResponde,
+  holonDeId,
+  nombreDeHolon,
+  relacionConHolon,
+} from "@/lib/pactos/postulacion";
+import { buscarNecesidad, holonDe, idDeHolon } from "@/lib/tribus/necesidades";
+import type { Idioma } from "@/lib/idioma/tipos";
+import { PostulacionesATareas } from "./postulaciones";
 import { leerDelNavegador, revocarEnNavegador } from "@/lib/pactos/registro-compartido";
 import { CLAVES } from "@/lib/demo/claves";
 import { TerminoEconomico } from "@/components/termino-economico";
@@ -32,10 +43,16 @@ import {
   deComunidad,
   leer,
   pactoCompleto,
+  puntualDe,
+  puntualesDe,
   reducir,
+  reducirPuntual,
   totalAportes,
+  ultimaPostulacion,
   ultimaPropuesta,
   type Accion,
+  type AccionPuntual,
+  type EdicionPuntual,
   type EstadoPactos,
   type RespuestaAplicada,
 } from "@/lib/pactos/estado";
@@ -45,7 +62,7 @@ import { formatearMonto, notaTipoDeCambio } from "@/lib/configuracion/preferenci
 import { EVENTOS } from "@/lib/actividad/eventos";
 import { formatearFecha, formatearNumero } from "@/lib/idioma/formatos";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
-import { COMUNIDAD_LIGHTHOUSE, comunidadesDondeEsMiembro, leerMembresiaDelNavegador } from "@/lib/membresia/estado";
+import { COMUNIDAD_LIGHTHOUSE, comunidadesDondeEsMiembro, estadoDe, leerMembresiaDelNavegador, type Membresias } from "@/lib/membresia/estado";
 import { DATOS_VACIOS, type DatosPersona } from "@/lib/pasaporte/datos";
 import { leerPasaporteDelNavegador } from "@/lib/pasaporte/del-navegador";
 import { useKyc } from "@/lib/pasaporte/usar-kyc";
@@ -70,19 +87,43 @@ function nombreComunidad(id: string): string {
 type TextosPactos = ReturnType<typeof useTextos<"pactos">>;
 
 /** El texto que se anuncia (y queda en pantalla) cuando se aplican respuestas de la tribu; vacío si no hubo ninguna. */
-function anuncioDe(aplicadas: RespuestaAplicada[], tx: TextosPactos): string {
+function anuncioDe(aplicadas: RespuestaAplicada[], tx: TextosPactos, idioma: Idioma): string {
   const a = aplicadas[aplicadas.length - 1];
   if (!a) return "";
   const donde = nombreComunidad(a.comunidad);
+  if (a.tipo === "preadmite") return tx.puntual.anuncios.preadmitida(holonConArticulo(a.holon, idioma, tx), tareaDe(a.necesidadId, idioma));
+  if (a.tipo === "no-preadmite")
+    return tx.puntual.anuncios.noPreadmitida(holonConArticulo(a.holon, idioma, tx), tareaDe(a.necesidadId, idioma), a.motivo ?? "");
   if (a.tipo === "acepta") return a.esCambio ? tx.anuncios.cambioAceptado(donde, a.version) : tx.anuncios.pactoAceptado(donde);
   return a.esCambio ? tx.avisoCambioNoAceptado(donde, a.motivo ?? "") : tx.anuncios.pactoNoAceptado(donde, a.motivo ?? "");
 }
 
+/** "El círculo Energía solar" (con mayúscula inicial) a partir del id del holón (`circulo:valle-3`). */
+function holonConArticulo(holonId: string | undefined, idioma: Idioma, tx: TextosPactos): string {
+  const h = holonId ? holonDeId(holonId) : null;
+  if (!h) return "";
+  const { nombre, tipo } = nombreDeHolon(h, idioma);
+  const s = tx.puntual.holon(nombre, tipo);
+  return s[0].toUpperCase() + s.slice(1);
+}
+
+function tareaDe(necesidadId: string | undefined, idioma: Idioma): string {
+  return (necesidadId && buscarNecesidad(necesidadId, idioma)?.titulo) || "";
+}
+
 /** Mi recorrido: una sola vez por respuesta (todos los eventos llevan clave, también el rechazo de un cambio). */
-function registrarEventosDe(aplicadas: RespuestaAplicada[]): void {
+function registrarEventosDe(aplicadas: RespuestaAplicada[], idioma: Idioma, tx: TextosPactos): void {
   for (const a of aplicadas) {
     const donde = nombreComunidad(a.comunidad);
-    if (a.tipo === "acepta") {
+    if (a.necesidadId && (a.tipo === "preadmite" || a.tipo === "no-preadmite")) {
+      const holon = holonConArticulo(a.holon, idioma, tx);
+      const tarea = tareaDe(a.necesidadId, idioma);
+      registrarEvento(
+        a.tipo === "preadmite"
+          ? EVENTOS.postulacionPreadmitida(holon, tarea, a.comunidad, a.necesidadId)
+          : EVENTOS.postulacionNoPreadmitida(holon, tarea, a.comunidad, a.propuestaId),
+      );
+    } else if (a.tipo === "acepta") {
       if (a.esCambio) registrarEvento(EVENTOS.cambioDePactoAceptado(donde, a.comunidad, a.version));
       else {
         registrarEvento(EVENTOS.pactoAceptado(donde, a.comunidad));
@@ -102,10 +143,17 @@ export function PactosCliente() {
   const rolSesion = sesion?.rol ?? null;
   const quien = quienRespondeDe(idPersona && rolSesion ? { idPersona, rol: rolSesion } : null, tribuLider);
   // Lo que la carga inicial necesita de la sesión, sin volver a cargar cuando cambia (p. ej. al terminar de calcular el nivel).
-  const contexto = useRef({ tx, quien, email });
+  const contexto = useRef({ tx, quien, email, idioma });
   useEffect(() => {
-    contexto.current = { tx, quien, email };
+    contexto.current = { tx, quien, email, idioma };
   });
+  const router = useRouter();
+  // El parámetro `necesidad` de la dirección se procesa una sola vez.
+  const necesidadProcesada = useRef(false);
+  const [membresias, setMembresias] = useState<Membresias>({});
+  // Postulación cuyo estado recibe el foco después de enviarla o retirarla (el botón apretado desaparece).
+  const [focoPuntual, setFocoPuntual] = useState<string | null>(null);
+  const [mensajeNecesidad, setMensajeNecesidad] = useState<{ tipo: "no-se-puede" } | { tipo: "sin-relacion"; tribu: string } | null>(null);
   const pasaporte = useTextos("pasaporte");
   const comunes = useTextos("comunes");
   const textoSemillas = useTextos("semillas");
@@ -115,6 +163,11 @@ export function PactosCliente() {
   /** Número según el idioma: "1.200" en español, "1,200" en inglés. */
   const miles = (n: number) => formatearNumero(n, idioma);
   const [estado, setEstado] = useState<EstadoPactos>(INICIAL);
+  useEffect(() => {
+    if (!focoPuntual) return;
+    document.getElementById(`estado-puntual-${focoPuntual}`)?.focus();
+    setFocoPuntual(null);
+  }, [focoPuntual, estado]);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [listo, setListo] = useState(false);
   const foco = useRef(false);
@@ -134,10 +187,12 @@ export function PactosCliente() {
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
     setDatos(leerPasaporteDelNavegador());
-    const comunidades = comunidadesDondeEsMiembro(leerMembresiaDelNavegador());
+    const todas = leerMembresiaDelNavegador();
+    setMembresias(todas);
+    const comunidades = comunidadesDondeEsMiembro(todas);
     setMiembro(comunidades);
-    const pedida = new URLSearchParams(window.location.search).get("comunidad");
-    setElegida(pedida && comunidades.includes(pedida) ? pedida : (comunidades[0] ?? ""));
+    const parametros = new URLSearchParams(window.location.search);
+    const pedida = parametros.get("comunidad");
     let leido: EstadoPactos = INICIAL;
     try {
       leido = leer(window.localStorage.getItem(CLAVES.pactos));
@@ -145,7 +200,7 @@ export function PactosCliente() {
       setFalloAlmacen(true);
     }
     if (idPersona) {
-      const { tx: t, quien: q, email: correo } = contexto.current;
+      const { tx: t, quien: q, email: correo, idioma: lang } = contexto.current;
       // Un pacto enviado antes de este cambio se publica una vez (design §8); con el registro ilegible no se publica nada.
       const registro = publicarLoQueFalta(
         leido,
@@ -157,13 +212,40 @@ export function PactosCliente() {
       const r = conciliarYGuardar(leido, registro, idPersona);
       if (!r.guardado) setFalloAlmacen(true);
       if (r.aplicadas.length > 0) {
-        setAnuncio(anuncioDe(r.aplicadas, t));
-        registrarEventosDe(r.aplicadas);
+        setAnuncio(anuncioDe(r.aplicadas, t, lang));
+        registrarEventosDe(r.aplicadas, lang, t);
       }
       leido = r.estado;
+      // El parámetro `necesidad` se procesa una sola vez y recién ahora, con la membresía ya leída (design §5).
+      const necesidadPedida = parametros.get("necesidad");
+      if (necesidadPedida && !necesidadProcesada.current) {
+        necesidadProcesada.current = true;
+        const apertura = aperturaDePostulacion(todas, pedida ?? "", necesidadPedida);
+        if (apertura.tipo === "crear") {
+          const nuevo = reducirPuntual(leido, { tipo: "nuevoPuntual", comunidad: apertura.necesidad.tribuId, necesidad: apertura.necesidad });
+          if (nuevo !== leido) {
+            try {
+              window.localStorage.setItem(CLAVES.pactos, JSON.stringify(nuevo));
+            } catch {
+              setFalloAlmacen(true);
+            }
+            setAnuncio(t.puntual.creada(buscarNecesidad(necesidadPedida, lang)?.titulo ?? ""));
+          }
+          leido = nuevo;
+        } else {
+          setMensajeNecesidad(apertura.tipo === "sin-relacion" ? { tipo: "sin-relacion", tribu: apertura.tribu } : { tipo: "no-se-puede" });
+        }
+        // La dirección vuelve a la de siempre: recargar no vuelve a crear nada.
+        router.replace(pedida ? `/pactos?comunidad=${encodeURIComponent(pedida)}` : "/pactos");
+      }
     }
+    // Comunidades donde se puede estar: donde es miembro y donde tiene postulaciones (aspirante, o miembro de otra tribu del círculo).
+    const conPostulaciones = puntualesDe(leido).map((x) => x.comunidad);
+    const opcionesLeidas = [...new Set([...comunidades, ...conPostulaciones])];
+    setElegida(pedida && opcionesLeidas.includes(pedida) ? pedida : (opcionesLeidas[0] ?? ""));
     setEstado(leido);
     setListo(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- el router y el contexto no deben volver a disparar la carga
   }, [idPersona]);
 
   // El botón de paso desaparece al apretarlo: el foco pasa al estado nuevo.
@@ -207,8 +289,8 @@ export function PactosCliente() {
             const r = conciliarYGuardar(estado, registro, idPersona);
             if (!r.guardado) setFalloAlmacen(true);
             foco.current = true;
-            setAnuncio(anuncioDe(r.aplicadas, tx));
-            registrarEventosDe(r.aplicadas);
+            setAnuncio(anuncioDe(r.aplicadas, tx, idioma));
+            registrarEventosDe(r.aplicadas, idioma, tx);
             setEstado(r.estado);
             return;
           }
@@ -259,6 +341,63 @@ export function PactosCliente() {
     setEstado(siguiente);
   }
 
+  /** Las postulaciones a tareas: enviar y retirar escriben en el registro compartido; las respuestas del holón solo llegan por conciliación. */
+  function accionPuntual(accion: AccionPuntual) {
+    const siguiente = reducirPuntual(estado, accion);
+    if (siguiente === estado) return;
+    const ahora = new Date().toISOString();
+    const comunidadId = accion.comunidad;
+    const necesidadId = "necesidadId" in accion ? accion.necesidadId : accion.necesidad.id;
+    const n = buscarNecesidad(necesidadId, idioma);
+    const holon = n ? holonDe(n) : null;
+    if (accion.tipo === "enviarPuntual" && idPersona) {
+      const puntual = puntualDe(siguiente, comunidadId, necesidadId);
+      const relacion = holon ? relacionConHolon(membresias, holon) : null;
+      if (!puntual || !n || !holon || !relacion) {
+        setFalloPublicar("envio");
+        return;
+      }
+      const lidera = quien ? comunidadesQueResponde(quien).includes(comunidadQueResponde(holon)) : false;
+      // Enviar escribe la postulación en el registro compartido; si el navegador no deja, no se envía.
+      const ok = publicarPostulacion({ comunidad: comunidadId, puntual, holon: idDeHolon(holon), relacion, lidera }, { idPersona, email }, ahora);
+      setFalloPublicar(ok === null ? "envio" : null);
+      if (ok === null) return;
+      registrarEvento(EVENTOS.tePostulaste(n.titulo, nombreComunidad(n.tribuId), comunidadId, necesidadId, ok.envio));
+      setAnuncio(tx.puntual.anuncios.enviada);
+      setFocoPuntual(necesidadId);
+    } else if (accion.tipo === "retirarPuntual" && idPersona) {
+      const registro = leerDelNavegador();
+      const propuesta = registro ? ultimaPostulacion(registro, idPersona, necesidadId) : null;
+      if (registro && propuesta) {
+        if (respuestaDe(registro, propuesta.id)) {
+          // El holón ya respondió: se aplica su respuesta y no se retira nada.
+          const r = conciliarYGuardar(estado, registro, idPersona);
+          if (!r.guardado) setFalloAlmacen(true);
+          setAnuncio(anuncioDe(r.aplicadas, tx, idioma));
+          registrarEventosDe(r.aplicadas, idioma, tx);
+          setEstado(r.estado);
+          setFocoPuntual(necesidadId);
+          return;
+        }
+        // Si no se pudo escribir, no se retira: el holón seguiría viendo la postulación pendiente.
+        const ok = revocarEnNavegador(propuesta.id, idPersona, ahora);
+        setFalloPublicar(ok === null ? "retiro" : null);
+        if (ok === null) return;
+      }
+      setAnuncio(tx.puntual.anuncios.retirada);
+      setFocoPuntual(necesidadId);
+    } else if (accion.tipo === "descartarPuntual") {
+      setAnuncio(tx.puntual.anuncios.descartada);
+    }
+    try {
+      window.localStorage.setItem(CLAVES.pactos, JSON.stringify(siguiente));
+      setFalloAlmacen(false);
+    } catch {
+      setFalloAlmacen(true);
+    }
+    setEstado(siguiente);
+  }
+
   function alTeclearPestana(e: KeyboardEvent<HTMLButtonElement>, i: number) {
     const delta = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
     if (!delta && e.key !== "Home" && e.key !== "End") return;
@@ -271,18 +410,40 @@ export function PactosCliente() {
 
   if (!listo) return <p role="status" className="text-sm text-muted">{tx.cargando}</p>;
 
-  if (miembro.length === 0) {
+  // Se puede estar en una comunidad como miembro o con postulaciones a sus tareas (aspirante, o miembro de otra tribu del círculo).
+  const opciones = [...new Set([...miembro, ...puntualesDe(estado).map((x) => x.comunidad)])];
+  const avisoNecesidad = mensajeNecesidad && (
+    <p role="status" className={AVISO} data-testid="aviso-necesidad">
+      {mensajeNecesidad.tipo === "sin-relacion" ? (
+        <>
+          {tx.puntual.sinRelacion(nombreComunidad(mensajeNecesidad.tribu))}{" "}
+          <Link className="underline" href={`/tribus/${mensajeNecesidad.tribu}/manifiesto`}>
+            {tx.puntual.verManifiesto}
+          </Link>
+        </>
+      ) : (
+        tx.puntual.noSePuede
+      )}
+    </p>
+  );
+
+  if (opciones.length === 0) {
     return (
-      <section aria-label={tx.sinComunidad.aria} className="grid gap-3 rounded-xl border border-faint bg-surface p-4">
-        <p>{tx.sinComunidad.texto}</p>
-        <Link className={BOTON_PRIMARIO} href="/tribus">
-          {tx.sinComunidad.ver}
-        </Link>
-      </section>
+      <div className="grid gap-4">
+        {avisoNecesidad}
+        <section aria-label={tx.sinComunidad.aria} className="grid gap-3 rounded-xl border border-faint bg-surface p-4">
+          <p>{tx.sinComunidad.texto}</p>
+          <Link className={BOTON_PRIMARIO} href="/tribus">
+            {tx.sinComunidad.ver}
+          </Link>
+        </section>
+      </div>
     );
   }
 
-  const comunidad = elegida;
+  const comunidad = opciones.includes(elegida) ? elegida : opciones[0];
+  const esMiembro = miembro.includes(comunidad);
+  const puntualesDeLaComunidad = deComunidad(estado, comunidad).puntuales;
   const nombre = nombreComunidad(comunidad);
   const mias = deComunidad(estado, comunidad);
   const t = mias.tiempo;
@@ -302,6 +463,7 @@ export function PactosCliente() {
           {tx.errorAlmacenamiento}
         </p>
       )}
+      {avisoNecesidad}
       <section aria-label={tx.comunidad.aria} className="grid gap-2 rounded-xl border border-faint bg-surface p-4">
         <label className="grid gap-1 text-sm">
           <span className="font-medium">{tx.comunidad.pregunta}</span>
@@ -313,7 +475,7 @@ export function PactosCliente() {
             }}
             className={`${CAMPO} w-fit`}
           >
-            {miembro.map((id) => (
+            {opciones.map((id) => (
               <option key={id} value={id}>
                 {nombreComunidad(id)}
               </option>
@@ -323,6 +485,17 @@ export function PactosCliente() {
         <p className="text-sm text-muted"><MarcaSemillas texto={tx.comunidad.ayuda} /></p>
       </section>
 
+      {!esMiembro && (
+        <>
+          <p className="rounded-xl border border-faint bg-surface p-4" data-testid="nota-aspirante">
+            {estadoDe(membresias, comunidad) === "pedido" ? tx.puntual.aspirante(nombreComunidad(comunidad)) : tx.puntual.porOtraTribu(nombreComunidad(comunidad))}
+          </p>
+          <p role="status" className="sr-only">
+            {anuncio}
+          </p>
+        </>
+      )}
+      {esMiembro && (
       <section aria-label={tx.estadoAria} className="grid gap-4 rounded-xl border border-faint bg-surface p-4">
         {estado.pestana === "tiempo" && (
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -798,6 +971,17 @@ export function PactosCliente() {
           {anuncio}
         </p>
       </section>
+      )}
+      {puntualesDeLaComunidad.length > 0 && (
+        <PostulacionesATareas
+          comunidad={comunidad}
+          puntuales={puntualesDeLaComunidad}
+          alEditar={(necesidadId, cambios: EdicionPuntual) => accionPuntual({ tipo: "editarPuntual", comunidad, necesidadId, cambios })}
+          alEnviar={(necesidadId) => accionPuntual({ tipo: "enviarPuntual", comunidad, necesidadId })}
+          alRetirar={(necesidadId) => accionPuntual({ tipo: "retirarPuntual", comunidad, necesidadId })}
+          alDescartar={(necesidadId) => accionPuntual({ tipo: "descartarPuntual", comunidad, necesidadId })}
+        />
+      )}
       <KycDialogo
         abierto={dialogoKyc}
         kyc={kyc.kyc}

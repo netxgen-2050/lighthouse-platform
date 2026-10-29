@@ -15,9 +15,21 @@ import {
   pendientesParaVer,
   personaDeAfirma,
   proponeLider,
+  preadmitidasDe,
   puedeResponder,
+  topeDeDatos,
   type ConstanciaPacto,
 } from "@/lib/pactos/constancias";
+import {
+  holonDeId,
+  loAdministraHifa,
+  nombreDeHolon,
+  postulacionesParaVer,
+  puedeResponderPostulacion,
+  responderPostulacion,
+  type ResultadoRespuesta,
+} from "@/lib/pactos/postulacion";
+import { buscarNecesidad } from "@/lib/tribus/necesidades";
 import { quienRespondeDe } from "@/lib/pactos/navegador";
 import { actualizarEnNavegador, leerDelNavegador } from "@/lib/pactos/registro-compartido";
 import { buscarRol, textoDeRol } from "@/lib/pactos/datos";
@@ -35,7 +47,10 @@ function nombreComunidad(id: string): string {
 
 export function ResponderCliente() {
   const idioma = useIdioma();
-  const t = useTextos("pactos").responder;
+  const textosPactos = useTextos("pactos");
+  const t = textosPactos.responder;
+  const p = t.postulaciones;
+  const tp = textosPactos.puntual;
   const { estado, sesion, tribuLider } = useSesion();
   const comunes = useTextos("comunes");
   const idPersona = sesion?.idPersona ?? null;
@@ -73,6 +88,41 @@ export function ResponderCliente() {
   const visibles = lista === null ? [] : pendientesParaVer(lista, q);
   // Una sección por comunidad, en el orden en que aparecen.
   const comunidades = [...new Set(visibles.map((c) => comunidadDeSobre(c.sobre) ?? ""))].filter(Boolean);
+  // Postulaciones a tareas, agrupadas por holón (pacto-puntual, design §6).
+  const postulaciones = lista === null ? [] : postulacionesParaVer(lista, q);
+  const holones = [...new Set(postulaciones.map((c) => c.datos.holon ?? ""))].filter(Boolean);
+
+  function responderAPostulacion(c: ConstanciaPacto, acepta: boolean) {
+    if (!q) return;
+    const texto = motivo.trim();
+    if (!acepta && texto.length === 0) {
+      setErrorMotivo(p.motivoVacio);
+      campoMotivo.current?.focus();
+      return;
+    }
+    setErrorMotivo("");
+    let resultado: ResultadoRespuesta = "ya-respondida";
+    // Se relee y se vuelve a comprobar, justo antes de escribir, que ESA postulación no tenga respuesta (otra pestaña pudo responderla).
+    const nueva = actualizarEnNavegador((actual) => {
+      const r = responderPostulacion(actual, { propuestaId: c.id, acepta, motivo: texto, sesion: q }, new Date().toISOString());
+      resultado = r.resultado;
+      return r.resultado === "ok" ? r.lista : null;
+    });
+    setAbierta(null);
+    setMotivo("");
+    if (nueva === null) {
+      setResultado((r) => ({ n: r.n + 1, texto: t.errorGuardar, error: true }));
+      return;
+    }
+    setLista(nueva);
+    const quien = quienPropone(c);
+    const tarea = buscarNecesidad(c.datos.necesidad ?? "", idioma)?.titulo ?? comunes.sinDato;
+    setResultado((r) =>
+      resultado !== "ok"
+        ? { n: r.n + 1, texto: p.yaRespondida, error: true }
+        : { n: r.n + 1, texto: acepta ? p.preadmitiste(quien, tarea) : p.noPreadmitiste(quien, tarea), error: false },
+    );
+  }
 
   function quienPropone(c: ConstanciaPacto): string {
     return c.datos.nombre || c.datos.iniciales || t.quienSinDato;
@@ -140,10 +190,11 @@ export function ResponderCliente() {
         <p className="rounded-xl border border-faint bg-surface p-4">{t.sinPermiso}</p>
       ) : lista === null ? (
         <p className="rounded-xl border border-faint bg-surface p-4">{t.registroSinDato}</p>
-      ) : comunidades.length === 0 ? (
+      ) : comunidades.length === 0 && postulaciones.length === 0 ? (
         <p className="rounded-xl border border-faint bg-surface p-4">{t.sinPendientes}</p>
       ) : (
-        comunidades.map((comunidad) => (
+        <>
+        {comunidades.map((comunidad) => (
           <section key={comunidad} aria-labelledby={`com-${comunidad}`} className="grid gap-3">
             <h2 id={`com-${comunidad}`} className="text-xl font-semibold">
               {t.deComunidad(nombreComunidad(comunidad))}
@@ -243,7 +294,138 @@ export function ResponderCliente() {
                 );
               })}
           </section>
-        ))
+        ))}
+        {postulaciones.length > 0 && (
+          <section aria-labelledby="titulo-postulaciones" className="grid gap-4">
+            <h2 id="titulo-postulaciones" className="text-xl font-semibold">
+              {p.titulo}
+            </h2>
+            {holones.map((holonId) => {
+              const holon = holonDeId(holonId);
+              const nombre = holon ? nombreDeHolon(holon, idioma) : null;
+              const hifa = holon ? loAdministraHifa(holon) : false;
+              return (
+                <section key={holonId} aria-labelledby={`holon-${holonId}`} className="grid gap-3">
+                  <h3 id={`holon-${holonId}`} className="text-lg font-semibold">
+                    {p.deHolon(nombre ? tp.holon(nombre.nombre, nombre.tipo) : comunes.sinDato)}
+                  </h3>
+                  {hifa && <p className="text-sm text-muted">{p.respaldoHifa}</p>}
+                  {postulaciones
+                    .filter((c) => c.datos.holon === holonId)
+                    .map((c) => {
+                      const puede = puedeResponderPostulacion(q, c);
+                      const propio = personaDeAfirma(c.afirma) === q.idPersona;
+                      const tarea = buscarNecesidad(c.datos.necesidad ?? "", idioma)?.titulo ?? comunes.sinDato;
+                      const rolClave = buscarRol(c.datos.rol);
+                      const nombreRol = c.datos.rol === "otro" ? c.datos.rolOtro : rolClave ? textoDeRol(rolClave, idioma).nombre : comunes.sinDato;
+                      const horas = Number(c.datos.horas);
+                      const tope = topeDeDatos(c.datos.topeUnidad, c.datos.topeValor);
+                      const topeTotal = topeDeDatos(c.datos.topeTotalUnidad, c.datos.topeTotalValor);
+                      const yaPreadmitidas = lista ? preadmitidasDe(lista, c.datos.necesidad ?? "") : [];
+                      const horasYa = yaPreadmitidas.reduce((s, x) => s + (Number(x.datos.horas) || 0), 0);
+                      const fecha = Number.isNaN(Date.parse(c.cuando)) ? t.fechaSinDato : formatearFecha(c.cuando, idioma);
+                      const relacion = c.datos.relacion === "miembro" ? p.miembro : p.aspirante;
+                      return (
+                        <article key={c.id} aria-labelledby={`art-${c.id}`} className="grid gap-2 rounded-xl border border-faint bg-surface p-4">
+                          <h4 id={`art-${c.id}`} className="text-lg font-semibold">
+                            {p.propone}: <span translate="no">{quienPropone(c)} · {relacion}</span>
+                          </h4>
+                          {puede && proponeLider(c) && nombre && <p className="text-sm text-muted">{p.loProponeLider(tp.holon(nombre.nombre, nombre.tipo))}</p>}
+                          <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+                            <dt className="text-muted">{p.tarea}</dt>
+                            <dd>{tarea}</dd>
+                            <dt className="text-muted">{t.rol}</dt>
+                            <dd lang={c.datos.rol === "otro" && idioma === "en" ? "es" : undefined}>{nombreRol}</dd>
+                            <dt className="text-muted">{p.horas}</dt>
+                            <dd>{Number.isFinite(horas) ? `${formatearNumero(horas, idioma)} h` : comunes.sinDato}</dd>
+                            <dt className="text-muted">{p.fecha}</dt>
+                            <dd>{c.datos.fecha ? formatearFecha(c.datos.fecha, idioma) : comunes.sinDato}</dd>
+                            <dt className="text-muted">{p.descripcion}</dt>
+                            <dd lang={idioma === "en" ? "es" : undefined}>{c.datos.descripcion || comunes.sinDato}</dd>
+                          </dl>
+                          {tope && (
+                            <p className="text-sm text-muted">
+                              {tope.unidad === "horas" ? tp.maximoHoras(tope.valor) : tp.maximoSemillas(tope.valor)} · {tp.horasDeMas}
+                            </p>
+                          )}
+                          {topeTotal && (
+                            <p className="text-sm text-muted">
+                              {topeTotal.unidad === "horas" ? tp.maximoTotalHoras(topeTotal.valor) : tp.maximoTotalSemillas(topeTotal.valor)} ·{" "}
+                              {tp.totalAclaracion}
+                            </p>
+                          )}
+                          {topeTotal?.unidad === "horas" && yaPreadmitidas.length > 0 && (
+                            <p className="text-sm text-muted">{p.preadmitidasTotal(horasYa, topeTotal.valor)}</p>
+                          )}
+                          {yaPreadmitidas.length > 0 && <p className="text-sm font-medium">{p.yaPreadmitiste(yaPreadmitidas.length)}</p>}
+                          <p className="text-sm text-muted">{t.enviado(fecha)}</p>
+                          {propio && nombre && (
+                            <p className="rounded-lg bg-surface-2 px-3 py-2 text-sm">{p.propia(tp.holon(nombre.nombre, nombre.tipo))}</p>
+                          )}
+                          {puede && abierta !== c.id && (
+                            <div className="flex flex-wrap gap-3">
+                              <button type="button" className={BOTON_PRIMARIO} onClick={() => responderAPostulacion(c, true)}>
+                                {p.preadmitir}
+                              </button>
+                              <button
+                                type="button"
+                                className={BOTON_SECUNDARIO}
+                                onClick={() => {
+                                  setAbierta(c.id);
+                                  setMotivo("");
+                                  setErrorMotivo("");
+                                }}
+                              >
+                                {p.noPreadmitir}
+                              </button>
+                            </div>
+                          )}
+                          {puede && abierta === c.id && (
+                            <div className="grid gap-2">
+                              <label className="grid gap-1 text-sm">
+                                <span className="font-medium">{t.motivo}</span>
+                                <textarea
+                                  ref={campoMotivo}
+                                  rows={3}
+                                  maxLength={MAX_MOTIVO}
+                                  value={motivo}
+                                  onChange={(e) => setMotivo(e.target.value)}
+                                  aria-describedby={errorMotivo ? `error-${c.id}` : undefined}
+                                  aria-invalid={errorMotivo ? true : undefined}
+                                  className={CAMPO}
+                                />
+                              </label>
+                              {errorMotivo && (
+                                <p id={`error-${c.id}`} role="alert" className="text-sm font-medium text-danger">
+                                  {errorMotivo}
+                                </p>
+                              )}
+                              <div className="flex flex-wrap gap-3">
+                                <button type="button" className={BOTON_PRIMARIO} onClick={() => responderAPostulacion(c, false)}>
+                                  {p.confirmar}
+                                </button>
+                                <button
+                                  type="button"
+                                  className={BOTON_SECUNDARIO}
+                                  onClick={() => {
+                                    setAbierta(null);
+                                    setErrorMotivo("");
+                                  }}
+                                >
+                                  {t.cancelar}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </article>
+                      );
+                    })}
+                </section>
+              );
+            })}
+          </section>
+        )}
+        </>
       )}
     </div>
   );

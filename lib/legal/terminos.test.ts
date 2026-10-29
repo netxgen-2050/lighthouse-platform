@@ -51,6 +51,7 @@ describe("catálogo legal", () => {
         "obra",
         "ordenanza173",
         "pactoDosPartes",
+        "pactopuntual",
         "pacto",
         "pase",
         "pasaporte",
@@ -101,6 +102,17 @@ describe("catálogo legal", () => {
     expect(esBorrador("pactoDosPartes")).toBe(true);
     expect(terminoEn("pactoDosPartes")?.titulo).toBe("Pact accepted by both parties");
     expect(TERMINOS.pactoDosPartes.texto).toMatch(/no es un contrato de trabajo ni de inversión/i);
+  });
+
+  it("pactopuntual es borrador, tiene inglés y aclara que no es un contrato de trabajo, sin horario impuesto ni pago en dinero", () => {
+    expect(esBorrador("pactopuntual")).toBe(true);
+    expect(terminoEn("pactopuntual")?.titulo).toBe("One-off pact");
+    const texto = TERMINOS.pactopuntual.texto;
+    expect(texto).toMatch(/No es un contrato de trabajo/);
+    expect(texto).toMatch(/horario impuesto/);
+    expect(texto).toMatch(/no hay pago en dinero/);
+    expect(texto).toMatch(/Semillas, que no son un sueldo/);
+    expect(texto).not.toMatch(/brote|germin/i);
   });
 
   it("ordenanza173 es borrador y dice que se verifica con abogado", () => {

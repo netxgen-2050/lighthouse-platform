@@ -5,8 +5,10 @@ import { cargarPerfil } from "@/lib/perfil/modelo";
 import { inicialesDeEmail } from "@/lib/sesion/iniciales";
 import {
   afirmaPersona,
+  datosDePostulacion,
   datosDePropuesta,
   sobreDe,
+  sobrePuntual,
   type ConstanciaPacto,
   type QuienResponde,
 } from "./constancias";
@@ -14,9 +16,11 @@ import {
   conciliar,
   propuestasPorPublicar,
   type EstadoPactos,
+  type PactoPuntual,
   type PorPublicar,
   type RespuestaAplicada,
 } from "./estado";
+import type { Relacion } from "./postulacion";
 import { agregarEnNavegador } from "./registro-compartido";
 
 /** Lo mínimo de la sesión del cliente que hace falta para los pactos. */
@@ -64,6 +68,48 @@ export function publicarPropuesta(
     },
     cuando,
   );
+}
+
+/**
+ * Publica una postulación a una tarea en el registro compartido. Devuelve la lista nueva, el id de la propuesta y el número de
+ * envío de esta persona a esta necesidad (para registrar un evento por envío), o null si el navegador no deja.
+ */
+export function publicarPostulacion(
+  p: { comunidad: string; puntual: PactoPuntual; holon: string; relacion: Relacion; lidera: boolean },
+  persona: { idPersona: string; email: string | null },
+  cuando: string,
+): { lista: ConstanciaPacto[]; propuestaId: string; envio: number } | null {
+  const quien = quienPropone(persona.email);
+  const sobre = sobrePuntual(p.puntual.necesidadId, persona.idPersona);
+  const lista = agregarEnNavegador(
+    {
+      esquema: "pacto-propone",
+      afirma: afirmaPersona(persona.idPersona),
+      por: persona.idPersona,
+      sobre,
+      version: 1,
+      datos: datosDePostulacion({
+        comunidad: p.comunidad,
+        necesidad: p.puntual.necesidadId,
+        holon: p.holon,
+        relacion: p.relacion,
+        rol: p.puntual.rol,
+        rolOtro: p.puntual.rolOtro,
+        descripcion: p.puntual.descripcion,
+        horas: p.puntual.horas ?? 0,
+        fecha: p.puntual.fecha ?? "",
+        tope: p.puntual.tope,
+        topeTotal: p.puntual.topeTotal,
+        nombre: quien.nombre,
+        iniciales: quien.iniciales,
+        proponeLider: p.lidera,
+      }),
+    },
+    cuando,
+  );
+  if (lista === null) return null;
+  const propias = lista.filter((c) => c.esquema === "pacto-propone" && c.sobre === sobre);
+  return { lista, propuestaId: propias[propias.length - 1].id, envio: propias.length };
 }
 
 /** Compatibilidad (design §8): publica lo enviado antes de este cambio que no está en el registro. Devuelve el registro al día. */
