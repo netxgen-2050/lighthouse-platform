@@ -21,7 +21,7 @@ Reglas:
 - **El nivel es por persona y por propuesta**, y una persona puede tener varios (unión de permisos), salvo las restricciones de quien presenta, que siempre ganan (nadie decide sobre la legitimidad de los concerns de su propio pedido).
 - **Prototipo:** el nivel inicial sale de lo que sabe el navegador (membresía de la tribu del holón que decide) y el resto se **simula** con un selector rotulado como simulación. Cada registro guarda el nivel simulado con que se hizo.
 - **En la base:** el nivel lo **calcula el servidor** a partir de la membresía, el rol de proceso asignado en ese holón y la declaración de afectada vigente. Nunca se acepta del pedido, y el selector desaparece. Ser de la tribu que pide **no** da el nivel "del ámbito" en el consejo: ahí deciden los representantes.
-- **Ningún rol de la plataforma** (super admin, líder de tribu) da por sí solo un nivel dentro de una propuesta.
+- **Ningún rol de la plataforma** (super admin, líder de tribu) da por sí solo un nivel dentro de una propuesta. Única excepción, transitoria: definir quién es del ámbito en las propuestas del consejo mientras no haya representantes elegidos (ADR-023).
 - **Concern sin nombre:** cuando haya base, la autoría va en un registro aparte que solo ve la facilitación; el registro público no la lleva.
 
 ## Consecuencias

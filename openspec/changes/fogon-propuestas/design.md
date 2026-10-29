@@ -99,7 +99,9 @@ function permiso(accion, niveles: readonly NivelImplicacion[], ctx: { ambito: Am
   - `agrupar-concerns` (C1): rol de proceso "sí"; el resto "no". Cubre agrupar, nombrar el grupo y sacar un concern del grupo.
   - `sugerir-mecanismo` (D2): las mismas celdas que "Comentar en la discusión abierta".
   - `acusar-conformidad` (B3): del ámbito "sí"; el resto "no". Por la unión, quien presenta y también es del ámbito puede firmarlo.
-- **Definir el ámbito del consejo (G1)** no es una acción por nivel de implicación: depende del nivel de **plataforma** `superadmin` de la sesión. `page.tsx` lo lee en el servidor (`lib/sesion/`) y le pasa `puedeDefinirAmbitoConsejo: boolean` al cliente; `lib/fogon/propuestas/` no importa `lib/permisos/` ni `lib/sesion/`.
+- **Definir el ámbito del consejo (G1)** no es una acción por nivel de implicación: depende del rol de **plataforma** `superadmin` de la sesión. Lo lee **el componente de cliente** con `useSesion()` (`sesion?.rol === "superadmin"`, igual que `components/sesion/solo-super-admin.tsx`) y se lo pasa como `puedeDefinirAmbitoConsejo: boolean` a lo que dibuja; mientras la sesión carga, `false`. `lib/fogon/propuestas/` no importa `lib/permisos/`, `lib/sesion/` ni `components/sesion/`. Excepción a ADR-022 escrita en ADR-023.
+  <!-- arquitecto: no se lee en `page.tsx`. La cookie del super admin real (`lh-sesion-admin`) tiene `path=/admin` (ADR-016): en `/fogon/propuestas/…` el servidor solo vería la cookie de prueba, y en producción el super admin nunca vería el control. Como el control solo escribe en su propio navegador, verificarlo en el servidor no protege nada hoy (ADR-015). -->
+
   - Respaldar una sugerencia del Guardián **no es una acción aparte**: es `levantar-concern` con `apuntaA` a la sugerencia, así que sigue sus permisos y sus fases.
 - **Por fase** (`lib/fogon/propuestas/fases.ts`): `ACCIONES_POR_FASE: Record<Fase, readonly Accion[]>`. Leer y recibir avisos, siempre (para los niveles que pueden). Resumen:
 
@@ -137,8 +139,11 @@ function permiso(accion, niveles: readonly NivelImplicacion[], ctx: { ambito: Am
 - Cada propuesta del consejo trae `ambitoConsejo: { personas: string[] }` de ejemplo (7 personas "(ejemplo)", marcado "definido por el board de NetXGen") y la página muestra la lista con el aviso "Mientras no haya representantes elegidos, quién es del ámbito lo define el board de NetXGen".
 - Si `puedeDefinirAmbitoConsejo` (super admin de la sesión), aparece "Definir quién es del ámbito (en nombre del board de NetXGen)": casillas con las personas de ejemplo y "vos". Cada cambio es un registro `ambito-consejo` con `datos: { agrega | quita: personaId, enNombreDe: "board-netxgen" }` y `quien: "vos"`, `nivel` de plataforma `superadmin` anotado en `datos`. Se muestra "Definido por el super admin en nombre del board de NetXGen (simulado)".
 - `tamanoAmbito` de una propuesta del consejo **se deriva** de esa lista (no es un número fijo); `minimoParticipacion` se recalcula.
+- **Lista vacía:** si el super admin quita a todas, el ámbito no está definido: `tamanoAmbito = 0` se trata como `null` ("sin dato"), no se puede cerrar por consenso y la página dice "El board de NetXGen todavía no definió quién es del ámbito". Nunca un quórum de 0. <!-- arquitecto -->
+- **Solo se aplican si quien mira es super admin:** los registros `ambito-consejo` guardados en el navegador se aplican únicamente cuando `puedeDefinirAmbitoConsejo` es `true`; si no, se ignoran y se usa la lista de ejemplo. Así una persona que deja de ser super admin, o que escribe a mano en `localStorage`, no se agrega al ámbito. <!-- arquitecto -->
+- **Lo ve solo el super admin:** como el resto de los registros (§4, clave con prefijo de persona), los cambios quedan en el navegador del super admin; el resto del equipo ve la lista de ejemplo. Es una simulación individual, no una lista compartida. <!-- arquitecto -->
 - Sin super admin, la lista se ve y el control no. En propuestas que no son del consejo no aparece nada de esto.
-- Cuando haya base: lo registra el servidor con la identidad real del super admin (o del board) y nunca se acepta del navegador; cuando haya representantes elegidos, esta lista se reemplaza por ellos.
+- Cuando haya base: lo registra el servidor con la identidad real del super admin (o del board) y nunca se acepta del navegador; cuando haya representantes elegidos, esta lista se reemplaza por ellos (ADR-023).
 
 ### 4. Modelo y registros (`lib/fogon/propuestas/tipos.ts`, `estado.ts`)
 
@@ -167,7 +172,8 @@ type Registro = {                        // forma de constancia (ADR-012), solo 
   datos?: Record<string, string | number | boolean>;
   confirmadoPor?: string /* personaId que confirmó una propuesta de Hifa */; simulado: true;
 };
-function derivarEstado(p: Propuesta, extra: readonly Registro[], ahora: Date): EstadoPropuesta;
+function derivarEstado(p: Propuesta, extra: readonly Registro[], ahora: Date,
+  opciones?: { aplicaAmbitoConsejo: boolean /* = puedeDefinirAmbitoConsejo; por defecto false (§3b) */ }): EstadoPropuesta; // arquitecto
 // EstadoPropuesta = { fase; version; fases: { fase; desde; vence; hecha }[]; concerns: ConcernVista[];
 //   grupos: { id; nombre; concerns: ConcernVista[]; autoras: string[] }[]; mecanismos: MecanismoVista[];
 //   sugerenciasGuardian: SugerenciaVista[]; acuses: AcuseVista[];
@@ -187,6 +193,8 @@ function derivarEstado(p: Propuesta, extra: readonly Registro[], ahora: Date): E
 - Validaciones (`acciones.ts`): uno por persona y versión; no se puede con un concern abierto propio en esa versión; no en borrador ni después del cierre.
 - Si después la persona levanta un concern, el acuse se ve "reemplazado por un concern" (se deriva; no se borra nada). Tras una versión nueva, el acuse dice "sobre la versión N".
 - `REGISTROS_QUE_CUENTAN = ["pregunta", "respuesta", "comentario", "concern", "sumarse", "resolucion", "a-un-lado", "bloqueo", "acuse"]`. `participacion.cuenta` = personas distintas, del ámbito o afectadas, con al menos uno de esos registros. `agrupar`, `mecanismo`, `fase`, `ambito-consejo` y `evaluacion` no cuentan; tampoco abrir la página.
+- `minimoParticipacion(0)` → `null` (ámbito sin definir; ver §3b), nunca 0. <!-- arquitecto -->
+- Un acuse de una versión anterior **sigue contando como participación** (participar no es aprobar), pero se muestra "sobre la versión N". Interpretación del arquitecto; queda en Open Questions. <!-- arquitecto -->
 - `alVencer(simple)`: concern abierto o bloqueo → pausada; sin objeciones y `cuenta >= minimo` → adoptada ("nadie objetó en el plazo y hubo quórum"); sin objeciones y sin quórum, o `minimo === null` → pausada ("no se alcanzó la participación mínima").
 - En la página: un bloque "Participación" con "N de M para el quórum (X firmaron el acuse)", el botón "Entiendo la propuesta y no tengo ningún concern" si la persona puede, y la lista de acuses con nombre y versión.
 - **Respaldo de una sugerencia del Guardián (E1):** es un registro `concern` con `apuntaA` = id de la sugerencia, el principio de la sugerencia como valor por defecto y la razón escrita por la persona (obligatoria). La sugerencia pasa a "Respaldada por N personas".
@@ -271,7 +279,7 @@ const guardianGuionado: Guardian;   // devuelve p.guion.guardian filtrado a las 
 ### 7. Página (`app/fogon/propuestas/[id]/`)
 
 - `page.tsx` (servidor): busca la propuesta por id de decisión; `notFound()` si no existe. Arma los datos en el idioma pedido y pasa todo a `propuesta-cliente.tsx`.
-- `page.tsx` también lee la sesión y pasa `puedeDefinirAmbitoConsejo` (nivel `superadmin`) al cliente (§3b).
+- `page.tsx` **no** lee la sesión: `propuesta-cliente.tsx` calcula `puedeDefinirAmbitoConsejo` con `useSesion()` (§2 y §3b). <!-- arquitecto: la cookie del super admin no llega fuera de `/admin` (ADR-016). -->
 - Orden en el DOM: migas (Fogón › propuesta) → encabezado (ámbito y título) → fases (`<ol aria-label>` con `aria-current="step"` y texto "hecha / ahora / pendiente", más la fecha de vencimiento) → ficha (`<dl>`) → **ámbito del consejo** (solo propuestas del consejo, §3b) → **participación y acuses** (§4b) → **mecanismos sugeridos sobre la propuesta** → discusión (`<ol>` con un `<article>` por entrada; un grupo de concerns es un `<article>` con su nombre, sus autoras y una lista con cada concern original) → "Qué podés hacer" (selector y botones) → facilitación de Hifa → "Quién puede hacer qué" (`<details>` con la tabla) → historial de versiones.
 - **Lugar para sugerir un mecanismo (D2):**
   - Debajo de la ficha, una sección "Mecanismos para priorizar o repartir" con las sugerencias sobre la propuesta y, si la persona puede `sugerir-mecanismo` en esta fase, el botón "Sugerir un mecanismo".
@@ -324,11 +332,15 @@ Toca **permisos** (dentro de una decisión, de ejemplo) y **plata simulada** (mo
 
 **Veredicto del arquitecto (28-oct-2026, sobre la versión anterior):** ⚠️ aprobar con ajustes, ya incorporados (marcas `<!-- arquitecto -->`): nivel inicial desde el holón y no desde `tribuId`; el consejo arranca en `red`; huerta con `holonId: null`; D1 en el consejo; coherencia de plata; `nivel` simulado que en la base calcula el servidor. Decisión escrita en **ADR-022** (Propuesta). Para cuando haya base: el concern sin nombre guarda la autoría en un registro aparte que solo ve la facilitación, y la evaluación del proceso se muestra solo agregada.
 
-**Pendiente: segunda revisión del arquitecto** con el id `fogon-propuestas`, por los cambios del 29-oct: la matriz cambió (A2 visita sin acceso, C4 quien presenta levanta concerns y bloquea; ADR-022 sigue valiendo porque la restricción de legitimidad se mantiene), se suma el Guardián de IA (puerto nuevo, simulado; cuando sea real entra por la skill `integracion-externa` con su decisión de privacidad) y se quita `origenHolonId`. Y por las respuestas del 29-oct a las preguntas abiertas: el **acuse de conformidad** (registro nuevo con forma de constancia), el **ámbito del consejo definido por el super admin** en nombre del board (lee el nivel `superadmin` de la sesión en `page.tsx`; toca permisos de plataforma solo para mostrar un control simulado), la agrupación de concerns (las autoras quedan registradas dentro del grupo) y que quien presenta no se hace a un lado.
+**Segunda revisión del arquitecto (29-oct-2026):** ⚠️ aprobar con ajustes, ya incorporados (marcas `<!-- arquitecto -->`): el control del ámbito del consejo se habilita en el cliente con `useSesion()` y no en `page.tsx` (la cookie del super admin solo viaja a `/admin`, ADR-016); los registros `ambito-consejo` solo se aplican si quien mira es super admin; un ámbito vacío es "sin dato" y nunca quórum 0; los acuses de versiones anteriores siguen contando. Que un rol de plataforma defina el ámbito es una excepción a ADR-022, escrita en **ADR-023** (Propuesta). Datos personales: sin datos reales nuevos; el texto libre de la evaluación (F4) y los concerns de temas de cuidado quedan solo en el navegador de cada persona; cuando haya base, la evaluación va agregada y sin texto asociado a la persona, y el concern sin nombre separa la autoría (ADR-022).
+
+Antes (pedido de segunda revisión) con el id `fogon-propuestas`, por los cambios del 29-oct: la matriz cambió (A2 visita sin acceso, C4 quien presenta levanta concerns y bloquea; ADR-022 sigue valiendo porque la restricción de legitimidad se mantiene), se suma el Guardián de IA (puerto nuevo, simulado; cuando sea real entra por la skill `integracion-externa` con su decisión de privacidad) y se quita `origenHolonId`. Y por las respuestas del 29-oct a las preguntas abiertas: el **acuse de conformidad** (registro nuevo con forma de constancia), el **ámbito del consejo definido por el super admin** en nombre del board (lee el nivel `superadmin` de la sesión en `page.tsx`; toca permisos de plataforma solo para mostrar un control simulado), la agrupación de concerns (las autoras quedan registradas dentro del grupo) y que quien presenta no se hace a un lado.
 
 ## Open Questions
 
 - B3 (interpretación de Claude que Gus pidió confirmar): "participar" = escribir en la discusión o firmar el acuse; abrir la propuesta sin hacer nada no cuenta. Este diseño además **no cuenta** sugerir un mecanismo, agrupar concerns ni la evaluación. ¿Está bien?
 - Acuse: ¿lo pueden firmar también las personas **afectadas** (que sí cuentan para el quórum si escriben)? Este diseño lo deja solo para las del ámbito, como dijo Gus.
 - Agrupar: ¿una autora puede pedir que saquen su concern de un grupo, o lo decide solo quien facilita? Este diseño deja "sacar del grupo" en el rol de proceso.
+- <!-- arquitecto --> Acuse tras una versión nueva: ¿el acuse de la versión 1 sigue contando para el quórum de la versión 2 (lo que propone este diseño), o hay que volver a firmarlo?
+- <!-- arquitecto --> Ámbito del consejo: ¿el super admin puede incluirse a sí mismo (lo que dice la spec), o el board define el ámbito sin que quien lo marca se agregue? ¿Los cambios tienen que verse para todo el equipo (hoy solo los ve el super admin en su navegador)?
 - <!-- arquitecto --> Una propuesta urgente del consejo que vence sin consenso: ¿se pausa (lo que propone este diseño) o sube al común? (no fue parte de las seis respuestas del 29-oct)
