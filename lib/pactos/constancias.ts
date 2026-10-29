@@ -299,7 +299,8 @@ export function holonIdDePostulacion(c: ConstanciaPacto): string | null {
 
 /**
  * Quién tiene que afirmar la aceptación de una propuesta: en un pacto de tiempo, la comunidad; en una postulación a una
- * tarea (`datos.tipo === "puntual"`), el holón de la necesidad (`datos.holon`, p. ej. `circulo:valle-3`).
+ * tarea (`datos.tipo === "puntual"`), el holón de la necesidad recalculado desde el `sobre` (p. ej. `circulo:valle-3`),
+ * no el `datos.holon` que escribió la persona.
  */
 export function contraparteDe(propuesta: ConstanciaPacto): string | null {
   if (propuesta.datos.tipo === "puntual") return holonIdDePostulacion(propuesta);
