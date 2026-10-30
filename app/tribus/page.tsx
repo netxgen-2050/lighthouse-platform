@@ -99,6 +99,15 @@ function FrenteItem({ f, idioma, futuro }: { f: Frente; idioma: Idioma; futuro: 
       </p>
       <p>
         <span className="font-medium">{e.lugar}</span> {f.lugar ? e.enElMapa : e.sinLugar}
+        {f.lugar && (
+          <>
+            {" · "}
+            <Link className="underline" href={`/territorios/lighthouse?vista=ahora&sel=${f.id}`}>
+              {textos("territorio", idioma).verEnMapa}
+              <span className="sr-only"> · {f.nombre}</span>
+            </Link>
+          </>
+        )}
       </p>
       {futuro && <p className="font-medium">{e.masAdelante(f.desde)}</p>}
     </li>

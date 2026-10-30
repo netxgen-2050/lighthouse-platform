@@ -5,24 +5,18 @@ import Link from "next/link";
 import { useSesion } from "@/components/sesion/contexto";
 import { EnlaceConCuenta, EntrarPara } from "@/components/sesion/entrar-para";
 import { EstadoAdministrativo } from "@/components/estado-administrativo";
-import { MembresiaAcciones } from "@/components/membresia-acciones";
-import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
-import { destinosDisponibles } from "@/lib/navegacion";
+import { listarFrentes } from "@/lib/equipos/frentes";
+import type { Fase } from "@/lib/territorios/fases";
+import type { FuentePlanId, VistaId } from "@/lib/territorios/vistas";
 import { PedidoContacto } from "@/components/pedido-contacto";
 import { SelloTribu } from "@/components/sello-tribu";
 import { referenciaDeFinca } from "@/lib/contactos/pedidos";
 import type { Pedido } from "@/lib/contactos/tipos";
 import { ESTADOS_ADMINISTRATIVOS, accionesDeLote } from "@/lib/legal/estado-administrativo";
 import { TerminoLegal } from "@/components/termino-legal";
-import {
-  buscarElemento,
-  contarTribusPorEstado,
-  macrolote7,
-  textoDeEstadoFinca,
-  textoHectareas,
-  textoSuperficieM2,
-  tribuDeBarrio,
-} from "@/lib/territorios/biopueblo";
+import { buscarElemento, textoDeEstadoFinca, textoHectareas, textoSuperficieM2, tribuDeBarrio } from "@/lib/territorios/biopueblo";
+import { FichaFrente, MARCA_EJEMPLO } from "./vistas/ficha-frente";
+import { PANELES, PertenecerAlLighthouse } from "./vistas/paneles";
 import { TEXTO_COMUN, descripcionDeLugar, esNombrePropioDeLugar, nombreDeLugar } from "@/lib/territorios/textos";
 import { listarTribus, rutaProponerComunidad } from "@/lib/tribus/datos";
 import { textoDeEstado } from "@/lib/tribus/tipos";
@@ -37,6 +31,10 @@ type Props = {
   consultas: string[];
   /** Guarda el pedido de contacto. Devuelve false si no se pudo guardar. */
   alConsultar: (pedido: Pedido) => boolean;
+  vista: VistaId;
+  fase: Fase;
+  fuente: FuentePlanId;
+  alElegir: (id: string) => void;
 };
 
 const boton =
@@ -88,12 +86,15 @@ function ConsultaFinca({
   );
 }
 
-export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
+export function FichaLateral({ seleccion, consultas, alConsultar, vista, fase, fuente, alElegir }: Props) {
   const idioma = useIdioma();
   const tx = useTextos("territorio");
   const t = tx.ficha;
   const nd = sinDato(idioma);
   const el = seleccion ? buscarElemento(seleccion) : undefined;
+  const frente = seleccion ? listarFrentes(idioma).find((f) => f.id === seleccion && f.lugar) : undefined;
+
+  if (frente) return <FichaFrente frente={frente} />;
 
   if (el?.tipo === "barrio") {
     const tribu = tribuDeBarrio(el, listarTribus(idioma));
@@ -111,6 +112,7 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
           </div>
         </div>
         <p>{tribu.foco}</p>
+        <p className={MARCA_EJEMPLO}>{tx.vision.ejemploTribus}</p>
         <p className="text-sm font-medium">{t.estado} {textoDeEstado(tribu.estado, idioma)}</p>
         <p className="text-sm">
           <strong>{t.hogares}</strong> {tribu.hogares}
@@ -207,32 +209,11 @@ export function FichaLateral({ seleccion, consultas, alConsultar }: Props) {
     );
   }
 
-  const conteo = contarTribusPorEstado(listarTribus(idioma));
-  const cifras = [
-    { etiqueta: t.activas, valor: conteo.activa },
-    { etiqueta: t.formacion, valor: conteo.formacion },
-    { etiqueta: t.vacantes, valor: conteo.vacante },
-  ];
+  const Panel = PANELES[vista];
   return (
     <div className="grid gap-3">
-      <h2 className="text-xl font-semibold" translate="no">{macrolote7().nombre}</h2>
-      <p className="text-sm">{t.resumen(textoHectareas(macrolote7().areaHa, idioma))}</p>
-      <p className="text-sm text-muted">{t.elegiUno}</p>
-      <h3 className="font-semibold">{t.tribusDelTerritorio}</h3>
-      <dl className="grid grid-cols-3 gap-2">
-        {cifras.map((c) => (
-          <div key={c.etiqueta} className="grid gap-1 rounded-lg border border-faint bg-surface-2 p-2">
-            <dt className="text-sm text-muted">{c.etiqueta}</dt>
-            <dd className="text-2xl font-semibold">{c.valor}</dd>
-          </div>
-        ))}
-      </dl>
-      <h3 className="font-semibold">{t.pertenecer}</h3>
-      <MembresiaAcciones
-        comunidad={COMUNIDAD_LIGHTHOUSE}
-        nombre="Lighthouse"
-        pactos={destinosDisponibles().some((d) => d.href === "/pactos")}
-      />
+      <Panel fase={fase} fuente={fuente} alElegir={alElegir} seleccion={seleccion} />
+      <PertenecerAlLighthouse />
     </div>
   );
 }

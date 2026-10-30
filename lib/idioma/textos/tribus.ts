@@ -169,6 +169,7 @@ const es = {
     masAdelante: (n: number) => `Más adelante · fase ${n}`,
     sumarme: {
       boton: (equipo: string) => `Quiero sumarme a ${equipo}`,
+      botonFrente: "Quiero sumarme a este frente",
       entrar: "Entrá para sumarte",
       sinAdhesion: "Para sumarte, primero sumate como aspirante al Lighthouse",
       verManifiesto: "Ir al manifiesto del Lighthouse",
@@ -421,6 +422,7 @@ const en: Textos<typeof es> = {
     masAdelante: (n: number) => `Later on · phase ${n}`,
     sumarme: {
       boton: (equipo: string) => `I want to join ${equipo}`,
+      botonFrente: "I want to join this front",
       entrar: "Sign in to join",
       sinAdhesion: "To join, first sign on as an applicant to the Lighthouse",
       verManifiesto: "Go to the Lighthouse manifesto",

@@ -1,6 +1,6 @@
 import { CIRCULOS_DEL_COMUN } from "@/lib/gobernanza/datos";
 import type { Circulo } from "@/lib/gobernanza/tipos";
-import type { Idioma } from "@/lib/idioma/tipos";
+import { textoEn, type Idioma } from "@/lib/idioma/tipos";
 import { FASE_ACTUAL, vigenteEn, type Fase } from "@/lib/territorios/fases";
 import { frentesDe, type Frente } from "./frentes";
 
@@ -86,4 +86,10 @@ export function estadoSumarme(x: EntradaSumarme): EstadoSumarme {
 export function confirmarPedido(x: EntradaSumarme): PedidosEquipos | null {
   if (estadoSumarme(x).tipo !== "puede" || !esDelComun(x.circuloId)) return null;
   return pedir(x.pedidos, x.circuloId);
+}
+
+/** Nombre de un equipo (círculo del común) en el idioma pedido; `null` si el id no es de un círculo del común. */
+export function nombreDeEquipo(circuloId: string, idioma: Idioma): string | null {
+  const c = CIRCULOS_DEL_COMUN.find((x) => x.id === circuloId);
+  return c ? textoEn(c.nombre, idioma) : null;
 }
