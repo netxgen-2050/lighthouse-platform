@@ -65,6 +65,14 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Manifiestos de ejemplo (el del Lighthouse y siete de tribus) traducidos del español: voz de la comunidad, a revisar también con quien los escriba de verdad",
   },
+  "textos/manifiestoVrn": {
+    estado: "pendiente",
+    que: "Manifiesto de Lighthouse VRN: ficha del común, tarjeta de Tribus, lectura completa, principios propios de las tribus, aviso de adhesión y bloque de la Vista NetX",
+  },
+  "lib/manifiestos/lighthouse-vrn.ts": {
+    estado: "pendiente",
+    que: "Texto del manifiesto de Lighthouse VRN (propósito, 15 principios, 7 derechos de la tierra, compromisos, cómo se cambia) y nombre visible del común; traducidos del español, borrador a ratificar",
+  },
   "lib/territorios/textos.ts": {
     estado: "pendiente",
     que: "Textos del territorio con su inglés: terreno común, descripción y nombres descriptivos de los lugares, bienes comunes",
@@ -180,6 +188,7 @@ export function fuentesObligatorias(): string[] {
     "lib/tribus/necesidades.ts",
     "lib/gobernanza/datos.ts",
     "lib/manifiestos/datos.ts",
+    "lib/manifiestos/lighthouse-vrn.ts",
     "lib/territorios/textos.ts",
     "lib/semillas/datos.ts",
     "lib/evaluacion/guia.ts",

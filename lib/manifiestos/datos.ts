@@ -6,6 +6,8 @@
 // nota "Translated from Spanish". Esa traducción también la escribió un agente y está pendiente de revisión nativa
 // (y de la comunidad que los escriba de verdad). Los nombres de las comunidades no se traducen.
 import { textoEn, type BilingueConOriginal, type Idioma } from "@/lib/idioma/tipos";
+import { MANIFIESTO_VRN, NOMBRE_META_TRIBU, type ManifiestoVrn } from "./lighthouse-vrn";
+import type { PrincipioDeTribu } from "./principios-tribu";
 
 /** Un texto del manifiesto: español original y su traducción al inglés. */
 const v = (es: string, en: string): BilingueConOriginal => ({ es, en, original: "es" });
@@ -26,6 +28,10 @@ export type Manifiesto = {
   version: string;
   /** Siempre true en el prototipo: texto de ejemplo. */
   ejemplo: true;
+  /** Solo el del común: el manifiesto completo de Lighthouse VRN (principios, derechos, cómo se cambia). */
+  vrn?: ManifiestoVrn;
+  /** Solo algunas tribus: principios que suman a los de Lighthouse VRN, sin contradecirlos (ver `principios-tribu.ts`). */
+  principiosPropios?: PrincipioDeTribu[];
 };
 
 /** El manifiesto como se guarda: cada texto con su español original y su inglés. */
@@ -42,61 +48,28 @@ type Base = Omit<ManifiestoBilingue, "version" | "ejemplo">;
 
 const BASES: Base[] = [
   {
-    id: "lighthouse",
-    comunidad: "Lighthouse",
-    titulo: v("Pacto de convivencia del Lighthouse", "Lighthouse Coexistence Pact"),
-    introduccion: v(
-      "El Lighthouse es un lugar donde van a vivir y trabajar muchas personas y muchas tribus. Antes de cualquier pacto, este es el piso común: lo que nos prometemos a todas las personas que decidimos pertenecer, sea cual sea la tribu a la que nos sumemos.",
-      "The Lighthouse is a place where many people and many tribes will live and work. Before any pact, this is the common ground: what we promise to all of us who decide to belong, whichever tribe we join.",
-    ),
-    compromisos: [
-      {
-        titulo: v("Nos cuidamos", "We take care of each other"),
-        texto: v(
-          "Tratamos a cada persona como alguien con quien vamos a convivir años. Preguntamos antes de suponer, escuchamos antes de contestar y nadie queda solo cuando está pasando un mal momento.",
-          "We treat each person as someone we will live alongside for years. We ask before assuming, we listen before answering, and no one is left alone when going through a hard time.",
-        ),
-      },
-      {
-        titulo: v("Decidimos juntos lo que es de todos", "We decide together what belongs to everyone"),
-        texto: v(
-          "Lo que afecta a todo el Lighthouse (el agua, los caminos, el terreno común) se decide con consenso en la asamblea. Lo que le toca a una tribu lo decide esa tribu, y lo hace público.",
-          "What affects the whole Lighthouse (water, roads, the common land) is decided by consensus in the assembly. What concerns a single tribe is decided by that tribe, and made public.",
-        ),
-      },
-      {
-        titulo: v("Hablamos antes de que el conflicto crezca", "We talk before conflict grows"),
-        texto: v(
-          "Si algo nos duele o nos molesta, lo decimos pronto y cara a cara, con respeto. Si no alcanza, pedimos una mediación de la comunidad antes de acudir a otra instancia.",
-          "If something hurts or bothers us, we say so early and face to face, with respect. If that is not enough, we ask the community for mediation before turning to any other body.",
-        ),
-      },
-      {
-        titulo: v("Cuidamos la tierra", "We care for the land"),
-        texto: v(
-          "Dejamos el suelo, el agua y el monte mejor de como los encontramos. No hacemos obras, quemas ni vertidos que dañen lo que es de todos.",
-          "We leave the soil, the water and the woodland better than we found them. We do not carry out works, burning or dumping that harm what belongs to everyone.",
-        ),
-      },
-      {
-        titulo: v("Aportamos al común", "We contribute to the commons"),
-        texto: v(
-          "Cada tribu y cada persona suma al pozo común lo que acordó: tiempo, trabajo, saberes o recursos. Lo que se aporta se registra y se rinde cuentas a la comunidad.",
-          "Each tribe and each person adds to the common pool what they agreed to: time, work, knowledge or resources. What is contributed is recorded and reported back to the community.",
-        ),
-      },
-      {
-        titulo: v("Cuando alguien se va, nos vamos bien", "When someone leaves, we part well"),
-        texto: v(
-          "Nadie queda atado. Quien decide irse avisa con tiempo, deja en orden lo que tenía a cargo y se lleva lo que es suyo. Si algún día no podemos cumplir un acuerdo, lo hablamos con la comunidad en lugar de callarlo.",
-          "No one is tied down. Whoever decides to leave gives notice, leaves in order whatever they were in charge of, and takes what is theirs. If one day we cannot keep an agreement, we talk about it with the community instead of staying silent.",
-        ),
-      },
-    ],
-  },
-  {
     id: "semilla",
     comunidad: "Semilla Viva",
+    principiosPropios: [
+      {
+        id: "semilla-libre",
+        nombre: v("Las semillas son libres", "Seeds are free"),
+        practica: v(
+          "Intercambiamos y multiplicamos semillas criollas; nunca las patentamos ni las vendemos como propias.",
+          "We exchange and multiply native seeds; we never patent them or sell them as our own.",
+        ),
+        profundiza: ["suelo-vivo", "tierra-no-mercancia"],
+      },
+      {
+        id: "comer-de-estacion",
+        nombre: v("Comemos de estación", "We eat in season"),
+        practica: v(
+          "La huerta sigue el calendario del lugar, no el del supermercado.",
+          "The garden follows the calendar of the place, not that of the supermarket.",
+        ),
+        profundiza: ["recursos-con-medida"],
+      },
+    ],
     titulo: v("Manifiesto de Semilla Viva", "Semilla Viva Manifesto"),
     introduccion: v(
       "Somos una tribu que cuida el suelo y las semillas criollas para que todo el Lighthouse coma bien. Sumarte es aceptar un ritmo de campo: se siembra, se espera y se comparte la cosecha.",
@@ -256,6 +229,17 @@ const BASES: Base[] = [
   {
     id: "agua",
     comunidad: "Agua Clara",
+    principiosPropios: [
+      {
+        id: "cada-litro-a-la-vista",
+        nombre: v("Cada litro, a la vista", "Every liter in plain view"),
+        practica: v(
+          "Publicamos todos los meses cuánta agua se usa y cómo vuelve.",
+          "Every month we publish how much water is used and how it goes back.",
+        ),
+        profundiza: ["agua-viva", "agua-vuelve-limpia"],
+      },
+    ],
     titulo: v("Manifiesto de Agua Clara", "Agua Clara Manifesto"),
     introduccion: v(
       "Diseñamos y cuidamos el agua común: toma, cisterna, riego y tratamiento. El agua es de todas y de todos, y quien la administra tiene una responsabilidad enorme. Este manifiesto lo recuerda.",
@@ -520,7 +504,22 @@ const BASES: Base[] = [
   },
 ];
 
-const MANIFIESTOS: ManifiestoBilingue[] = BASES.map((b) => ({ ...b, version: VERSION, ejemplo: true }));
+/** El manifiesto del común se arma desde el de Lighthouse VRN (mismo id `lighthouse`, misma clave de membresía). */
+const LIGHTHOUSE: ManifiestoBilingue = {
+  id: MANIFIESTO_VRN.id,
+  comunidad: NOMBRE_META_TRIBU,
+  titulo: v("Manifiesto de Lighthouse VRN", "Lighthouse VRN Manifesto"),
+  introduccion: MANIFIESTO_VRN.proposito,
+  compromisos: MANIFIESTO_VRN.compromisos,
+  version: MANIFIESTO_VRN.version,
+  ejemplo: true,
+  vrn: MANIFIESTO_VRN,
+};
+
+const MANIFIESTOS: ManifiestoBilingue[] = [
+  LIGHTHOUSE,
+  ...BASES.map((b): ManifiestoBilingue => ({ ...b, version: VERSION, ejemplo: true })),
+];
 
 /** El manifiesto con sus textos en los dos idiomas (para mostrar la nota de traducción y para los tests). */
 export function buscarManifiestoBilingue(id: string): ManifiestoBilingue | undefined {

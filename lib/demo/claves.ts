@@ -22,6 +22,8 @@ export const NOMBRES_BASE = {
   origen: "lh-origen",
   bitacora: "lh-bitacora",
   membresia: "lh-membresia",
+  /** A qué versión del manifiesto de Lighthouse VRN adhirió la persona (si cambia de versión, vuelve a adherir). */
+  adhesionVersion: "lh-adhesion-version",
   postulaciones: "lh-postulaciones",
   actividad: "lh-actividad",
   kyc: "lh-kyc",

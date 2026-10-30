@@ -1,6 +1,12 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
-import { ignorarEnSinRed } from "./ayudas";
+import { conAdhesionAlManifiesto, ignorarEnSinRed } from "./ayudas";
+
+// Votar es participar en la gobernanza: pide haber adherido al manifiesto de Lighthouse VRN. Los escenarios sin
+// adhesión están en `manifiesto-lighthouse-vrn.spec.ts`.
+test.beforeEach(async ({ page }) => {
+  await conAdhesionAlManifiesto(page);
+});
 
 test("lista las diez decisiones con dónde, regla y ⚖, y el aviso de prototipo", async ({ page }) => {
   const respuesta = await page.goto("/fogon");
