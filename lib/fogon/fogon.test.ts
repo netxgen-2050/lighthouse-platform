@@ -87,9 +87,10 @@ describe("datos", () => {
   });
 });
 
-const exterior: Condicion = { residencia: "exterior", pase: false };
-const argentina: Condicion = { residencia: "argentina", pase: false };
-const conPase: Condicion = { residencia: undefined, pase: true };
+const NEUTRA: Condicion = { ...SIN_CONDICION, adhirio: true };
+const exterior: Condicion = { residencia: "exterior", pase: false, adhirio: true };
+const argentina: Condicion = { residencia: "argentina", pase: false, adhirio: true };
+const conPase: Condicion = { residencia: undefined, pase: true, adhirio: true };
 
 describe("quién puede votar (residencia cargada y Pase Fundador)", () => {
   it("con residencia en el exterior y sin Pase vota en tribu; no en la asamblea ni en el fideicomiso", () => {
@@ -99,6 +100,7 @@ describe("quién puede votar (residencia cargada y Pase Fundador)", () => {
   });
   it("el motivo se lee en los dos idiomas desde el diccionario", () => {
     expect(textos("fogon", "es").motivos).toEqual({
+      manifiesto: "Para participar, adherí al manifiesto de Lighthouse VRN",
       pase: "Votan quienes tienen el Pase Fundador",
       residentes: "Solo residentes",
       sinDato: "Sin dato de tu residencia",
@@ -112,14 +114,46 @@ describe("quién puede votar (residencia cargada y Pase Fundador)", () => {
     expect(motivoSinVoto(bomba, argentina)).toBeNull();
   });
   it("sin dato de residencia vota en tribu y en la asamblea dice que falta el dato (no asume)", () => {
-    expect(motivoSinVoto(huerta, SIN_CONDICION)).toBeNull();
-    expect(motivoSinVoto(bomba, SIN_CONDICION)).toBe("sinDato");
-    expect(motivoSinVoto(presupuesto, SIN_CONDICION)).toBe("pase");
+    expect(motivoSinVoto(huerta, NEUTRA)).toBeNull();
+    expect(motivoSinVoto(bomba, NEUTRA)).toBe("sinDato");
+    expect(motivoSinVoto(presupuesto, NEUTRA)).toBe("pase");
   });
   it("con el Pase vota en el fideicomiso sin importar la residencia; la asamblea sigue pidiendo residencia", () => {
     expect(motivoSinVoto(presupuesto, conPase)).toBeNull();
-    expect(motivoSinVoto(presupuesto, { residencia: "exterior", pase: true })).toBeNull();
+    expect(motivoSinVoto(presupuesto, { residencia: "exterior", pase: true, adhirio: true })).toBeNull();
     expect(motivoSinVoto(bomba, conPase)).toBe("sinDato");
+  });
+});
+
+describe("la adhesión al manifiesto de Lighthouse VRN va antes que todo (ADR-023)", () => {
+  const sinAdhesionConPase: Condicion = { residencia: "argentina", pase: true, adhirio: false };
+
+  it("sin adhesión el motivo es 'manifiesto', en cualquier decisión", () => {
+    for (const d of DECISIONES) expect(motivoSinVoto(d, sinAdhesionConPase), d.id).toBe("manifiesto");
+  });
+  it("sin adhesión y sin pase da un solo motivo: manifiesto", () => {
+    expect(motivoSinVoto(presupuesto, { residencia: undefined, pase: false, adhirio: false })).toBe("manifiesto");
+    expect(motivoSinVoto(bomba, SIN_CONDICION)).toBe("manifiesto");
+  });
+  it("una decisión con requisito 'ninguno' sin adhesión da 'manifiesto'", () => {
+    expect(huerta.requisito).toBe("ninguno");
+    expect(motivoSinVoto(huerta, SIN_CONDICION)).toBe("manifiesto");
+    expect(motivoSinVoto(huerta, NEUTRA)).toBeNull();
+  });
+  it("si falta el dato no se asume que adhirió", () => {
+    expect(SIN_CONDICION.adhirio).toBe(false);
+  });
+  it("sin adhesión, votar y llevarAlConsejo devuelven el mismo estado", () => {
+    expect(votar(INICIAL, "huerta", "favor", SIN_CONDICION)).toBe(INICIAL);
+    expect(votar(INICIAL, "presupuesto", "favor", sinAdhesionConPase)).toBe(INICIAL);
+    const sinAdhesionLidera: Condicion = { ...lideraValle, adhirio: false };
+    expect(puedeLlevarAlConsejo(INICIAL, cisterna, sinAdhesionLidera)).toBe(false);
+    expect(llevarAlConsejo(INICIAL, "cisterna", sinAdhesionLidera)).toBe(INICIAL);
+  });
+  it("sin adhesión no se ve un voto guardado antes, pero los votos de ejemplo siguen en el conteo", () => {
+    const e = votar(INICIAL, "huerta", "favor", NEUTRA);
+    expect(votoPropio(e, huerta, SIN_CONDICION)).toBeUndefined();
+    expect(contar(huerta, undefined)).toEqual(huerta.votos);
   });
 });
 
@@ -148,8 +182,8 @@ describe("filtro", () => {
   });
 });
 
-const lideraValle: Condicion = { residencia: undefined, pase: false, lidera: "valle" };
-const lideraTaller: Condicion = { residencia: undefined, pase: false, lidera: "taller" };
+const lideraValle: Condicion = { residencia: undefined, pase: false, adhirio: true, lidera: "valle" };
+const lideraTaller: Condicion = { residencia: undefined, pase: false, adhirio: true, lidera: "taller" };
 const cisterna = DECISIONES_DE_GOBERNANZA[1];
 
 describe("llevar al consejo", () => {
@@ -166,9 +200,9 @@ describe("llevar al consejo", () => {
   });
   it("quien no lidera esa tribu no puede, ni quien no lidera ninguna", () => {
     expect(puedeLlevarAlConsejo(INICIAL, cisterna, lideraTaller)).toBe(false);
-    expect(puedeLlevarAlConsejo(INICIAL, cisterna, SIN_CONDICION)).toBe(false);
+    expect(puedeLlevarAlConsejo(INICIAL, cisterna, NEUTRA)).toBe(false);
     expect(llevarAlConsejo(INICIAL, "cisterna", lideraTaller)).toBe(INICIAL);
-    expect(llevarAlConsejo(INICIAL, "cisterna", SIN_CONDICION)).toBe(INICIAL);
+    expect(llevarAlConsejo(INICIAL, "cisterna", NEUTRA)).toBe(INICIAL);
   });
   it("solo se llevan las decisiones de tribu que piden algo al común, y una sola vez", () => {
     expect(llevarAlConsejo(INICIAL, "huerta", lideraValle)).toBe(INICIAL);
@@ -180,7 +214,7 @@ describe("llevar al consejo", () => {
   });
   it("se puede votar en la copia del consejo y el voto queda", () => {
     const e = llevarAlConsejo(INICIAL, "cisterna", lideraValle);
-    const v = votar(e, "consejo-cisterna", "favor", SIN_CONDICION);
+    const v = votar(e, "consejo-cisterna", "favor", NEUTRA);
     expect(v.votos["consejo-cisterna"]).toBe("favor");
     expect(v.alConsejo).toEqual(["cisterna"]);
   });
@@ -188,13 +222,13 @@ describe("llevar al consejo", () => {
 
 describe("votar", () => {
   it("suma el voto propio al conteo de ejemplo", () => {
-    const e = votar(INICIAL, "huerta", "favor", SIN_CONDICION);
-    expect(contar(huerta, votoPropio(e, huerta, SIN_CONDICION)).favor).toBe(huerta.votos.favor + 1);
+    const e = votar(INICIAL, "huerta", "favor", NEUTRA);
+    expect(contar(huerta, votoPropio(e, huerta, NEUTRA)).favor).toBe(huerta.votos.favor + 1);
     expect(contar(huerta, undefined)).toEqual(huerta.votos);
   });
   it("cambiar el voto no suma dos", () => {
-    const e = votar(votar(INICIAL, "huerta", "favor", SIN_CONDICION), "huerta", "contra", SIN_CONDICION);
-    const c = contar(huerta, votoPropio(e, huerta, SIN_CONDICION));
+    const e = votar(votar(INICIAL, "huerta", "favor", NEUTRA), "huerta", "contra", NEUTRA);
+    const c = contar(huerta, votoPropio(e, huerta, NEUTRA));
     expect(c.favor).toBe(huerta.votos.favor);
     expect(c.contra).toBe(huerta.votos.contra + 1);
   });

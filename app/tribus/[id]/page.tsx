@@ -12,22 +12,28 @@ import { Medidor } from "@/components/medidor";
 import { validadaPorElComun } from "@/lib/gobernanza/registros";
 import { idiomaDelPedido } from "@/lib/idioma/servidor";
 import { textos } from "@/lib/idioma/textos";
+import { nombreDelComun } from "@/lib/manifiestos/lighthouse-vrn";
+import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
 import { destinosDisponibles } from "@/lib/navegacion";
 import { buscarTribu, buscarTribuBilingue, listarTribus, rutaProponerComunidad } from "@/lib/tribus/datos";
 import { MembresiaAcciones } from "@/components/membresia-acciones";
 import { VerBarrio } from "./acciones";
+import { FichaComun } from "./ficha-comun";
 import { Necesidades } from "./necesidades";
 
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return listarTribus().map((t) => ({ id: t.id }));
+  // `lighthouse` es la ficha del común (Lighthouse VRN): no es una tribu.
+  return [...listarTribus().map((t) => ({ id: t.id })), { id: COMUNIDAD_LIGHTHOUSE }];
 }
 
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const t = buscarTribu((await params).id);
+  const id = (await params).id;
+  if (id === COMUNIDAD_LIGHTHOUSE) return { title: nombreDelComun(await idiomaDelPedido()) };
+  const t = buscarTribu(id);
   if (!t) return {};
   const tx = textos("tribus", await idiomaDelPedido());
   return { title: t.estado === "vacante" ? tx.barrioBuscaTribu(t.barrio) : t.nombre };
@@ -47,6 +53,7 @@ const tarjeta ="grid content-start gap-3 rounded-xl border border-faint bg-surfa
 
 export default async function TribuPage({ params }: Props) {
   const { id } = await params;
+  if (id === COMUNIDAD_LIGHTHOUSE) return <FichaComun />;
   const idioma = await idiomaDelPedido();
   const t = buscarTribu(id, idioma);
   const original = buscarTribuBilingue(id);

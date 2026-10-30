@@ -51,6 +51,7 @@ const es = {
   llevaste: (titulo: string) => `Llevaste «${titulo}» al consejo (simulado). La ves en el ámbito Consejo.`,
   /** Por qué una persona no puede votar en una decisión. */
   motivos: {
+    manifiesto: "Para participar, adherí al manifiesto de Lighthouse VRN",
     pase: "Votan quienes tienen el Pase Fundador",
     residentes: "Solo residentes",
     sinDato: "Sin dato de tu residencia",
@@ -126,6 +127,7 @@ const en: Textos<typeof es> = {
   votanRepresentantes: "In the real version the representatives vote. Here the vote is open and simulated.",
   llevaste: (titulo: string) => `You took «${titulo}» to the council (simulated). You can see it under the Council scope.`,
   motivos: {
+    manifiesto: "To take part, sign on to the Lighthouse VRN manifesto",
     pase: "Only Founder Pass holders vote",
     residentes: "Residents only",
     sinDato: "No data on your residency",

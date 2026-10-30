@@ -92,18 +92,18 @@ test("la aceptación simulada también se puede hacer desde la página del manif
   await expect(page.getByRole("button", { name: "Adherir", exact: true })).toHaveCount(0);
 });
 
-test("el Lighthouse tiene su pacto de convivencia y su resumen ofrece lo mismo", async ({ page }) => {
+test("el Lighthouse tiene su manifiesto y su resumen ofrece lo mismo", async ({ page }) => {
   await page.goto("/territorios/lighthouse");
   await expect(page.getByRole("heading", { name: "Pertenecer al Lighthouse" })).toBeVisible();
-  await page.getByRole("link", { name: "Leer el manifiesto del Lighthouse" }).click();
+  await page.getByRole("link", { name: "Leer el manifiesto de Lighthouse VRN" }).click();
   await expect(page).toHaveURL(/\/tribus\/lighthouse\/manifiesto$/);
-  await expect(page.getByRole("heading", { level: 1, name: "Pacto de convivencia del Lighthouse" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Manifiesto de Lighthouse VRN" })).toBeVisible();
 
   await alFinal(page);
   await page.getByLabel(LEYO).check();
   await page.getByLabel(CUIDAR).check();
   await page.getByRole("button", { name: "Adherir", exact: true }).click();
-  await expect(page.getByText("Tu pedido llegó al Lighthouse. Quien lo administra lo va a revisar.")).toBeVisible();
+  await expect(page.getByText("Adheriste al manifiesto de Lighthouse VRN. Ya podés participar en la gobernanza; el común va a confirmar tu adhesión.")).toBeVisible();
 
   await page.goto("/territorios/lighthouse");
   await page.getByRole("button", { name: "Simular: la comunidad me acepta" }).click();
@@ -168,7 +168,7 @@ test("al aceptar desde el Lighthouse el foco pasa al aviso", async ({ page }) =>
   await page.goto("/territorios/lighthouse");
   await page.getByRole("button", { name: "Simular: la comunidad me acepta" }).focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("status").filter({ hasText: "Ya sos parte del Lighthouse." })).toBeFocused();
+  await expect(page.getByRole("status").filter({ hasText: "Ya sos parte de Lighthouse VRN." })).toBeFocused();
 });
 
 test("el ⚖ de adherir está junto al botón y junto al enlace",async ({ page }) => {

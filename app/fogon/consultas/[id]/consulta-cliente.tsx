@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Donut } from "@/components/donut";
+import { AvisoAdhesion } from "@/components/fogon/aviso-adhesion";
+import { useParticipacion } from "@/lib/gobernanza/usar-participacion";
 import { ErrorDeLectura } from "@/components/fogon/error-lectura";
 import { Medidor } from "@/components/medidor";
 import { CREDITOS_POR_PERSONA, type Reparto } from "@/lib/cuadratico/motor";
@@ -42,6 +44,12 @@ export function ConsultaCliente({ id }: { id: string }) {
   const c = t.consulta;
   const comunes = useTextos("comunes");
   const textosDonut = useTextosDonut();
+  const manifiestoVrn = useTextos("manifiestoVrn");
+  // Repartir créditos es participar en la gobernanza: pide haber adherido al manifiesto (regla única, ADR-023). Hasta
+  // leer lo guardado no se muestra ni la acción ni el aviso.
+  const participacion = useParticipacion();
+  const puedeRepartir = participacion.listo && participacion.puede;
+  const sinAdhesion = participacion.listo && !participacion.puede;
   const repo = useMemo(() => repositorioConsultas(), []);
   const [lectura, setLectura] = useState<Lectura<VistaConsulta> | null>(null);
   const [reparto, setReparto] = useState<Reparto>({});
@@ -110,6 +118,7 @@ export function ConsultaCliente({ id }: { id: string }) {
   const traducido = idioma !== (consulta.titulo.original ?? "es");
 
   function cambiar(opcionId: string, delta: 1 | -1) {
+    if (!puedeRepartir) return;
     const siguiente = mover(consulta, reparto, opcionId, delta);
     if (siguiente === reparto) return;
     setReparto(siguiente);
@@ -120,6 +129,8 @@ export function ConsultaCliente({ id }: { id: string }) {
   }
 
   async function guardar() {
+    // Se frena la acción, no solo el botón: sin adhesión no se guarda ningún reparto.
+    if (!puedeRepartir) return;
     const r = await repo.guardarReparto(id, reparto);
     if (r.ok) {
       setErrorGuardar(null);
@@ -209,6 +220,13 @@ export function ConsultaCliente({ id }: { id: string }) {
               </p>
             )}
             <p className="text-sm text-muted">{c.costoCuadratico}</p>
+            {sinAdhesion && (
+              <p className="rounded-lg border border-gold bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+                <AvisoAdhesion
+                  texto={participacion.desactualizada ? manifiestoVrn.aviso.desactualizada : manifiestoVrn.aviso.texto}
+                />
+              </p>
+            )}
           </>
         )}
 
@@ -229,7 +247,7 @@ export function ConsultaCliente({ id }: { id: string }) {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <span className="font-medium">{etiqueta}</span>
                   <span className="flex items-center gap-2">
-                    {!cerrada && (
+                    {!cerrada && puedeRepartir && (
                       <button
                         type="button"
                         aria-label={c.quitar(etiqueta)}
@@ -244,7 +262,7 @@ export function ConsultaCliente({ id }: { id: string }) {
                     <span className="min-w-36 text-center">
                       {textoVotos(v, idioma)} · {textoCreditos(costo(v), idioma)}
                     </span>
-                    {!cerrada && (
+                    {!cerrada && puedeRepartir && (
                       <button
                         type="button"
                         aria-label={c.sumar(etiqueta)}
@@ -258,13 +276,13 @@ export function ConsultaCliente({ id }: { id: string }) {
                     )}
                   </span>
                 </div>
-                {!cerrada && bloqueoMas && (
+                {!cerrada && puedeRepartir && bloqueoMas && (
                   <p id={idMas} className="text-sm text-danger">
                     <span aria-hidden="true">⚠ </span>
                     {bloqueoMas}
                   </p>
                 )}
-                {!cerrada && bloqueoMenos && (
+                {!cerrada && puedeRepartir && bloqueoMenos && (
                   <span id={idMenos} className="sr-only">
                     {bloqueoMenos}
                   </span>
@@ -289,7 +307,7 @@ export function ConsultaCliente({ id }: { id: string }) {
           textos={textosDonut}
         />
 
-        {!cerrada && (
+        {!cerrada && puedeRepartir && (
           <div className="flex flex-wrap items-center gap-3">
             <button type="button" onClick={guardar} aria-describedby={idAviso} className={BOTON_PRINCIPAL}>
               {c.guardar}
