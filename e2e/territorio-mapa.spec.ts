@@ -5,12 +5,12 @@ test.beforeEach(async ({ page }) => {
   await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
 });
 
-const region = (page: Page) => page.getByRole("region", { name: "Mapa del Macrolote 7" });
+const region = (page: Page) => page.getByRole("region", { name: "Mapa del Macrolote 7", exact: true });
 const ficha = (page: Page) => page.getByRole("complementary", { name: "Ficha del territorio" });
 const marcador = (page: Page, inicio: string) => page.locator(`[aria-label^="${inicio}"]`);
 
 async function abrir(page: Page) {
-  await page.goto("/territorios/lighthouse");
+  await page.goto("/territorios/lighthouse?vista=vision");
   await expect(marcador(page, "Barrio ")).toHaveCount(12);
 }
 
@@ -88,7 +88,7 @@ test("elegir Valle Solar en el mapa y ir a la tribu", async ({ page }) => {
   await expect(ficha(page).getByRole("heading", { name: "Valle Solar" })).toBeVisible();
   await expect(ficha(page).getByText("Estado: Activa")).toBeVisible();
   // Sigue en la misma página; la selección queda en ?sel= para no perderse al entrar.
-  await expect(page).toHaveURL(/\/territorios\/lighthouse\?sel=barrio-6$/);
+  await expect(page).toHaveURL(/\/territorios\/lighthouse\?vista=vision&sel=barrio-6$/);
   await ficha(page).getByRole("link", { name: "Conocer la tribu" }).click();
   await expect(page).toHaveURL(/\/tribus\/valle$/);
 });
