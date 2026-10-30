@@ -52,10 +52,18 @@ git worktree remove --force "$DIR" 2>/dev/null || true
 git worktree add -q -B "$RAMA" "$DIR" origin/dev
 (cd "$DIR" && pnpm install --frozen-lockfile --silent > /dev/null 2>&1)
 
+# El especificador tiene la herramienta Agent(arquitecto), pero acá el arquitecto corre como paso
+# aparte (su salida va al PR y sus preguntas al issue): se le avisa para que no lo invoque dos veces.
+if [[ $ARQUITECTO -eq 1 ]]; then
+  NOTA_ARQ="No invoques al agente arquitecto: este script lo corre en un paso aparte, después de vos."
+else
+  NOTA_ARQ="No invoques al agente arquitecto: Gus pidió esta spec sin revisión de arquitectura. Si igual el cambio toca tablas, integraciones externas, permisos, pagos o datos personales, decilo en las preguntas abiertas."
+fi
+
 paso "Especificador escribiendo la spec"
 agente especificador "$PEDIDO
 
-Rutas de la documentación de producto: $DOCS/Documentation (y el tokenomics en $TOKENOMICS, si existe). Escribí los cambios OpenSpec en la rama actual ($RAMA), validá cada uno con 'pnpm exec openspec validate <id> --strict' y hacé commit sin push. Terminá con un resumen corto y, al final, una sección que empiece exactamente con '**Preguntas abiertas**'." "$LOGS/especificador.txt"
+Rutas de la documentación de producto: $DOCS/Documentation (y el tokenomics en $TOKENOMICS, si existe). Escribí los cambios OpenSpec en la rama actual ($RAMA), validá cada uno con 'pnpm exec openspec validate <id> --strict' y hacé commit sin push. $NOTA_ARQ Terminá con un resumen corto y, al final, una sección que empiece exactamente con '**Preguntas abiertas**'." "$LOGS/especificador.txt"
 
 if [[ $ARQUITECTO -eq 1 ]]; then
   paso "Arquitecto revisando"

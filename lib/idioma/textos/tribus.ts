@@ -116,14 +116,16 @@ const es = {
     },
   },
   membresia: {
-    leerManifiesto: (lighthouse: boolean) => (lighthouse ? "Leer el manifiesto del Lighthouse" : "Leer el manifiesto de la tribu"),
+    leerManifiesto: (lighthouse: boolean) => (lighthouse ? "Leer el manifiesto de Lighthouse VRN" : "Leer el manifiesto de la tribu"),
     adherirManifiesto: (lighthouse: boolean) =>
-      lighthouse ? "Adherir al manifiesto del Lighthouse" : "Adherir al manifiesto de la tribu",
+      lighthouse ? "Adherir al manifiesto de Lighthouse VRN" : "Adherir al manifiesto de la tribu",
     sumateAdherir: "Sumate para adherir",
     puedesLeer: `Podés leer el manifiesto sin cuenta. Para adherir, sumate como ${G.miembro.es}.`,
     pedidoLlego: (lighthouse: boolean, nombre: string) =>
-      `Tu pedido llegó ${lighthouse ? "al Lighthouse" : `a ${nombre}`}. Quien ${lighthouse ? "lo" : "la"} administra lo va a revisar.`,
-    yaSosParte: (lighthouse: boolean, nombre: string) => `Ya sos parte ${lighthouse ? "del Lighthouse" : `de ${nombre}`}.`,
+      lighthouse
+        ? "Adheriste al manifiesto de Lighthouse VRN. Ya podés participar en la gobernanza; el común va a confirmar tu adhesión."
+        : `Tu pedido llegó a ${nombre}. Quien la administra lo va a revisar.`,
+    yaSosParte: (lighthouse: boolean, nombre: string) => (lighthouse ? "Ya sos parte de Lighthouse VRN." : `Ya sos parte de ${nombre}.`),
     proponerPacto: "Proponer mi pacto",
     salaLighthouse: "Abriríamos la sala del Lighthouse en Telegram. Podés salir cuando quieras.",
     salaTribu: "Abriríamos la sala de la tribu en Telegram. Podés salir cuando quieras.",
@@ -138,7 +140,7 @@ const es = {
     fin: "Fin del manifiesto.",
     antesDeAdherir: "Antes de adherir",
     sumarteA: (lighthouse: boolean, comunidad: string) =>
-      `Sumarte a ${lighthouse ? "el Lighthouse" : comunidad} es pertenecer a un grupo de personas reales. Tomate el tiempo que necesites.`,
+      `${lighthouse ? "Adherir a Lighthouse VRN" : `Sumarte a ${comunidad}`} es pertenecer a un grupo de personas reales. Tomate el tiempo que necesites.`,
     leiAtentamente: "Leí el manifiesto con atención y entiendo que sumarme es comprometerme con un grupo de personas",
     mePrometo: "Me comprometo a cuidar estos acuerdos y a hablar con la comunidad si algún día no puedo cumplirlos",
     adherir: "Adherir",
@@ -369,14 +371,16 @@ const en: Textos<typeof es> = {
     },
   },
   membresia: {
-    leerManifiesto: (lighthouse: boolean) => (lighthouse ? "Read the Lighthouse manifesto" : "Read the tribe's manifesto"),
+    leerManifiesto: (lighthouse: boolean) => (lighthouse ? "Read the Lighthouse VRN manifesto" : "Read the tribe's manifesto"),
     adherirManifiesto: (lighthouse: boolean) =>
-      lighthouse ? "Sign on to the Lighthouse manifesto" : "Sign on to the tribe's manifesto",
+      lighthouse ? "Sign on to the Lighthouse VRN manifesto" : "Sign on to the tribe's manifesto",
     sumateAdherir: "Join to sign on",
     puedesLeer: `You can read the manifesto without an account. To sign on, join as a ${G.miembro.en}.`,
     pedidoLlego: (lighthouse: boolean, nombre: string) =>
-      `Your request reached ${lighthouse ? "the Lighthouse" : nombre}. Whoever manages it will review it.`,
-    yaSosParte: (lighthouse: boolean, nombre: string) => `You are now part of ${lighthouse ? "the Lighthouse" : nombre}.`,
+      lighthouse
+        ? "You signed on to the Lighthouse VRN manifesto. You can now take part in governance; the commons will confirm your sign-on."
+        : `Your request reached ${nombre}. Whoever manages it will review it.`,
+    yaSosParte: (lighthouse: boolean, nombre: string) => (lighthouse ? "You are now part of Lighthouse VRN." : `You are now part of ${nombre}.`),
     proponerPacto: "Propose my pact",
     salaLighthouse: "We would open the Lighthouse room on Telegram. You can leave whenever you like.",
     salaTribu: "We would open the tribe's room on Telegram. You can leave whenever you like.",
@@ -391,7 +395,7 @@ const en: Textos<typeof es> = {
     fin: "End of the manifesto.",
     antesDeAdherir: "Before signing on",
     sumarteA: (lighthouse: boolean, comunidad: string) =>
-      `Joining ${lighthouse ? "the Lighthouse" : comunidad} means belonging to a group of real people. Take all the time you need.`,
+      `${lighthouse ? "Signing on to Lighthouse VRN" : `Joining ${comunidad}`} means belonging to a group of real people. Take all the time you need.`,
     leiAtentamente: "I read the manifesto carefully and I understand that joining means committing to a group of people",
     mePrometo: "I commit to looking after these agreements and to talking with the community if one day I cannot keep them",
     adherir: "Sign on",

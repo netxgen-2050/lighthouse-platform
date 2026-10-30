@@ -8,7 +8,7 @@ import { CLAVES } from "@/lib/demo/claves";
 import { confirmarPedido, estadoSumarme, leerPedidos, type EntradaSumarme, type PedidosEquipos } from "@/lib/equipos/equipos";
 import { puedeParticiparEnGobernanza } from "@/lib/gobernanza/participar";
 import { useTextos } from "@/lib/idioma/cliente";
-import { leerMembresiaDelNavegador } from "@/lib/membresia/estado";
+import { leerAdhesionDelNavegador } from "@/lib/membresia/versiones";
 import { puedeCapacidad } from "@/lib/permisos/niveles";
 
 const BOTON =
@@ -61,7 +61,8 @@ export function SumarmeEquipo({
   useEffect(() => {
     if (!conSesion) return;
     setPedidos(leerPedidosDelNavegador());
-    setAdhirio(puedeParticiparEnGobernanza(leerMembresiaDelNavegador()));
+    const a = leerAdhesionDelNavegador();
+    setAdhirio(puedeParticiparEnGobernanza(a.membresias, a.versiones));
     setAbierto(false);
     setFalloAlmacen(false);
     setAviso({ n: 0, texto: "" });
@@ -89,9 +90,10 @@ export function SumarmeEquipo({
 
   function confirmar() {
     // Se vuelve a leer todo en este momento: una membresía retirada en otra pestaña no deja un pedido escrito.
+    const a = leerAdhesionDelNavegador();
     const ahora: EntradaSumarme = {
       ...entrada,
-      adhirio: puedeParticiparEnGobernanza(leerMembresiaDelNavegador()),
+      adhirio: puedeParticiparEnGobernanza(a.membresias, a.versiones),
       pedidos: leerPedidosDelNavegador(),
     };
     const siguiente = confirmarPedido(ahora);

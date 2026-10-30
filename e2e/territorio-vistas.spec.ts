@@ -83,7 +83,7 @@ test("elegir un frente desde la lista con el teclado", async ({ page }) => {
   await expect(page.locator('[aria-label^="Frente 1:"]')).toBeVisible();
   await expect(page.locator('[aria-label^="Frente 1:"] .mapa-sello-elegido')).toHaveCount(1);
   await expect(ficha(page).getByRole("heading", { name: "Agua y cuenca" })).toBeVisible();
-  await expect(ficha(page).getByText("Equipo: Agua del Lighthouse")).toBeVisible();
+  await expect(ficha(page).getByText("Equipo: Agua")).toBeVisible();
   await expect(ficha(page).getByText(/Necesidad: Medir el caudal/)).toBeVisible();
   await expect(ficha(page).getByText(/Falta: 1 hidróloga/)).toBeVisible();
   await expect(ficha(page).getByText(/Para: antes de diciembre/)).toBeVisible();

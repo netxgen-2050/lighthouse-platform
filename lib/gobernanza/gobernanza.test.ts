@@ -156,3 +156,35 @@ describe("lectura tolerante de lo guardado", () => {
     expect(l[0].datos).toEqual({ a: "b" });
   });
 });
+
+describe("equipos transversales de Lighthouse VRN (los círculos del común)", () => {
+  it("están los ocho nombres de la lista de Gus y Tokenomics y Semillas se queda", () => {
+    expect(CIRCULOS_DEL_COMUN.map((c) => c.nombre.es)).toEqual(
+      expect.arrayContaining([
+        "Legal",
+        "Permacultura y regeneración",
+        "Marketing y comunicación",
+        "Tecnología",
+        "Gestión de contratistas",
+        "Gobernanza",
+        "Cuidado y conflictos",
+        "Agua",
+        "Tokenomics y Semillas",
+      ]),
+    );
+  });
+
+  it("conservan los ids de siempre y suman contratistas y gobernanza", () => {
+    const ids = CIRCULOS_DEL_COMUN.map((c) => c.id);
+    for (const id of ["permacultura", "agua", "legal", "token", "marketing", "cuidado", "plataforma", "contratistas", "gobernanza"]) {
+      expect(ids).toContain(`comun-${id}`);
+    }
+  });
+
+  it("cada uno tiene su propósito para todo el Lighthouse en los dos idiomas", () => {
+    for (const c of CIRCULOS_DEL_COMUN) {
+      expect(c.paraTodoElLighthouse?.es.trim(), c.id).toBeTruthy();
+      expect(c.paraTodoElLighthouse?.en?.trim(), c.id).toBeTruthy();
+    }
+  });
+});

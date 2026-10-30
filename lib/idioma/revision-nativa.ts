@@ -69,6 +69,14 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Manifiestos de ejemplo (el del Lighthouse y siete de tribus) traducidos del español: voz de la comunidad, a revisar también con quien los escriba de verdad",
   },
+  "textos/manifiestoVrn": {
+    estado: "pendiente",
+    que: "Manifiesto de Lighthouse VRN: ficha del común, tarjeta de Tribus, lectura completa, principios propios de las tribus, aviso de adhesión y bloque de la Vista NetX",
+  },
+  "lib/manifiestos/lighthouse-vrn.ts": {
+    estado: "pendiente",
+    que: "Texto del manifiesto de Lighthouse VRN (propósito, 15 principios, 7 derechos de la tierra, compromisos, cómo se cambia) y nombre visible del común; traducidos del español, borrador a ratificar",
+  },
   "lib/territorios/textos.ts": {
     estado: "pendiente",
     que: "Textos del territorio con su inglés: terreno común, descripción y nombres descriptivos de los lugares, bienes comunes",
@@ -108,6 +116,18 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   "textos/fogonConsultas": {
     estado: "pendiente",
     que: "Consultas del Fogón: lista, reparto de créditos con voto cuadrático, voto abierto o secreto, padrón, resultado por grupo, acta de ejemplo, gráfico de dona y errores de lectura",
+  },
+  "textos/fogonPropuestas": {
+    estado: "pendiente",
+    que: "Propuestas del Fogón: fases, discusión, concerns y grupos, acuse y quórum, ámbito del consejo, niveles, acciones, condiciones de la matriz, mecanismos y vista sin cuenta",
+  },
+  "lib/fogon/propuestas/ejemplos.ts": {
+    estado: "pendiente",
+    que: "Cinco propuestas de ejemplo del Fogón (problema, propuesta, registros, guiones de Hifa y del Guardián) con su inglés",
+  },
+  "lib/fogon/propuestas/principios.ts": {
+    estado: "pendiente",
+    que: "Lista de ejemplo (borrador) de 16 principios del Lighthouse con su explicación en inglés",
   },
   "lib/fogon/consultas/ejemplo.ts": {
     estado: "pendiente",
@@ -184,6 +204,7 @@ export function fuentesObligatorias(): string[] {
     "lib/tribus/necesidades.ts",
     "lib/gobernanza/datos.ts",
     "lib/manifiestos/datos.ts",
+    "lib/manifiestos/lighthouse-vrn.ts",
     "lib/territorios/textos.ts",
     "lib/semillas/datos.ts",
     "lib/evaluacion/guia.ts",

@@ -11,6 +11,7 @@ import { sinDato } from "@/lib/idioma/formatos";
 import { idiomaDelPedido } from "@/lib/idioma/servidor";
 import { textos } from "@/lib/idioma/textos";
 import { textoEn, type Idioma } from "@/lib/idioma/tipos";
+import { nombreDelComun } from "@/lib/manifiestos/lighthouse-vrn";
 import { esDeHoy } from "@/lib/territorios/vistas";
 import { agruparPorEstado, listarTribus, rutaProponerComunidad } from "@/lib/tribus/datos";
 import { textoDeEstado, type Tribu } from "@/lib/tribus/tipos";
@@ -170,6 +171,8 @@ export default async function TribusPage({ searchParams }: Props) {
   const vision = (await searchParams).ver === "tribus";
   const { activas, formacion, vacantes } = agruparPorEstado(listarTribus(idioma));
   const nd = sinDato(idioma);
+  const vrn = textos("manifiestoVrn", idioma);
+  const nombre = nombreDelComun(idioma);
   return (
     <div className="mx-auto max-w-5xl p-6 sm:p-10">
       <p className="mb-2 text-sm">
@@ -181,6 +184,22 @@ export default async function TribusPage({ searchParams }: Props) {
       <p className="mt-2 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
         {textos("marco", idioma).aviso}
       </p>
+      <section aria-labelledby="sec-comun" className="mt-8">
+        <h2 id="sec-comun" className="sr-only">
+          {nombre}
+        </h2>
+        <Link
+          href="/tribus/lighthouse"
+          className="grid gap-1 rounded-xl border-2 border-deep bg-green-soft p-5 hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+        >
+          <span className="text-sm font-medium text-muted">{vrn.tarjeta.sobre}</span>
+          <span className="text-2xl font-semibold" translate="no">
+            {nombre}
+          </span>
+          <span>{vrn.tarjeta.texto}</span>
+          <span className="w-fit rounded-full border border-faint px-2 py-0.5 text-xs">{vrn.borrador}</span>
+        </Link>
+      </section>
       <Pestanas idioma={idioma} actual={vision ? "tribus" : "equipos"} />
       {!vision ? (
         <PestanaEquipos idioma={idioma} />

@@ -8,7 +8,9 @@ import { compromisos } from "./textos/compromisos";
 import { configuracion } from "./textos/configuracion";
 import { fogon } from "./textos/fogon";
 import { fogonConsultas } from "./textos/fogon-consultas";
+import { fogonPropuestas } from "./textos/fogon-propuestas";
 import { gobernanza } from "./textos/gobernanza";
+import { manifiestoVrn } from "./textos/manifiesto-vrn";
 import { marco } from "./textos/marco";
 import { pactos } from "./textos/pactos";
 import { pasaporte } from "./textos/pasaporte";
@@ -28,7 +30,9 @@ export const DICCIONARIOS = {
   configuracion,
   fogon,
   fogonConsultas,
+  fogonPropuestas,
   gobernanza,
+  manifiestoVrn,
   marco,
   pactos,
   pasaporte,

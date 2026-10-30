@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AvisoAdhesion } from "@/components/fogon/aviso-adhesion";
 import { TerminoLegal } from "@/components/termino-legal";
 import Link from "next/link";
+import { useParticipacion } from "@/lib/gobernanza/usar-participacion";
 import { CLAVES } from "@/lib/demo/claves";
+import { propuestaDe } from "@/lib/fogon/propuestas/ejemplos";
 import { ParametrosDecision } from "./parametros-decision";
 import { TextoBilingue } from "@/components/texto-bilingue";
 import { ambitos as ambitosDe, opciones as opcionesDe, type Ambito, type Opcion } from "@/lib/fogon/datos";
@@ -54,16 +57,23 @@ function ConTribu({ texto, tribu }: { texto: string; tribu?: string }) {
 export function FogonCliente() {
   const idioma = useIdioma();
   const t = useTextos("fogon");
+  const tp = useTextos("fogonPropuestas");
   const comunes = useTextos("comunes");
+  const manifiestoVrn = useTextos("manifiestoVrn");
   const AMBITOS = ambitosDe(idioma);
   const OPCIONES = opcionesDe(idioma);
   const [estado, setEstado] = useState<EstadoFogon>(INICIAL);
   const [ambito, setAmbito] = useState<Ambito | null>(null);
   const [abierta, setAbierta] = useState<string | null>(null);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
-  const [listo, setListo] = useState(false);
+  const [listoPropio, setListo] = useState(false);
   const [anuncio, setAnuncio] = useState("");
-  const [condicion, setCondicion] = useState<Condicion>(SIN_CONDICION);
+  const [condicionBase, setCondicion] = useState<Condicion>(SIN_CONDICION);
+  // La adhesión al manifiesto la resuelve la regla única (`puedeParticiparEnGobernanza`); hasta leer lo guardado no se
+  // muestra ni la acción ni el aviso.
+  const participacion = useParticipacion();
+  const listo = listoPropio && participacion.listo;
+  const condicion: Condicion = { ...condicionBase, adhirio: participacion.puede };
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
@@ -73,7 +83,7 @@ export function FogonCliente() {
       const pase = puede(personaDesdeSumarte(sumarte), "voto-fideicomiso").abierta;
       // La tribu que lidera sale de lo elegido en Sumarte (Plan Tribu); sin tribu elegida no lidera ninguna.
       const lidera = sumarte.tribu ? sumarte.tribuId : null;
-      setCondicion({ residencia: leerPasaporteDelNavegador().residencia, pase, lidera });
+      setCondicion({ residencia: leerPasaporteDelNavegador().residencia, pase, lidera, adhirio: false });
       setEstado(leer(window.localStorage.getItem(CLAVES.fogon)));
     } catch {
       setFalloAlmacen(true);
@@ -200,7 +210,11 @@ export function FogonCliente() {
                   )}
                   {!listo ? null : motivo ? (
                     <span className={`${CHIP} text-muted`}>
-                      {t.motivos[motivo]}
+                      {motivo === "manifiesto" ? (
+                        <AvisoAdhesion texto={participacion.desactualizada ? manifiestoVrn.aviso.desactualizada : t.motivos.manifiesto} />
+                      ) : (
+                        t.motivos[motivo]
+                      )}
                       {motivo === "pase" && (
                         <>
                           {" · "}
@@ -238,6 +252,13 @@ export function FogonCliente() {
               </p>
               {d.ambito === "consejo" && (
                 <p className="text-sm text-muted">{t.votanRepresentantes}</p>
+              )}
+              {propuestaDe(d.id) && (
+                <p>
+                  <Link className={`${BOTON_SUAVE} inline-block`} href={`/fogon/propuestas/${d.id}`}>
+                    {tp.pagina.abrir}
+                  </Link>
+                </p>
               )}
               {listo && propio && (
                 <p className="rounded-lg border border-deep bg-green-soft px-3 py-2 text-sm text-deep">

@@ -13,7 +13,7 @@ describe("listarEquipos", () => {
 
   it("hay un equipo por círculo del común y los que tienen más frentes van primero", () => {
     const e = listarEquipos("es");
-    expect(e).toHaveLength(8);
+    expect(e).toHaveLength(9);
     expect(e[0].circulo.id).toBe("comun-permacultura");
     expect(e[1].circulo.id).toBe("comun-agua");
   });

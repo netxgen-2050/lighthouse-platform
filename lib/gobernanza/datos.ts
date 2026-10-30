@@ -2,6 +2,7 @@
 // roles, las personas y el consejo son de EJEMPLO: el reglamento real lo define el diseño legal. Los nombres, los
 // propósitos y los "Decide sobre" se pueden cambiar acá sin tocar la spec.
 import { textoEn, type BilingueConOriginal, type Idioma } from "@/lib/idioma/tipos";
+import { nombreDelComun } from "@/lib/manifiestos/lighthouse-vrn";
 import { buscarTribuBilingue, listarTribusBilingues } from "@/lib/tribus/datos";
 import type { Circulo, Nodo, PersonaDeEjemplo, Proposito, Registro, Rol } from "./tipos";
 
@@ -10,8 +11,8 @@ const b = (es: string, en: string): BilingueConOriginal => ({ es, en });
 /** El común (Lighthouse como meta-comunidad): la raíz de la estructura. */
 export const COMUN_ID = "lighthouse";
 
-export function nodoComun(): Nodo {
-  return { tipo: "comun", id: COMUN_ID, nombre: "Lighthouse" };
+export function nodoComun(idioma: Idioma = "es"): Nodo {
+  return { tipo: "comun", id: COMUN_ID, nombre: nombreDelComun(idioma) };
 }
 
 type Def = { nombre: BilingueConOriginal; proposito: Proposito; decide: BilingueConOriginal[] };
@@ -72,25 +73,66 @@ const AREAS_AVELAN: { proposito: Proposito; decide: BilingueConOriginal[] }[] = 
   { proposito: "comunidad", decide: [b("Encuentros de la tribu", "Tribe gatherings")] },
 ];
 
-const delComun = (id: string, x: Def): Circulo => ({
+const delComun = (id: string, x: Def, paraTodoElLighthouse: BilingueConOriginal): Circulo => ({
   id: `comun-${id}`,
   nombre: x.nombre,
   tribus: [],
   proposito: x.proposito,
   decide: x.decide,
+  paraTodoElLighthouse,
 });
 
-/** Los círculos del común (de ejemplo, del boceto aprobado). Su id lleva prefijo `comun-` para no chocar con una tribu. */
+/**
+ * Los círculos del común (de ejemplo): son los equipos transversales de Lighthouse VRN, "una startup para el procomún"
+ * (cambio `manifiesto-lighthouse-vrn`, design §6). Su id lleva prefijo `comun-` para no chocar con una tribu.
+ * Los ids de los siete primeros no cambian; `comun-contratistas` y `comun-gobernanza` son nuevos.
+ */
 export const CIRCULOS_DEL_COMUN: Circulo[] = [
-  delComun("permacultura", d(b("Permacultura y suelo", "Permaculture and soil"), "tierra", b("Diseño del paisaje", "Landscape design"), b("Suelo y compost del común", "Soil and compost of the commons"))),
-  delComun("agua", d(b("Agua del Lighthouse", "Lighthouse water"), "agua", b("Cuenca y riego", "Watershed and irrigation"), b("Cisternas compartidas", "Shared cisterns"))),
-  delComun("legal", d(b("Legal y fideicomiso", "Legal and trust"), "gobierno", b("Estatuto", "Bylaws"), b("Contratos con las series", "Contracts with the series"))),
-  delComun("token", d(b("Tokenomics y Semillas", "Tokenomics and Seeds"), "economia", b("Emisión de Semillas", "Seed issuance"), b("Parámetros del Juego B", "Game B parameters"))),
-  delComun("marketing", d(b("Comunicación y marketing", "Communications and marketing"), "comunidad", b("Relato público", "Public story"), b("Bienvenida a quien llega", "Welcoming newcomers"))),
-  delComun("cuidado", d(b("Cuidado y conflictos", "Care and conflicts"), "comunidad", b("Acuerdos de convivencia", "Coexistence agreements"), b("Mediación", "Mediation"))),
-  delComun("plataforma", d(b("Plataforma y datos", "Platform and data"), "conocimiento", b("NetX", "NetX"), b("Privacidad", "Privacy"))),
-  // Mismo id y mismos datos que define `manifiesto-lighthouse-vrn` (design §6): si ese cambio entra después, no lo duplica.
-  delComun("contratistas", d(b("Gestión de contratistas", "Contractor management"), "economia", b("Convocatorias y contratos de obra", "Calls and contracts for works"), b("Seguimiento de entregas", "Follow-up of deliveries"))),
+  delComun(
+    "permacultura",
+    d(b("Permacultura y regeneración", "Permaculture and regeneration"), "tierra", b("Diseño del paisaje", "Landscape design"), b("Suelo y compost del común", "Soil and compost of the commons")),
+    b("El diseño del paisaje, el suelo y la tierra silvestre, con la regeneración medida año a año", "Landscape design, soil and wild land, with regeneration measured year by year"),
+  ),
+  delComun(
+    "agua",
+    d(b("Agua", "Water"), "agua", b("Cuenca y riego", "Watershed and irrigation"), b("Cisternas compartidas", "Shared cisterns")),
+    b("La cuenca, el riego y las cisternas compartidas", "The watershed, irrigation and the shared cisterns"),
+  ),
+  delComun(
+    "legal",
+    d(b("Legal", "Legal"), "gobierno", b("Estatuto", "Bylaws"), b("Contratos con las series", "Contracts with the series")),
+    b("Estatuto, contratos y los borradores con peso legal, para que todo lo del común esté en regla", "Bylaws, contracts and drafts with legal weight, so that everything in the commons is in order"),
+  ),
+  delComun(
+    "token",
+    d(b("Tokenomics y Semillas", "Tokenomics and Seeds"), "economia", b("Emisión de Semillas", "Seed issuance"), b("Parámetros del Juego B", "Game B parameters")),
+    b("La emisión de Semillas y los parámetros del Juego B", "The issuance of Seeds and the parameters of Game B"),
+  ),
+  delComun(
+    "marketing",
+    d(b("Marketing y comunicación", "Marketing and communications"), "comunidad", b("Relato público", "Public story"), b("Bienvenida a quien llega", "Welcoming newcomers")),
+    b("El relato público y la bienvenida a quien llega", "The public story and the welcome for whoever arrives"),
+  ),
+  delComun(
+    "cuidado",
+    d(b("Cuidado y conflictos", "Care and conflicts"), "comunidad", b("Acuerdos de convivencia", "Coexistence agreements"), b("Mediación", "Mediation")),
+    b("Acuerdos de convivencia y mediación cuando un conflicto crece", "Coexistence agreements and mediation when a conflict grows"),
+  ),
+  delComun(
+    "plataforma",
+    d(b("Tecnología", "Technology"), "conocimiento", b("NetX", "NetX"), b("Privacidad", "Privacy")),
+    b("La plataforma, los datos y la privacidad de todas las personas", "The platform, the data and the privacy of everyone"),
+  ),
+  delComun(
+    "contratistas",
+    d(b("Gestión de contratistas", "Contractor management"), "economia", b("Convocatorias y contratos de obra", "Calls and work contracts"), b("Seguimiento de entregas", "Delivery follow-up")),
+    b("Convocar, contratar y seguir las obras y los servicios de terceros, con los principios en el pliego", "Calling for, hiring and following the works and services of third parties, with the principles in the terms"),
+  ),
+  delComun(
+    "gobernanza",
+    d(b("Gobernanza", "Governance"), "gobierno", b("Proceso de propuestas del Fogón", "The Fogón proposals process"), b("Cuidado del manifiesto", "Care of the manifesto")),
+    b("Cuidar el proceso de propuestas del Fogón y este manifiesto, sin decidir por nadie", "Looking after the Fogón proposals process and this manifesto, without deciding for anyone"),
+  ),
 ];
 
 /** Lo que decide el común, el consejo y cada tribu (ejemplo). Una tribu que busca tribu no decide nada todavía. */

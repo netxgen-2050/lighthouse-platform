@@ -11,7 +11,7 @@ test("pestaña por defecto: Equipos · ahora, marcada como actual, con la lista 
   const nav = page.getByRole("navigation", { name: "Secciones de Tribus" });
   await expect(nav.getByRole("link", { name: "Equipos · ahora" })).toHaveAttribute("aria-current", "page");
   await expect(nav.getByRole("link", { name: "Tribus · visión" })).not.toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("heading", { level: 3 })).toHaveCount(8);
+  await expect(page.getByRole("heading", { level: 3 })).toHaveCount(9);
   await expect(page.getByText("Un equipo puede volverse una tribu más adelante; el proceso está por definir.")).toBeVisible();
   await expect(page.locator("main")).toHaveCount(1);
 });
@@ -19,7 +19,7 @@ test("pestaña por defecto: Equipos · ahora, marcada como actual, con la lista 
 test("un valor raro de ver muestra los equipos", async ({ page }) => {
   await page.goto("/tribus?ver=xyz");
   await expect(page.getByRole("link", { name: "Equipos · ahora" })).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("heading", { level: 3, name: "Agua del Lighthouse" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 3, name: "Agua" })).toBeVisible();
 });
 
 test("cambiar de pestaña con el teclado", async ({ page }) => {
@@ -53,7 +53,7 @@ test("ficha de una tribu y de una vacante: marca Ejemplo · a definir", async ({
 
 test("Agua muestra su frente con lo que falta y para cuándo", async ({ page }) => {
   await page.goto("/tribus");
-  const agua = tarjeta(page, "Agua del Lighthouse");
+  const agua = tarjeta(page, "Agua");
   await expect(agua.getByText("Agua y cuenca")).toBeVisible();
   await expect(agua.getByText("1 hidróloga, 2 personas para mediciones de campo")).toBeVisible();
   await expect(agua.getByText("antes de diciembre")).toBeVisible();
@@ -62,7 +62,7 @@ test("Agua muestra su frente con lo que falta y para cuándo", async ({ page }) 
 
 test("Legal dice Sin lugar en el mapa", async ({ page }) => {
   await page.goto("/tribus");
-  const legal = tarjeta(page, "Legal y fideicomiso");
+  const legal = tarjeta(page, "Legal");
   await expect(legal.getByText("Papeles y fideicomiso")).toBeVisible();
   await expect(legal.getByText("Sin lugar en el mapa")).toBeVisible();
 });
@@ -77,7 +77,7 @@ test("Primer obrador aparece como Más adelante · fase 1", async ({ page }) => 
 
 test("Línea de base dice sin dato donde falta quién", async ({ page }) => {
   await page.goto("/tribus");
-  const linea = tarjeta(page, "Permacultura y suelo").locator("li").filter({ hasText: "Línea de base" });
+  const linea = tarjeta(page, "Permacultura y regeneración").locator("li").filter({ hasText: "Línea de base" });
   await expect(linea.getByText("Quién falta:")).toBeVisible();
   await expect(linea).toContainText("Quién falta: sin dato");
 });
@@ -92,7 +92,7 @@ test.describe("sin sesión", () => {
 
   test("ve Entrá para sumarte en vez del botón", async ({ page }) => {
     await page.goto("/tribus");
-    const agua = tarjeta(page, "Agua del Lighthouse");
+    const agua = tarjeta(page, "Agua");
     await expect(agua.getByRole("link", { name: "Entrá para sumarte" })).toBeVisible();
     await expect(page.getByRole("button", { name: /Quiero sumarme/ })).toHaveCount(0);
   });
@@ -100,7 +100,7 @@ test.describe("sin sesión", () => {
 
 test("sin adhesión al Lighthouse: ve el aviso con el enlace al manifiesto y no el botón", async ({ page }) => {
   await page.goto("/tribus");
-  const agua = tarjeta(page, "Agua del Lighthouse");
+  const agua = tarjeta(page, "Agua");
   await expect(agua.getByText("Para sumarte, primero sumate como aspirante al Lighthouse")).toBeVisible();
   await expect(agua.getByRole("link", { name: "Ir al manifiesto del Lighthouse" })).toHaveAttribute(
     "href",
@@ -115,7 +115,7 @@ test.describe("explorador", () => {
   test("sin la capacidad de adherir ve el mismo aviso del manifiesto", async ({ page }) => {
     await conAdhesionAlLighthouse(page);
     await page.goto("/tribus");
-    const agua = tarjeta(page, "Agua del Lighthouse");
+    const agua = tarjeta(page, "Agua");
     await expect(agua.getByText(/Podés leer el manifiesto sin cuenta/)).toBeVisible();
     await expect(page.getByRole("button", { name: /Quiero sumarme/ })).toHaveCount(0);
   });
@@ -128,20 +128,20 @@ test.describe("con adhesión al Lighthouse", () => {
 
   test("pedir sumarse, que siga al recargar y que la membresía no cambie", async ({ page }) => {
     await page.goto("/tribus");
-    const agua = tarjeta(page, "Agua del Lighthouse");
-    const boton = agua.getByRole("button", { name: "Quiero sumarme a Agua del Lighthouse" });
+    const agua = tarjeta(page, "Agua");
+    const boton = agua.getByRole("button", { name: "Quiero sumarme a Agua" });
     await expect(boton).toHaveAttribute("aria-expanded", "false");
     await boton.click();
     await expect(boton).toHaveAttribute("aria-expanded", "true");
     await expect(agua.getByText(/lo administra y facilita Hifa/)).toBeVisible();
     await agua.getByRole("button", { name: "Confirmar" }).click();
-    await expect(agua.getByText("Pediste sumarte a Agua del Lighthouse · aspirante")).toBeVisible();
+    await expect(agua.getByText("Pediste sumarte a Agua · aspirante")).toBeVisible();
     await expect(agua.getByRole("button", { name: /Quiero sumarme/ })).toHaveCount(0);
 
     await page.reload();
-    await expect(tarjeta(page, "Agua del Lighthouse").getByText("Pediste sumarte a Agua del Lighthouse · aspirante")).toBeVisible();
+    await expect(tarjeta(page, "Agua").getByText("Pediste sumarte a Agua · aspirante")).toBeVisible();
     // Otros equipos siguen pudiendo pedirse.
-    await expect(tarjeta(page, "Legal y fideicomiso").getByRole("button", { name: /Quiero sumarme/ })).toBeVisible();
+    await expect(tarjeta(page, "Legal").getByRole("button", { name: /Quiero sumarme/ })).toBeVisible();
 
     const guardado = await page.evaluate(() => ({
       equipos: window.localStorage.getItem("lh-equipos"),
@@ -153,11 +153,11 @@ test.describe("con adhesión al Lighthouse", () => {
 
   test("con el teclado: se abre la confirmación con el foco en su título y Cancelar devuelve el foco", async ({ page }) => {
     await page.goto("/tribus");
-    const agua = tarjeta(page, "Agua del Lighthouse");
-    const boton = agua.getByRole("button", { name: "Quiero sumarme a Agua del Lighthouse" });
+    const agua = tarjeta(page, "Agua");
+    const boton = agua.getByRole("button", { name: "Quiero sumarme a Agua" });
     await boton.focus();
     await page.keyboard.press("Enter");
-    await expect(agua.getByText("Sumarte a Agua del Lighthouse como aspirante")).toBeFocused();
+    await expect(agua.getByText("Sumarte a Agua como aspirante")).toBeFocused();
     await agua.getByRole("button", { name: "Cancelar" }).focus();
     await page.keyboard.press("Enter");
     await expect(boton).toBeFocused();
@@ -168,7 +168,7 @@ test.describe("con adhesión al Lighthouse", () => {
 
   test("si la adhesión se retira entre abrir y confirmar, no se escribe nada", async ({ page }) => {
     await page.goto("/tribus");
-    const agua = tarjeta(page, "Agua del Lighthouse");
+    const agua = tarjeta(page, "Agua");
     await agua.getByRole("button", { name: /Quiero sumarme/ }).click();
     await page.evaluate(() => window.localStorage.removeItem("lh-membresia"));
     await agua.getByRole("button", { name: "Confirmar" }).click();
@@ -182,7 +182,7 @@ test.describe("con adhesión al Lighthouse", () => {
 
   test("Mis datos: la descarga incluye el pedido", async ({ page }) => {
     await page.goto("/tribus");
-    const agua = tarjeta(page, "Agua del Lighthouse");
+    const agua = tarjeta(page, "Agua");
     await agua.getByRole("button", { name: /Quiero sumarme/ }).click();
     await agua.getByRole("button", { name: "Confirmar" }).click();
     await expect(agua.getByText(/Pediste sumarte/)).toBeVisible();
@@ -215,7 +215,7 @@ test.describe("en inglés a 390 px", () => {
       "page",
     );
     await expect(page.getByRole("link", { name: "Tribes · vision" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 3, name: "Lighthouse water" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 3, name: "Water", exact: true })).toBeVisible();
     await expect(page.getByText("No place on the map").first()).toBeVisible();
     await expect(page.getByText("Later on · phase 1").first()).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);

@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
 import { listarTribus } from "@/lib/tribus/datos";
-import { conIdentidadVerificada } from "./ayudas";
+import { conAdhesionAlManifiesto, conIdentidadVerificada } from "./ayudas";
 
 const rutas = [
   "/",
@@ -23,6 +23,8 @@ const rutas = [
   "/mis-datos",
   "/panel/bitacora",
   ...listarTribus().map((t) => `/tribus/${t.id}`),
+  "/tribus/lighthouse",
+  "/tribus/lighthouse/manifiesto",
   "/territorios/lighthouse",
   "/territorios/lighthouse?vista=plan",
   "/territorios/lighthouse?vista=vision",
@@ -41,8 +43,8 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 37 rutas auditadas", () => {
-  expect(rutas).toHaveLength(37);
+test("hay 39 rutas auditadas", () => {
+  expect(rutas).toHaveLength(39);
 });
 
 async function graves(page: Page) {
@@ -51,6 +53,14 @@ async function graves(page: Page) {
     .filter((v) => v.impact === "serious" || v.impact === "critical")
     .map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }));
 }
+
+test("axe sin violaciones serias o críticas: una propuesta del Fogón (la bomba) con la tabla de permisos abierta", async ({ page }) => {
+  await page.goto("/fogon/propuestas/consejo-bomba");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await page.getByText("Ver la tabla de permisos por nivel").click();
+  await expect(page.getByRole("table")).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
 
 test("axe sin violaciones serias o críticas: /pasaporte con sellos obtenidos, en trámite y modalidad cargada", async ({ page }) => {
   await page.addInitScript(() => {
@@ -305,6 +315,8 @@ test.describe("la plataforma en inglés", () => {
     "/tribus?ver=tribus",
     "/tribus/valle",
     "/tribus/valle/manifiesto",
+    "/tribus/lighthouse",
+    "/tribus/lighthouse/manifiesto",
     "/tribus/grano/postular",
     "/territorios/lighthouse",
     "/configuracion",
@@ -394,6 +406,7 @@ test("axe sin violaciones serias o críticas: /fogon/consultas", async ({ page }
 });
 
 test("axe sin violaciones serias o críticas: /fogon/consultas/u1 abierta, con el reparto a medias y el bloqueo a la vista", async ({ page }) => {
+  await conAdhesionAlManifiesto(page);
   await page.goto("/fogon/consultas/u1");
   await expect(page.getByRole("region", { name: "Mi reparto" })).toBeVisible();
   const mas = page.getByRole("button", { name: "Sumar un voto a Regeneración ecológica" });
@@ -404,6 +417,7 @@ test("axe sin violaciones serias o críticas: /fogon/consultas/u1 abierta, con e
 });
 
 test("axe sin violaciones serias o críticas: /fogon/consultas/u4 cerrada, con resultado, tabla de repartos y acta", async ({ page }) => {
+  await conAdhesionAlManifiesto(page);
   await page.goto("/fogon/consultas/u4");
   await page.getByRole("button", { name: "Sumar un voto a Vivero de nativas" }).click();
   await page.getByRole("button", { name: "Guardar mi reparto" }).click();
