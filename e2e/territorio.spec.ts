@@ -27,7 +27,7 @@ test("el listado completo de tribus ya no está en la página", async ({ page })
 });
 
 test("barrio 6 por la lista con teclado lleva a Valle Solar", async ({ page }) => {
-  await page.goto("/territorios/lighthouse");
+  await page.goto("/territorios/lighthouse?vista=vision");
   await page.getByRole("region", { name: "Elegir en el mapa" }).getByRole("button", { name: /^Barrio 6/ }).focus();
   await page.keyboard.press("Enter");
   await page.getByRole("link", { name: "Conocer la tribu" }).focus();

@@ -28,6 +28,14 @@ export async function conIdentidadVerificada(page: Page) {
 }
 
 /**
+ * SIEMBRA DE TEST (no es un flujo de la app): igual que `conAdhesionAlManifiesto` (con `lighthouse: "pedido"` y la
+ * versión vigente del manifiesto). Se mantiene el nombre porque lo usan los tests de equipos y territorio.
+ */
+export async function conAdhesionAlLighthouse(page: Page) {
+  await conAdhesionAlManifiesto(page);
+}
+
+/**
  * SIEMBRA DE TEST (no es un flujo de la app): escribe en `compartido:pactos-constancias` la respuesta de la tribu a la
  * última propuesta pendiente y recarga la página, como si quien lidera hubiera respondido desde `/pactos/responder`.
  * Los tests que solo necesitan "un pacto aceptado" (Semillas, Mi recorrido, axe) la usan para no repetir el cambio de persona;
