@@ -158,6 +158,7 @@ export function VitrinaTerritorio() {
   const barrios = listarBarrios();
   const disponibles = listarFincas().filter((f) => f.estado === "disponible");
   const comun = terrenoComun();
+  const elegiblesAhora = elegibles(vista, fase);
   const tribus = listarTribus(idioma);
 
   return (
@@ -239,8 +240,9 @@ export function VitrinaTerritorio() {
             {tx.elegir.titulo}
           </h3>
           <ul className="flex flex-wrap gap-2">
-            {vista === "vision" &&
-              barrios.map((b) => {
+            {barrios
+              .filter((b) => elegiblesAhora.includes(b.id))
+              .map((b) => {
                 const t = tribuDeBarrio(b, tribus);
                 return (
                   <li key={b.id}>

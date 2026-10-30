@@ -154,6 +154,13 @@ test("Ver en el mapa desde Equipos", async ({ page }) => {
   await expect(ficha(page).getByRole("heading", { name: "Agua y cuenca" })).toBeVisible();
 });
 
+test("Ver en el mapa de un frente de fase siguiente abre esa fase con el frente elegido", async ({ page }) => {
+  await page.goto("/tribus");
+  await page.getByRole("link", { name: /Ver en el mapa.*Primer obrador/ }).click();
+  await expect(page).toHaveURL(/vista=ahora&fase=1&sel=primer-obrador/);
+  await expect(ficha(page).getByRole("heading", { name: "Primer obrador" })).toBeVisible();
+});
+
 test("celular 390 px: selector y etapa en el ancho, ficha debajo, sin scroll horizontal", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/territorios/lighthouse");

@@ -8,11 +8,13 @@ import { FASE_ACTUAL, esFase, vigenteEn, type Fase } from "./fases";
 export type VistaId = "ahora" | "plan" | "vision";
 
 /** Grupos de capas del mapa. La vista Red (D28) sumaría una capa propia sin tocar las demás. */
-export type Capa = "contexto" | "soluna" | "macrolote" | "comun" | "barrios" | "sellos-barrio" | "lugares" | "frentes";
+export type Capa = "contexto" | "soluna" | "macrolote" | "comun" | "barrios" | "barrios-neutros" | "sellos-barrio" | "lugares" | "frentes";
 
 export type Vista = {
   id: VistaId;
-  /** Qué grupos de Leaflet se ven. En Plan, `barrios` se dibuja en neutro (sin estado de tribu ni sellos). */
+  /** Clave del texto del nombre (territorio.vistas.<id>.nombre). */
+  nombre: `vistas.${VistaId}.nombre`;
+  /** Qué grupos de Leaflet se ven. `barrios-neutros` dibuja los barrios sin estado de tribu ni sellos (Plan). */
   capas: readonly Capa[];
   /** Ids que se pueden elegir en el mapa y en la lista, para esa fase. */
   elegibles(fase: Fase): string[];
@@ -24,17 +26,20 @@ const idsLugares = () => listarLugares().map((l) => l.id);
 export const VISTAS: readonly Vista[] = [
   {
     id: "ahora",
+    nombre: "vistas.ahora.nombre",
     capas: ["contexto", "soluna", "macrolote", "comun", "frentes", "lugares"],
     // El común se elige en las tres vistas (lo que es elegible en todas se queda donde está la persona).
     elegibles: (fase) => [...frentesEn(fase).conLugar.map((f) => f.id), terrenoComun().id, ...idsFincas(), ...idsLugares()],
   },
   {
     id: "plan",
-    capas: ["contexto", "soluna", "macrolote", "comun", "barrios", "lugares"],
+    nombre: "vistas.plan.nombre",
+    capas: ["contexto", "soluna", "macrolote", "comun", "barrios-neutros", "lugares"],
     elegibles: () => [terrenoComun().id, ...idsFincas(), ...idsLugares()],
   },
   {
     id: "vision",
+    nombre: "vistas.vision.nombre",
     capas: ["contexto", "soluna", "macrolote", "comun", "barrios", "sellos-barrio", "lugares"],
     elegibles: () => [...listarBarrios().map((b) => b.id), terrenoComun().id, ...idsFincas(), ...idsLugares()],
   },

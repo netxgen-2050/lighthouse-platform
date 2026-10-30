@@ -58,9 +58,6 @@ export const ORDEN_GRUPOS: readonly Grupo[] = [
 /** Qué grupos se ven en una vista: en Plan la capa `barrios` es la neutra; en Visión, la que lleva el estado de cada tribu. */
 export function gruposDeVista(vista: VistaId): Set<Grupo> {
   const salida = new Set<Grupo>();
-  for (const c of buscarVista(vista).capas) {
-    if (c === "barrios") salida.add(vista === "plan" ? "barrios-plan" : "barrios");
-    else salida.add(c);
-  }
+  for (const c of buscarVista(vista).capas) salida.add(c === "barrios-neutros" ? "barrios-plan" : c);
   return salida;
 }
