@@ -6,6 +6,7 @@ import { TerminoLegal } from "@/components/termino-legal";
 import Link from "next/link";
 import { useParticipacion } from "@/lib/gobernanza/usar-participacion";
 import { CLAVES } from "@/lib/demo/claves";
+import { propuestaDe } from "@/lib/fogon/propuestas/ejemplos";
 import { ParametrosDecision } from "./parametros-decision";
 import { TextoBilingue } from "@/components/texto-bilingue";
 import { ambitos as ambitosDe, opciones as opcionesDe, type Ambito, type Opcion } from "@/lib/fogon/datos";
@@ -56,6 +57,7 @@ function ConTribu({ texto, tribu }: { texto: string; tribu?: string }) {
 export function FogonCliente() {
   const idioma = useIdioma();
   const t = useTextos("fogon");
+  const tp = useTextos("fogonPropuestas");
   const comunes = useTextos("comunes");
   const manifiestoVrn = useTextos("manifiestoVrn");
   const AMBITOS = ambitosDe(idioma);
@@ -250,6 +252,13 @@ export function FogonCliente() {
               </p>
               {d.ambito === "consejo" && (
                 <p className="text-sm text-muted">{t.votanRepresentantes}</p>
+              )}
+              {propuestaDe(d.id) && (
+                <p>
+                  <Link className={`${BOTON_SUAVE} inline-block`} href={`/fogon/propuestas/${d.id}`}>
+                    {tp.pagina.abrir}
+                  </Link>
+                </p>
               )}
               {listo && propio && (
                 <p className="rounded-lg border border-deep bg-green-soft px-3 py-2 text-sm text-deep">

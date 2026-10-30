@@ -12,10 +12,20 @@ describe("catálogo legal", () => {
   it("las claves del catálogo", () => {
     expect(Object.keys(TERMINOS).sort()).toEqual(
       [
+        "acuseConformidad",
         "adhesion",
         "adhesiongobernanza",
         "adherente",
+        "afectada",
         "agencia",
+        "aunlado",
+        "bloqueo",
+        "concern",
+        "guardianIA",
+        "medidaProvisoria",
+        "principios",
+        "quorum",
+        "urgencia",
         "avisosimulador",
         "bitacora",
         "art32",

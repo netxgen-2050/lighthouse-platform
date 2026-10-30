@@ -113,6 +113,18 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Consultas del Fogón: lista, reparto de créditos con voto cuadrático, voto abierto o secreto, padrón, resultado por grupo, acta de ejemplo, gráfico de dona y errores de lectura",
   },
+  "textos/fogonPropuestas": {
+    estado: "pendiente",
+    que: "Propuestas del Fogón: fases, discusión, concerns y grupos, acuse y quórum, ámbito del consejo, niveles, acciones, condiciones de la matriz, mecanismos y vista sin cuenta",
+  },
+  "lib/fogon/propuestas/ejemplos.ts": {
+    estado: "pendiente",
+    que: "Cinco propuestas de ejemplo del Fogón (problema, propuesta, registros, guiones de Hifa y del Guardián) con su inglés",
+  },
+  "lib/fogon/propuestas/principios.ts": {
+    estado: "pendiente",
+    que: "Lista de ejemplo (borrador) de 16 principios del Lighthouse con su explicación en inglés",
+  },
   "lib/fogon/consultas/ejemplo.ts": {
     estado: "pendiente",
     que: "Consultas de ejemplo del Fogón (título, descripción, opciones y nota del monto) con su inglés, traducidas del español",
