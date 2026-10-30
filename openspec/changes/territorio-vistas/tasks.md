@@ -4,7 +4,7 @@ Una noche. Va **después de `tribus-equipos`**. Rama `agente/territorio-vistas` 
 
 ## 1. Lógica pura
 
-- [ ] 1.1 `lib/territorios/vistas.ts`: `VISTAS`, `leerVista`, `leerFase`, `numeroDeFrente`, `frentesEn`, `elegibles` por vista y fase, y el registro de fuentes del plan (design §1 y §5).
+- [x] 1.1 `lib/territorios/vistas.ts`: `VISTAS`, `leerVista`, `leerFase`, `numeroDeFrente`, `frentesEn`, `elegibles` por vista y fase, y el registro de fuentes del plan (design §1 y §5).
   - **Verifica:** `vistas.test.ts` cubre estos casos:
     - `leerVista("red")` da `"ahora"`;
     - `leerVista("permacultura")` da `"plan"`;
@@ -13,9 +13,9 @@ Una noche. Va **después de `tribus-equipos`**. Rama `agente/territorio-vistas` 
     - con la fase 0, `frentesEn` deja "Primer obrador" en `despues`;
     - "Papeles y fideicomiso" queda en `sinLugar`;
     - `elegibles("plan")` no incluye barrios.
-- [ ] 1.2 Regla de compatibilidad (design §1): solo **sin** `vista`, si un `sel` no es elegible en Ahora pero sí en otra vista, se abre la primera de `VISTAS` donde lo sea. Con `vista` explícita, el `sel` no elegible se limpia. <!-- arquitecto: antes también cambiaba una vista explícita, en contra del design §1 -->
+- [x] 1.2 Regla de compatibilidad (design §1): solo **sin** `vista`, si un `sel` no es elegible en Ahora pero sí en otra vista, se abre la primera de `VISTAS` donde lo sea. Con `vista` explícita, el `sel` no elegible se limpia. <!-- arquitecto: antes también cambiaba una vista explícita, en contra del design §1 -->
   - **Verifica:** un test comprueba que `sel=barrio-6` sin `vista` abre `"vision"`, que `vista=ahora&sel=barrio-6` abre `"ahora"` sin selección y que `sel=comun` sin `vista` se queda en `"ahora"`.
-- [ ] 1.3 <!-- arquitecto --> `esDeHoy(frente)` y `leerFuentePlan` (design §1 y §2).
+- [x] 1.3 <!-- arquitecto --> `esDeHoy(frente)` y `leerFuentePlan` (design §1 y §2).
   - **Verifica:** un test comprueba que `esDeHoy` de "Primer obrador" da `false` y el de "Agua y cuenca" `true`, y que `leerFuentePlan` con `permacultura` sin esa fuente disponible da `"ilustrativa"`.
 
 ## 2. Mapa y pantalla

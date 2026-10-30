@@ -192,3 +192,8 @@ export function validarFrentes(
   }
   return errores;
 }
+
+/** Todos los frentes en el idioma pedido y en el orden de los datos. */
+export function listarFrentes(idioma: Idioma): Frente[] {
+  return FRENTES.map((f) => enIdioma(f, idioma));
+}
