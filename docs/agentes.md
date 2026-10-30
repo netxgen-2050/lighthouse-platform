@@ -43,6 +43,11 @@ Vale desde `idioma-pendientes`. La plataforma tiene español e inglés y no pued
 - `scripts/integrar.sh <n> [<n>…]`: integra PRs en `dev` con verificar, build y e2e local; pushea, comenta y cierra los PRs y espera el deploy. `--a main` para una entrega; `--probar` para todo menos el push. El guardia no deja que un agente lo corra.
 - Issue **🧭 Decisiones de Gus**: un solo lugar para contestar preguntas, también desde el celular.
 
+## Probar un PR antes de mergear
+- Cada PR de integración que abre `scripts/integrar.sh` tiene su **propio link en Railway** (`https://lighthouse-dev-pr-<n>.up.railway.app`), comentado en el PR. Es una copia del entorno "production" de Railway, con el modo de prueba ("Entrar como…") y datos de ejemplo.
+- Después del merge, Claude borra ese entorno (`railway environment delete pr-<n>`) y el cambio pasa al link de `dev` (`https://lighthouse-dev-production.up.railway.app`), que se actualiza con `railway up` desde `dev`.
+- Mientras Vercel no despliega (problema de pago desde el 16-oct), este es el modo de revisar. Cuando Railway se conecte al repo, sus *PR Environments* pueden dar un link a cada PR de los agentes.
+
 ## Salvaguardas
 - `.claude/hooks/guardia.mjs` corre antes de cada comando de los agentes: bloquea `gh pr merge`, push, commit o merge en `dev` o `main`, push forzado, leer `.env*`, imprimir secretos; antes de commitear busca secretos y corre `pnpm verificar`; antes de abrir PR corre `pnpm build`.
 - `.claude/settings.json` define qué comandos pueden correr sin preguntar. Lo que no está en la lista, en la corrida nocturna se rechaza solo.
