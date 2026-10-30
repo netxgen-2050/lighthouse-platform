@@ -49,6 +49,8 @@
 - Un id que no está en el árbol (`buscarNodo` da `null`) o una lente que no está en el registro se ignoran (común y primera lente); no se reescribe la dirección hasta que la persona cambie algo.
 - `page.tsx` es de servidor: también lee `searchParams` y pasa `focoInicial`/`lenteInicial` al cliente, así el primer render ya muestra el holón y no hay salto al hidratar. `useSearchParams` va dentro de un `<Suspense>` para que `pnpm build` no falle.
 - Los nombres de los parámetros (`holon`, `lente`, `desde`) no se traducen; `?lang=en` convive con ellos.
+<!-- arquitecto: lo que viene de la dirección no se confía -->
+- **Lo que llega por la dirección no se muestra ni se enlaza tal cual:** `holon`, `lente` y `desde` se validan contra el árbol y el registro de lentes con una sola función pura; los textos que se ven (nombres en migas, "Volver a…", "La abriste desde…") salen siempre del nodo encontrado, nunca del parámetro, y los enlaces se arman con `URLSearchParams` sobre rutas fijas (`/fogon`, `/fogon/propuestas/<id>`). La redirección de `/fogon/gobernanza` va siempre a `/fogon` y solo copia `holon` y `lente` (sin otros parámetros).
 
 ### 5. La propuesta en contexto
 - "Abrir la propuesta" (tarjeta y panel de la lente Decisiones) arma `/fogon/propuestas/<id>?desde=<focoId>` y suma `&lente=<id>` si no es la primera.
@@ -70,6 +72,11 @@
 - `MembresiaAcciones`: para `lighthouse` desaparecen `pedidoLlego` y el botón "Simular: la comunidad me acepta"; al adherir se anuncia "Ya sos parte de Lighthouse VRN" en la zona de avisos (el foco va ahí, como hoy al aceptar). La ayuda `ayudaPuede` ("tu pedido le llega a quien administra…") no se muestra para Lighthouse VRN.
 - La versión del manifiesto se sigue guardando igual: con versión vieja, `adhesionDesactualizada` sigue pidiendo volver a adherir, y `reducir` ya permite volver a adherir porque el estado se recalcula con la versión.
 - **Costura D37:** comentario `// D37: aval con constancias EAS` en `reducir`, junto al caso de Lighthouse, diciendo que ahí un aval podría condicionar `"miembro"`. Sin tipos ni funciones nuevas.
+<!-- arquitecto: "miembro de lighthouse" cambia de significado (de "me aceptaron" a "adherí") y lo leen otros módulos (ADR-025, Propuesta) -->
+- **Quién más lee "miembro de `lighthouse`":** `lib/pactos/postulacion.ts` (`relacionConHolon`: en las necesidades del común la persona pasa de "aspirante" a "miembro" apenas adhiere), `app/semillas/semillas-cliente.tsx` y `app/pactos/pactos-cliente.tsx` (`comunidadesDondeEsMiembro`: Lighthouse aparece entre sus comunidades), `lib/pasaporte/sellos.ts` y `app/perfil/perfil-cliente.tsx`. Es lo que pide Gus; no se cambia ninguno de esos archivos, pero sus tests tienen que seguir en verde, y se suma un test en `lib/pactos` que muestre que adherir a `lighthouse` da relación "miembro" con el común y que adherir a una tribu sigue dando "aspirante".
+- **Versión vieja:** `reducir` no pisa una membresía `"miembro"`, así que "volver a adherir" con versión vieja depende de que la versión se guarde aparte (PR #144). Test explícito: con `lighthouse: "miembro"` y versión vieja, `puedeParticiparEnGobernanza` da `false`; al volver a adherir, la versión queda la vigente y da `true`. Si la implementación del PR #144 no permite esto, frenar y reportar.
+- **`leer` normaliza solo la clave `lighthouse`:** un `"pedido"` de una tribu sigue siendo `"pedido"` (test).
+- **En la base** (fuera de alcance): la membresía del común no se guarda aparte; se calcula desde la adhesión vigente (ADR-025). La costura D37 va en ese mismo punto.
 - Se revisa el ⚖ `adhesiongobernanza` y `adhesion`: el texto de `adhesion` ya dice "la adhesión vale desde que adherís"; si algún texto de Lighthouse VRN dice que alguien acepta, se ajusta (con `borrador: true` si es nuevo).
 
 ## Risks / Trade-offs
