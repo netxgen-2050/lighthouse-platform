@@ -13,6 +13,13 @@ Diseño completo en `NS_platform/Documentation/Desarrollo/05 - Agentes IA en el 
 | Documentador | `.claude/agents/documentador.md` | Sonnet | Reporte de la noche en `docs/noches/` |
 | Arquitecto | `.claude/agents/arquitecto.md` | Opus | Revisa specs que tocan base, integraciones, permisos, pagos o datos personales antes de que Gus las apruebe; escribe ADRs en estado Propuesta |
 
+## El especificador llama al arquitecto
+- El especificador tiene la herramienta `Agent`, que tiene que quedar **limitada al arquitecto** (`Agent(arquitecto)` en su frontmatter; pendiente al 29-oct-2026: hoy dice `Agent` a secas y solo la instrucción en texto lo limita). Si un cambio toca tablas, integraciones externas, permisos, pagos o datos personales, lo invoca él mismo y suma el veredicto a su resumen.
+- **Solo funciona cuando el especificador es la sesión principal** (`claude --agent especificador`, como en `scripts/spec.sh`). Si lo lanzás como subagente desde otra sesión, Claude Code no le da la herramienta (los subagentes no lanzan subagentes): avisa "falta la revisión del arquitecto" y la sesión principal tiene que invocar al arquitecto.
+- **Sin bucles:** el arquitecto no tiene `Agent`, así que no puede llamar a nadie; el especificador no puede llamar a otro agente que no sea el arquitecto.
+- **`scripts/spec.sh`** corre al arquitecto como paso aparte (su salida va al PR y sus preguntas al issue). Por eso le dice al especificador que **no** lo invoque, para no pagar dos revisiones con Opus. Con `--sin-arquitecto` tampoco lo invoca, pero avisa en las preguntas si el cambio toca base o datos.
+- **Noche:** el especificador no participa (el cierre ya no pide propuestas desde el 17-oct-2026), así que esto no suma trabajo ni consumo a la noche, en la Mac ni en la nube.
+
 Modelos pensados para Max 5x: Opus solo donde se piensa (spec y revisión). Con Max 20x se puede pasar el implementador a Opus.
 
 ## Ciclo
@@ -22,8 +29,8 @@ Modelos pensados para Max 5x: Opus solo donde se piensa (spec y revisión). Con 
          especificador → arquitecto (si aplica) → Gus aprueba
  21:00   pnpm noche a,b,c d,e        (cada argumento es un carril; corren en paralelo)
  noche   por cada cambio: implementador → PR · revisor (hasta 2 vueltas de corrección) · tester · documentador
- cierre  integración de todas las ramas · el especificador propone 3 cambios · resumen
- 08:30   Gus lee docs/noches/<fecha>-resumen.md (rama agente/propuestas-<fecha>) → merge en dev en orden, aprueba propuestas
+ cierre  integración de todas las ramas · resumen (sin propuestas del especificador desde el 17-oct-2026)
+ 08:30   Gus lee docs/noches/<fecha>-resumen.md (rama agente/resumen-<fecha>) → merge en dev en orden
  entrega Gus decide: PR dev → main (verificación completa, preview de dev probado) → producción
 ```
 
