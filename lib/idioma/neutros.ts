@@ -21,6 +21,7 @@ export const NEUTROS: readonly string[] = [
   "Community manager",
   "Culture manager",
   "Compost",
+  "Plan",
   "Marketing",
   "Temazcal",
   "Valle Solar",

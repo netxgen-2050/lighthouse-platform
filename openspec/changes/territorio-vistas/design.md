@@ -41,7 +41,7 @@ export type VistaId = "ahora" | "plan" | "vision";
 export type Capa = "contexto" | "soluna" | "macrolote" | "comun" | "barrios" | "sellos-barrio" | "lugares" | "frentes";
 export type Vista = {
   id: VistaId;
-  nombre: ClaveTexto;               // territorio.vistas.<id>.nombre
+                                    // el nombre sale del id: tx.vistas[id].nombre (no hay campo propio)
   capas: readonly Capa[];           // qué grupos de Leaflet se ven
   elegibles(fase: Fase): string[];  // ids que se pueden elegir (sellos y lista)
 };

@@ -29,7 +29,16 @@ function leerPedidosDelNavegador(): PedidosEquipos {
  * "Quiero sumarme a <equipo>": pedir ser aspirante de un círculo del común. La regla vive en `lib/equipos/equipos.ts`;
  * acá solo se lee lo del navegador y se dibuja. Antes de hidratar deja un lugar vacío de alto fijo.
  */
-export function SumarmeEquipo({ circuloId, nombreEquipo }: { circuloId: string; nombreEquipo: string }) {
+export function SumarmeEquipo({
+  circuloId,
+  nombreEquipo,
+  desdeFrente = false,
+}: {
+  circuloId: string;
+  nombreEquipo: string;
+  /** Desde la ficha de un frente del mapa el botón dice "a este frente"; el pedido es el mismo, al equipo. */
+  desdeFrente?: boolean;
+}) {
   const tx = useTextos("tribus");
   const t = tx.equipos.sumarme;
   const tm = tx.membresia;
@@ -135,7 +144,7 @@ export function SumarmeEquipo({ circuloId, nombreEquipo }: { circuloId: string; 
             aria-expanded={abierto}
             onClick={() => setAbierto(true)}
           >
-            {t.boton(nombreEquipo)}
+            {desdeFrente ? t.botonFrente : t.boton(nombreEquipo)}
           </button>
           {abierto && (
             <div role="group" aria-labelledby={`sumarme-${circuloId}`} className="grid gap-2 rounded-xl border border-faint bg-surface-2 p-3">

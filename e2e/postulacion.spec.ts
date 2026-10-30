@@ -20,7 +20,7 @@ async function completar(page: Page) {
 }
 
 test("desde el mapa, el Barrio 3 ofrece proponer una comunidad", async ({ page }) => {
-  await page.goto("/territorios/lighthouse");
+  await page.goto("/territorios/lighthouse?vista=vision");
   await expect(page.locator('[aria-label^="Barrio "]')).toHaveCount(12);
   await page.locator('[aria-label^="Barrio 3 "]').click();
   const ficha = page.getByRole("complementary", { name: "Ficha del territorio" });

@@ -14,7 +14,7 @@ const rail = (page: Page) => page.getByRole("navigation", { name: "Principal" })
 
 test.describe("páginas públicas sin sesión", () => {
   test("Territorio: se ve el mapa, la ficha lateral y el panel de tribus", async ({ page }) => {
-    await page.goto("/territorios/lighthouse");
+    await page.goto("/territorios/lighthouse?vista=vision");
     await expect(page.getByRole("heading", { name: "Mapa del Macrolote 7" })).toBeVisible();
     const ficha = page.getByRole("complementary", { name: "Ficha del territorio" });
     await expect(ficha).toBeVisible();
@@ -67,7 +67,7 @@ test.describe("páginas públicas sin sesión", () => {
   });
 
   test("un barrio vacante pide sumarse para proponer una comunidad", async ({ page }) => {
-    await page.goto("/territorios/lighthouse");
+    await page.goto("/territorios/lighthouse?vista=vision");
     await page.getByRole("button", { name: /^Barrio \d+$/ }).first().click();
     const ficha = page.getByRole("complementary", { name: "Ficha del territorio" });
     await expect(ficha).toBeVisible();
@@ -136,7 +136,7 @@ test.describe("navegación sin sesión", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
     await page.getByRole("button", { name: EMAILS.persona }).click();
-    await expect(page).toHaveURL(/\/territorios\/lighthouse\?sel=/);
+    await expect(page).toHaveURL(/\/territorios\/lighthouse\?.*sel=/);
     await expect(ficha.getByRole("heading", { level: 2, name: titulo })).toBeVisible();
     await expect(ficha.getByRole("button", { name: "Consultar por este lote", exact: true })).toBeVisible();
   });
@@ -184,7 +184,7 @@ test.describe("sin datos guardados sin sesión", () => {
       await expect(page.getByText("Prototipo interno · datos de ejemplo").first()).toBeVisible();
     }
     // Se elige algo en el mapa y se cambia la facturación de Sumarte: tampoco se guarda.
-    await page.goto("/territorios/lighthouse");
+    await page.goto("/territorios/lighthouse?vista=vision");
     await page.getByRole("button", { name: /^Barrio \d+/ }).first().click();
     await page.goto("/sumarte");
     await page.getByRole("button", { name: /^Mensual/ }).click();

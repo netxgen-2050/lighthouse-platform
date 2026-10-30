@@ -161,11 +161,11 @@ test.describe("territorio en inglés", () => {
   test.use({ locale: "en-US" });
 
   test("la vitrina, la leyenda y la ficha del resumen en inglés", async ({ page }) => {
-    await page.goto("/territorios/lighthouse");
+    await page.goto("/territorios/lighthouse?vista=vision");
     await expect(html(page)).toHaveAttribute("lang", "en");
     await expect(page.getByRole("heading", { level: 1, name: "Lighthouse" })).toBeVisible();
     await expect(page.getByText("~993 ha, twelve neighborhoods and the tribes forming them.")).toBeVisible();
-    const region = page.getByRole("region", { name: "Map of Macrolote 7" });
+    const region = page.getByRole("region", { name: "Map of Macrolote 7", exact: true });
     await expect(region).toBeVisible();
     const leyenda = region.getByRole("group", { name: "Map legend" });
     await expect(leyenda.getByText("Neighborhood with an active tribe", { exact: true })).toBeVisible();
@@ -201,7 +201,7 @@ test.describe("territorio en inglés", () => {
   });
 
   test("finca disponible en inglés", async ({ page }) => {
-    await page.goto("/territorios/lighthouse");
+    await page.goto("/territorios/lighthouse?vista=vision");
     await page.getByText(/Available Soluna plots/).click();
     await page.getByRole("button", { name: "Plot 502", exact: true }).click();
     await expect(ficha(page).getByRole("heading", { name: "Plot 502" })).toBeVisible();
@@ -212,7 +212,7 @@ test.describe("territorio en inglés", () => {
   });
 
   test("los marcadores del mapa tienen nombre accesible en inglés", async ({ page }) => {
-    await page.goto("/territorios/lighthouse");
+    await page.goto("/territorios/lighthouse?vista=vision");
     await expect(page.locator('[aria-label^="Neighborhood "]')).toHaveCount(12);
     await expect(page.locator('[aria-label="Neighborhood 3 · Looking for a tribe"]')).toHaveCount(1);
     await expect(page.locator('[aria-label="Neighborhood 6 · Valle Solar · Active"]')).toHaveCount(1);

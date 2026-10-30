@@ -11,6 +11,7 @@ import { sinDato } from "@/lib/idioma/formatos";
 import { idiomaDelPedido } from "@/lib/idioma/servidor";
 import { textos } from "@/lib/idioma/textos";
 import { textoEn, type Idioma } from "@/lib/idioma/tipos";
+import { esDeHoy } from "@/lib/territorios/vistas";
 import { agruparPorEstado, listarTribus, rutaProponerComunidad } from "@/lib/tribus/datos";
 import { textoDeEstado, type Tribu } from "@/lib/tribus/tipos";
 
@@ -99,6 +100,18 @@ function FrenteItem({ f, idioma, futuro }: { f: Frente; idioma: Idioma; futuro: 
       </p>
       <p>
         <span className="font-medium">{e.lugar}</span> {f.lugar ? e.enElMapa : e.sinLugar}
+        {f.lugar && (
+          <>
+            {" · "}
+            <Link
+              className="underline"
+              href={`/territorios/lighthouse?vista=ahora${esDeHoy(f) ? "" : `&fase=${f.desde}`}&sel=${f.id}`}
+              aria-label={`${textos("territorio", idioma).verEnMapa} · ${f.nombre}`}
+            >
+              {textos("territorio", idioma).verEnMapa}
+            </Link>
+          </>
+        )}
       </p>
       {futuro && <p className="font-medium">{e.masAdelante(f.desde)}</p>}
     </li>
