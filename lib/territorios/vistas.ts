@@ -12,8 +12,6 @@ export type Capa = "contexto" | "soluna" | "macrolote" | "comun" | "barrios" | "
 
 export type Vista = {
   id: VistaId;
-  /** Clave del texto del nombre (territorio.vistas.<id>.nombre). */
-  nombre: `vistas.${VistaId}.nombre`;
   /** Qué grupos de Leaflet se ven. `barrios-neutros` dibuja los barrios sin estado de tribu ni sellos (Plan). */
   capas: readonly Capa[];
   /** Ids que se pueden elegir en el mapa y en la lista, para esa fase. */
@@ -26,20 +24,17 @@ const idsLugares = () => listarLugares().map((l) => l.id);
 export const VISTAS: readonly Vista[] = [
   {
     id: "ahora",
-    nombre: "vistas.ahora.nombre",
     capas: ["contexto", "soluna", "macrolote", "comun", "frentes", "lugares"],
     // El común se elige en las tres vistas (lo que es elegible en todas se queda donde está la persona).
     elegibles: (fase) => [...frentesEn(fase).conLugar.map((f) => f.id), terrenoComun().id, ...idsFincas(), ...idsLugares()],
   },
   {
     id: "plan",
-    nombre: "vistas.plan.nombre",
     capas: ["contexto", "soluna", "macrolote", "comun", "barrios-neutros", "lugares"],
     elegibles: () => [terrenoComun().id, ...idsFincas(), ...idsLugares()],
   },
   {
     id: "vision",
-    nombre: "vistas.vision.nombre",
     capas: ["contexto", "soluna", "macrolote", "comun", "barrios", "sellos-barrio", "lugares"],
     elegibles: () => [...listarBarrios().map((b) => b.id), terrenoComun().id, ...idsFincas(), ...idsLugares()],
   },
