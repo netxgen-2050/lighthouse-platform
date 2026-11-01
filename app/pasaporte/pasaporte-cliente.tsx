@@ -130,7 +130,17 @@ function TarjetaSello({ s }: { s: Sello }) {
           <p className="text-sm font-medium">{s.estado === "obtenido" ? t.queAbre : t.queAbriria}</p>
           <ul className="list-disc pl-5 text-sm">
             {s.abre.map((a) => (
-              <li key={a}>{a}</li>
+              <li key={a}>
+                {a.split(/(conviction voting)/).map((parte, i) =>
+                  i % 2 === 1 ? (
+                    <span key={i} translate="no">
+                      {parte}
+                    </span>
+                  ) : (
+                    parte
+                  ),
+                )}
+              </li>
             ))}
           </ul>
         </div>

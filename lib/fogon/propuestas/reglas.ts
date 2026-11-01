@@ -138,6 +138,8 @@ export type HechosAlVencer = {
   apoyan: number;
   minimo: number | null;
   urgencia: "pedida" | "validada" | "caida" | null;
+  /** Venció sin llegar al llamado ni a la objeción porque un desafío del Guardián quedó sin respuesta. */
+  desafioSinRespuesta?: boolean;
   holonId: string | null;
   /** AAAA-MM-DD del vencimiento. */
   vencimiento: string;
@@ -152,6 +154,8 @@ export type HechosAlVencer = {
 export function alVencer(h: HechosAlVencer): Resultado {
   const hayQuorum = h.minimo !== null && h.cuenta >= h.minimo;
   if (h.recorrido === "simple" && !h.concernAbierto && !h.bloqueo) {
+    // Nunca llegó al período de objeción porque un desafío quedó sin respuesta: "nadie objetó" sería falso.
+    if (h.desafioSinRespuesta) return { tipo: "pausada", motivo: "desafio-sin-respuesta" };
     return hayQuorum
       ? { tipo: "adoptada", motivo: "nadie-objeto" }
       : { tipo: "pausada", motivo: "participacion-minima" };

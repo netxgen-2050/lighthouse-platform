@@ -62,6 +62,17 @@ test("axe sin violaciones serias o críticas: una propuesta del Fogón (la bomba
   expect(await graves(page)).toEqual([]);
 });
 
+test("axe sin violaciones serias o críticas: la bomba con la sección del desafío del Guardián a la vista, en español y en inglés", async ({ page }) => {
+  await page.goto("/fogon/propuestas/consejo-bomba");
+  await page.getByLabel("Mirá la propuesta como…").selectOption("ambito");
+  await expect(page.getByRole("region", { name: /El Guardián desafía esta propuesta/ })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+  await page.goto("/fogon/propuestas/consejo-bomba?lang=en");
+  await page.getByLabel("See the proposal as…").selectOption("ambito");
+  await expect(page.getByRole("region", { name: /The Guardian challenges this proposal/ })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
 test("axe sin violaciones serias o críticas: /pasaporte con sellos obtenidos, en trámite y modalidad cargada", async ({ page }) => {
   await page.addInitScript(() => {
     if (window.localStorage.getItem("lh-membresia")) return;

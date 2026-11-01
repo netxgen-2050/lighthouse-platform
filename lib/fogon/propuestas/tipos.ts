@@ -267,7 +267,7 @@ export type Resultado =
   | { tipo: "adoptada"; motivo: "nadie-objeto" }
   | {
       tipo: "pausada";
-      motivo: "sin-consenso" | "concern-abierto" | "participacion-minima" | "sin-nivel-de-arriba" | "revision-sin-consenso";
+      motivo: "sin-consenso" | "concern-abierto" | "participacion-minima" | "sin-nivel-de-arriba" | "revision-sin-consenso" | "desafio-sin-respuesta";
     }
   | { tipo: "sube"; a: string | null }
   | { tipo: "provisoria"; revisarAntesDe: string; concernsQueObligan: string[]; enRevision: boolean };

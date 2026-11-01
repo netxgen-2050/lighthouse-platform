@@ -120,6 +120,16 @@ test.describe("fases y discusión", () => {
     await expect(desafio).toContainText("No pausa ni decide nada");
   });
 
+  test("el desafío del Guardián se ve en inglés con ?lang=en", async ({ page }) => {
+    await page.goto("/fogon/propuestas/consejo-bomba?lang=en");
+    await page.getByLabel("See the proposal as…").selectOption("ambito");
+    const desafio = page.getByRole("region", { name: /The Guardian challenges this proposal/ });
+    await expect(desafio).toBeVisible();
+    await expect(desafio).toContainText("It never pauses nor decides anything");
+    await expect(desafio).toContainText("No answer yet");
+    await expect(desafio).toContainText("Answered by");
+  });
+
   test("quien facilita no puede pasar de fase mientras falte responder el desafío, y puede seguir proponiendo", async ({ page }) => {
     await page.goto("/fogon/propuestas/consejo-bomba");
     await page.getByLabel(NIVEL).selectOption("proceso");

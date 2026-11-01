@@ -463,6 +463,25 @@ describe("desafío del Guardián (1-nov, variante b)", () => {
     expect(derivarEstado(bomba, [raro], AHORA).fase).toBe("resolver");
   });
 
+  describe("vence sin respuesta al desafío", () => {
+    const desafio = { ...bomba.guion.guardian[0], id: "h-g-desafio", fase: "presentacion" as const };
+    const huertaDesafio: Propuesta = { ...huerta, guion: { ...huerta.guion, guardian: [desafio] } };
+    const acuses = ["a", "b", "c"].map((q) => reg("huerta", "acuse", q, "ambito", "2026-10-29T10:00"));
+    const haciaObjetar = reg("huerta", "fase", "nico", "proceso", "2026-10-29T11:00", { datos: { fase: "objetar" } });
+
+    it("simple con desafío sin respuesta: el registro hacia objetar se ignora y al vencer no se adopta", () => {
+      const e = derivarEstado(huertaDesafio, [...acuses, haciaObjetar], DESPUES);
+      expect(e.historial.some((h) => h.id === haciaObjetar.id && h.clave === "fase-con-desafio-sin-respuesta")).toBe(true);
+      expect(e.resultado).toEqual({ tipo: "pausada", motivo: "desafio-sin-respuesta" });
+    });
+
+    it("con el desafío respondido, llega a objetar y se adopta como siempre", () => {
+      const respuesta = reg("huerta", "respuesta-desafio", "mora", "ambito", "2026-10-29T10:30", { apuntaA: desafio.id, texto: "Está resuelto." });
+      const e = derivarEstado(huertaDesafio, [...acuses, respuesta, haciaObjetar], DESPUES);
+      expect(e.resultado).toEqual({ tipo: "adoptada", motivo: "nadie-objeto" });
+    });
+  });
+
   it("ninguna propuesta de ejemplo cambia de fase por la regla nueva", () => {
     for (const id of ["consejo-bomba", "regalia", "siembra", "cisterna-compartida", "huerta"]) {
       const p = P(id);

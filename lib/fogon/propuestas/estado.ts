@@ -114,6 +114,8 @@ type Pasada = {
   aUnLado: EstadoPropuesta["aUnLado"];
   historial: ItemHistorial[];
   cierre: Registro | null;
+  /** Desafíos del Guardián que ya aparecieron y nadie respondió. */
+  desafiosSinRespuesta: number;
 };
 
 function pasada(p: Propuesta, regs: readonly Registro[], ctx: Contexto): Pasada {
@@ -455,6 +457,7 @@ function pasada(p: Propuesta, regs: readonly Registro[], ctx: Contexto): Pasada 
     aUnLado,
     historial,
     cierre,
+    desafiosSinRespuesta: desafiosAparecidos(fase).filter((s) => !respuestasDesafio.has(s.id)).length,
   };
 }
 
@@ -562,6 +565,8 @@ function derivarCon(p: Propuesta, regs: readonly Registro[], ahora: Date, opts: 
       apoyan,
       minimo: corte.participacion.minimo,
       urgencia: corte.urgencia?.estado ?? null,
+      // Venció sin haber llegado al llamado ni a la objeción y con un desafío sin respuesta.
+      desafioSinRespuesta: corte.desafiosSinRespuesta > 0 && corte.fase !== "llamado" && corte.fase !== "objetar",
       holonId: p.holonId,
       vencimiento: cr.vence,
       diasRevision: plazos.diasRevision,
