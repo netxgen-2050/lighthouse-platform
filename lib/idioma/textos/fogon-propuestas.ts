@@ -122,7 +122,7 @@ const es = {
       bloqueo: "Bloqueo",
       resolucion: "Propuesta de resolución",
       "a-un-lado": "A un lado",
-      guardian: "Sugerencia del Guardián (IA, simulado)",
+      guardian: "Desafío del Guardián, que defiende la Voz de la Tierra (IA, simulado)",
       grupo: "Grupo de concerns",
     },
     por: (quien: string) => `de ${quien}`,
@@ -150,7 +150,7 @@ const es = {
       urgencia: "Cita la urgencia marcada",
     },
     guardianEstado: {
-      sinRespaldo: "Nadie la respaldó: no frena la propuesta",
+      sinRespaldo: "Nadie la respaldó como concern",
       respaldada: (n: number) => (n === 1 ? "Respaldada por 1 persona" : `Respaldada por ${n} personas`),
     },
     guardianTipos: {
@@ -275,6 +275,18 @@ const es = {
     "respaldar-urgencia": "Respaldar la urgencia",
     "objetar-urgencia": "Levantar un concern sobre la urgencia",
     "abrir-revision": "Abrir la revisión",
+    "responder-desafio": "Responder el desafío del Guardián",
+  },
+  desafio: {
+    titulo: "El Guardián desafía esta propuesta",
+    intro:
+      "El Guardián (IA, simulado) defiende la Voz de la Tierra: habla por el agua, el suelo y la vida nativa. No pausa ni decide nada: pide que una persona del ámbito le responda por escrito antes del llamado al consenso o del período de objeción.",
+    sinRespuesta: "Sin respuesta todavía",
+    respuestas: "Respuestas",
+    respondio: (quien: string) => `Respondió ${quien}`,
+    verEnDiscusion: "Ver en la discusión",
+    verDesafio: "Ver el desafío",
+    falta: "Falta responder el desafío del Guardián",
   },
   condiciones: {
     "solo-comun": "solo decisiones del común",
@@ -413,7 +425,7 @@ const en: Textos<typeof es> = {
       bloqueo: "Block",
       resolucion: "Resolution proposal",
       "a-un-lado": "Standing aside",
-      guardian: "Guardian suggestion (AI, simulated)",
+      guardian: "Challenge from the Guardian, who defends the Voice of the Earth (AI, simulated)",
       grupo: "Group of concerns",
     },
     por: (quien: string) => `by ${quien}`,
@@ -441,7 +453,7 @@ const en: Textos<typeof es> = {
       urgencia: "Cites the urgency requested",
     },
     guardianEstado: {
-      sinRespaldo: "Nobody backed it: it does not hold the proposal back",
+      sinRespaldo: "Nobody backed it as a concern",
       respaldada: (n: number) => (n === 1 ? "Backed by 1 person" : `Backed by ${n} people`),
     },
     guardianTipos: {
@@ -566,6 +578,18 @@ const en: Textos<typeof es> = {
     "respaldar-urgencia": "Back the urgency",
     "objetar-urgencia": "Raise a concern about the urgency",
     "abrir-revision": "Open the review",
+    "responder-desafio": "Answer the Guardian's challenge",
+  },
+  desafio: {
+    titulo: "The Guardian challenges this proposal",
+    intro:
+      "The Guardian (AI, simulated) defends the Voice of the Earth: it speaks for the water, the soil and native life. It never pauses nor decides anything: it asks a person in the scope to answer in writing before the consensus call or the objection period.",
+    sinRespuesta: "No answer yet",
+    respuestas: "Answers",
+    respondio: (quien: string) => `Answered by ${quien}`,
+    verEnDiscusion: "See it in the discussion",
+    verDesafio: "See the challenge",
+    falta: "The Guardian's challenge still needs an answer",
   },
   condiciones: {
     "solo-comun": "only decisions of the common",

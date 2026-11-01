@@ -615,11 +615,11 @@ export const TERMINOS = {
   guardianIA: {
     titulo: "Guardián (IA, simulado)",
     texto:
-      "Una IA simulada que sugiere posibles impactos desde los principios de la vida y la tierra. Nunca decide ni declara nada ilegítimo: si ninguna persona respalda su sugerencia como concern, la propuesta sigue su curso. No es un órgano de la Fundación: el Fondo Común lo administra el Consejo de la Fundación.",
+      "Una IA simulada que defiende la Voz de la Tierra: habla por el agua, el suelo y la vida nativa y desafía lo que pueda dañarlos desde los principios de la vida y la tierra. Nunca pausa ni decide, ni declara nada ilegítimo. Su desafío no pausa nada: los plazos siguen. Lo único que pide es que una persona del ámbito le responda por escrito antes del llamado al consenso (o del período de objeción); si nadie responde y el plazo vence, la propuesta se cierra sin llegar al llamado, como cualquier propuesta que nadie hace avanzar. No es un órgano de la Fundación: el Fondo Común lo administra el Consejo de la Fundación.",
     en: {
       titulo: "Guardian (AI, simulated)",
       texto:
-        "A simulated AI that suggests possible impacts from the principles of life and land. It never decides nor declares anything illegitimate: if no person backs its suggestion as a concern, the proposal goes on. It is not a body of the Foundation: the Common Fund is administered by the Foundation Council.",
+        "A simulated AI that defends the Voice of the Earth: it speaks for the water, the soil and native life and challenges what could harm them, from the principles of life and land. It never pauses nor decides, nor declares anything illegitimate. Its challenge does not pause anything: the deadlines keep running. All it asks is that a person in the scope answers it in writing before the consensus call (or the objection period); if nobody answers and the deadline passes, the proposal closes without reaching the call, like any proposal nobody moves forward. It is not a body of the Foundation: the Common Fund is administered by the Foundation Council.",
     },
     borrador: true,
   },

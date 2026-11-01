@@ -50,7 +50,8 @@ export type AccionDeProceso =
   | "marcar-urgente"
   | "respaldar-urgencia"
   | "objetar-urgencia"
-  | "abrir-revision";
+  | "abrir-revision"
+  | "responder-desafio";
 
 export type Accion = AccionMatriz | AccionDeProceso;
 
@@ -112,7 +113,9 @@ export type TipoRegistro =
   | "revision"
   | "cierre"
   | "acta"
-  | "evaluacion";
+  | "evaluacion"
+  /** Respuesta escrita al desafío del Guardián; `apuntaA` = id de la sugerencia. */
+  | "respuesta-desafio";
 
 /** Forma de constancia (ADR-012), de solo agregar. Siempre de una persona; nunca de Hifa ni del Guardián. */
 export type Registro = {
@@ -237,7 +240,14 @@ export type MecanismoVista = {
   apuntaA?: string;
 };
 
-export type SugerenciaVista = SugerenciaGuardian & { respaldos: string[]; estado: "sin-respaldo" | "respaldada" };
+export type RespuestaDesafioVista = { id: string; quien: string; texto: Bi | string; cuando: string };
+
+export type SugerenciaVista = SugerenciaGuardian & {
+  respaldos: string[];
+  estado: "sin-respaldo" | "respaldada";
+  /** Respuestas escritas válidas al desafío (vale en todas las versiones). */
+  respuestas: RespuestaDesafioVista[];
+};
 
 export type EstadoUrgencia = "pedida" | "validada" | "caida";
 

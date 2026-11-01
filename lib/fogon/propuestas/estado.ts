@@ -14,8 +14,11 @@ import {
   type Plazos,
 } from "./reglas";
 import { RECORRIDOS } from "./fases";
+import { celdasDe } from "./permisos";
 import type {
   AcuseVista,
+  Bi,
+  RespuestaDesafioVista,
   ConcernVista,
   EstadoPropuesta,
   Fase,
@@ -137,13 +140,35 @@ function pasada(p: Propuesta, regs: readonly Registro[], ctx: Contexto): Pasada 
   let version = 1;
   let fase: Fase = RECORRIDOS[recorrido][0];
   const sinUrgencia = p.materia !== undefined && (MATERIAS_SIN_URGENCIA as readonly string[]).includes(p.materia);
+  // Desafíos del Guardián: sus respuestas válidas y cuáles ya habían aparecido en una fase dada.
+  const respuestasDesafio = new Map<string, RespuestaDesafioVista[]>();
+  const desafiosAparecidos = (enFase: Fase) => p.guion.guardian.filter((s) => ORDEN_GLOBAL.indexOf(s.fase) <= ORDEN_GLOBAL.indexOf(enFase));
 
   for (const r of regs) {
     const objetivo = r.apuntaA ? concerns.get(r.apuntaA) : undefined;
     switch (r.tipo) {
-      case "fase":
-        fase = (r.datos?.fase as Fase) ?? fase;
+      case "fase": {
+        const destino = (r.datos?.fase as Fase) ?? fase;
+        // Misma regla que el botón: no se pasa al llamado ni a la objeción con un desafío del Guardián sin respuesta.
+        if ((destino === "llamado" || destino === "objetar") && desafiosAparecidos(fase).some((s) => !respuestasDesafio.has(s.id))) {
+          ignora(r, "fase-con-desafio-sin-respuesta");
+          continue;
+        }
+        fase = destino;
         break;
+      }
+      case "respuesta-desafio": {
+        const desafio = desafiosAparecidos(fase).find((s) => s.id === r.apuntaA);
+        const vacio = typeof r.texto === "string" ? r.texto.trim() === "" : !r.texto || (r.texto.es.trim() === "" && r.texto.en.trim() === "");
+        if (!desafio || vacio || celdasDe("responder-desafio")[r.nivel] !== "si") {
+          ignora(r, "respuesta-desafio-no-valida");
+          continue;
+        }
+        const lista = respuestasDesafio.get(desafio.id) ?? [];
+        lista.push({ id: r.id, quien: r.quien, texto: typeof r.texto === "string" ? r.texto.trim() : (r.texto as Bi), cuando: r.cuando });
+        respuestasDesafio.set(desafio.id, lista);
+        break;
+      }
       case "recorrido":
         recorrido = "importante";
         fase = "preguntas";
@@ -403,7 +428,12 @@ function pasada(p: Propuesta, regs: readonly Registro[], ctx: Contexto): Pasada 
     .filter((s) => ORDEN_GLOBAL.indexOf(s.fase) <= posActual)
     .map((s) => {
       const respaldos = [...(respaldosDeSugerencia.get(s.id) ?? [])];
-      return { ...s, respaldos, estado: respaldos.length > 0 ? ("respaldada" as const) : ("sin-respaldo" as const) };
+      return {
+        ...s,
+        respaldos,
+        estado: respaldos.length > 0 ? ("respaldada" as const) : ("sin-respaldo" as const),
+        respuestas: respuestasDesafio.get(s.id) ?? [],
+      };
     });
 
   return {

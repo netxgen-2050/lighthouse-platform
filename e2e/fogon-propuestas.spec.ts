@@ -100,8 +100,34 @@ test.describe("fases y discusión", () => {
     await expect(grupo).toContainText("Los días de riego");
     // El concern de Inés queda suelto, fuera del grupo.
     await expect(discusion.getByRole("article").filter({ hasText: "Coincido con la sugerencia" })).not.toContainText("Uso compartido");
-    await expect(discusion).toContainText("Sugerencia del Guardián (IA, simulado)");
-    await expect(discusion).toContainText("Nadie la respaldó: no frena la propuesta");
+    await expect(discusion).toContainText("Desafío del Guardián, que defiende la Voz de la Tierra (IA, simulado)");
+    await expect(discusion).toContainText("Nadie la respaldó como concern");
+  });
+
+  test("el Guardián desafía antes de la ficha, con la respuesta de Gala y el otro desafío sin respuesta", async ({ page }) => {
+    await page.goto("/fogon/propuestas/consejo-bomba");
+    await page.getByLabel(NIVEL).selectOption("ambito");
+    const desafio = page.getByRole("region", { name: /El Guardián desafía esta propuesta/ });
+    await expect(desafio).toBeVisible();
+    await expect(desafio).toContainText("Voz de la Tierra");
+    await expect(desafio).toContainText("Respaldada por 1 persona");
+    await expect(desafio).toContainText("Respondió Gala (ejemplo)");
+    await expect(desafio).toContainText("Sin respuesta todavía");
+    // Está antes de la ficha.
+    const posiciones = await page.locator("h2").allTextContents();
+    expect(posiciones.findIndex((h) => h.includes("El Guardián desafía"))).toBeLessThan(posiciones.findIndex((h) => h === "Ficha"));
+    // Ningún agente pausa ni decide: lo dice en texto.
+    await expect(desafio).toContainText("No pausa ni decide nada");
+  });
+
+  test("quien facilita no puede pasar de fase mientras falte responder el desafío, y puede seguir proponiendo", async ({ page }) => {
+    await page.goto("/fogon/propuestas/consejo-bomba");
+    await page.getByLabel(NIVEL).selectOption("proceso");
+    const hacer = page.getByRole("region", { name: "Qué podés hacer" });
+    await expect(hacer.getByRole("listitem").filter({ hasText: "Pasar de fase" })).toContainText("Falta responder el desafío del Guardián");
+    await expect(hacer).toContainText("Proponer una enmienda o resolución");
+    await page.getByLabel(NIVEL).selectOption("ambito");
+    await expect(hacer).toContainText("Responder el desafío del Guardián");
   });
 
   test("principios: la lista de ejemplo se ve en la ficha", async ({ page }) => {
