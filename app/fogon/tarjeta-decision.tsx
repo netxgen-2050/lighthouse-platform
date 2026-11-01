@@ -80,7 +80,7 @@ export function TarjetaDecision({ decision: d, fogon, desde, lente, lugar }: Pro
             </span>
             <span className={`${CHIP} border-deep text-deep`}>
               <TextoBilingue valor={d.regla} sinNota />
-              <TerminoLegal clave={d.base} />
+              <TerminoLegal clave={d.base} idioma={idioma} />
             </span>
             {d.ambito === "tribu" && <span className={CHIP}>{t.chipTribu}</span>}
             {d.ambito === "circulo" && <span className={CHIP}>{t.chipCirculo}</span>}
@@ -90,13 +90,13 @@ export function TarjetaDecision({ decision: d, fogon, desde, lente, lugar }: Pro
           {d.destino && (
             <p className="text-sm font-medium">
               {t.destino[d.destino]}
-              <TerminoLegal clave={d.base} />
+              <TerminoLegal clave={d.base} idioma={idioma} />
             </p>
           )}
           {d.origen && (
             <p className="text-sm font-medium">
               {t.vieneDe} <span translate="no">{d.origen.aprobadaEn}</span> {t.aprobadaEnTribu}
-              <TerminoLegal clave="consejo" />
+              <TerminoLegal clave="consejo" idioma={idioma} />
             </p>
           )}
           <ParametrosDecision decision={d} />

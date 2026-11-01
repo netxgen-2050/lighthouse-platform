@@ -70,12 +70,12 @@ export function HolarquiaCliente({ raiz, lentes = LENTES, focoInicial, lenteInic
 
   // El lugar vive en la dirección, sin sumar entradas al historial por cada zoom. Mientras la persona no cambie nada no se
   // reescribe (un `holon` inválido queda como llegó). Se conserva el resto de la dirección (por ejemplo `?lang=en`).
-  const cambioElLugar = useRef(false);
+  // Se compara contra el último lugar visto (no con una marca de "ya corrió"): así aguanta el doble efecto de StrictMode.
+  const lugarVisto = useRef(`${foco.id}|${lente.id}`);
   useEffect(() => {
-    if (!cambioElLugar.current) {
-      cambioElLugar.current = true;
-      return;
-    }
+    const lugar = `${foco.id}|${lente.id}`;
+    if (lugar === lugarVisto.current) return;
+    lugarVisto.current = lugar;
     const url = new URL(window.location.href);
     if (foco.id === raiz.id) url.searchParams.delete("holon");
     else url.searchParams.set("holon", foco.id);
