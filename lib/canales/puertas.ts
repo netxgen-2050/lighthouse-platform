@@ -33,7 +33,7 @@ export const NOMBRES: Record<Puerta, string> = textos("canales", "es").nombres;
 const TERMINO_DE_PUERTA: Partial<Record<Puerta, ClaveTermino>> = {
   "canal-fundadores": "pasefundador",
   "voz-fondo-comun": "guardian",
-  "voto-fideicomiso": "gobernanzafideicomiso",
+  "influencia-fondo-comun": "influenciafondocomun",
   creditos: "creditos",
 };
 

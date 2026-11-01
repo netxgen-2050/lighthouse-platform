@@ -6,7 +6,8 @@ import { filasDePuertas, nombresDePases, nombresDePlanes, personaDesdeSumarte } 
 const VALLE = { id: "valle", nombre: "Valle Solar" };
 const base: Persona = personaDesdeSumarte(leer(null));
 const con = (c: Partial<Persona>): Persona => ({ ...base, ...c });
-const buscar = (filas: ReturnType<typeof filasDePuertas>, nombre: string) => {
+const ETIQUETA_INFLUENCIA = "Influencia en el Fondo Común (próximamente: conviction voting)";
+const buscar =(filas: ReturnType<typeof filasDePuertas>, nombre: string) => {
   const f = filas.find((x) => x.nombre === nombre);
   if (!f) throw new Error(`No hay fila "${nombre}"`);
   return f;
@@ -68,14 +69,14 @@ describe("filasDePuertas", () => {
     expect(f.motivos).toEqual(["por tu pase"]);
   });
 
-  it("voto en el Fideicomiso: solo con el Pase, igual en los tres niveles, y con su ⚖", () => {
+  it("influencia en el Fondo Común: solo con el Pase, igual en los tres niveles, y con su ⚖", () => {
     for (const pase of ["semilla", "brote", "raiz"] as const) {
-      const f = buscar(filasDePuertas(con({ plan: "miembro", pase })), "Voto en el Fideicomiso");
+      const f = buscar(filasDePuertas(con({ plan: "miembro", pase })), ETIQUETA_INFLUENCIA);
       expect(f.estado).toBe("Abierta");
       expect(f.motivos).toEqual(["por tu pase"]);
-      expect(f.termino).toBe("gobernanzafideicomiso");
+      expect(f.termino).toBe("influenciafondocomun");
     }
-    const sin = buscar(filasDePuertas(con({ plan: "miembro" })), "Voto en el Fideicomiso");
+    const sin = buscar(filasDePuertas(con({ plan: "miembro" })), ETIQUETA_INFLUENCIA);
     expect(sin.estado).toBe("Cerrada");
     expect(sin.abreCon).toBe("Pase Fundador");
   });

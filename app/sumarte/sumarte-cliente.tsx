@@ -391,7 +391,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
             </li>
             <li>
               {t.fundador.fideicomiso}
-              <TerminoLegal clave="gobernanzafideicomiso" idioma={idioma} />
+              <TerminoLegal clave="influenciafondocomun" idioma={idioma} />
             </li>
             <li>{t.fundador.canal}</li>
             <li>{t.fundador.registroGenesis}</li>

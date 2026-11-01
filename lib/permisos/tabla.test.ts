@@ -42,7 +42,7 @@ const ESPERADO: Record<Puerta, Array<string | null>> = {
   "voz-tribu": [N, N, N, "segun estatuto", N, N],
   "voz-fondo-comun": [N, N, "1 voz", N, N, N],
   "voto-asamblea-residentes": [N, N, N, N, N, "1 persona = 1 voto"],
-  "voto-fideicomiso": [N, N, "abierta", N, N, N],
+  "influencia-fondo-comun": [N, N, "abierta", N, N, N],
   creditos: [N, N, "abierta", N, N, N],
 };
 

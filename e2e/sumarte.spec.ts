@@ -75,11 +75,11 @@ test("elegir el nivel Raíz cambia precio y créditos", async ({ page }) => {
   await expect(pase.getByRole("button", { name: "Quiero el Pase Raíz" })).toBeVisible();
 });
 
-test("la tarjeta del Pase dice que da voz en el fideicomiso y el Fondo Común, con su ⚖", async ({ page }) => {
+test("la tarjeta del Pase dice que da influencia en el Fondo Común, con su ⚖", async ({ page }) => {
   await page.goto("/sumarte");
   const pase = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Pase Fundador/ }) });
-  await expect(pase).toContainText("Voz en las decisiones del fideicomiso y del Fondo Común");
-  await expect(pase.getByRole("button", { name: /Voto en el Fideicomiso/ })).toBeVisible();
+  await expect(pase).toContainText("Influencia en el Fondo Común: la distribución de grandes sumas se va a decidir con conviction voting (próximamente)");
+  await expect(pase.getByRole("button", { name: /Influencia en el Fondo Común/ })).toBeVisible();
 });
 
 test.describe("comprar el Pase", () => {

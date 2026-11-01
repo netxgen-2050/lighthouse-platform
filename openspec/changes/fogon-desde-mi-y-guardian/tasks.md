@@ -22,7 +22,7 @@
 
 ## 4. Pase Fundador
 
-- [ ] 4.1 Design §4: `voto-fideicomiso` → `influencia-fondo-comun` en `lib/permisos/` y `lib/canales/puertas.ts`; etiqueta es/en en `lib/idioma/textos/pasaporte.ts`; texto de la tarjeta en `lib/idioma/textos/sumarte.ts`; ⚖ `gobernanzafideicomiso` → `influenciafondocomun` (borrador) en `lib/legal/terminos.ts` y `app/sumarte/sumarte-cliente.tsx`. Actualizar `lib/permisos/tabla.test.ts`, `lib/canales/puertas.test.ts`, `lib/legal/terminos.test.ts` y los e2e que nombren "Voto en el Fideicomiso". Sin conviction voting. Verificar con `pnpm test lib/permisos lib/canales lib/legal`, `git grep -n -i "voto-fideicomiso\|Voto en el Fideicomiso\|gobernanzafideicomiso" -- lib app components e2e` sin resultados y `pnpm test:e2e` de los e2e tocados.
+- [x] 4.1 Design §4: `voto-fideicomiso` → `influencia-fondo-comun` en `lib/permisos/` y `lib/canales/puertas.ts`; etiqueta es/en en `lib/idioma/textos/pasaporte.ts`; texto de la tarjeta en `lib/idioma/textos/sumarte.ts`; ⚖ `gobernanzafideicomiso` → `influenciafondocomun` (borrador) en `lib/legal/terminos.ts` y `app/sumarte/sumarte-cliente.tsx`. Actualizar `lib/permisos/tabla.test.ts`, `lib/canales/puertas.test.ts`, `lib/legal/terminos.test.ts` y los e2e que nombren "Voto en el Fideicomiso". Sin conviction voting. Verificar con `pnpm test lib/permisos lib/canales lib/legal`, `git grep -n -i "voto-fideicomiso\|Voto en el Fideicomiso\|gobernanzafideicomiso" -- lib app components e2e` sin resultados y `pnpm test:e2e` de los e2e tocados.
 
 ## 5. Integración
 

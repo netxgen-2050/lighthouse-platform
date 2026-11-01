@@ -283,10 +283,15 @@ export const TERMINOS = {
     borrador: true,
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
-  gobernanzafideicomiso: {
-    titulo: "Voto en el Fideicomiso",
+  influenciafondocomun: {
+    titulo: "Influencia en el Fondo Común",
     texto:
-      "El fideicomiso decide cosas como el presupuesto de obra del macrolote. En el prototipo, quien tiene el Pase Fundador vota esas decisiones, con el mismo voto en los tres niveles del pase, y el voto es simulado. En la versión real, quién vota y con qué alcance lo define el contrato del fideicomiso, que todavía hay que confirmar con el equipo legal.",
+      "El Pase Fundador te va a dar influencia en cómo se reparten las sumas grandes del Fondo Común, con un mecanismo llamado conviction voting: tu apoyo a una propuesta pesa más cuanto más tiempo lo sostenés. Todavía no está construido. No es un voto en ningún fideicomiso ni en las series: esas asambleas votan por capital y fuera de la plataforma. Quién decide el presupuesto del Fondo Común lo define el estatuto de la Fundación, a confirmar con el equipo legal.",
+    en: {
+      titulo: "Influence in the Common Fund",
+      texto:
+        "The Founder Pass will give you influence over how large sums of the Common Fund are distributed, with a mechanism called conviction voting: your support for a proposal weighs more the longer you sustain it. It is not built yet. It is not a vote in any trust or in the series: those assemblies vote by capital and outside the platform. Who decides the Common Fund budget is defined by the Foundation's bylaws, to be confirmed with the legal team.",
+    },
     borrador: true,
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
