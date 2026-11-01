@@ -9,7 +9,8 @@ test.describe("abrir la propuesta", () => {
     await page.goto("/fogon");
     const tarjeta = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Pedido de Valle Solar al Fondo Común para la bomba solar" }) });
     await tarjeta.getByRole("link", { name: "Abrir la propuesta" }).click();
-    await expect(page).toHaveURL(/\/fogon\/propuestas\/consejo-bomba$/);
+    // La dirección lleva el holón y la lente de donde viene la persona (la página los usa en la noche 2).
+    await expect(page).toHaveURL(/\/fogon\/propuestas\/consejo-bomba\?desde=lighthouse&lente=estructura$/);
     await expect(page.getByRole("heading", { level: 1, name: "Pedido de Valle Solar al Fondo Común para la bomba solar" })).toBeVisible();
     await expect(page.locator("main")).toHaveCount(1);
   });
@@ -31,8 +32,8 @@ test.describe("abrir la propuesta", () => {
     await page.goto("/fogon/gobernanza");
     await page.getByRole("button", { name: /Decisiones que suben/ }).click();
     await page.getByRole("button", { name: /Calendario de siembra de otoño/ }).click();
-    await page.getByRole("link", { name: "Abrir la propuesta" }).click();
-    await expect(page).toHaveURL(/\/fogon\/propuestas\/siembra$/);
+    await page.getByRole("region", { name: "Detalle" }).getByRole("link", { name: "Abrir la propuesta" }).click();
+    await expect(page).toHaveURL(/\/fogon\/propuestas\/siembra(\?|$)/);
   });
 });
 
