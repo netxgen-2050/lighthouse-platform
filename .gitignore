@@ -47,3 +47,6 @@ next-env.d.ts
 /playwright-report/
 .carriles/
 .claude/worktrees/
+
+# Bóveda de Obsidian abierta sobre el repo (configuración local)
+docs/.obsidian/
