@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Abrir la propuesta
-Every Fogón decision that has an example proposal SHALL show an "Abrir la propuesta" link on its card in the section of proposals next to the holarchy in `/fogon` and in the panel of the chosen decision in the "Decisiones que suben" lens. The link MUST lead to `/fogon/propuestas/<id de la decisión>?desde=<holón enfocado>` (y `&lente=<lente>` si no es la primera). Decisions without a proposal (for example those of the fideicomiso or copies taken to the council) MUST NOT show it.
+Every Fogón decision that has an example proposal SHALL show an "Abrir la propuesta" link on its card in the section of proposals next to the holarchy in `/fogon` and in the panel of the chosen decision in the "Decisiones que suben" lens. The link MUST lead to `/fogon/propuestas/<id de la decisión>?desde=<holón enfocado>` (y `&lente=<lente>` si no es la primera). Decisions without a proposal (for example the Common Fund budget, which is only a recommendation to the Foundation council, or copies taken to the council) MUST NOT show it.
 
 #### Scenario: Desde el Fogón
 - **WHEN** una persona, con el consejo enfocado, toca "Abrir la propuesta" en la tarjeta "Pedido de Valle Solar al Fondo Común para la bomba solar"
@@ -12,7 +12,7 @@ Every Fogón decision that has an example proposal SHALL show an "Abrir la propu
 - **THEN** llega a la página de esa propuesta
 
 #### Scenario: Decisión sin propuesta
-- **WHEN** la persona mira la tarjeta "Presupuesto de obra 2027 del macrolote" (fideicomiso)
+- **WHEN** la persona mira la tarjeta "Presupuesto 2027 del Fondo Común"
 - **THEN** no ve "Abrir la propuesta"
 
 #### Scenario: Propuesta que no existe
@@ -37,7 +37,7 @@ La página de una propuesta SHALL mostrar como migas el camino de la holarquía 
 - **THEN** las migas dicen "Lighthouse VRN › Consejo de tribus › Pedido de Valle Solar al Fondo Común para la bomba solar"
 
 ### Requirement: Dónde se decide
-La página de una propuesta SHALL mostrar, antes de la ficha, una tarjeta corta "Dónde se decide" con el nombre y el tipo del holón, lo que ese holón "Decide sobre" y, si la decisión tiene camino de ejemplo, el camino en texto con su tipo (sube, se deriva o se decide abajo). Sin camino MUST decir "Sin camino de ejemplo", sin inventarlo.
+La página de una propuesta SHALL mostrar, antes de la ficha, una tarjeta corta "Dónde se decide" con el nombre y el tipo del holón, lo que ese holón "Decide sobre", el destino si lo decide un órgano legal (por ejemplo "Lo decide el Consejo de la Fundación; el Fogón le lleva la recomendación") y, si la decisión tiene camino de ejemplo, el camino en texto con su tipo (sube, se deriva o se decide abajo). Sin camino MUST decir "Sin camino de ejemplo", sin inventarlo.
 
 #### Scenario: Camino que sube
 - **WHEN** la persona abre la propuesta del pedido de la bomba solar
@@ -51,7 +51,7 @@ La página de una propuesta SHALL mostrar, antes de la ficha, una tarjeta corta 
 La página de una propuesta SHALL ofrecer "Volver a {holón}" que lleva a `/fogon` con el holón y la lente de donde vino la persona (`desde` y `lente`). Si `desde` falta o no existe en la holarquía, MUST volver al holón donde se decide la propuesta. Si la persona vino de un holón distinto del que decide, la página MUST decirlo ("La abriste desde {holón}").
 
 #### Scenario: Volver al común
-- **WHEN** la persona, en el común con "Sumar lo de adentro" y la lente "Propósitos", abre "Calendario de siembra de otoño" y activa "Volver a Lighthouse VRN"
+- **WHEN** la persona, en el común con "Ver también lo de los círculos de adentro" expandido y la lente "Propósitos", abre "Calendario de siembra de otoño" y activa "Volver a Lighthouse VRN"
 - **THEN** llega a `/fogon?holon=lighthouse&lente=propositos` con el común enfocado y "Propósitos" elegida
 
 #### Scenario: Abierta desde otro holón
@@ -65,3 +65,14 @@ La página de una propuesta SHALL ofrecer "Volver a {holón}" que lleva a `/fogo
 #### Scenario: Accesible y en inglés
 - **WHEN** corre la auditoría de axe sobre la propuesta abierta desde un holón, y la persona la abre con `?lang=en`
 - **THEN** no hay violaciones serias ni críticas, y las migas, "Where it is decided" y "Back to {holón}" salen en inglés con los nombres propios sin traducir
+
+### Requirement: El Guardián defiende la Voz de la Tierra y ningún agente decide
+La página de una propuesta SHALL presentar al Guardián como el agente (IA, simulado) que defiende la Voz de la Tierra: habla por el agua, el suelo y la vida nativa y desafía lo que pueda dañarlos. Su etiqueta y su ⚖ (borrador) MUST decirlo en palabras simples y MUST decir que nunca pausa ni decide. Ningún texto del Guardián, de Hifa ni de su ⚖ MUST decir que un agente pausa, frena, bloquea o decide una propuesta; la decisión es siempre de personas.
+
+#### Scenario: Etiqueta del Guardián
+- **WHEN** la persona abre la propuesta del pedido de la bomba solar
+- **THEN** la sugerencia del Guardián dice que viene del Guardián que defiende la Voz de la Tierra (IA, simulado), con su ⚖ marcado como borrador
+
+#### Scenario: Ningún agente pausa
+- **WHEN** se revisan en es y en todos los textos guionados del Guardián y de Hifa y el ⚖ del Guardián
+- **THEN** ninguno dice que el agente pausa, frena, bloquea o decide
