@@ -12,7 +12,7 @@
 - **THEN** ninguna tarjeta de decisión aparece antes del dibujo en el orden de la página
 
 ### Requirement: Propuestas del holón al lado de la holarquía
-`/fogon` SHALL mostrar, adyacente al dibujo, una sección "Propuestas en {nombre del holón enfocado}" con las decisiones de ejemplo de ese holón, en dos grupos: "Se decide acá" (las que se deciden en ese holón) y "Nace o pasa por acá" (las que se deciden en otro holón y cuyo camino de ejemplo nace en este o lo cruza al subir o al derivarse; una que se decide abajo sin subir no cuenta como que pasa). Cada decisión MUST usar la misma tarjeta de hoy (votar, "Llevar al consejo", parámetros, "Abrir la propuesta"). Un grupo vacío MUST decir que no hay decisiones de ejemplo, sin mostrar 0.
+`/fogon` SHALL mostrar, adyacente al dibujo, una sección "Propuestas en {nombre del holón enfocado}" con las decisiones de ejemplo de ese holón, en dos grupos (más el de los círculos de adentro, en el requisito siguiente): "Se decide acá" (las que se deciden en ese holón) y "Nace o pasa por acá" (las que se deciden en otro holón y cuyo camino de ejemplo nace en este o lo cruza al subir o al derivarse; una que se decide abajo sin subir no cuenta como que pasa). Cada decisión MUST usar la misma tarjeta de hoy (votar, "Llevar al consejo", parámetros, "Abrir la propuesta"). Un grupo vacío MUST decir que no hay decisiones de ejemplo, sin mostrar 0.
 
 #### Scenario: Zoom a un círculo
 - **WHEN** la persona entra a "Cuidado de la tierra" de Valle Solar
@@ -20,7 +20,7 @@
 
 #### Scenario: Zoom a una tribu
 - **WHEN** la persona entra a "Valle Solar"
-- **THEN** en "Se decide acá" están "Elegir facilitador/a de Valle Solar" y "Pedir al Fondo Común una cisterna para la huerta de Valle Solar", en "Nace o pasa por acá" está "Pedido de Valle Solar al Fondo Común para la bomba solar" y "Calendario de siembra de otoño" no está en ninguno de los dos grupos
+- **THEN** en "Se decide acá" están "Elegir facilitador/a de Valle Solar" y "Pedir al Fondo Común una cisterna para la huerta de Valle Solar", en "Nace o pasa por acá" está "Pedido de Valle Solar al Fondo Común para la bomba solar" y "Calendario de siembra de otoño" no está en esos dos grupos sino en "En los círculos de adentro", con "en Cuidado de la tierra"
 
 #### Scenario: Nace en un círculo del común
 - **WHEN** la persona entra a "Tokenomics y Semillas" del común
@@ -38,30 +38,30 @@
 - **WHEN** la persona, adherida al manifiesto de Lighthouse VRN, vota "A favor" en "Calendario de siembra de otoño" desde la sección adyacente
 - **THEN** el voto queda guardado como hoy, se anuncia y el foco vuelve al botón de esa decisión
 
-### Requirement: Ver también lo de los círculos de adentro
-La sección adyacente SHALL ofrecer un botón "Ver también lo de los círculos de adentro ({n})", con `aria-expanded`, cuando los holones de adentro del holón enfocado tienen decisiones de ejemplo que no están en sus dos grupos. El botón MUST arrancar cerrado en todos los holones, también en el común, y volver a cerrarse al cambiar de holón. Al expandirlo MUST listar esas decisiones en un tercer grupo, cada una con el nombre del holón donde se decide. Sin decisiones de adentro, el botón MUST NOT aparecer.
+### Requirement: Lo de los círculos de adentro, por defecto
+La sección adyacente SHALL mostrar por defecto, en un tercer grupo "En los círculos de adentro", las decisiones de ejemplo que se deciden en holones de adentro del holón enfocado y que no están en sus otros dos grupos, cada una con la etiqueta del círculo donde se decide ("en {círculo} · {tribu}", o el tramo que corresponda). Cuando ese grupo tiene decisiones, la sección MUST ofrecer un botón "Solo las de {holón}", con `aria-pressed`, que esconde ese grupo y deja solo "Se decide acá" y "Nace o pasa por acá"; activarlo otra vez lo vuelve a mostrar. Al cambiar de holón, la sección MUST volver a mostrar lo de adentro. Sin decisiones de adentro, ni el grupo ni el botón MUST aparecer.
 
-#### Scenario: Cerrado al llegar
+#### Scenario: Abierto al llegar
 - **WHEN** la persona abre `/fogon` en el común
-- **THEN** ve el botón "Ver también lo de los círculos de adentro" con `aria-expanded="false"` y "Calendario de siembra de otoño" no está en la sección
+- **THEN** en "En los círculos de adentro" está "Calendario de siembra de otoño" con "en Cuidado de la tierra · Valle Solar", y el botón "Solo las de Lighthouse VRN" está con `aria-pressed="false"`
 
-#### Scenario: Desde el común
-- **WHEN** la persona está en el común y activa "Ver también lo de los círculos de adentro" con el teclado
-- **THEN** aparece "Calendario de siembra de otoño" con "en Cuidado de la tierra · Valle Solar" y el botón queda con `aria-expanded="true"`
+#### Scenario: Acotar al holón
+- **WHEN** la persona está en el común y activa "Solo las de Lighthouse VRN" con el teclado
+- **THEN** "Calendario de siembra de otoño" deja de estar en la sección, "Se decide acá" sigue y el botón queda con `aria-pressed="true"`
 
-#### Scenario: Se cierra al cambiar de holón
-- **WHEN** la persona lo expandió en el común y después entra a "Valle Solar"
-- **THEN** el botón de Valle Solar arranca con `aria-expanded="false"`
+#### Scenario: Vuelve a mostrar todo al cambiar de holón
+- **WHEN** la persona acotó la lista en el común y después entra a "Valle Solar"
+- **THEN** ve "En los círculos de adentro" con "Calendario de siembra de otoño" y el botón "Solo las de Valle Solar" con `aria-pressed="false"`
 
 #### Scenario: Círculo sin nada adentro
 - **WHEN** la persona está en "Cuidado de la tierra"
-- **THEN** no ve el botón "Ver también lo de los círculos de adentro"
+- **THEN** no ve el grupo "En los círculos de adentro" ni el botón "Solo las de Cuidado de la tierra"
 
 ### Requirement: Cada decisión tiene su holón
 Toda decisión de ejemplo del Fogón SHALL tener el holón donde se decide, que MUST existir en la holarquía y coincidir con el holón de su propuesta cuando la tiene. Las copias llevadas al consejo MUST decidirse en el consejo. El Fogón MUST NOT tener decisiones fuera de la holarquía ni un ámbito "fideicomiso".
 
 #### Scenario: Sin fideicomiso
-- **WHEN** la persona recorre el común con "Ver también lo de los círculos de adentro" expandido
+- **WHEN** la persona recorre el común con lo de los círculos de adentro a la vista
 - **THEN** no ve ningún grupo, decisión ni texto de "fideicomiso" ni de "Asamblea de beneficiarios"
 
 #### Scenario: Copia llevada al consejo
@@ -82,29 +82,6 @@ El Fogón SHALL presentarse como el espacio consultivo del procomún. Una decisi
 #### Scenario: Decisión sin destino
 - **WHEN** la persona mira "Elegir facilitador/a de Valle Solar"
 - **THEN** no ve ningún destino y el voto dice "Tu voto"
-
-### Requirement: Tus propuestas en la lente Desde mí
-Con la lente "Desde mí" elegida, la sección adyacente SHALL titularse "Tus propuestas" y listar, sin depender del holón enfocado, las decisiones de ejemplo donde la persona participa: las del ámbito de sus tribus y círculos, las del común si adhirió al manifiesto de Lighthouse VRN y aquellas donde se declaró afectada. MUST agruparlas por lo que necesita su acción, en este orden: "Necesitan tu acuse", "Esperan tu respuesta" (un concern suyo con una resolución en juego), "Podés sugerir o votar" y "Las seguís"; dentro de cada grupo, primero la que vence antes. Cada una MUST mostrar el holón donde se decide y la acción en texto. Los grupos vacíos MUST NOT mostrarse. Con otra lente, la sección MUST volver a ser "Propuestas en {holón}".
-
-#### Scenario: Sin participación
-- **WHEN** una persona con sesión que no adhirió ni es de ninguna tribu elige la lente "Desde mí"
-- **THEN** la sección dice "Todavía no participás en ninguna propuesta de ejemplo" y muestra el aviso para adherir
-
-#### Scenario: Miembro de una tribu
-- **WHEN** una persona miembro de Valle Solar (simulado) y adherida elige "Desde mí" con el común enfocado
-- **THEN** en "Tus propuestas" están "Elegir facilitador/a de Valle Solar" y "Calendario de siembra de otoño", cada una con su holón, y también las del común
-
-#### Scenario: Afectada en otro holón
-- **WHEN** la persona se declaró afectada en "Cisterna compartida entre Agua Clara y Valle Solar" sin ser del consejo, y elige "Desde mí"
-- **THEN** esa propuesta aparece en "Tus propuestas"
-
-#### Scenario: Primero lo que necesita su acción
-- **WHEN** la persona puede firmar el acuse en una propuesta y en otra solo puede comentar
-- **THEN** la primera aparece en "Necesitan tu acuse", antes del grupo "Podés sugerir o votar"
-
-#### Scenario: Volver a la lente anterior
-- **WHEN** la persona pasa de "Desde mí" a "Estructura" con Valle Solar enfocado
-- **THEN** la sección vuelve a decir "Propuestas en Valle Solar"
 
 ### Requirement: El lugar vive en la dirección
 El holón enfocado y la lente elegida SHALL reflejarse en la dirección de `/fogon` (`?holon=<id>&lente=<id>`) sin sumar una entrada al historial por cada zoom. Abrir esa dirección MUST mostrar ese holón y esa lente. Un holón o una lente que no existen MUST volver al común o a la primera lente, sin errores.
@@ -129,7 +106,7 @@ El holón enfocado y la lente elegida SHALL reflejarse en la dirección de `/fog
 - **THEN** llega a `/netx/simulador` (o a la puerta que pide sesión, como hoy)
 
 ### Requirement: Portada accesible y bilingüe
-`/fogon` SHALL funcionar solo con teclado, no tener scroll horizontal a 390 px (con el dibujo arriba, después la sección adyacente y después el panel de detalle), tomar sus textos de los diccionarios es/en, usar solo tokens del tema y pasar la auditoría de axe en cada lente (también "Desde mí" con "Tus propuestas") y con "Ver también lo de los círculos de adentro" expandido.
+`/fogon` SHALL funcionar solo con teclado, no tener scroll horizontal a 390 px (con el dibujo arriba, después la sección adyacente y después el panel de detalle), tomar sus textos de los diccionarios es/en, usar solo tokens del tema y pasar la auditoría de axe en cada lente, con lo de los círculos de adentro a la vista y con "Solo las de {holón}" activado.
 
 #### Scenario: Celular
 - **WHEN** la persona abre `/fogon` a 390 px
@@ -137,10 +114,10 @@ El holón enfocado y la lente elegida SHALL reflejarse en la dirección de `/fog
 
 #### Scenario: En inglés
 - **WHEN** la persona abre `/fogon?lang=en` y entra a Valle Solar
-- **THEN** la sección dice "Proposals in Valle Solar" con sus grupos en inglés y el nombre de la tribu sin traducir
+- **THEN** la sección dice "Proposals in Valle Solar" con sus grupos y el botón "Only those of Valle Solar" en inglés y el nombre de la tribu sin traducir
 
 #### Scenario: Auditoría
-- **WHEN** corre la auditoría de accesibilidad sobre `/fogon` con cada lente y con "Ver también lo de los círculos de adentro" expandido
+- **WHEN** corre la auditoría de accesibilidad sobre `/fogon` con cada lente, con lo de adentro a la vista y con "Solo las de Lighthouse VRN" activado
 - **THEN** no hay violaciones serias ni críticas
 
 ## REMOVED Requirements
