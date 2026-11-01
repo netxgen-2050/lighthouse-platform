@@ -73,7 +73,69 @@ const es = {
     barrioTribu: (n: number, nombre: string, estado: string) => `Barrio ${n} · ${nombre} · ${estado}`,
     comun: "Terreno común del Lighthouse",
     lugar: (nombre: string) => `Lugar de interés · ${nombre}`,
+    frente: (n: number, nombre: string, equipo: string, masAdelante: number | null) =>
+      `Frente ${n}: ${nombre} · equipo ${equipo}${masAdelante === null ? "" : ` · más adelante, fase ${masAdelante}`}`,
   },
+  vistas: {
+    grupo: "Vista del mapa",
+    ahora: { nombre: "Ahora · frentes de trabajo", corto: "Ahora" },
+    plan: { nombre: "Plan · zonas", corto: "Plan" },
+    vision: { nombre: "Visión · tribus por barrio", corto: "Visión" },
+  },
+  etapa: {
+    titulo: "Etapa",
+    fase: "Fase",
+    hoy: "(hoy)",
+  },
+  mapa: {
+    aria: (vista: string, fase: string) =>
+      `Mapa del Macrolote 7 · vista ${vista} · fase ${fase}. La lista equivalente está al lado`,
+    faseHoy: (n: number) => `${n} (hoy)`,
+  },
+  leyendaVistas: {
+    frente: "Frente de trabajo (número, borde lleno)",
+    frenteDespues: "Frente que viene (borde punteado)",
+    zona: "Zona de barrio (ilustrativa)",
+    ejemploTribus: "Tribus de ejemplo, a definir",
+  },
+  ahora: {
+    donde: "Dónde podés ayudar",
+    explicacion: "Frentes de trabajo de los equipos. Cada número es el del sello en el mapa.",
+    sinLugar: "Sin lugar en el mapa",
+    masAdelante: "Más adelante",
+    ninguno: "En esta etapa no hay frentes con lugar en el mapa.",
+    fase: (n: number) => `fase ${n}`,
+  },
+  frente: {
+    numero: (n: number) => `Frente ${n}`,
+    equipo: "Equipo:",
+    necesidad: "Necesidad:",
+    falta: "Falta:",
+    para: "Para:",
+    lugarIlustrativo: "Lugar ilustrativo: el punto no marca una obra real.",
+    sinLugar: "Este frente no tiene lugar en el mapa.",
+    masAdelante: (n: number) => `Más adelante · fase ${n}`,
+    ejemplo: "Ejemplo · a definir",
+  },
+  plan: {
+    titulo: "Plan · zonas",
+    explicacion: "La distribución ilustrativa del Macrolote 7: el común y las 12 zonas de barrio, sin tribus.",
+    sinFases: "Este plan todavía no dice qué se hace en cada fase (sin dato).",
+    fuentes: "Fuentes del plan",
+    fuente: "Fuente:",
+    ilustrativa: "Distribución ilustrativa",
+    permacultura: "Masterplan de permacultura (borrador)",
+    martin: "Masterplan de Martín: todavía no está",
+  },
+  vision: {
+    ejemploTribus: "Tribus de ejemplo, a definir",
+    fase: {
+      0: "En la fase 0 todavía no hay tribus: hay equipos.",
+      1: "En la fase 1 nacen las primeras comunidades, muchas desde un equipo que ya trabajó junto.",
+      2: "En la fase 2 los barrios están habitados.",
+    },
+  },
+  verEnMapa: "Ver en el mapa",
 };
 
 const en: Textos<typeof es> = {
@@ -142,7 +204,69 @@ const en: Textos<typeof es> = {
     barrioTribu: (n: number, nombre: string, estado: string) => `Neighborhood ${n} · ${nombre} · ${estado}`,
     comun: "Common land of the Lighthouse",
     lugar: (nombre: string) => `Place of interest · ${nombre}`,
+    frente: (n: number, nombre: string, equipo: string, masAdelante: number | null) =>
+      `Front ${n}: ${nombre} · ${equipo} team${masAdelante === null ? "" : ` · later on, phase ${masAdelante}`}`,
   },
+  vistas: {
+    grupo: "Map view",
+    ahora: { nombre: "Now · work fronts", corto: "Now" },
+    plan: { nombre: "Plan · zones", corto: "Plan" },
+    vision: { nombre: "Vision · tribes by neighborhood", corto: "Vision" },
+  },
+  etapa: {
+    titulo: "Stage",
+    fase: "Phase",
+    hoy: "(today)",
+  },
+  mapa: {
+    aria: (vista: string, fase: string) =>
+      `Map of Macrolote 7 · ${vista} view · phase ${fase}. The equivalent list is next to it`,
+    faseHoy: (n: number) => `${n} (today)`,
+  },
+  leyendaVistas: {
+    frente: "Work front (number, solid border)",
+    frenteDespues: "Front coming later (dashed border)",
+    zona: "Neighborhood zone (illustrative)",
+    ejemploTribus: "Sample tribes, to be defined",
+  },
+  ahora: {
+    donde: "Where you can help",
+    explicacion: "Work fronts of the teams. Each number is the one on the seal on the map.",
+    sinLugar: "Not on the map",
+    masAdelante: "Later on",
+    ninguno: "In this stage there are no fronts with a place on the map.",
+    fase: (n: number) => `phase ${n}`,
+  },
+  frente: {
+    numero: (n: number) => `Front ${n}`,
+    equipo: "Team:",
+    necesidad: "Need:",
+    falta: "Missing:",
+    para: "For:",
+    lugarIlustrativo: "Illustrative place: the point does not mark a real work site.",
+    sinLugar: "This front has no place on the map.",
+    masAdelante: (n: number) => `Later on · phase ${n}`,
+    ejemplo: "Sample · to be defined",
+  },
+  plan: {
+    titulo: "Plan · zones",
+    explicacion: "The illustrative layout of Macrolote 7: the common land and the 12 neighborhood zones, without tribes.",
+    sinFases: "This plan does not yet say what is done in each phase (no data).",
+    fuentes: "Plan sources",
+    fuente: "Source:",
+    ilustrativa: "Illustrative layout",
+    permacultura: "Permaculture masterplan (draft)",
+    martin: "Martín's masterplan: not available yet",
+  },
+  vision: {
+    ejemploTribus: "Sample tribes, to be defined",
+    fase: {
+      0: "In phase 0 there are no tribes yet: there are teams.",
+      1: "In phase 1 the first communities are born, many from a team that already worked together.",
+      2: "In phase 2 the neighborhoods are inhabited.",
+    },
+  },
+  verEnMapa: "See on the map",
 };
 
 export const territorio = { es, en };

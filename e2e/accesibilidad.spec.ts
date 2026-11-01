@@ -6,6 +6,7 @@ import { conAdhesionAlManifiesto, conIdentidadVerificada } from "./ayudas";
 const rutas = [
   "/",
   "/tribus",
+  "/tribus?ver=tribus",
   "/compromisos",
   "/panel",
   "/pactos",
@@ -25,6 +26,8 @@ const rutas = [
   "/tribus/lighthouse",
   "/tribus/lighthouse/manifiesto",
   "/territorios/lighthouse",
+  "/territorios/lighthouse?vista=plan",
+  "/territorios/lighthouse?vista=vision",
   "/congreso",
   "/congreso/en",
   "/territorios/no-existe",
@@ -40,8 +43,8 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 36 rutas auditadas", () => {
-  expect(rutas).toHaveLength(36);
+test("hay 39 rutas auditadas", () => {
+  expect(rutas).toHaveLength(39);
 });
 
 async function graves(page: Page) {
@@ -309,6 +312,7 @@ test.describe("la plataforma en inglés", () => {
     "/",
     "/sumarte",
     "/tribus",
+    "/tribus?ver=tribus",
     "/tribus/valle",
     "/tribus/valle/manifiesto",
     "/tribus/lighthouse",
@@ -468,7 +472,13 @@ for (const ruta of rutas) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);
     if (ruta === "/territorios/lighthouse") {
-      // El mapa se arma en el navegador: auditar con los 12 sellos ya puestos.
+      // El mapa se arma en el navegador: auditar con los sellos de los frentes ya puestos.
+      await expect(page.locator('[aria-label^="Frente "][role="button"]')).toHaveCount(4);
+    }
+    if (ruta === "/territorios/lighthouse?vista=plan") {
+      await expect(page.locator('[aria-label="Terreno común del Lighthouse"][role="button"]')).toHaveCount(1);
+    }
+    if (ruta === "/territorios/lighthouse?vista=vision") {
       await expect(page.locator('[aria-label^="Barrio "][role="button"]')).toHaveCount(12);
     }
     const r = await new AxeBuilder({ page })

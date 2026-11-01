@@ -35,6 +35,8 @@ export const NOMBRES_BASE = {
   fogonConsultas: "lh-fogon-consultas",
   /** Registros de gobernanza con forma de attestation (validaciones y decisiones llevadas al consejo), solo de agregar. */
   gobernanza: "lh-gobernanza",
+  /** A qué círculos del común pidió sumarse la persona (`{ [circuloId]: "pedido" }`). Aparte de la membresía a propósito. */
+  equipos: "lh-equipos",
 } as const;
 
 /**
