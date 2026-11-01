@@ -15,9 +15,12 @@ describe("propuestas de ejemplo (design §8)", () => {
     expect(PROPUESTAS_DE_EJEMPLO.map((p) => p.decisionId).sort()).toEqual(["consejo-bomba", "cisterna-compartida", "huerta", "regalia", "siembra"].sort());
   });
 
-  it("cada decisionId existe y ninguna decisión del fideicomiso tiene propuesta", () => {
-    for (const p of PROPUESTAS_DE_EJEMPLO) expect(decision(p.decisionId), p.decisionId).toBeDefined();
-    for (const d of DECISIONES_BASE.filter((x) => x.ambito === "fideicomiso")) expect(propuestaDe(d.id), d.id).toBeNull();
+  it("cada decisionId existe, el holón de la propuesta es el de su decisión y las decisiones con destino no tienen propuesta", () => {
+    for (const p of PROPUESTAS_DE_EJEMPLO) {
+      expect(decision(p.decisionId), p.decisionId).toBeDefined();
+      expect(p.holonId, p.decisionId).toBe(decision(p.decisionId)!.holonId);
+    }
+    for (const d of DECISIONES_BASE.filter((x) => x.destino)) expect(propuestaDe(d.id), d.id).toBeNull();
   });
 
   it("propuestaDe devuelve null si no hay", () => {

@@ -111,7 +111,7 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "textos/fogon": {
     estado: "pendiente",
-    que: "Fogón: encabezado, enlace a Cómo decidimos, filtros por ámbito (Círculo, Tribu, común, Consejo, Fideicomiso), opciones de voto, motivos para no votar, llevar al consejo, acta de ejemplo y ayudas (\"Fideicomiso\" = Trust)",
+    que: "Fogón: portada Cómo decidimos, propuestas del holón (grupos y botón Solo las de…), opciones de voto, destino de lo que decide un órgano legal, motivos para no votar, llevar al consejo, acta de ejemplo y ayudas",
   },
   "textos/fogonConsultas": {
     estado: "pendiente",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { CLAVES } from "@/lib/demo/claves";
 import { leer as leerFogon } from "@/lib/fogon/estado";
 import { decisionesDeLaLente } from "@/lib/gobernanza/caminos";
@@ -28,14 +28,25 @@ const BOTON =
 const BOTON_SUAVE = `${BOTON} border-muted hover:bg-surface-2`;
 const BOTON_ACTIVO = `${BOTON} border-deep bg-deep text-on-deep`;
 
-type Props = { raiz: NodoH; lentes?: readonly Lente[] };
+/** Lo que recibe la ranura de al lado del dibujo (un objeto, para poder sumar campos sin romper la firma). */
+export type ContextoAdyacente = { foco: NodoH; raiz: NodoH; lente: string };
+
+type Props = {
+  raiz: NodoH;
+  lentes?: readonly Lente[];
+  /** Holón y lente con los que arranca (ya validados con `interpretarLugar`). */
+  focoInicial?: string;
+  lenteInicial?: string;
+  /** Sección que va en la columna derecha, antes del panel de la lente. Sin ella la página se ve como antes. */
+  adyacente?: (ctx: ContextoAdyacente) => ReactNode;
+};
 
 /** La holarquía: lentes, migas, dibujo con zoom, leyenda, panel de detalle y la estructura como lista. */
-export function HolarquiaCliente({ raiz, lentes = LENTES }: Props) {
+export function HolarquiaCliente({ raiz, lentes = LENTES, focoInicial, lenteInicial, adyacente }: Props) {
   const idioma = useIdioma();
   const tx = useTextos("gobernanza");
-  const [focoId, setFocoId] = useState(raiz.id);
-  const [lenteId, setLenteId] = useState(lentes[0].id);
+  const [focoId, setFocoId] = useState(focoInicial && buscarNodo(raiz, focoInicial) ? focoInicial : raiz.id);
+  const [lenteId, setLenteId] = useState(lentes.some((l) => l.id === lenteInicial) ? lenteInicial! : lentes[0].id);
   const [seleccion, setSeleccion] = useState<string | null>(null);
   const [decisionId, setDecisionId] = useState<string | null>(null);
   // Lo que el navegador ya sabe: se lee una sola vez, después de montar. No se escribe nada.
@@ -56,6 +67,22 @@ export function HolarquiaCliente({ raiz, lentes = LENTES }: Props) {
 
   const foco = buscarNodo(raiz, focoId) ?? raiz;
   const lente = lentes.find((l) => l.id === lenteId) ?? lentes[0];
+
+  // El lugar vive en la dirección, sin sumar entradas al historial por cada zoom. Mientras la persona no cambie nada no se
+  // reescribe (un `holon` inválido queda como llegó). Se conserva el resto de la dirección (por ejemplo `?lang=en`).
+  const cambioElLugar = useRef(false);
+  useEffect(() => {
+    if (!cambioElLugar.current) {
+      cambioElLugar.current = true;
+      return;
+    }
+    const url = new URL(window.location.href);
+    if (foco.id === raiz.id) url.searchParams.delete("holon");
+    else url.searchParams.set("holon", foco.id);
+    if (lente.id === lentes[0].id) url.searchParams.delete("lente");
+    else url.searchParams.set("lente", lente.id);
+    window.history.replaceState(window.history.state, "", url);
+  }, [foco.id, lente.id, raiz.id, lentes]);
   const decisiones = useMemo(() => decisionesDeLaLente(alConsejo), [alConsejo]);
   const decision = decisiones.find((d) => d.id === decisionId) ?? null;
 
@@ -160,12 +187,15 @@ export function HolarquiaCliente({ raiz, lentes = LENTES }: Props) {
           <Leyenda entradas={leyenda} />
         </div>
 
-        <section aria-labelledby="panel-titulo" aria-live="polite" className="min-w-0 rounded-xl border border-faint bg-surface p-4">
-          <h2 id="panel-titulo" className="mb-3 text-lg font-semibold">
-            {tx.panel.titulo}
-          </h2>
-          <Panel ctx={ctx} enfocar={enfocar} seleccionar={setSeleccion} decisiones={decisiones} elegirDecision={elegirDecision} />
-        </section>
+        <div className="grid min-w-0 gap-5">
+          {adyacente?.({ foco, raiz, lente: lente.id })}
+          <section aria-labelledby="panel-titulo" aria-live="polite" className="min-w-0 rounded-xl border border-faint bg-surface p-4">
+            <h2 id="panel-titulo" className="mb-3 text-lg font-semibold">
+              {tx.panel.titulo}
+            </h2>
+            <Panel ctx={ctx} enfocar={enfocar} seleccionar={setSeleccion} decisiones={decisiones} elegirDecision={elegirDecision} />
+          </section>
+        </div>
       </div>
 
       <Arbol raiz={raiz} enfocar={enfocar} elegirPersona={elegirPersona} />
