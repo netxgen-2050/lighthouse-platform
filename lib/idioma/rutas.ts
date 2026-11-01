@@ -17,8 +17,6 @@ export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   /^\/tribus\/[^/]+\/manifiesto$/,
   /^\/tribus\/[^/]+\/postular$/,
   /^\/territorios\/[^/]+$/,
-  // Cómo decidimos (fogon-gobernanza-fractal).
-  /^\/fogon\/gobernanza$/,
   // Pasaporte (con la verificación de identidad), Semillas y Pactos (idioma-pasaporte-semillas-pactos).
   /^\/pasaporte$/,
   /^\/semillas$/,
@@ -52,6 +50,8 @@ export const RUTAS_INTERNAS: readonly RegExp[] = [
   /^\/panel\/bitacora$/,
   // Redirige a /netx/simulador.
   /^\/fogon\/simulador$/,
+  // Redirige a /fogon (fogon-portada-holarquia).
+  /^\/fogon\/gobernanza$/,
 ];
 
 /**

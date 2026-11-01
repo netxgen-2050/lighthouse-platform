@@ -338,8 +338,8 @@ const H = "huerta";
 const huerta: Propuesta = {
   decisionId: H,
   recorrido: "simple",
-  holonId: null,
-  presenta: { personaId: "ema", desde: b("Círculo de Tierra", "Círculo de Tierra") },
+  holonId: "semilla-1",
+  presenta: { personaId: "ema", desde: b("Huerta intensiva · Semilla Viva", "Intensive garden · Semilla Viva") },
   problema: b(
     "No hay un plan para la huerta comunitaria del próximo año y cada quien siembra por su lado.",
     "There is no plan for next year's community garden and everyone sows on their own.",
