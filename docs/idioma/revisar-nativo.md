@@ -6,7 +6,7 @@ Todo el inglés lo escribió un agente y está pendiente hasta que un hablante n
 **Cómo marcar algo como revisado:** en `lib/idioma/revision-nativa.ts`, cambiá el `estado` de la fuente a `"revisado"`
 y sumá `revisadoPor` y `fecha` (AAAA-MM-DD). Después corré `pnpm idioma:pendientes`.
 
-Fuentes pendientes: 35
+Fuentes pendientes: 41
 
 | Fuente | Qué es | Textos en inglés |
 |---|---|---|
@@ -14,13 +14,17 @@ Fuentes pendientes: 35
 | `lib/compromisos/mercado.ts` | Ofertas de ejemplo del Mercado con su inglés, traducidas del español (las que publica la persona no se traducen) | — |
 | `lib/congreso/evento-ejemplo.ts` | Página del Congreso en inglés (/congreso/en): datos de ejemplo del evento | — |
 | `lib/economia/terminos.ts` | Término económico 🌱 de Semillas en inglés (borrador, sin revisión) | — |
+| `lib/equipos/frentes.ts` | Los 8 frentes de trabajo de ejemplo de los equipos (nombre, necesidad, quién falta y para cuándo) con su inglés, traducidos del español | — |
 | `lib/evaluacion/ejemplo.ts` | Motivos de ejemplo y resumen de ejemplo del feedback de la evaluación entre pares | — |
 | `lib/evaluacion/guia.ts` | Guía por nivel de estrellas (1 a 5) de la evaluación entre pares, rol y cultura | — |
 | `lib/fogon/consultas/ejemplo.ts` | Consultas de ejemplo del Fogón (título, descripción, opciones y nota del monto) con su inglés, traducidas del español | — |
 | `lib/fogon/datos.ts` | Decisiones de ejemplo del Fogón (título, lugar y regla; incluye las de círculo, tribu, común y consejo) con su inglés, traducidas del español | — |
+| `lib/fogon/propuestas/ejemplos.ts` | Cinco propuestas de ejemplo del Fogón (problema, propuesta, registros, guiones de Hifa y del Guardián) con su inglés | — |
+| `lib/fogon/propuestas/principios.ts` | Lista de ejemplo (borrador) de 16 principios del Lighthouse con su explicación en inglés | — |
 | `lib/gobernanza/datos.ts` | Nombres, propósitos y 'Decide sobre' de los círculos de ejemplo del común, de cada tribu y del círculo transversal, con su inglés | — |
 | `lib/legal/terminos.ts` | Catálogo de términos legales (⚖) con su explicación en inglés; borradores sin revisión legal | — |
 | `lib/manifiestos/datos.ts` | Manifiestos de ejemplo (el del Lighthouse y siete de tribus) traducidos del español: voz de la comunidad, a revisar también con quien los escriba de verdad | — |
+| `lib/manifiestos/lighthouse-vrn.ts` | Texto del manifiesto de Lighthouse VRN (propósito, 15 principios, 7 derechos de la tierra, compromisos, cómo se cambia) y nombre visible del común; traducidos del español, borrador a ratificar | — |
 | `lib/pactos/datos.ts` | Roles de ejemplo (nombre y descripción), pestañas y pasos de un pacto, con su inglés | — |
 | `lib/semillas/datos.ts` | Datos de ejemplo de la ronda de reconocimiento con su inglés (compañeros, criterios y reconocimiento recibido) | — |
 | `lib/sumarte/datos.ts` | Comparativa de planes de Sumarte (filas de ejemplo con su inglés) | — |
@@ -32,9 +36,11 @@ Fuentes pendientes: 35
 | `textos/compromisos` | Compromisos y Mercado: formulario, validaciones, tipos y medios de intercambio, filtros y avisos | 58 |
 | `textos/comunes` | Textos que se repiten en todas las zonas (cargando, cancelar, sin dato, notas de traducción…) | 15 |
 | `textos/configuracion` | Configuración: apariencia, avisos por tipo, Hifa, moneda, idioma y borrado de lo guardado en el navegador | 48 |
-| `textos/fogon` | Fogón: encabezado, enlace a Cómo decidimos, filtros por ámbito (Círculo, Tribu, común, Consejo, Fideicomiso), opciones de voto, motivos para no votar, llevar al consejo, acta de ejemplo y ayudas ("Fideicomiso" = Trust) | 57 |
+| `textos/fogon` | Fogón: encabezado, enlace a Cómo decidimos, filtros por ámbito (Círculo, Tribu, común, Consejo, Fideicomiso), opciones de voto, motivos para no votar, llevar al consejo, acta de ejemplo y ayudas ("Fideicomiso" = Trust) | 58 |
 | `textos/fogonConsultas` | Consultas del Fogón: lista, reparto de créditos con voto cuadrático, voto abierto o secreto, padrón, resultado por grupo, acta de ejemplo, gráfico de dona y errores de lectura | 119 |
+| `textos/fogonPropuestas` | Propuestas del Fogón: fases, discusión, concerns y grupos, acuse y quórum, ámbito del consejo, niveles, acciones, condiciones de la matriz, mecanismos y vista sin cuenta | 248 |
 | `textos/gobernanza` | Gobernanza fractal: página Cómo decidimos (estructura, círculos, consejo), marca de validación de la ficha de tribu y Quiénes te validaron en Mi recorrido | 120 |
+| `textos/manifiestoVrn` | Manifiesto de Lighthouse VRN: ficha del común, tarjeta de Tribus, lectura completa, principios propios de las tribus, aviso de adhesión y bloque de la Vista NetX | 49 |
 | `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 57 |
 | `textos/pactos` | Pactos: pactos de tiempo y de plata, cambios, historial, avisos y anuncios | 286 |
 | `textos/pasaporte` | Pasaporte: sellos y lo que abren, tarjeta y diálogo de verificación de identidad (KYC) con sus errores, sello de la billetera y datos de aporte | 149 |
@@ -43,5 +49,5 @@ Fuentes pendientes: 35
 | `textos/recorrido` | Mi recorrido: próximo paso (cinco pasos), pestañas, línea de tiempo y tabla de la Bitácora | 45 |
 | `textos/semillas` | Semillas: libro por comunidad, detalle, meta de sembrador/a activo/a y ronda de reconocimiento ("Semillas" no se traduce) | 124 |
 | `textos/sumarte` | Sumarte: planes, niveles del pase (Seed, Sprout, Root, a confirmar), inversores, avisos de nivel, formulario de pedido de contacto y panel Entrar como… | 144 |
-| `textos/territorio` | Territorio: vitrina, leyenda y controles del mapa, ficha lateral y marcadores | 60 |
-| `textos/tribus` | Tribus: listado, ficha, botones de membresía, interfaz del manifiesto y postulación de una comunidad (formulario, requisitos y errores) | 178 |
+| `textos/territorio` | Territorio: vitrina, leyenda y controles del mapa, ficha lateral y marcadores | 105 |
+| `textos/tribus` | Tribus: listado, ficha, botones de membresía, interfaz del manifiesto y postulación de una comunidad (formulario, requisitos y errores) | 208 |

@@ -1,11 +1,12 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
 import { listarTribus } from "@/lib/tribus/datos";
-import { conIdentidadVerificada } from "./ayudas";
+import { conAdhesionAlManifiesto, conIdentidadVerificada } from "./ayudas";
 
 const rutas = [
   "/",
   "/tribus",
+  "/tribus?ver=tribus",
   "/compromisos",
   "/panel",
   "/pactos",
@@ -22,7 +23,11 @@ const rutas = [
   "/mis-datos",
   "/panel/bitacora",
   ...listarTribus().map((t) => `/tribus/${t.id}`),
+  "/tribus/lighthouse",
+  "/tribus/lighthouse/manifiesto",
   "/territorios/lighthouse",
+  "/territorios/lighthouse?vista=plan",
+  "/territorios/lighthouse?vista=vision",
   "/congreso",
   "/congreso/en",
   "/territorios/no-existe",
@@ -38,8 +43,8 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 34 rutas auditadas", () => {
-  expect(rutas).toHaveLength(34);
+test("hay 39 rutas auditadas", () => {
+  expect(rutas).toHaveLength(39);
 });
 
 async function graves(page: Page) {
@@ -48,6 +53,14 @@ async function graves(page: Page) {
     .filter((v) => v.impact === "serious" || v.impact === "critical")
     .map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }));
 }
+
+test("axe sin violaciones serias o críticas: una propuesta del Fogón (la bomba) con la tabla de permisos abierta", async ({ page }) => {
+  await page.goto("/fogon/propuestas/consejo-bomba");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await page.getByText("Ver la tabla de permisos por nivel").click();
+  await expect(page.getByRole("table")).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
 
 test("axe sin violaciones serias o críticas: /pasaporte con sellos obtenidos, en trámite y modalidad cargada", async ({ page }) => {
   await page.addInitScript(() => {
@@ -299,8 +312,11 @@ test.describe("la plataforma en inglés", () => {
     "/",
     "/sumarte",
     "/tribus",
+    "/tribus?ver=tribus",
     "/tribus/valle",
     "/tribus/valle/manifiesto",
+    "/tribus/lighthouse",
+    "/tribus/lighthouse/manifiesto",
     "/tribus/grano/postular",
     "/territorios/lighthouse",
     "/configuracion",
@@ -390,6 +406,7 @@ test("axe sin violaciones serias o críticas: /fogon/consultas", async ({ page }
 });
 
 test("axe sin violaciones serias o críticas: /fogon/consultas/u1 abierta, con el reparto a medias y el bloqueo a la vista", async ({ page }) => {
+  await conAdhesionAlManifiesto(page);
   await page.goto("/fogon/consultas/u1");
   await expect(page.getByRole("region", { name: "Mi reparto" })).toBeVisible();
   const mas = page.getByRole("button", { name: "Sumar un voto a Regeneración ecológica" });
@@ -400,6 +417,7 @@ test("axe sin violaciones serias o críticas: /fogon/consultas/u1 abierta, con e
 });
 
 test("axe sin violaciones serias o críticas: /fogon/consultas/u4 cerrada, con resultado, tabla de repartos y acta", async ({ page }) => {
+  await conAdhesionAlManifiesto(page);
   await page.goto("/fogon/consultas/u4");
   await page.getByRole("button", { name: "Sumar un voto a Vivero de nativas" }).click();
   await page.getByRole("button", { name: "Guardar mi reparto" }).click();
@@ -454,7 +472,13 @@ for (const ruta of rutas) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);
     if (ruta === "/territorios/lighthouse") {
-      // El mapa se arma en el navegador: auditar con los 12 sellos ya puestos.
+      // El mapa se arma en el navegador: auditar con los sellos de los frentes ya puestos.
+      await expect(page.locator('[aria-label^="Frente "][role="button"]')).toHaveCount(4);
+    }
+    if (ruta === "/territorios/lighthouse?vista=plan") {
+      await expect(page.locator('[aria-label="Terreno común del Lighthouse"][role="button"]')).toHaveCount(1);
+    }
+    if (ruta === "/territorios/lighthouse?vista=vision") {
       await expect(page.locator('[aria-label^="Barrio "][role="button"]')).toHaveCount(12);
     }
     const r = await new AxeBuilder({ page })

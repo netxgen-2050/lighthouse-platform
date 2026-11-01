@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { TerminoLegal } from "@/components/termino-legal";
+import { propuestaDe } from "@/lib/fogon/propuestas/ejemplos";
 import { CAMINOS, caminoDe, caminoEnArbol } from "@/lib/gobernanza/caminos";
 import { buscarNodo } from "@/lib/gobernanza/holarquia";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
@@ -14,6 +16,7 @@ export function PanelDecisiones({ ctx, decisiones, elegirDecision }: PropsPanel)
   const idioma = useIdioma();
   const tx = useTextos("gobernanza");
   const t = tx.decisiones;
+  const propuestas = useTextos("fogonPropuestas");
   const elegida = ctx.decision;
   const camino = elegida ? caminoDe(elegida) : null;
   const ids = camino ? caminoEnArbol(ctx.raiz, camino.camino) : [];
@@ -77,6 +80,13 @@ export function PanelDecisiones({ ctx, decisiones, elegirDecision }: PropsPanel)
             <p className="text-sm">{t.sinCamino}</p>
           )}
           <ParametrosDecision decision={elegida} />
+          {propuestaDe(elegida.id) && (
+            <p>
+              <Link className={BOTON_LINEA} href={`/fogon/propuestas/${elegida.id}`}>
+                {propuestas.pagina.abrir}
+              </Link>
+            </p>
+          )}
         </section>
       )}
     </div>

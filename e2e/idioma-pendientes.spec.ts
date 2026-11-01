@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
 import { textosEnEspanol } from "./ayudas-idioma";
-import { sembrarRespuestaDeLaTribu } from "./ayudas";
+import { conAdhesionAlManifiesto, sembrarRespuestaDeLaTribu } from "./ayudas";
 
 // idioma-pendientes: consultas del Fogón y cambios a un pacto con la plataforma en inglés.
 
@@ -15,6 +15,10 @@ async function axeSinGraves(page: Page) {
 
 test.describe("Consultas del Fogón en inglés", () => {
   test.use({ locale: "en-US" });
+  // Repartir créditos es participar en la gobernanza: pide haber adherido al manifiesto de Lighthouse VRN.
+  test.beforeEach(async ({ page }) => {
+    await conAdhesionAlManifiesto(page);
+  });
 
   test("la lista sale en inglés, sin el aviso de página sin traducir, y pasa axe", async ({ page }) => {
     await page.goto("/fogon");
@@ -97,6 +101,9 @@ test.describe("Consultas del Fogón en inglés", () => {
 });
 
 test.describe("Consultas del Fogón en español", () => {
+  test.beforeEach(async ({ page }) => {
+    await conAdhesionAlManifiesto(page);
+  });
   test("nada cambia: título, estados y acción", async ({ page }) => {
     await page.goto("/fogon/consultas/u1");
     await expect(page.getByRole("heading", { level: 1, name: "¿Para qué optimiza el Lighthouse?" })).toBeVisible();

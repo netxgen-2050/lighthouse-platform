@@ -25,7 +25,7 @@ Reglas:
 ## Consecuencias
 - Ganamos: una sola regla con tests; el requisito de Gus no se pierde cuando el Fogón pase a la base.
 - Aceptamos: en el prototipo la adhesión es una casilla del navegador; cualquiera puede escribirla a mano y "pedido" ya cuenta (la aprobación del común sigue simulada, B6). Sin efecto sobre nadie, porque los votos tampoco salen del navegador.
-- Aceptamos: quien había adherido al "Pacto de convivencia" queda adherida al manifiesto nuevo sin haberlo leído (prototipo, mismo id `lighthouse`).
+- Decidido por Gus al implementar (29-oct-2026): **la adhesión guarda la versión del manifiesto** (`lh-adhesion-version`, junto a la membresía) y, si el manifiesto cambia de versión, hay que volver a adherir para seguir participando. La regla recibe esa versión como dato (`puedeParticiparEnGobernanza(membresias, versiones)`). Quien adhirió antes de que se guardara la versión (por ejemplo al "Pacto de convivencia") también vuelve a adherir. La adhesión vale desde que la persona adhiere: "pedido" cuenta, sin esperar la aceptación simulada del común. Esto reemplaza el "Aceptamos" anterior sobre quien quedaba adherida sin haber leído el manifiesto nuevo.
 - Revisar cuando: se apruebe `fogon-cuadratico-en-la-base` o `fogon-propuestas` pase a la base; o el manifiesto tenga su primera versión ratificada (ahí hace falta saber a qué versión adhirió cada quien).
 
 ## En palabras simples

@@ -207,7 +207,43 @@ export const TERMINOS = {
   adhesion: {
     titulo: "Adherir a un manifiesto",
     texto:
-      "Adherir es aceptar por escrito las reglas de convivencia de una comunidad. No te hace dueño de nada ni te obliga a pagar: te compromete a cuidar esos acuerdos, y la comunidad decide si te acepta. Podés retirarte siguiendo lo que diga el propio manifiesto. En el prototipo todo es simulado y queda solo en este navegador.",
+      "Adherir es aceptar por escrito los principios y las reglas de convivencia de una comunidad. No te hace dueño de nada ni te obliga a pagar: te compromete a cuidar esos acuerdos, y en una tribu la comunidad decide si te acepta. En Lighthouse VRN, adherir al manifiesto es lo que te permite participar en las decisiones; la adhesión vale desde que adherís, y si el manifiesto cambia de versión tenés que volver a adherir. Podés retirarte siguiendo lo que diga el propio manifiesto. En el prototipo todo es simulado y queda solo en este navegador.",
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  manifiestovrn: {
+    titulo: "Manifiesto de Lighthouse VRN",
+    texto:
+      "Es el texto donde Lighthouse VRN, la meta-tribu de la que forman parte todas las tribus, dice qué cuida y cómo decide: propósito, principios, derechos de la tierra y compromisos. Hoy es un borrador escrito por un agente: el común todavía no lo ratificó, y solo vale como ejemplo. No es un contrato ni un reglamento legal.",
+    en: {
+      titulo: "Lighthouse VRN manifesto",
+      texto:
+        "This is the text where Lighthouse VRN, the meta-tribe all tribes belong to, says what it looks after and how it decides: purpose, principles, rights of the land and commitments. Today it is a draft written by an agent: the commons has not ratified it yet, and it only counts as an example. It is not a contract or a legal rulebook.",
+    },
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  derechostierra: {
+    titulo: "Derechos de la tierra",
+    texto:
+      "Son lo que el común se compromete a respetar con la tierra, el agua y los seres que viven en ella. Se inspiran en la Declaración Universal de los Derechos de la Madre Tierra, pero no son un texto jurídico y no te dan derechos ante un juez. Es un borrador para revisar antes de cualquier uso real.",
+    en: {
+      titulo: "Rights of the land",
+      texto:
+        "These are what the commons commits to respect regarding the land, the water and the beings that live in it. They draw on the Universal Declaration of the Rights of Mother Earth, but they are not a legal text and they do not give you rights before a judge. It is a draft to be reviewed before any real use.",
+    },
+    borrador: true,
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  adhesiongobernanza: {
+    titulo: "Adherir para participar",
+    texto:
+      "Para votar, repartir créditos o llevar una decisión al consejo hace falta haber adherido al manifiesto de Lighthouse VRN: es el compromiso de cuidar la vida en cada decisión. Sin adherir podés mirar todo, pero no participar. Si el manifiesto cambia de versión, volvés a adherir. En el prototipo la adhesión queda en este navegador y es un borrador a revisar antes de cualquier uso real.",
+    en: {
+      titulo: "Sign on to take part",
+      texto:
+        "To vote, distribute credits or take a decision to the council you must have signed on to the Lighthouse VRN manifesto: it is the commitment to look after life in every decision. Without signing on you can look at everything, but not take part. If the manifesto changes version, you sign on again. In the prototype the sign-on stays in this browser and it is a draft to be reviewed before any real use.",
+    },
     borrador: true,
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
@@ -465,6 +501,117 @@ export const TERMINOS = {
       titulo: "Semillas attestation",
       texto:
         "A record NetX asserts about your Semillas. It is never edited: if there is a mistake it is revoked and issued again. Today it is only an example that lives in your browser; personal data is never stored on a blockchain.",
+    },
+    borrador: true,
+  },
+  // ---- Propuestas del Fogón (fogon-propuestas). Textos nuevos, no vienen del mock-up: borrador a revisar antes de cualquier uso real.
+  concern: {
+    titulo: "Concern",
+    texto:
+      "Una preocupación fundada sobre una propuesta: algo que, si se aprueba así, podría dañar al grupo, a la tierra o al propósito. No es un voto en contra: es una pista para mejorar la propuesta. Hoy es una regla de prueba del prototipo.",
+    en: {
+      titulo: "Concern",
+      texto:
+        "A well-founded worry about a proposal: something that, if approved as it is, could harm the group, the land or the purpose. It is not a vote against: it is a clue to improve the proposal. Today it is a trial rule of the prototype.",
+    },
+    borrador: true,
+  },
+  bloqueo: {
+    titulo: "Bloqueo",
+    texto:
+      "Un concern tan grave que frena la decisión. Hay que dar una razón y citar un principio del Lighthouse. Si el grupo del ámbito no lo considera legítimo, queda como un concern más. Regla de prueba del prototipo.",
+    en: {
+      titulo: "Block",
+      texto:
+        "A concern so serious that it stops the decision. A reason is required and a Lighthouse principle has to be cited. If the group concerned does not consider it legitimate, it stays as one more concern. Trial rule of the prototype.",
+    },
+    borrador: true,
+  },
+  aunlado: {
+    titulo: "Hacerse a un lado",
+    texto:
+      "Decir que vos no lo harías así, pero no vas a frenar al grupo. Queda registrado con tu razón y la decisión puede seguir. Quien presenta la propuesta no puede hacerse a un lado de la suya. Regla de prueba del prototipo.",
+    en: {
+      titulo: "Standing aside",
+      texto:
+        "Saying that you would not do it this way, but you will not hold the group back. It is recorded with your reason and the decision can go on. Whoever presents the proposal cannot stand aside from their own. Trial rule of the prototype.",
+    },
+    borrador: true,
+  },
+  afectada: {
+    titulo: "Persona afectada",
+    texto:
+      "Quien no es del ámbito pero vive las consecuencias de la decisión. Se declara con un motivo de una línea y el grupo del ámbito puede objetarlo. Hoy es una declaración simulada que vive en tu navegador.",
+    en: {
+      titulo: "Affected person",
+      texto:
+        "Someone who is not in the circle of the decision but lives its consequences. It is declared with a one-line reason and the group concerned can object. Today it is a simulated statement that lives in your browser.",
+    },
+    borrador: true,
+  },
+  acuseConformidad: {
+    titulo: "Acuse de conformidad",
+    texto:
+      "Firmar \"Entiendo la propuesta y no tengo ningún concern\". Cuenta para el quórum de participación y vale para una versión: si la propuesta cambia, hay que volver a firmar. No es un voto ni una firma legal, y por sí solo no cierra ni adopta nada. Hoy es simulado.",
+    en: {
+      titulo: "Acknowledgment of agreement",
+      texto:
+        "Signing \"I understand the proposal and I have no concern\". It counts toward the participation quorum and holds for one version: if the proposal changes, it has to be signed again. It is neither a vote nor a legal signature, and by itself it neither closes nor adopts anything. Today it is simulated.",
+    },
+    borrador: true,
+  },
+  quorum: {
+    titulo: "Quórum de participación",
+    texto:
+      "La cantidad mínima de personas del ámbito (o afectadas) que tienen que haber participado para cerrar por consenso: la mitad del ámbito, y nunca menos de 3 (o todas, si son menos de 3). Participar es escribir en la discusión o firmar el acuse. Abrir la propuesta no cuenta. Regla de prueba del prototipo.",
+    en: {
+      titulo: "Participation quorum",
+      texto:
+        "The minimum number of people in the circle (or affected) who must have taken part to close by consensus: half of the circle, and never fewer than 3 (or all of them, if there are fewer than 3). Taking part means writing in the discussion or signing the acknowledgment. Opening the proposal does not count. Trial rule of the prototype.",
+    },
+    borrador: true,
+  },
+  urgencia: {
+    titulo: "Urgencia",
+    texto:
+      "Una propuesta se puede marcar urgente con tres datos (qué se pierde si se espera, la fecha límite real y por qué la medida es reversible) y dos respaldos de personas del ámbito. Un pedido de plata urgente tiene tope y solo vale para algo que se pueda revender o reutilizar. Nunca vale para tierra, reglas ni el manifiesto. Regla de prueba del prototipo.",
+    en: {
+      titulo: "Urgency",
+      texto:
+        "A proposal can be marked urgent with three facts (what is lost by waiting, the real deadline and why the measure is reversible) and two backers from the circle. An urgent money request has a cap and only holds for something that can be resold or reused. It never holds for land, rules or the manifesto. Trial rule of the prototype.",
+    },
+    borrador: true,
+  },
+  medidaProvisoria: {
+    titulo: "Medida provisoria",
+    texto:
+      "Lo que se aplica por urgencia cuando no hubo consenso pero lo apoya la mayoría. Se revisa antes de una fecha y los concerns abiertos obligan a revisarla. Mientras se revisa, sigue aplicándose. Regla de prueba del prototipo.",
+    en: {
+      titulo: "Provisional measure",
+      texto:
+        "What is applied for urgency when there was no consensus but the majority supports it. It is reviewed before a date and open concerns require reviewing it. While it is under review, it keeps applying. Trial rule of the prototype.",
+    },
+    borrador: true,
+  },
+  principios: {
+    titulo: "Principios del Lighthouse",
+    texto:
+      "La lista de principios que se citan para bloquear una propuesta. Es un punto de partida: el común tiene que ratificarla, y va a vivir en el manifiesto de la meta-tribu Lighthouse. Hoy es una lista de ejemplo.",
+    en: {
+      titulo: "Lighthouse principles",
+      texto:
+        "The list of principles cited to block a proposal. It is a starting point: the common has to ratify it, and it will live in the Lighthouse meta-tribe manifesto. Today it is a sample list.",
+    },
+    borrador: true,
+  },
+  guardianIA: {
+    titulo: "Guardián (IA, simulado)",
+    texto:
+      "Una IA simulada que sugiere posibles impactos desde los principios de la vida y la tierra. Nunca decide ni declara nada ilegítimo: si ninguna persona respalda su sugerencia como concern, la propuesta sigue su curso. No es el Guardián del Lighthouse, la asociación que custodia el Fondo Común.",
+    en: {
+      titulo: "Guardian (AI, simulated)",
+      texto:
+        "A simulated AI that suggests possible impacts from the principles of life and land. It never decides nor declares anything illegitimate: if no person backs its suggestion as a concern, the proposal goes on. It is not the Lighthouse Guardian, the association that holds the Common Fund.",
     },
     borrador: true,
   },

@@ -3,7 +3,7 @@ import { expect, test } from "./fixtura";
 import { listarTribus, rutaProponerComunidad } from "@/lib/tribus/datos";
 
 test("listado: 12 tarjetas en orden con estado escrito", async ({ page }) => {
-  await page.goto("/tribus");
+  await page.goto("/tribus?ver=tribus");
   const links = page.locator("main ul > li > a[href^='/tribus/']:not([aria-label])");
   await expect(links).toHaveCount(12);
   await expect(links.first()).toContainText("Barrio 1");
@@ -16,7 +16,7 @@ test("listado: 12 tarjetas en orden con estado escrito", async ({ page }) => {
 });
 
 test("listado: tres secciones con 3, 5 y 4 tarjetas", async ({ page }) => {
-  await page.goto("/tribus");
+  await page.goto("/tribus?ver=tribus");
   const secciones = [
     ["Tribus activas", "Ya tienen un compromiso con el Lighthouse y están construyendo su barrio.", 3],
     ["En formación", "Se están organizando para postularse a un barrio del Lighthouse.", 5],
@@ -30,7 +30,7 @@ test("listado: tres secciones con 3, 5 y 4 tarjetas", async ({ page }) => {
 });
 
 test("listado: tarjetas distintas por estado", async ({ page }) => {
-  await page.goto("/tribus");
+  await page.goto("/tribus?ver=tribus");
   const tarjeta = (href: string) => page.locator(`main ul > li:has(a[href='${href}'])`).first();
   const monte = tarjeta("/tribus/monte");
   await expect(monte).toContainText("Etapa: Armando su propuesta");
@@ -206,6 +206,8 @@ test.describe("⚖ como tooltip, híbrido (toque en pantalla que también tiene 
     await page.goto("/tribus/valle");
     expect(await page.evaluate(() => window.matchMedia("(hover: hover)").matches)).toBe(true);
     const boton = page.getByRole("button", { name: RITUAL });
+    // Con la marca "Ejemplo · a definir" en el encabezado el ⚖ puede quedar fuera de la pantalla: se lo trae a la vista.
+    await boton.evaluate((el) => el.scrollIntoView({ block: "center" }));
     const caja = (await boton.boundingBox())!;
     const x = caja.x + caja.width / 2;
     const y = caja.y + caja.height / 2;
@@ -274,7 +276,7 @@ test.describe("⚖ como tooltip, en celular", () => {
 });
 
 test("el listado sigue sin plata ni avales en pantalla", async ({ page }) => {
-  await page.goto("/tribus");
+  await page.goto("/tribus?ver=tribus");
   const texto = await page.locator("body").innerText();
   expect(texto).not.toMatch(/USD/);
   expect(texto.toLowerCase()).not.toContain("avales");

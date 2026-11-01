@@ -1,6 +1,7 @@
 // La holarquía: el común, sus círculos, el consejo y las tribus con sus círculos y roles, como un solo árbol puro.
 // No depende del navegador: el servidor y el cliente dibujan exactamente lo mismo (design §1).
 import { textoEn, type BilingueConOriginal, type Idioma } from "@/lib/idioma/tipos";
+import { nombreDelComun } from "@/lib/manifiestos/lighthouse-vrn";
 import { listarTribus } from "@/lib/tribus/datos";
 import type { EstadoTribu } from "@/lib/tribus/tipos";
 import {
@@ -179,7 +180,7 @@ export function construirHolarquia(idioma: Idioma, registros: readonly Registro[
   return {
     tipo: "comun",
     id: COMUN_ID,
-    nombre: "Lighthouse",
+    nombre: nombreDelComun(idioma),
     proposito: "gobierno",
     decide: DECIDE_COMUN.map((x) => tx(x, idioma)),
     ejemplo: true,

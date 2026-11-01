@@ -279,3 +279,43 @@ h3 {
   border-color: var(--color-rose);
   border-radius: 9999px;
 }
+
+/* Vistas del territorio: sellos de frentes y muestras de la leyenda. Lleno = vigente hoy, punteado = viene después. */
+.mapa-sello-frente {
+  width: 32px;
+  height: 32px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-color: var(--color-deep);
+  border-style: solid;
+}
+
+.mapa-sello-frente-despues {
+  border-style: dashed;
+}
+
+.mapa-sello-elegido {
+  background: var(--color-deep);
+  color: var(--color-on-deep);
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+.mapa-leyenda-frente {
+  background: var(--color-surface);
+  border-color: var(--color-deep);
+  border-radius: 9999px;
+}
+
+.mapa-leyenda-frente-despues {
+  background: var(--color-surface);
+  border-color: var(--color-deep);
+  border-style: dashed;
+  border-radius: 9999px;
+}
+
+.mapa-leyenda-zona {
+  background: var(--color-surface);
+  border-color: var(--color-faint);
+  border-style: dashed;
+}

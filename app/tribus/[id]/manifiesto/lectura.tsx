@@ -10,8 +10,15 @@ import { registrarEvento } from "@/lib/actividad/almacen";
 import { EVENTOS } from "@/lib/actividad/eventos";
 import { TextoBilingue } from "@/components/texto-bilingue";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
-import { textoEn } from "@/lib/idioma/tipos";
+import { textoEn, type Idioma } from "@/lib/idioma/tipos";
 import type { ManifiestoBilingue } from "@/lib/manifiestos/datos";
+import {
+  GRUPOS_PRINCIPIO,
+  principioVrnPorId,
+  principiosDelGrupo,
+  type ManifiestoVrn,
+} from "@/lib/manifiestos/lighthouse-vrn";
+import type { PrincipioDeTribu } from "@/lib/manifiestos/principios-tribu";
 import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
 import { useMembresia } from "@/lib/membresia/usar-membresia";
 
@@ -22,9 +29,132 @@ const SUAVE = `${BOTON} border border-muted hover:bg-surface-2`;
 
 const HUELGA = 8; // píxeles de tolerancia para dar por llegado al final
 
+/** Los principios por grupo y los derechos de la tierra, dentro del texto que hay que leer hasta el final. */
+function SeccionesVrn({ vrn: m, idioma }: { vrn: ManifiestoVrn; idioma: Idioma }) {
+  const tx = useTextos("manifiestoVrn");
+  return (
+    <>
+      <h2 className="text-lg font-semibold">{tx.lectura.principios}</h2>
+      {GRUPOS_PRINCIPIO.map((g) => (
+        <section key={g} aria-labelledby={`lectura-grupo-${g}`} className="grid gap-2">
+          <h3 id={`lectura-grupo-${g}`} className="font-semibold">
+            {tx.grupos[g]}
+          </h3>
+          <ul className="grid gap-2">
+            {principiosDelGrupo(g).map((p) => (
+              <li key={p.id} className="grid gap-0.5">
+                <span className="font-medium">
+                  <TextoBilingue valor={p.nombre} sinNota />
+                </span>
+                <span className="text-sm">
+                  <TextoBilingue valor={p.practica} sinNota />
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+      <h2 className="text-lg font-semibold">
+        {tx.lectura.derechos}
+        <TerminoLegal clave="derechostierra" idioma={idioma} />
+      </h2>
+      <p className="text-sm">{tx.ficha.derechosIntro}</p>
+      <ul className="grid gap-2">
+        {m.derechos.map((d) => (
+          <li key={d.id} className="grid gap-0.5">
+            <span className="font-medium">
+              <TextoBilingue valor={d.nombre} sinNota />
+            </span>
+            <span className="text-sm">
+              <TextoBilingue valor={d.practica} sinNota />
+            </span>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+/** Cómo se cambia el manifiesto, la regla de las tribus y la frase de cierre. Sin ningún botón para cambiarlo. */
+function ComoSeCambiaVrn({ vrn: m }: { vrn: ManifiestoVrn }) {
+  const tx = useTextos("manifiestoVrn");
+  return (
+    <>
+      <h2 className="text-lg font-semibold">{tx.lectura.comoSeCambia}</h2>
+      <ol className="grid list-decimal gap-1 pl-5">
+        {m.comoSeCambia.map((x) => (
+          <li key={x.es}>
+            <TextoBilingue valor={x} sinNota />
+          </li>
+        ))}
+      </ol>
+      <p className="text-sm text-muted">{tx.lectura.sinBoton}</p>
+      <p>
+        <Link className="underline" href="/fogon">
+          {tx.lectura.irAlFogon}
+        </Link>
+      </p>
+      <h2 className="text-lg font-semibold">{tx.lectura.reglaTribus}</h2>
+      <p>
+        <TextoBilingue valor={m.reglaTribus} sinNota />
+      </p>
+      <h2 className="text-lg font-semibold">{tx.lectura.maquinas}</h2>
+      <p>
+        <TextoBilingue valor={m.maquinasSugieren} sinNota />
+      </p>
+    </>
+  );
+}
+
+/** Lo que una tribu suma a los principios de Lighthouse VRN, o que todavía no sumó nada. */
+function PrincipiosPropios({ propios, idioma }: { propios: PrincipioDeTribu[]; idioma: Idioma }) {
+  const tx = useTextos("manifiestoVrn").tribu;
+  return (
+    <section aria-labelledby="principios-propios" className="grid gap-2">
+      <h2 id="principios-propios" className="text-lg font-semibold">
+        {tx.suma}
+      </h2>
+      {propios.length === 0 ? (
+        <p>{tx.sinPropios}</p>
+      ) : (
+        <ul className="grid gap-2">
+          {propios.map((p) => (
+            <li key={p.id} className="grid gap-0.5">
+              <span className="font-medium">
+                <TextoBilingue valor={p.nombre} sinNota />
+              </span>
+              <span>
+                <TextoBilingue valor={p.practica} sinNota />
+              </span>
+              {p.profundiza.length > 0 && (
+                <span className="text-sm text-muted">
+                  {tx.profundiza}{" "}
+                  {p.profundiza
+                    .flatMap((id) => {
+                      const x = principioVrnPorId(id);
+                      return x ? [textoEn(x.nombre, idioma)] : [];
+                    })
+                    .join(", ")}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="text-sm text-muted">{tx.reglaCorta}</p>
+      <p>
+        <Link className="underline" href="/tribus/lighthouse/manifiesto">
+          {tx.leerComun}
+        </Link>
+      </p>
+    </section>
+  );
+}
+
 export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: ManifiestoBilingue; pactos: boolean }) {
   const idioma = useIdioma();
   const tx = useTextos("tribus");
+  const vrn = useTextos("manifiestoVrn");
   const t = tx.manifiesto;
   const tm = tx.membresia;
   const comunes = useTextos("comunes");
@@ -32,7 +162,7 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
   const conSesion = estadoSesion === "ok";
   // Adherir es de Miembro en adelante; Explorador y sin cuenta ven "Sumate para adherir".
   const puedeAdherir = conSesion && puedeCapacidad(nivel, "adherir");
-  const { estado, cargado, falloAlmacen, adherir, aceptar } = useMembresia(m.id, conSesion);
+  const { estado, cargado, falloAlmacen, adherir, aceptar, desactualizada } = useMembresia(m.id, conSesion);
   const esLighthouse = m.id === COMUNIDAD_LIGHTHOUSE;
   const texto = useRef<HTMLDivElement>(null);
   const aviso = useRef<HTMLParagraphElement>(null);
@@ -66,7 +196,8 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
   const textoPedido = tm.pedidoLlego(esLighthouse, m.comunidad);
   const textoMiembro = tm.yaSosParte(esLighthouse, m.comunidad);
   // El estado guardado se muestra como texto común; la zona de avisos solo se llena por una acción de esta sesión.
-  const textoGuardado = !cargado || mensaje ? "" : estado === "pedido" ? textoPedido : estado === "miembro" ? textoMiembro : "";
+  const textoGuardado =
+    !cargado || mensaje || desactualizada ? "" : estado === "pedido" ? textoPedido : estado === "miembro" ? textoMiembro : "";
 
   const puede = llegoAlFinal && leyo && cuidar;
   const faltan: string[] = [];
@@ -85,7 +216,8 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
       <p className="mt-1 text-sm text-muted">
         {t.versionDel(textoEn(m.version, idioma))}{" "}
         <span className="rounded-full border border-faint px-2 py-0.5 text-xs">{tx.ejemplo}</span>
-        <TerminoLegal clave="adhesion" />
+        {m.vrn && <span className="ml-1 rounded-full border border-faint px-2 py-0.5 text-xs">{vrn.borrador}</span>}
+        <TerminoLegal clave={m.vrn ? "manifiestovrn" : "adhesion"} idioma={idioma} />
       </p>
       {traducido && <p className="mt-1 text-sm font-medium text-muted">{comunes.traducidoDelOriginal}</p>}
 
@@ -97,21 +229,32 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
         tabIndex={0}
         className="mt-4 grid max-h-[28rem] gap-4 overflow-y-auto rounded-xl border border-faint bg-surface p-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
       >
+        {m.vrn && <h2 className="text-lg font-semibold">{vrn.ficha.proposito}</h2>}
         <p>
           <TextoBilingue valor={m.introduccion} sinNota />
         </p>
+        {m.vrn && <SeccionesVrn vrn={m.vrn} idioma={idioma} />}
+        {m.vrn && <h2 className="text-lg font-semibold">{vrn.lectura.compromisos}</h2>}
         <ol className="grid gap-3">
           {m.compromisos.map((c, i) => (
             <li key={c.titulo.es} className="grid gap-1">
-              <h2 className="font-semibold">
-                {i + 1}. <TextoBilingue valor={c.titulo} sinNota />
-              </h2>
+              {m.vrn ? (
+                <h3 className="font-semibold">
+                  {i + 1}. <TextoBilingue valor={c.titulo} sinNota />
+                </h3>
+              ) : (
+                <h2 className="font-semibold">
+                  {i + 1}. <TextoBilingue valor={c.titulo} sinNota />
+                </h2>
+              )}
               <p>
                 <TextoBilingue valor={c.texto} sinNota />
               </p>
             </li>
           ))}
         </ol>
+        {m.vrn && <ComoSeCambiaVrn vrn={m.vrn} />}
+        {!m.vrn && <PrincipiosPropios propios={m.principiosPropios ?? []} idioma={idioma} />}
         <p className="text-sm text-muted">{t.fin}</p>
       </div>
 
@@ -134,7 +277,7 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
             <EntrarPara texto={tm.sumateAdherir} nivelMinimo="miembro" />
           </div>
         )
-      ) : !cargado ? null : estado === "no-miembro" ? (
+      ) : !cargado ? null : estado === "no-miembro" || desactualizada ? (
         <form
           className="mt-4 grid gap-3 rounded-xl border border-faint bg-surface-2 p-4"
           onSubmit={(e) => {
@@ -148,6 +291,7 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
           }}
         >
           <h2 className="text-lg font-semibold">{t.antesDeAdherir}</h2>
+          {desactualizada && <p className="text-sm font-medium">{vrn.lectura.cambioVersion}</p>}
           <p className="text-sm">{t.sumarteA(esLighthouse, m.comunidad)}</p>
           <label className="flex items-start gap-2">
             <input type="checkbox" className="mt-1 size-4" checked={leyo} onChange={(e) => setLeyo(e.target.checked)} />
@@ -161,14 +305,14 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
             <button type="submit" className={PRIMARIO} disabled={!puede} aria-describedby="adherir-ayuda">
               {t.adherir}
             </button>
-            <TerminoLegal clave="adhesion" />
+            <TerminoLegal clave="adhesion" idioma={idioma} />
           </span>
           <p id="adherir-ayuda" className="text-sm text-muted">
             {puede ? t.ayudaPuede : t.ayudaFalta(faltan.join(t.y))}
           </p>
         </form>
       ) : estado === "pedido" ? (
-        <div className="mt-4 grid gap-3 rounded-xl border border-faint bg-surface-2 p-4">
+        <div className="mt-4 flex flex-wrap gap-3 rounded-xl border border-faint bg-surface-2 p-4">
           <button
             type="button"
             className={PRIMARIO}
@@ -181,6 +325,9 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
           >
             {tm.simularAcepta}
           </button>
+          <Link className={SUAVE} href={`/tribus/${m.id}`}>
+            {t.volver}
+          </Link>
         </div>
       ) : (
         <div className="mt-4 grid gap-3 rounded-xl border border-faint bg-surface-2 p-4">
@@ -190,7 +337,7 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
                 {tm.proponerPacto}
               </Link>
             )}
-            <Link className={SUAVE} href={esLighthouse ? "/territorios/lighthouse" : `/tribus/${m.id}`}>
+            <Link className={SUAVE} href={`/tribus/${m.id}`}>
               {t.volver}
             </Link>
           </div>

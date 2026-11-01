@@ -18,15 +18,21 @@ export const INICIAL: EstadoFogon = { votos: {}, alConsejo: [] };
  * `pase` es si tiene el Pase Fundador (cualquier nivel): es lo que habilita el Fideicomiso.
  * `lidera` es la tribu que lidera (dato de Sumarte): es lo que habilita llevar una decisión de esa tribu al consejo.
  */
-export type Condicion = { residencia: Residencia | undefined; pase: boolean; lidera?: string | null };
+export type Condicion = {
+  residencia: Residencia | undefined;
+  pase: boolean;
+  /** Adhirió al manifiesto de Lighthouse VRN (la regla vive en `lib/gobernanza/participar.ts`). Obligatorio: si falta el dato, no se asume que adhirió. */
+  adhirio: boolean;
+  lidera?: string | null;
+};
 
-export const SIN_CONDICION: Condicion = { residencia: undefined, pase: false };
+export const SIN_CONDICION: Condicion = { residencia: undefined, pase: false, adhirio: false };
 
 /**
  * Por qué una persona no puede votar en una decisión. Es una clave: el texto sale del diccionario del Fogón
  * (`textos("fogon", idioma).motivos`), así que se lee igual en los dos idiomas.
  */
-export type MotivoSinVoto = "pase" | "residentes" | "sinDato";
+export type MotivoSinVoto = "manifiesto" | "pase" | "residentes" | "sinDato";
 
 /** Las decisiones que se ven: las de siempre más las copias de las que se llevaron al consejo. */
 export function decisionesVisibles(e: EstadoFogon): readonly Decision[] {
@@ -47,6 +53,9 @@ const OPCIONES: readonly string[] = ["favor", "contra", "abstencion"];
 
 /** null si puede votar; si no, la clave del motivo que se muestra. Sin dato de residencia no se asume nada. */
 export function motivoSinVoto(d: Pick<Decision, "requisito">, condicion: Condicion): MotivoSinVoto | null {
+  // La adhesión al manifiesto va primero de todo, también antes de las decisiones sin requisito (ADR-023): sin ella no
+  // se participa en ninguna, y es el único motivo que se muestra.
+  if (!condicion.adhirio) return "manifiesto";
   if (d.requisito === "ninguno") return null;
   if (d.requisito === "pase") return condicion.pase ? null : "pase";
   if (condicion.residencia === "argentina") return null;
@@ -75,6 +84,7 @@ export function votar(e: EstadoFogon, id: string, opcion: Opcion, condicion: Con
 /** ¿Quien mira puede llevar esta decisión al consejo? Solo la líder de la tribu de origen, una vez, y si ya se aprobó en la tribu. */
 export function puedeLlevarAlConsejo(e: EstadoFogon, d: Decision, condicion: Condicion): boolean {
   return (
+    condicion.adhirio &&
     d.ambito === "tribu" &&
     d.pideAlComun === true &&
     d.tribuId !== undefined &&

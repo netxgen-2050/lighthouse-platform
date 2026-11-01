@@ -22,6 +22,8 @@ export const NOMBRES_BASE = {
   origen: "lh-origen",
   bitacora: "lh-bitacora",
   membresia: "lh-membresia",
+  /** A qué versión del manifiesto de Lighthouse VRN adhirió la persona (si cambia de versión, vuelve a adherir). */
+  adhesionVersion: "lh-adhesion-version",
   postulaciones: "lh-postulaciones",
   actividad: "lh-actividad",
   kyc: "lh-kyc",
@@ -33,6 +35,8 @@ export const NOMBRES_BASE = {
   fogonConsultas: "lh-fogon-consultas",
   /** Registros de gobernanza con forma de attestation (validaciones y decisiones llevadas al consejo), solo de agregar. */
   gobernanza: "lh-gobernanza",
+  /** A qué círculos del común pidió sumarse la persona (`{ [circuloId]: "pedido" }`). Aparte de la membresía a propósito. */
+  equipos: "lh-equipos",
 } as const;
 
 /**

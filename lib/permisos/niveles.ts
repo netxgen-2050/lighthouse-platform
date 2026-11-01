@@ -1,3 +1,5 @@
+// Estas son las puertas de la PLATAFORMA (quién entra a qué pantalla). No son los permisos dentro de una decisión del Fogón
+// (`lib/fogon/propuestas/permisos.ts`: niveles de implicación, simulados): son cosas distintas y no se mezclan (ADR-022).
 import { marco } from "@/lib/idioma/textos/marco";
 import { sumarte } from "@/lib/idioma/textos/sumarte";
 import type { Idioma } from "@/lib/idioma/tipos";

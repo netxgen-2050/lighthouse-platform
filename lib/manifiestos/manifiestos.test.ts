@@ -17,8 +17,15 @@ describe("manifiestos de ejemplo", () => {
     }
   });
 
-  it("el del Lighthouse es el Pacto de convivencia", () => {
-    expect(buscarManifiesto("lighthouse")?.titulo).toBe("Pacto de convivencia del Lighthouse");
+  it("el del Lighthouse es el Manifiesto de Lighthouse VRN, con su manifiesto completo", () => {
+    expect(buscarManifiesto("lighthouse")?.titulo).toBe("Manifiesto de Lighthouse VRN");
+    expect(buscarManifiesto("lighthouse", "en")?.titulo).toBe("Lighthouse VRN Manifesto");
+    expect(buscarManifiestoBilingue("lighthouse")?.vrn?.principios.length).toBeGreaterThanOrEqual(10);
+    expect(buscarManifiestoBilingue("semilla")?.vrn).toBeUndefined();
+  });
+
+  it("ya no queda el Pacto de convivencia", () => {
+    expect(JSON.stringify(buscarManifiestoBilingue("lighthouse"))).not.toMatch(/Pacto de convivencia|Coexistence Pact/);
   });
 
   it("cada uno trae título, introducción, 5 a 7 compromisos completos, versión y marca de ejemplo", () => {

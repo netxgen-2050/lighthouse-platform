@@ -23,6 +23,8 @@ export type Circulo = {
   /** Razón de ser y "Decide sobre" (ejemplo). Si faltan, el panel dice "sin dato". */
   proposito?: Proposito;
   decide?: BilingueConOriginal[];
+  /** Solo los equipos transversales del común: su propósito en una línea, para la ficha de Lighthouse VRN. */
+  paraTodoElLighthouse?: BilingueConOriginal;
 };
 
 /** Un lugar del consejo. `representante: null` significa "Sin representante elegido": nunca se inventa un nombre. */

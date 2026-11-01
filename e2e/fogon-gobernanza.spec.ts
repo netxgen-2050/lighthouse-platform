@@ -1,6 +1,9 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
 import { ignorarEnSinRed } from "./ayudas";
+import { nombreDelComun } from "../lib/manifiestos/lighthouse-vrn";
+
+const COMUN = nombreDelComun("es");
 
 const dibujo = (page: Page) => page.getByRole("img", { name: /Dibujo de la estructura/ });
 const migas = (page: Page) => page.getByRole("navigation", { name: "Dónde estás en la estructura" });
@@ -38,7 +41,7 @@ test.describe("Estructura de gobernanza visible", () => {
     await expect(dibujo(page)).toBeVisible();
     await abrirLista(page);
     const l = arbol(page);
-    for (const n of ["Agua del Lighthouse", "Tokenomics y Semillas", "Consejo de tribus", "Comunicación del común"]) {
+    for (const n of ["Agua", "Tokenomics y Semillas", "Consejo de tribus", "Comunicación del común"]) {
       await expect(l.getByRole("button", { name: n, exact: true })).toBeVisible();
     }
     await expect(l.getByText(/^Estado:/)).toHaveCount(12);
@@ -82,7 +85,7 @@ test.describe("Estructura de gobernanza visible", () => {
     await expect(panel(page)).toContainText("Participan: Valle Solar y Taller Común");
     await expect(panel(page)).toContainText("Zona del territorio: sin dato");
     await expect(panel(page)).not.toContainText(/lote/i);
-    await expect(migas(page)).toContainText("Lighthouse");
+    await expect(migas(page)).toContainText(COMUN);
   });
 });
 
@@ -106,7 +109,7 @@ test.describe("Gráfico accesible", () => {
     await expect(boton).toBeFocused();
     await page.keyboard.press("Enter");
     await foco(page, "valle");
-    await expect(migas(page).getByRole("listitem")).toHaveText(["Lighthouse›", "Valle Solar"]);
+    await expect(migas(page).getByRole("listitem")).toHaveText([`${COMUN}›`, "Valle Solar"]);
     await expect(panel(page)).toContainText("Valle Solar");
     await expect(panel(page)).toContainText("Tipo: Tribu");
   });
@@ -174,18 +177,18 @@ test.describe("Zoom por niveles", () => {
     await irDesdeLista(page, "Valle Solar");
     await panel(page).getByRole("button", { name: "Cuidado de la tierra" }).click();
     await foco(page, "valle-0");
-    await expect(migas(page).getByRole("listitem")).toHaveText(["Lighthouse›", "Valle Solar›", "Cuidado de la tierra"]);
+    await expect(migas(page).getByRole("listitem")).toHaveText([`${COMUN}›`, "Valle Solar›", "Cuidado de la tierra"]);
     await expect(migas(page).locator('[aria-current="location"]')).toHaveText("Cuidado de la tierra");
-    await migas(page).getByRole("button", { name: "Lighthouse" }).click();
+    await migas(page).getByRole("button", { name: COMUN }).click();
     await foco(page, "lighthouse");
-    await expect(migas(page).locator('[aria-current="location"]')).toHaveText("Lighthouse");
+    await expect(migas(page).locator('[aria-current="location"]')).toHaveText(COMUN);
   });
 });
 
 test.describe("Panel de detalle", () => {
   test("un círculo del común dice su tipo, propósito, de qué decide y sus roles", async ({ page }) => {
     await page.goto("/fogon/gobernanza");
-    await irDesdeLista(page, "Agua del Lighthouse");
+    await irDesdeLista(page, "Agua");
     await foco(page, "comun-agua");
     const p = panel(page);
     await expect(p).toContainText("Tipo: Círculo del común");
@@ -230,16 +233,16 @@ test.describe("Roles en cada círculo", () => {
   test("la lista muestra a cada persona debajo de su círculo con su rol en texto", async ({ page }) => {
     await page.goto("/fogon/gobernanza");
     await abrirLista(page);
-    const agua = arbol(page).getByRole("listitem").filter({ has: page.getByRole("button", { name: "Agua del Lighthouse", exact: true }) }).last();
+    const agua = arbol(page).getByRole("listitem").filter({ has: page.getByRole("button", { name: "Agua", exact: true }) }).last();
     await expect(agua.getByRole("button", { name: "Ana (ejemplo) · Miembro" })).toBeVisible();
     await expect(agua.getByRole("button", { name: "Bruno (ejemplo) · Facilita" })).toBeVisible();
   });
 });
 
 test.describe("Roles visibles en el dibujo", () => {
-  test("al entrar a Agua del Lighthouse en escritorio se ve cada nombre y, debajo, su rol", async ({ page }) => {
+  test("al entrar a Agua en escritorio se ve cada nombre y, debajo, su rol", async ({ page }) => {
     await page.goto("/fogon/gobernanza");
-    await irDesdeLista(page, "Agua del Lighthouse");
+    await irDesdeLista(page, "Agua");
     await foco(page, "comun-agua");
     const ana = dibujo(page).locator("g", { has: page.locator("text", { hasText: /^Ana$/ }) }).last();
     await expect(ana.locator("text").nth(0)).toHaveText("Ana");
@@ -265,7 +268,7 @@ test.describe("Todos los roles de una persona", () => {
     const r = rolesDePersona(page);
     await expect(r.getByRole("heading", { name: "Todos los roles de Ana (ejemplo)" })).toBeVisible();
     await expect(r.getByRole("button")).toHaveText([
-      "Miembro en Agua del Lighthouse (el común)",
+      "Miembro en Agua (el común)",
       "Facilita en Huerta intensiva (Semilla Viva)",
       "Dejar de ver a esta persona",
     ]);
@@ -273,28 +276,28 @@ test.describe("Todos los roles de una persona", () => {
 
   test("Bruno tiene tres roles en tres lugares", async ({ page }) => {
     await page.goto("/fogon/gobernanza");
-    await irDesdeLista(page, "Agua del Lighthouse");
+    await irDesdeLista(page, "Agua");
     await panel(page).getByRole("button", { name: /Bruno \(ejemplo\)/ }).click();
     await expect(rolesDePersona(page).getByRole("button")).toHaveText([
-      "Facilita en Agua del Lighthouse (el común)",
+      "Facilita en Agua (el común)",
       "Enlace hacia arriba en Toma y cisterna (Agua Clara)",
       "Memoria en Energía solar (Valle Solar)",
       "Dejar de ver a esta persona",
     ]);
   });
 
-  test("solo con teclado: de la lista a Ana y de su rol a Agua del Lighthouse, con las migas", async ({ page }) => {
+  test("solo con teclado: de la lista a Ana y de su rol a Agua, con las migas", async ({ page }) => {
     await page.goto("/fogon/gobernanza");
     await abrirLista(page);
     const enLista = arbol(page).getByRole("button", { name: "Ana (ejemplo) · Miembro" });
     await enLista.focus();
     await page.keyboard.press("Enter");
     await expect(rolesDePersona(page)).toBeVisible();
-    const rol = rolesDePersona(page).getByRole("button", { name: "Miembro en Agua del Lighthouse (el común)" });
+    const rol = rolesDePersona(page).getByRole("button", { name: "Miembro en Agua (el común)" });
     await rol.focus();
     await page.keyboard.press("Enter");
     await foco(page, "comun-agua");
-    await expect(migas(page).getByRole("listitem")).toHaveText(["Lighthouse›", "Agua del Lighthouse"]);
+    await expect(migas(page).getByRole("listitem")).toHaveText([`${COMUN}›`, "Agua"]);
     await expect(rolesDePersona(page).getByRole("heading", { name: "Todos los roles de Ana (ejemplo)" })).toBeVisible();
   });
 
@@ -311,7 +314,7 @@ test.describe("Todos los roles de una persona", () => {
 
   test("tocar a una persona en el dibujo la elige sin cambiar de nivel", async ({ page }) => {
     await page.goto("/fogon/gobernanza");
-    await irDesdeLista(page, "Agua del Lighthouse");
+    await irDesdeLista(page, "Agua");
     await foco(page, "comun-agua");
     await dibujo(page).locator('circle[data-nodo="comun-agua-rol-1"]').dispatchEvent("click");
     await expect(rolesDePersona(page)).toBeVisible();
@@ -358,17 +361,17 @@ test.describe("Lente Decisiones que suben", () => {
       "1. Cuidado de la tierra ›",
       "2. Valle Solar ›",
       "3. Consejo de tribus ›",
-      "4. Lighthouse",
+      `4. ${COMUN}`,
     ]);
     await expect(dibujo(page).locator("g[aria-hidden] text").filter({ hasText: /^[1-4]$/ })).toHaveText(["1", "2", "3", "4"]);
     await expect(panel(page)).toContainText("Sube.");
   });
 
-  test("la derivación termina en Agua del Lighthouse y el panel explica que el consejo la derivó", async ({ page }) => {
+  test("la derivación termina en Agua y el panel explica que el consejo la derivó", async ({ page }) => {
     await page.goto("/fogon/gobernanza");
     await decisiones(page).click();
     await panel(page).getByRole("button", { name: "Cisterna compartida entre Agua Clara y Valle Solar" }).click();
-    await expect(page.getByTestId("camino-texto").getByRole("listitem").last()).toHaveText("4. Agua del Lighthouse");
+    await expect(page.getByTestId("camino-texto").getByRole("listitem").last()).toHaveText("4. Agua");
     await expect(panel(page)).toContainText("El consejo la derivó a un círculo del común");
   });
 
@@ -406,17 +409,17 @@ test.describe("Lente Decisiones que suben", () => {
 test.describe("Lente Desde mí", () => {
   const desdeMi = (page: Page) => page.getByRole("button", { name: "Desde mí" });
 
-  test("varios niveles: Permacultura y suelo (del común) y Cuidado de la tierra (de Valle Solar), con su rol y (ejemplo)", async ({ page }) => {
+  test("varios niveles: Permacultura y regeneración (del común) y Cuidado de la tierra (de Valle Solar), con su rol y (ejemplo)", async ({ page }) => {
     await page.goto("/fogon/gobernanza");
     await desdeMi(page).click();
     const lugares = panel(page).getByRole("listitem");
-    const perma = lugares.filter({ hasText: "Permacultura y suelo" }).first();
+    const perma = lugares.filter({ hasText: "Permacultura y regeneración" }).first();
     await expect(perma).toContainText("(ejemplo)");
     await expect(perma).toContainText("Tu rol: Miembro");
     const tierra = lugares.filter({ hasText: "Cuidado de la tierra" }).first();
     await expect(tierra).toContainText("(ejemplo)");
     await expect(tierra).toContainText("Tu rol: Enlace hacia arriba");
-    await expect(tierra).toContainText("Lighthouse › Valle Solar › Cuidado de la tierra");
+    await expect(tierra).toContainText(`${COMUN} › Valle Solar › Cuidado de la tierra`);
     await expect(tierra).toContainText("Decidís sobre: Calendario de siembra, Manejo del suelo");
     await tierra.getByRole("button", { name: "Ir a este círculo" }).click();
     await foco(page, "valle-0");
@@ -521,7 +524,7 @@ test.describe("Cómo decidimos en inglés", () => {
     await expect(page.getByRole("region", { name: "Legend" })).toBeVisible();
     await page.getByText("See the whole structure as a list").click();
     await expect(page.getByText("Taking part: Valle Solar and Taller Común")).toBeVisible();
-    await page.locator("details").getByRole("button", { name: "Lighthouse water", exact: true }).click();
+    await page.locator("details").getByRole("button", { name: "Water", exact: true }).click();
     await expect(page.getByRole("region", { name: "Detail" })).toContainText("Purpose: Water");
     await expect(page.getByRole("region", { name: "Detail" })).toContainText("Circle of the commons");
   });

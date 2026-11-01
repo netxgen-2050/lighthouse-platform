@@ -1,5 +1,11 @@
 import { expect, test, type Page } from "./fixtura";
 import { textosEnEspanol } from "./ayudas-idioma";
+import { conAdhesionAlManifiesto } from "./ayudas";
+
+// Votar es participar en la gobernanza: pide haber adherido al manifiesto de Lighthouse VRN.
+test.beforeEach(async ({ page }) => {
+  await conAdhesionAlManifiesto(page);
+});
 
 const decision = (page: Page, titulo: string | RegExp) =>
   page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: titulo }) });

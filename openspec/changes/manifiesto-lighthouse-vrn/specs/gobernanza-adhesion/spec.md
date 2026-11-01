@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Adherir para participar en la gobernanza
-Participating in any aspect of governance SHALL require having adhered to the manifesto of Lighthouse VRN. Participating means: voting on a decision of the Fogón, taking a decision to the council, distributing or saving credits in a consultation, and, when they exist, commenting, asking, raising, joining or backing concerns, blocking, standing aside or declaring oneself affected in a proposal. The rule MUST live in a single function over the browser membership; a person has adhered when the membership of `lighthouse` is "pedido" or "miembro". Every governance screen, including those added by later changes, MUST use that function instead of its own check.
+Participating in any aspect of governance SHALL require having adhered to the manifesto of Lighthouse VRN. Participating means: voting on a decision of the Fogón, taking a decision to the council, distributing or saving credits in a consultation, and, when they exist, commenting, asking, raising, joining or backing concerns, blocking, standing aside or declaring oneself affected in a proposal. The rule MUST live in a single function over the browser membership; a person has adhered when the membership of `lighthouse` is "pedido" or "miembro" (adhesion counts from the moment of adhering) and the version of the manifesto they adhered to is the current one: when the manifesto changes version, the person MUST adhere again to keep taking part. Every governance screen, including those added by later changes, MUST use that function instead of its own check.
 
 #### Scenario: Una sola regla
 - **WHEN** se buscan en el código las comprobaciones de adhesión de las pantallas del Fogón y de las consultas
@@ -10,6 +10,10 @@ Participating in any aspect of governance SHALL require having adhered to the ma
 #### Scenario: Adhesión registrada
 - **WHEN** la membresía de `lighthouse` es "pedido" o "miembro"
 - **THEN** la regla permite participar
+
+#### Scenario: Cambio de versión del manifiesto
+- **WHEN** la persona adhirió a una versión anterior del manifiesto
+- **THEN** la regla no permite participar hasta que vuelva a adherir a la versión vigente
 
 #### Scenario: Adhesión a una tribu sola
 - **WHEN** la persona es miembro de Valle Solar pero no adhirió al manifiesto de Lighthouse VRN

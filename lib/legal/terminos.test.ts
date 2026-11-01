@@ -12,9 +12,20 @@ describe("catálogo legal", () => {
   it("las claves del catálogo", () => {
     expect(Object.keys(TERMINOS).sort()).toEqual(
       [
+        "acuseConformidad",
         "adhesion",
+        "adhesiongobernanza",
         "adherente",
+        "afectada",
         "agencia",
+        "aunlado",
+        "bloqueo",
+        "concern",
+        "guardianIA",
+        "medidaProvisoria",
+        "principios",
+        "quorum",
+        "urgencia",
         "avisosimulador",
         "bitacora",
         "art32",
@@ -36,6 +47,7 @@ describe("catálogo legal", () => {
         "creditos",
         "datos",
         "dobleenlace",
+        "derechostierra",
         "dominio",
         "encuentroeducativo",
         "espejo",
@@ -49,6 +61,7 @@ describe("catálogo legal", () => {
         "kyc",
         "licencia",
         "loteo",
+        "manifiestovrn",
         "membresia",
         "notasverdes",
         "obra",
@@ -101,6 +114,17 @@ describe("catálogo legal", () => {
       expect(TERMINOS[clave].texto, clave).toMatch(/todavía|no existe/);
     }
   });
+  it("los términos del manifiesto de Lighthouse VRN son borrador, con inglés; derechostierra dice que no es texto jurídico", () => {
+    for (const clave of ["manifiestovrn", "derechostierra", "adhesiongobernanza"] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+      expect(terminoEn(clave)?.texto.trim(), clave).toBeTruthy();
+    }
+    expect(TERMINOS.derechostierra.texto).toContain("Declaración Universal de los Derechos de la Madre Tierra");
+    expect(TERMINOS.derechostierra.texto).toMatch(/no son un texto jurídico/);
+    expect(TERMINOS.manifiestovrn.texto).toMatch(/borrador/);
+    expect(TERMINOS.adhesion.texto).toContain("Lighthouse VRN");
+  });
+
   it("pactoDosPartes es borrador, tiene inglés y aclara que no es un contrato de trabajo ni de inversión", () => {
     expect(esBorrador("pactoDosPartes")).toBe(true);
     expect(terminoEn("pactoDosPartes")?.titulo).toBe("Pact accepted by both parties");

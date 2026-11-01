@@ -1,5 +1,8 @@
+import Link from "next/link";
 import { Rangos } from "@/components/rangos";
 import { TerminoLegal } from "@/components/termino-legal";
+import { textos } from "@/lib/idioma/textos";
+import { GRUPOS_PRINCIPIO, MANIFIESTO_VRN, principiosDelGrupo, principiosLighthouseVrn } from "@/lib/manifiestos/lighthouse-vrn";
 import {
   FUTUROS_SIMULADOS,
   MONTE_CARLO,
@@ -236,7 +239,44 @@ export function SeccionJuegos() {
       <p className="mt-3 max-w-3xl">
         <strong>Para quien quiere vender.</strong> {PROPUESTA_PARA_QUIEN_VENDE}
       </p>
+      <BloqueManifiesto />
     </section>
+  );
+}
+
+/** "Las decisiones, con la vida en el centro": el propósito y los cinco grupos de Lighthouse VRN, leídos de la misma fuente que la ficha. */
+function BloqueManifiesto() {
+  // Esta página está solo en español, como el resto de la Vista NetX.
+  const t = textos("manifiestoVrn", "es");
+  const total = principiosLighthouseVrn().length;
+  return (
+    <div aria-labelledby="m-manifiesto" role="group" className={`mt-6 grid gap-2 ${CARTA}`}>
+      <h3 id="m-manifiesto" className="text-lg font-semibold">
+        {t.netx.titulo}
+      </h3>
+      <p className="max-w-3xl">{t.netx.intro}</p>
+      <p className="max-w-3xl font-medium">
+        {MANIFIESTO_VRN.proposito.es}
+      </p>
+      <p className="text-sm font-medium">{t.netx.grupos}</p>
+      <ul className="grid gap-1 text-sm sm:grid-cols-2">
+        {GRUPOS_PRINCIPIO.map((g) => (
+          <li key={g}>
+            {t.grupos[g]}: {t.netx.cantidad(principiosDelGrupo(g).length)}
+          </li>
+        ))}
+      </ul>
+      <p className="text-sm">{t.netx.total(total)}</p>
+      <p className="flex flex-wrap items-center gap-2 text-sm">
+        <span className="rounded-full border border-faint px-2 py-0.5 text-xs">{t.borrador}</span>
+        <TerminoLegal clave="manifiestovrn" />
+      </p>
+      <p>
+        <Link className="underline" href="/tribus/lighthouse">
+          {t.netx.ver}
+        </Link>
+      </p>
+    </div>
   );
 }
 
