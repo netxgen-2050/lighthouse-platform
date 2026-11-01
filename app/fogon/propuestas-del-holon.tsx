@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { decisionesDelHolon } from "@/lib/fogon/estado";
 import { buscarNodo, nombreDe, type NodoH } from "@/lib/gobernanza/holarquia";
 import { useTextos } from "@/lib/idioma/cliente";
+import { nombreDelLugar } from "@/lib/idioma/textos/fogon";
 import { LENTES } from "./gobernanza/lentes";
 import { TarjetaDecision } from "./tarjeta-decision";
 import type { FogonUsado } from "./usar-fogon";
@@ -121,8 +122,8 @@ export function PropuestasDelHolon({ foco, raiz, lente: lenteActual, fogon }: Pr
                     lente={lente}
                     lugar={
                       <>
-                        {t.enCirculo("", null)}
-                        <span translate="no">{x.tribu ? `${x.circulo} · ${x.tribu}` : x.circulo}</span>
+                        {t.enPrefijo}
+                        <span translate="no">{nombreDelLugar(x.circulo, x.tribu)}</span>
                       </>
                     }
                   />

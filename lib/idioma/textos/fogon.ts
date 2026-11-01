@@ -7,6 +7,11 @@ import type { Textos } from "../tipos";
 
 const G = GLOSARIO;
 
+/** El círculo (y la tribu, si hay) tal como se ve: son nombres propios, no se traducen. */
+export function nombreDelLugar(circulo: string, tribu: string | null) {
+  return tribu ? `${circulo} · ${tribu}` : circulo;
+}
+
 const es = {
   pagina: {
     titulo: "Cómo decidimos · Fogón",
@@ -40,7 +45,9 @@ const es = {
   sinEnGrupo: "No hay decisiones de ejemplo en este grupo.",
   soloLasDe: (nombre: string) => `Solo las de ${nombre}`,
   seDecideEn: (nombre: string) => `Se decide en ${nombre}`,
-  enCirculo: (circulo: string, tribu: string | null) => (tribu ? `en ${circulo} · ${tribu}` : `en ${circulo}`),
+  /** El lugar en partes: el prefijo traducible y el nombre propio (que va con translate="no"). */
+  enPrefijo: "en ",
+  enCirculo: (circulo: string, tribu: string | null) => `en ${nombreDelLugar(circulo, tribu)}`,
   /** El ámbito de una decisión (se nombra en la página de la propuesta; ya no es un filtro). */
   ambitos: { circulo: "Círculo", tribu: "Tribu", comun: "Lighthouse (el común)", consejo: "Consejo" },
   opciones: { favor: "A favor", contra: "En contra", abstencion: "Abstención" },
@@ -127,7 +134,8 @@ const en: Textos<typeof es> = {
   sinEnGrupo: "There are no sample decisions in this group.",
   soloLasDe: (nombre: string) => `Only those of ${nombre}`,
   seDecideEn: (nombre: string) => `Decided in ${nombre}`,
-  enCirculo: (circulo: string, tribu: string | null) => (tribu ? `in ${circulo} · ${tribu}` : `in ${circulo}`),
+  enPrefijo: "in ",
+  enCirculo: (circulo: string, tribu: string | null) => `in ${nombreDelLugar(circulo, tribu)}`,
   ambitos: { circulo: "Circle", tribu: "Tribe", comun: "Lighthouse (the commons)", consejo: "Council" },
   opciones: { favor: "In favor", contra: "Against", abstencion: "Abstention" },
   chipTribu: "Tribe",

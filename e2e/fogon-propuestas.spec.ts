@@ -20,7 +20,7 @@ test.describe("abrir la propuesta", () => {
     await page.getByRole("button", { name: /Decisiones que suben/ }).click();
     const tarjeta = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Pedido de Valle Solar al Fondo Común para la bomba solar" }) });
     await tarjeta.getByRole("link", { name: "Abrir la propuesta" }).click();
-    await expect(page).toHaveURL(/\/fogon\/propuestas\/consejo-bomba\?desde=lighthouse&lente=[a-z-]+$/);
+    await expect(page).toHaveURL(/\/fogon\/propuestas\/consejo-bomba\?desde=lighthouse&lente=decisiones$/);
   });
 
   test("una decisión sin propuesta no tiene el botón", async ({ page }) => {
