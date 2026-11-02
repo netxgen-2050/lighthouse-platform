@@ -24,11 +24,14 @@ El GeoJSON del boceto trae rasgos `tipo`: `sector` (1), `produccion` (1), `uso-c
   ```ts
   export type Lote = { id: string; numero: number; nombre: string; clase?: string; superficieM2?: number; anillo: Anillo };
   export function listarLotes(): Lote[];     // por número
-  export function sectorNorte(): ZonaLoteo;  // con areaHa
+  export function sectorNorte(): ZonaLoteo | null;  // con areaHa, si la hay
   export function zonasDelLoteo(): ZonaLoteo[]; // uso común, producción, camino
   export function fuenteDelLoteo(): FuentePlanId; // metadata.fuenteId; si falta, "ilustrativa"
   ```
 Las pantallas nunca escriben "25" ni "1.344": cantidad y rango salen de `listarLotes()`.
+
+<!-- arquitecto: el KMZ puede no traer sector ni zonas, y esta es la vista por defecto de una página pública -->
+**Si el plano no trae algo, la página no se cae.** Sin sector no se dibuja su contorno, y el resumen dice "sin dato" en las hectáreas; tampoco se calcula un rango con lotes sin superficie, y si ninguno la tiene, el rango dice "sin dato". Al entrar a la vista, `fitBounds` usa solo los lotes.
 
 ### 2. La fuente reutiliza `FuentePlanId`, y `FUENTES_PLAN` no cambia
 `FUENTES_PLAN` ya prevé `martin`. El archivo de datos dice su fuente en `metadata.fuenteId`, con el mismo tipo. Con `ilustrativa`, la vista Lotes dice "Boceto propio sobre el polígono del 7A: lo reemplaza el plano de Martín"; con `martin`, dice "Plano de Martín (KMZ, `<fecha>`)". En los dos casos sigue diciendo "Loteo provisorio, ilustrativo".
@@ -119,15 +122,26 @@ Un `Placemark` que no entra en la tabla **se informa y hace fallar la importaci�
 | Sin superposiciones entre lotes | Error, con los dos ids |
 | Ids únicos y con formato `lote-<número>` | Error |
 | Al menos un lote | Error |
+| <!-- arquitecto --> Dos polígonos que dan el mismo id de zona (por ejemplo, dos caminos) | Error, con los dos nombres |
+| <!-- arquitecto --> Falta el sector o alguna zona | Aviso: la pantalla dice "sin dato" |
 | Ids del archivo anterior que ya no están | Aviso (afectan a `ESTADOS_EJEMPLO` y a las reservas guardadas) |
 | Lote en `ESTADOS_EJEMPLO` que ya no existe | Aviso |
 | Franja del río | Aviso fijo: "Franja del río: sin verificar (sin dato)" |
 
 **Superposición con tolerancia.** Los lotes vecinos comparten lados, y redondear a 6 decimales mueve un vértice unos 10 cm. Dos lotes se superponen si un vértice de uno queda dentro del otro a más de 0,5 m de su borde, o si dos lados se cruzan propiamente lejos de sus extremos. `geometria.ts` suma una función pura y testeada para esto. El boceto completo tiene que pasar como test.
 
-**Salida.** El mismo formato del boceto: `metadata.fuenteId: "martin"`, `metadata.archivo`, `metadata.importado`, y `superficie_m2` calculada con la misma proyección de `boceto_loteo_norte.py` (`MX = 111320 × 0,7759`, `MY = 110540`), para que un lote de 32 × 42 m dé 1.344 m². `ilustrativo: true` se mantiene: lo saca una decisión, no una importación. Con errores, **no escribe nada** y sale con código 1. `--comprobar` valida sin escribir.
+**Salida.** El mismo formato del boceto: `metadata.fuenteId: "martin"`, `metadata.archivo`, `metadata.importado`, y `superficie_m2` calculada con la misma proyección de `boceto_loteo_norte.py` (`MX = 111320 × 0,7759`, `MY = 110540`), para que un lote de 32 × 42 m dé 1.344 m²; <!-- arquitecto: sin esto, el resumen perdería las hectáreas al importar --> `area_ha` del sector, con la misma proyección. `ilustrativo: true` se mantiene: lo saca una decisión, no una importación. Con errores, **no escribe nada** y sale con código 1. `--comprobar` valida sin escribir.
 
 *Alternativa descartada:* un script Python como `kmz_to_geojson.py`. Validaría con otra geometría que la que usan los tests, y la noche no tiene `shapely`.
+
+<!-- arquitecto: con tests atados a 25 lotes, el PR del KMZ no podría ser "solo el archivo", que es lo que pide la spec -->
+### 9. Los tests no atan los datos al boceto
+Reemplazar el archivo no puede romper tests que no tienen que ver. Hay dos clases:
+
+- **Del archivo vigente, siempre:** ids únicos, `validarLoteo` sin errores, y que un id de `ESTADOS_EJEMPLO` sin lote se ignore (es el aviso de §8, no un error).
+- **Del boceto, solo mientras esté:** 25 lotes, 1.344 y 2.200 m², 102 ha, `lote-13` vendido. En Vitest van en `describe.runIf(fuenteDelLoteo() === "ilustrativa")`; en Playwright, con `test.skip(fuenteDelLoteo() !== "ilustrativa")`.
+
+El e2e del resumen calcula el texto esperado con `listarLotes()`, como `e2e/estado-administrativo.spec.ts` importa su lista de rutas. Probar el comando de punta a punta también queda dentro de Vitest (`scripts/importar-loteo.test.ts`, como `scripts/datos-previews.test.ts`), en una carpeta de `os.tmpdir()`: `zip` no está entre los comandos que la noche puede correr, y así el comando nunca escribe sobre el archivo real.
 
 ## Risks / Trade-offs
 
@@ -137,6 +151,7 @@ Un `Placemark` que no entra en la tabla **se informa y hace fallar la importaci�
 - [Un lote no se puede tocar con el dedo en el mapa] → La lista es equivalente y es el camino en el celular.
 - [El boceto puede caer en zona inundable o sobre la franja del río] → No tenemos ese dato: el texto lo dice y el importador avisa. Ver pregunta abierta.
 - [Se ve "Reservado" o "Vendido" sin que nadie haya hecho nada] → La leyenda dice "Estados de ejemplo".
+- <!-- arquitecto: comprobado con una muestra de puntos de los lotes contra los polígonos del mapa --> [Los lotes caen dentro del Barrio 1 de la vista Visión, que lo muestra con su tribu] → Se acepta: el aviso "distribuidos al azar, solo de forma ilustrativa" ya está en esa vista, y Lotes no dibuja barrios. La muestra no toca Soluna ni los macrolotes vecinos de BioPueblo, y sí cae dentro del 7A; el importador solo controla el 7A. Con el plano real, hay que mirar el Barrio 1 (pregunta para Gus).
 
 ## Migration Plan
 

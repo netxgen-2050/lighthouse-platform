@@ -42,6 +42,9 @@ export type EstadoAdministrativo = {
 ```
 `accionesDeLote(p)` devuelve `["consultar", "reservar", "comprar"]` si `ventaSimulada`, y `["consultar"]` si no. **No lee `aprobacionMunicipal`.** El test viejo "con aprobación sigue siendo solo consultar" sigue pasando para Soluna.
 
+<!-- arquitecto: los comentarios del archivo son lo primero que lee el agente que venga después; hoy dicen lo contrario -->
+Se reescriben también el comentario de cabecera ("Regla C1: … no ofrece compra ni reserva sin aprobación") y el de `accionesDeLote`, y se quita la línea `void …aprobacionMunicipal`: toda vista con lotes muestra el estado, y lo que se ofrece depende de `ventaSimulada`, nunca de la aprobación.
+
 *Alternativa descartada:* poner `aprobacionMunicipal: true` en Norte para reutilizar la condición. Sería un dato falso, y la bitácora guardaría "aprobada".
 
 *Alternativa descartada:* un `if (proyecto === "lighthouse-norte")` dentro de la función. Esconde la regla en vez de dejarla en el dato.
@@ -95,7 +98,7 @@ Sección nueva, justo antes de "Fase de prototipo interno":
 ## Fase 1: venta de lotes privados (desde el 2-nov-2026, decisión de Franz)
 Decidió Franz (CEO) en la llamada del 2-nov; Gus lo aceptó. **No se vuelve a discutir** en specs, revisiones ni PRs: el riesgo legal y comercial queda a cargo de Franz (confirmación escrita pedida, sin respuesta todavía). Detalle en `docs/decisiones/ADR-028-fase-1-venta-de-lotes-simulada.md`.
 - **Se puede, solo simulado:** en `lighthouse-norte`, ofrecer lotes, mostrar precio, reservar, pago simulado y boleto de ejemplo. Si la nota 19, el backlog T7, doc 30 o una spec vieja dicen lo contrario, manda ADR-028.
-- **No cambia:** ningún cobro real, pasarela ni KYC real; la aprobación municipal nunca se muestra como otorgada (es un supuesto de trabajo, fecha "sin dato"); `accionesDeLote("soluna")` devuelve solo `consultar`; ningún pase, ticket ni token da prioridad sobre un lote.
+- **No cambia:** ningún cobro real, pasarela ni KYC real; la aprobación municipal nunca se muestra como otorgada (es un supuesto de trabajo, fecha "sin dato"); `accionesDeLote("soluna")` devuelve solo `consultar`; ningún pase, ticket ni token da prioridad sobre un lote; ninguna página se deja indexar.
 - **Foco solo en VRN:** nada de Lighthouse SMA ni del deck de inversores (USD 111M, TIR, recupero). No usar la nota de las "300 razones" (`NS_permacultura` 17).
 - **Los números de lotes** salen de un solo módulo con versión (`lib/lotes/modelo.ts`), nunca escritos en pantallas. Infraestructura, casa y parte del dueño: "sin dato".
 - **Congelado, ni se toca ni se propone:** `fogon-desde-mi-y-guardian`, `fogon-consenso-en-tarjetas`, `fogon-consenso-formal`, `semillas-constancias`, `liderar-varias-tribus`, billeteras, Mi Raíz, EAS, smart contracts, red de nodos. `procomun-tickets` está bloqueado hasta el sí de Franz.
@@ -106,6 +109,16 @@ En "Plata e inversión", después de "los pagos son simulados.", se suma: "Vale 
 
 ### 7. Nota `docs/notas/congreso-en-pausa.md`
 Sigue la forma de `docs/notas/compromisos-en-pausa.md`: qué pasó y por qué (menú de fase 1, 2-nov; relacionado con D16 y la cancelación del 23-oct), qué quedó (página, `/congreso/en`, registro del ticket, rutas públicas), qué marca lo deja en pausa (`oculto: true`), y pasos para volver (quitar la marca, ajustar `lib/navegacion.test.ts` y los e2e del rail).
+
+<!-- arquitecto: decisión agregada en la revisión. Una página con precio y "Comprar" que un buscador guarda no se deshace revirtiendo el PR, y ADR-028 solo vale si no sale del equipo -->
+### 8. Ninguna página se deja indexar (P7)
+La serie pone lotes, precio, "Comprar" y un rango de tickets en páginas públicas, y hoy solo `/netx` y `/admin` piden `noindex`. La Ordenanza 173 también nombra "publicitar" (nota 19 §1, hipótesis), y lo que un buscador guarda no se borra revirtiendo un PR. Por eso entra en la noche 1, antes de que aparezca el primer lote:
+
+- `generateMetadata` de `app/layout.tsx` suma `robots: { index: false, follow: false }`. Las páginas la heredan, incluidas `/congreso` y `/congreso/en`, que no declaran `robots`.
+- **No se suma `robots.txt` con `Disallow`:** un buscador que no puede entrar a la página no llega a leer el `noindex`.
+- **Lo que no hace:** no pide sesión. Quien tenga el enlace sigue viendo `/lotes` (ADR-015). Eso lo resuelve R14, antes de abrir la plataforma.
+
+*Alternativa descartada:* un `noindex` por página en `/lotes`, `/sumarte`, `/` y `/territorios`. Son cuatro cambios para lo mismo, y la próxima página pública nacería sin él.
 
 ## Risks / Trade-offs
 

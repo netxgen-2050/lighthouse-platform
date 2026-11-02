@@ -22,7 +22,8 @@ Ya existen: `lib/territorios/loteo.ts` y `loteo-estados.ts` (`loteo-norte-7a`), 
 ```ts
 // lib/lotes/modelo.ts. Puro: sin React ni Next. Todos los valores son de ejemplo, salvo el precio: [NC, Franz].
 export const VERSION_MODELO_LOTES = {
-  fuente: "NS_Tokenomics doc 31 y sim/lot_sale_sim.py",
+  // arquitecto: la pantalla no puede citar una fuente que nadie contrastó (ADR-010, regla 3)
+  fuente: "Valores del pedido del 2-nov-2026; falta contrastarlos con NS_Tokenomics doc 31 y sim/lot_sale_sim.py",
   version: "v0.1",
   fecha: "2026-11-02",
 } as const;
@@ -47,6 +48,9 @@ export function leccionAporte(lotes: number, idioma: Idioma): string;
 export function leccionExpensas(lotes: number, idioma: Idioma): string;
 ```
 La cantidad de lotes **nunca** es una constante: la pantalla pasa `listarLotes().length`, así el KMZ de Martín mueve las cuentas solo. Con `lotes <= 0` las funciones devuelven `null`, y la pantalla dice "sin dato" (no dividir por cero).
+
+<!-- arquitecto: ADR-010 pide tests contra la tabla del .py, y hoy no se puede -->
+**Excepción a ADR-010, regla 3:** los tests de este módulo comprueban la cuenta con los valores del pedido, no la tabla de resultados de `lot_sale_sim.py`, que nadie leyó al especificar. Cuando se contrasten, otro cambio chico actualiza `fuente`, valores y tests.
 
 ### 2. La lección del aporte sale de la cuenta, no de una frase fija
 **⚠ El pedido dice que "con 25 lotes, un aporte único del 5 % no alcanza ni el primer año". Con los valores del mismo pedido da otra cosa:** 25 × USD 500.000 × 5 % = **USD 625.000**, contra un presupuesto de USD 240.000 al año: alcanza para 2,6 años. Puede que doc 31 suponga otra cosa (ventas repartidas en el tiempo, otra base para el 5 %), pero no se pudo leer. La otra lección sí cierra: 240.000 ÷ 25 = **USD 9.600**.
@@ -74,7 +78,7 @@ La ficha dice: "Desde USD 500.000 por familia · precio de referencia, de ejempl
 4. **Costos:** tabla con Aporte único, Expensas por año, Infraestructura (sin dato), Parte del dueño (sin dato). Al pie, `VERSION_MODELO_LOTES`.
 5. **Derechos y deberes** (§6).
 6. **Estado administrativo:** versión completa de `lighthouse-norte`.
-7. **Acciones:** según `accionesDeLote("lighthouse-norte")`, y solo si el estado del lote es "disponible". "Hablar con alguien" está siempre.
+7. **Acciones:** según `accionesDeLote("lighthouse-norte")`, y solo si el estado del lote es "disponible". "Hablar con alguien" está siempre <!-- arquitecto: "Acciones que piden cuenta" y "Sin datos guardados sin sesión" --> (sin sesión, "Entrá para hablar con alguien", como en una finca).
 8. **Quién vende:** "sin dato".
 
 `generateStaticParams` con `listarLotes()` y `dynamicParams = false`; un id desconocido da `notFound()`. `/lotes`: resumen, estado administrativo completo y la lista con enlaces a cada ficha, en el mismo formato que la lista del mapa.
@@ -95,7 +99,13 @@ type CompraLote = {
 ```
 **Ningún campo de identidad**: ni nombre, ni documento, ni domicilio, ni forma de pago. Sin sesión no se guarda nada ("Sin datos guardados sin sesión").
 
-**Lectura de ADR-017:** la versión de la política sube cuando amplía datos o finalidades. Este registro no agrega datos personales nuevos, y por eso `VERSION_POLITICA` no cambia. **Es la pregunta para el arquitecto:** una reserva guardada con el prefijo de la persona dice "qué lote le interesó". Si entiende que eso amplía, hay que sumar una fila a `DATOS_POR_PANTALLA` y subir la versión, como una tarea más; no cambia el resto del diseño. También hay que mirar la frase de `lib/privacidad/politica.ts` "Lo que ves no es una oferta de inversión ni de venta de lotes": sigue siendo cierta, porque es simulada, y este cambio no la toca.
+<!-- arquitecto: respuesta a la pregunta que dejó el especificador -->
+**Lectura de ADR-017: amplía, y la versión sube.** El registro no pide identidad, pero se guarda con el prefijo de la persona, entra en su descarga y dice qué lote eligió, por cuánto y cuándo. Es un dato de esa persona, de una clase que la política no nombra, y ADR-017 sube la versión cuando se suman datos o finalidades. En `lib/privacidad/politica.ts`:
+
+- `DATOS_POR_PANTALLA` suma: pantalla "Lotes (simulado)"; datos "Qué lote reservaste o “pagaste” en la simulación, la opción que elegiste, las fechas y los valores que viste. Nunca datos de pago ni de identidad."; dónde "Solo en tu navegador: no se envía a ningún lado."
+- `RESUMEN`, en "Qué guardamos", suma "lotes simulados". `FINALIDADES`, en "Mostrarte el territorio…", suma "y simular la reserva y la compra de un lote".
+- `TERMINOS_DE_USO` pasa a "planes, Pase Fundador, aportes, inversión y lotes son simulados". La frase "Lo que ves no es una oferta de inversión ni de venta de lotes" sigue siendo cierta, porque es simulada, y no se toca.
+- `VERSION_POLITICA` sube a `<fecha de la noche>-borrador`, y la cabecera lo anota con el cambio. **Costo aceptado:** cada persona del equipo vuelve a aceptar la política una vez, y también el consentimiento de datos sensibles si lo había dado. `e2e/fixtura.ts` importa la constante, así que no se rompe.
 
 ### 6. Derechos y deberes (⚖ `derechosdeberes`, borrador)
 Salen de doc 18 §3 y §4, como supuestos del modelo, nunca como promesa.
@@ -146,7 +156,7 @@ Se suman `/^\/lotes$/` y `/^\/lotes\/[^/]+$/` a `RUTAS_PUBLICAS`: `puedeRuta` re
 ## Risks / Trade-offs
 
 - [El prototipo muestra "Comprar" y un boleto] → Es lo decidido (ADR-028). Se mantienen la franja "SIMULADO · SIN VALOR LEGAL", el ⚖ en borrador y el aviso de prototipo.
-- [Una página pública con precio y reserva queda indexable] → **P7 (`prototipo-no-indexar`) sigue sin hacerse.** El backlog la pide antes de la próxima entrega a `main`. Queda como pregunta, porque ahora importa más; ADR-015 ya dice que la sesión no protege.
+- <!-- arquitecto: P7 pasó a `venta-lotes-regla`, design §8 --> [Una página pública con precio y reserva] → No se indexa (P7, `venta-lotes-regla`, que corre antes). Quien tenga el enlace la ve sin sesión: ADR-015 ya dice que la sesión no protege, y se resuelve en R14.
 - [Valores cambian en doc 31] → Se cambia un solo módulo, con otra versión. Un boleto viejo muestra lo que se vio.
 - [El precio es el mismo para lotes de 1.344 y de 2.200 m²] → Es el dato ("igual para todos por ahora") y la pantalla lo dice.
 - [Un lote desaparece con el KMZ y queda una reserva vieja] → `estadoConCompras` ignora ids desconocidos, y el importador avisa.

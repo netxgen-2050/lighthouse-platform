@@ -32,6 +32,7 @@ Si un agente lee alguna de esas reglas y este ADR, manda este ADR. Los documento
 ### Qué sigue igual
 - **Es el prototipo interno.** Pagos simulados, ningún cobro real, sin pasarela, sin KYC real, y el aviso "Prototipo interno · datos de ejemplo" en todas las páginas. Abrirlo afuera es otro paso (R14).
 - **La aprobación municipal no se muestra como otorgada.** El estado dice en texto que es un supuesto de trabajo, con fecha "sin dato".
+- **Ninguna página se deja indexar** (P7, lo hace `venta-lotes-regla`). Es lo que sostiene que esto "no sale del equipo": lo que un buscador guarda no se deshace revirtiendo un PR. No reemplaza a R14: quien tenga el enlace puede ver `/lotes` sin sesión.
 - **Chacras de Soluna no cambia:** `accionesDeLote("soluna")` devuelve solo `consultar`.
 - **Reglas de calidad:** el dato que falta no es cero; accesibilidad; tokens del tema; ⚖ en un solo catálogo con `borrador: true`; textos es/en (ADR-004).
 - **Ningún pase, ticket ni token da prioridad, crédito o reserva sobre un lote** (doc 18 §4.5).
