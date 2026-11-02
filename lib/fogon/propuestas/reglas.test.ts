@@ -118,6 +118,9 @@ describe("alVencer · decisión simple (B4)", () => {
   it("sin objeciones y con quórum → adoptada", () => {
     expect(alVencer(simple())).toEqual({ tipo: "adoptada", motivo: "nadie-objeto" });
   });
+  it("con un desafío del Guardián sin respuesta nunca se adopta: venció sin llegar a objetar", () => {
+    expect(alVencer(simple({ desafioSinRespuesta: true }))).toEqual({ tipo: "pausada", motivo: "desafio-sin-respuesta" });
+  });
   it("sin objeciones y sin quórum → pausada por participación mínima", () => {
     expect(alVencer(simple({ cuenta: 2 }))).toEqual({ tipo: "pausada", motivo: "participacion-minima" });
   });

@@ -2,7 +2,7 @@
 import type { Ambito } from "@/lib/fogon/datos";
 import { MATERIAS_SIN_URGENCIA, topeUrgenciaDe } from "./reglas";
 import { permiso, type ResultadoPermiso } from "./permisos";
-import type { Accion, EstadoPropuesta, Fase, NivelImplicacion, Propuesta, Recorrido } from "./tipos";
+import type { Accion, EstadoPropuesta, Fase, NivelImplicacion, Propuesta, Recorrido, SugerenciaVista } from "./tipos";
 
 export const RECORRIDOS: Readonly<Record<Recorrido, readonly Fase[]>> = {
   simple: ["presentacion", "objetar", "cierre"],
@@ -13,7 +13,7 @@ export const RECORRIDOS: Readonly<Record<Recorrido, readonly Fase[]>> = {
 const SIEMPRE: readonly Accion[] = ["leer-propuesta", "leer-discusion", "recibir-avisos"];
 
 /** Se ofrecen en cualquier fase menos "cierre" (si el contexto lo permite). */
-const ANTES_DEL_CIERRE: readonly Accion[] = ["declararse-afectada", "objetar-afectada", "sacar-propio-del-grupo", "objetar-urgencia"];
+const ANTES_DEL_CIERRE: readonly Accion[] = ["declararse-afectada", "objetar-afectada", "sacar-propio-del-grupo", "objetar-urgencia", "responder-desafio"];
 
 export const ACCIONES_POR_FASE: Readonly<Record<Fase, readonly Accion[]>> = {
   borrador: ["editar", "pasar-fase", "marcar-urgente"],
@@ -67,7 +67,25 @@ export function accionesDeFase(fase: Fase, recorrido: Recorrido): Accion[] {
   return base.filter((a) => !(a === "preguntar" && fase === "presentacion" && recorrido === "importante"));
 }
 
-export type AccionOfrecida = { accion: Accion; permiso: ResultadoPermiso };
+export type Bloqueo = "falta-responder-desafio";
+
+/** `bloqueo`: la acción existe pero no está disponible; la pantalla dice el motivo en texto. */
+export type AccionOfrecida = { accion: Accion; permiso: ResultadoPermiso; bloqueo?: Bloqueo };
+
+/** Los desafíos del Guardián que ya aparecieron y todavía no tienen ninguna respuesta escrita. */
+export function desafiosSinRespuesta(e: Pick<EstadoPropuesta, "sugerenciasGuardian">): SugerenciaVista[] {
+  return e.sugerenciasGuardian.filter((s) => s.respuestas.length === 0);
+}
+
+/** Pasar a esta fase exige que cada desafío que ya apareció tenga una respuesta. */
+export const FASES_QUE_EXIGEN_RESPUESTA: readonly Fase[] = ["llamado", "objetar"];
+
+/** La fase que sigue a `fase` en el recorrido, o null si es la última. */
+export function faseSiguiente(recorrido: Recorrido, fase: Fase): Fase | null {
+  const lista = RECORRIDOS[recorrido];
+  const i = lista.indexOf(fase);
+  return i >= 0 && i < lista.length - 1 ? lista[i + 1] : null;
+}
 
 /**
  * Lo único que usa la pantalla: las acciones de la fase que el nivel permite (sí o con condición). La visita no tiene ninguna.
@@ -79,8 +97,11 @@ export function accionesDisponibles(
   niveles: readonly NivelImplicacion[],
   ambito: Ambito,
   /** `monto`: la cantidad en USD de la decisión (null = sin dato); `quien`: la persona que mira. */
-  ctx: { monto?: number | null; quien?: string } = {},
+  ctx: { monto?: number | null; quien?: string; desafios?: { total: number; sinRespuesta: number } } = {},
 ): AccionOfrecida[] {
+  const desafios = ctx.desafios ?? { total: 0, sinRespuesta: 0 };
+  const siguiente = faseSiguiente(p.recorrido, e.fase);
+  const traba = desafios.sinRespuesta > 0 && siguiente !== null && FASES_QUE_EXIGEN_RESPUESTA.includes(siguiente);
   const acciones = accionesDeFase(e.fase, p.recorrido);
   if (e.fase === "cierre" && e.resultado?.tipo === "provisoria" && !e.resultado.enRevision) acciones.push("abrir-revision");
   const sinUrgencia = p.materia !== undefined && (MATERIAS_SIN_URGENCIA as readonly string[]).includes(p.materia);
@@ -95,8 +116,11 @@ export function accionesDisponibles(
     if ((accion === "respaldar-urgencia" || accion === "objetar-urgencia") && !urgenciaViva) continue;
     if (accion === "respaldar-urgencia" && e.urgencia?.estado === "validada") continue;
     if (accion === "sacar-propio-del-grupo" && !tieneConcernEnGrupo) continue;
+    // Solo hay algo que responder si el Guardián desafió.
+    if (accion === "responder-desafio" && desafios.total === 0) continue;
     const r = permiso(accion, niveles, { ambito });
-    if (r.estado !== "no") salida.push({ accion, permiso: r });
+    if (r.estado === "no") continue;
+    salida.push(accion === "pasar-fase" && traba ? { accion, permiso: r, bloqueo: "falta-responder-desafio" } : { accion, permiso: r });
   }
   return salida;
 }

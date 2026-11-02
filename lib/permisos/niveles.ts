@@ -7,8 +7,8 @@ import { esPublica } from "@/lib/sesion/rutas-publicas";
 
 /**
  * Niveles de acceso según cómo se suma la persona (Sumarte). Cada uno incluye todo lo del anterior.
- * `fundador` es quien tiene el Pase Fundador (sin Plan Tribu). Votar en el Fideicomiso no sale de este orden sino de la
- * puerta `voto-fideicomiso` (`lib/permisos/tabla.ts`): un líder de tribu sin pase no vota ahí.
+ * `fundador` es quien tiene el Pase Fundador (sin Plan Tribu). La influencia en el Fondo Común no sale de este orden sino
+ * de la puerta `influencia-fondo-comun` (`lib/permisos/tabla.ts`): un líder de tribu sin pase no tiene influencia ahí.
  * `sin-cuenta` no es un plan: es quien todavía no se registró. `superadmin` no se elige: viene de `LH_PERSONAS`.
  */
 export const NIVELES = ["sin-cuenta", "explorador", "miembro", "fundador", "lider", "superadmin"] as const;

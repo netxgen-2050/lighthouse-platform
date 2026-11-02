@@ -129,6 +129,14 @@ const bomba: Propuesta = {
         "Watering shifts: each circle gets two mornings a week and the pump is switched off if the water table drops below an agreed level.",
       ),
     }),
+    // Respuesta escrita al desafío del Guardián sobre la napa. El desafío sobre la reversibilidad queda sin respuesta a propósito.
+    reg(B, "b-r-impacto", "respuesta-desafio", "gala", "ambito", "2026-10-29T12:30", {
+      apuntaA: "b-g-impacto",
+      texto: b(
+        "Todavía no se midió. La resolución de turnos apaga la bomba si la napa baja del nivel acordado; proponemos medirla cada semana en verano en el pozo de la zona baja.",
+        "It has not been measured yet. The shift resolution switches the pump off if the water table drops below the agreed level; we propose measuring it every week in summer at the well in the lower area.",
+      ),
+    }),
     reg(B, "b-mec", "mecanismo", "ramiro", "ambito", "2026-10-29T13:00", {
       apuntaA: "b-res-gala",
       datos: { mecanismo: "cuadratico", fin: "Repartir los días de riego entre los círculos" },

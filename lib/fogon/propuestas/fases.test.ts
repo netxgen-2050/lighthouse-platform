@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { accionesDeFase, accionesDisponibles, RECORRIDOS } from "./fases";
+import { propuestaDe } from "./ejemplos";
+import { derivarEstado } from "./estado";
+import { accionesDeFase, accionesDisponibles, desafiosSinRespuesta, RECORRIDOS } from "./fases";
 import type { Accion, EstadoPropuesta, Fase, NivelImplicacion, Propuesta } from "./tipos";
 
 const FASES: Fase[] = ["borrador", "presentacion", "preguntas", "discusion", "concerns", "resolver", "llamado", "objetar", "cierre"];
@@ -122,6 +124,51 @@ describe("acciones por fase", () => {
 
   it("la visita no tiene ninguna acción, ni leer", () => {
     for (const f of FASES) expect(acciones(importante, f, ["visita"]), f).toEqual([]);
+  });
+
+  describe("desafío del Guardián", () => {
+    const ofrecidas = (p: Pick<Propuesta, "recorrido" | "materia">, fase: Fase, niveles: NivelImplicacion[], total: number, sinRespuesta: number) =>
+      accionesDisponibles(p, estado(fase), niveles, "consejo", { desafios: { total, sinRespuesta } });
+    const pasar = (lista: ReturnType<typeof ofrecidas>) => lista.find((a) => a.accion === "pasar-fase");
+
+    it("desafiosSinRespuesta: en la bomba de ejemplo queda solo b-g-reversible", () => {
+      const e = derivarEstado(propuestaDe("consejo-bomba")!, [], new Date("2026-10-30T12:00:00Z"));
+      expect(desafiosSinRespuesta(e).map((s) => s.id)).toEqual(["b-g-reversible"]);
+    });
+
+    it("responder-desafio: ámbito, afectada, proceso y presenta sí; visita, red y común no; solo con desafíos y antes del cierre", () => {
+      for (const n of ["ambito", "afectada", "proceso", "presenta"] as const) {
+        expect(ofrecidas(importante, "resolver", [n], 1, 1).map((a) => a.accion), n).toContain("responder-desafio");
+      }
+      for (const n of ["visita", "red", "comun"] as const) {
+        expect(ofrecidas(importante, "resolver", [n], 1, 1).map((a) => a.accion), n).not.toContain("responder-desafio");
+      }
+      expect(ofrecidas(importante, "resolver", ["ambito"], 0, 0).map((a) => a.accion)).not.toContain("responder-desafio");
+      expect(ofrecidas(importante, "cierre", ["ambito"], 1, 0).map((a) => a.accion)).not.toContain("responder-desafio");
+    });
+
+    it("la bomba en resolver sin respuesta: pasar de fase queda con el motivo y proponer-resolucion sigue", () => {
+      const lista = ofrecidas(importante, "resolver", ["proceso", "ambito"], 2, 1);
+      expect(pasar(lista)?.bloqueo).toBe("falta-responder-desafio");
+      expect(lista.map((a) => a.accion)).toContain("proponer-resolucion");
+    });
+
+    it("con una respuesta a cada desafío ofrece pasar de fase sin bloqueo", () => {
+      expect(pasar(ofrecidas(importante, "resolver", ["proceso"], 2, 0))?.bloqueo).toBeUndefined();
+      expect(pasar(ofrecidas(importante, "resolver", ["proceso"], 2, 0))).toBeDefined();
+    });
+
+    it("una propuesta simple con un desafío de presentación sin respuesta no pasa a objetar", () => {
+      expect(pasar(ofrecidas(simple, "presentacion", ["proceso"], 1, 1))?.bloqueo).toBe("falta-responder-desafio");
+    });
+
+    it("un desafío no traba el cierre desde objetar", () => {
+      expect(pasar(ofrecidas(simple, "objetar", ["proceso"], 1, 1))?.bloqueo).toBeUndefined();
+    });
+
+    it("la cisterna en preguntas puede pasar a discusión sin respuesta", () => {
+      expect(pasar(ofrecidas(importante, "preguntas", ["proceso"], 1, 1))?.bloqueo).toBeUndefined();
+    });
   });
 
   it("preguntar en la presentación solo vale para la simple", () => {
