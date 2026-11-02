@@ -1,0 +1,31 @@
+# Tasks
+
+**Antes de empezar:** rama `agente/sumarte-diseno-b`; el PR apunta a `dev`. Correr `git grep -n influenciafondocomun -- lib` y mirar si `membresia` ya tiene `en` en `lib/legal/terminos.ts`: si `fogon-desde-mi-y-guardian` o `idioma-legal` ya entraron, reusar lo que exista y no duplicarlo. Los textos exactos están en design §7. El alcance termina en lo que dice `proposal.md`: lo que encuentres afuera, se reporta.
+
+## 1. Catálogo legal
+
+- [ ] 1.1 En `lib/legal/terminos.ts`, reescribir `pasefundador`, `guardian` y `creditos` con `borrador: true`, y sumar `influenciafondocomun`, `noesinversion` y `noesoferta` (estas dos con `frase`, como `consultivo`), todas con `en`. Mantener `gobernanzafideicomiso` y `ronda0`. Actualizar `lib/legal/terminos.test.ts`: las claves nuevas, que todas sean borrador con inglés, que `pasefundador` no nombre "Guardián" y diga "no a NetX", y que `influenciafondocomun` diga "conviction voting". Verificar con `pnpm test lib/legal`.
+- [ ] 1.2 Sumar `en` a `membresia`, `plantribu`, `safe`, `circulo`, `serieprograma`, `safu`, `seriemadre` y `fundaciontierra` sin tocar su español (design §7). Sumar a `lib/legal/terminos.test.ts` que estas claves tienen inglés y que el español de las que vienen del mock-up sigue coincidiendo con él. Verificar con `pnpm test lib/legal`, y comprobar en `lib/idioma/revision-nativa.ts` que `lib/legal/terminos.ts` figura como pendiente (si no, sumarlo).
+
+## 2. Datos y diccionarios
+
+- [ ] 2.1 En `lib/sumarte/datos.ts`, cambiar las filas 1 y 7 de `FILAS`, quitar `EMISION` y actualizar el comentario de cabecera. En `lib/sumarte/sumarte.test.ts`: sacar `EMISION`, las filas que no cambiaron siguen comparándose con el mock-up, y comprobar que ninguna fila dice "Congreso", "Ronda 0" ni "fideicomiso", que la tabla sigue en 8 filas y que `PASSES`, `COHORT`, `MEMBRESIA` y `PLAN_TRIBU` no cambiaron. Verificar con `pnpm test lib/sumarte`.
+- [ ] 2.2 En `lib/idioma/textos/sumarte.ts`, es y en: aplicar los textos de design §7; `inversores` pasa a `invertir`; salen `lote7`, `aporte*`, `medidorCirculo`, `medidorNoCalificados` y `elegibilidad*`. Ajustar el comentario de cabecera del archivo: "No es una inversión…" ahora vive en el catálogo legal. Verificar con `pnpm verificar` y con `git grep -nE "Lote 7|Lot 7|Ronda 0|Round 0|Congreso|Congress|Feb 2027" -- lib/idioma/textos/sumarte.ts lib/sumarte/datos.ts app/sumarte` sin resultados. Si `app/sumarte/page.tsx` los nombra, corregirlos también.
+- [ ] 2.3 En `lib/idioma/textos/pasaporte.ts`, es y en: cambiar la mención al Lote 7 de la ayuda de identidad y de `loteSiete` (solo el texto, no la clave). Actualizar la aserción de `e2e/pasaporte.spec.ts` a "programa de series". Verificar con `pnpm test:e2e e2e/pasaporte.spec.ts`.
+
+## 3. Pantalla de planes
+
+- [ ] 3.1 En `app/sumarte/sumarte-cliente.tsx`, tarjeta del Pase: `fundador.influencia` con el ⚖ `influenciafondocomun` y `translate="no"` en "conviction voting"; sin Ronda 0 ni el ⚖ `gobernanzafideicomiso`; la línea de la plata; la frase `noesinversion` del catálogo, con su ⚖, en lugar del `TextoBilingue` en español. En `e2e/sumarte.spec.ts`, reemplazar el test de la tarjeta por los escenarios "Tarjeta" y "Nivel Raíz". En `e2e/idioma-portada-sumarte.spec.ts`, actualizar los dos tests que dependían del español marcado: la frase ahora se lee en inglés, y el aviso "only in Spanish" se comprueba con el ⚖ `semillas`. Verificar con `pnpm test:e2e e2e/sumarte.spec.ts e2e/idioma-portada-sumarte.spec.ts`.
+- [ ] 3.2 Mostrar la línea de la plata en las tarjetas de Miembro y Plan Tribu, y el párrafo de adhesión debajo de las tarjetas, con el ⚖ `adhesiongobernanza` y el enlace a `/tribus/lighthouse`. Sumar a `e2e/sumarte.spec.ts` los escenarios de "Valores de ejemplo", "A dónde va la plata", "Adhesión para participar" (incluido: activar el Pase no escribe la adhesión en `lh-membresia`) y "Planes sin Congreso". Verificar con `pnpm test:e2e e2e/sumarte.spec.ts`.
+
+## 4. Sección Invertir
+
+- [ ] 4.1 Reemplazar "Para inversores" por "Invertir": frase `noesoferta` con ⚖ y las dos tarjetas. Sacar los medidores, `sumaInvitacion` y los ⚖ `sumarte`, `caja`, `espejo` y `hacienda` de la página (quedan en el catálogo). Conservar `boton-invitacion`, el diálogo de identidad, `boton-charla` y `enviarPedido`. Las referencias de los pedidos salen del diccionario. Verificar con el test "los ⚖ del catálogo" de `e2e/sumarte.spec.ts`, ampliado con Serie, SAFU, Serie Madre, Fundación de la tierra y Esto no es una oferta, con `pnpm test:e2e e2e/sumarte.spec.ts` y `pnpm verificar`.
+- [ ] 4.2 Sumar los dos enlaces a la Vista NetX con `next/link`, sin lógica de sesión propia. En `e2e/sumarte.spec.ts`, sumar los escenarios "Con sesión", "Sin sesión" y "Con teclado" y "Sin números de inversión" (sin `$`, `USD`, `%` ni medidores dentro de la sección). Reescribir "pedir invitación suma un lugar…" sin medidores. Verificar con `pnpm test:e2e e2e/sumarte.spec.ts`.
+- [ ] 4.3 Actualizar las referencias en `e2e/contactos.spec.ts` y `e2e/idioma-portada-sumarte.spec.ts` ("Invitation to the circle · Series program", título "Invest", enlaces "(in Spanish)"). Verificar con `pnpm test:e2e e2e/contactos.spec.ts e2e/idioma-portada-sumarte.spec.ts`.
+
+## 5. Integración
+
+- [ ] 5.1 Comprobar la auditoría de axe de `/sumarte` en los dos idiomas y 390 px sin desborde en la sección Invertir, sumando lo que falte en `e2e/accesibilidad.spec.ts`. Verificar con `pnpm test:e2e e2e/accesibilidad.spec.ts e2e/sumarte-acceso.spec.ts e2e/canales.spec.ts e2e/bitacora.spec.ts`.
+- [ ] 5.2 Comprobar que no cambió lo que debe seguir igual: `git diff --name-only origin/dev` no incluye `lib/permisos/`, `lib/sumarte/estado.ts` ni `lib/sesion/nivel.ts`, y no suma dependencias. Correr `pnpm verificar` y `pnpm build`, los dos en verde.
+- [ ] 5.3 Abrir el PR con `scripts/pr.sh` hacia `dev`, aclarando: el Pasaporte sigue diciendo "Voto en el Fideicomiso" hasta `fogon-desde-mi-y-guardian`; la ficha de Lighthouse VRN sigue mostrando la aceptación simulada hasta `fogon-portada-holarquia`; los ⚖ reescritos son borrador; R14 sigue pendiente; no se tocaron lotes privados. Verificar con `scripts/preview-url.sh agente/sumarte-diseno-b` y `BASE_URL=<url> pnpm test:e2e e2e/sumarte.spec.ts`.
