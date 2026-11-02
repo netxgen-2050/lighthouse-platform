@@ -42,7 +42,7 @@ type EventoComunidad<Tx = string> = {
 ```
 
 - `lib/eventos/datos.ts`: `obtenerEventos(idioma)` es la **única** forma de leerlos. Hoy resuelve el contenido de ejemplo con `resolver` de `lib/congreso/idioma`, y es la costura para más adelante.
-<!-- arquitecto: costura asíncrona, id estable y lista vacía; ver ADR-027 -->
+<!-- arquitecto: costura asíncrona, id estable y lista vacía; ver ADR-028 -->
 - `obtenerEventos` es `async` y devuelve una promesa, igual que `obtenerEvento()`: si mañana los eventos vienen de otro lado, las pantallas no cambian.
 - `id` es propio de NetX y **no se renombra**: es la clave que queda guardada en el navegador de cada persona y en su actividad. Si un evento sale de la lista, lo guardado se conserva y no rompe nada.
 - Si no hay eventos próximos, la sección lo dice con una frase ("Todavía no hay eventos próximos" / "No upcoming events yet"), sin mostrar un 0.
@@ -70,7 +70,7 @@ type EventoComunidad<Tx = string> = {
 
 Las reglas nuevas van en `app/congreso/tema-evento.css`, bajo `.tema-evento .ev-agenda…`, para respetar ADR-002 y el test que prohíbe `--evento-` fuera de `app/congreso/`. Solo se agregan reglas. Si una combinación de color no está en la tabla de `app/congreso/tema-evento.test.ts`, se suma ahí.
 
-**Consecuencia:** `/eventos` pasa a depender de `app/congreso/evento/`, de su hoja, de `app/congreso/netx/ir-al-ancla.tsx` y de `lib/congreso/{idioma,formatos,ancla,mostrar-ticket}.ts`. El cambio siguiente lo deja escrito en la nota para volver, para que nadie borre esos archivos creyendo que están sin uso. Se agrega una nota con fecha a ADR-002. El reparto con UnityHub va en ADR-027 (ver decisión 10).
+**Consecuencia:** `/eventos` pasa a depender de `app/congreso/evento/`, de su hoja, de `app/congreso/netx/ir-al-ancla.tsx` y de `lib/congreso/{idioma,formatos,ancla,mostrar-ticket}.ts`. El cambio siguiente lo deja escrito en la nota para volver, para que nadie borre esos archivos creyendo que están sin uso. Se agrega una nota con fecha a ADR-002. El reparto con UnityHub va en ADR-028 (ver decisión 10).
 <!-- arquitecto: IrAlAncla vive en app/congreso/netx/, no en evento/; la lista de dependencias estaba incompleta -->
 
 
@@ -127,9 +127,9 @@ Es una sección estática al final, "Eventos de la red", sin formulario: "Todav�
 <!-- arquitecto: faltaba; sin esto se pierde la campaña de los enlaces viejos a /congreso -->
 La página guarda el origen de la campaña igual que la vitrina y la portada: `{hayCampana(origen) && <GuardarOrigen origen={origen} />}`, con `origen = leerParametros(searchParams)`. Eventos es la nueva puerta de entrada, y `eventos-reemplaza-congreso` promete que `/congreso?utm_source=…` sigue guardando el origen al llegar acá. La política ya nombra este dato ("Origen de la visita").
 
-### 10. Reparto con UnityHub (ADR-027, en Propuesta)
+### 10. Reparto con UnityHub (ADR-028, en Propuesta)
 <!-- arquitecto: decisión nueva; ADR-013 le da la convocatoria a UnityHub y pide un ADR para lo que se superpone -->
-ADR-013 (también en Propuesta) le da a UnityHub la convocatoria a eventos, y su regla 4 pide un ADR para las funciones que se superponen. Este cambio no integra nada, pero sí crea una lista de eventos y una intención de ir dentro de NetX. ADR-027 propone:
+ADR-013 (también en Propuesta) le da a UnityHub la convocatoria a eventos, y su regla 4 pide un ADR para las funciones que se superponen. Este cambio no integra nada, pero sí crea una lista de eventos y una intención de ir dentro de NetX. ADR-028 propone:
 - Hoy los eventos son de ejemplo, viven en un archivo de NetX y se leen solo por `obtenerEventos`.
 - "Quiero ir" es una intención personal: no es una inscripción ni le llega a quien organiza. Inscribir de verdad no se construye en este cambio.
 - Si la agenda viene después de otro servicio, se copia lo mínimo, con `proveedor`, `id_externo` y `sincronizado_at`, y el `id` de NetX no cambia. Las pantallas siguen sin enterarse.

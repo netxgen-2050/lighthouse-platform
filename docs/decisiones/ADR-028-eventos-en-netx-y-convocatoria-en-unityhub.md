@@ -1,4 +1,4 @@
-# ADR-027 · NetX muestra los eventos y guarda una intención personal de ir; la inscripción de verdad no se construye todavía y UnityHub sigue como posible capa de convocatoria
+# ADR-028 · NetX muestra los eventos y guarda una intención personal de ir; la inscripción de verdad no se construye todavía y UnityHub sigue como posible capa de convocatoria
 
 - **Estado:** Propuesta
 - **Fecha:** 2026-11-02
