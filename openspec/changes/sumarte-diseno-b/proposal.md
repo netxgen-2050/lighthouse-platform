@@ -28,7 +28,7 @@
 - **Lo que Sumarte no muestra:** tasas, descuentos, cupos ni retornos, ni tickets de los proyectos (SAFU). Eso vive solo en la Vista NetX, que pide sesión.
 - **Tierra:** la tierra común queda en una Fundación que todavía no existe; los lotes privados son otro camino.
 
-**Puerta nueva: "Comprar un lote".** Una sección propia, entre los planes e "Invertir": lotes privados del sector norte de Lighthouse VRN, con el precio de referencia leído de `lib/lotes/modelo.ts`, el estado administrativo compacto, la aclaración de que todo es simulado y un enlace a `/lotes`. Queda **fuera** de "Invertir" para que la frase "desde esta sección no se vende ni se cobra nada" siga siendo literalmente cierta.
+**Puerta nueva: "Comprar un lote".** Una sección propia, entre los planes e "Invertir": lotes privados del sector norte de Lighthouse VRN, con el precio mínimo de lote leído de `lib/lotes/modelo.ts`, el estado administrativo compacto, la aclaración de que todo es simulado y un enlace a `/lotes`. Queda **fuera** de "Invertir" para que la frase "desde esta sección no se vende ni se cobra nada" siga siendo literalmente cierta.
 
 **Catálogo legal (⚖ en borrador, es/en).**
 

@@ -78,7 +78,7 @@ Este cambio toma de su design §4 solo la tarjeta de Sumarte y la **creación** 
 Doc 04 lo llama "Guardián"; `RESULTS_platform_revenue.md` y el código, "Brote". "Guardián" ya nombra al agente que defiende la Voz de la Tierra, y usarlo también para un nivel de pago confunde. Si Gus quiere el cambio, es de una línea por idioma en `niveles`; el id `brote` queda.
 
 ### 6 bis. Puerta "Comprar un lote" (2-nov)
-Es un `h2` propio, entre los planes e "Invertir", y **no** va dentro de "Invertir": ahí la frase `noesoferta` dice "desde esta sección no se vende ni se cobra nada" y tiene que seguir siendo literalmente cierta. Muestra: el texto, el precio de referencia de `lib/lotes/modelo.ts` (nunca escrito en el diccionario), `EstadoAdministrativo proyecto="lighthouse-norte" compacto`, y un enlace `next/link` a `/lotes`. No tiene botón de compra ni de reserva: eso vive en la ficha.
+Es un `h2` propio, entre los planes e "Invertir", y **no** va dentro de "Invertir": ahí la frase `noesoferta` dice "desde esta sección no se vende ni se cobra nada" y tiene que seguir siendo literalmente cierta. Muestra: el texto, el precio mínimo de lote de `lib/lotes/modelo.ts` (nunca escrito en el diccionario), `EstadoAdministrativo proyecto="lighthouse-norte" compacto`, y un enlace `next/link` a `/lotes`. No tiene botón de compra ni de reserva: eso vive en la ficha.
 
 *Alternativa descartada:* una tarjeta más dentro de los cuatro planes. Un lote no es un plan: no se activa ni se compara en "Qué incluye cada plan".
 
@@ -95,7 +95,7 @@ Valen como punto de partida; el implementador los copia y puede ajustar solo el 
 |---|---|
 | `pagina.intro` | Sumarte es la puerta de entrada: cómo te sumás define qué podés hacer. Explorar es gratis. La membresía te abre las salas y los pactos. El Pase Fundador sostiene el Fondo Común del Lighthouse y te da influencia y créditos. Comprar un lote e invertir son otros caminos: están más abajo. Valores de ejemplo, a re-ajustar. Nada se cobra de verdad: todo lo que elijas acá es simulado y queda solo en este navegador. |
 | `comprarLote.titulo` | Comprar un lote |
-| `comprarLote.texto` | Lotes privados en el sector norte de Lighthouse VRN, con un loteo provisorio e ilustrativo. Desde {precio} por familia: precio de referencia, de ejemplo, a confirmar. Es una simulación: no se cobra nada y no reserva ningún lote de verdad. |
+| `comprarLote.texto` | Lotes privados en el sector norte de Lighthouse VRN, con un loteo provisorio e ilustrativo. Desde {precio} el lote, con opción de casa: precios de ejemplo, a confirmar. Es una simulación: no se cobra nada y no reserva ningún lote de verdad. |
 | `comprarLote.enlace` | Ver los lotes |
 | `explorador.incluye` | Mapa y páginas de tribus · Entrevista con el agente · Eventos abiertos · Hifa y tu espacio personal |
 | `miembro.plata` | La cobra NetX: es un servicio. |
@@ -128,7 +128,7 @@ Valen como punto de partida; el implementador los copia y puede ajustar solo el 
 |---|---|
 | `pagina.intro` | Joining is the way in: how you join defines what you can do. Exploring is free. Membership opens the rooms and the pacts. The Founder Pass supports the Lighthouse Common Fund and gives you influence and credits. Buying a lot and investing are different paths: they're further down. Sample values, to be re-tuned. Nothing is really charged: everything you choose here is simulated and stays only in this browser. |
 | `comprarLote.titulo` | Buy a lot |
-| `comprarLote.texto` | Private lots in the north sector of Lighthouse VRN, on a provisional, illustrative subdivision. From {precio} per family: a reference price, a sample, to be confirmed. It's a simulation: nothing is charged and no lot is really reserved. |
+| `comprarLote.texto` | Private lots in the north sector of Lighthouse VRN, on a provisional, illustrative subdivision. From {precio} per lot, with a house option: sample prices, to be confirmed. It's a simulation: nothing is charged and no lot is really reserved. |
 | `comprarLote.enlace` | See the lots |
 | `explorador.incluye` | Map and tribe pages · Interview with the agent · Open events · Hifa and your personal space |
 | `miembro.plata` | NetX charges it: it's a service. |

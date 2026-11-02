@@ -18,7 +18,7 @@ Mostrar, en una lista y en una ficha por lote, qué se compraría en Lighthouse 
 - **THEN** el enlace "Lotes" del rail tiene `aria-current="page"`
 
 ### Requirement: Ficha del lote
-`/lotes/[id]` SHALL mostrar la superficie, el estado, el precio de referencia, los costos, los derechos y deberes, el estado administrativo completo y quién vende como "sin dato". Un id desconocido MUST dar la página de no encontrado.
+`/lotes/[id]` SHALL mostrar la superficie, el estado, el precio del lote, los costos, los derechos y deberes, el estado administrativo completo y quién vende como "sin dato". Un id desconocido MUST dar la página de no encontrado.
 
 #### Scenario: Ficha
 - **WHEN** una persona abre `/lotes/lote-1`
@@ -28,23 +28,23 @@ Mostrar, en una lista y en una ficha por lote, qué se compraría en Lighthouse 
 - **WHEN** una persona abre `/lotes/no-existe`
 - **THEN** ve la página de no encontrado
 
-### Requirement: Precio de referencia marcado de ejemplo
-La ficha SHALL mostrar el precio de referencia con el texto "de ejemplo, a confirmar" y su ⚖ en borrador, diciendo que es por familia, como mínimo e igual para todos los lotes por ahora. El valor MUST salir del módulo del modelo.
+### Requirement: Precio del lote marcado de ejemplo
+La ficha SHALL mostrar el precio del lote según su superficie, con el texto "precio de ejemplo, a confirmar", su ⚖ en borrador y el rango de precios de lotes. El valor MUST salir del módulo del modelo. MUST NOT mostrar USD 500.000 por familia.
 
 #### Scenario: Precio
-- **WHEN** una persona lee la ficha de cualquier lote
-- **THEN** lee "Desde USD 500.000 por familia", "precio de referencia, de ejemplo, a confirmar" y su ⚖
+- **WHEN** una persona lee la ficha de `lote-1`, de 1.344 m²
+- **THEN** lee "USD 15.000", "precio de ejemplo, a confirmar", el rango de USD 15.000 a USD 40.000 y su ⚖
 
 ### Requirement: Costos, aporte y expensas
-La ficha SHALL mostrar el aporte único al procomún, las expensas por año, la infraestructura y la parte del dueño, cada una con su valor o "sin dato". El aporte MUST mostrarse aparte del precio, sin sumarlos, y decir que no hay dato de si va incluido.
+La ficha SHALL mostrar el aporte único al procomún, las expensas por año, la infraestructura y la parte del dueño, cada una con su valor marcado "de ejemplo". El aporte MUST mostrarse aparte del precio, sin sumarlos, y decir que no hay dato de si va incluido.
 
 #### Scenario: Valores
-- **WHEN** una persona lee los costos
-- **THEN** lee el aporte "USD 25.000", las expensas "USD 3.000" por año, e Infraestructura y Parte del dueño "sin dato"
+- **WHEN** una persona lee los costos de `lote-1` con "Solo el lote"
+- **THEN** lee el aporte "USD 750", las expensas "USD 1.200" por año, la infraestructura "USD 12.000" y la parte del dueño "USD 3.000", todos de ejemplo
 
 #### Scenario: Aporte y precio
 - **WHEN** una persona compara el aporte con el precio
-- **THEN** no hay un total, y lee que si se suma o va incluido es "sin dato"
+- **THEN** no están sumados, y lee que si se suma o va incluido es "sin dato"
 
 ### Requirement: Derechos y deberes
 La ficha SHALL listar qué daría el lote y qué pediría, con un ⚖ en borrador, y decir que ningún pase, ticket ni token da prioridad, crédito o reserva sobre un lote.
@@ -55,11 +55,12 @@ La ficha SHALL listar qué daría el lote y qué pediría, con un ⚖ en borrado
 - **AND** lee que ningún pase da prioridad sobre un lote
 
 ### Requirement: Opción con casa
-La ficha SHALL ofrecer elegir entre "Solo el lote" y "Con casa de referencia". La casa MUST describirse como de 170 m² y borrador de Martín, con su precio y el total como "sin dato". La elección MUST poder hacerse con el teclado.
+La ficha SHALL ofrecer elegir entre "Solo el lote", "Casa modular", "Casa familiar" y "Casa amplia". Cada casa MUST decir sus m², su precio y el total de lote más casa, marcados como estimación de ejemplo y sin presupuesto. La elección MUST poder hacerse con el teclado, y el aporte MUST recalcularse sobre la opción elegida.
 
 #### Scenario: Con casa
-- **WHEN** una persona elige "Con casa de referencia" con el teclado
-- **THEN** lee "170 m²", "borrador de Martín", "Precio: sin dato" y "Total: sin dato"
+- **WHEN** una persona elige "Casa familiar" con el teclado en `lote-1`
+- **THEN** lee "170 m²", "referencia de Martín", "USD 238.000", el total "USD 253.000" y "estimación de ejemplo"
+- **AND** el aporte pasa a "USD 12.650"
 
 ### Requirement: Hablar con alguien
 La ficha SHALL ofrecer "Hablar con alguien", con el mismo pedido de contacto de la plataforma, registrado como consulta por un lote de Lighthouse VRN, con destino "Equipo NetX". Enviarlo MUST NOT reservar el lote.

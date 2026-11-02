@@ -53,5 +53,5 @@ Franz decidió que lo primero que muestra la plataforma es la venta de lotes en 
 ## Fuentes
 - Pedido de Gus del 2-nov-2026 (decisión de Franz en la llamada del mismo día).
 - `NS_platform`: nota 19, backlog T7 y D16.
-- `NS_Tokenomics`: doc 18 §4, doc 30 §3. Doc 31 y `sim/lot_sale_sim.py` (rama `gustavo-lotes-fase-1`) no estaban en la copia local al escribir esto; los valores llegaron en el pedido de Gus.
+- `NS_Tokenomics`: doc 18 §4, doc 30 §3, doc 31 y `sim/lot_sale_sim.py` v0.2.
 - ADR-004 (bilingüe), ADR-010 (modelos copiados con versión), ADR-015 (la sesión oculta, no protege), ADR-017 (versión de la política).

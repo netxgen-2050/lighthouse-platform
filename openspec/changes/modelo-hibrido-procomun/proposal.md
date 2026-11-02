@@ -21,7 +21,7 @@ Quien mira un lote tiene que entender qué compra y qué sigue siendo de todos. 
 - **Tickets de acceso al procomún:** es `procomun-tickets`, bloqueado hasta el sí de Franz.
 - **Gobernanza del procomún** (`consentimiento-alta`, Fogón en la base, conviction voting): congelada hasta ese sí.
 - **El nombre "Juego B" en el Fogón** (`lib/gobernanza/datos.ts`, "Parámetros del Juego B"): queda como está; se reporta.
-- **Números que no existen:** el costo de cada rubro común, la infraestructura y la parte del dueño son "sin dato". El cuadro no reparte el presupuesto entre rubros.
+- **Números que no existen:** el costo de cada rubro común es "sin dato" y el cuadro no reparte el presupuesto entre rubros. Lote, casa, infraestructura y parte del dueño vienen del módulo, como valores de ejemplo.
 - **Cumplir los resguardos:** esto los cuenta, no los hace. Tampoco se dibuja la franja del río, porque no hay dato.
 - **Decidir qué pasa con la Fundación en el híbrido:** se conserva "todavía no existe" y se aclara que los lotes privados no quedarían en ella (ver preguntas).
 - **Editar `NS_Tokenomics`** (doc 30, `AGENTS.md`) y `NS_platform`.

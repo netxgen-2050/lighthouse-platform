@@ -29,14 +29,14 @@ La página SHALL mostrar el aporte único y las expensas por lote, leídos del m
 
 #### Scenario: Aportes
 - **WHEN** una persona lee "Cuánto aporta cada lote"
-- **THEN** lee "USD 25.000" una vez, "USD 3.000" por año y "sin dato" sobre si el aporte va incluido
+- **THEN** lee que el aporte único es el 5 % de lo que se paga, "USD 1.200" por año y "sin dato" sobre si el aporte va incluido
 
 ### Requirement: Por qué la venta sola no alcanza
 La página SHALL mostrar las lecciones calculadas por el módulo: qué paga el aporte único, cuánta expensa haría falta para cubrir el presupuesto común y cuánto falta por año con la expensa de ejemplo. De dónde sale lo que falta MUST decir "sin dato". Ningún número MUST estar escrito en la página.
 
 #### Scenario: Con los valores de hoy
 - **WHEN** una persona lee esa sección con 25 lotes
-- **THEN** lee "USD 625.000", "2,6 años", "USD 9.600", "USD 3.000" y "USD 165.000"
+- **THEN** lee "USD 190.125", "USD 63.375", "USD 72.000", "USD 2.880", "USD 1.200" y "USD 42.000"
 
 #### Scenario: Cambia el modelo
 - **WHEN** cambia un valor del módulo

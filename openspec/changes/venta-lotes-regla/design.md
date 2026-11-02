@@ -100,7 +100,7 @@ Decidió Franz (CEO) en la llamada del 2-nov; Gus lo aceptó. **No se vuelve a d
 - **Se puede, solo simulado:** en `lighthouse-norte`, ofrecer lotes, mostrar precio, reservar, pago simulado y boleto de ejemplo. Si la nota 19, el backlog T7, doc 30 o una spec vieja dicen lo contrario, manda ADR-028.
 - **No cambia:** ningún cobro real, pasarela ni KYC real; la aprobación municipal nunca se muestra como otorgada (es un supuesto de trabajo, fecha "sin dato"); `accionesDeLote("soluna")` devuelve solo `consultar`; ningún pase, ticket ni token da prioridad sobre un lote; ninguna página se deja indexar.
 - **Foco solo en VRN:** nada de Lighthouse SMA ni del deck de inversores (USD 111M, TIR, recupero). No usar la nota de las "300 razones" (`NS_permacultura` 17).
-- **Los números de lotes** salen de un solo módulo con versión (`lib/lotes/modelo.ts`), nunca escritos en pantallas. Infraestructura, casa y parte del dueño: "sin dato".
+- **Los números de lotes** salen de un solo módulo con versión (`lib/lotes/modelo.ts`), nunca escritos en pantallas. Todos son de ejemplo (`NS_Tokenomics` doc 31, `sim/lot_sale_sim.py`): casas, infraestructura y parte del dueño son estimaciones sin presupuesto, y lo dicen.
 - **Congelado, ni se toca ni se propone:** `fogon-desde-mi-y-guardian`, `fogon-consenso-en-tarjetas`, `fogon-consenso-formal`, `semillas-constancias`, `liderar-varias-tribus`, billeteras, Mi Raíz, EAS, smart contracts, red de nodos. `procomun-tickets` está bloqueado hasta el sí de Franz.
 - **Abrirlo afuera es otro paso** (R14).
 ```

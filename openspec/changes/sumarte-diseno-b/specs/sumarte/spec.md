@@ -119,11 +119,11 @@ La tarjeta "En los proyectos de regeneración" SHALL decir que la tierra común 
 - **THEN** sigue leyendo que no da tierra, lotes, prioridad ni rendimiento
 
 ### Requirement: Puerta para comprar un lote
-`/sumarte` SHALL mostrar una sección "Comprar un lote", fuera de "Invertir" y antes de ella, con el precio de referencia marcado de ejemplo y leído del módulo del modelo, el estado administrativo compacto de `lighthouse-norte`, la aclaración de que es una simulación y un enlace a `/lotes`. MUST NOT tener un botón para reservar o comprar.
+`/sumarte` SHALL mostrar una sección "Comprar un lote", fuera de "Invertir" y antes de ella, con el precio mínimo de lote marcado de ejemplo y leído del módulo del modelo, el estado administrativo compacto de `lighthouse-norte`, la aclaración de que es una simulación y un enlace a `/lotes`. MUST NOT tener un botón para reservar o comprar.
 
 #### Scenario: Ver la puerta
 - **WHEN** una persona abre `/sumarte`
-- **THEN** ve "Comprar un lote" antes de "Invertir", lee "precio de referencia, de ejemplo", "supuesto de trabajo, no otorgada" y que no se cobra nada
+- **THEN** ve "Comprar un lote" antes de "Invertir", lee "precios de ejemplo", "supuesto de trabajo, no otorgada" y que no se cobra nada
 
 #### Scenario: Ir a los lotes con el teclado
 - **WHEN** la persona llega con Tab a "Ver los lotes" y aprieta Enter

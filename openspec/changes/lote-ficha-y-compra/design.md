@@ -4,7 +4,7 @@
 
 Ya existen: `lib/territorios/loteo.ts` y `loteo-estados.ts` (`loteo-norte-7a`), `accionesDeLote("lighthouse-norte")` (`venta-lotes-regla`), `PedidoContacto`, `EntrarPara`, `usd` y `SIN_DATO` en `lib/series/formato.ts`, y el patrón de `lib/series/escenarios.ts` (`VERSION_MODELO`).
 
-**Fuente de los números:** `NS_Tokenomics`, rama `gustavo-lotes-fase-1`, doc 31 y `sim/lot_sale_sim.py` v0.1 (2-nov-2026). No estaban en la copia local al especificar: los valores vienen del pedido de Gus. ADR-010 dice que NS_Tokenomics manda sobre los modelos, y que si el `.py` cambia se abre otro cambio.
+**Fuente de los números:** `NS_Tokenomics` `main`, doc 31 y `sim/lot_sale_sim.py` v0.2 (2-nov-2026), con sus resultados en `sim/RESULTS_lot_sale.md`. Gus corrigió el precio después del pedido: lotes de USD 15–40K (llamada sin registro) y casas, infraestructura y parte del dueño como estimaciones provisorias. ADR-010 dice que NS_Tokenomics manda sobre los modelos, y que si el `.py` cambia se abre otro cambio.
 
 ## Goals / Non-Goals
 
@@ -20,62 +20,72 @@ Ya existen: `lib/territorios/loteo.ts` y `loteo-estados.ts` (`loteo-norte-7a`), 
 
 ### 1. El módulo
 ```ts
-// lib/lotes/modelo.ts. Puro: sin React ni Next. Todos los valores son de ejemplo, salvo el precio: [NC, Franz].
+// lib/lotes/modelo.ts. Puro: sin React ni Next. Todos los valores son de ejemplo y provisorios.
 export const VERSION_MODELO_LOTES = {
-  // arquitecto: la pantalla no puede citar una fuente que nadie contrastó (ADR-010, regla 3)
-  fuente: "Valores del pedido del 2-nov-2026; falta contrastarlos con NS_Tokenomics doc 31 y sim/lot_sale_sim.py",
-  version: "v0.1",
+  fuente: "NS_Tokenomics doc 31 y sim/lot_sale_sim.py",
+  version: "v0.2",
   fecha: "2026-11-02",
 } as const;
 
 export const MODELO_LOTES = {
-  precioReferencia: 500_000,        // USD por familia, como mínimo; igual para todos los lotes por ahora
-  aporteUnico: 0.05,                // proporción del precio, al procomún
-  expensaAnual: 3_000,              // USD por lote por año
-  presupuestoComunAnual: 240_000,   // USD por año
-  casaReferenciaM2: 170,            // borrador de Martín
-  precioCasa: null,
-  infraestructura: null,
-  parteDelDueno: null,
+  precioLote: { min: 15_000, max: 40_000, m2Min: 1_344, m2Max: 2_200 }, // USD; [NC, llamada sin registro]; lineal entre tamaños
+  casas: {                          // estimación [criterio], sin presupuesto detrás; 170 m² es la referencia de Martín
+    modular: { m2: 90, usdPorM2: 1_000 },
+    familiar: { m2: 170, usdPorM2: 1_400 },
+    amplia: { m2: 250, usdPorM2: 2_000 },
+  },
+  mezcla: { "solo-lote": 0.4, modular: 0.3, familiar: 0.2, amplia: 0.1 }, // proporción de compradores [criterio]
+  aporteUnico: 0.05,                // proporción de lo que se paga, al procomún
+  expensaAnual: 1_200,              // USD por lote por año
+  presupuestoComunAnual: 72_000,    // USD por año
+  aniosDeVenta: 3,                  // los lotes se venden parejo en estos años
+  infraestructuraPorLote: 12_000,   // USD: caminos, agua y energía
+  parteDelDueno: 0.2,               // proporción del precio del lote; todavía no hay acuerdo
 } as const;
 
-export const aportePorLote = () => …;                   // 25.000
-export const aporteTotal = (lotes: number) => …;        // 25 → 625.000
-export const expensasTotales = (lotes: number) => …;    // 25 → 75.000
-export const expensaParaCubrir = (lotes: number) => …;  // 25 → 9.600
+export type OpcionCompra = "solo-lote" | "modular" | "familiar" | "amplia";
+
+export const precioLote = (m2: number) => …;            // 1.344 → 15.000; 2.200 → 40.000; fuera de rango, el extremo
+export const precioCasa = (tipo: TipoCasa) => …;        // 90.000; 238.000; 500.000
+export const precioPaquete = (m2: number, o: OpcionCompra) => …;
+export const aporteDe = (precio: number) => …;          // 5 % de lo que se paga
+export const paquetePromedio = () => …;                 // con el lote en el medio del rango: 152.100
+export const aporteTotal = (lotes: number) => …;        // 25 → 190.125
+export const aportePrimerAnio = (lotes: number) => …;   // 25 → 63.375
+export const expensasTotales = (lotes: number) => …;    // 25 → 30.000
+export const expensaParaCubrir = (lotes: number) => …;  // 25 → 2.880
 export const aniosQueCubreElAporte = (lotes: number) => …; // 25 → 2,6
 export function leccionAporte(lotes: number, idioma: Idioma): string;
 export function leccionExpensas(lotes: number, idioma: Idioma): string;
 ```
 La cantidad de lotes **nunca** es una constante: la pantalla pasa `listarLotes().length`, así el KMZ de Martín mueve las cuentas solo. Con `lotes <= 0` las funciones devuelven `null`, y la pantalla dice "sin dato" (no dividir por cero).
 
-<!-- arquitecto: ADR-010 pide tests contra la tabla del .py, y hoy no se puede -->
-**Excepción a ADR-010, regla 3:** los tests de este módulo comprueban la cuenta con los valores del pedido, no la tabla de resultados de `lot_sale_sim.py`, que nadie leyó al especificar. Cuando se contrasten, otro cambio chico actualiza `fuente`, valores y tests.
+**Tests contra el modelo (ADR-010, regla 3):** comprueban los valores de `sim/RESULTS_lot_sale.md` v0.2. Si el `.py` cambia, otro cambio chico actualiza valores, versión y tests.
 
 ### 2. La lección del aporte sale de la cuenta, no de una frase fija
-**⚠ El pedido dice que "con 25 lotes, un aporte único del 5 % no alcanza ni el primer año". Con los valores del mismo pedido da otra cosa:** 25 × USD 500.000 × 5 % = **USD 625.000**, contra un presupuesto de USD 240.000 al año: alcanza para 2,6 años. Puede que doc 31 suponga otra cosa (ventas repartidas en el tiempo, otra base para el 5 %), pero no se pudo leer. La otra lección sí cierra: 240.000 ÷ 25 = **USD 9.600**.
-
-Para no publicar una frase que los números desmienten, ni cambiarle el mensaje a Gus en silencio, `leccionAporte` la elige según la cuenta:
+El modelo reparte las ventas en tres años, así que el aporte también entra de a partes: con 25 lotes y la mezcla de compradores suma USD 190.125, pero el primer año entran USD 63.375, menos que los USD 72.000 del presupuesto. `leccionAporte` elige la frase según la cuenta:
 
 | Condición | es |
 |---|---|
-| `aporteTotal < presupuestoComunAnual` | Con {n} lotes, el aporte único del {p} suma {total}: no alcanza ni para el primer año de un presupuesto común de {presupuesto}. |
+| `aportePrimerAnio < presupuestoComunAnual` | Con {n} lotes, el aporte único del {p} suma {total} en {años de venta} años de ventas. El primer año entran {primer año}: no alcanza para un presupuesto común de {presupuesto} por año, y el aporte no se repite. |
 | si no | Con {n} lotes, el aporte único del {p} suma {total}: paga {años} años de un presupuesto común de {presupuesto}, y no se repite. |
 
-Hoy se ve la segunda; si Gus corrige un valor del módulo, aparece la primera sin tocar pantallas. Está como primera pregunta abierta.
+Hoy se ve la primera. Con 50 lotes o con otro valor del módulo, aparece la segunda sin tocar pantallas.
 
-`leccionExpensas`: "Cubrir ese presupuesto solo con expensas pide {9.600} por lote al año; la expensa de ejemplo es {3.000}." En inglés, lo mismo.
+`leccionExpensas`: "Cubrir ese presupuesto solo con expensas pide {2.880} por lote al año; la expensa de ejemplo es {1.200}." En inglés, lo mismo.
 
 ### 3. Precio
-La ficha dice: "Desde USD 500.000 por familia · precio de referencia, de ejemplo, a confirmar" ⚖ `precioreferencia`. "Por familia" y "como mínimo" son el dato tal como llegó, sin interpretar. El mismo valor para todos los lotes, por ahora, y la pantalla lo dice.
+La ficha dice el precio del lote según su superficie: "USD {precio} · precio de ejemplo, a confirmar" ⚖ `precioreferencia`. Debajo: "Los precios de lotes van de USD {min} a USD {max} según la superficie, de ejemplo". El tamaño real de esos lotes es "sin dato" hasta el KMZ de Martín, y el modelo supone que entra una casa familiar.
 
-**Aporte y precio van separados, sin total.** No hay dato de si el 5 % va dentro del precio o se suma. El pago simulado muestra el precio de referencia y, aparte, "Aporte único al procomún: USD 25.000 · si se suma al precio o va incluido: sin dato".
+**USD 500.000 por familia no se muestra:** es la cifra de la llamada del 2-nov, y solo la alcanza el paquete mayor. Queda como pregunta para Franz (doc 31 §3), no como dato de pantalla.
+
+**Aporte y precio van separados, sin sumarlos.** No hay dato de si el 5 % va dentro del precio o se suma. El pago simulado muestra el precio elegido y, aparte, "Aporte único al procomún: USD {aporte} · si se suma al precio o va incluido: sin dato".
 
 ### 4. Secciones de la ficha `/lotes/[id]`
 1. **Encabezado:** `Lote N`, marca "Loteo provisorio, ilustrativo", superficie, estado en texto y forma.
 2. **Precio** (§3).
-3. **Con casa:** radio "Solo el lote" / "Con casa de referencia". Con casa: "Casa de referencia de 170 m², borrador de Martín · Precio: sin dato · Total: sin dato".
-4. **Costos:** tabla con Aporte único, Expensas por año, Infraestructura (sin dato), Parte del dueño (sin dato). Al pie, `VERSION_MODELO_LOTES`.
+3. **Con casa:** radio "Solo el lote" / "Casa modular" / "Casa familiar" / "Casa amplia". Cada opción dice sus m² y el precio de la casa, y debajo se ve el total de lote más casa, "estimación de ejemplo, sin presupuesto". La familiar aclara "170 m², referencia de Martín".
+4. **Costos:** tabla con Aporte único (sobre la opción elegida), Expensas por año, Infraestructura por lote y Parte del dueño (sobre el lote), todos "de ejemplo". Al pie, `VERSION_MODELO_LOTES`.
 5. **Derechos y deberes** (§6).
 6. **Estado administrativo:** versión completa de `lighthouse-norte`.
 7. **Acciones:** según `accionesDeLote("lighthouse-norte")`, y solo si el estado del lote es "disponible". "Hablar con alguien" está siempre <!-- arquitecto: "Acciones que piden cuenta" y "Sin datos guardados sin sesión" --> (sin sesión, "Entrá para hablar con alguien", como en una finca).
@@ -89,7 +99,7 @@ La ficha dice: "Desde USD 500.000 por familia · precio de referencia, de ejempl
 ```ts
 type CompraLote = {
   loteId: string;
-  opcion: "solo-lote" | "con-casa";
+  opcion: OpcionCompra;
   paso: "reservado" | "pagado";
   reservadoEl: string; // ISO
   pagadoEl?: string;
@@ -120,7 +130,7 @@ Los demás ⚖ (todos con `borrador: true`):
 
 | Clave | Título es / en | Texto es | Texto en |
 |---|---|---|---|
-| `precioreferencia` | Precio de referencia / Reference price | Un valor de ejemplo para el prototipo, igual para todos los lotes por ahora y a confirmar. No es una oferta ni un precio de venta. | A sample value for the prototype, the same for every lot for now and to be confirmed. It is not an offer or a sale price. |
+| `precioreferencia` | Precio de ejemplo / Sample price | Un valor provisorio para el prototipo, a confirmar, igual que los precios de las casas: no salen de un presupuesto. No es una oferta ni un precio de venta. | A provisional value for the prototype, to be confirmed, like the house prices: they do not come from a quote. It is not an offer or a sale price. |
 | `aporteunico` | Aporte único al procomún / One-off contribution to the commons | Una parte del precio que cada lote aportaría una sola vez a lo que es de todos. Es de ejemplo: quién la recibe depende de una entidad que todavía no existe. A verificar con abogado. | A share of the price that each lot would contribute once to what belongs to everyone. It is a sample: who receives it depends on an entity that does not exist yet. To be verified with a lawyer. |
 | `expensas` | Expensas / Common charges | Lo que cada lote pagaría por año para sostener lo común. Es un valor de ejemplo y todavía no hay reglamento que lo fije. | What each lot would pay per year to sustain the commons. It is a sample value and no regulation sets it yet. |
 | `boletoejemplo` | Boleto de ejemplo / Sample purchase agreement | Es una simulación del prototipo: no es un boleto de compraventa, no obliga a nadie, no transfiere ningún derecho y no se pagó nada. | This is a prototype simulation: it is not a purchase agreement, it binds nobody, it transfers no rights and nothing was paid. |
@@ -148,7 +158,7 @@ Una sección con título "Boleto de ejemplo" y una franja visible en borde punte
 `estadoConCompras` se aplica sobre `estadoDeLote`: `reservado` → "Reservado (simulado, por vos)"; `pagado` → "Vendido (simulado, a vos)". Lo usan la ficha, `/lotes` y la lista del mapa. Del lado del servidor se dibuja la base, y el cliente la actualiza al leer lo guardado, sin mover el diseño.
 
 ### 10. "Hablar con alguien"
-`Motivo` suma `consulta-lote-vrn`: "Consulta por un lote de Lighthouse VRN" / "Inquiry about a Lighthouse VRN lot", con destino "Equipo NetX" / "NetX team". No se reutiliza `consulta-lote` porque su destino dice "BioPueblo, vía NetX como agencia", y no hay dato de quién vende acá. `PedidoContacto` y `esPedido` no cambian de forma: leen `MOTIVOS`. La referencia es "Lote N" y `estadoMostrado` lleva el texto del estado.
+`Motivo` suma `consulta-lote-vrn`: "Consulta por un lote de Lighthouse VRN" / "Inquiry about a Lighthouse VRN lot", con destino "Equipo NetX" / "NetX team". El formulario se llama "Hablar con alguien". No se reutiliza `consulta-lote` porque su destino dice "BioPueblo, vía NetX como agencia", y no hay dato de quién vende acá. `PedidoContacto` y `esPedido` no cambian de forma: leen `MOTIVOS`. La referencia es "Lote N" y `estadoMostrado` lleva el texto del estado.
 
 ### 11. Público
 Se suman `/^\/lotes$/` y `/^\/lotes\/[^/]+$/` a `RUTAS_PUBLICAS`: `puedeRuta` responde "descubrir" solo. El destino pasa a `existe: true`, y el test de coincidencia con `app/` lo exige.
@@ -158,7 +168,7 @@ Se suman `/^\/lotes$/` y `/^\/lotes\/[^/]+$/` a `RUTAS_PUBLICAS`: `puedeRuta` re
 - [El prototipo muestra "Comprar" y un boleto] → Es lo decidido (ADR-028). Se mantienen la franja "SIMULADO · SIN VALOR LEGAL", el ⚖ en borrador y el aviso de prototipo.
 - <!-- arquitecto: P7 pasó a `venta-lotes-regla`, design §8 --> [Una página pública con precio y reserva] → No se indexa (P7, `venta-lotes-regla`, que corre antes). Quien tenga el enlace la ve sin sesión: ADR-015 ya dice que la sesión no protege, y se resuelve en R14.
 - [Valores cambian en doc 31] → Se cambia un solo módulo, con otra versión. Un boleto viejo muestra lo que se vio.
-- [El precio es el mismo para lotes de 1.344 y de 2.200 m²] → Es el dato ("igual para todos por ahora") y la pantalla lo dice.
+- [El boceto solo tiene dos tamaños, así que casi todos los lotes dan USD 15.000] → Se corrige solo con el KMZ de Martín, porque el precio sale de la superficie. Con costos de ejemplo, un lote de USD 15.000 no se cubre (doc 31 §3): no se muestra en la ficha, es una pregunta para el equipo.
 - [Un lote desaparece con el KMZ y queda una reserva vieja] → `estadoConCompras` ignora ids desconocidos, y el importador avisa.
 
 ## Migration Plan

@@ -51,8 +51,8 @@ Después del pago simulado, la persona SHALL ver un "Boleto de ejemplo" con la m
 - **THEN** ve el boleto con la marca, "Comprador: Persona de ejemplo", "Vendedor: sin dato" y "supuesto de trabajo, no otorgada"
 
 #### Scenario: Con casa
-- **WHEN** la persona eligió "Con casa de referencia"
-- **THEN** el boleto dice la opción y "Precio de la casa: sin dato"
+- **WHEN** la persona eligió "Casa familiar"
+- **THEN** el boleto dice la opción, el precio de la casa y el total que vio, marcados como estimación de ejemplo
 
 #### Scenario: En inglés
 - **WHEN** la persona ve el boleto en inglés

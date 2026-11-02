@@ -6,12 +6,12 @@
 
 ## 1. Datos
 
-- [ ] 1.1 Sumar `faltanteAnual` y `leccionFaltante` a `lib/lotes/modelo.ts`, y crear `lib/lotes/hibrido.ts` con la tabla bilingüe (design §2) y los resguardos (design §5). Verificar con `lib/lotes/hibrido.test.ts`: con 25 lotes faltan USD 165.000 por año; hay 7 rubros comunes, entre ellos aguas grises y negras, y 2 privados; todo rubro sin valor da "sin dato"; los cuatro resguardos dicen que no están hechos, y el del río dice "sin dato". `pnpm test lib/lotes`.
+- [ ] 1.1 Sumar `faltanteAnual` y `leccionFaltante` a `lib/lotes/modelo.ts`, y crear `lib/lotes/hibrido.ts` con la tabla bilingüe (design §2) y los resguardos (design §5). Verificar con `lib/lotes/hibrido.test.ts`: con 25 lotes faltan USD 42.000 por año; hay 7 rubros comunes, entre ellos aguas grises y negras, y 2 privados; todo rubro sin valor da "sin dato"; los cuatro resguardos dicen que no están hechos, y el del río dice "sin dato". `pnpm test lib/lotes`.
 - [ ] 1.2 Reescribir `ordenanza173` y sumar `resguardoshibrido`, con `borrador: true` y `en` (design §5 y §8). Actualizar `lib/legal/terminos.test.ts` (la línea que espera "en el Juego B" en `ordenanza173`). `pnpm test lib/legal`.
 
 ## 2. Página
 
-- [ ] 2.1 Crear `app/lotes/hibrido/page.tsx` con todas las secciones, y enlazarla desde `/lotes` y desde cada ficha. Ampliar el test de números de `lote-ficha-y-compra` a esta ruta. Verificar con `e2e/hibrido.spec.ts`, nuevo: sin sesión se lee el título "Qué es tuyo y qué es de todos"; cada rubro dice "Común" o "Privado" en texto; <!-- arquitecto: con otra cantidad de lotes, un número escrito en el test rompería el PR del KMZ --> se leen las tres lecciones, comparando contra `leccionAporte`, `leccionExpensas` y `leccionFaltante` con `listarLotes().length` (y, solo con 25 lotes, "USD 625.000", "2,6 años", "USD 9.600" y "USD 165.000"); un resguardo dice "Todavía no está hecho"; `/lotes/lote-7` enlaza a la página. `pnpm test:e2e e2e/hibrido.spec.ts`.
+- [ ] 2.1 Crear `app/lotes/hibrido/page.tsx` con todas las secciones, y enlazarla desde `/lotes` y desde cada ficha. Ampliar el test de números de `lote-ficha-y-compra` a esta ruta. Verificar con `e2e/hibrido.spec.ts`, nuevo: sin sesión se lee el título "Qué es tuyo y qué es de todos"; cada rubro dice "Común" o "Privado" en texto; <!-- arquitecto: con otra cantidad de lotes, un número escrito en el test rompería el PR del KMZ --> se leen las tres lecciones, comparando contra `leccionAporte`, `leccionExpensas` y `leccionFaltante` con `listarLotes().length` (y, solo con 25 lotes, "USD 190.125", "USD 63.375", "USD 2.880" y "USD 42.000"); un resguardo dice "Todavía no está hecho"; `/lotes/lote-7` enlaza a la página. `pnpm test:e2e e2e/hibrido.spec.ts`.
 - [ ] 2.2 Sumar inglés, axe y 390 px. Verificar en `e2e/hibrido.spec.ts` que `?lang=en` no deja español suelto y no hay scroll horizontal, y sumar la ruta a `e2e/accesibilidad.spec.ts`. `pnpm test:e2e e2e/hibrido.spec.ts e2e/accesibilidad.spec.ts`.
 
 ## 3. Vista NetX
@@ -23,4 +23,4 @@
 ## 4. Integración
 
 - [ ] 4.1 `git grep -n "Juego B" -- app lib` solo puede dar `lib/gobernanza/datos.ts`: se reporta y no se toca. `git diff --name-only origin/dev` no incluye `lib/permisos/` ni `package.json`. `pnpm verificar` y `pnpm build` en verde.
-- [ ] 4.2 Abrir el PR con `scripts/pr.sh` hacia `dev`, aclarando: toca `/netx` además de lo que nombró el pedido, y por qué; el Fogón sigue diciendo "Parámetros del Juego B"; los resguardos no están hechos; el texto de la lección del aporte (pregunta para Gus). Verificar con `scripts/preview-url.sh agente/modelo-hibrido-procomun` y `BASE_URL=<url> pnpm test:e2e e2e/hibrido.spec.ts e2e/netx-financiamiento.spec.ts`.
+- [ ] 4.2 Abrir el PR con `scripts/pr.sh` hacia `dev`, aclarando: toca `/netx` además de lo que nombró el pedido, y por qué; el Fogón sigue diciendo "Parámetros del Juego B"; los resguardos no están hechos. Verificar con `scripts/preview-url.sh agente/modelo-hibrido-procomun` y `BASE_URL=<url> pnpm test:e2e e2e/hibrido.spec.ts e2e/netx-financiamiento.spec.ts`.

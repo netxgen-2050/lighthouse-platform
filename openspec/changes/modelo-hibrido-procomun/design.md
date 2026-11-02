@@ -34,8 +34,8 @@ Por eso el cambio toca también `/netx` y `relato.ts`.
 
 | Qué | De quién | Quién lo paga | Cuánto |
 |---|---|---|---|
-| Tu lote | Privado | Quien compra | Precio de referencia (módulo) |
-| Tu casa, si la construís | Privado | Quien compra | sin dato |
+| Tu lote | Privado | Quien compra | Rango de precios de lote (módulo), de ejemplo |
+| Tu casa, si la construís | Privado | Quien compra | Rango de precios de casa (módulo), estimación de ejemplo |
 | Caminos | Común | Presupuesto común | sin dato |
 | Agua | Común | Presupuesto común | sin dato |
 | Aguas grises y negras | Común | Presupuesto común | sin dato |
@@ -44,19 +44,19 @@ Por eso el cambio toca también `/netx` y `relato.ts`.
 | Restauración | Común | Presupuesto común | sin dato |
 | Producción | Común | Presupuesto común | sin dato |
 
-Debajo: "El costo de cada rubro todavía no está calculado: sin dato. El presupuesto común de ejemplo es {240.000} por año y sale del aporte único y de las expensas." "Quién lo paga" es un supuesto del modelo, y la página lo dice. La columna "De quién" lleva palabra, no color.
+Debajo: "El costo de cada rubro todavía no está calculado: sin dato. El presupuesto común de ejemplo es {72.000} por año y sale del aporte único y de las expensas." "Quién lo paga" es un supuesto del modelo, y la página lo dice. La columna "De quién" lleva palabra, no color.
 
 ### 3. Cuánto aporta cada lote
-Tres datos, leídos del módulo: aporte único ({25.000}, ⚖ `aporteunico`), expensas por año ({3.000}, ⚖ `expensas`), y "si el aporte se suma al precio o va incluido: sin dato".
+Tres datos, leídos del módulo: aporte único (el 5 % de lo que se paga, ⚖ `aporteunico`, con el ejemplo del paquete promedio: {7.605}), expensas por año ({1.200}, ⚖ `expensas`), y "si el aporte se suma al precio o va incluido: sin dato".
 
 ### 4. Por qué la venta sola no alcanza
 Con `n = listarLotes().length`:
 
-1. `leccionAporte(n)`: hoy, "Con 25 lotes, el aporte único del 5 % suma USD 625.000: paga 2,6 años de un presupuesto común de USD 240.000, y no se repite."
-2. `leccionExpensas(n)`: "Cubrir ese presupuesto solo con expensas pide USD 9.600 por lote al año; la expensa de ejemplo es USD 3.000."
-3. `leccionFaltante(n)`, nueva: "Con las expensas de ejemplo entran USD 75.000 por año: faltan USD 165.000 por año, y de dónde salen: sin dato."
+1. `leccionAporte(n)`: hoy, "Con 25 lotes, el aporte único del 5 % suma USD 190.125 en 3 años de ventas. El primer año entran USD 63.375: no alcanza para un presupuesto común de USD 72.000 por año, y el aporte no se repite."
+2. `leccionExpensas(n)`: "Cubrir ese presupuesto solo con expensas pide USD 2.880 por lote al año; la expensa de ejemplo es USD 1.200."
+3. `leccionFaltante(n)`, nueva: "Con las expensas de ejemplo entran USD 30.000 por año: faltan USD 42.000 por año, y de dónde salen: sin dato."
 
-**El título "Por qué la venta sola no alcanza" sigue siendo cierto con los números de hoy**: el aporte no se repite y las expensas cubren menos de un tercio. Lo que no se afirma es "ni el primer año", salvo que los valores lo sostengan (`lote-ficha-y-compra`, design §2).
+**El título "Por qué la venta sola no alcanza" se sostiene con los números de hoy:** el primer año no alcanza, el aporte no se repite y las expensas cubren menos de la mitad. Si cambian los valores, las frases cambian solas (`lote-ficha-y-compra`, design §2).
 
 ### 5. Resguardos
 Cuatro, de doc 18 §4 (los que pidió Gus), cada uno con la línea "Estado: todavía no está hecho":
