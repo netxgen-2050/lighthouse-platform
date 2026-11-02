@@ -28,6 +28,12 @@ Fuentes:
 ### 1. Los números de inversión quedan detrás de la sesión
 Sumarte nombra los instrumentos y enlaza, sin tasas, tickets, descuentos ni cupos. El ⚖ `circulo` dice "sin difusión masiva del instrumento", y Sumarte es pública.
 
+<!-- arquitecto: "detrás de la sesión" es una tapa, no una llave (ADR-015); se deja escrito para que nadie lo tome como protección -->
+**Qué protege y qué no.** La sesión de la Vista NetX oculta la página en el navegador, pero no la protege: según ADR-015, sus números se pueden leer sin sesión y el registro de Explorador es gratis y abierto. Esta decisión ordena el relato para el equipo; no cumple por sí sola con "sin difusión masiva". El enlace nuevo además conecta una página pública, y hoy indexable (P7), con el detalle del SAFU. Alcanza para el prototipo interno. Antes de mostrar la plataforma afuera (R14) hay que pasar a la opción C de ADR-015 o sacar los enlaces.
+
+<!-- arquitecto: la spec prohíbe cupos y descuentos en la sección, y dos ⚖ que se conservan los nombran -->
+**Los ⚖ de la sección.** "Sin cupos ni descuentos" se aplica a lo que la sección muestra y ofrece: lugares disponibles, medidores y valores del instrumento. Los ⚖ se leen solo si se abren y conservan su texto: `circulo` nombra los topes de la norma (35 y 15) y `safu` dice "con un descuento", sin el valor. Si Gus prefiere que tampoco aparezcan ahí, hay que usar otro texto solo para Sumarte.
+
 *Alternativa descartada:* un resumen con números en Sumarte (se parece a P21 y a una oferta).
 
 *Alternativa descartada:* sacar toda mención a invertir. CLAUDE.md pide que la plataforma deje claro que va a servir para captar plata de inversores.
@@ -47,6 +53,12 @@ Las referencias de los dos pedidos salen del diccionario, porque se ven en la pa
 La spec `gobernanza-adhesion` y `lib/gobernanza/participar.ts` definen la adhesión como un acto de la persona: adherís y valés al instante, sin que nadie te acepte. Elegir un plan no adhiere, porque adherir es aceptar por escrito unos principios.
 
 La línea va **fuera** de las tarjetas, sin botón de adherir y sin condicionar ningún plan. Esto corrige en lo mínimo la decisión del 29-oct "No va en Sumarte" (`manifiesto-lighthouse-vrn`), y por eso queda como pregunta para confirmar. Si Gus la prefiere afuera, se saca un solo párrafo.
+
+<!-- arquitecto: "No aparece en Sumarte" es un requisito con test; este cambio lo contradice dos veces -->
+**Choque con `manifiesto-lighthouse-vrn`.** Su requisito "No aparece en Sumarte" y su test (`e2e/manifiesto-lighthouse-vrn.spec.ts`) prohíben que `/sumarte` nombre a "Lighthouse VRN" o muestre el requisito de adhesión. Lo nombran esta línea y también `invertir.proyectos.tierra`, así que sacar el párrafo de adhesión no alcanza. Hay que actualizar el test (tarea 3.3) y sumar el delta de esa spec.
+
+<!-- arquitecto: adherir es de Miembro en adelante (`NIVEL_MINIMO.adherir`); sin decirlo, el texto le promete a un Explorador algo que la pantalla le niega -->
+**Adherir pide ser Miembro.** Hoy `NIVEL_MINIMO.adherir` es `miembro`, y `/fogon` también lo pide. Un Explorador que sigue el enlace no puede adherir: ve "Sumate para adherir". Por eso el texto de `adhesion` nombra los dos requisitos. Este cambio no modifica esa regla.
 
 ### 4. Ronda 0 sale de la tarjeta y la influencia es la única promesa de gobierno
 La Ronda 0 suponía el encuentro de febrero (NS_Tokenomics I-15, abierto). Prometer a la vez "voz en la Ronda 0" e "influencia" confunde.
@@ -81,7 +93,7 @@ Valen como punto de partida; el implementador los copia y puede ajustar solo el 
 | `fundador.creditosFin` | (⚖), se liberan en 3 años y vencen a los 12 meses de liberarse |
 | `fundador.registroGenesis` | Registro Genesis si venís a un evento de comunidad (a definir) |
 | `tribu.plata` | Lo cobra NetX: un servicio que le factura a la tribu. |
-| `adhesion` | Para participar en las decisiones hace falta adherir al manifiesto de Lighthouse VRN (⚖). Adherís y quedás adentro al instante: nadie tiene que aceptarte. Elegir un plan no te hace adherir. **Leer el manifiesto** → `/tribus/lighthouse` |
+| `adhesion` <!-- arquitecto: suma "como mínimo el plan Miembro" (§3) --> | Para participar en las decisiones hace falta tener como mínimo el plan Miembro y adherir al manifiesto de Lighthouse VRN (⚖). Adherís y quedás adentro al instante: nadie tiene que aceptarte. Elegir un plan no te hace adherir. **Leer el manifiesto** → `/tribus/lighthouse` |
 | `invertir.titulo` | Invertir |
 | `invertir.intro` | Invertir es distinto de sumarte: es otro camino, con otros documentos. |
 | `invertir.proyectos.etiqueta` | Por invitación (⚖ `circulo`) |
@@ -110,7 +122,7 @@ Valen como punto de partida; el implementador los copia y puede ajustar solo el 
 | `fundador.creditosFin` | (⚖), released over 3 years; they expire 12 months after release |
 | `fundador.registroGenesis` | Genesis registration if you attend a community event (to be defined) |
 | `tribu.plata` | NetX charges it: a service billed to the tribe. |
-| `adhesion` | To take part in decisions you have to sign on to the Lighthouse VRN manifesto (⚖). You sign on and you're in right away: nobody has to accept you. Choosing a plan doesn't sign you on. **Read the manifesto** → `/tribus/lighthouse` |
+| `adhesion` <!-- arquitecto: suma "at least the Member plan" (§3) --> | To take part in decisions you need at least the Member plan and to sign on to the Lighthouse VRN manifesto (⚖). You sign on and you're in right away: nobody has to accept you. Choosing a plan doesn't sign you on. **Read the manifesto** → `/tribus/lighthouse` |
 | `invertir.titulo` | Invest |
 | `invertir.intro` | Investing is not the same as joining: it's a different path, with different documents. |
 | `invertir.proyectos.etiqueta` | By invitation |
@@ -151,7 +163,8 @@ El título de la sección nueva queda en `h2`, las tarjetas en `h3`, como la sec
 - en: "The Founder Pass is a membership: you pay to support the commons and you receive access, influence and service credits. Do not expect a money gain. Investing is a different path, separate and with different documents."
 
 **`noesoferta`** (nueva, con `frase`) · título "Esto no es una oferta" / "This is not an offer"
-- frase es: "Esto no es una oferta: no se vende nada desde esta página ni se cobra nada. Contamos cómo funcionaría." Frase en: "This is not an offer: nothing is sold or charged from this page. We explain how it would work."
+<!-- arquitecto: decía "desde esta página", pero esta misma página muestra planes con precio y botones de compra simulada; la frase legal tiene que ser literalmente cierta -->
+- frase es: "Esto no es una oferta: desde esta sección no se vende ni se cobra nada. Contamos cómo funcionaría." Frase en: "This is not an offer: nothing is sold or charged from this section. We explain how it would work."
 - es: "Ofrecer inversiones al público necesita autorización de la CNV. Acá solo contamos un diseño que todavía no revisó un abogado: el SAFU y las series no existen. Si algún día se concreta, sería en forma privada, por invitación, con documentos propios y verificando tu identidad antes. A verificar con abogado."
 - en: "Offering investments to the public requires authorization from the CNV (Argentina's securities regulator). Here we only describe a design that no lawyer has reviewed yet: the SAFU and the series do not exist. If it ever happens, it would be private, by invitation, with its own documents and after verifying your identity. To be verified with a lawyer."
 
@@ -175,10 +188,12 @@ Quedan en español marcado los ⚖ `semillas`, `gobernanzafideicomiso` y otros q
 - [Dos pantallas se contradicen un tiempo: Sumarte dice "influencia" y el Pasaporte "Voto en el Fideicomiso"] → Se resuelve al entrar `fogon-desde-mi-y-guardian`. El PR lo aclara.
 - [Sumarte dice que no hace falta aceptación y la ficha de Lighthouse VRN todavía muestra "Simular: la comunidad me acepta"] → La regla real ya es esa (`participar.ts`: "pedido" cuenta); la ficha se corrige con `fogon-portada-holarquia`. El PR lo aclara.
 - [Conflictos de merge si `fogon-desde-mi-y-guardian` o `idioma-legal` corren en paralelo, en `terminos.ts` y en los diccionarios] → No correrlos la misma noche; el que entre segundo reusa lo que ya esté.
-- [El enlace sin sesión te devuelve a la misma página, con un aviso] → Es la regla de acceso vigente de la Vista NetX y el aviso explica por qué. No se abre esa Vista al público.
-- ["No es una oferta" da una falsa tranquilidad] → Es un borrador y no reemplaza R14 ni la revisión de un abogado. Antes de mostrar la plataforma afuera hay que revisar esta sección y evaluar P7 (`noindex`).
+- [El enlace sin sesión te devuelve a la misma página, con un aviso] → Es la regla de acceso vigente de la Vista NetX y el aviso explica por qué. No se abre esa Vista al público. <!-- arquitecto --> `IrASumarte` conserva la ruta y la query, pero no el `#`: quien se registra desde ese aviso vuelve al principio de `/netx/financiamiento`, no a "Dinero temprano". Se acepta.
+- ["No es una oferta" da una falsa tranquilidad] → Es un borrador y no reemplaza R14 ni la revisión de un abogado. Antes de mostrar la plataforma afuera hay que revisar esta sección, resolver lo de §1 ("Qué protege y qué no") y hacer P7 (`noindex`), que el backlog ya pide antes de la próxima entrega a `main`. <!-- arquitecto -->
+- [Otras specs sin archivar quedan desactualizadas: `manifiesto-lighthouse-vrn` ("No aparece en Sumarte"), `contactos-bandeja` ("Inversión y círculo con el mismo pedido": medidores y "Lote 7") y `pasaporte-identidad-destacada` ("Para qué sirve y qué no requiere": "Lote 7")] → Necesitan su delta en este cambio antes de aprobarlo; lo suma el especificador. <!-- arquitecto: el arquitecto no toca specs -->
 - [El ⚖ `guardian` cambia de título y la bitácora guarda la clave] → La clave no cambia. Las entradas viejas siguen valiendo.
-- [`guardianIA` sigue diciendo que "el Guardián del Lighthouse" custodia el Fondo Común] → Lo reescribe `fogon-desde-mi-y-guardian`. Queda fuera de este cambio.
+<!-- arquitecto: `fogon-desde-mi-y-guardian` §1 deja esta frase sin cambiar hasta que Gus confirme la figura legal; no alcanza con decir que la reescribe aquel cambio -->
+- [`guardianIA` sigue diciendo que "el Guardián del Lighthouse" custodia el Fondo Común, y Sumarte pasa a decir que lo administra la Fundación] → `fogon-desde-mi-y-guardian` §1 deja esa frase sin cambiar hasta que Gus confirme qué figura queda en el Juego B. Este cambio no la toca, pero el ⚖ `guardian` ya da por hecha la Fundación: hace falta esa confirmación para cerrar la contradicción.
 
 ## Migration Plan
 
