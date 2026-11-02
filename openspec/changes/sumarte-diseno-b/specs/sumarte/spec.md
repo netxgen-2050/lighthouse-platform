@@ -79,14 +79,14 @@ Los textos de los planes y de la comparativa SHALL dejar de ofrecer el Congreso 
 - **THEN** lee "Cohorte Génesis · fecha a definir" y no lee "Feb 2027"
 
 ### Requirement: Invertir sin oferta pública
-`/sumarte` SHALL mostrar una sección "Invertir" con el texto visible "Esto no es una oferta" y su ⚖ en borrador, y dos tarjetas: "En los proyectos de regeneración" y "En NetX como empresa". La sección MUST NOT mostrar tasas, tickets, descuentos, cupos, medidores ni retornos, y MUST NOT tener una acción de pago o aporte.
+`/sumarte` SHALL mostrar una sección "Invertir" con el texto visible "Esto no es una oferta" y su ⚖ en borrador, y dos tarjetas: "En los proyectos de regeneración" y "En NetX como empresa". La sección MUST NOT mostrar tasas, descuentos, cupos, medidores ni retornos, ni tickets de los proyectos, y MUST NOT tener una acción de pago o aporte. El único monto permitido es el rango de tickets de la tarjeta de la empresa.
 
 #### Scenario: Sección
 - **WHEN** una persona abre `/sumarte`
 - **THEN** ve el título "Invertir" y lee "Esto no es una oferta" antes de las dos tarjetas
 
-#### Scenario: Sin números de inversión
-- **WHEN** una persona lee la sección "Invertir"
+#### Scenario: Sin números en los proyectos
+- **WHEN** una persona lee la tarjeta "En los proyectos de regeneración"
 - **THEN** no hay montos, porcentajes ni medidores de lugares
 - **AND** no lee "Lote 7"
 
@@ -106,12 +106,40 @@ La tarjeta "En los proyectos de regeneración" SHALL explicar en palabras simple
 - **THEN** ve "Invitación pedida (simulado)" y el pedido figura como "Invitación al círculo · Programa de series"
 - **AND** ningún medidor cambia, porque no hay medidores
 
-### Requirement: Lighthouse VRN no vende tierra
-La tarjeta "En los proyectos de regeneración" SHALL decir que en el Juego B Lighthouse VRN no vende tierra y que la tierra queda en una Fundación que todavía no existe, con su ⚖. Sumarte MUST NOT ofrecer, reservar ni dar prioridad sobre lotes o tierra.
+### Requirement: La tierra común y los lotes privados
+La tarjeta "En los proyectos de regeneración" SHALL decir que la tierra común queda en una Fundación que todavía no existe, con su ⚖, y que los lotes privados son otro camino. MUST NOT decir que Lighthouse VRN no vende tierra, ni nombrar "Juego A" o "Juego B". Ningún plan ni el Pase Fundador MUST dar prioridad, crédito o reserva sobre un lote.
 
 #### Scenario: Texto
 - **WHEN** una persona lee la tarjeta
-- **THEN** lee que Lighthouse VRN no vende tierra en el Juego B, con el ⚖ "Fundación de la tierra"
+- **THEN** lee que la tierra común queda en una Fundación, con el ⚖ "Fundación de la tierra", y que los lotes privados están en "Comprar un lote"
+- **AND** no lee "no vende tierra" ni "Juego B"
+
+#### Scenario: El Pase no da lotes
+- **WHEN** una persona lee la tarjeta del Pase Fundador
+- **THEN** sigue leyendo que no da tierra, lotes, prioridad ni rendimiento
+
+### Requirement: Puerta para comprar un lote
+`/sumarte` SHALL mostrar una sección "Comprar un lote", fuera de "Invertir" y antes de ella, con el precio de referencia marcado de ejemplo y leído del módulo del modelo, el estado administrativo compacto de `lighthouse-norte`, la aclaración de que es una simulación y un enlace a `/lotes`. MUST NOT tener un botón para reservar o comprar.
+
+#### Scenario: Ver la puerta
+- **WHEN** una persona abre `/sumarte`
+- **THEN** ve "Comprar un lote" antes de "Invertir", lee "precio de referencia, de ejemplo", "supuesto de trabajo, no otorgada" y que no se cobra nada
+
+#### Scenario: Ir a los lotes con el teclado
+- **WHEN** la persona llega con Tab a "Ver los lotes" y aprieta Enter
+- **THEN** llega a `/lotes`
+
+#### Scenario: En inglés
+- **WHEN** una persona abre `/sumarte` con el idioma en inglés
+- **THEN** ve "Buy a lot" y "See the lots"
+
+### Requirement: Tickets de la empresa
+La tarjeta "En NetX como empresa" SHALL mostrar el rango de tickets, desde USD 5.000 hasta USD 50.000 o más, marcado en texto como de ejemplo y a definir con Vagner. Los montos MUST salir de una sola constante.
+
+#### Scenario: Rango
+- **WHEN** una persona lee la tarjeta
+- **THEN** lee "USD 5.000", "USD 50.000", "o más" y "a definir con Vagner"
+- **AND** la tarjeta sigue sin tener una acción de pago
 
 ### Requirement: Enlaces a la Vista NetX
 Cada tarjeta de "Invertir" SHALL enlazar a la Vista NetX: los proyectos a `/netx/financiamiento#m-temprano` y la empresa a `/netx`. Sin sesión, el enlace MUST seguir la regla de acceso de la Vista NetX. En inglés, el enlace SHALL avisar que la Vista NetX está en español.

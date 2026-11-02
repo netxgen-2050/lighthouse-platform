@@ -26,7 +26,9 @@ Fuentes:
 ## Decisions
 
 ### 1. Los números de inversión quedan detrás de la sesión
-Sumarte nombra los instrumentos y enlaza, sin tasas, tickets, descuentos ni cupos. El ⚖ `circulo` dice "sin difusión masiva del instrumento", y Sumarte es pública.
+Sumarte nombra los instrumentos y enlaza, sin tasas, descuentos ni cupos, y sin tickets de los proyectos. El ⚖ `circulo` dice "sin difusión masiva del instrumento", y Sumarte es pública.
+
+**Única excepción, pedida por Gus el 2-nov:** el rango de tickets de "En NetX como empresa". Sale de una constante con su marca, `TICKETS_SAFE = { min: 5_000, max: 50_000, abierto: true }` en `lib/financiamiento/fuentes.ts`, y la tarjeta dice "de ejemplo, a definir con Vagner". Es un SAFE de la empresa, no el círculo de un fideicomiso. Igual, es un monto de inversión en una página pública e indexable: antes de mostrar la plataforma afuera, esto se revisa junto con lo de abajo.
 
 <!-- arquitecto: "detrás de la sesión" es una tapa, no una llave (ADR-015); se deja escrito para que nadie lo tome como protección -->
 **Qué protege y qué no.** La sesión de la Vista NetX oculta la página en el navegador, pero no la protege: según ADR-015, sus números se pueden leer sin sesión y el registro de Explorador es gratis y abierto. Esta decisión ordena el relato para el equipo; no cumple por sí sola con "sin difusión masiva". El enlace nuevo además conecta una página pública, y hoy indexable (P7), con el detalle del SAFU. Alcanza para el prototipo interno. Antes de mostrar la plataforma afuera (R14) hay que pasar a la opción C de ADR-015 o sacar los enlaces.
@@ -55,7 +57,7 @@ La spec `gobernanza-adhesion` y `lib/gobernanza/participar.ts` definen la adhesi
 La línea va **fuera** de las tarjetas, sin botón de adherir y sin condicionar ningún plan. Esto corrige en lo mínimo la decisión del 29-oct "No va en Sumarte" (`manifiesto-lighthouse-vrn`), y por eso queda como pregunta para confirmar. Si Gus la prefiere afuera, se saca un solo párrafo.
 
 <!-- arquitecto: "No aparece en Sumarte" es un requisito con test; este cambio lo contradice dos veces -->
-**Choque con `manifiesto-lighthouse-vrn`.** Su requisito "No aparece en Sumarte" y su test (`e2e/manifiesto-lighthouse-vrn.spec.ts`) prohíben que `/sumarte` nombre a "Lighthouse VRN" o muestre el requisito de adhesión. Lo nombran esta línea y también `invertir.proyectos.tierra`, así que sacar el párrafo de adhesión no alcanza. Hay que actualizar el test (tarea 3.3) y sumar el delta de esa spec.
+**Choque con `manifiesto-lighthouse-vrn`.** Su requisito "No aparece en Sumarte" y su test (`e2e/manifiesto-lighthouse-vrn.spec.ts`) prohíben que `/sumarte` nombre a "Lighthouse VRN" o muestre el requisito de adhesión. Lo nombran esta línea, `invertir.proyectos.tierra` y la puerta "Comprar un lote", así que sacar el párrafo de adhesión no alcanza. Hay que actualizar el test (tarea 3.3) y el delta de esa spec, que ya está en este cambio.
 
 <!-- arquitecto: adherir es de Miembro en adelante (`NIVEL_MINIMO.adherir`); sin decirlo, el texto le promete a un Explorador algo que la pantalla le niega -->
 **Adherir pide ser Miembro.** Hoy `NIVEL_MINIMO.adherir` es `miembro`, y `/fogon` también lo pide. Un Explorador que sigue el enlace no puede adherir: ve "Sumate para adherir". Por eso el texto de `adhesion` nombra los dos requisitos. Este cambio no modifica esa regla.
@@ -75,6 +77,14 @@ Este cambio toma de su design §4 solo la tarjeta de Sumarte y la **creación** 
 ### 6. "Brote" sigue igual
 Doc 04 lo llama "Guardián"; `RESULTS_platform_revenue.md` y el código, "Brote". "Guardián" ya nombra al agente que defiende la Voz de la Tierra, y usarlo también para un nivel de pago confunde. Si Gus quiere el cambio, es de una línea por idioma en `niveles`; el id `brote` queda.
 
+### 6 bis. Puerta "Comprar un lote" (2-nov)
+Es un `h2` propio, entre los planes e "Invertir", y **no** va dentro de "Invertir": ahí la frase `noesoferta` dice "desde esta sección no se vende ni se cobra nada" y tiene que seguir siendo literalmente cierta. Muestra: el texto, el precio de referencia de `lib/lotes/modelo.ts` (nunca escrito en el diccionario), `EstadoAdministrativo proyecto="lighthouse-norte" compacto`, y un enlace `next/link` a `/lotes`. No tiene botón de compra ni de reserva: eso vive en la ficha.
+
+*Alternativa descartada:* una tarjeta más dentro de los cuatro planes. Un lote no es un plan: no se activa ni se compara en "Qué incluye cada plan".
+
+### 6 ter. "Juego B" sale de los textos de esta página (2-nov)
+`modelo-hibrido-procomun` saca el Juego A y el B de la Vista NetX, y dejarlos acá dejaría a Sumarte hablando de algo que ya no se explica en ningún lado. Los textos de abajo dicen "modelo híbrido" o directamente lo que pasa. Que la Fundación siga guardando la tierra común es un **supuesto** y queda como pregunta para Gus: si cambia, son textos y dos ⚖.
+
 ### 7. Textos
 
 Valen como punto de partida; el implementador los copia y puede ajustar solo el armado con los ⚖.
@@ -83,7 +93,10 @@ Valen como punto de partida; el implementador los copia y puede ajustar solo el 
 
 | Clave (orientativa) | Texto |
 |---|---|
-| `pagina.intro` | Sumarte es la puerta de entrada: cómo te sumás define qué podés hacer. Explorar es gratis. La membresía te abre las salas y los pactos. El Pase Fundador sostiene el Fondo Común del Lighthouse y te da influencia y créditos. Invertir es otro camino: está más abajo. Valores de ejemplo, a re-ajustar. Nada se cobra de verdad: todo lo que elijas acá es simulado y queda solo en este navegador. |
+| `pagina.intro` | Sumarte es la puerta de entrada: cómo te sumás define qué podés hacer. Explorar es gratis. La membresía te abre las salas y los pactos. El Pase Fundador sostiene el Fondo Común del Lighthouse y te da influencia y créditos. Comprar un lote e invertir son otros caminos: están más abajo. Valores de ejemplo, a re-ajustar. Nada se cobra de verdad: todo lo que elijas acá es simulado y queda solo en este navegador. |
+| `comprarLote.titulo` | Comprar un lote |
+| `comprarLote.texto` | Lotes privados en el sector norte de Lighthouse VRN, con un loteo provisorio e ilustrativo. Desde {precio} por familia: precio de referencia, de ejemplo, a confirmar. Es una simulación: no se cobra nada y no reserva ningún lote de verdad. |
+| `comprarLote.enlace` | Ver los lotes |
 | `explorador.incluye` | Mapa y páginas de tribus · Entrevista con el agente · Eventos abiertos · Hifa y tu espacio personal |
 | `miembro.plata` | La cobra NetX: es un servicio. |
 | `fundador.cohorte` | Cohorte Génesis · fecha a definir |
@@ -98,13 +111,14 @@ Valen como punto de partida; el implementador los copia y puede ajustar solo el 
 | `invertir.intro` | Invertir es distinto de sumarte: es otro camino, con otros documentos. |
 | `invertir.proyectos.etiqueta` | Por invitación (⚖ `circulo`) |
 | `invertir.proyectos.titulo` | En los proyectos de regeneración |
-| `invertir.proyectos.texto` | En el Juego B, la plata de inversión va a proyectos (las series ⚖), no a la tierra. Las series todavía no existen: la idea es entrar con un SAFU (⚖), que después se convierte en Unidades de la Serie Madre (⚖). |
-| `invertir.proyectos.tierra` | Lighthouse VRN no vende tierra en el Juego B: queda en una Fundación (⚖) que todavía no existe y que no podría venderla. |
+| `invertir.proyectos.texto` | Esta plata de inversión va a proyectos (las series ⚖), no a la tierra. Las series todavía no existen: la idea es entrar con un SAFU (⚖), que después se convierte en Unidades de la Serie Madre (⚖). |
+| `invertir.proyectos.tierra` | La tierra común queda en una Fundación (⚖) que todavía no existe y que no podría venderla. Los lotes privados son otro camino: están en "Comprar un lote". |
 | `invertir.proyectos.enlace` | Ver cómo funciona en la Vista NetX |
 | `invertir.proyectos.referencia` | Programa de series |
 | `invertir.empresa.etiqueta` | Conversación privada |
 | `invertir.empresa.titulo` | En NetX como empresa (⚖ `safe`) |
 | `invertir.empresa.texto` | Es otra inversión: en la compañía detrás de la plataforma, no en los proyectos. Lo hablamos uno a uno con el equipo. |
+| `invertir.empresa.tickets` | Tickets desde {min} hasta {max} o más: de ejemplo, a definir con Vagner. |
 | `invertir.empresa.enlace` | Ver cómo se financia NetX en la Vista NetX |
 | `invertir.empresa.referencia` | Invertir en NetX |
 
@@ -112,7 +126,10 @@ Valen como punto de partida; el implementador los copia y puede ajustar solo el 
 
 | Clave (orientativa) | Texto |
 |---|---|
-| `pagina.intro` | Joining is the way in: how you join defines what you can do. Exploring is free. Membership opens the rooms and the pacts. The Founder Pass supports the Lighthouse Common Fund and gives you influence and credits. Investing is a different path: it's further down. Sample values, to be re-tuned. Nothing is really charged: everything you choose here is simulated and stays only in this browser. |
+| `pagina.intro` | Joining is the way in: how you join defines what you can do. Exploring is free. Membership opens the rooms and the pacts. The Founder Pass supports the Lighthouse Common Fund and gives you influence and credits. Buying a lot and investing are different paths: they're further down. Sample values, to be re-tuned. Nothing is really charged: everything you choose here is simulated and stays only in this browser. |
+| `comprarLote.titulo` | Buy a lot |
+| `comprarLote.texto` | Private lots in the north sector of Lighthouse VRN, on a provisional, illustrative subdivision. From {precio} per family: a reference price, a sample, to be confirmed. It's a simulation: nothing is charged and no lot is really reserved. |
+| `comprarLote.enlace` | See the lots |
 | `explorador.incluye` | Map and tribe pages · Interview with the agent · Open events · Hifa and your personal space |
 | `miembro.plata` | NetX charges it: it's a service. |
 | `fundador.cohorte` | Genesis Cohort · date to be defined |
@@ -127,13 +144,14 @@ Valen como punto de partida; el implementador los copia y puede ajustar solo el 
 | `invertir.intro` | Investing is not the same as joining: it's a different path, with different documents. |
 | `invertir.proyectos.etiqueta` | By invitation |
 | `invertir.proyectos.titulo` | In the regeneration projects |
-| `invertir.proyectos.texto` | In Game B, investment money goes to projects (the series ⚖), not to the land. The series don't exist yet: the idea is to come in with a SAFU (⚖), which later converts into Units of the Mother Series (⚖). |
-| `invertir.proyectos.tierra` | Lighthouse VRN doesn't sell land in Game B: it stays in a Foundation (⚖) that doesn't exist yet and could not sell it. |
+| `invertir.proyectos.texto` | This investment money goes to projects (the series ⚖), not to the land. The series don't exist yet: the idea is to come in with a SAFU (⚖), which later converts into Units of the Mother Series (⚖). |
+| `invertir.proyectos.tierra` | The common land stays in a Foundation (⚖) that doesn't exist yet and could not sell it. Private lots are a different path: see "Buy a lot". |
 | `invertir.proyectos.enlace` | See how it works in the NetX View (in Spanish) |
 | `invertir.proyectos.referencia` | Series program |
 | `invertir.empresa.etiqueta` | Private conversation |
 | `invertir.empresa.titulo` | In NetX as a company |
 | `invertir.empresa.texto` | It's a different investment: in the company behind the platform, not in the projects. We talk it over one on one with the team. |
+| `invertir.empresa.tickets` | Tickets from {min} to {max} or more: samples, to be defined with Vagner. |
 | `invertir.empresa.enlace` | See how NetX is funded in the NetX View (in Spanish) |
 | `invertir.empresa.referencia` | Invest in NetX |
 
@@ -142,12 +160,12 @@ El título de la sección nueva queda en `h2`, las tarjetas en `h3`, como la sec
 **Catálogo legal (todos con `borrador: true`).** La bitácora y el tooltip no cambian.
 
 **`pasefundador`** · título "Pase Fundador" / "Founder Pass"
-- es: "Una membresía no transferible del procomún del Lighthouse. Da influencia en el Fondo Común, acceso y créditos de servicios. No da tierra, lotes, prioridad ni rendimiento, y no se puede revender. La plata del Pase va al Fondo Común, no a NetX. En el Juego B la recibe la Fundación de la tierra, que todavía no existe; quién la recibiría mientras tanto está sin definir. A verificar con abogado."
-- en: "A non-transferable membership of the Lighthouse commons. It gives influence in the Common Fund, access and service credits. It gives no land, lots, priority or return, and it cannot be resold. The Pass money goes to the Common Fund, not to NetX. In Game B it is received by the land Foundation, which does not exist yet; who would receive it in the meantime is still undefined. To be verified with a lawyer."
+- es: "Una membresía no transferible del procomún del Lighthouse. Da influencia en el Fondo Común, acceso y créditos de servicios. No da tierra, lotes, prioridad ni rendimiento, y no se puede revender. La plata del Pase va al Fondo Común, no a NetX. En el modelo híbrido la recibe la Fundación de la tierra, que todavía no existe; quién la recibiría mientras tanto está sin definir. A verificar con abogado."
+- en: "A non-transferable membership of the Lighthouse commons. It gives influence in the Common Fund, access and service credits. It gives no land, lots, priority or return, and it cannot be resold. The Pass money goes to the Common Fund, not to NetX. Under the hybrid model it is received by the land Foundation, which does not exist yet; who would receive it in the meantime is still undefined. To be verified with a lawyer."
 
 **`guardian`** · título "El Fondo Común" / "The Common Fund". La clave queda porque la usa `lib/canales/puertas.ts`.
-- es: "La plata del procomún para agua, energía, vivero e incubación de tribus. Recibe el pago del Pase directamente. NetX nunca toma un porcentaje: como mucho cobra una tarifa de servicio fija y publicada, si se la contrata para operar la plataforma. En el Juego B lo administra la Fundación de la tierra, que todavía no existe. A verificar con abogado."
-- en: "The commons' money for water, energy, the nursery and incubating tribes. It receives the Pass payment directly. NetX never takes a percentage: at most it charges a fixed, published service fee, if it is hired to operate the platform. In Game B it is managed by the land Foundation, which does not exist yet. To be verified with a lawyer."
+- es: "La plata del procomún para agua, energía, vivero e incubación de tribus. Recibe el pago del Pase directamente. NetX nunca toma un porcentaje: como mucho cobra una tarifa de servicio fija y publicada, si se la contrata para operar la plataforma. En el modelo híbrido lo administra la Fundación de la tierra, que todavía no existe. A verificar con abogado."
+- en: "The commons' money for water, energy, the nursery and incubating tribes. It receives the Pass payment directly. NetX never takes a percentage: at most it charges a fixed, published service fee, if it is hired to operate the platform. Under the hybrid model it is managed by the land Foundation, which does not exist yet. To be verified with a lawyer."
 
 **`creditos`** · título "Créditos comunes y de estadía" / "Common and stay credits"
 - es: "Un saldo con un solo emisor, quien custodie el Fondo Común: se canjea por productos de las tribus y por estadías. Se libera por partes en 3 años y cada parte vence a los 12 meses. No se transfiere y no se rescata en dinero, para no ser un medio de pago. Valores de ejemplo, a re-ajustar."
@@ -179,21 +197,26 @@ El título de la sección nueva queda en `h2`, las tarjetas en `h3`, como la sec
 | `serieprograma` | Series | A project with its own money, its own income and its own investors (for example, the vineyard or the solar park) within the trust program. Each trust is a separate estate: a problem in one series does not reach another. |
 | `safu` | SAFU | A simple agreement for future Units: someone puts in money today, before the series exist, and receives it as Units of the Mother Series when it opens, at a discount. How it can legally be offered still has to be confirmed by a lawyer. |
 | `seriemadre` | Mother Series | A series with no project of its own: it invests in all the others. Whoever comes in holds a small piece of every project, with less risk than in a single one. It is where the SAFU and, later, the tokens end up. |
-| `fundaciontierra` | Land Foundation | In Game B, the entity that holds the Lighthouse land. It does not exist yet: it is created if the design is accepted and the current owner transfers the land to it. Its statute would forbid selling it, mortgaging it or pledging it as collateral (how to make that binding on third parties is to be verified with a lawyer). It collects a ground rent and a royalty from each series before any investor, and uses them to fund the commons. NetX cannot take a percentage of its money. |
+
+**`fundaciontierra`** (se reescribe el español también, 2-nov, `borrador: true`) · título "Fundación de la tierra" / "Land Foundation"
+- es: "En el modelo híbrido, la entidad en la que queda la tierra común del Lighthouse. Todavía no existe: se crea si se acepta el diseño y el dueño actual le pasa esa tierra. Los lotes privados no quedan en ella. Su estatuto le prohibiría vender, hipotecar o dar en garantía la tierra común (cómo hacer que eso valga frente a terceros está a verificar con abogado). Cobra un canon y una regalía de cada serie antes que cualquier inversor y con eso paga el procomún. NetX no puede tomar un porcentaje de su plata."
+- en: "Under the hybrid model, the entity that holds the Lighthouse common land. It does not exist yet: it is created if the design is accepted and the current owner transfers that land to it. Private lots do not stay in it. Its statute would forbid selling, mortgaging or pledging the common land as collateral (how to make that binding on third parties is to be verified with a lawyer). It collects a ground rent and a royalty from each series before any investor, and uses them to fund the commons. NetX cannot take a percentage of its money."
 
 Quedan en español marcado los ⚖ `semillas`, `gobernanzafideicomiso` y otros que este cambio no toca: los resuelve `idioma-legal`.
 
 ## Risks / Trade-offs
 
-- [Dos pantallas se contradicen un tiempo: Sumarte dice "influencia" y el Pasaporte "Voto en el Fideicomiso"] → Se resuelve al entrar `fogon-desde-mi-y-guardian`. El PR lo aclara.
+- [Dos pantallas se contradicen: Sumarte dice "influencia" y el Pasaporte "Voto en el Fideicomiso"] → Se iba a resolver con `fogon-desde-mi-y-guardian`, **que quedó congelado el 2-nov**: la contradicción sigue hasta nuevo aviso. El PR lo aclara.
+- [`/sumarte` es pública y ahora muestra precio de lote y rango de tickets] → Es el prototipo interno (ADR-028). P7 (`noindex`) sigue pendiente, y sumar estos dos montos la vuelve más urgente antes de cualquier entrega a `main`.
+- [Las líneas sobre "Juego B" de `lib/legal/terminos.test.ts` esperan el texto viejo de `fundaciontierra`] → Se actualizan en la tarea 1.2.
 - [Sumarte dice que no hace falta aceptación y la ficha de Lighthouse VRN todavía muestra "Simular: la comunidad me acepta"] → La regla real ya es esa (`participar.ts`: "pedido" cuenta); la ficha se corrige con `fogon-portada-holarquia`. El PR lo aclara.
 - [Conflictos de merge si `fogon-desde-mi-y-guardian` o `idioma-legal` corren en paralelo, en `terminos.ts` y en los diccionarios] → No correrlos la misma noche; el que entre segundo reusa lo que ya esté.
 - [El enlace sin sesión te devuelve a la misma página, con un aviso] → Es la regla de acceso vigente de la Vista NetX y el aviso explica por qué. No se abre esa Vista al público. <!-- arquitecto --> `IrASumarte` conserva la ruta y la query, pero no el `#`: quien se registra desde ese aviso vuelve al principio de `/netx/financiamiento`, no a "Dinero temprano". Se acepta.
 - ["No es una oferta" da una falsa tranquilidad] → Es un borrador y no reemplaza R14 ni la revisión de un abogado. Antes de mostrar la plataforma afuera hay que revisar esta sección, resolver lo de §1 ("Qué protege y qué no") y hacer P7 (`noindex`), que el backlog ya pide antes de la próxima entrega a `main`. <!-- arquitecto -->
-- [Otras specs sin archivar quedan desactualizadas: `manifiesto-lighthouse-vrn` ("No aparece en Sumarte"), `contactos-bandeja` ("Inversión y círculo con el mismo pedido": medidores y "Lote 7") y `pasaporte-identidad-destacada` ("Para qué sirve y qué no requiere": "Lote 7")] → Necesitan su delta en este cambio antes de aprobarlo; lo suma el especificador. <!-- arquitecto: el arquitecto no toca specs -->
+- [Otras specs quedaban desactualizadas: `manifiesto-lighthouse-vrn` ("No aparece en Sumarte"), `contactos-bandeja` ("Inversión y círculo con el mismo pedido": medidores y "Lote 7") y `pasaporte-identidad-destacada` ("Para qué sirve y qué no requiere": "Lote 7")] → Sus deltas ya están en este cambio (2-nov).
 - [El ⚖ `guardian` cambia de título y la bitácora guarda la clave] → La clave no cambia. Las entradas viejas siguen valiendo.
 <!-- arquitecto: `fogon-desde-mi-y-guardian` §1 deja esta frase sin cambiar hasta que Gus confirme la figura legal; no alcanza con decir que la reescribe aquel cambio -->
-- [`guardianIA` sigue diciendo que "el Guardián del Lighthouse" custodia el Fondo Común, y Sumarte pasa a decir que lo administra la Fundación] → `fogon-desde-mi-y-guardian` §1 deja esa frase sin cambiar hasta que Gus confirme qué figura queda en el Juego B. Este cambio no la toca, pero el ⚖ `guardian` ya da por hecha la Fundación: hace falta esa confirmación para cerrar la contradicción.
+- [`guardianIA` sigue diciendo que "el Guardián del Lighthouse" custodia el Fondo Común, y Sumarte pasa a decir que lo administra la Fundación] → `fogon-desde-mi-y-guardian` §1 deja esa frase sin cambiar hasta que Gus confirme qué figura queda en el modelo híbrido. Este cambio no la toca, pero el ⚖ `guardian` ya da por hecha la Fundación: hace falta esa confirmación para cerrar la contradicción.
 
 ## Migration Plan
 
