@@ -10,8 +10,8 @@ export const TEXTO_COMUN: { para: BilingueConOriginal; cuida: BilingueConOrigina
     en: "Water, energy, a plant nursery and the spaces used by all the tribes (sample).",
   },
   cuida: {
-    es: "El Guardián del Lighthouse, con la participación de todas las tribus (ejemplo).",
-    en: "The Lighthouse Guardian, with the participation of all the tribes (sample).",
+    es: "El Consejo de la Fundación, con la participación de todas las tribus (ejemplo).",
+    en: "The Foundation Council, with the participation of all the tribes (sample).",
   },
 };
 

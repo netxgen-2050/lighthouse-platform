@@ -138,7 +138,7 @@ export async function FichaComun() {
           ))}
         </ul>
         <p>
-          <Link className="underline" href="/fogon/gobernanza">
+          <Link className="underline" href="/fogon">
             {f.verGobernanza}
           </Link>
         </p>

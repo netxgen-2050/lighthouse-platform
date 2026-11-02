@@ -6,7 +6,7 @@ En la revisión del 1-nov de `fogon-portada-holarquia`, Gus pidió tres cosas qu
 
 ## What Changes
 
-- **Dependencia:** se apila sobre `fogon-portada-holarquia` (ranura `adyacente` de la holarquía, `tarjeta-decision.tsx`, `usarFogon()`, sin ámbito fideicomiso). La implementación parte de `dev` **con `fogon-portada-holarquia` integrado**; si no está, frenar y reportar.
+- **Dependencia:** se apila sobre `fogon-portada-holarquia` (ranura `adyacente` de la holarquía, `tarjeta-decision.tsx`, `useFogon()`, sin ámbito fideicomiso). La implementación parte de `dev` **con `fogon-portada-holarquia` integrado**; si no está, frenar y reportar.
 - **El Guardián defiende la Voz de la Tierra** (Gus, 1-nov): su etiqueta y su ⚖ `guardianIA` (borrador) lo presentan como el agente (IA, simulado) que habla por el agua, el suelo y la vida nativa, que desafía lo que pueda dañarlos y que **nunca pausa ni decide**. Ningún texto de Hifa ni del Guardián dice que un agente pausa, frena, bloquea o decide.
 - **Desafío del Guardián, variante (b)** (Gus, 1-nov):
   - Cada sugerencia del Guardián que ya apareció es un **desafío** que se ve **destacado arriba de la propuesta** ("El Guardián desafía esta propuesta"), con el principio o la decisión que cita, sus respaldos y sus respuestas.

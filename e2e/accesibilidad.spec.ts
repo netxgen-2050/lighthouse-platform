@@ -13,7 +13,7 @@ const rutas = [
   "/semillas",
   "/canales",
   "/fogon",
-  "/fogon/gobernanza",
+  "/fogon/propuestas/siembra?desde=lighthouse",
   "/netx",
   "/netx/comunidad",
   "/pasaporte",
@@ -448,8 +448,9 @@ test("axe sin violaciones serias o críticas: /netx/financiamiento con todos los
 });
 
 for (const lente of ["Estructura", "Propósitos", "Decisiones que suben", "Desde mí"]) {
-  test(`axe sin violaciones serias o críticas: /fogon/gobernanza con la lente ${lente}`, async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+  test(`axe sin violaciones serias o críticas: /fogon con la lente ${lente} y lo de los círculos de adentro a la vista`, async ({ page }) => {
+    await page.goto("/fogon");
+    await expect(page.getByRole("heading", { level: 3, name: "En los círculos de adentro" })).toBeVisible();
     await page.getByRole("button", { name: lente, exact: true }).click();
     await expect(page.getByRole("button", { name: lente, exact: true })).toHaveAttribute("aria-pressed", "true");
     if (lente === "Decisiones que suben") {
@@ -460,8 +461,15 @@ for (const lente of ["Estructura", "Propósitos", "Decisiones que suben", "Desde
   });
 }
 
-test("axe sin violaciones serias o críticas: /fogon/gobernanza con Ana seleccionada y la lista abierta", async ({ page }) => {
-  await page.goto("/fogon/gobernanza");
+test("axe sin violaciones serias o críticas: /fogon con Solo las de Lighthouse VRN activado", async ({ page }) => {
+  await page.goto("/fogon");
+  await page.getByRole("button", { name: "Solo las de Lighthouse VRN" }).click();
+  await expect(page.getByRole("button", { name: "Solo las de Lighthouse VRN" })).toHaveAttribute("aria-pressed", "true");
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /fogon con Ana seleccionada y la lista abierta", async ({ page }) => {
+  await page.goto("/fogon");
   await page.getByText("Ver toda la estructura como lista").click();
   await page.locator("details").getByRole("button", { name: "Ana (ejemplo) · Miembro" }).click();
   await expect(page.getByRole("heading", { name: "Todos los roles de Ana (ejemplo)" })).toBeVisible();

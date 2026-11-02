@@ -31,7 +31,7 @@ const foco = (page: Page, id: string) => expect(dibujo(page)).toHaveAttribute("d
 
 test.describe("Estructura de gobernanza visible", () => {
   test("muestra el común con sus círculos, el consejo y las doce tribus con su estado en texto", async ({ page }) => {
-    const respuesta = await page.goto("/fogon/gobernanza");
+    const respuesta = await page.goto("/fogon");
     expect(respuesta?.status()).toBe(200);
     await expect(page.getByRole("heading", { level: 1, name: "Cómo decidimos" })).toBeVisible();
     await expect(page.getByText("Prototipo interno · datos de ejemplo")).toBeVisible();
@@ -52,7 +52,7 @@ test.describe("Estructura de gobernanza visible", () => {
   });
 
   test("Barrio 3 busca tribu, con Lugar libre, sin círculos y sin lugar en el consejo", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await abrirLista(page);
     const b3 = arbol(page).getByRole("listitem").filter({ has: page.getByRole("button", { name: "Barrio 3", exact: true }) }).last();
     await expect(b3).toContainText("Busca tribu");
@@ -67,7 +67,7 @@ test.describe("Estructura de gobernanza visible", () => {
   });
 
   test("el consejo tiene un lugar por tribu validada, sin representante y sin nombres inventados", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await tocarCirculo(page, "consejo");
     await foco(page, "consejo");
     await expect(panel(page)).toContainText("Tipo: Consejo");
@@ -79,7 +79,7 @@ test.describe("Estructura de gobernanza visible", () => {
   });
 
   test("el círculo transversal cuelga del común, lista sus tribus y no inventa una zona", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await irDesdeLista(page, "Comunicación del común");
     await expect(panel(page)).toContainText("Tipo: Círculo transversal");
     await expect(panel(page)).toContainText("Participan: Valle Solar y Taller Común");
@@ -91,7 +91,7 @@ test.describe("Estructura de gobernanza visible", () => {
 
 test.describe("Gráfico accesible", () => {
   test("el dibujo tiene un nombre que dice qué muestra y la lista anidada está cerrada hasta abrirla", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await expect(dibujo(page)).toBeVisible();
     await expect(arbol(page)).not.toHaveAttribute("open", "");
     await expect(page.getByText("Ver toda la estructura como lista")).toBeVisible();
@@ -100,7 +100,7 @@ test.describe("Gráfico accesible", () => {
   });
 
   test("solo con teclado se entra a Valle Solar desde la lista: dibujo, migas y panel", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     const resumen = page.getByText("Ver toda la estructura como lista");
     await resumen.focus();
     await page.keyboard.press("Enter");
@@ -116,7 +116,7 @@ test.describe("Gráfico accesible", () => {
 
   test("en 390 px no hay scroll horizontal, con el dibujo arriba y el panel abajo", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await expect(dibujo(page)).toBeVisible();
     const sobra = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(sobra).toBeLessThanOrEqual(0);
@@ -130,7 +130,7 @@ test.describe("Gráfico accesible", () => {
 
   test("con movimiento reducido el zoom cambia de una vez, sin animación", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await tocarCirculo(page, "valle");
     await foco(page, "valle");
     const a = await dibujo(page).getAttribute("viewBox");
@@ -142,7 +142,7 @@ test.describe("Gráfico accesible", () => {
   });
 
   test("con movimiento normal el zoom se anima y termina en la vista final", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     const inicial = await dibujo(page).getAttribute("viewBox");
     await tocarCirculo(page, "valle");
     await foco(page, "valle");
@@ -154,7 +154,7 @@ test.describe("Gráfico accesible", () => {
 
 test.describe("Zoom por niveles", () => {
   test("entrar a Valle Solar desde el dibujo y volver al común tocando el fondo", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await foco(page, "lighthouse");
     await tocarCirculo(page, "valle");
     await foco(page, "valle");
@@ -165,7 +165,7 @@ test.describe("Zoom por niveles", () => {
   });
 
   test("tocar el círculo que ya está enfocado sale un nivel (haciendo clic en el círculo, no en el fondo)", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await tocarCirculo(page, "valle");
     await foco(page, "valle");
     await tocarCirculo(page, "valle");
@@ -173,7 +173,7 @@ test.describe("Zoom por niveles", () => {
   });
 
   test("las migas llevan al común y la actual queda marcada como ubicación actual", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await irDesdeLista(page, "Valle Solar");
     await panel(page).getByRole("button", { name: "Cuidado de la tierra" }).click();
     await foco(page, "valle-0");
@@ -187,7 +187,7 @@ test.describe("Zoom por niveles", () => {
 
 test.describe("Panel de detalle", () => {
   test("un círculo del común dice su tipo, propósito, de qué decide y sus roles", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await irDesdeLista(page, "Agua");
     await foco(page, "comun-agua");
     const p = panel(page);
@@ -199,7 +199,7 @@ test.describe("Panel de detalle", () => {
   });
 
   test("una tribu dice tipo, estado, validación, de qué decide y sus círculos navegables", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await irDesdeLista(page, "Valle Solar");
     const p = panel(page);
     await expect(p).toContainText("Tipo: Tribu");
@@ -213,7 +213,7 @@ test.describe("Panel de detalle", () => {
   });
 
   test("un dato que falta dice sin dato: una tribu que busca tribu no decide nada todavía", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await irDesdeLista(page, "Barrio 3");
     await expect(panel(page)).toContainText("Propósito: sin dato");
     await expect(panel(page).getByRole("heading", { name: /Decide sobre/ })).toBeVisible();
@@ -223,7 +223,7 @@ test.describe("Panel de detalle", () => {
 
 test.describe("Roles en cada círculo", () => {
   test("el panel de Huerta intensiva lista a Ana (ejemplo) con Facilita", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await irDesdeLista(page, "Huerta intensiva");
     const ana = panel(page).getByRole("button", { name: /Ana \(ejemplo\)/ });
     await expect(ana).toContainText("Facilita");
@@ -231,7 +231,7 @@ test.describe("Roles en cada círculo", () => {
   });
 
   test("la lista muestra a cada persona debajo de su círculo con su rol en texto", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await abrirLista(page);
     const agua = arbol(page).getByRole("listitem").filter({ has: page.getByRole("button", { name: "Agua", exact: true }) }).last();
     await expect(agua.getByRole("button", { name: "Ana (ejemplo) · Miembro" })).toBeVisible();
@@ -241,7 +241,7 @@ test.describe("Roles en cada círculo", () => {
 
 test.describe("Roles visibles en el dibujo", () => {
   test("al entrar a Agua en escritorio se ve cada nombre y, debajo, su rol", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await irDesdeLista(page, "Agua");
     await foco(page, "comun-agua");
     const ana = dibujo(page).locator("g", { has: page.locator("text", { hasText: /^Ana$/ }) }).last();
@@ -252,7 +252,7 @@ test.describe("Roles visibles en el dibujo", () => {
   });
 
   test("en el nivel del común el dibujo no muestra nombres ni roles, pero el panel y la lista siguen", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await expect(dibujo(page).getByText("Ana", { exact: true })).toHaveCount(0);
     await expect(dibujo(page).getByText("Miembro", { exact: true })).toHaveCount(0);
     await abrirLista(page);
@@ -262,7 +262,7 @@ test.describe("Roles visibles en el dibujo", () => {
 
 test.describe("Todos los roles de una persona", () => {
   test("Ana tiene dos roles en dos niveles", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await irDesdeLista(page, "Huerta intensiva");
     await panel(page).getByRole("button", { name: /Ana \(ejemplo\)/ }).click();
     const r = rolesDePersona(page);
@@ -275,7 +275,7 @@ test.describe("Todos los roles de una persona", () => {
   });
 
   test("Bruno tiene tres roles en tres lugares", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await irDesdeLista(page, "Agua");
     await panel(page).getByRole("button", { name: /Bruno \(ejemplo\)/ }).click();
     await expect(rolesDePersona(page).getByRole("button")).toHaveText([
@@ -287,7 +287,7 @@ test.describe("Todos los roles de una persona", () => {
   });
 
   test("solo con teclado: de la lista a Ana y de su rol a Agua, con las migas", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await abrirLista(page);
     const enLista = arbol(page).getByRole("button", { name: "Ana (ejemplo) · Miembro" });
     await enLista.focus();
@@ -302,7 +302,7 @@ test.describe("Todos los roles de una persona", () => {
   });
 
   test("una persona con un solo rol muestra ese rol, sin lista vacía ni roles inventados", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await irDesdeLista(page, "Compost");
     const primera = panel(page).getByRole("list").last().getByRole("button").first();
     await primera.click();
@@ -313,7 +313,7 @@ test.describe("Todos los roles de una persona", () => {
   });
 
   test("tocar a una persona en el dibujo la elige sin cambiar de nivel", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await irDesdeLista(page, "Agua");
     await foco(page, "comun-agua");
     await dibujo(page).locator('circle[data-nodo="comun-agua-rol-1"]').dispatchEvent("click");
@@ -324,7 +324,7 @@ test.describe("Todos los roles de una persona", () => {
 
 test.describe("Lentes", () => {
   test("las cuatro lentes son botones con aria-pressed y Estructura arranca elegida", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     const barra = page.getByRole("group", { name: "Lentes" });
     await expect(barra.getByRole("button")).toHaveText([/Estructura$/, /Propósitos$/, /Decisiones que suben$/, /Desde mí$/]);
     await expect(barra.getByRole("button", { name: "Estructura" })).toHaveAttribute("aria-pressed", "true");
@@ -334,14 +334,14 @@ test.describe("Lentes", () => {
   });
 
   test("Propósitos muestra la leyenda con Tierra, Agua, Economía, Comunidad, Conocimiento y Gobierno, cada uno con su texto", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await page.getByRole("button", { name: "Propósitos" }).click();
     const leyenda = page.getByRole("region", { name: "Leyenda" });
     await expect(leyenda.getByRole("listitem")).toHaveText(["Tierra", "Agua", "Economía", "Comunidad", "Conocimiento", "Gobierno"]);
   });
 
   test("el propósito también es texto, no solo color: el panel y la lista dicen Propósito: Tierra", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await page.getByRole("button", { name: "Propósitos" }).click();
     await irDesdeLista(page, "Banco de semillas");
     await expect(panel(page)).toContainText("Propósito: Tierra");
@@ -354,7 +354,7 @@ test.describe("Lente Decisiones que suben", () => {
   const decisiones = (page: Page) => page.getByRole("button", { name: "Decisiones que suben" });
 
   test("el camino que sube: el dibujo marca 1 a 4 y el panel dice el mismo camino en texto", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await decisiones(page).click();
     await panel(page).getByRole("button", { name: "Pedido de Valle Solar al Fondo Común para la bomba solar" }).click();
     await expect(page.getByTestId("camino-texto").getByRole("listitem")).toHaveText([
@@ -368,7 +368,7 @@ test.describe("Lente Decisiones que suben", () => {
   });
 
   test("la derivación termina en Agua y el panel explica que el consejo la derivó", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await decisiones(page).click();
     await panel(page).getByRole("button", { name: "Cisterna compartida entre Agua Clara y Valle Solar" }).click();
     await expect(page.getByTestId("camino-texto").getByRole("listitem").last()).toHaveText("4. Agua");
@@ -376,7 +376,7 @@ test.describe("Lente Decisiones que suben", () => {
   });
 
   test("los parámetros que existen se muestran y los que faltan no tienen fila", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await decisiones(page).click();
     await panel(page).getByRole("button", { name: "Pedido de Valle Solar al Fondo Común para la bomba solar" }).click();
     await expect(panel(page)).toContainText("Cierra el:");
@@ -388,7 +388,7 @@ test.describe("Lente Decisiones que suben", () => {
   });
 
   test("lo que se decide abajo tiene dos pasos dentro de Valle Solar y no hace falta subir", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await decisiones(page).click();
     await panel(page).getByRole("button", { name: "Calendario de siembra de otoño" }).click();
     await expect(page.getByTestId("camino-texto").getByRole("listitem")).toHaveCount(2);
@@ -399,7 +399,7 @@ test.describe("Lente Decisiones que suben", () => {
     await page.addInitScript(() => {
       window.localStorage.setItem("lh-fogon", JSON.stringify({ votos: {}, alConsejo: ["cisterna"] }));
     });
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await decisiones(page).click();
     await panel(page).getByRole("button", { name: /Pedir al Fondo Común una cisterna/ }).click();
     await expect(page.getByTestId("camino-texto").getByRole("listitem")).toHaveText(["1. Valle Solar ›", "2. Consejo de tribus"]);
@@ -410,7 +410,7 @@ test.describe("Lente Desde mí", () => {
   const desdeMi = (page: Page) => page.getByRole("button", { name: "Desde mí" });
 
   test("varios niveles: Permacultura y regeneración (del común) y Cuidado de la tierra (de Valle Solar), con su rol y (ejemplo)", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await desdeMi(page).click();
     const lugares = panel(page).getByRole("listitem");
     const perma = lugares.filter({ hasText: "Permacultura y regeneración" }).first();
@@ -429,7 +429,7 @@ test.describe("Lente Desde mí", () => {
     await page.addInitScript(() => {
       window.localStorage.setItem("lh-membresia", JSON.stringify({ lighthouse: "miembro", taller: "miembro", valle: "pedido" }));
     });
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await desdeMi(page).click();
     const taller = panel(page).getByRole("listitem").filter({ hasText: "Taller Común" }).first();
     await expect(taller).toContainText("Tu rol: Miembro");
@@ -442,7 +442,7 @@ test.describe("Lente Desde mí", () => {
       window.localStorage.setItem("lh-sumarte", "[1,2");
       window.localStorage.setItem("lh-fogon", "nada");
     });
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await desdeMi(page).click();
     await expect(panel(page).getByRole("button", { name: "Ir a este círculo" })).toHaveCount(2);
   });
@@ -451,13 +451,13 @@ test.describe("Lente Desde mí", () => {
     await page.addInitScript(() => {
       window.localStorage.setItem("lh-sumarte", JSON.stringify({ plan: "miembro", tribu: true, tribuId: "valle" }));
     });
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await desdeMi(page).click();
     await expect(panel(page).getByRole("listitem").filter({ hasText: "Tu rol: Facilita" })).toHaveCount(1);
   });
 
   test("las ideas de gamificación son solo texto: sin puntajes, Semillas ni botones para ganarlas, y no se escribe nada", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await desdeMi(page).click();
     await expect(panel(page).getByRole("heading", { name: "Ideas para más adelante" })).toBeVisible();
     await expect(panel(page)).toContainText("todavía no hay puntajes ni nada para ganar");
@@ -467,7 +467,7 @@ test.describe("Lente Desde mí", () => {
   });
 
   test("las marcas resaltan los lugares con borde grueso y no cambian la cantidad de círculos", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await expect(dibujo(page).locator("circle[data-nodo]")).not.toHaveCount(0);
     const antes = await dibujo(page).locator("circle[data-nodo]").count();
     await desdeMi(page).click();
@@ -478,12 +478,12 @@ test.describe("Lente Desde mí", () => {
 
 test.describe("Cómo decidimos", () => {
   test("el botón de reportar está presente", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await expect(page.getByRole("button", { name: "Reportar un problema o una idea" })).toBeVisible();
   });
 
   test("los términos ⚖ nuevos (Decide sobre y doble enlace) se abren y avisan que son borrador", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await irDesdeLista(page, "Huerta intensiva");
     const dominio = panel(page).getByRole("button", { name: /Qué significa legalmente: Decide sobre/ });
     await dominio.click();
@@ -497,13 +497,13 @@ test.describe("Cómo decidimos", () => {
     page.on("request", (r) => {
       if (r.method() !== "GET") pedidos.push(`${r.method()} ${r.url()}`);
     });
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await page.getByRole("button", { name: "Desde mí" }).click();
     expect(pedidos.filter((p) => !p.includes("/api/sesion"))).toEqual([]);
   });
 
   test("axe sin violaciones serias o críticas", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
     const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
     expect(graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
@@ -514,7 +514,7 @@ test.describe("Cómo decidimos en inglés", () => {
   test.use({ locale: "en-US" });
 
   test("las lentes, las migas, el panel y la leyenda salen en inglés", async ({ page }) => {
-    await page.goto("/fogon/gobernanza");
+    await page.goto("/fogon");
     await expect(page.getByRole("heading", { level: 1, name: "How we decide" })).toBeVisible();
     await expect(page.getByText("This page is only available in Spanish for now.")).toHaveCount(0);
     const barra = page.getByRole("group", { name: "Lenses" });
