@@ -13,28 +13,28 @@ const decision = (page: Page, titulo: string | RegExp) =>
 test.describe("Fogón en inglés", () => {
   test.use({ locale: "en-US" });
 
-  test("filtros, decisiones de ejemplo traducidas con su nota y nada de español suelto", async ({ page }) => {
-    await page.goto("/fogon");
+  test("portada, decisiones de ejemplo traducidas con su nota y nada de español suelto", async ({ page }) => {
+    await page.goto("/fogon?holon=semilla-1");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("heading", { level: 1, name: "What is being decided" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "How we decide" })).toBeVisible();
     await expect(page.getByText("This page is only available in Spanish for now.")).toHaveCount(0);
-    const filtros = page.getByRole("group", { name: "Filter by scope" }).getByRole("button");
-    await expect(filtros).toHaveText([/All$/, /Circle$/, /Tribe$/, /Lighthouse \(the commons\)$/, /Council$/, /Trust$/]);
+    await expect(page.getByRole("group", { name: "Filter by scope" })).toHaveCount(0);
     await expect(page.getByText("Residents' Assembly")).toHaveCount(0);
     const huerta = decision(page, "2027 community garden plan");
     await expect(huerta).toBeVisible();
     await expect(huerta.getByText("Translated from Spanish")).toBeVisible();
     await expect(huerta).toContainText("Sample votes: In favor 14 · Against 1 · Abstention 3");
     // Los nombres de tribus no se traducen.
-    await expect(huerta).toContainText("Círculo de Tierra");
-    await expect(huerta.locator('[translate="no"]', { hasText: "Círculo de Tierra" })).toHaveCount(1);
+    await expect(huerta).toContainText("Intensive garden · Semilla Viva");
+    await expect(huerta.locator('[translate="no"]', { hasText: "Semilla Viva" })).toHaveCount(1);
+    await page.goto("/fogon?holon=valle");
     const valle = decision(page, "Choose a facilitator for Valle Solar");
     await expect(valle.locator('[translate="no"]', { hasText: "Valle Solar" })).toHaveCount(2);
     expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
 
   test("votar In favor registra el voto igual que en español y el estado se lee en inglés", async ({ page }) => {
-    await page.goto("/fogon");
+    await page.goto("/fogon?holon=semilla-1");
     const huerta = decision(page, "2027 community garden plan");
     await huerta.getByRole("button", { name: "Vote" }).click();
     await huerta.getByRole("button", { name: "In favor" }).click();
@@ -49,7 +49,7 @@ test.describe("Fogón en inglés", () => {
   });
 
   test("el acta de ejemplo tras votar también marca el nombre de la tribu con translate=no", async ({ page }) => {
-    await page.goto("/fogon");
+    await page.goto("/fogon?holon=valle");
     const valle = decision(page, "Choose a facilitator for Valle Solar");
     await valle.getByRole("button", { name: "Vote" }).click();
     await valle.getByRole("button", { name: "In favor" }).click();
@@ -62,12 +62,13 @@ test.describe("Fogón en inglés", () => {
     await page.goto("/fogon");
     await expect(page.getByText("No data on your residency")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Vote" })).toHaveCount(9);
+    await expect(page.getByRole("button", { name: "Recommend" })).toHaveCount(1);
   });
 
   const cisterna = (page: Page) => decision(page, /Ask the Common Fund for a cistern/);
 
   test("quien no lidera Valle Solar no ve Take to the council", async ({ page }) => {
-    await page.goto("/fogon");
+    await page.goto("/fogon?holon=valle");
     await expect(cisterna(page)).toBeVisible();
     await expect(page.getByRole("button", { name: "Take to the council" })).toHaveCount(0);
   });
@@ -76,13 +77,13 @@ test.describe("Fogón en inglés", () => {
     await page.addInitScript(() => {
       window.localStorage.setItem("lh-sumarte", JSON.stringify({ plan: "miembro", tribu: true, tribuId: "valle" }));
     });
-    await page.goto("/fogon");
+    await page.goto("/fogon?holon=valle");
     const chip = cisterna(page).locator('[translate="no"]', { hasText: "Valle Solar" });
     await expect(chip).toHaveCount(2);
     await cisterna(page).getByRole("button", { name: "Take to the council" }).click();
     await expect(page.getByRole("status")).toContainText("You took «Ask the Common Fund for a cistern for the Valle Solar garden» to the council (simulated).");
     await expect(cisterna(page).getByText("Already in the council")).toBeVisible();
-    await page.getByRole("button", { name: "Council", exact: true }).click();
+    await page.goto("/fogon?holon=consejo");
     const copia = cisterna(page);
     await expect(copia).toContainText("Comes from Valle Solar (approved in the tribe)");
     await expect(copia.locator('[translate="no"]', { hasText: /^Valle Solar$/ })).toHaveCount(2);
@@ -93,20 +94,22 @@ test.describe("Fogón en inglés", () => {
     await page.addInitScript(() => {
       window.localStorage.setItem("lh-fogon", JSON.stringify({ votos: { huerta: "contra" } }));
     });
-    await page.goto("/fogon");
+    await page.goto("/fogon?holon=semilla-1");
     await expect(decision(page, "2027 community garden plan").getByText("Your vote: Against (simulated)")).toBeVisible();
   });
 });
 
-test.describe("Fogón: Pase Fundador en inglés", () => {
+test.describe("Fogón: recomendación al Consejo de la Fundación en inglés", () => {
   test.use({ locale: "en-US", plan: "miembro" });
 
-  test("el Fideicomiso sin Pase explica el motivo y enlaza a Sumarte", async ({ page }) => {
+  test("el presupuesto del Fondo Común dice a quién le lleva la recomendación y no pide el Pase", async ({ page }) => {
     await page.goto("/fogon");
-    await page.getByRole("button", { name: "Trust" }).click();
-    const p = decision(page, /construction budget/);
-    await expect(p).toContainText("Only Founder Pass holders vote");
-    await expect(p.getByRole("link", { name: "See the Founder Pass in Join" })).toHaveAttribute("href", "/sumarte");
+    const p = decision(page, "2027 Common Fund budget");
+    await expect(p).toContainText("Decided by the Foundation Council; the Fireside brings it the recommendation");
+    await expect(page.getByText(/Founder Pass/)).toHaveCount(0);
+    await p.getByRole("button", { name: "Recommend" }).click();
+    await p.getByRole("button", { name: "In favor" }).click();
+    await expect(p).toContainText("Your recommendation: In favor (simulated)");
   });
 });
 

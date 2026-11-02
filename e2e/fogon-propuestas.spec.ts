@@ -9,9 +9,18 @@ test.describe("abrir la propuesta", () => {
     await page.goto("/fogon");
     const tarjeta = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Pedido de Valle Solar al Fondo Común para la bomba solar" }) });
     await tarjeta.getByRole("link", { name: "Abrir la propuesta" }).click();
-    await expect(page).toHaveURL(/\/fogon\/propuestas\/consejo-bomba$/);
+    // La dirección lleva el holón de donde viene la persona; la lente solo si no es la primera.
+    await expect(page).toHaveURL(/\/fogon\/propuestas\/consejo-bomba\?desde=lighthouse$/);
     await expect(page.getByRole("heading", { level: 1, name: "Pedido de Valle Solar al Fondo Común para la bomba solar" })).toBeVisible();
     await expect(page.locator("main")).toHaveCount(1);
+  });
+
+  test("con otra lente elegida, la dirección de la propuesta también lleva la lente", async ({ page }) => {
+    await page.goto("/fogon");
+    await page.getByRole("button", { name: /Decisiones que suben/ }).click();
+    const tarjeta = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Pedido de Valle Solar al Fondo Común para la bomba solar" }) });
+    await tarjeta.getByRole("link", { name: "Abrir la propuesta" }).click();
+    await expect(page).toHaveURL(/\/fogon\/propuestas\/consejo-bomba\?desde=lighthouse&lente=decisiones$/);
   });
 
   test("una decisión sin propuesta no tiene el botón", async ({ page }) => {
@@ -31,8 +40,8 @@ test.describe("abrir la propuesta", () => {
     await page.goto("/fogon/gobernanza");
     await page.getByRole("button", { name: /Decisiones que suben/ }).click();
     await page.getByRole("button", { name: /Calendario de siembra de otoño/ }).click();
-    await page.getByRole("link", { name: "Abrir la propuesta" }).click();
-    await expect(page).toHaveURL(/\/fogon\/propuestas\/siembra$/);
+    await page.getByRole("region", { name: "Detalle" }).getByRole("link", { name: "Abrir la propuesta" }).click();
+    await expect(page).toHaveURL(/\/fogon\/propuestas\/siembra(\?|$)/);
   });
 });
 
@@ -70,6 +79,8 @@ test.describe("fases y discusión", () => {
   });
 
   test("recorrido simple: presentación, plazo para objetar y cierre", async ({ page }) => {
+    // La huerta empieza el 28-oct y el plazo para objetar dura 3 días: con el reloj real ya venció.
+    await page.clock.setFixedTime(new Date("2026-10-30T15:00:00Z"));
     await page.goto("/fogon/propuestas/huerta");
     const fases = page.getByRole("list", { name: "Fases de la propuesta" });
     await expect(fases.getByRole("listitem")).toHaveText([/Presentación/, /Plazo para objetar/, /Cierre/]);

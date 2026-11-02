@@ -51,8 +51,8 @@ describe("catálogo legal", () => {
         "dominio",
         "encuentroeducativo",
         "espejo",
+        "destinoconsejofundacion",
         "estatuto",
-        "fidasamblea",
         "fundaciontierra",
         "gobernanzafideicomiso",
         "guardian",
@@ -123,6 +123,25 @@ describe("catálogo legal", () => {
     expect(TERMINOS.derechostierra.texto).toMatch(/no son un texto jurídico/);
     expect(TERMINOS.manifiestovrn.texto).toMatch(/borrador/);
     expect(TERMINOS.adhesion.texto).toContain("Lighthouse VRN");
+  });
+
+  it("ningún texto nombra una asociación que custodia el Fondo Común: lo administra el Consejo de la Fundación", () => {
+    for (const [clave, t] of Object.entries(TERMINOS)) {
+      const todo = JSON.stringify(t);
+      expect(todo, clave).not.toMatch(/asociaci[oó]n[^."]*(custodia|administra)[^."]*Fondo Com[uú]n/i);
+      expect(todo, clave).not.toMatch(/association that (holds|keeps|custodies)/i);
+      expect(todo, clave).not.toMatch(/Guardián del Lighthouse|Lighthouse Guardian/);
+    }
+    for (const clave of ["pasefundador", "guardian", "guardianIA"] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+    }
+    expect(TERMINOS.guardian.texto).toContain("Consejo de la Fundación");
+  });
+
+  it("destinoconsejofundacion es borrador, con inglés, y dice que la recomendación no obliga", () => {
+    expect(esBorrador("destinoconsejofundacion")).toBe(true);
+    expect(terminoEn("destinoconsejofundacion")?.texto.trim()).toBeTruthy();
+    expect(TERMINOS.destinoconsejofundacion.texto).toContain("no lo obliga");
   });
 
   it("pactoDosPartes es borrador, tiene inglés y aclara que no es un contrato de trabajo ni de inversión", () => {

@@ -1,5 +1,7 @@
+import { caminoDe } from "@/lib/gobernanza/caminos";
+import { buscarNodo, caminoHasta, nombreDe, recorrer, type NodoH } from "@/lib/gobernanza/holarquia";
 import type { Residencia } from "@/lib/pasaporte/datos";
-import { copiaParaElConsejo, DECISIONES_BASE, type Ambito, type Decision, type Opcion } from "./datos";
+import { copiaParaElConsejo, DECISIONES_BASE, type Decision, type Opcion } from "./datos";
 
 export type VotosPersona = Partial<Record<string, Opcion>>;
 
@@ -15,24 +17,22 @@ export const INICIAL: EstadoFogon = { votos: {}, alConsejo: [] };
 /**
  * Lo que habilita votar. `residencia` es la que la persona cargó en "Tus datos" (`undefined` si no la cargó: sin dato);
  * el requisito `residente` ya no lo usa ninguna decisión visible (la Asamblea de residentes todavía no existe).
- * `pase` es si tiene el Pase Fundador (cualquier nivel): es lo que habilita el Fideicomiso.
  * `lidera` es la tribu que lidera (dato de Sumarte): es lo que habilita llevar una decisión de esa tribu al consejo.
  */
 export type Condicion = {
   residencia: Residencia | undefined;
-  pase: boolean;
   /** Adhirió al manifiesto de Lighthouse VRN (la regla vive en `lib/gobernanza/participar.ts`). Obligatorio: si falta el dato, no se asume que adhirió. */
   adhirio: boolean;
   lidera?: string | null;
 };
 
-export const SIN_CONDICION: Condicion = { residencia: undefined, pase: false, adhirio: false };
+export const SIN_CONDICION: Condicion = { residencia: undefined, adhirio: false };
 
 /**
  * Por qué una persona no puede votar en una decisión. Es una clave: el texto sale del diccionario del Fogón
  * (`textos("fogon", idioma).motivos`), así que se lee igual en los dos idiomas.
  */
-export type MotivoSinVoto = "manifiesto" | "pase" | "residentes" | "sinDato";
+export type MotivoSinVoto = "manifiesto" | "residentes" | "sinDato";
 
 /** Las decisiones que se ven: las de siempre más las copias de las que se llevaron al consejo. */
 export function decisionesVisibles(e: EstadoFogon): readonly Decision[] {
@@ -57,15 +57,67 @@ export function motivoSinVoto(d: Pick<Decision, "requisito">, condicion: Condici
   // se participa en ninguna, y es el único motivo que se muestra.
   if (!condicion.adhirio) return "manifiesto";
   if (d.requisito === "ninguno") return null;
-  if (d.requisito === "pase") return condicion.pase ? null : "pase";
   if (condicion.residencia === "argentina") return null;
   if (condicion.residencia === undefined) return "sinDato";
   return "residentes";
 }
 
-export function filtrar(ambito: Ambito | null, e: EstadoFogon = INICIAL): readonly Decision[] {
+/** Una decisión de "En los círculos de adentro" con el lugar donde se decide, para decir "en {círculo} · {tribu}". */
+export type DecisionDeAdentro = { decision: Decision; circulo: string; tribu: string | null };
+
+export type DecisionesDelHolon = {
+  /** Se deciden en este holón. */
+  aca: readonly Decision[];
+  /** Nacen o pasan por este holón según su camino de ejemplo, sin decidirse acá. */
+  pasa: readonly Decision[];
+  /** Se deciden en un círculo o tribu de adentro de este holón. */
+  adentro: readonly DecisionDeAdentro[];
+};
+
+/**
+ * Las decisiones que se ven al lado de la holarquía para el holón enfocado (design §2):
+ * - `aca`: `holonId === H`.
+ * - `pasa`: se deciden en otro lado, su camino de ejemplo incluye a H y (no es "queda" o nace en H).
+ * - `adentro`: se deciden en un descendiente estricto de H y no están en `aca` ni en `pasa`.
+ * Las copias llevadas al consejo salen de `decisionesVisibles(estado)`.
+ */
+export function decisionesDelHolon(raiz: NodoH, holonId: string, e: EstadoFogon = INICIAL): DecisionesDelHolon {
   const todas = decisionesVisibles(e);
-  return ambito ? todas.filter((d) => d.ambito === ambito) : todas;
+  const nodo = buscarNodo(raiz, holonId);
+  const aca: Decision[] = [];
+  const pasa: Decision[] = [];
+  const adentro: DecisionDeAdentro[] = [];
+  const abajo = new Set<string>();
+  const ancestros = new Set<string>(caminoHasta(raiz, holonId).map((n) => n.id));
+  if (nodo) {
+    recorrer(nodo, (n) => {
+      if (n.id !== nodo.id) abajo.add(n.id);
+    });
+  }
+  for (const d of todas) {
+    if (d.holonId === holonId) {
+      aca.push(d);
+      continue;
+    }
+    const c = caminoDe(d);
+    if (c && c.camino.includes(holonId) && (c.tipo !== "queda" || c.camino[0] === holonId)) {
+      pasa.push(d);
+      continue;
+    }
+    if (abajo.has(d.holonId)) {
+      const camino = caminoHasta(raiz, d.holonId);
+      const lugar = camino[camino.length - 1];
+      const tribu = camino.find((n) => n.tipo === "tribu");
+      // En una tribu (o dentro de una) solo se dice "en {círculo}": la tribu es la que ya se está mirando.
+      const tribuYaVista = tribu ? ancestros.has(tribu.id) || tribu.id === holonId : true;
+      adentro.push({
+        decision: d,
+        circulo: lugar ? nombreDe(lugar) : d.holonId,
+        tribu: tribu && !tribuYaVista && tribu.id !== lugar?.id ? nombreDe(tribu) : null,
+      });
+    }
+  }
+  return { aca, pasa, adentro };
 }
 
 /** Conteo de ejemplo más el voto propio, si lo hay. */

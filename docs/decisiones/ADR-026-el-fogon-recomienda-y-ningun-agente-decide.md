@@ -1,6 +1,6 @@
 # ADR-026 · El Fogón recomienda a los órganos legales y ningún agente pausa ni decide: lo que decide un órgano del diseño legal lleva su destino en el dato, la plataforma no registra votos de esos órganos, y la Voz de la Tierra con veto suspensivo queda fuera de la plataforma
 
-- **Estado:** Propuesta
+- **Estado:** Propuesta. ADR-027 (también Propuesta) revisa dos reglas: que lo elegido se guarde como recomendación y que, en la base, las recomendaciones sean votos del Fogón.
 - **Fecha:** 2026-11-01
 - **Cambio OpenSpec relacionado:** `fogon-portada-holarquia` (design §1b y §8; decisiones de Gus del 1-nov) y `fogon-desde-mi-y-guardian` (design §1, §2, §4 y §5: el desafío del Guardián, variante b, y el Pase con influencia en el Fondo Común). Se apoya en ADR-023 (la adhesión es la llave de la gobernanza) y ADR-022 (permisos por nivel de implicación). Deja desactualizada la spec del cambio `pase-fundador-gobernanza` (a corregir antes de archivar).
 

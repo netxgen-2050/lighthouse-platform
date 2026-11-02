@@ -1,0 +1,46 @@
+## MODIFIED Requirements
+
+### Requirement: Adherir para participar en la gobernanza
+Participating in any aspect of governance SHALL require having adhered to the manifesto of Lighthouse VRN. Participating means: taking a decision to the council, distributing or saving credits in a consultation, and, when they exist, commenting, asking, raising, joining or backing concerns, blocking, standing aside or declaring oneself affected in a proposal. The rule MUST live in a single function over the browser membership; a person has adhered when the membership of `lighthouse` is "pedido" or "miembro" (adhesion counts from the moment of adhering) and the version of the manifesto they adhered to is the current one: when the manifesto changes version, the person MUST adhere again to keep taking part. Every governance screen, including those added by later changes, MUST use that function instead of its own check.
+
+#### Scenario: Una sola regla
+- **WHEN** se buscan en el código las comprobaciones de adhesión de las pantallas del Fogón y de las consultas
+- **THEN** todas usan la misma función de la regla
+
+#### Scenario: Adhesión registrada
+- **WHEN** la membresía de `lighthouse` es "pedido" o "miembro"
+- **THEN** la regla permite participar
+
+#### Scenario: Cambio de versión del manifiesto
+- **WHEN** la persona adhirió a una versión anterior del manifiesto
+- **THEN** la regla no permite participar hasta que vuelva a adherir a la versión vigente
+
+#### Scenario: Adhesión a una tribu sola
+- **WHEN** la persona es miembro de Valle Solar pero no adhirió al manifiesto de Lighthouse VRN
+- **THEN** la regla no permite participar
+
+### Requirement: Sin adhesión se mira pero no se participa
+Without adhesion a person SHALL still be able to see the Fogón, its decisions with their consensus status, the consultations with their results and the holarchy, as their access level allows today. The section of proposals in `/fogon` MUST show once, not on each card, in text "Para participar, adherí al manifiesto de Lighthouse VRN" with a link to `/tribus/lighthouse/manifiesto` and a ⚖ in draft that explains the requirement, and MUST NOT show the actions that need adhesion. Other screens MUST show the same notice where the action would be.
+
+#### Scenario: Mirar el Fogón
+- **WHEN** una persona de nivel Miembro que no adhirió mira una sección de propuestas en `/fogon`
+- **THEN** no ve "Llevar al consejo", ve una sola vez el aviso con el enlace al manifiesto y sigue viendo el estado del consenso y "Abrir la propuesta"
+
+#### Scenario: Repartir créditos en una consulta
+- **WHEN** esa persona abre una consulta abierta en `/fogon/consultas`
+- **THEN** ve las opciones y los resultados, pero no los botones para sumar o quitar votos ni "Guardar", y ve el aviso con el enlace al manifiesto
+
+#### Scenario: Después de adherir
+- **WHEN** la persona, líder de Valle Solar (simulado), adhiere al manifiesto de Lighthouse VRN y vuelve a `/fogon`
+- **THEN** el aviso ya no está y ve "Llevar al consejo" en la decisión de su tribu que lo permite
+
+### Requirement: Accesibilidad del aviso de adhesión
+The adhesion notice SHALL be text (not only an icon or a color), reachable with the keyboard through its link, and MUST NOT move the focus by itself. While the browser membership is still being read, the screen MUST show neither the action nor the notice.
+
+#### Scenario: Cargando
+- **WHEN** la página todavía no leyó la membresía guardada
+- **THEN** no muestra ni "Llevar al consejo" ni el aviso de adhesión
+
+#### Scenario: Auditoría
+- **WHEN** corre la auditoría de accesibilidad sobre `/fogon` sin adhesión
+- **THEN** no hay violaciones serias ni críticas

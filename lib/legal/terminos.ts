@@ -91,12 +91,14 @@ export const TERMINOS = {
   pasefundador: {
     titulo: "Pase Fundador",
     texto:
-      "Una membresía no transferible del Guardián del Lighthouse (la asociación que custodia el Fondo Común). Da voz, acceso y créditos de servicios. No da tierra, lotes, prioridad ni rendimiento, y no se puede revender (así no es un activo virtual ni un valor negociable).",
+      "Una membresía no transferible que aporta al Fondo Común, que administra el Consejo de la Fundación. Da voz, acceso y créditos de servicios. No da tierra, lotes, prioridad ni rendimiento, y no se puede revender (así no es un activo virtual ni un valor negociable).",
+    borrador: true,
   },
   guardian: {
-    titulo: "El Guardián y el Fondo Común",
+    titulo: "El Fondo Común",
     texto:
-      "El Guardián del Lighthouse es una asociación civil que custodia el Fondo Común (agua, energía, vivero, incubación de tribus). Recibe el pago del Pase directamente; NetX cobra una tarifa de servicio fija y publicada por operar la plataforma.",
+      "El Fondo Común (agua, energía, vivero, incubación de tribus) lo administra el Consejo de la Fundación. El Pase se paga al Fondo Común; NetX cobra una tarifa de servicio fija y publicada por operar la plataforma. Cómo se compone el consejo lo define su estatuto, que todavía hay que confirmar con el equipo legal.",
+    borrador: true,
   },
   creditos: {
     titulo: "Créditos comunes y de estadía",
@@ -140,10 +142,16 @@ export const TERMINOS = {
     titulo: "Reglamento de Soluna, art. 44",
     texto: "El reglamento se modifica con 2/3 de los copropietarios con derecho a voto y aviso de 30 días.",
   },
-  fidasamblea: {
-    titulo: "Asamblea de beneficiarios",
+  destinoconsejofundacion: {
+    titulo: "Lo decide el Consejo de la Fundación",
     texto:
-      "La define el contrato de fideicomiso: mayorías, comité y derechos de información. El fiduciario rinde cuentas al menos una vez por año y no se puede dispensar (arts. 1675–1676 CCyCN).",
+      "En el diseño legal en estudio, la tierra y el Fondo Común son de una Fundación. Su consejo decide el presupuesto del Fondo Común. Lo que se vota acá es una recomendación del común para ese consejo: no lo obliga. Cómo se compone el consejo y cómo recibe las recomendaciones lo define su estatuto, que todavía hay que confirmar con el equipo legal.",
+    en: {
+      titulo: "Decided by the Foundation Council",
+      texto:
+        "In the legal design under study, the land and the Common Fund belong to a Foundation. Its council decides the Common Fund budget. What is voted here is a recommendation from the commons to that council: it does not bind it. How the council is made up and how it receives recommendations is set by its bylaws, which still have to be confirmed with the legal team.",
+    },
+    borrador: true,
   },
   estatuto: {
     titulo: "Estatuto de la tribu",
@@ -607,11 +615,11 @@ export const TERMINOS = {
   guardianIA: {
     titulo: "Guardián (IA, simulado)",
     texto:
-      "Una IA simulada que sugiere posibles impactos desde los principios de la vida y la tierra. Nunca decide ni declara nada ilegítimo: si ninguna persona respalda su sugerencia como concern, la propuesta sigue su curso. No es el Guardián del Lighthouse, la asociación que custodia el Fondo Común.",
+      "Una IA simulada que sugiere posibles impactos desde los principios de la vida y la tierra. Nunca decide ni declara nada ilegítimo: si ninguna persona respalda su sugerencia como concern, la propuesta sigue su curso. No es un órgano de la Fundación: el Fondo Común lo administra el Consejo de la Fundación.",
     en: {
       titulo: "Guardian (AI, simulated)",
       texto:
-        "A simulated AI that suggests possible impacts from the principles of life and land. It never decides nor declares anything illegitimate: if no person backs its suggestion as a concern, the proposal goes on. It is not the Lighthouse Guardian, the association that holds the Common Fund.",
+        "A simulated AI that suggests possible impacts from the principles of life and land. It never decides nor declares anything illegitimate: if no person backs its suggestion as a concern, the proposal goes on. It is not a body of the Foundation: the Common Fund is administered by the Foundation Council.",
     },
     borrador: true,
   },
