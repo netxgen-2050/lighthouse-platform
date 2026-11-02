@@ -82,8 +82,8 @@ Cambia lo que **enlaza a `/congreso`** o **invita a hacer algo imposible**. No c
 
 `docs/notas/congreso-en-pausa.md`, con la estructura de `compromisos-en-pausa.md`:
 1. Qué pasó y por qué, con las fuentes (D16, decisión del 2-nov-2026).
-2. Qué quedó en el código, y **qué no se puede borrar aunque la vitrina siga en pausa**: `app/congreso/evento/`, `app/congreso/tema-evento.css`, `lib/congreso/{idioma,formatos,ancla,mostrar-ticket,ticket}.ts`, de los que dependen `/eventos`, el Pasaporte, Semillas y el idioma.
-3. La tabla de pendientes de la decisión 6, más check-in, Genesis y venta de entradas.
+2. Qué quedó en el código, y **qué no se puede borrar aunque la vitrina siga en pausa**: `app/congreso/evento/`, `app/congreso/netx/ir-al-ancla.tsx`, `app/congreso/tema-evento.css`, `lib/congreso/{idioma,formatos,ancla,mostrar-ticket,ticket}.ts`, de los que dependen `/eventos`, el Pasaporte, Semillas y el idioma. <!-- arquitecto: faltaba ir-al-ancla.tsx, que /eventos importa de netx/ -->
+3. La tabla de pendientes de la decisión 6, más check-in, Genesis, venta de entradas y el botón para quitar el ticket (ver "Risks").
 4. Los pasos para volver: quitar los redirects, quitar `oculto`, reordenar el rail, devolver textos y enlaces, y reactivar los e2e, con la lista de archivos.
 
 ## Risks / Trade-offs
@@ -93,6 +93,10 @@ Cambia lo que **enlaza a `/congreso`** o **invita a hacer algo imposible**. No c
 - **Cookie con valor inválido** en `/congreso/en` → cae en la tercera regla y llega a `/eventos` con el idioma que resuelva el pedido. Es aceptable.
 - **Sello que cambia de estado** → puede afectar conteos en el Pasaporte; se revisa con los tests de sellos.
 - **Choque con otra spec:** la lista de Participar aparece en la spec de `rail-sin-compromisos` (ver `proposal.md`).
+<!-- arquitecto: tres riesgos encontrados en la revisión -->
+- **El ticket ya no se puede quitar solo** → el botón "Quitar" vive en `app/congreso/registro-ticket.tsx`, dentro de la vitrina que deja de verse. El ticket se puede descargar, y borrar con "Borrar todo" o "Retirar mi consentimiento", pero eso se lleva todo lo demás. Se acepta mientras dure la pausa en un prototipo; la nota lo lista como pendiente y Gus decide si hace falta un botón en el Pasaporte.
+- **La preferencia guardada puede cambiar a inglés** → la regla `missing` solo mira la cookie. Una persona con sesión, español guardado en sus preferencias y sin cookie que abre `/congreso/en` recibe `lang=en`; como "la cookie manda" (`decidirSincronizacion`), su preferencia pasa a inglés. Es un caso raro, se cambia con un clic y no se puede saber en `next.config.ts`. Se acepta y se anota.
+- **La redirección es temporal, y ADR-003 promete una permanente** si la dirección cambia para siempre → el 307 es correcto mientras sea una pausa. La nota de ADR-003 lo aclara: si Gus retira la vitrina para siempre, `/congreso/en` pasa a redirección permanente.
 
 ## Migration Plan
 

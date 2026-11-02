@@ -42,6 +42,10 @@ type EventoComunidad<Tx = string> = {
 ```
 
 - `lib/eventos/datos.ts`: `obtenerEventos(idioma)` es la **única** forma de leerlos. Hoy resuelve el contenido de ejemplo con `resolver` de `lib/congreso/idioma`, y es la costura para más adelante.
+<!-- arquitecto: costura asíncrona, id estable y lista vacía; ver ADR-027 -->
+- `obtenerEventos` es `async` y devuelve una promesa, igual que `obtenerEvento()`: si mañana los eventos vienen de otro lado, las pantallas no cambian.
+- `id` es propio de NetX y **no se renombra**: es la clave que queda guardada en el navegador de cada persona y en su actividad. Si un evento sale de la lista, lo guardado se conserva y no rompe nada.
+- Si no hay eventos próximos, la sección lo dice con una frase ("Todavía no hay eventos próximos" / "No upcoming events yet"), sin mostrar un 0.
 - El nombre del organizador no se copia: sale de `CIRCULOS_DEL_COMUN` (`lib/gobernanza/datos.ts`) o de las tribus (`lib/tribus/datos.ts`). Un test verifica que todos los ids de ejemplo existan.
 - `lib/eventos/agenda.ts`: función pura `agruparEventos(eventos, hoy)`, que devuelve `{ proximos, pasados }`. `hoy` entra como parámetro para que los tests no dependan de la fecha. La página lo calcula en la zona `America/Argentina/Buenos_Aires`. Como la página lee el idioma del pedido, es dinámica y no se congela en el build.
 
@@ -66,7 +70,9 @@ type EventoComunidad<Tx = string> = {
 
 Las reglas nuevas van en `app/congreso/tema-evento.css`, bajo `.tema-evento .ev-agenda…`, para respetar ADR-002 y el test que prohíbe `--evento-` fuera de `app/congreso/`. Solo se agregan reglas. Si una combinación de color no está en la tabla de `app/congreso/tema-evento.test.ts`, se suma ahí.
 
-**Consecuencia:** `/eventos` pasa a depender de `app/congreso/evento/` y de su hoja. El cambio siguiente lo deja escrito en la nota para volver, para que nadie borre esa carpeta creyendo que está sin uso. Se agrega una nota con fecha a ADR-002. Si el arquitecto considera que hace falta un ADR nuevo, lo escribe él.
+**Consecuencia:** `/eventos` pasa a depender de `app/congreso/evento/`, de su hoja, de `app/congreso/netx/ir-al-ancla.tsx` y de `lib/congreso/{idioma,formatos,ancla,mostrar-ticket}.ts`. El cambio siguiente lo deja escrito en la nota para volver, para que nadie borre esos archivos creyendo que están sin uso. Se agrega una nota con fecha a ADR-002. El reparto con UnityHub va en ADR-027 (ver decisión 10).
+<!-- arquitecto: IrAlAncla vive en app/congreso/netx/, no en evento/; la lista de dependencias estaba incompleta -->
+
 
 ### 4. Quiero ir: intención, no inscripción
 
@@ -75,12 +81,19 @@ Las reglas nuevas van en `app/congreso/tema-evento.css`, bajo `.tema-evento .ev-
 - **Pieza cliente** `app/eventos/quiero-ir.tsx`: el mensaje de estado va en una región `aria-live="polite"`, y el `aria-label` del botón incluye el nombre del evento, porque hay varios botones iguales en la página.
 - **Actividad:** nuevo `EVENTOS.quisisteIr(nombre, id)`, con `tipo: "evento"`, `enlace: /eventos#evento-<id>`, `clave: quiero-ir:<id>` y sin notificación. Retirar la intención no borra el registro (la actividad es de solo agregar) ni agrega otro.
 - **No toca** `lib/semillas`, `lib/pasaporte` ni `lib/permisos`. Anotarse no da Semillas: nunca hay Semillas por un clic propio (Backlog D31). El copy nunca dice "reservá" (Backlog T7).
+<!-- arquitecto: aclaraciones de lo que la intención no hace, firma de lectura y nombre en la actividad -->
+- **Quien organiza no ve la intención.** El dato queda en el navegador, así que la aclaración cerca de la acción también lo dice: "Por ahora queda solo en este navegador: quien organiza todavía no lo ve." Sin esa frase, "quien organiza confirma la participación" haría creer que el aviso le llegó.
+- **`leer` recibe el texto crudo** (`string | null`), como `leerKyc` y `leerMembresia`, para que `leerProgreso` pueda usarla en el cambio siguiente. Quien llama lee el almacenamiento y maneja sus errores.
+- **La línea de actividad no decide el resultado.** Primero se guarda la intención; si después falla la actividad, la persona igual queda anotada.
+- **`DatosEvento` suma `evento?: string`** y `DATO_DEL_MENSAJE` suma `quisisteIr: "evento"`. La frase sale en el idioma actual, pero el nombre del evento queda en el idioma en que la persona se anotó, igual que `descripcion`. Se acepta en el prototipo para no guardar los dos idiomas en cada línea.
 
 ### 5. Política: se sube la versión
 
-El dato es nuevo, y ADR-017 dice que lo que amplía sube `VERSION_POLITICA`. Hay que: sumar "eventos" al segundo punto de `RESUMEN`; agregar a `DATOS_POR_PANTALLA` la fila `{ pantalla: "Eventos", datos: "A qué eventos dijiste que querés ir.", donde: "Hoy, solo en tu navegador. Con la base, en Neon." }`; subir `VERSION_POLITICA` a `2026-11-02-borrador` y actualizar la aserción de `lib/privacidad/privacidad.test.ts:207`.
+El dato es nuevo, y ADR-017 dice que lo que amplía sube `VERSION_POLITICA`. Hay que: sumar "eventos" al segundo punto de `RESUMEN`; agregar a `DATOS_POR_PANTALLA` la fila `{ pantalla: "Eventos", datos: "A qué eventos dijiste que querés ir. Si cambiás de idea se borra la intención, pero la línea queda en Mi recorrido.", donde: "Hoy, solo en tu navegador. Con la base, en Neon." }`; subir `VERSION_POLITICA` a `2026-11-02-borrador` y actualizar la aserción de `lib/privacidad/privacidad.test.ts:207`.
 
-**Costo:** todas las personas vuelven a aceptar, también el consentimiento de datos sensibles del Pasaporte, porque `sensibles.version` se compara con la misma constante. Se acepta por coherencia con ADR-017; es una fricción menor en un prototipo con el equipo. Lo revisa el arquitecto.
+**Costo:** todas las personas vuelven a aceptar, también el consentimiento de datos sensibles del Pasaporte, porque `sensibles.version` se compara con la misma constante. Se acepta por coherencia con ADR-017; es una fricción menor en un prototipo con el equipo.
+<!-- arquitecto: revisado contra el código -->
+Revisado: el consentimiento sensible solo se usa en `components/kyc-dialogo.tsx`, que lo vuelve a pedir antes de seguir un KYC en curso. Lo ya cargado no se borra, y un KYC aprobado no vuelve atrás. Las fixturas de e2e importan la constante, así que no hay versión escrita a mano.
 
 ### 6. Término legal nuevo
 
@@ -110,6 +123,17 @@ Es una sección estática al final, "Eventos de la red", sin formulario: "Todav�
 ### 9. Ruta pública
 
 `/eventos` se suma a `RUTAS_PUBLICAS` con la misma justificación que tuvo la vitrina (decisión de Gus del 14-oct). `capacidadDeRuta` devuelve `descubrir` porque mira primero `esPublica`, sin más cambios.
+
+<!-- arquitecto: faltaba; sin esto se pierde la campaña de los enlaces viejos a /congreso -->
+La página guarda el origen de la campaña igual que la vitrina y la portada: `{hayCampana(origen) && <GuardarOrigen origen={origen} />}`, con `origen = leerParametros(searchParams)`. Eventos es la nueva puerta de entrada, y `eventos-reemplaza-congreso` promete que `/congreso?utm_source=…` sigue guardando el origen al llegar acá. La política ya nombra este dato ("Origen de la visita").
+
+### 10. Reparto con UnityHub (ADR-027, en Propuesta)
+<!-- arquitecto: decisión nueva; ADR-013 le da la convocatoria a UnityHub y pide un ADR para lo que se superpone -->
+ADR-013 (también en Propuesta) le da a UnityHub la convocatoria a eventos, y su regla 4 pide un ADR para las funciones que se superponen. Este cambio no integra nada, pero sí crea una lista de eventos y una intención de ir dentro de NetX. ADR-027 propone:
+- Hoy los eventos son de ejemplo, viven en un archivo de NetX y se leen solo por `obtenerEventos`.
+- "Quiero ir" es una intención personal: no es una inscripción ni le llega a quien organiza. Inscribir de verdad no se construye en este cambio.
+- Si la agenda viene después de otro servicio, se copia lo mínimo, con `proveedor`, `id_externo` y `sincronizado_at`, y el `id` de NetX no cambia. Las pantallas siguen sin enterarse.
+- Cuando "Quiero ir" pase a la base, el servidor toma a la persona de la sesión, nunca del pedido, y exige consentimiento vigente (ADR-005).
 
 ## Risks / Trade-offs
 

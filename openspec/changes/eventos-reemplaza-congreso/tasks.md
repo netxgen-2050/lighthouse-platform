@@ -1,6 +1,8 @@
 # Tasks
 
 **Antes de empezar:** confirmar que `eventos` ya está en `dev` con `ls app/eventos/page.tsx lib/eventos/quiero-ir.ts`. Si no están, frenar y reportar.
+<!-- arquitecto: la tarea 2.2 necesita que /eventos guarde el origen; ajustes también en 7.1 y 7.2 -->
+Confirmar también que `app/eventos/page.tsx` monta `GuardarOrigen` (`eventos`, decisión 9): la tarea 2.2 depende de eso. Si no lo monta, frenar y reportar.
 
 ## 1. Rail
 
@@ -39,8 +41,8 @@
 
 ## 7. Documentación
 
-- [ ] 7.1 Crear `docs/notas/congreso-en-pausa.md` (decisión 8), en palabras simples y con ruta o referencia en cada afirmación. Verificar con `ls` de cada ruta citada.
-- [ ] 7.2 Agregar una "Nota 2-nov-2026" a ADR-002 (cierra su pendiente: se reutiliza como Eventos; la vitrina queda en pausa) y a ADR-003 (las direcciones redirigen; se conserva la regla por si se vuelve). Verificar con `git diff docs/decisiones`.
+- [ ] 7.1 Crear `docs/notas/congreso-en-pausa.md` (decisión 8), en palabras simples y con ruta o referencia en cada afirmación. Incluir `app/congreso/netx/ir-al-ancla.tsx` entre lo que no se puede borrar, y como pendientes el botón para quitar el ticket y ADR-027. Verificar con `ls` de cada ruta citada.
+- [ ] 7.2 Agregar una "Nota 2-nov-2026" a ADR-002 (cierra su pendiente: se reutiliza como Eventos; la vitrina queda en pausa) y a ADR-003 (las direcciones redirigen con un 307 porque es una pausa; se conserva la regla por si se vuelve; si la vitrina se retira para siempre, `/congreso/en` pasa a redirección permanente). Verificar con `git diff docs/decisiones`.
 - [ ] 7.3 Verificar los comentarios: `grep -rn "congreso-en-pausa" lib e2e next.config.ts` debe devolver `lib/navegacion.ts`, los e2e saltados y `next.config.ts`.
 
 ## 8. Integración
