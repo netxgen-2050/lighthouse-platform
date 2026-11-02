@@ -1,4 +1,4 @@
-# ADR-027 · En el prototipo, el saldo de Semillas se deriva al leer con una función pura: las constancias calculadas cuentan, se rotulan y nunca se migran como emitidas
+# ADR-029 · En el prototipo, el saldo de Semillas se deriva al leer con una función pura: las constancias calculadas cuentan, se rotulan y nunca se migran como emitidas
 
 - **Estado:** Propuesta
 - **Fecha:** 2026-11-02

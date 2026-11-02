@@ -70,7 +70,7 @@ test.describe("la ficha del común", () => {
       await expect(equipos.getByText(n, { exact: true })).toBeVisible();
     }
     await equipos.getByRole("link", { name: "Ver cómo decidimos" }).click();
-    await expect(page).toHaveURL(/\/fogon\/gobernanza$/);
+    await expect(page).toHaveURL(/\/fogon$/);
     await expect(page.getByRole("img", { name: /Dibujo de la estructura/ })).toBeVisible();
   });
 
@@ -168,7 +168,7 @@ test.describe("sin adhesión se mira pero no se participa", () => {
       window.localStorage.setItem("lh-sumarte", JSON.stringify({ plan: "miembro", tribu: true, tribuId: "valle" }));
     });
     await page.goto("/fogon");
-    await expect(page.getByRole("heading", { level: 1, name: "Lo que se está decidiendo" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Cómo decidimos" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Votar" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Llevar al consejo" })).toHaveCount(0);
     const huerta = decision(page, "Plan de huerta comunitaria 2027");

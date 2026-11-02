@@ -33,7 +33,7 @@ La página de una propuesta SHALL presentar al Guardián como el agente (IA, sim
 - **THEN** ninguno dice que el agente pausa, frena, bloquea o decide
 
 ### Requirement: Desafío del Guardián con respuesta por escrito
-Cada sugerencia del Guardián cuya fase ya llegó SHALL verse como un desafío destacado arriba de la ficha de la propuesta, bajo "El Guardián desafía esta propuesta", con su texto, el principio o la decisión que cita, quiénes lo respaldaron como concern y sus respuestas (cada una con el nombre de quien responde y su texto), o "Sin respuesta todavía". Cualquier persona del ámbito de la decisión, quien facilita y quien presenta MUST poder responderlo por escrito en cualquier fase antes del cierre; una respuesta vacía MUST NOT registrarse. Antes de pasar al llamado al consenso (recorrido importante) o al período de objeción (recorrido simple), cada desafío cuya fase ya llegó MUST tener al menos una respuesta; si falta, "Pasar de fase" MUST NOT estar disponible y MUST decir en texto "Falta responder el desafío del Guardián". La regla MUST valer también en el estado calculado de la propuesta: un cambio de fase registrado hacia el llamado o la objeción con desafíos sin respuesta MUST ignorarse y quedar en el historial como ignorado. El desafío MUST NOT pausar la propuesta: los plazos siguen corriendo, las demás acciones siguen abiertas y, si la fase vence sin respuesta, rige lo mismo que para cualquier propuesta que vence ("Sin consenso al vencer"). Las respuestas MUST ser registros de solo agregar con forma de constancia (ADR-012), solo en el navegador, que "Borrar todo" limpia y que no se envían a ningún servidor.
+Cada sugerencia del Guardián cuya fase ya llegó SHALL verse como un desafío destacado arriba de la ficha de la propuesta, bajo "El Guardián desafía esta propuesta", con su texto, el principio o la decisión que cita, quiénes lo respaldaron como concern y sus respuestas (cada una con el nombre de quien responde y su texto), o "Sin respuesta todavía". Cualquier persona del ámbito de la decisión, quien facilita, quien presenta y las personas que se declararon afectadas MUST poder responderlo por escrito en cualquier fase antes del cierre, además de respaldarlo como concern (Gus, 1-nov: las personas afectadas respaldan y también responden, como en el resto del Fogón); una respuesta vacía MUST NOT registrarse. Antes de pasar al llamado al consenso (recorrido importante) o al período de objeción (recorrido simple), cada desafío cuya fase ya llegó MUST tener al menos una respuesta; si falta, "Pasar de fase" MUST NOT estar disponible y MUST decir en texto "Falta responder el desafío del Guardián". La regla MUST valer también en el estado calculado de la propuesta: un cambio de fase registrado hacia el llamado o la objeción con desafíos sin respuesta MUST ignorarse y quedar en el historial como ignorado. El desafío MUST NOT pausar la propuesta: los plazos siguen corriendo, las demás acciones siguen abiertas y, si nadie responde el desafío y la fase vence, la propuesta se cierra sin llegar al llamado al consenso (ni al período de objeción), como cualquier propuesta que nadie hace avanzar (Gus, 1-nov); el cierre no figura como obra del Guardián. Las respuestas MUST ser registros de solo agregar con forma de constancia (ADR-012), solo en el navegador, que "Borrar todo" limpia y que no se envían a ningún servidor.
 
 #### Scenario: Desafío destacado
 - **WHEN** la persona abre la propuesta del pedido de la bomba solar
@@ -51,6 +51,10 @@ Cada sugerencia del Guardián cuya fase ya llegó SHALL verse como un desafío d
 - **WHEN** una persona de la red o del común (simulado) mira la propuesta de la bomba solar
 - **THEN** ve los desafíos y sus respuestas pero no el formulario para responder, y puede respaldar el desafío como concern si su nivel lo permite
 
+#### Scenario: La persona afectada respalda y responde
+- **WHEN** una persona que se declaró afectada en la propuesta de la bomba solar respalda el desafío sobre la napa como concern y escribe una respuesta al desafío sobre si la medida es reversible
+- **THEN** ambas cosas quedan registradas con su nombre: el concern cuenta como respaldo y la respuesta aparece debajo del desafío
+
 #### Scenario: Respuesta vacía
 - **WHEN** una persona del ámbito envía la respuesta sin texto
 - **THEN** no se registra nada y el campo dice que falta la respuesta
@@ -61,7 +65,7 @@ Cada sugerencia del Guardián cuya fase ya llegó SHALL verse como un desafío d
 
 #### Scenario: Vence sin respuesta
 - **WHEN** la fase "Resolver" de una propuesta vence con un desafío del Guardián sin respuesta
-- **THEN** la propuesta sigue la regla de "Sin consenso al vencer" como cualquier otra, y ni el desafío ni el Guardián figuran como quien la cerró o la pausó
+- **THEN** la propuesta se cierra sin llegar al llamado al consenso, por vencer sin que nadie la hiciera avanzar, y ni el desafío ni el Guardián figuran como quien la cerró o la pausó
 
 #### Scenario: Recorrido simple
 - **WHEN** una propuesta simple tiene un desafío del Guardián de la fase "Presentación" sin respuesta

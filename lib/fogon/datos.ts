@@ -2,12 +2,15 @@
 // Los conteos de votos son de ejemplo (el mock-up no trae cifras).
 // El título, el lugar y la regla de cada decisión de ejemplo tienen su inglés (borrador a revisar: ver
 // `lib/idioma/revision-nativa.ts`); el título se muestra con la nota "Translated from Spanish". Los nombres de tribus no se traducen.
+import { COMUN_ID } from "@/lib/gobernanza/datos";
 import type { ClaveTermino } from "@/lib/legal/terminos";
 import { textos } from "@/lib/idioma/textos";
 import type { BilingueConOriginal } from "@/lib/idioma/tipos";
 
-export type Ambito = "circulo" | "tribu" | "comun" | "consejo" | "fideicomiso";
-export type Requisito = "ninguno" | "residente" | "pase";
+export type Ambito = "circulo" | "tribu" | "comun" | "consejo";
+export type Requisito = "ninguno" | "residente";
+/** Órgano legal que toma la decisión: el Fogón es consultivo y le lleva la recomendación (unión abierta a otros órganos). */
+export type Destino = "consejo-fundacion";
 export type Opcion = "favor" | "contra" | "abstencion";
 
 type Bi = BilingueConOriginal & { en: string };
@@ -22,6 +25,10 @@ export type Decision = {
   regla: Bi;
   base: ClaveTermino;
   ambito: Ambito;
+  /** Dónde de la holarquía se decide (id del nodo de `construirHolarquia`). Es un dato, no se deriva del ámbito. */
+  holonId: string;
+  /** Si lo decide un órgano legal, a quién le lleva la recomendación el Fogón. */
+  destino?: Destino;
   /** Quién puede votar. */
   requisito: Requisito;
   /** Votos de ejemplo, sin contar el propio. */
@@ -36,7 +43,7 @@ export type Decision = {
   plazo?: { cierra: string /* AAAA-MM-DD */ };
   acuerdo?: { tipo: "pacto" | "norma"; nombre: Bi; href?: string };
   /** Plata SIMULADA. `cantidad: null` es "sin dato", nunca 0. */
-  monto?: { cantidad: number | null; moneda: "USD"; fuente: "fondo-comun" | "tribu" | "fideicomiso" };
+  monto?: { cantidad: number | null; moneda: "USD"; fuente: "fondo-comun" | "tribu" };
 };
 
 const b = (es: string, en: string): { es: string; en: string; original: "es" } => ({ es, en, original: "es" });
@@ -45,22 +52,26 @@ export const DECISIONES: readonly Decision[] = [
   {
     id: "huerta",
     titulo: b("Plan de huerta comunitaria 2027", "2027 community garden plan"),
-    donde: b("Círculo de Tierra", "Círculo de Tierra"),
-    tribu: "Círculo de Tierra",
+    donde: b("Huerta intensiva · Semilla Viva", "Intensive garden · Semilla Viva"),
+    tribu: "Semilla Viva",
     regla: b("Consentimiento", "Consent"),
     base: "art32",
-    ambito: "tribu",
+    ambito: "circulo",
+    holonId: "semilla-1",
     requisito: "ninguno",
     votos: { favor: 14, contra: 1, abstencion: 3 },
   },
   {
-    id: "presupuesto",
-    titulo: b("Presupuesto de obra 2027 del macrolote", "2027 construction budget for the macro-lot"),
-    donde: b("Asamblea de beneficiarios", "Beneficiaries' Assembly"),
-    regla: b("Mayoría según el contrato", "Majority as set by the contract"),
-    base: "fidasamblea",
-    ambito: "fideicomiso",
-    requisito: "pase",
+    // Reemplaza a `presupuesto` (obra del macrolote): otra pregunta, otro id (design §1b). Sin propuesta de consenso.
+    id: "presupuesto-fondo-comun",
+    titulo: b("Presupuesto 2027 del Fondo Común", "2027 Common Fund budget"),
+    donde: b("Lighthouse VRN", "Lighthouse VRN"),
+    regla: b("Recomendación del común", "Recommendation of the commons"),
+    base: "destinoconsejofundacion",
+    ambito: "comun",
+    holonId: COMUN_ID,
+    destino: "consejo-fundacion",
+    requisito: "ninguno",
     votos: { favor: 17, contra: 6, abstencion: 1 },
   },
   {
@@ -71,6 +82,7 @@ export const DECISIONES: readonly Decision[] = [
     regla: b("Según el estatuto de la tribu", "As set by the tribe's bylaws"),
     base: "estatuto",
     ambito: "tribu",
+    holonId: "valle",
     requisito: "ninguno",
     votos: { favor: 9, contra: 0, abstencion: 2 },
   },
@@ -87,6 +99,7 @@ export const EJEMPLOS_COMUN: readonly Omit<Decision, "ambito">[] = [
     donde: b("Asamblea de residentes", "Residents' Assembly"),
     regla: b("Consenso", "Consensus"),
     base: "art35",
+    holonId: COMUN_ID,
     requisito: "residente",
     votos: { favor: 21, contra: 4, abstencion: 2 },
   },
@@ -96,6 +109,7 @@ export const EJEMPLOS_COMUN: readonly Omit<Decision, "ambito">[] = [
     donde: b("Asamblea de residentes", "Residents' Assembly"),
     regla: b("2/3 de los votos", "2/3 of the votes"),
     base: "art44",
+    holonId: COMUN_ID,
     requisito: "residente",
     votos: { favor: 12, contra: 9, abstencion: 5 },
   },
@@ -123,6 +137,7 @@ export const DECISIONES_DE_GOBERNANZA: readonly Decision[] = [
     regla: b("Consentimiento", "Consent"),
     base: "circulotrabajo",
     ambito: "circulo",
+    holonId: "valle-0",
     requisito: "ninguno",
     votos: { favor: 6, contra: 0, abstencion: 1 },
   },
@@ -137,6 +152,7 @@ export const DECISIONES_DE_GOBERNANZA: readonly Decision[] = [
     regla: b("Según el estatuto de la tribu", "As set by the tribe's bylaws"),
     base: "estatuto",
     ambito: "tribu",
+    holonId: "valle",
     requisito: "ninguno",
     votos: { favor: 11, contra: 1, abstencion: 2 },
     tribuId: "valle",
@@ -153,6 +169,7 @@ export const DECISIONES_DE_GOBERNANZA: readonly Decision[] = [
     regla: REGLA_CONSEJO,
     base: "consejo",
     ambito: "consejo",
+    holonId: "consejo",
     requisito: "ninguno",
     votos: { favor: 5, contra: 1, abstencion: 1 },
     origen: { tribuId: "valle", aprobadaEn: "Valle Solar" },
@@ -170,6 +187,7 @@ export const DECISIONES_CON_CAMINO: readonly Decision[] = [
     regla: b("Consenso", "Consensus"),
     base: "art35",
     ambito: "comun",
+    holonId: COMUN_ID,
     requisito: "ninguno",
     votos: { favor: 8, contra: 1, abstencion: 2 },
     plazo: { cierra: "2026-12-01" },
@@ -183,6 +201,7 @@ export const DECISIONES_CON_CAMINO: readonly Decision[] = [
     regla: REGLA_CONSEJO,
     base: "consejo",
     ambito: "consejo",
+    holonId: "consejo",
     requisito: "ninguno",
     votos: { favor: 3, contra: 0, abstencion: 1 },
     acuerdo: { tipo: "norma", nombre: b("Norma de uso compartido del agua (ejemplo)", "Shared water use rule (sample)") },
@@ -209,6 +228,7 @@ export function copiaParaElConsejo(d: Decision): Decision {
     regla: REGLA_CONSEJO,
     base: "consejo",
     ambito: "consejo",
+    holonId: "consejo",
     requisito: "ninguno",
     votos: { favor: 0, contra: 0, abstencion: 0 },
     pideAlComun: false,
@@ -216,20 +236,10 @@ export function copiaParaElConsejo(d: Decision): Decision {
   };
 }
 
-/** Los ámbitos y las opciones de voto con su etiqueta en español (las de inglés salen de `textos("fogon", "en")`). */
-export const AMBITOS: readonly { id: Ambito; etiqueta: string }[] = (
-  Object.entries(textos("fogon", "es").ambitos) as [Ambito, string][]
-).map(([id, etiqueta]) => ({ id, etiqueta }));
-
+/** Las opciones de voto con su etiqueta en español (las de inglés salen de `textos("fogon", "en")`). */
 export const OPCIONES: readonly { id: Opcion; etiqueta: string }[] = (
   Object.entries(textos("fogon", "es").opciones) as [Opcion, string][]
 ).map(([id, etiqueta]) => ({ id, etiqueta }));
-
-/** Los ámbitos con su etiqueta en el idioma pedido. */
-export function ambitos(idioma: "es" | "en"): readonly { id: Ambito; etiqueta: string }[] {
-  const t = textos("fogon", idioma).ambitos;
-  return AMBITOS.map((a) => ({ id: a.id, etiqueta: t[a.id] }));
-}
 
 /** Las opciones de voto con su etiqueta en el idioma pedido. */
 export function opciones(idioma: "es" | "en"): readonly { id: Opcion; etiqueta: string }[] {
