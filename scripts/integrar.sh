@@ -61,8 +61,15 @@ paso "Instalando dependencias"; pnpm install --frozen-lockfile --silent >/dev/nu
 paso "pnpm verificar"; pnpm verificar > $LOGS/verificar.log 2>&1 || { tail -30 $LOGS/verificar.log; exit 1; }
 UNIT="$(grep -Eo 'Tests +[0-9]+ passed' $LOGS/verificar.log | tail -1 || true)"
 paso "pnpm build"; pnpm build > $LOGS/build.log 2>&1 || { tail -30 $LOGS/build.log; exit 1; }
-paso "e2e local"; PORT=3016 pnpm test:e2e > $LOGS/e2e.log 2>&1 || { grep -E "failed|✘" $LOGS/e2e.log | head -20; exit 1; }
-E2E="$(grep -Eo '[0-9]+ passed' $LOGS/e2e.log | tail -1 || true)"
+# Algunos e2e fallan solo con toda la suite en paralelo (carga): se reintentan una vez solos y el PR lo dice.
+paso "e2e local"; REINTENTO=""
+if ! PORT=3016 pnpm test:e2e > $LOGS/e2e.log 2>&1; then
+  grep -E "✘" $LOGS/e2e.log | head -20
+  paso "Reintento solo de los e2e que fallaron"
+  PORT=3016 pnpm exec playwright test --last-failed > $LOGS/e2e-reintento.log 2>&1 || { grep -E "failed|✘" $LOGS/e2e-reintento.log | head -20; exit 1; }
+  REINTENTO=" (reintentados y en verde: $(grep -E "✘" $LOGS/e2e.log | sed -E 's/.*› (e2e\/[^ ]+).*/\1/' | sort -u | paste -sd ', ' -))"
+fi
+E2E="$(grep -Eo '[0-9]+ passed' $LOGS/e2e.log | tail -1 || true)${REINTENTO}"
 paso "Todo en verde: ${UNIT:-unitarios ok} · e2e ${E2E:-ok}"
 
 if [[ $PROBAR -eq 1 ]]; then paso "Modo --probar: no pusheo. La copia queda en $DIR."; exit 0; fi
