@@ -2,7 +2,7 @@
 
 ## Why
 
-Quien llega de cero a la portada hoy lee "Encontrá tu tribu" y ve una tarjeta del Congreso cancelado. La fase 1 (ADR-028) pide otra cosa: que entienda qué promete Lighthouse VRN y por qué, y que llegue a los lotes.
+Quien llega de cero a la portada hoy lee "Encontrá tu tribu" y ve una tarjeta del Congreso cancelado. La fase 1 (ADR-030) pide otra cosa: que entienda qué promete Lighthouse VRN y por qué, y que llegue a los lotes.
 
 ## What Changes
 

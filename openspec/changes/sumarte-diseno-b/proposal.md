@@ -1,6 +1,6 @@
 # Proposal
 
-**Revisado el 2-nov-2026 por la fase 1 (ADR-028).** Saca "Lighthouse VRN no vende tierra", suma la puerta "Comprar un lote", amplía los tickets de "Invertir en NetX", deja de decir "Juego B" en pantalla y suma los deltas que había pedido la revisión de arquitectura. El resto no cambia. Se implementa la **noche 3**, después de `lote-ficha-y-compra` y antes de `modelo-hibrido-procomun`.
+**Revisado el 2-nov-2026 por la fase 1 (ADR-030).** Saca "Lighthouse VRN no vende tierra", suma la puerta "Comprar un lote", amplía los tickets de "Invertir en NetX", deja de decir "Juego B" en pantalla y suma los deltas que había pedido la revisión de arquitectura. El resto no cambia. Se implementa la **noche 3**, después de `lote-ficha-y-compra` y antes de `modelo-hibrido-procomun`.
 
 ## Why
 

@@ -2,7 +2,7 @@
 
 ## Why
 
-Quien mira un lote tiene que entender qué compra y qué sigue siendo de todos. Además, la Vista NetX todavía dice lo contrario de la fase 1 (ADR-028): su título pregunta cómo financiarse "sin vender lotes", y compara un "Juego A" de vender lotes con un "Juego B". Este cambio cuenta el modelo híbrido en un solo relato.
+Quien mira un lote tiene que entender qué compra y qué sigue siendo de todos. Además, la Vista NetX todavía dice lo contrario de la fase 1 (ADR-030): su título pregunta cómo financiarse "sin vender lotes", y compara un "Juego A" de vender lotes con un "Juego B". Este cambio cuenta el modelo híbrido en un solo relato.
 
 ## What Changes
 

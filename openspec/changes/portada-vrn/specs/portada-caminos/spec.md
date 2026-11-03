@@ -32,5 +32,5 @@ The description of "Ver las tribus" SHALL derive the number of neighborhoods fro
 ## REMOVED Requirements
 
 ### Requirement: Héroe del mock-up con la propuesta para inversores
-**Reason**: La portada pasa a contar la narrativa de Lighthouse VRN a 2030 (fase 1, ADR-028).
+**Reason**: La portada pasa a contar la narrativa de Lighthouse VRN a 2030 (fase 1, ADR-030).
 **Migration**: La reemplazan los requisitos de `portada-narrativa`. El enlace "Elegí cómo sumarte" se conserva como acción secundaria, y `/sumarte` sigue dejando claro que la plataforma sirve para captar plata.

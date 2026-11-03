@@ -2,7 +2,7 @@
 
 ## Context
 
-Hoy `accionesDeLote` devuelve solo `consultar` para cualquier proyecto y la spec `estado-administrativo` prohíbe comprar o reservar sin aprobación. El único proyecto es Chacras de Soluna. La decisión de producto y las reglas que cambia están en ADR-028; los valores de plata no entran acá (los trae `lib/lotes/modelo.ts` en `lote-ficha-y-compra`).
+Hoy `accionesDeLote` devuelve solo `consultar` para cualquier proyecto y la spec `estado-administrativo` prohíbe comprar o reservar sin aprobación. El único proyecto es Chacras de Soluna. La decisión de producto y las reglas que cambia están en ADR-030; los valores de plata no entran acá (los trae `lib/lotes/modelo.ts` en `lote-ficha-y-compra`).
 
 ## Goals / Non-Goals
 
@@ -30,7 +30,7 @@ export type EstadoAdministrativo = {
   normaCorta: string;
   expediente?: string;
   aprobacionMunicipal: boolean;
-  /** Habilita reservar y comprar SOLO simulados (ADR-028). Nunca implica aprobación. */
+  /** Habilita reservar y comprar SOLO simulados (ADR-030). Nunca implica aprobación. */
   ventaSimulada?: true;
   /** Texto que reemplaza a "aprobada/pendiente" cuando se trabaja con un supuesto. */
   supuestoDeTrabajo?: string;
@@ -90,14 +90,14 @@ Oculto:       Compromisos · Congreso
 *Alternativa descartada:* dejar el id `participar` con otro título. El id mentiría, porque Tribus no está en "Participar" y nada de ese grupo se ofrece como principal.
 
 ### 6. Texto para `CLAUDE.md`
-Línea del encabezado, después de "pactos y semillas.": **"Fase 1 (desde el 2-nov-2026): venta simulada de lotes privados en Lighthouse VRN más el modelo híbrido con el procomún (ADR-028)."**
+Línea del encabezado, después de "pactos y semillas.": **"Fase 1 (desde el 2-nov-2026): venta simulada de lotes privados en Lighthouse VRN más el modelo híbrido con el procomún (ADR-030)."**
 
 Sección nueva, justo antes de "Fase de prototipo interno":
 
 ```markdown
 ## Fase 1: venta de lotes privados (desde el 2-nov-2026, decisión de Franz)
-Decidió Franz (CEO) en la llamada del 2-nov; Gus lo aceptó. **No se vuelve a discutir** en specs, revisiones ni PRs: el riesgo legal y comercial queda a cargo de Franz (confirmación escrita pedida, sin respuesta todavía). Detalle en `docs/decisiones/ADR-028-fase-1-venta-de-lotes-simulada.md`.
-- **Se puede, solo simulado:** en `lighthouse-norte`, ofrecer lotes, mostrar precio, reservar, pago simulado y boleto de ejemplo. Si la nota 19, el backlog T7, doc 30 o una spec vieja dicen lo contrario, manda ADR-028.
+Decidió Franz (CEO) en la llamada del 2-nov; Gus lo aceptó. **No se vuelve a discutir** en specs, revisiones ni PRs: el riesgo legal y comercial queda a cargo de Franz (confirmación escrita pedida, sin respuesta todavía). Detalle en `docs/decisiones/ADR-030-fase-1-venta-de-lotes-simulada.md`.
+- **Se puede, solo simulado:** en `lighthouse-norte`, ofrecer lotes, mostrar precio, reservar, pago simulado y boleto de ejemplo. Si la nota 19, el backlog T7, doc 30 o una spec vieja dicen lo contrario, manda ADR-030.
 - **No cambia:** ningún cobro real, pasarela ni KYC real; la aprobación municipal nunca se muestra como otorgada (es un supuesto de trabajo, fecha "sin dato"); `accionesDeLote("soluna")` devuelve solo `consultar`; ningún pase, ticket ni token da prioridad sobre un lote; ninguna página se deja indexar.
 - **Foco solo en VRN:** nada de Lighthouse SMA ni del deck de inversores (USD 111M, TIR, recupero). No usar la nota de las "300 razones" (`NS_permacultura` 17).
 - **Los números de lotes** salen de un solo módulo con versión (`lib/lotes/modelo.ts`), nunca escritos en pantallas. Todos son de ejemplo (`NS_Tokenomics` doc 31, `sim/lot_sale_sim.py`): casas, infraestructura y parte del dueño son estimaciones sin presupuesto, y lo dicen.
@@ -110,7 +110,7 @@ En "Plata e inversión", después de "los pagos son simulados.", se suma: "Vale 
 ### 7. Nota `docs/notas/congreso-en-pausa.md`
 Sigue la forma de `docs/notas/compromisos-en-pausa.md`: qué pasó y por qué (menú de fase 1, 2-nov; relacionado con D16 y la cancelación del 23-oct), qué quedó (página, `/congreso/en`, registro del ticket, rutas públicas), qué marca lo deja en pausa (`oculto: true`), y pasos para volver (quitar la marca, ajustar `lib/navegacion.test.ts` y los e2e del rail).
 
-<!-- arquitecto: decisión agregada en la revisión. Una página con precio y "Comprar" que un buscador guarda no se deshace revirtiendo el PR, y ADR-028 solo vale si no sale del equipo -->
+<!-- arquitecto: decisión agregada en la revisión. Una página con precio y "Comprar" que un buscador guarda no se deshace revirtiendo el PR, y ADR-030 solo vale si no sale del equipo -->
 ### 8. Ninguna página se deja indexar (P7)
 La serie pone lotes, precio, "Comprar" y un rango de tickets en páginas públicas, y hoy solo `/netx` y `/admin` piden `noindex`. La Ordenanza 173 también nombra "publicitar" (nota 19 §1, hipótesis), y lo que un buscador guarda no se borra revirtiendo un PR. Por eso entra en la noche 1, antes de que aparezca el primer lote:
 

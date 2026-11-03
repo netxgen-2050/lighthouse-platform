@@ -14,7 +14,7 @@
 
 ## 1. La regla escrita
 
-- [ ] 1.1 Editar `CLAUDE.md` con la línea del encabezado, la sección "Fase 1" y la frase de "Plata e inversión" (design §6). Verificar con `git diff CLAUDE.md`: solo suma esas tres cosas, y `docs/decisiones/ADR-028-fase-1-venta-de-lotes-simulada.md` existe y figura en `docs/decisiones/README.md`.
+- [ ] 1.1 Editar `CLAUDE.md` con la línea del encabezado, la sección "Fase 1" y la frase de "Plata e inversión" (design §6). Verificar con `git diff CLAUDE.md`: solo suma esas tres cosas, y `docs/decisiones/ADR-030-fase-1-venta-de-lotes-simulada.md` existe y figura en `docs/decisiones/README.md`.
 - [ ] 1.2 Crear `docs/notas/congreso-en-pausa.md` (design §7). Verificar leyendo que cada archivo y marca que nombra existe, con `git grep -n "oculto" -- lib/navegacion.ts`.
 
 ## 2. Estado administrativo
@@ -33,4 +33,4 @@
 ## 4. Integración
 
 - [ ] 4.1 Comprobar lo que no debe cambiar: `git diff --name-only origin/dev` no incluye `lib/permisos/`, `lib/sesion/rutas-publicas.ts` ni `package.json`. `pnpm verificar` y `pnpm build` en verde.
-- [ ] 4.2 Abrir el PR con `scripts/pr.sh` hacia `dev`, aclarando en el cuerpo: que rompe reglas escritas a propósito (ADR-028); que ninguna pantalla ofrece lotes todavía; que `/lotes` aparece en el rail recién con `lote-ficha-y-compra`; que la portada sigue enlazando al Congreso hasta `portada-vrn`; que la confirmación escrita de Franz sigue pendiente; y que este PR también hace P7 (`noindex` en todas las páginas), que no pide sesión. Verificar con `scripts/preview-url.sh agente/venta-lotes-regla` y `BASE_URL=<url> pnpm test:e2e e2e/marco.spec.ts`.
+- [ ] 4.2 Abrir el PR con `scripts/pr.sh` hacia `dev`, aclarando en el cuerpo: que rompe reglas escritas a propósito (ADR-030); que ninguna pantalla ofrece lotes todavía; que `/lotes` aparece en el rail recién con `lote-ficha-y-compra`; que la portada sigue enlazando al Congreso hasta `portada-vrn`; que la confirmación escrita de Franz sigue pendiente; y que este PR también hace P7 (`noindex` en todas las páginas), que no pide sesión. Verificar con `scripts/preview-url.sh agente/venta-lotes-regla` y `BASE_URL=<url> pnpm test:e2e e2e/marco.spec.ts`.

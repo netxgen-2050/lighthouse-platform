@@ -14,7 +14,7 @@ The system SHALL keep, in `lib/legal/estado-administrativo.ts`, one record per p
 - **THEN** se lee "Titular: sin dato", "Expediente: sin dato" y "Fecha: sin dato"
 
 ### Requirement: Sin compra ni reserva sin aprobación
-The system SHALL decide which actions a view may offer on a lot through a pure function `accionesDeLote(proyecto)`. For Chacras de Soluna it MUST return only "consultar" (never "comprar", "reservar" or "señar"), whatever its approval says, and no view SHALL show a button or link to buy, reserve or put a deposit on a Soluna lot. For `lighthouse-norte`, marked as simulated sale (ADR-028), it SHALL return "consultar", "reservar" and "comprar". Those two actions MUST exist only as simulated flows, with no charge, and the function MUST NOT read `aprobacionMunicipal` to enable them.
+The system SHALL decide which actions a view may offer on a lot through a pure function `accionesDeLote(proyecto)`. For Chacras de Soluna it MUST return only "consultar" (never "comprar", "reservar" or "señar"), whatever its approval says, and no view SHALL show a button or link to buy, reserve or put a deposit on a Soluna lot. For `lighthouse-norte`, marked as simulated sale (ADR-030), it SHALL return "consultar", "reservar" and "comprar". Those two actions MUST exist only as simulated flows, with no charge, and the function MUST NOT read `aprobacionMunicipal` to enable them.
 
 #### Scenario: Sin aprobación
 - **WHEN** se llama `accionesDeLote` para Chacras de Soluna con `aprobacionMunicipal: false`

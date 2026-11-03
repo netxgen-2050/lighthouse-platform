@@ -2,7 +2,7 @@
 
 ## Why
 
-Con `loteo-norte-7a` los lotes se ven en el mapa, pero la fase 1 (ADR-028) necesita mostrar qué se compra y cómo: la ficha de cada lote y el recorrido completo, de punta a punta, sin que nadie pague nada. Es lo central para la reunión del lunes 9-nov.
+Con `loteo-norte-7a` los lotes se ven en el mapa, pero la fase 1 (ADR-030) necesita mostrar qué se compra y cómo: la ficha de cada lote y el recorrido completo, de punta a punta, sin que nadie pague nada. Es lo central para la reunión del lunes 9-nov.
 
 ## What Changes
 

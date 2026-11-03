@@ -4,11 +4,11 @@
 
 Franz (CEO) decidió en la llamada del 2-nov-2026 que la fase 1 de la plataforma es la **venta de lotes privados en Lighthouse VRN más el modelo híbrido con el procomún**. Gus lo aceptó: no se vuelve a discutir y el riesgo legal y comercial queda a cargo de Franz (confirmación escrita pedida, sin respuesta todavía). Antes de construir pantallas, hay que dejar la regla escrita donde los agentes la leen: si no, la spec `estado-administrativo` y los documentos de producto los frenan.
 
-**Esto rompe reglas escritas, a propósito:** nota 19 §2 ("nunca ofrecer, reservar ni poner precio a un lote del Lighthouse"), backlog T7, doc 30 §3, `CLAUDE.md` y `sumarte-diseno-b`. El detalle está en ADR-028.
+**Esto rompe reglas escritas, a propósito:** nota 19 §2 ("nunca ofrecer, reservar ni poner precio a un lote del Lighthouse"), backlog T7, doc 30 §3, `CLAUDE.md` y `sumarte-diseno-b`. El detalle está en ADR-030.
 
 ## What Changes
 
-- **ADR-028** (ya escrito en estado Propuesta, con su línea en el índice): quién decide, qué reglas cambia y qué sigue igual.
+- **ADR-030** (ya escrito en estado Propuesta, con su línea en el índice): quién decide, qué reglas cambia y qué sigue igual.
 - **`CLAUDE.md`:** una sección "Fase 1" para que ningún agente frene por las reglas viejas, con la lista de lo congelado.
 - **`lib/legal/estado-administrativo.ts`:**
   - proyecto nuevo `lighthouse-norte`, con `aprobacionMunicipal: false`;
@@ -28,7 +28,7 @@ Franz (CEO) decidió en la llamada del 2-nov-2026 que la fase 1 de la plataforma
 - **Cobros reales, pasarela, KYC real y abrir la plataforma afuera** (R14): siguen prohibidos.
 - **Decir que el municipio aprobó algo:** ningún dato ni texto lo afirma.
 - **Lighthouse SMA y el deck de inversores** (USD 111M, TIR, recupero). Tampoco la nota de las "300 razones" (`NS_permacultura` 17).
-- **Editar `NS_platform` y `NS_Tokenomics`** (nota 19, backlog T7, doc 18 §4.6, doc 30, `AGENTS.md`): este repo es solo código. ADR-028 lista lo que hay que actualizar allá.
+- **Editar `NS_platform` y `NS_Tokenomics`** (nota 19, backlog T7, doc 18 §4.6, doc 30, `AGENTS.md`): este repo es solo código. ADR-030 lista lo que hay que actualizar allá.
 - **Retirar `/congreso`** (backlog D16, decide Gus): solo sale del menú y la página sigue en su dirección. La tarjeta de la portada que enlaza al Congreso la saca `portada-vrn`.
 - **Lo congelado:** `fogon-desde-mi-y-guardian`, `fogon-consenso-en-tarjetas`, `fogon-consenso-formal`, `semillas-constancias`, `liderar-varias-tribus`, billeteras, Mi Raíz, EAS, smart contracts y red de nodos.
 

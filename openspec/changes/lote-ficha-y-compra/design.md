@@ -165,7 +165,7 @@ Se suman `/^\/lotes$/` y `/^\/lotes\/[^/]+$/` a `RUTAS_PUBLICAS`: `puedeRuta` re
 
 ## Risks / Trade-offs
 
-- [El prototipo muestra "Comprar" y un boleto] → Es lo decidido (ADR-028). Se mantienen la franja "SIMULADO · SIN VALOR LEGAL", el ⚖ en borrador y el aviso de prototipo.
+- [El prototipo muestra "Comprar" y un boleto] → Es lo decidido (ADR-030). Se mantienen la franja "SIMULADO · SIN VALOR LEGAL", el ⚖ en borrador y el aviso de prototipo.
 - <!-- arquitecto: P7 pasó a `venta-lotes-regla`, design §8 --> [Una página pública con precio y reserva] → No se indexa (P7, `venta-lotes-regla`, que corre antes). Quien tenga el enlace la ve sin sesión: ADR-015 ya dice que la sesión no protege, y se resuelve en R14.
 - [Valores cambian en doc 31] → Se cambia un solo módulo, con otra versión. Un boleto viejo muestra lo que se vio.
 - [El boceto solo tiene dos tamaños, así que casi todos los lotes dan USD 15.000] → Se corrige solo con el KMZ de Martín, porque el precio sale de la superficie. Con costos de ejemplo, un lote de USD 15.000 no se cubre (doc 31 §3): no se muestra en la ficha, es una pregunta para el equipo.

@@ -2,7 +2,7 @@
 
 ## Why
 
-La fase 1 vende lotes en Lighthouse VRN (ADR-028), y hoy el mapa no tiene ninguno. Hace falta verlos sobre el territorio para la reunión del lunes 9-nov. Los datos son un boceto improvisado, pero Gus recibe esta semana el KMZ de Martín: reemplazar uno por el otro no tiene que tocar pantallas.
+La fase 1 vende lotes en Lighthouse VRN (ADR-030), y hoy el mapa no tiene ninguno. Hace falta verlos sobre el territorio para la reunión del lunes 9-nov. Los datos son un boceto improvisado, pero Gus recibe esta semana el KMZ de Martín: reemplazar uno por el otro no tiene que tocar pantallas.
 
 ## What Changes
 

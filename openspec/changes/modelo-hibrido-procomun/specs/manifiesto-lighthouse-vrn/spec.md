@@ -12,5 +12,5 @@ The "El modelo híbrido" section of `/netx/financiamiento` SHALL include a short
 ## REMOVED Requirements
 
 ### Requirement: Manifiesto en la Vista NetX
-**Reason**: Nombraba la sección "Juego A o Juego B", que sale de `/netx/financiamiento` (ADR-028).
+**Reason**: Nombraba la sección "Juego A o Juego B", que sale de `/netx/financiamiento` (ADR-030).
 **Migration**: Lo reemplaza "Manifiesto en el modelo híbrido", con el mismo bloque en la sección nueva.

@@ -207,7 +207,7 @@ Quedan en español marcado los ⚖ `semillas`, `gobernanzafideicomiso` y otros q
 ## Risks / Trade-offs
 
 - [Dos pantallas se contradicen: Sumarte dice "influencia" y el Pasaporte "Voto en el Fideicomiso"] → Se iba a resolver con `fogon-desde-mi-y-guardian`, **que quedó congelado el 2-nov**: la contradicción sigue hasta nuevo aviso. El PR lo aclara.
-- [`/sumarte` es pública y ahora muestra precio de lote y rango de tickets] → Es el prototipo interno (ADR-028). <!-- arquitecto --> No se indexa (P7, `venta-lotes-regla`), y quien tenga el enlace la ve: se resuelve en R14.
+- [`/sumarte` es pública y ahora muestra precio de lote y rango de tickets] → Es el prototipo interno (ADR-030). <!-- arquitecto --> No se indexa (P7, `venta-lotes-regla`), y quien tenga el enlace la ve: se resuelve en R14.
 - [Las líneas sobre "Juego B" de `lib/legal/terminos.test.ts` esperan el texto viejo de `fundaciontierra`] → Se actualizan en la tarea 1.2.
 - [Sumarte dice que no hace falta aceptación y la ficha de Lighthouse VRN todavía muestra "Simular: la comunidad me acepta"] → La regla real ya es esa (`participar.ts`: "pedido" cuenta); la ficha se corrige con `fogon-portada-holarquia`. El PR lo aclara.
 - [Conflictos de merge si `fogon-desde-mi-y-guardian` o `idioma-legal` corren en paralelo, en `terminos.ts` y en los diccionarios] → No correrlos la misma noche; el que entre segundo reusa lo que ya esté.

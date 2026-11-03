@@ -1,4 +1,4 @@
-# ADR-028 · La fase 1 es la venta de lotes privados en Lighthouse VRN más el modelo híbrido con el procomún, solo simulada dentro del prototipo
+# ADR-030 · La fase 1 es la venta de lotes privados en Lighthouse VRN más el modelo híbrido con el procomún, solo simulada dentro del prototipo
 
 - **Estado:** Propuesta
 - **Fecha:** 2026-11-02

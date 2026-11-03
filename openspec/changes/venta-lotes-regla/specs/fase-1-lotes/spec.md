@@ -11,10 +11,10 @@ El repo SHALL tener un ADR que registre quién decidió la venta de lotes, qué 
 
 #### Scenario: Leer la decisión
 - **WHEN** una persona abre `docs/decisiones/README.md`
-- **THEN** encuentra ADR-028 en estado Propuesta, y el ADR nombra a Franz como quien decide y a la nota 19, doc 30, T7, `CLAUDE.md` y `sumarte-diseno-b` como reglas que cambian
+- **THEN** encuentra ADR-030 en estado Propuesta, y el ADR nombra a Franz como quien decide y a la nota 19, doc 30, T7, `CLAUDE.md` y `sumarte-diseno-b` como reglas que cambian
 
 ### Requirement: La regla en CLAUDE.md
-`CLAUDE.md` SHALL decir que la fase 1 es la venta simulada de lotes en `lighthouse-norte`, que no se vuelve a discutir, que manda ADR-028 sobre las reglas viejas, y qué queda congelado. MUST seguir diciendo que ningún flujo cobra de verdad y que abrirla afuera es otro paso.
+`CLAUDE.md` SHALL decir que la fase 1 es la venta simulada de lotes en `lighthouse-norte`, que no se vuelve a discutir, que manda ADR-030 sobre las reglas viejas, y qué queda congelado. MUST seguir diciendo que ningún flujo cobra de verdad y que abrirla afuera es otro paso.
 
 #### Scenario: Un agente lee las reglas
 - **WHEN** un agente lee `CLAUDE.md` antes de trabajar en un lote

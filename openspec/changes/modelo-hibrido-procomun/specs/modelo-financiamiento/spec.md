@@ -12,5 +12,5 @@ El sistema SHALL ofrecer los textos del modelo híbrido como datos con fuente, y
 ## REMOVED Requirements
 
 ### Requirement: Textos del Juego A y el Juego B
-**Reason**: El contraste entre los dos juegos sale de la Vista NetX (ADR-028).
+**Reason**: El contraste entre los dos juegos sale de la Vista NetX (ADR-030).
 **Migration**: Lo reemplaza "Textos del modelo híbrido". La lista de palabras que no van se conserva.

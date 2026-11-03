@@ -76,7 +76,7 @@ El Resumen SHALL contar en un solo bloque el modelo híbrido: lotes privados sim
 ## REMOVED Requirements
 
 ### Requirement: Juego A y Juego B
-**Reason**: La fase 1 es la venta de lotes más el modelo híbrido (ADR-028). El contraste presentaba vender como el camino que no se toma.
+**Reason**: La fase 1 es la venta de lotes más el modelo híbrido (ADR-030). El contraste presentaba vender como el camino que no se toma.
 **Migration**: Lo reemplaza "El modelo híbrido en el Resumen". `PROCOMUN_EN_SIMPLE` se conserva.
 
 ### Requirement: Vender lotes en tres líneas
