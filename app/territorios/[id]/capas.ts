@@ -46,7 +46,7 @@ export function estiloElegido(base: PathOptions, conservarTrazo = false): PathOp
     color: token("ink"),
     weight: 4,
     dashArray: conservarTrazo ? base.dashArray : undefined,
-    lineCap: conservarTrazo ? base.lineCap : undefined,
+    lineCap: base.lineCap ?? "round",
     fillOpacity: Math.min(0.85, (base.fillOpacity ?? 0.4) + 0.3),
   };
 }
