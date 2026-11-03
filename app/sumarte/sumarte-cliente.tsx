@@ -34,10 +34,8 @@ import { guardarPedido } from "@/lib/contactos/almacen";
 import type { Pedido } from "@/lib/contactos/tipos";
 import { usePreferencias } from "@/lib/configuracion/almacen";
 import { formatearMonto, notaTipoDeCambio, TIPO_DE_CAMBIO } from "@/lib/configuracion/preferencias";
-import { usd } from "@/lib/series/formato";
 import { TICKETS_SAFE } from "@/lib/financiamiento/fuentes";
 import { MODELO_LOTES } from "@/lib/lotes/modelo";
-import { usdEn } from "@/lib/lotes/formato";
 import { fraseDeTermino } from "@/lib/legal/mostrar-termino";
 import { EstadoAdministrativo } from "@/components/estado-administrativo";
 import {
@@ -559,7 +557,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
 
       <section aria-labelledby="comprar-lote" className={`${TARJETA} ${BORDE}`}>
         <h2 id="comprar-lote" className="text-2xl font-semibold">{t.comprarLote.titulo}</h2>
-        <p className="max-w-3xl text-sm">{t.comprarLote.texto(usdEn(MODELO_LOTES.precioLote.min, idioma))}</p>
+        <p className="max-w-3xl text-sm">{t.comprarLote.texto(monto(MODELO_LOTES.precioLote.min))}</p>
         <EstadoAdministrativo proyecto="lighthouse-norte" compacto idioma={idioma} />
         <Link className="w-fit rounded-lg border border-muted px-4 py-1.5 font-medium hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/lotes">
           {t.comprarLote.enlace}
@@ -633,7 +631,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
               <TerminoLegal clave="safe" idioma={idioma} />
             </h3>
             <p className="text-sm text-muted">{t.invertir.empresa.texto}</p>
-            <p className="text-sm font-medium">{t.invertir.empresa.tickets(usd(TICKETS_SAFE.min), usd(TICKETS_SAFE.max))}</p>
+            <p className="text-sm font-medium">{t.invertir.empresa.tickets(monto(TICKETS_SAFE.min), monto(TICKETS_SAFE.max), TICKETS_SAFE.abierto)}</p>
             <Link className="w-fit text-sm underline" href="/netx">
               {t.invertir.empresa.enlace}
             </Link>

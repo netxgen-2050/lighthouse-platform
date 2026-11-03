@@ -180,8 +180,9 @@ const es = {
       titulo: "En NetX como empresa",
       texto:
         "Es otra inversión: en la compañía detrás de la plataforma, no en los proyectos. Lo hablamos uno a uno con el equipo.",
-      tickets: (min: string, max: string) =>
-        `Tickets desde ${min} hasta ${max} o más: de ejemplo, a definir con Vagner.`,
+      // `abierto` (TICKETS_SAFE) decide si el máximo es "o más".
+      tickets: (min: string, max: string, abierto: boolean) =>
+        `Tickets desde ${min} hasta ${max}${abierto ? " o más" : ""}: de ejemplo, a definir con Vagner.`,
       enlace: "Ver cómo se financia NetX en la Vista NetX",
       referencia: "Invertir en NetX",
       charlaPedida: "Charla pedida",
@@ -385,8 +386,8 @@ const en: Textos<typeof es> = {
       titulo: "In NetX as a company",
       texto:
         "It's a different investment: in the company behind the platform, not in the projects. We talk it over one on one with the team.",
-      tickets: (min: string, max: string) =>
-        `Tickets from ${min} to ${max} or more: samples, to be defined with Vagner.`,
+      tickets: (min: string, max: string, abierto: boolean) =>
+        `Tickets from ${min} to ${max}${abierto ? " or more" : ""}: samples, to be defined with Vagner.`,
       enlace: "See how NetX is funded in the NetX View (in Spanish)",
       referencia: "Invest in NetX",
       charlaPedida: "Talk requested",

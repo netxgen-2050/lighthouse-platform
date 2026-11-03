@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
+import { textos } from "@/lib/idioma/textos";
 import {
   COMISION_DESARROLLO,
   CONSUMO_MENSUAL_USD,
@@ -36,6 +37,14 @@ describe("fuentes", () => {
     expect(TICKETS_SAFE).toMatchObject({ min: 5_000, max: 50_000, abierto: true, aConfirmar: "Vagner" });
     expect(TICKETS_SAFE.fuente.trim()).toBeTruthy();
     expect(TICKETS_SAFE.min).toBeLessThan(TICKETS_SAFE.max);
+  });
+  test("el 'o más' de los tickets de Sumarte depende de TICKETS_SAFE.abierto, en los dos idiomas", () => {
+    for (const [idioma, mas] of [["es", " o más"], ["en", " or more"]] as const) {
+      const f = textos("sumarte", idioma).invertir.empresa.tickets;
+      expect(f("A", "B", TICKETS_SAFE.abierto)).toContain(`B${mas}`);
+      expect(f("A", "B", true)).toContain(mas);
+      expect(f("A", "B", false)).not.toContain(mas);
+    }
   });
   test("el contrato de diseño no tiene monto (null, no 0)", () => {
     expect(CONTRATO_DISENO_BIOPUEBLO_USD.valor).toBeNull();

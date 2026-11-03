@@ -355,6 +355,28 @@ test.describe("en inglés", () => {
     await expect(page.getByText("Sample values, to be re-tuned")).toBeVisible();
     await expect(page.getByText("Genesis Cohort · date to be defined")).toBeVisible();
   });
+
+  test("el precio del lote y los tickets se formatean como el resto de la página, con coma de miles", async ({ page }) => {
+    await page.goto("/sumarte");
+    const puerta = page.getByRole("region", { name: "Buy a lot" });
+    await expect(puerta).toContainText(`From USD ${MODELO_LOTES.precioLote.min.toLocaleString("en-US")} per lot`);
+    const empresa = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /^In NetX as a company/ }) });
+    await expect(empresa).toContainText(
+      `Tickets from USD ${TICKETS_SAFE.min.toLocaleString("en-US")} to USD ${TICKETS_SAFE.max.toLocaleString("en-US")} or more`,
+    );
+  });
+});
+
+test("con moneda en pesos, el precio del lote y los tickets se convierten como los planes", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("lh-configuracion", JSON.stringify({ moneda: "ARS" }));
+  });
+  await page.goto("/sumarte");
+  await expect(page.getByRole("region", { name: "Comprar un lote" })).toContainText("Desde ARS ");
+  await expect(page.getByRole("region", { name: "Comprar un lote" })).not.toContainText("USD");
+  const empresa = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /^En NetX como empresa/ }) });
+  await expect(empresa).toContainText("Tickets desde ARS ");
+  await expect(empresa).not.toContainText("USD");
 });
 
 test("almacenamiento bloqueado: avisa", async ({ page }) => {
