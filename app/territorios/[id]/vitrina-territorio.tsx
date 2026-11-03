@@ -33,7 +33,7 @@ type Tx = Textos<typeof territorio.es>;
 type Grupo = {
   id: string;
   titulo: React.ReactNode;
-  items: { clase: string; texto: string }[];
+  items: { clase: string; texto: string; simbolo?: string }[];
   nota?: string;
 };
 
@@ -74,9 +74,9 @@ function grupos(tx: Tx, vista: VistaId, fase: Fase): Grupo[] {
             ),
             nota: lo.estadosEjemplo,
             items: [
-              { clase: "mapa-leyenda-lote-disponible", texto: `● ${lo.estado.disponible}` },
-              { clase: "mapa-leyenda-lote-reservado", texto: `◐ ${lo.estado.reservado}` },
-              { clase: "mapa-leyenda-lote-vendido", texto: `✕ ${lo.estado.vendido}` },
+              { clase: "mapa-leyenda-lote-disponible", texto: lo.estado.disponible, simbolo: "●" },
+              { clase: "mapa-leyenda-lote-reservado", texto: lo.estado.reservado, simbolo: "◐" },
+              { clase: "mapa-leyenda-lote-vendido", texto: lo.estado.vendido, simbolo: "✕" },
               ...(sectorNorte() ? [{ clase: "mapa-leyenda-sector", texto: lo.leyenda.sector }] : []),
               ...(zonas.has("uso-comun") ? [{ clase: "mapa-leyenda-uso-comun", texto: lo.leyenda.comun }] : []),
               ...(zonas.has("produccion") ? [{ clase: "mapa-leyenda-produccion", texto: lo.leyenda.produccion }] : []),
@@ -252,6 +252,7 @@ export function VitrinaTerritorio() {
                 {g.items.map((l) => (
                   <li key={l.texto} className="flex items-center gap-2">
                     <span aria-hidden="true" className={`mapa-leyenda ${l.clase}`} />
+                    {l.simbolo && <span aria-hidden="true">{l.simbolo} </span>}
                     {l.texto}
                   </li>
                 ))}

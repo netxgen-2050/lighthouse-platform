@@ -161,7 +161,6 @@ const es = {
       produccion: "Producción de alimentos",
       camino: "Camino",
     },
-    zonas: { "uso-comun": "Espacio de uso común", produccion: "Producción de alimentos", calle: "Camino", sector: "Sector norte" },
   },
 };
 
@@ -318,7 +317,6 @@ const en: Textos<typeof es> = {
       produccion: "Food production",
       camino: "Road",
     },
-    zonas: { "uso-comun": "Common-use space", produccion: "Food production", calle: "Road", sector: "North sector" },
   },
 };
 

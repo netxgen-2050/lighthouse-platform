@@ -9,8 +9,6 @@ export const ESTADOS_EJEMPLO: Readonly<Record<string, Exclude<EstadoLote, "dispo
   "lote-24": "reservado",
 };
 
-export const ESTADOS_DE_LOTE: readonly EstadoLote[] = ["disponible", "reservado", "vendido"];
-
 export function estadoDeLote(id: string): EstadoLote {
   return Object.hasOwn(ESTADOS_EJEMPLO, id) ? ESTADOS_EJEMPLO[id] : "disponible";
 }

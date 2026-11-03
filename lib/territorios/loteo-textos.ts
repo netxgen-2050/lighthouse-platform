@@ -1,4 +1,4 @@
-import { formatearNumero } from "../idioma/formatos";
+import { formatearNumero, sinDato } from "../idioma/formatos";
 import { territorio } from "../idioma/textos/territorio";
 import type { Idioma } from "../idioma/tipos";
 import { fechaDelLoteo, fuenteDelLoteo, listarLotes, rangoDeSuperficies, sectorNorte } from "./loteo";
@@ -28,5 +28,5 @@ export function resumenDelLoteo(idioma: Idioma): string {
 export function fuenteTexto(idioma: Idioma): string {
   const t = territorio[idioma].loteo;
   if (fuenteDelLoteo() === "ilustrativa") return t.fuenteBoceto;
-  return t.fuenteMartin(fechaDelLoteo() ?? (idioma === "es" ? "sin dato" : "no data"));
+  return t.fuenteMartin(fechaDelLoteo() ?? sinDato(idioma));
 }

@@ -40,6 +40,17 @@ export function estiloLote(estado: EstadoLote): PathOptions {
   return { color: token("muted"), weight: 1.5, dashArray: "1 4", lineCap: "round", fillColor: token("gray"), fillOpacity: 0.6 };
 }
 
+/** Resaltado de lo elegido. Con `conservarTrazo` (lotes) el borde mantiene su forma: lleno, trazos o puntos. */
+export function estiloElegido(base: PathOptions, conservarTrazo = false): PathOptions {
+  return {
+    color: token("ink"),
+    weight: 4,
+    dashArray: conservarTrazo ? base.dashArray : undefined,
+    lineCap: conservarTrazo ? base.lineCap : undefined,
+    fillOpacity: Math.min(0.85, (base.fillOpacity ?? 0.4) + 0.3),
+  };
+}
+
 /** Grupos de capas del mapa, en el orden en que se apilan. `barrios-plan` es interno de la vista Plan. */
 export type Grupo =
   | "contexto"

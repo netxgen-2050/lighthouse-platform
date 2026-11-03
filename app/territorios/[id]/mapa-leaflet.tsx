@@ -28,6 +28,7 @@ import {
   aLatLng,
   estiloBarrio,
   estiloBarrioPlan,
+  estiloElegido,
   estiloFinca,
   estiloLote,
   gruposDeVista,
@@ -77,7 +78,7 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props)
     const nueva = capas.current.get(id);
     const m = mapaRef.current;
     if (nueva) {
-      nueva.capa.setStyle({ color: token("ink"), weight: 4, dashArray: undefined, fillOpacity: Math.min(0.85, (nueva.base.fillOpacity ?? 0.4) + 0.3) });
+      nueva.capa.setStyle(estiloElegido(nueva.base, id.startsWith("lote-")));
       nueva.capa.bringToFront();
       if (m) m.fitBounds(nueva.limites(), { padding: [40, 40], maxZoom: id.startsWith("finca-") || id.startsWith("lote-") ? 17 : 15 });
     } else if (m && puntos.current.has(id)) {
