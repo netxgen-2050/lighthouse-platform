@@ -21,11 +21,12 @@ test("el rail trae solo la navegación, en orden", async ({ page }) => {
   await expect(nav).toBeVisible();
   const textos = (await nav.getByRole("link").allInnerTexts()).map((t) => t.trim().split("\n")[0]);
   // "Admin" va al final, en el grupo "Interno", y solo lo ve el super admin (el rol por defecto de estas pruebas).
-  const orden = ["Inicio", "Territorio", "Tribus", "Pactos", "Semillas", "Fogón", "Congreso", "Sumarte", "Admin"];
+  const orden = ["Inicio", "Territorio", "Sumarte", "Tribus", "Pactos", "Semillas", "Fogón", "Admin"];
   expect(textos).toEqual(orden.filter((o) => textos.includes(o)));
-  // Compromisos está en pausa (27-oct-2026): no aparece en el rail.
+  // Compromisos (27-oct-2026) y Congreso (menú de fase 1, 2-nov-2026) están en pausa: no aparecen en el rail.
   await expect(nav.getByRole("link", { name: "Compromisos" })).toHaveCount(0);
-  expect(textos).toEqual(expect.arrayContaining(["Inicio", "Tribus", "Congreso", "Sumarte"]));
+  await expect(nav.getByRole("link", { name: "Congreso" })).toHaveCount(0);
+  expect(textos).toEqual(expect.arrayContaining(["Inicio", "Tribus", "Sumarte"]));
   // Perfil, Pasaporte, Mi recorrido y Configuración viven en el menú del avatar; NetX y la campanita, en la barra superior.
   await expect(nav.getByRole("link", { name: "Perfil" })).toHaveCount(0);
   await expect(nav.getByRole("link", { name: "NetX" })).toHaveCount(0);
@@ -79,14 +80,15 @@ test("celular 390 x 844: la barra superior muestra NetX, la campanita, el select
   }
 });
 
-test("el rail muestra los grupos Descubrir y Participar en la computadora", async ({ page }) => {
+test("el rail muestra los grupos Descubrir y Lo que viene en la computadora", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Principal" });
   await expect(nav.getByText("Descubrir", { exact: true })).toBeVisible();
-  await expect(nav.getByText("Participar", { exact: true })).toBeVisible();
-  await expect(nav.getByRole("list", { name: "Descubrir" }).getByRole("link")).toHaveCount(3);
-  await expect(nav.getByRole("list", { name: "Participar" }).getByRole("link")).toHaveCount(4);
+  await expect(nav.getByText("Lo que viene", { exact: true })).toBeVisible();
+  // Lotes llega con lote-ficha-y-compra: por ahora Descubrir trae Inicio y Territorio.
+  await expect(nav.getByRole("list", { name: "Descubrir" }).getByRole("link")).toHaveCount(2);
+  await expect(nav.getByRole("list", { name: "Lo que viene" }).getByRole("link")).toHaveCount(4);
   await expect(nav.getByRole("link", { name: "Compromisos" })).toHaveCount(0);
 });
 
@@ -163,6 +165,8 @@ test("celular 390 x 844: rail a la izquierda, 72 px o menos, sin scroll horizont
     expect(caja!.width).toBeLessThanOrEqual(72);
     await expect(nav.getByRole("link", { name: "Inicio" })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Compromisos" })).toHaveCount(0);
+    // El título del grupo se oculta en el rail angosto; la lista conserva su nombre accesible.
+    await expect(nav.getByRole("list", { name: "Lo que viene" }).getByRole("link", { name: "Tribus" })).toBeVisible();
     const desborde = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     expect(desborde, `scroll horizontal en ${ruta}`).toBe(false);
   }
@@ -259,4 +263,12 @@ test("portada con titular y botón a /tribus", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Encontrá tu tribu\.\s*Construí en común\./);
   await page.getByRole("link", { name: "Ver las tribus" }).click();
   await expect(page).toHaveURL(/\/tribus$/);
+});
+
+test("ninguna página se deja indexar: noindex, nofollow y sin pedir sesión", async ({ page }) => {
+  for (const ruta of ["/", "/sumarte", "/territorios/lighthouse", "/congreso"]) {
+    const r = await page.goto(ruta);
+    expect(r?.status(), ruta).toBe(200);
+    await expect(page.locator('meta[name="robots"]'), ruta).toHaveAttribute("content", "noindex, nofollow");
+  }
 });

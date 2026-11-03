@@ -31,7 +31,7 @@ async function habilitados(page: Page, nombres: string[]) {
 test.describe("sumarse desde Sumarte", () => {
   test.use({ rol: "ninguno" });
 
-  test("sumarse gratis: queda como Explorador y ve habilitados Hifa y Congreso", async ({ page }) => {
+  test("sumarse gratis: queda como Explorador y ve habilitados Hifa y Tribus", async ({ page }) => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     await page.goto("/sumarte");
     await expect(page.getByText("Todavía no te sumaste: elegí un plan.")).toBeVisible();
@@ -39,7 +39,7 @@ test.describe("sumarse desde Sumarte", () => {
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(page.getByText("Tu plan actual:")).toContainText("Explorador");
     await expect(barra(page).getByRole("button", { name: "Menú de la persona" })).toBeVisible();
-    await habilitados(page, ["Congreso", "Inicio", "Sumarte"]);
+    await habilitados(page, ["Tribus", "Inicio", "Sumarte"]);
     await expect(page.getByRole("button", { name: "Hablar con Hifa" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Reportar un problema o una idea" })).toBeVisible();
     await deshabilitados(page, PARTICIPAR);
@@ -96,7 +96,7 @@ test.describe("acceso abierto", () => {
     await context.addCookies([{ name: COOKIE_PRUEBA, value: encodeURIComponent("nueva@prueba.test"), url: baseURL! }]);
     await page.goto("/");
     await expect(barra(page).getByRole("button", { name: "Menú de la persona" })).toBeVisible();
-    await habilitados(page, ["Congreso"]);
+    await habilitados(page, ["Tribus"]);
     await deshabilitados(page, PARTICIPAR);
   });
 });
@@ -110,7 +110,7 @@ test.describe("Explorador", () => {
     for (const nombre of PARTICIPAR) {
       await expect(rail(page).getByRole("link", { name: `Sumate para participar: ${nombre}` })).toBeVisible();
     }
-    await habilitados(page, ["Congreso", "Sumarte"]);
+    await habilitados(page, ["Tribus", "Sumarte"]);
   });
 
   test("abrir una página de Participar por dirección lleva a Sumarte con el aviso", async ({ page }) => {
