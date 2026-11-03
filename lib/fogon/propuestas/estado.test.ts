@@ -383,9 +383,111 @@ describe("cierre · solo desde llamado u objetar", () => {
     expect(e.resultado).toBeNull();
     expect(e.fase).toBe("concerns");
     expect(e.historial.some((h) => h.clave === "cierre-fuera-de-fase")).toBe(true);
+    // El desafío del Guardián sobre la cisterna ya apareció: hay que responderlo antes del llamado.
+    const respuesta = reg("cisterna-compartida", "respuesta-desafio", "mora", "ambito", "2026-10-29T10:20", {
+      apuntaA: "c-g-previa",
+      texto: "No usa esa parcela: queda del otro lado del camino.",
+    });
     const llamado = reg("cisterna-compartida", "fase", "nico", "proceso", "2026-10-29T10:30", { datos: { fase: "llamado" } });
-    const ok = derivarEstado(base, [...regs, llamado, cierre], AHORA);
+    const ok = derivarEstado(base, [...regs, respuesta, llamado, cierre], AHORA);
     expect(ok.resultado).toMatchObject({ tipo: "consenso" });
+  });
+});
+
+describe("desafío del Guardián (1-nov, variante b)", () => {
+  const llamadoBomba = reg("consejo-bomba", "fase", "nico", "proceso", "2026-10-30T09:00", { datos: { fase: "llamado" } });
+  const respuestaReversible = (extra: Partial<Registro> = {}) =>
+    reg("consejo-bomba", "respuesta-desafio", "mora", "ambito", "2026-10-30T08:00", {
+      apuntaA: "b-g-reversible",
+      texto: "Se puede revender y recuperar parte de la plata.",
+      ...extra,
+    });
+
+  it("la respuesta de Gala a b-g-impacto sale en la vista, y b-g-reversible queda sin respuesta", () => {
+    const e = derivarEstado(bomba, [], AHORA);
+    const impacto = e.sugerenciasGuardian.find((s) => s.id === "b-g-impacto");
+    expect(impacto?.respuestas).toHaveLength(1);
+    expect(impacto?.respuestas[0]).toMatchObject({ quien: "gala" });
+    expect(e.sugerenciasGuardian.find((s) => s.id === "b-g-reversible")?.respuestas).toEqual([]);
+  });
+
+  it("el cambio de fase al llamado sin responder b-g-reversible se ignora y la fase sigue en resolver", () => {
+    const e = derivarEstado(bomba, [llamadoBomba], AHORA);
+    expect(e.fase).toBe("resolver");
+    expect(e.historial.some((h) => h.id === llamadoBomba.id && h.tipo === "ignorado" && h.clave === "fase-con-desafio-sin-respuesta")).toBe(true);
+  });
+
+  it("con la respuesta antes, pasa al llamado", () => {
+    expect(derivarEstado(bomba, [respuestaReversible(), llamadoBomba], AHORA).fase).toBe("llamado");
+  });
+
+  it("la respuesta vale aunque cambie la versión de la propuesta", () => {
+    const v2 = reg("consejo-bomba", "version", "lautaro", "presenta", "2026-10-30T08:30", { version: 2 });
+    const e = derivarEstado(bomba, [respuestaReversible(), v2, llamadoBomba], AHORA);
+    expect(e.version).toBe(2);
+    expect(e.fase).toBe("llamado");
+  });
+
+  it("una respuesta vacía, de un nivel sin permiso o a un id que no es un desafío no cuenta", () => {
+    for (const r of [
+      respuestaReversible({ texto: "   " }),
+      respuestaReversible({ texto: undefined }),
+      respuestaReversible({ nivel: "red" }),
+      respuestaReversible({ nivel: "visita" }),
+      respuestaReversible({ apuntaA: "b-c-ramiro" }),
+      respuestaReversible({ apuntaA: "no-existe" }),
+    ]) {
+      const e = derivarEstado(bomba, [r, llamadoBomba], AHORA);
+      expect(e.fase, JSON.stringify(r.nivel) + String(r.apuntaA)).toBe("resolver");
+      expect(e.historial.some((h) => h.id === r.id && h.tipo === "ignorado")).toBe(true);
+    }
+  });
+
+  it("las personas afectadas también responden", () => {
+    const e = derivarEstado(bomba, [respuestaReversible({ quien: "vos", nivel: "afectada" }), llamadoBomba], AHORA);
+    expect(e.fase).toBe("llamado");
+  });
+
+  it("una respuesta a un desafío que todavía no apareció se ignora", () => {
+    const e = derivarEstado(cisterna, [reg("cisterna-compartida", "respuesta-desafio", "mora", "ambito", "2026-10-30T08:00", { apuntaA: "c-g-previa", texto: "x" })], AHORA);
+    // c-g-previa es de la fase "preguntas" y la cisterna ya está ahí: es válida. La de la bomba en "concerns" no lo es antes de llegar.
+    expect(e.sugerenciasGuardian[0]?.respuestas).toHaveLength(1);
+    const temprana = reg("consejo-bomba", "respuesta-desafio", "mora", "ambito", "2026-10-26T09:30", { apuntaA: "b-g-impacto", texto: "x" });
+    const eb = derivarEstado(bomba, [temprana], AHORA);
+    expect(eb.historial.some((h) => h.id === temprana.id && h.clave === "respuesta-desafio-no-valida")).toBe(true);
+  });
+
+  it("un registro de tipo desconocido no rompe nada", () => {
+    const raro = reg("consejo-bomba", "tipo-del-futuro" as TipoRegistro, "mora", "ambito", "2026-10-30T08:00");
+    expect(() => derivarEstado(bomba, [raro], AHORA)).not.toThrow();
+    expect(derivarEstado(bomba, [raro], AHORA).fase).toBe("resolver");
+  });
+
+  describe("vence sin respuesta al desafío", () => {
+    const desafio = { ...bomba.guion.guardian[0], id: "h-g-desafio", fase: "presentacion" as const };
+    const huertaDesafio: Propuesta = { ...huerta, guion: { ...huerta.guion, guardian: [desafio] } };
+    const acuses = ["a", "b", "c"].map((q) => reg("huerta", "acuse", q, "ambito", "2026-10-29T10:00"));
+    const haciaObjetar = reg("huerta", "fase", "nico", "proceso", "2026-10-29T11:00", { datos: { fase: "objetar" } });
+
+    it("simple con desafío sin respuesta: el registro hacia objetar se ignora y al vencer no se adopta", () => {
+      const e = derivarEstado(huertaDesafio, [...acuses, haciaObjetar], DESPUES);
+      expect(e.historial.some((h) => h.id === haciaObjetar.id && h.clave === "fase-con-desafio-sin-respuesta")).toBe(true);
+      expect(e.resultado).toEqual({ tipo: "pausada", motivo: "desafio-sin-respuesta" });
+    });
+
+    it("con el desafío respondido, llega a objetar y se adopta como siempre", () => {
+      const respuesta = reg("huerta", "respuesta-desafio", "mora", "ambito", "2026-10-29T10:30", { apuntaA: desafio.id, texto: "Está resuelto." });
+      const e = derivarEstado(huertaDesafio, [...acuses, respuesta, haciaObjetar], DESPUES);
+      expect(e.resultado).toEqual({ tipo: "adoptada", motivo: "nadie-objeto" });
+    });
+  });
+
+  it("ninguna propuesta de ejemplo cambia de fase por la regla nueva", () => {
+    for (const id of ["consejo-bomba", "regalia", "siembra", "cisterna-compartida", "huerta"]) {
+      const p = P(id);
+      const e = derivarEstado(p, [], AHORA);
+      expect(e.historial.some((h) => h.clave === "fase-con-desafio-sin-respuesta"), id).toBe(false);
+    }
   });
 });
 

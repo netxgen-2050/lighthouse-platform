@@ -9,7 +9,7 @@ import { formatoPlata } from "@/lib/fogon/consultas/reglas";
 import { entradasDeDiscusion, type EntradaDiscusion } from "@/lib/fogon/propuestas/discusion";
 import { personaDeEjemplo, propuestaDe } from "@/lib/fogon/propuestas/ejemplos";
 import { derivarEstado } from "@/lib/fogon/propuestas/estado";
-import { accionesDisponibles } from "@/lib/fogon/propuestas/fases";
+import { accionesDisponibles, desafiosSinRespuesta } from "@/lib/fogon/propuestas/fases";
 import { nivelInicialSeguro, VOS } from "@/lib/fogon/propuestas/nivel";
 import { ACCIONES_DE_PROCESO, MATRIZ, NIVELES_IMPLICACION, permiso } from "@/lib/fogon/propuestas/permisos";
 import { principioPorId } from "@/lib/fogon/propuestas/principios";
@@ -107,7 +107,12 @@ export function PropuestaCliente({ id }: { id: string }) {
   // Plata simulada: un monto que falta es "sin dato", nunca 0.
   const monto = decision.monto && decision.monto.cantidad !== null ? formatoPlata(decision.monto.cantidad * 100, "USD", idioma) : null;
   const entradas = entradasDeDiscusion(p, estado, p.registros);
-  const disponibles = accionesDisponibles(p, estado, niveles, decision.ambito, { monto: decision.monto?.cantidad, quien: VOS });
+  const desafios = estado.sugerenciasGuardian;
+  const disponibles = accionesDisponibles(p, estado, niveles, decision.ambito, {
+    monto: decision.monto?.cantidad,
+    quien: VOS,
+    desafios: { total: desafios.length, sinRespuesta: desafiosSinRespuesta(estado).length },
+  });
   const nombreHolon = (holonId: string) => {
     const n = buscarNodo(arbol, holonId);
     return n ? nombreDe(n) : holonId;
@@ -232,6 +237,9 @@ export function PropuestaCliente({ id }: { id: string }) {
           </p>
           <p className="text-sm font-medium">
             {s.estado === "respaldada" ? t.discusion.guardianEstado.respaldada(s.respaldos.length) : t.discusion.guardianEstado.sinRespaldo}
+          </p>
+          <p className="text-sm">
+            <a className="underline" href={`#desafio-${s.id}`}>{t.desafio.verDesafio}</a>
           </p>
         </article>
       );
@@ -370,6 +378,63 @@ export function PropuestaCliente({ id }: { id: string }) {
           <p className="text-sm text-muted">{t.resultado.reabrir}</p>
         )}
       </section>
+
+      {desafios.length > 0 && puedeLeerDiscusion && (
+        <section aria-labelledby="h-desafio" className="grid gap-3 rounded-xl border-2 border-dashed border-blue bg-surface p-4">
+          <h2 id="h-desafio" className="flex flex-wrap items-center gap-2 text-xl font-semibold">
+            {t.desafio.titulo} <TerminoLegal clave="guardianIA" idioma={idioma} />
+          </h2>
+          <p className="text-sm text-muted">{t.desafio.intro}</p>
+          <ul className="grid gap-3">
+            {desafios.map((s) => {
+              const previa = s.decisionPrevia ? DECISIONES_BASE.find((d) => d.id === s.decisionPrevia) : undefined;
+              const principio = s.principio ? principioPorId(s.principio) : null;
+              return (
+                <li key={s.id}>
+                  <article id={`desafio-${s.id}`} className="grid gap-2 rounded-lg border border-faint p-3">
+                    <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">
+                      <span className={CHIP}>{t.discusion.guardianTipos[s.tipo]}</span>
+                    </p>
+                    <p>{txt(s.texto)}</p>
+                    <p className="text-sm text-muted">
+                      {s.principio && (
+                        <>
+                          {t.discusion.guardianCita.principio}: {principio ? textoEn(principio.nombre, idioma) : t.discusion.principioFuera(s.principio)}
+                        </>
+                      )}
+                      {previa && (
+                        <>
+                          {t.discusion.guardianCita.previa}: {textoEn(previa.titulo, idioma)}
+                        </>
+                      )}
+                      {s.urgencia && <>{t.discusion.guardianCita.urgencia}</>}
+                    </p>
+                    <p className="text-sm font-medium">
+                      {s.estado === "respaldada" ? t.discusion.guardianEstado.respaldada(s.respaldos.length) : t.discusion.guardianEstado.sinRespaldo}
+                      {s.respaldos.length > 0 && `: ${personas(s.respaldos)}`}
+                    </p>
+                    {s.respuestas.length === 0 ? (
+                      <p className="font-medium">{t.desafio.sinRespuesta}</p>
+                    ) : (
+                      <div className="grid gap-1">
+                        <p className="text-sm font-semibold">{t.desafio.respuestas}</p>
+                        <ul className="grid gap-2">
+                          {s.respuestas.map((r) => (
+                            <li key={r.id} className="rounded-lg bg-green-soft p-3">
+                              <p className="text-sm text-muted">{t.desafio.respondio(persona(r.quien))} · {fecha(r.cuando)} {t.pagina.simulado}</p>
+                              <p>{txt(r.texto)}</p>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </article>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       <section aria-labelledby="h-ficha" className={CAJA}>
         <h2 id="h-ficha" className="text-xl font-semibold">{t.ficha.titulo}</h2>
@@ -557,8 +622,11 @@ export function PropuestaCliente({ id }: { id: string }) {
           <ul className="grid gap-1">
             {disponibles.map((a) => (
               <li key={a.accion}>
-                <span aria-hidden="true">{a.permiso.estado === "si" ? "✓ " : "◐ "}</span>
+                <span aria-hidden="true">{a.bloqueo ? "✗ " : a.permiso.estado === "si" ? "✓ " : "◐ "}</span>
                 {t.acciones[a.accion]}
+                {a.bloqueo === "falta-responder-desafio" && (
+                  <span className="font-medium"> · {t.desafio.falta}</span>
+                )}
                 {a.permiso.condiciones.length > 0 && (
                   <span className="text-muted"> ({a.permiso.condiciones.map((c) => t.condiciones[c]).join(", ")})</span>
                 )}

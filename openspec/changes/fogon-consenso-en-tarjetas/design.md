@@ -88,7 +88,7 @@ La urgencia reusa los textos de `t.urgencia`, y la fase y el resultado, los de `
 - **Con cuenta, cualquier nivel:** solo cantidades. Ni nombres, ni razones, ni nombres de grupos, porque el nivel "red" lee la propuesta pero no la discusión. Es un criterio derivado de A2 y A3: lo mira el arquitecto.
 <!-- arquitecto: corregido contra el código; el hallazgo original no ocurre. -->
 - **Hoy nadie sin cuenta llega a esta tarjeta:** `/fogon` y todo lo que cuelga de esa ruta piden nivel Miembro (`PARTICIPAR` en `lib/permisos/niveles.ts`), no están en `RUTAS_PUBLICAS`, y `Puerta` manda a `/sumarte` a quien no tiene sesión o no alcanza el nivel. Por eso una persona sin cuenta tampoco puede tocar "Abrir la propuesta", y A2 se cumple; la página arranca en `red` solo porque ya pasó la puerta. La rama `sinCuenta` del componente queda como defensa por si la ruta se abre más adelante, y se prueba con un test de componente: en un e2e sin sesión se ve Sumarte, no la tarjeta.
-- **Ocultar no es proteger (ADR-015):** hoy alcanza porque todo son datos de ejemplo que viajan en el bundle. Cuando las propuestas pasen a la base, el resumen lo arma el servidor con el nivel verificado y al navegador llegan solo las cantidades (ADR-027).
+- **Ocultar no es proteger (ADR-015):** hoy alcanza porque todo son datos de ejemplo que viajan en el bundle. Cuando las propuestas pasen a la base, el resumen lo arma el servidor con el nivel verificado y al navegador llegan solo las cantidades (ADR-028).
 
 ### 5. Sacar el voto
 - `datos.ts`: salen `votos`, `requisito`, `Opcion`, `Requisito`, `OPCIONES` y `opciones()`. Quedan `regla`, `base`, `destino` y `holonId`.

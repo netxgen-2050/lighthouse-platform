@@ -59,6 +59,8 @@ export const ACCIONES_DE_PROCESO: Readonly<Record<AccionDeProceso, Readonly<Reco
   "respaldar-urgencia": fila(NO, NO, SI, NO, c("quien-facilita"), NO),
   "objetar-urgencia": MATRIZ["levantar-concern"],
   "abrir-revision": fila(NO, NO, NO, NO, c("quien-facilita"), NO),
+  // Desafío del Guardián (Gus, 1-nov): ámbito, afectadas, quien facilita y quien presenta responden por escrito.
+  "responder-desafio": fila(NO, NO, SI, SI, SI, SI),
 };
 
 /** Acciones que quien presenta nunca puede hacer sobre su propia propuesta, aunque otro de sus niveles las permita (F3, C4). */

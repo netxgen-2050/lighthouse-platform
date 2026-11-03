@@ -60,11 +60,11 @@ const ETIQUETA_ACTUAL = "w-fit rounded-full border border-deep bg-green-soft px-
 
 const ACCIONES_DE_PLAN: readonly Accion["tipo"][] = ["plan", "pase", "tribu"];
 
-/** "Semillas" es una marca de la plataforma: el traductor del navegador no la cambia (`translate="no"`). */
+/** "Semillas" y "conviction voting" son marcas: el traductor del navegador no las cambia (`translate="no"`). */
 function ConMarcas({ texto }: { texto: string }) {
   return (
     <>
-      {texto.split(/(Semillas(?: \(seeds\))?)/).map((parte, i) =>
+      {texto.split(/(Semillas(?: \(seeds\))?|conviction voting)/).map((parte, i) =>
         i % 2 === 1 ? (
           <span key={i} translate="no">
             {parte}
@@ -390,8 +390,8 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
               {t.fundador.creditosFin}
             </li>
             <li>
-              {t.fundador.fideicomiso}
-              <TerminoLegal clave="gobernanzafideicomiso" idioma={idioma} />
+              <ConMarcas texto={t.fundador.fideicomiso} />
+              <TerminoLegal clave="influenciafondocomun" idioma={idioma} />
             </li>
             <li>{t.fundador.canal}</li>
             <li>{t.fundador.registroGenesis}</li>
