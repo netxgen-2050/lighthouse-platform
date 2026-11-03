@@ -80,17 +80,17 @@ test("enviar una consulta: anuncio, sigue tras recargar y aparece en /admin", as
   await expect(fila).toContainText("sin dato");
 });
 
-test("pedir invitación al círculo: suma uno al medidor y queda en la bandeja", async ({ page }) => {
+test("pedir invitación al círculo: queda en la bandeja como Programa de series, sin medidores", async ({ page }) => {
   await conIdentidadVerificada(page);
   await page.goto("/sumarte");
   await page.getByRole("button", { name: "Pedir invitación" }).click();
   await page.getByRole("radio", { name: "Email" }).check();
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
   await expect(page.getByText("Invitación pedida (simulado)")).toBeVisible();
-  await expect(page.getByText("23 de 35")).toBeVisible();
+  await expect(page.getByText("de 35")).toHaveCount(0);
   await page.goto("/admin");
   const fila = page.getByRole("row").filter({ hasText: "Invitación al círculo" });
-  await expect(fila).toContainText("Lote 7");
+  await expect(fila).toContainText("Programa de series");
   await expect(fila).toContainText("Equipo NetX");
 });
 
@@ -103,7 +103,6 @@ test("cancelar la invitación o la charla no cambia nada", async ({ page }) => {
   await page.getByRole("button", { name: "Pedir invitación" }).click();
   await page.getByRole("button", { name: "Cancelar" }).click();
   await expect(page.getByRole("button", { name: "Pedir invitación" })).toBeVisible();
-  await expect(page.getByText("22 de 35")).toBeVisible();
   expect(await page.evaluate(() => window.localStorage.getItem("lh-contactos"))).toBeNull();
 });
 
@@ -185,7 +184,7 @@ test("no se puede guardar el pedido: avisa solo el formulario y no marca la invi
   await expect(alertas(page)).toHaveCount(1);
   await expect(alertas(page)).toContainText("el pedido no se pudo guardar");
   await expect(page.getByText("Invitación pedida (simulado)")).toHaveCount(0);
-  await expect(page.getByText("22 de 35")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Pedir invitación" })).toBeVisible();
 });
 
 test("falla guardar la página después del pedido: una sola alerta y reintentar no duplica", async ({ page }) => {

@@ -202,6 +202,23 @@ test("axe sin violaciones serias o críticas: /semillas con la ronda y sus error
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
+test.describe("/sumarte en inglés", () => {
+  test.use({ locale: "en-US" });
+
+  test("axe sin violaciones serias o críticas", async ({ page }) => {
+    await page.goto("/sumarte");
+    await expect(page.getByRole("heading", { level: 2, name: "Invest", exact: true })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+});
+
+test("celular 390 px: /sumarte no tiene desborde horizontal, con la sección Invertir a la vista", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/sumarte");
+  await page.getByRole("heading", { level: 2, name: "Invertir", exact: true }).scrollIntoViewIfNeeded();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+});
+
 test("axe sin violaciones serias o críticas: /sumarte con el formulario de contacto abierto", async ({ page }) => {
   await conIdentidadVerificada(page);
   await page.goto("/sumarte");
