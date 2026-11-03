@@ -44,8 +44,7 @@ test("el orden de la lista es el de la spec", () => {
 test("los grupos del rail y del menú de la persona salen de la lista única", () => {
   const etiquetas = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "es"));
   expect(GRUPOS_RAIL.map((g) => tituloDeGrupo(g.id, "es"))).toEqual(["Descubrir", "Sumarte", "Lo que viene"]);
-  // Lotes está declarado con existe: false (llega con lote-ficha-y-compra): el rail todavía no lo muestra.
-  expect(etiquetas("descubrir")).toEqual(["Inicio", "Territorio"]);
+  expect(etiquetas("descubrir")).toEqual(["Inicio", "Territorio", "Lotes"]);
   expect(etiquetas("sumarte")).toEqual(["Sumarte"]);
   expect(etiquetas("viene")).toEqual(["Tribus", "Pactos", "Semillas", "Fogón"]);
   expect(etiquetas("persona")).toEqual(["Perfil", "Pasaporte", "Mi recorrido", "Configuración", "Mis datos"]);
@@ -55,7 +54,7 @@ test("los grupos del rail y del menú de la persona salen de la lista única", (
 test("en inglés el rail dice lo que fija el glosario, y Semillas no se traduce", () => {
   const ingles = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "en"));
   expect(GRUPOS_RAIL.map((g) => tituloDeGrupo(g.id, "en"))).toEqual(["Discover", "Join", "Coming next"]);
-  expect(ingles("descubrir")).toEqual(["Home", "Territory"]);
+  expect(ingles("descubrir")).toEqual(["Home", "Territory", "Lots"]);
   expect(ingles("viene")).toEqual(["Tribes", "Pacts", "Semillas", "Fireside"]);
   expect(ingles("persona")).toEqual(["Profile", "Passport", "My journey", "Settings", "My data"]);
 });
@@ -76,10 +75,10 @@ test("Congreso existe pero no aparece en ningún grupo", () => {
   expect(grupos.flatMap((g) => destinosDeGrupo(g)).some((d) => d.href === "/congreso")).toBe(false);
 });
 
-test("Lotes se declara sin existir hasta lote-ficha-y-compra", () => {
+test("Lotes existe y aparece en el grupo Descubrir", () => {
   const lotes = DESTINOS.find((d) => d.href === "/lotes");
-  expect(lotes?.existe).toBe(false);
-  expect(destinosDisponibles().some((d) => d.href === "/lotes")).toBe(false);
+  expect(lotes?.existe).toBe(true);
+  expect(destinosDeGrupo("descubrir").some((d) => d.href === "/lotes")).toBe(true);
 });
 
 test("todo destino oculto existe", () => {

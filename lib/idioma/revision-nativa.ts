@@ -41,6 +41,10 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Tribus: listado, ficha, botones de membresía, interfaz del manifiesto y postulación de una comunidad (formulario, requisitos y errores)",
   },
+  "textos/lotes": {
+    estado: "pendiente",
+    que: "Lotes de Lighthouse VRN: lista, ficha, precio de ejemplo, con casa, costos, derechos y deberes, reserva y pago simulados y boleto de ejemplo",
+  },
   "textos/territorio": {
     estado: "pendiente",
     que: "Territorio: vitrina, leyenda y controles del mapa, ficha lateral y marcadores",

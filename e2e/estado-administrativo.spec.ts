@@ -8,16 +8,25 @@ test.beforeEach(async ({ page }) => {
 
 const ficha = (page: Page) => page.getByRole("complementary", { name: "Ficha del territorio" });
 
-for (const ruta of VISTAS_CON_LOTES) {
+// Cada ruta muestra el estado administrativo de cada uno de sus proyectos (`lib/legal/vistas-con-lotes.ts`).
+for (const { ruta, proyectos } of VISTAS_CON_LOTES) {
   test(`la vista con lotes ${ruta} muestra el estado administrativo`, async ({ page }) => {
     await page.goto(ruta);
-    const aviso = page.getByRole("region", { name: "Estado administrativo · Chacras de Soluna" });
-    await expect(aviso, `La ruta ${ruta} muestra lotes pero no tiene el aviso`).toBeVisible();
-    await expect(aviso).toContainText("Chacras de Soluna");
-    await expect(aviso).toContainText("Loteo en trámite");
-    await expect(aviso).toContainText("Ord. 173/2026 de Mainqué");
-    await expect(aviso).toContainText("Expediente: sin dato");
-    await expect(aviso).toContainText("Aprobación municipal: pendiente");
+    if (proyectos.includes("soluna")) {
+      const aviso = page.getByRole("region", { name: "Estado administrativo · Chacras de Soluna" });
+      await expect(aviso, `La ruta ${ruta} muestra lotes pero no tiene el aviso`).toBeVisible();
+      await expect(aviso).toContainText("Chacras de Soluna");
+      await expect(aviso).toContainText("Loteo en trámite");
+      await expect(aviso).toContainText("Ord. 173/2026 de Mainqué");
+      await expect(aviso).toContainText("Expediente: sin dato");
+      await expect(aviso).toContainText("Aprobación municipal: pendiente");
+    }
+    if (proyectos.includes("lighthouse-norte")) {
+      const aviso = page.getByRole("region", { name: "Estado administrativo · Lighthouse VRN" });
+      await expect(aviso, `La ruta ${ruta} muestra lotes pero no tiene el aviso`).toBeVisible();
+      await expect(aviso).toContainText("Loteo provisorio");
+      await expect(aviso).toContainText("supuesto de trabajo, no otorgada");
+    }
   });
 }
 

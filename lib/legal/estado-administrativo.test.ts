@@ -56,7 +56,16 @@ describe("estado administrativo", () => {
     expect(n.supuestoDeTrabajo).toContain("no otorgada");
     expect(n.en?.supuestoDeTrabajo).toContain("not granted");
   });
-  it("la lista de vistas con lotes incluye el territorio", () => {
-    expect(VISTAS_CON_LOTES).toContain("/territorios/lighthouse");
+  it("la lista de vistas con lotes incluye el territorio (Soluna y Norte), /lotes y una ficha (Norte)", () => {
+    const de = (ruta: string) => VISTAS_CON_LOTES.find((v) => v.ruta === ruta)?.proyectos;
+    expect(de("/territorios/lighthouse")).toEqual(["soluna", "lighthouse-norte"]);
+    expect(de("/lotes")).toEqual(["lighthouse-norte"]);
+    expect(de("/lotes/lote-1")).toEqual(["lighthouse-norte"]);
+  });
+  it("cada vista con lotes declara al menos un proyecto que existe", () => {
+    for (const v of VISTAS_CON_LOTES) {
+      expect(v.proyectos.length, v.ruta).toBeGreaterThan(0);
+      for (const p of v.proyectos) expect(ESTADOS_ADMINISTRATIVOS[p], `${v.ruta}: ${p}`).toBeDefined();
+    }
   });
 });

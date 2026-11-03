@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { EstadoAdministrativo } from "@/components/estado-administrativo";
+import { EstadoDeUnLote } from "@/components/lotes/estado-del-lote";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { textoSuperficieM2 } from "@/lib/territorios/biopueblo";
 import { fuenteDelLoteo, listarLotes } from "@/lib/territorios/loteo";
-import { estadoDeLote, type EstadoLote } from "@/lib/territorios/loteo-estados";
+import type { EstadoLote } from "@/lib/territorios/loteo-estados";
 import { fuenteTexto, parcelasSinUso, resumenDelLoteo } from "@/lib/territorios/loteo-textos";
 import { MARCA_EJEMPLO } from "./ficha-frente";
 
@@ -46,6 +48,7 @@ export function MarcaLoteo({ conFuente = false }: { conFuente?: boolean }) {
 export function FichaLote({ id }: { id: string }) {
   const idioma = useIdioma();
   const tx = useTextos("territorio");
+  const lt = useTextos("lotes");
   const lote = listarLotes().find((l) => l.id === id);
   if (!lote) return null;
   return (
@@ -56,11 +59,17 @@ export function FichaLote({ id }: { id: string }) {
         <strong>{tx.ficha.superficie}</strong> {textoSuperficieM2(lote.superficieM2, idioma)}
       </p>
       <p className="text-sm font-medium">
-        {tx.ficha.estado} <EstadoDeLote estado={estadoDeLote(lote.id)} />
+        {tx.ficha.estado} <EstadoDeUnLote id={lote.id} />
       </p>
       <MarcaLoteo conFuente />
       <p className="text-sm text-muted">{tx.loteo.estadosEjemplo}</p>
       <EstadoAdministrativo proyecto="lighthouse-norte" compacto idioma={idioma} />
+      <Link
+        href={`/lotes/${lote.id}`}
+        className="w-fit rounded-lg bg-deep px-4 py-1.5 text-on-deep hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+      >
+        {lt.lista.verLaFicha}
+      </Link>
     </div>
   );
 }

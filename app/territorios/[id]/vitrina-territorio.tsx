@@ -9,10 +9,12 @@ import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import type { territorio } from "@/lib/idioma/textos/territorio";
 import type { Textos } from "@/lib/idioma/tipos";
 import { listarBarrios, listarFincas, terrenoComun, textoSuperficieM2, tribuDeBarrio } from "@/lib/territorios/biopueblo";
-import { EstadoDeLote, MarcaLoteo } from "./vistas/lotes";
+import { MarcaLoteo } from "./vistas/lotes";
+import { TextoEstado } from "@/components/lotes/estado-del-lote";
+import { useCompras } from "@/components/lotes/usar-compras";
+import { estadoConCompras } from "@/lib/lotes/compra";
 import { FASE_ACTUAL, FASES, type Fase } from "@/lib/territorios/fases";
 import { listarLotes, sectorNorte, zonasDelLoteo } from "@/lib/territorios/loteo";
-import { estadoDeLote } from "@/lib/territorios/loteo-estados";
 import { resumenDelLoteo } from "@/lib/territorios/loteo-textos";
 import {
   VISTAS,
@@ -133,6 +135,7 @@ function escribirUrl(vista: VistaId, fase: Fase, sel: string | null) {
 export function VitrinaTerritorio() {
   const idioma = useIdioma();
   const tx = useTextos("territorio");
+  const { compras } = useCompras();
   const [vista, setVista] = useState<VistaId>(VISTA_POR_DEFECTO);
   const [fase, setFase] = useState<Fase>(FASE_ACTUAL);
   const [fuente, setFuente] = useState<FuentePlanId>("ilustrativa");
@@ -286,7 +289,7 @@ export function VitrinaTerritorio() {
                 {listarLotes().map((l) => (
                   <li key={l.id}>
                     <button type="button" className={botonLista} aria-pressed={seleccion === l.id} onClick={() => elegir(l.id)}>
-                      {tx.loteo.lote(l.numero)} · {textoSuperficieM2(l.superficieM2, idioma)} · <EstadoDeLote estado={estadoDeLote(l.id)} />
+                      {tx.loteo.lote(l.numero)} · {textoSuperficieM2(l.superficieM2, idioma)} · <TextoEstado estado={estadoConCompras(l.id, compras)} />
                     </button>
                   </li>
                 ))}

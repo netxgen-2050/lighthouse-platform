@@ -49,8 +49,7 @@ export type Destino = {
 export const DESTINOS: readonly Destino[] = [
   { href: "/", clave: "inicio", icono: Home, grupo: "descubrir", existe: true },
   { href: "/territorios/lighthouse", clave: "territorio", icono: MapaIcono, grupo: "descubrir", existe: true },
-  // /lotes llega con `lote-ficha-y-compra`; hasta entonces `existe: false` y el rail no lo muestra.
-  { href: "/lotes", clave: "lotes", icono: LandPlot, grupo: "descubrir", existe: false },
+  { href: "/lotes", clave: "lotes", icono: LandPlot, grupo: "descubrir", existe: true },
   { href: "/sumarte", clave: "sumarte", icono: Sprout, grupo: "sumarte", existe: true },
   { href: "/tribus", clave: "tribus", icono: Users, grupo: "viene", existe: true },
   { href: "/pactos", clave: "pactos", icono: FileSignature, grupo: "viene", existe: true },
