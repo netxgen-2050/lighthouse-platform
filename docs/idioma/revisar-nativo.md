@@ -10,7 +10,7 @@ Fuentes pendientes: 41
 
 | Fuente | Qué es | Textos en inglés |
 |---|---|---|
-| `glosario` | Glosario de términos de la plataforma (Pase Fundador, Fogón…); confirmado por Gus el 15-oct-2026, falta el nativo | 23 |
+| `glosario` | Glosario de términos de la plataforma (Pase Fundador, Fogón…); confirmado por Gus el 15-oct-2026, falta el nativo | 24 |
 | `lib/compromisos/mercado.ts` | Ofertas de ejemplo del Mercado con su inglés, traducidas del español (las que publica la persona no se traducen) | — |
 | `lib/congreso/evento-ejemplo.ts` | Página del Congreso en inglés (/congreso/en): datos de ejemplo del evento | — |
 | `lib/economia/terminos.ts` | Término económico 🌱 de Semillas en inglés (borrador, sin revisión) | — |
@@ -41,7 +41,7 @@ Fuentes pendientes: 41
 | `textos/fogonPropuestas` | Propuestas del Fogón: fases, discusión, concerns y grupos, acuse y quórum, ámbito del consejo, niveles, acciones, condiciones de la matriz, mecanismos y vista sin cuenta | 256 |
 | `textos/gobernanza` | Gobernanza fractal: página Cómo decidimos (estructura, círculos, consejo), marca de validación de la ficha de tribu y Quiénes te validaron en Mi recorrido | 120 |
 | `textos/manifiestoVrn` | Manifiesto de Lighthouse VRN: ficha del común, tarjeta de Tribus, lectura completa, principios propios de las tribus, aviso de adhesión y bloque de la Vista NetX | 49 |
-| `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 57 |
+| `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 58 |
 | `textos/pactos` | Pactos: pactos de tiempo y de plata, cambios, historial, avisos y anuncios | 286 |
 | `textos/pasaporte` | Pasaporte: sellos y lo que abren, tarjeta y diálogo de verificación de identidad (KYC) con sus errores, sello de la billetera y datos de aporte | 149 |
 | `textos/perfil` | Perfil: encabezado, formulario, tarjetas, errores de validación y las seis preguntas de la entrevista | 58 |
