@@ -30,6 +30,8 @@ const rutas = [
   "/territorios/lighthouse?vista=ahora",
   "/territorios/lighthouse?vista=plan",
   "/territorios/lighthouse?vista=vision",
+  "/lotes",
+  "/lotes/lote-1",
   "/congreso",
   "/congreso/en",
   "/territorios/no-existe",
@@ -45,8 +47,8 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 41 rutas auditadas", () => {
-  expect(rutas).toHaveLength(41);
+test("hay 43 rutas auditadas", () => {
+  expect(rutas).toHaveLength(43);
 });
 
 async function graves(page: Page) {
@@ -515,3 +517,29 @@ for (const ruta of rutas) {
     ).toEqual([]);
   });
 }
+
+// Lotes: la lista y una ficha en inglés, y la ficha con la compra simulada en cada paso (lote-ficha-y-compra).
+for (const ruta of ["/lotes?lang=en", "/lotes/lote-1?lang=en"]) {
+  test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
+    await page.goto(ruta);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+}
+
+test("axe sin violaciones serias o críticas: la ficha de un lote en la reserva, el pago simulado y el boleto, en español y en inglés", async ({ page }) => {
+  for (const [ruta, reservar, pagar, confirmar] of [
+    ["/lotes/lote-1", "Reservar (simulado)", "Simular el pago", "Confirmar el pago simulado"],
+    ["/lotes/lote-1?lang=en", "Reserve (simulated)", "Simulate the payment", "Confirm the simulated payment"],
+  ] as const) {
+    await page.goto(ruta);
+    await page.getByRole("button", { name: reservar }).click();
+    expect(await graves(page)).toEqual([]);
+    await page.getByRole("button", { name: pagar }).click();
+    expect(await graves(page)).toEqual([]);
+    await page.getByRole("button", { name: confirmar }).click();
+    await expect(page.getByRole("region", { name: /Boleto de ejemplo|Sample purchase agreement/ })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+    await page.evaluate(() => window.localStorage.removeItem("lh-lotes"));
+  }
+});

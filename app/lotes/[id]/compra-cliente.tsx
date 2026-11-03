@@ -184,50 +184,43 @@ export function CompraSimulada({ loteId, numero, superficieM2, opcion, vio, comp
             {t.boleto.marca}
           </p>
           <p className="text-sm">{t.compra.noSeCobro}</p>
-          <dl className="grid gap-1 text-sm">
-            <div>
-              <dt className="inline font-semibold">{t.boleto.lote} </dt>
-              <dd className="inline">
-                {tl.lote(numero)} ·{textoSuperficieM2(superficieM2, idioma)}
-              </dd>
-            </div>
-            <div>
-              <dt className="inline font-semibold">{t.boleto.opcion} </dt>
-              <dd className="inline">
-                {t.casa.opciones[compra.opcion]}
-                {compra.opcion !== "solo-lote" && (
-                  <>
-                    {" · "}
-                    {t.boleto.casaEstimacion(
-                      t.casa.opciones[compra.opcion],
-                      usd(precioCasa(compra.opcion)),
-                      usd(compra.vio.precio),
-                    )}
-                  </>
-                )}
-              </dd>
-            </div>
-            <div>
-              <dt className="inline font-semibold">{t.boleto.precio} </dt>
-              <dd className="inline">{usd(compra.vio.precio)}</dd>
-            </div>
-            <div>
-              <dt className="inline font-semibold">{t.boleto.aporte} </dt>
-              <dd className="inline">{usd(compra.vio.aporte)}</dd>
-            </div>
-            <div>
-              <dt className="inline font-semibold">{t.boleto.expensa} </dt>
-              <dd className="inline">{usd(compra.vio.expensa)}</dd>
-            </div>
-            <div>{t.boleto.comprador}</div>
-            <div>
+          <ul className="grid gap-1 text-sm break-words">
+            <li>
+              <strong>{t.boleto.lote}</strong> {tl.lote(numero)}
+              {" · "}
+              {textoSuperficieM2(superficieM2, idioma)}
+            </li>
+            <li>
+              <strong>{t.boleto.opcion}</strong> {t.casa.opciones[compra.opcion]}
+              {compra.opcion !== "solo-lote" && (
+                <>
+                  {" · "}
+                  {t.boleto.casaEstimacion(
+                    t.casa.opciones[compra.opcion],
+                    usd(precioCasa(compra.opcion)),
+                    usd(compra.vio.precio),
+                  )}
+                </>
+              )}
+            </li>
+            <li>
+              <strong>{t.boleto.precio}</strong> {usd(compra.vio.precio)}
+            </li>
+            <li>
+              <strong>{t.boleto.aporte}</strong> {usd(compra.vio.aporte)}
+            </li>
+            <li>
+              <strong>{t.boleto.expensa}</strong> {usd(compra.vio.expensa)}
+            </li>
+            <li>{t.boleto.comprador}</li>
+            <li>
               {t.boleto.vendedor} {sinDato(idioma)}
-            </div>
-            <div>
+            </li>
+            <li>
               {t.boleto.aprobacion}{" "}
               {idioma === "en" && norte.en?.supuestoDeTrabajo ? norte.en.supuestoDeTrabajo : norte.supuestoDeTrabajo}
-            </div>
-            <div>
+            </li>
+            <li>
               {t.boleto.reservado} {formatearFecha(compra.reservadoEl, idioma, "corto")}
               {compra.pagadoEl && (
                 <>
@@ -235,11 +228,11 @@ export function CompraSimulada({ loteId, numero, superficieM2, opcion, vio, comp
                   {t.boleto.pagado} {formatearFecha(compra.pagadoEl, idioma, "corto")}
                 </>
               )}
-            </div>
-            <div className="text-muted">
+            </li>
+            <li className="text-muted">
               {t.boleto.modelo}: {VERSION_MODELO_LOTES.fuente} · {compra.vio.version}
-            </div>
-          </dl>
+            </li>
+          </ul>
           <button type="button" onClick={alDeshacer} className={SECUNDARIO}>
             {t.compra.deshacer}
           </button>
