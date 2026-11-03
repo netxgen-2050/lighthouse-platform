@@ -91,10 +91,8 @@ test.describe("navegación sin sesión", () => {
       await expect(bloqueado).not.toHaveAttribute("href", /.*/);
       await expect(rail(page).getByRole("link", { name: `Sumate para participar: ${nombre}` })).toBeVisible();
     }
-    // Congreso se abrió sin cuenta (decisión de Gus, 14-oct): la vitrina se ve; vincular el ticket sí pide cuenta.
-    const congreso = rail(page).getByRole("link", { name: "Congreso", exact: true });
-    await expect(congreso).toHaveAttribute("href", "/congreso");
-    await expect(congreso).not.toHaveAttribute("aria-disabled", "true");
+    // Congreso sale del menú de fase 1 (2-nov-2026): no está en el rail, pero /congreso sigue abierto sin cuenta.
+    await expect(rail(page).getByRole("link", { name: "Congreso", exact: true })).toHaveCount(0);
     await expect(rail(page).getByRole("link", { name: "Sumate gratis para usar esto: Congreso" })).toHaveCount(0);
     await expect(rail(page).getByRole("link", { name: "Inicio", exact: true })).not.toHaveAttribute("aria-disabled", "true");
     // Un destino deshabilitado no navega: el enlace de ayuda lleva a Sumarte y vuelve a ese destino al sumarse.

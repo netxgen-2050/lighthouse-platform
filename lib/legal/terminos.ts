@@ -197,6 +197,18 @@ export const TERMINOS = {
       "Los lotes de Chacras de Soluna son de BioPueblo. Su loteo está en trámite según la Ordenanza 173/2026 de Mainqué: hasta que el municipio lo apruebe no se pueden reservar, señar ni comprar. Lo que ves acá es informativo. NetX actúa como agencia y publica el número de expediente cuando exista.",
     borrador: true,
   },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real (ADR-030).
+  loteonorte: {
+    titulo: "Loteo provisorio de Lighthouse VRN",
+    texto:
+      "Este prototipo simula la venta de lotes en el sector norte de Lighthouse VRN. Trabaja con el supuesto de que el loteo se va a aprobar: hoy la aprobación municipal no está otorgada y no tiene fecha (sin dato). La Ordenanza 173/2026 de Mainqué no permite ofrecer, publicitar ni reservar parcelas sin aprobación, así que esto solo vale como prueba dentro del equipo: no es una oferta, no se cobra nada y no reserva ningún lote de verdad. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Provisional subdivision of Lighthouse VRN",
+      texto:
+        "This prototype simulates selling lots in the north sector of Lighthouse VRN. It works on the assumption that the subdivision will be approved: today municipal approval has not been granted and has no date (no data). Mainqué Ordinance 173/2026 does not allow offering, advertising or reserving plots without approval, so this only counts as a test inside the team: it is not an offer, nothing is charged and no lot is really reserved. To be verified with a lawyer.",
+    },
+  },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
   contacto: {
     titulo: "Pedir contacto",

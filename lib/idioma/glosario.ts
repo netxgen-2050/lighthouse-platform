@@ -12,8 +12,9 @@ export type Termino = {
 export const GLOSARIO = {
   inicio: { es: "Inicio", en: "Home" },
   descubrir: { es: "Descubrir", en: "Discover" },
-  participar: { es: "Participar", en: "Take part" },
+  viene: { es: "Lo que viene", en: "Coming next" },
   territorio: { es: "Territorio", en: "Territory" },
+  lotes: { es: "Lotes", en: "Lots" },
   tribus: { es: "Tribus", en: "Tribes" },
   pactos: { es: "Pactos", en: "Pacts" },
   semillas: { es: "Semillas", en: "Semillas", explicada: { en: "Semillas (seeds)" } },

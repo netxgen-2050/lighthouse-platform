@@ -18,15 +18,20 @@ const TITULOS_EN_ORDEN = [
 
 // ===== Con sesión (Miembro por defecto): vitrina completa y registro del ticket =====
 
-test("las secciones aparecen en el orden indicado y el rail marca Congreso", async ({ page }) => {
+test("Congreso no está en el rail, responde por su dirección y ningún destino queda marcado", async ({ page }) => {
+  await page.goto("/congreso");
+  await expect(page.getByRole("heading", { level: 1, name: /Solarpunk Patagonia/ })).toBeVisible();
+  const nav = page.getByRole("navigation", { name: "Principal" });
+  await expect(nav.getByRole("link", { name: "Congreso" })).toHaveCount(0);
+  await expect(nav.locator('[aria-current="page"]')).toHaveCount(0);
+});
+
+test("las secciones aparecen en el orden indicado", async ({ page }) => {
   await page.goto("/congreso");
   await expect(page.getByRole("heading", { level: 1, name: /Solarpunk Patagonia/ })).toBeVisible();
   const titulos = await page.locator("main h2").allInnerTexts();
   expect(titulos).toHaveLength(TITULOS_EN_ORDEN.length);
   TITULOS_EN_ORDEN.forEach((t, i) => expect(titulos[i].startsWith(t), `${i}: ${titulos[i]}`).toBe(true));
-  await expect(
-    page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Congreso", exact: true }),
-  ).toHaveAttribute("aria-current", "page");
 });
 
 test("un solo h1 y la cinta de prototipo", async ({ page }) => {
@@ -339,11 +344,10 @@ test.describe("visitante sin cuenta", () => {
     expect(claves.filter((c) => c.includes("congreso-ticket"))).toEqual([]);
   });
 
-  test("el rail muestra Congreso habilitado", async ({ page }) => {
+  test("sin cuenta, /congreso responde y el rail no lo ofrece", async ({ page }) => {
     await page.goto("/congreso");
-    const congreso = page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Congreso", exact: true });
-    await expect(congreso).toHaveAttribute("href", "/congreso");
-    await expect(congreso).not.toHaveAttribute("aria-disabled", "true");
+    await expect(page.getByRole("heading", { level: 1, name: /Solarpunk Patagonia/ })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Congreso", exact: true })).toHaveCount(0);
   });
 
   test("el modo de origen también funciona sin cuenta", async ({ page }) => {
