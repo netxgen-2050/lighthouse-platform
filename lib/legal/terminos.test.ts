@@ -61,6 +61,7 @@ describe("catálogo legal", () => {
         "kyc",
         "licencia",
         "loteo",
+        "loteonorte",
         "manifiestovrn",
         "membresia",
         "notasverdes",
@@ -216,6 +217,12 @@ describe("catálogo legal", () => {
   it("loteo es borrador", () => {
     expect(esBorrador("loteo")).toBe(true);
     expect(TERMINOS.loteo.titulo).toBe("Estado del loteo");
+  });
+  it("loteonorte es borrador, tiene inglés y nombra la Ordenanza 173", () => {
+    expect(esBorrador("loteonorte")).toBe(true);
+    expect(terminoEn("loteonorte")).toBeDefined();
+    expect(TERMINOS.loteonorte.texto).toContain("Ordenanza 173");
+    expect(terminoEn("loteonorte")?.texto).toContain("Ordinance 173");
   });
   it("contacto es borrador", () => {
     expect(esBorrador("contacto")).toBe(true);

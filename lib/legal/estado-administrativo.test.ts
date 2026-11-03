@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ESTADOS_ADMINISTRATIVOS, accionesDeLote, textoExpediente } from "./estado-administrativo";
+import { ESTADOS_ADMINISTRATIVOS, accionesDeLote, textoExpediente, textoFechaAprobacion, textoTitular } from "./estado-administrativo";
 import { VISTAS_CON_LOTES } from "./vistas-con-lotes";
 
 describe("estado administrativo", () => {
@@ -28,6 +28,33 @@ describe("estado administrativo", () => {
     } finally {
       ESTADOS_ADMINISTRATIVOS.soluna.aprobacionMunicipal = original;
     }
+  });
+  it("Norte ofrece consultar, reservar y comprar (solo simulados)", () => {
+    expect(accionesDeLote("lighthouse-norte")).toEqual(["consultar", "reservar", "comprar"]);
+    expect(ESTADOS_ADMINISTRATIVOS["lighthouse-norte"].ventaSimulada).toBe(true);
+  });
+  it("Soluna sigue en solo consultar, incluso con aprobación", () => {
+    const original = ESTADOS_ADMINISTRATIVOS.soluna.aprobacionMunicipal;
+    ESTADOS_ADMINISTRATIVOS.soluna.aprobacionMunicipal = true;
+    try {
+      expect(accionesDeLote("soluna")).toEqual(["consultar"]);
+    } finally {
+      ESTADOS_ADMINISTRATIVOS.soluna.aprobacionMunicipal = original;
+    }
+  });
+  it("Norte: aprobación no otorgada, titular y fecha sin dato", () => {
+    const n = ESTADOS_ADMINISTRATIVOS["lighthouse-norte"];
+    expect(n.aprobacionMunicipal).toBe(false);
+    expect(textoTitular(n)).toBe("sin dato");
+    expect(textoFechaAprobacion(n)).toBe("sin dato");
+    expect(textoExpediente(n)).toBe("sin dato");
+    expect(textoTitular(ESTADOS_ADMINISTRATIVOS.soluna)).toBe("BioPueblo");
+    expect(textoFechaAprobacion({ ...n, fechaAprobacion: "2027-01-05" })).toBe("2027-01-05");
+  });
+  it("el supuesto de trabajo dice 'no otorgada' / 'not granted'", () => {
+    const n = ESTADOS_ADMINISTRATIVOS["lighthouse-norte"];
+    expect(n.supuestoDeTrabajo).toContain("no otorgada");
+    expect(n.en?.supuestoDeTrabajo).toContain("not granted");
   });
   it("la lista de vistas con lotes incluye el territorio", () => {
     expect(VISTAS_CON_LOTES).toContain("/territorios/lighthouse");
