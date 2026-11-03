@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Mergea PRs en dev sin esperar a Gus, según los niveles que Gus aprobó el 2-nov-2026 (docs/agentes.md).
+# Mergea PRs en dev después de que Gus los revisó y dio su OK en el chat (docs/agentes.md, desde el 3-nov-2026).
 # Lo corre Gus o Claude; nunca un agente de la noche (el guardia lo bloquea, igual que integrar.sh).
 #
 # Uso:
@@ -35,7 +35,7 @@ for n in "${PRS[@]}"; do
     | (.context // .name)')"
   [[ -z "$rojos" ]] || { paso "#$n tiene checks sin pasar: $rojos"; exit 1; }
   gh pr merge "$n" --merge --admin
-  gh pr comment "$n" -b "Mergeado por Claude (nivel **$NIVEL**, con el OK de Gus del 2-nov-2026; ver \`docs/agentes.md\`)." >/dev/null
+  gh pr comment "$n" -b "Mergeado por Claude (nivel **$NIVEL**, con el OK de Gus; ver \`docs/agentes.md\`)." >/dev/null
   if [[ "$NIVEL" == "integracion" ]] && command -v railway >/dev/null; then
     railway environment delete "pr-$n" --yes >/dev/null 2>&1 && paso "Entorno de Railway pr-$n borrado." || true
   fi
