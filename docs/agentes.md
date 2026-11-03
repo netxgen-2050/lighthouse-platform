@@ -48,16 +48,16 @@ Vale desde `idioma-pendientes`. La plataforma tiene español e inglés y no pued
 ## Herramientas para Gus (y Claude con su OK)
 - `scripts/spec.sh <nombre> "<pedido>"`: especificador → arquitecto → validación → PR de specs contra `dev`, y las preguntas abiertas al issue **🧭 Decisiones de Gus** (etiqueta `decisiones`). Con `--sin-arquitecto` para cambios solo de pantalla; con `--archivo pedido.md` para pedidos largos. Reintenta si se corta la red.
 - `scripts/integrar.sh <n> [<n>…]`: integra PRs en `dev` con verificar, build y e2e local; pushea, comenta y cierra los PRs y espera el deploy. `--a main` para una entrega; `--probar` para todo menos el push. El guardia no deja que un agente lo corra.
-- `scripts/mergear.sh --nivel <orden|spec|integracion> <n> [<n>…]`: Claude mergea en `dev` sin esperar a Gus (ver abajo). El guardia no deja que un agente lo corra.
+- `scripts/mergear.sh --nivel <orden|spec|integracion> <n> [<n>…]`: Claude mergea en `dev` con el OK de Gus (ver abajo). El guardia no deja que un agente lo corra.
 - Issue **🧭 Decisiones de Gus**: un solo lugar para contestar preguntas, también desde el celular.
 
-## Quién mergea (desde el 2-nov-2026)
-Gus aprobó tres niveles para que Claude mergee en `dev` con `scripts/mergear.sh`:
-1. **Orden** (archivar specs, resolver conflictos, renumerar ADRs, gitignore, herramientas): Claude mergea directo.
-2. **Specs:** Claude mergea cuando Gus contestó sus preguntas en el issue 🧭 o dejó un "ok" en el PR o en el chat.
-3. **Integraciones** de `scripts/integrar.sh`: Claude mergea cuando pasan verificar, build y e2e, y deja el link de Railway. Gus las mira cuando puede; lo que no le guste se revierte o se corrige en la noche siguiente.
+## Quién mergea (desde el 3-nov-2026)
+Ningún merge sin la revisión de Gus, pero el botón lo aprieta Claude:
+1. Claude le pasa a Gus qué revisar: el PR, el link de Railway si es una integración, y en dos líneas qué cambia y qué mirar.
+2. Gus revisa y da su OK en el chat ("mergeá 160 y 161").
+3. Claude mergea con `scripts/mergear.sh --nivel <orden|spec|integracion> <n>…`. El nivel solo queda anotado en el comentario del PR.
 
-`main` lo sigue pasando Gus. Los agentes de la noche nunca mergean. El script exige que el PR apunte a `dev`, esté sin conflictos y con los checks en verde salvo Vercel (que no despliega por el pago), y deja un comentario con el nivel. Como `gh` está logueado con la cuenta de Gus, en GitHub el merge figura a su nombre.
+`main` lo sigue pasando Gus. Los agentes de la noche nunca mergean. El script exige que el PR apunte a `dev`, esté sin conflictos y con los checks en verde salvo Vercel (que no despliega por el pago). Como `gh` está logueado con la cuenta de Gus, en GitHub el merge figura a su nombre.
 
 ## Probar un PR antes de mergear
 - Cada PR de integración que abre `scripts/integrar.sh` tiene su **propio link en Railway** (`https://lighthouse-dev-pr-<n>.up.railway.app`), comentado en el PR. Es una copia del entorno "production" de Railway, con el modo de prueba ("Entrar como…") y datos de ejemplo.
