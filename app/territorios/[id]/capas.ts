@@ -1,5 +1,6 @@
 import type { PathOptions } from "leaflet";
 import type { Anillo, EstadoFinca } from "@/lib/territorios/biopueblo";
+import type { EstadoLote } from "@/lib/territorios/loteo-estados";
 import { buscarVista, type VistaId } from "@/lib/territorios/vistas";
 import type { EstadoTribu } from "@/lib/tribus/tipos";
 
@@ -31,12 +32,21 @@ export function estiloFinca(estado: EstadoFinca | undefined): PathOptions {
   return { color: token("muted"), weight: 1.5, dashArray: "1 4", lineCap: "round", fillColor: token("gray"), fillOpacity: 0.6 };
 }
 
+/** Lote del sector norte: la forma del borde dice el estado (lleno, trazos, puntos), no el color. */
+export function estiloLote(estado: EstadoLote): PathOptions {
+  if (estado === "disponible") return { color: token("deep"), weight: 1.5, fillColor: token("green"), fillOpacity: 0.55 };
+  if (estado === "reservado")
+    return { color: token("gold-ink"), weight: 1.5, dashArray: "5 4", fillColor: token("gold"), fillOpacity: 0.3 };
+  return { color: token("muted"), weight: 1.5, dashArray: "1 4", lineCap: "round", fillColor: token("gray"), fillOpacity: 0.6 };
+}
+
 /** Grupos de capas del mapa, en el orden en que se apilan. `barrios-plan` es interno de la vista Plan. */
 export type Grupo =
   | "contexto"
   | "soluna"
   | "macrolote"
   | "comun"
+  | "loteo-norte"
   | "barrios-plan"
   | "barrios"
   | "frentes"
@@ -48,6 +58,7 @@ export const ORDEN_GRUPOS: readonly Grupo[] = [
   "soluna",
   "macrolote",
   "comun",
+  "loteo-norte",
   "barrios-plan",
   "barrios",
   "frentes",

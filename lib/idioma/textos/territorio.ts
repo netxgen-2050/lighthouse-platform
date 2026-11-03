@@ -78,6 +78,7 @@ const es = {
   },
   vistas: {
     grupo: "Vista del mapa",
+    lotes: { nombre: "Lotes · sector norte", corto: "Lotes" },
     ahora: { nombre: "Ahora · frentes de trabajo", corto: "Ahora" },
     plan: { nombre: "Plan · zonas", corto: "Plan" },
     vision: { nombre: "Visión · tribus por barrio", corto: "Visión" },
@@ -136,6 +137,32 @@ const es = {
     },
   },
   verEnMapa: "Ver en el mapa",
+  // Vista Lotes (spec loteo-norte). Los números y superficies salen de los datos (`lib/territorios/loteo.ts`), no de acá.
+  loteo: {
+    marca: "Loteo provisorio, ilustrativo",
+    limites: "Este boceto no considera la línea de inundación, la costa ni el relieve.",
+    fuenteBoceto: "Boceto propio sobre el polígono del 7A: lo reemplaza el plano de Martín.",
+    fuenteMartin: (fecha: string) => `Plano de Martín (KMZ, ${fecha}).`,
+    estadosEjemplo: "Estados de ejemplo.",
+    listaTitulo: "Lotes del sector norte",
+    lote: (n: number) => `Lote ${n}`,
+    resumen: (n: number, rango: string, sector: string) => `${n} lotes ${rango} ${sector}`,
+    rango: (min: string, max: string) => `de ${min} a ${max} m²`,
+    rangoSinDato: "(superficie: sin dato)",
+    sector: (ha: string) => `en un sector de ${ha} ha`,
+    sectorSinDato: "(sector: sin dato)",
+    sinFases: "Este loteo todavía no dice qué se vende en cada fase (sin dato).",
+    panelTitulo: "Lotes · sector norte",
+    elegiUno: "Elegí un lote en el mapa o en la lista.",
+    estado: { disponible: "Disponible", reservado: "Reservado", vendido: "Vendido" },
+    leyenda: {
+      sector: "Contorno del sector norte",
+      comun: "Espacio de uso común",
+      produccion: "Producción de alimentos",
+      camino: "Camino",
+    },
+    zonas: { "uso-comun": "Espacio de uso común", produccion: "Producción de alimentos", calle: "Camino", sector: "Sector norte" },
+  },
 };
 
 const en: Textos<typeof es> = {
@@ -209,6 +236,7 @@ const en: Textos<typeof es> = {
   },
   vistas: {
     grupo: "Map view",
+    lotes: { nombre: "Lots · north sector", corto: "Lots" },
     ahora: { nombre: "Now · work fronts", corto: "Now" },
     plan: { nombre: "Plan · zones", corto: "Plan" },
     vision: { nombre: "Vision · tribes by neighborhood", corto: "Vision" },
@@ -267,6 +295,31 @@ const en: Textos<typeof es> = {
     },
   },
   verEnMapa: "See on the map",
+  loteo: {
+    marca: "Provisional, illustrative subdivision",
+    limites: "This sketch does not consider the flood line, the shoreline or the terrain.",
+    fuenteBoceto: "Our own sketch on the 7A polygon: Martín's plan will replace it.",
+    fuenteMartin: (fecha: string) => `Martín's plan (KMZ, ${fecha}).`,
+    estadosEjemplo: "Sample statuses.",
+    listaTitulo: "North sector lots",
+    lote: (n: number) => `Lot ${n}`,
+    resumen: (n: number, rango: string, sector: string) => `${n} lots ${rango} ${sector}`,
+    rango: (min: string, max: string) => `of ${min} to ${max} m²`,
+    rangoSinDato: "(area: no data)",
+    sector: (ha: string) => `in a ${ha} ha sector`,
+    sectorSinDato: "(sector: no data)",
+    sinFases: "This subdivision does not yet say what is sold in each phase (no data).",
+    panelTitulo: "Lots · north sector",
+    elegiUno: "Choose a lot on the map or in the list.",
+    estado: { disponible: "Available", reservado: "Reserved", vendido: "Sold" },
+    leyenda: {
+      sector: "Outline of the north sector",
+      comun: "Common-use space",
+      produccion: "Food production",
+      camino: "Road",
+    },
+    zonas: { "uso-comun": "Common-use space", produccion: "Food production", calle: "Road", sector: "North sector" },
+  },
 };
 
 export const territorio = { es, en };

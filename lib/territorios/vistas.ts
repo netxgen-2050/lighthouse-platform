@@ -2,13 +2,24 @@ import { frentesBilingues, listarFrentes, type Frente } from "@/lib/equipos/fren
 import type { Idioma } from "@/lib/idioma/tipos";
 import { listarBarrios, listarFincas, listarLugares, terrenoComun } from "./biopueblo";
 import { FASE_ACTUAL, esFase, vigenteEn, type Fase } from "./fases";
+import { listarLotes } from "./loteo";
 
 // Vistas del mapa del territorio (spec territorio-vistas). Todo acá es puro: la pantalla solo dibuja lo que esto decide.
 
-export type VistaId = "ahora" | "plan" | "vision";
+export type VistaId = "lotes" | "ahora" | "plan" | "vision";
 
 /** Grupos de capas del mapa. La vista Red (D28) sumaría una capa propia sin tocar las demás. */
-export type Capa = "contexto" | "soluna" | "macrolote" | "comun" | "barrios" | "barrios-neutros" | "sellos-barrio" | "lugares" | "frentes";
+export type Capa =
+  | "contexto"
+  | "soluna"
+  | "macrolote"
+  | "comun"
+  | "loteo-norte"
+  | "barrios"
+  | "barrios-neutros"
+  | "sellos-barrio"
+  | "lugares"
+  | "frentes";
 
 export type Vista = {
   id: VistaId;
@@ -22,6 +33,11 @@ const idsFincas = () => listarFincas().map((f) => f.id);
 const idsLugares = () => listarLugares().map((l) => l.id);
 
 export const VISTAS: readonly Vista[] = [
+  {
+    id: "lotes",
+    capas: ["contexto", "soluna", "macrolote", "comun", "loteo-norte"],
+    elegibles: () => [...listarLotes().map((l) => l.id), terrenoComun().id, ...idsFincas(), ...idsLugares()],
+  },
   {
     id: "ahora",
     capas: ["contexto", "soluna", "macrolote", "comun", "frentes", "lugares"],
@@ -40,7 +56,7 @@ export const VISTAS: readonly Vista[] = [
   },
 ];
 
-export const VISTA_POR_DEFECTO: VistaId = "ahora";
+export const VISTA_POR_DEFECTO: VistaId = "lotes";
 
 export function buscarVista(id: VistaId): Vista {
   return VISTAS.find((v) => v.id === id)!;
@@ -50,7 +66,7 @@ export function elegibles(vista: VistaId, fase: Fase): string[] {
   return buscarVista(vista).elegibles(fase);
 }
 
-/** Vista de la URL. Desconocida o ausente = Ahora. El alias viejo `permacultura` abre Plan (la fuente se lee aparte). */
+/** Vista de la URL. Desconocida o ausente = Lotes. El alias viejo `permacultura` abre Plan (la fuente se lee aparte). */
 export function leerVista(x: string | null): VistaId {
   if (x === "permacultura") return "plan";
   return VISTAS.find((v) => v.id === x)?.id ?? VISTA_POR_DEFECTO;
@@ -110,7 +126,7 @@ export type Entrada = { vista: VistaId; fase: Fase; sel: string | null; fuente: 
 
 /**
  * Lee `vista`, `fase` y `sel` juntos. Un `sel` no elegible se limpia. Única excepción de compatibilidad: sin `vista`,
- * un `sel` que no es elegible en Ahora abre la primera vista donde sí lo sea (enlaces viejos como `?sel=barrio-6`).
+ * un `sel` que no es elegible en la vista por defecto abre la primera vista donde sí lo sea (enlaces viejos como `?sel=barrio-6`).
  */
 export function leerEntrada(params: URLSearchParams): Entrada {
   const fase = leerFase(params.get("fase"));

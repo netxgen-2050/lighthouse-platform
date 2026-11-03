@@ -39,6 +39,18 @@ describe("EstadoAdministrativo", () => {
     expect(en).toContain("Provisional subdivision of Lighthouse VRN");
   });
 
+  test("la región completa nombra su proyecto, así dos en la misma página se distinguen", () => {
+    expect(renderToStaticMarkup(<EstadoAdministrativo proyecto="soluna" />)).toContain(
+      'aria-label="Estado administrativo · Chacras de Soluna"',
+    );
+    expect(renderToStaticMarkup(<EstadoAdministrativo proyecto="lighthouse-norte" />)).toContain(
+      'aria-label="Estado administrativo · Lighthouse VRN"',
+    );
+    expect(renderToStaticMarkup(<EstadoAdministrativo proyecto="lighthouse-norte" idioma="en" />)).toContain(
+      'aria-label="Administrative status · Lighthouse VRN"',
+    );
+  });
+
   test("Soluna no cambia", () => {
     const t = texto(renderToStaticMarkup(<EstadoAdministrativo proyecto="soluna" />));
     expect(t).toContain("Aprobación municipal: pendiente");
