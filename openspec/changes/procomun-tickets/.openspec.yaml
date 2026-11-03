@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-11-02
+# BLOQUEADA hasta el sí de Franz: solo propuesta, sin specs ni tareas. Sacar esta marca si se aprueba.
+skip_specs: true
