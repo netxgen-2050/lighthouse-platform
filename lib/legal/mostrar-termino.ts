@@ -59,6 +59,11 @@ export function fraseConsultiva(idioma: IdiomaTermino = "es"): string {
   return idioma === "en" ? TERMINOS.consultivo.en.frase : TERMINOS.consultivo.frase;
 }
 
+/** La frase corta de un término que tiene una (por ejemplo "No es una inversión…"), en el idioma de la página. */
+export function fraseDeTermino(clave: "noesinversion" | "noesoferta", idioma: IdiomaTermino = "es"): string {
+  return idioma === "en" ? TERMINOS[clave].en.frase : TERMINOS[clave].frase;
+}
+
 /** La entrada de bitácora de un ⚖: lo que se mostró de verdad, con su idioma y su huella. */
 export function entradaBitacoraTermino(clave: ClaveTermino, idiomaPagina: IdiomaTermino = "es") {
   const m = terminoMostrado(clave, idiomaPagina);

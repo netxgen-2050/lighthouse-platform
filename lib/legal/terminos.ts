@@ -58,6 +58,12 @@ export const TERMINOS = {
     titulo: "Círculo por invitación",
     texto:
       "Oferta privada: acceso por invitación, hasta 35 aportantes por emisión y 15 no calificados como máximo, sin difusión masiva del instrumento (RG CNV 1016/2024, mod. RG 1088/2025). El contenido de comunidad sí es público.",
+    // Traducción nueva: borrador a revisar antes de cualquier uso real.
+    en: {
+      titulo: "Circle by invitation",
+      texto:
+        "Private offer: access by invitation, up to 35 contributors per issue and at most 15 non-qualified, with no mass promotion of the instrument (CNV General Resolution 1016/2024, as amended by 1088/2025). Community content is public.",
+    },
   },
   caja: {
     titulo: "La caja del proyecto",
@@ -87,23 +93,73 @@ export const TERMINOS = {
   membresia: {
     titulo: "Membresía de la red",
     texto: "Un servicio: acceso a la red, a las tribus y a los eventos. No da derechos sobre la tierra.",
+    // Traducción nueva: borrador a revisar antes de cualquier uso real.
+    en: {
+      titulo: "Network membership",
+      texto: "A service: access to the network, the tribes and the events. It gives no rights over the land.",
+    },
   },
   pasefundador: {
     titulo: "Pase Fundador",
     texto:
-      "Una membresía no transferible que aporta al Fondo Común, que administra el Consejo de la Fundación. Da voz, acceso y créditos de servicios. No da tierra, lotes, prioridad ni rendimiento, y no se puede revender (así no es un activo virtual ni un valor negociable).",
+      "Una membresía no transferible del procomún del Lighthouse. Da influencia en el Fondo Común, acceso y créditos de servicios. No da tierra, lotes, prioridad ni rendimiento, y no se puede revender. La plata del Pase va al Fondo Común, no a NetX. En el modelo híbrido la recibe la Fundación de la tierra, que todavía no existe; quién la recibiría mientras tanto está sin definir. A verificar con abogado.",
     borrador: true,
+    en: {
+      titulo: "Founder Pass",
+      texto:
+        "A non-transferable membership of the Lighthouse commons. It gives influence in the Common Fund, access and service credits. It gives no land, lots, priority or return, and it cannot be resold. The Pass money goes to the Common Fund, not to NetX. Under the hybrid model it is received by the land Foundation, which does not exist yet; who would receive it in the meantime is still undefined. To be verified with a lawyer.",
+    },
   },
   guardian: {
     titulo: "El Fondo Común",
     texto:
-      "El Fondo Común (agua, energía, vivero, incubación de tribus) lo administra el Consejo de la Fundación. El Pase se paga al Fondo Común; NetX cobra una tarifa de servicio fija y publicada por operar la plataforma. Cómo se compone el consejo lo define su estatuto, que todavía hay que confirmar con el equipo legal.",
+      "La plata del procomún para agua, energía, vivero e incubación de tribus. Recibe el pago del Pase directamente. NetX nunca toma un porcentaje: como mucho cobra una tarifa de servicio fija y publicada, si se la contrata para operar la plataforma. En el modelo híbrido lo administra la Fundación de la tierra, que todavía no existe. A verificar con abogado.",
     borrador: true,
+    en: {
+      titulo: "The Common Fund",
+      texto:
+        "The commons' money for water, energy, the nursery and incubating tribes. It receives the Pass payment directly. NetX never takes a percentage: at most it charges a fixed, published service fee, if it is hired to operate the platform. Under the hybrid model it is managed by the land Foundation, which does not exist yet. To be verified with a lawyer.",
+    },
   },
   creditos: {
     titulo: "Créditos comunes y de estadía",
     texto:
-      "Un saldo con un solo emisor (el Guardián): se canjea por productos de las tribus y por estadías. No se transfiere, vence y no se rescata en dinero, para no ser un medio de pago.",
+      "Un saldo con un solo emisor, quien custodie el Fondo Común: se canjea por productos de las tribus y por estadías. Se libera por partes en 3 años y cada parte vence a los 12 meses. No se transfiere y no se rescata en dinero, para no ser un medio de pago. Valores de ejemplo, a re-ajustar.",
+    borrador: true,
+    en: {
+      titulo: "Common and stay credits",
+      texto:
+        "A balance with a single issuer, whoever holds the Common Fund: it can be redeemed for tribe products and stays. It is released in parts over 3 years and each part expires after 12 months. It cannot be transferred or cashed out, so that it is not a means of payment. Sample values, to be re-tuned.",
+    },
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real. La frase es la que se ve en la
+  // tarjeta del Pase en Sumarte (R16); `texto` es la explicación del ⚖.
+  noesinversion: {
+    titulo: "No es una inversión",
+    frase: "No es una inversión: no da tierra, lotes, prioridad ni rendimiento, y no se revende.",
+    texto:
+      "El Pase Fundador es una membresía: pagás para sostener el procomún y recibís acceso, influencia y créditos de servicios. No esperes una ganancia en plata. Invertir es otro camino, separado y con otros documentos.",
+    borrador: true,
+    en: {
+      titulo: "It is not an investment",
+      frase: "It is not an investment: it gives no land, lots, priority or return, and it cannot be resold.",
+      texto:
+        "The Founder Pass is a membership: you pay to support the commons and you receive access, influence and service credits. Do not expect a money gain. Investing is a different path, separate and with different documents.",
+    },
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
+  noesoferta: {
+    titulo: "Esto no es una oferta",
+    frase: "Esto no es una oferta: desde esta sección no se vende ni se cobra nada. Contamos cómo funcionaría.",
+    texto:
+      "Ofrecer inversiones al público necesita autorización de la CNV. Acá solo contamos un diseño que todavía no revisó un abogado: el SAFU y las series no existen. Si algún día se concreta, sería en forma privada, por invitación, con documentos propios y verificando tu identidad antes. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "This is not an offer",
+      frase: "This is not an offer: nothing is sold or charged from this section. We explain how it would work.",
+      texto:
+        "Offering investments to the public requires authorization from the CNV (Argentina's securities regulator). Here we only describe a design that no lawyer has reviewed yet: the SAFU and the series do not exist. If it ever happens, it would be private, by invitation, with its own documents and after verifying your identity. To be verified with a lawyer.",
+    },
   },
   ronda0: {
     titulo: "Ronda 0",
@@ -113,6 +169,12 @@ export const TERMINOS = {
   plantribu: {
     titulo: "Plan Tribu",
     texto: "Un servicio de software que NetX le factura a la tribu (asociación civil o SAS). No es un aporte ni una inversión.",
+    // Traducción nueva: borrador a revisar antes de cualquier uso real.
+    en: {
+      titulo: "Tribe Plan",
+      texto:
+        "A software service that NetX bills to the tribe (a nonprofit association or a simplified company). It is not a contribution or an investment.",
+    },
   },
   remoto: {
     titulo: "Aporte remoto",
@@ -133,6 +195,12 @@ export const TERMINOS = {
     titulo: "Invertir en la empresa",
     texto:
       "La inversión en NetX como compañía es otra cosa: se hace con un SAFE en el holding, en conversaciones privadas, uno a uno. No se ofrece públicamente en la plataforma.",
+    // Traducción nueva: borrador a revisar antes de cualquier uso real.
+    en: {
+      titulo: "Investing in the company",
+      texto:
+        "Investing in NetX as a company is something else: it is done with a SAFE in the holding, in private conversations, one on one. It is not publicly offered on the platform.",
+    },
   },
   art35: {
     titulo: "Reglamento de Soluna, art. 35",
@@ -425,6 +493,11 @@ export const TERMINOS = {
     texto:
       "Acuerdo simple por Unidades futuras: alguien pone plata hoy, antes de que existan las series, y la recibe como Unidades de la Serie Madre cuando abra, con un descuento. Cómo se ofrece legalmente todavía lo tiene que confirmar un abogado.",
     borrador: true,
+    en: {
+      titulo: "SAFU",
+      texto:
+        "A simple agreement for future Units: someone puts in money today, before the series exist, and receives it as Units of the Mother Series when it opens, at a discount. How it can legally be offered still has to be confirmed by a lawyer.",
+    },
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
   serieprograma: {
@@ -432,6 +505,11 @@ export const TERMINOS = {
     texto:
       "Un proyecto con su propia plata, sus propios ingresos y sus propios inversores (por ejemplo, el viñedo o el parque solar) dentro del programa de fideicomisos. Cada fideicomiso es un patrimonio separado: un problema en una serie no alcanza a otra.",
     borrador: true,
+    en: {
+      titulo: "Series",
+      texto:
+        "A project with its own money, its own income and its own investors (for example, the vineyard or the solar park) within the trust program. Each trust is a separate estate: a problem in one series does not reach another.",
+    },
   },
   // Textos nuevos de la gobernanza fractal, no vienen del mock-up: borradores a revisar antes de cualquier uso real.
   circulotrabajo: {
@@ -507,13 +585,23 @@ export const TERMINOS = {
     texto:
       "Una serie que no tiene un proyecto propio: invierte en todas las demás. Quien entra ahí tiene un pedacito de todos los proyectos, con menos riesgo que en uno solo. Es donde terminan el SAFU y, más adelante, los tokens.",
     borrador: true,
+    en: {
+      titulo: "Mother Series",
+      texto:
+        "A series with no project of its own: it invests in all the others. Whoever comes in holds a small piece of every project, with less risk than in a single one. It is where the SAFU and, later, the tokens end up.",
+    },
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
   fundaciontierra: {
     titulo: "Fundación de la tierra",
     texto:
-      "En el Juego B, la entidad en la que queda la tierra del Lighthouse. Todavía no existe: se crea si se acepta el diseño y el dueño actual le pasa la tierra. Su estatuto le prohibiría venderla, hipotecarla o darla en garantía (cómo hacer que eso valga frente a terceros está a verificar con abogado). Cobra un canon y una regalía de cada serie antes que cualquier inversor y con eso paga el procomún. NetX no puede tomar un porcentaje de su plata.",
+      "En el modelo híbrido, la entidad en la que queda la tierra común del Lighthouse. Todavía no existe: se crea si se acepta el diseño y el dueño actual le pasa esa tierra. Los lotes privados no quedan en ella. Su estatuto le prohibiría vender, hipotecar o dar en garantía la tierra común (cómo hacer que eso valga frente a terceros está a verificar con abogado). Cobra un canon y una regalía de cada serie antes que cualquier inversor y con eso paga el procomún. NetX no puede tomar un porcentaje de su plata.",
     borrador: true,
+    en: {
+      titulo: "Land Foundation",
+      texto:
+        "Under the hybrid model, the entity that holds the Lighthouse common land. It does not exist yet: it is created if the design is accepted and the current owner transfers that land to it. Private lots do not stay in it. Its statute would forbid selling, mortgaging or pledging the common land as collateral (how to make that binding on third parties is to be verified with a lawyer). It collects a ground rent and a royalty from each series before any investor, and uses them to fund the commons. NetX cannot take a percentage of its money.",
+    },
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
   ordenanza173: {
