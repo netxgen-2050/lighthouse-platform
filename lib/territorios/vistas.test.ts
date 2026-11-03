@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { listarFrentes } from "@/lib/equipos/frentes";
 import { buscarElemento } from "./biopueblo";
+import { listarLotes } from "./loteo";
 import {
   FUENTES_PLAN,
   VISTAS,
@@ -79,8 +80,10 @@ describe("vistas", () => {
   });
 
   it("un lote es elegible solo en Lotes", () => {
-    expect(elegibles("lotes", 0)).toContain("lote-7");
-    for (const v of ["ahora", "plan", "vision"] as const) expect(elegibles(v, 0)).not.toContain("lote-7");
+    // Cualquier lote del archivo vigente: reemplazarlo por el plano de Martín no puede romper este test.
+    const id = listarLotes()[0].id;
+    expect(elegibles("lotes", 0)).toContain(id);
+    for (const v of ["ahora", "plan", "vision"] as const) expect(elegibles(v, 0)).not.toContain(id);
     expect(elegibles("lotes", 0)).not.toContain("barrio-6");
     expect(elegibles("lotes", 0)).not.toContain("agua-cuenca");
   });
@@ -127,9 +130,10 @@ describe("leerEntrada (compatibilidad de ?sel=)", () => {
     expect(leerEntrada(url("sel=comun"))).toMatchObject({ vista: "lotes", sel: "comun" });
   });
 
-  it("sel=lote-7 sin vista abre lotes; con otra vista se limpia", () => {
-    expect(leerEntrada(url("sel=lote-7"))).toMatchObject({ vista: "lotes", sel: "lote-7" });
-    expect(leerEntrada(url("vista=ahora&sel=lote-7"))).toMatchObject({ vista: "ahora", sel: null });
+  it("sel=<un lote> sin vista abre lotes; con otra vista se limpia", () => {
+    const id = listarLotes()[0].id;
+    expect(leerEntrada(url(`sel=${id}`))).toMatchObject({ vista: "lotes", sel: id });
+    expect(leerEntrada(url(`vista=ahora&sel=${id}`))).toMatchObject({ vista: "ahora", sel: null });
   });
 
   it("sel de frente sin vista abre ahora; en una fase donde no está se limpia", () => {
