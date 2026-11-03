@@ -6,7 +6,7 @@ export type EstadoLote = "disponible" | "reservado" | "vendido";
 export const ESTADOS_EJEMPLO: Readonly<Record<string, Exclude<EstadoLote, "disponible">>> = {
   "lote-5": "reservado",
   "lote-13": "vendido",
-  "lote-24": "reservado",
+  "lote-18": "reservado",
 };
 
 export function estadoDeLote(id: string): EstadoLote {

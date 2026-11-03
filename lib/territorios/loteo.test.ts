@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { macrolote7 } from "./biopueblo";
+import { anilloDentro } from "./geometria";
 import { ESTADOS_EJEMPLO, estadoDeLote } from "./loteo-estados";
 import { fuenteDelLoteo, listarLotes, loteoDe, rangoDeSuperficies, sectorNorte, zonasDelLoteo } from "./loteo";
 
@@ -61,8 +63,30 @@ describe.runIf(fuenteDelLoteo() === "ilustrativa")("loteo: boceto", () => {
     expect(estadoDeLote("lote-1")).toBe("disponible");
   });
 
+});
+
+describe("loteo (cualquier archivo)", () => {
   it("cada id de ESTADOS_EJEMPLO existe en el loteo", () => {
     const ids = listarLotes().map((l) => l.id);
     for (const id of Object.keys(ESTADOS_EJEMPLO)) expect(ids).toContain(id);
+  });
+});
+
+describe.runIf(fuenteDelLoteo() === "martin")("loteo: plano de Martín del 3-nov", () => {
+  it("21 lotes de 1.680 a 2.798 m² y un sector de 32,3 ha", () => {
+    const lotes = listarLotes();
+    expect(lotes.map((l) => l.id)).toEqual(Array.from({ length: 21 }, (_, i) => `lote-${i + 1}`));
+    expect(rangoDeSuperficies()).toEqual({ min: 1680, max: 2798 });
+    expect(sectorNorte()?.areaHa).toBe(32.3);
+  });
+
+  it("las demás parcelas no son lotes ni dicen un uso", () => {
+    const parcelas = zonasDelLoteo().filter((z) => z.tipo === "parcela");
+    expect(parcelas).toHaveLength(27);
+    for (const p of parcelas) expect(p.nombre).toBe("Parcela sin uso definido");
+  });
+
+  it("todos los lotes quedan dentro del 7A", () => {
+    for (const l of listarLotes()) expect(anilloDentro(l.anillo, macrolote7().anillo), l.id).toBe(true);
   });
 });

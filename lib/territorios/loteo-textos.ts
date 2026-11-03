@@ -1,7 +1,7 @@
 import { formatearNumero, sinDato } from "../idioma/formatos";
 import { territorio } from "../idioma/textos/territorio";
 import type { Idioma } from "../idioma/tipos";
-import { fechaDelLoteo, fuenteDelLoteo, listarLotes, rangoDeSuperficies, sectorNorte } from "./loteo";
+import { fechaDelLoteo, fuenteDelLoteo, listarLotes, rangoDeSuperficies, sectorNorte, zonasDelLoteo } from "./loteo";
 
 // Textos del loteo que se arman con los datos. Nada de cantidades escritas a mano: salen de `loteo.ts`.
 
@@ -22,6 +22,12 @@ export function resumenDelLoteo(idioma: Idioma): string {
     rango ? t.rango(formatearNumero(rango.min, idioma), formatearNumero(rango.max, idioma)) : t.rangoSinDato,
     ha === undefined ? t.sectorSinDato : t.sector(hectareas(ha, idioma)),
   );
+}
+
+/** Las parcelas que el plano dibuja sin decir su uso; null si no hay. */
+export function parcelasSinUso(idioma: Idioma): string | null {
+  const n = zonasDelLoteo().filter((z) => z.tipo === "parcela").length;
+  return n === 0 ? null : territorio[idioma].loteo.parcelas(n);
 }
 
 /** De dónde salen los datos: el boceto propio o el plano de Martín (con su fecha, si la trae). */

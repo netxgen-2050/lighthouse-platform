@@ -5,6 +5,7 @@ import {
   AVISO_RIO,
   armarSalida,
   clasificar,
+  convertirConMapeo,
   convertirKml,
   leerKml,
   serializar,
@@ -60,7 +61,7 @@ describe("leerKml", () => {
 
   it("un Placemark sin polígono queda con anillo null", () => {
     const p = leerKml(`<kml><Placemark><name>Pileta</name><Point><coordinates>1,2,0</coordinates></Point></Placemark></kml>`);
-    expect(p).toEqual([{ nombre: "Pileta", anillo: null }]);
+    expect(p).toEqual([{ nombre: "Pileta", anillo: null, trazo: null, numero: null }]);
   });
 });
 
@@ -215,5 +216,59 @@ describe("la salida del importador se lee sin tocar pantallas", () => {
 
   it("el archivo vigente se lee con la misma función", () => {
     expect(loteoDe({ features: rasgosDelLoteo(), metadata: { fuenteId: fuenteDelLoteo() } }).listarLotes().length).toBeGreaterThan(0);
+  });
+});
+
+describe("plano sin nombres (CAD) con mapeo", () => {
+  const linea = (n: number, a: Anillo) =>
+    `<Placemark id="plano.${n}"><LineString><coordinates>${coordenadas(a)}</coordinates></LineString></Placemark>`;
+  const abierta: Anillo = [rect(0, 0)[0], rect(0, 0)[1]];
+  const mapeo = { sector: 1, lotes: { "7": 2 }, parcelas: [3], ignorar: { "4": "Línea abierta" } };
+  const plano = kml(linea(1, rect(0, 0, 500, 500)), linea(2, rect(10, 10)), linea(3, rect(60, 10)), linea(4, abierta));
+
+  it("lee el número del Placemark y el trazo", () => {
+    const [p] = leerKml(plano);
+    expect(p.numero).toBe(1);
+    expect(p.anillo).toBeNull();
+    expect(p.trazo).toHaveLength(5);
+  });
+
+  it("clasifica por número, sin mirar nombres, y no usa lo ignorado", () => {
+    const { rasgos, errores } = convertirConMapeo(plano, mapeo);
+    expect(errores).toEqual([]);
+    expect(rasgos.map((r) => r.properties.id)).toEqual(["sector-norte", "lote-7", "parcela-3"]);
+  });
+
+  it("una copia exacta hereda la clase de su original", () => {
+    const { rasgos, errores } = convertirConMapeo(kml(linea(1, rect(0, 0, 500, 500)), linea(2, rect(10, 10)), linea(5, rect(10, 10))), {
+      sector: 1,
+      lotes: { "7": 2 },
+      parcelas: [],
+      ignorar: {},
+    });
+    expect(errores).toEqual([]);
+    expect(rasgos.filter((r) => r.properties.tipo === "lote")).toHaveLength(1);
+  });
+
+  it("lo que el mapeo no explica es un error: nada se descarta en silencio", () => {
+    expect(convertirConMapeo(kml(linea(1, rect(0, 0)), linea(9, rect(60, 0))), { sector: 1, lotes: {}, parcelas: [], ignorar: {} }).errores).toEqual([
+      "El Placemark 9 no está en el mapeo.",
+    ]);
+  });
+
+  it("nombrar un Placemark que no está, clasificarlo dos veces o usar una línea abierta como lote son errores", () => {
+    expect(convertirConMapeo(plano, { ...mapeo, parcelas: [3, 8] }).errores).toContain("El mapeo nombra el Placemark 8 (parcela), que no está en el plano.");
+    expect(convertirConMapeo(plano, { ...mapeo, parcelas: [2, 3] }).errores).toContain("El mapeo clasifica dos veces el Placemark 2: lote-7 y parcela.");
+    expect(convertirConMapeo(plano, { ...mapeo, parcelas: [3, 4], ignorar: {} }).errores).toContain("El Placemark 4 (parcela) no es un polígono cerrado.");
+  });
+
+  it("una parcela que pisa un lote es un error; compartir un borde casi sobre la misma línea, no", () => {
+    const l = lote(1, rect(0, 0));
+    const pisa: RasgoLoteo = { properties: { tipo: "parcela", id: "parcela-1", nombre: "Parcela" }, geometry: { type: "Polygon", coordinates: [rect(10, 10)] } };
+    expect(validarLoteo([l, pisa], anillo7A, [], []).errores).toEqual(["parcela-1 y lote-1 se superponen."]);
+    const m = 1 / METROS_POR_GRADO_LNG;
+    const vecina: Anillo = [[base[0] + 32 * m + 1e-8, base[1] - 0.0001], [base[0] + 90 * m, base[1]], [base[0] + 90 * m, base[1] + 0.001], [base[0] + 32 * m - 1e-8, base[1] + 0.001], [base[0] + 32 * m + 1e-8, base[1] - 0.0001]];
+    const roza: RasgoLoteo = { properties: { tipo: "parcela", id: "parcela-2", nombre: "Parcela" }, geometry: { type: "Polygon", coordinates: [vecina] } };
+    expect(validarLoteo([l, roza], anillo7A, [], []).errores).toEqual([]);
   });
 });

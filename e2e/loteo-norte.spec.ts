@@ -40,8 +40,16 @@ test("con el boceto, dice de dónde viene y qué no considera", async ({ page })
   await expect(ficha(page).getByText("25 lotes de 1.344 a 2.200 m² en un sector de 102 ha")).toBeVisible();
 });
 
+test("con el plano de Martín, dice que qué es un lote es nuestra lectura y separa las otras parcelas", async ({ page }) => {
+  test.skip(!noEsBoceto, "solo con el plano de Martín");
+  await page.goto("/territorios/lighthouse");
+  await expect(ficha(page).getByText(/Plano de Martín/)).toBeVisible();
+  await expect(ficha(page).getByText(/nuestra lectura, a confirmar con Martín/)).toBeVisible();
+  await expect(ficha(page).getByText(/parcelas sin decir su uso \(sin dato\)/)).toBeVisible();
+  await expect(page.getByRole("group", { name: "Leyenda del mapa" })).toContainText("Otra parcela (uso: sin dato)");
+});
+
 test("elegir un lote con el teclado: Tab, Enter, panel y URL", async ({ page }) => {
-  test.skip(noEsBoceto, "el lote 7 y su superficie son del boceto");
   await page.goto("/territorios/lighthouse");
   await lista(page).getByRole("button", { name: /^Lote 6 ·/ }).focus();
   await page.keyboard.press("Tab");
@@ -49,7 +57,7 @@ test("elegir un lote con el teclado: Tab, Enter, panel y URL", async ({ page }) 
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/sel=lote-7/);
   await expect(ficha(page).getByRole("heading", { name: "Lote 7" })).toBeVisible();
-  await expect(ficha(page).getByText("1.344 m²")).toBeVisible();
+  await expect(ficha(page).getByText(`${formatearNumero(listarLotes()[6].superficieM2!, "es")} m²`)).toBeVisible();
   await expect(ficha(page).getByText(/Disponible/)).toBeVisible();
   await expect(ficha(page).getByText("Loteo provisorio, ilustrativo")).toBeVisible();
   await expect(ficha(page).getByText(/supuesto de trabajo, no otorgada/)).toBeVisible();
@@ -65,7 +73,6 @@ test("cada lote de la lista dice su número, superficie y estado", async ({ page
 });
 
 test("enlace a un lote vendido: abre Lotes con el lote elegido y dice Vendido", async ({ page }) => {
-  test.skip(noEsBoceto, "lote-13 vendido es un estado de ejemplo del boceto");
   await page.goto("/territorios/lighthouse?sel=lote-13");
   await expect(vistas(page).getByRole("button", { name: /Lotes/ })).toHaveAttribute("aria-pressed", "true");
   await expect(ficha(page).getByRole("heading", { name: "Lote 13" })).toBeVisible();
@@ -108,7 +115,6 @@ test.describe("en inglés", () => {
     for (const estado of ["Available", "Reserved", "Sold"]) await expect(leyenda).toContainText(estado);
     await expect(page.getByRole("region", { name: /^Map of Macrolote 7 · Lots view/ })).toBeVisible();
     await expect(page.getByRole("region", { name: "Administrative status · Lighthouse VRN" })).toContainText("working assumption, not granted");
-    test.skip(noEsBoceto, "lote-13 vendido es un estado de ejemplo del boceto");
     await page.goto("/territorios/lighthouse?sel=lote-13");
     await expect(page.getByRole("complementary", { name: "Territory details" }).getByText(/Sold/)).toBeVisible();
     await expect(page.getByRole("complementary", { name: "Territory details" }).getByRole("heading", { name: "Lot 13" })).toBeVisible();

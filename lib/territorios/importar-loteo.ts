@@ -1,12 +1,19 @@
 import type { Anillo, Punto } from "./biopueblo";
 import { ESTADOS_EJEMPLO } from "./loteo-estados";
-import { anilloDentro, areaM2, seSuperponen } from "./geometria";
+import { anilloDentro, areaM2, distanciaM, seSuperponen, TOLERANCIA_BORDE_M } from "./geometria";
 import type { ArchivoLoteo, RasgoLoteo, TipoRasgoLoteo } from "./loteo";
 
 // Importador de KML/KMZ al formato de `loteo-norte.json` (spec loteo-norte, design §8). Todo acá es puro: el comando
 // (`scripts/importar-loteo.ts`) solo lee el archivo, llama a esto y escribe si no hay errores.
 
-export type Placemark = { nombre: string; anillo: Anillo | null };
+export type Placemark = {
+  nombre: string;
+  anillo: Anillo | null;
+  /** El trazo de un `LineString`: los planos que salen de CAD no traen polígonos. */
+  trazo: Anillo | null;
+  /** El número al final del id del Placemark (`…masterplan.12`), si lo tiene. */
+  numero: number | null;
+};
 
 const decodificar = (s: string) =>
   s
@@ -31,11 +38,18 @@ function leerCoordenadas(texto: string): Anillo {
 /** Cada `Placemark` con su nombre y el anillo exterior de su primer polígono (null si no tiene polígono). */
 export function leerKml(xml: string): Placemark[] {
   const salida: Placemark[] = [];
-  for (const m of xml.matchAll(/<Placemark\b[^>]*>([\s\S]*?)<\/Placemark>/g)) {
-    const cuerpo = m[1];
+  for (const m of xml.matchAll(/<Placemark\b([^>]*)>([\s\S]*?)<\/Placemark>/g)) {
+    const cuerpo = m[2];
     const nombre = decodificar(cuerpo.match(/<name\b[^>]*>([\s\S]*?)<\/name>/)?.[1] ?? "");
     const exterior = cuerpo.match(/<Polygon\b[\s\S]*?<outerBoundaryIs>[\s\S]*?<coordinates\b[^>]*>([\s\S]*?)<\/coordinates>/);
-    salida.push({ nombre, anillo: exterior ? leerCoordenadas(exterior[1]) : null });
+    const linea = cuerpo.match(/<LineString\b[\s\S]*?<coordinates\b[^>]*>([\s\S]*?)<\/coordinates>/);
+    const numero = m[1].match(/\bid="[^"]*?\.(\d+)"/)?.[1];
+    salida.push({
+      nombre,
+      anillo: exterior ? leerCoordenadas(exterior[1]) : null,
+      trazo: linea ? leerCoordenadas(linea[1]) : null,
+      numero: numero ? Number(numero) : null,
+    });
   }
   return salida;
 }
@@ -90,6 +104,85 @@ export function convertirKml(xml: string): Conversion {
       ilustrativo: true,
     };
     rasgos.push({ type: "Feature", properties: propiedades, geometry: { type: "Polygon", coordinates: [p.anillo] } });
+  }
+  return { rasgos, errores };
+}
+
+/**
+ * Para un plano sin nombres (CAD): dice qué es cada Placemark, por su número. Todo Placemark tiene que estar acá, o ser
+ * copia exacta de uno que esté: nunca se descarta nada en silencio, y lo que se ignora dice por qué.
+ */
+export type MapeoPlano = {
+  sector: number;
+  /** Número de lote → número de Placemark. */
+  lotes: Record<string, number>;
+  parcelas: number[];
+  /** Número de Placemark → por qué no se usa. */
+  ignorar: Record<string, string>;
+};
+
+const claveGeometria = (a: Anillo) =>
+  a
+    .map(([x, y]) => `${x.toFixed(6)},${y.toFixed(6)}`)
+    .sort()
+    .filter((p, i, todos) => p !== todos[i - 1])
+    .join(" ");
+
+/** Un trazo cerrado es un anillo (CAD deja el último vértice a milímetros del primero); uno abierto, no. */
+function anilloDeTrazo(t: Anillo | null): Anillo | null {
+  if (!t || t.length < 4 || distanciaM(t[0], t[t.length - 1]) > TOLERANCIA_BORDE_M) return null;
+  return [...t.slice(0, -1), t[0]];
+}
+
+/** KML sin nombres + mapeo → rasgos. Lo que el mapeo no explica, lo que nombra y no existe o lo que clasifica dos veces es un error. */
+export function convertirConMapeo(xml: string, mapeo: MapeoPlano): Conversion {
+  const errores: string[] = [];
+  const rasgos: RasgoLoteo[] = [];
+  const clases = new Map<number, string[]>();
+  const anotar = (numero: number, clase: string) => clases.set(numero, [...(clases.get(numero) ?? []), clase]);
+  anotar(mapeo.sector, "sector");
+  for (const [lote, n] of Object.entries(mapeo.lotes)) anotar(n, `lote-${lote}`);
+  for (const n of mapeo.parcelas) anotar(n, "parcela");
+  for (const n of Object.keys(mapeo.ignorar)) anotar(Number(n), "ignorar");
+
+  const placemarks = leerKml(xml);
+  if (placemarks.length === 0) errores.push("El archivo no tiene ningún polígono (<Placemark>).");
+  const numeros = new Set(placemarks.map((p) => p.numero));
+  for (const [n, c] of clases) {
+    if (!numeros.has(n)) errores.push(`El mapeo nombra el Placemark ${n} (${c.join(", ")}), que no está en el plano.`);
+    if (c.length > 1) errores.push(`El mapeo clasifica dos veces el Placemark ${n}: ${c.join(" y ")}.`);
+  }
+
+  const grupos = new Map<string, Placemark[]>();
+  for (const p of placemarks) {
+    const clave = claveGeometria(p.anillo ?? p.trazo ?? []);
+    grupos.set(clave, [...(grupos.get(clave) ?? []), p]);
+  }
+  for (const copias of grupos.values()) {
+    const nombres = copias.map((p) => p.numero ?? "sin número").join(", ");
+    const conClase = copias.flatMap((p) => (p.numero !== null && clases.has(p.numero) ? [{ p, clase: clases.get(p.numero)![0] }] : []));
+    if (conClase.length === 0) {
+      errores.push(`El Placemark ${nombres} no está en el mapeo.`);
+      continue;
+    }
+    if (new Set(conClase.map((c) => c.clase)).size > 1) {
+      errores.push(`Los Placemarks ${nombres} tienen la misma geometría y el mapeo les da clases distintas.`);
+      continue;
+    }
+    const { p, clase } = conClase[0];
+    if (clase === "ignorar") continue;
+    const anillo = p.anillo ?? anilloDeTrazo(p.trazo);
+    if (!anillo) {
+      errores.push(`El Placemark ${p.numero} (${clase}) no es un polígono cerrado.`);
+      continue;
+    }
+    const lote = clase.match(/^lote-(\d+)$/);
+    const propiedades: RasgoLoteo["properties"] = lote
+      ? { tipo: "lote", id: clase, nombre: `Lote ${lote[1]}`, numero: Number(lote[1]), superficie_m2: redondear(areaM2(anillo)), ilustrativo: true }
+      : clase === "sector"
+        ? { tipo: "sector", id: "sector-norte", nombre: "Sector norte", area_ha: redondear(areaM2(anillo) / 10_000, 1), ilustrativo: true }
+        : { tipo: "parcela", id: `parcela-${p.numero}`, nombre: "Parcela sin uso definido", ilustrativo: true };
+    rasgos.push({ type: "Feature", properties: propiedades, geometry: { type: "Polygon", coordinates: [anillo] } });
   }
   return { rasgos, errores };
 }
@@ -168,6 +261,15 @@ export function validarLoteo(
     }
   }
 
+  // Una parcela sin uso definido no puede pisar un lote: se vería como parte de lo que se vende.
+  for (const p of rasgos.filter((r) => r.properties.tipo === "parcela" && anilloValido(r.geometry.coordinates[0] ?? []))) {
+    for (const l of geometricos) {
+      if (seSuperponen(p.geometry.coordinates[0], l.geometry.coordinates[0])) {
+        errores.push(`${p.properties.id} y ${l.properties.id} se superponen.`);
+      }
+    }
+  }
+
   // Avisos.
   for (const z of ZONAS_ESPERADAS) {
     if (!rasgos.some((r) => r.properties.tipo === z.tipo)) avisos.push(`Falta ${z.nombre}: la pantalla dice "sin dato".`);
@@ -186,14 +288,14 @@ export function validarLoteo(
 
 /** El archivo de datos que escribe el comando: mismo formato del boceto, con `fuenteId: "martin"`. */
 export function armarSalida(rasgos: RasgoLoteo[], archivo: string, importado: string): ArchivoLoteo {
-  const orden: TipoRasgoLoteo[] = ["sector", "produccion", "uso-comun", "calle", "lote"];
+  const orden: TipoRasgoLoteo[] = ["sector", "parcela", "produccion", "uso-comun", "calle", "lote"];
   const ordenados = [...rasgos].sort(
     (a, b) =>
       orden.indexOf(a.properties.tipo) - orden.indexOf(b.properties.tipo) || (a.properties.numero ?? 0) - (b.properties.numero ?? 0),
   );
   return {
     type: "FeatureCollection",
-    metadata: { fuente: "Plano de Martín (KMZ)", fuenteId: "martin", archivo, importado },
+    metadata: { fuente: "Plano de Martín", fuenteId: "martin", archivo, importado },
     features: ordenados,
   };
 }

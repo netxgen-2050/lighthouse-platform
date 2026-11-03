@@ -5,7 +5,7 @@ import type { FuentePlanId } from "./vistas";
 // Loteo del sector norte de Lighthouse VRN (spec loteo-norte). Es lo ÚNICO que lee `loteo-norte.json`: las pantallas
 // nunca escriben cantidades ni superficies. Hoy el archivo es un boceto; el importador lo reemplaza por el plano de Martín.
 
-export type TipoRasgoLoteo = "sector" | "produccion" | "uso-comun" | "calle" | "lote";
+export type TipoRasgoLoteo = "sector" | "parcela" | "produccion" | "uso-comun" | "calle" | "lote";
 
 export type Lote = {
   id: string;
@@ -80,7 +80,7 @@ export function loteoDe(archivo: ArchivoLoteo) {
     listarLotes,
     /** El contorno del sector, o null si el plano no lo trae. */
     sectorNorte: (): ZonaLoteo | null => zonas().find((z) => z.tipo === "sector") ?? null,
-    /** Uso común, producción y camino (los que el plano traiga). */
+    /** Uso común, producción, camino y parcelas sin uso definido (los que el plano traiga). */
     zonasDelLoteo: (): ZonaLoteo[] => zonas().filter((z) => z.tipo !== "sector"),
     /** De dónde vienen los datos. Sin `metadata.fuenteId`, es el boceto propio. */
     fuenteDelLoteo: (): FuentePlanId => metadata.fuenteId ?? "ilustrativa",

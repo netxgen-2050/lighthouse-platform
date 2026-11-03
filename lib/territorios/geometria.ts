@@ -81,7 +81,11 @@ function seCruzan(a: Plano, b: Plano, c: Plano, d: Plano, tol: number): boolean 
   if (t <= 0 || t >= 1 || u <= 0 || u >= 1) return false;
   const lr = Math.hypot(r[0], r[1]);
   const ls = Math.hypot(s[0], s[1]);
-  return t * lr > tol && (1 - t) * lr > tol && u * ls > tol && (1 - u) * ls > tol;
+  if (!(t * lr > tol && (1 - t) * lr > tol && u * ls > tol && (1 - u) * ls > tol)) return false;
+  // Dos lados casi sobre la misma línea (vecinos que comparten un borde dibujado en CAD) se "cruzan" por milímetros:
+  // un cruce de verdad deja un extremo de cada lado a más de `tol` metros del otro.
+  const aLaRecta = (p: Plano, o: Plano, v: Plano, largo: number) => Math.abs(v[0] * (p[1] - o[1]) - v[1] * (p[0] - o[0])) / largo;
+  return Math.max(aLaRecta(c, a, r, lr), aLaRecta(d, a, r, lr)) > tol && Math.max(aLaRecta(a, c, s, ls), aLaRecta(b, c, s, ls)) > tol;
 }
 
 function ladosSeCruzan(a: Anillo, b: Anillo, tol: number): boolean {

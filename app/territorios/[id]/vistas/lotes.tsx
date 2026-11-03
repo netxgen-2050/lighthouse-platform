@@ -5,7 +5,7 @@ import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { textoSuperficieM2 } from "@/lib/territorios/biopueblo";
 import { fuenteDelLoteo, listarLotes } from "@/lib/territorios/loteo";
 import { estadoDeLote, type EstadoLote } from "@/lib/territorios/loteo-estados";
-import { fuenteTexto, resumenDelLoteo } from "@/lib/territorios/loteo-textos";
+import { fuenteTexto, parcelasSinUso, resumenDelLoteo } from "@/lib/territorios/loteo-textos";
 import { MARCA_EJEMPLO } from "./ficha-frente";
 
 // Vista Lotes (spec loteo-norte): marca provisoria, estado en texto y forma, panel del lote y resumen.
@@ -35,6 +35,7 @@ export function MarcaLoteo({ conFuente = false }: { conFuente?: boolean }) {
         <p className="text-sm text-muted">
           {fuenteTexto(idioma)}
           {fuenteDelLoteo() === "ilustrativa" && <> {t.limites}</>}
+          {fuenteDelLoteo() === "martin" && <> {t.lecturaMartin}</>}
         </p>
       )}
     </>
@@ -74,6 +75,7 @@ export function PanelLotes() {
       <h2 className="text-xl font-semibold">{t.panelTitulo}</h2>
       <MarcaLoteo conFuente />
       <p className="text-sm">{resumenDelLoteo(idioma)}</p>
+      {parcelasSinUso(idioma) && <p className="text-sm">{parcelasSinUso(idioma)}</p>}
       <p className="text-sm font-medium">{t.sinFases}</p>
       <p className="text-sm text-muted">{t.elegiUno}</p>
     </div>

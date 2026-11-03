@@ -2,13 +2,15 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { macrolote7 } from "../lib/territorios/biopueblo";
-import { armarSalida, convertirKml, serializar, validarLoteo } from "../lib/territorios/importar-loteo";
+import { armarSalida, convertirConMapeo, convertirKml, serializar, validarLoteo, type MapeoPlano } from "../lib/territorios/importar-loteo";
 import type { ArchivoLoteo } from "../lib/territorios/loteo";
 
 /**
  * Convierte un KMZ o KML del loteo al formato de `lib/territorios/loteo-norte.json` (spec loteo-norte).
  *
- *   pnpm exec tsx scripts/importar-loteo.ts <entrada.kmz|.kml> [--salida lib/territorios/loteo-norte.json] [--comprobar]
+ *   pnpm exec tsx scripts/importar-loteo.ts <entrada.kmz|.kml> [--salida lib/territorios/loteo-norte.json] [--comprobar] [--mapeo <archivo.json>]
+ *
+ * Con `--mapeo`, para planos sin nombres (CAD): qué es cada Placemark lo dice ese archivo, no su nombre.
  *
  * Valida contra el polígono del 7A. Con errores NO escribe nada y sale con código 1. Con `--comprobar` valida sin escribir.
  */
@@ -39,10 +41,12 @@ function main(argv: string[]): number {
   let entrada: string | undefined;
   let salida = SALIDA_POR_DEFECTO;
   let comprobar = false;
+  let mapeo: string | undefined;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--comprobar") comprobar = true;
     else if (a === "--salida") salida = argv[++i] ?? "";
+    else if (a === "--mapeo") mapeo = argv[++i] ?? "";
     else if (a.startsWith("--")) {
       console.error(`Opción desconocida: ${a}`);
       return 2;
@@ -53,7 +57,7 @@ function main(argv: string[]): number {
     }
   }
   if (!entrada || !salida) {
-    console.error("Uso: tsx scripts/importar-loteo.ts <entrada.kmz|.kml> [--salida <archivo.json>] [--comprobar]");
+    console.error("Uso: tsx scripts/importar-loteo.ts <entrada.kmz|.kml> [--salida <archivo.json>] [--comprobar] [--mapeo <archivo.json>]");
     return 2;
   }
 
@@ -65,12 +69,14 @@ function main(argv: string[]): number {
     return 1;
   }
 
-  const { rasgos, errores } = convertirKml(xml);
+  const { rasgos, errores } = mapeo
+    ? convertirConMapeo(xml, JSON.parse(readFileSync(mapeo, "utf8")) as MapeoPlano)
+    : convertirKml(xml);
   const validacion = validarLoteo(rasgos, macrolote7().anillo, idsAnteriores(salida));
   const todosLosErrores = [...errores, ...validacion.errores];
 
   const lotes = rasgos.filter((r) => r.properties.tipo === "lote").length;
-  console.log(`Plano: ${path.basename(entrada)} · ${lotes} lotes · ${rasgos.length - lotes} zonas`);
+  console.log(`Plano: ${path.basename(entrada)} · ${lotes} lotes · ${rasgos.length - lotes} zonas y parcelas`);
   for (const a of validacion.avisos) console.log(`Aviso: ${a}`);
 
   if (todosLosErrores.length > 0) {

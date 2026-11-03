@@ -26,6 +26,16 @@ Hoy `lib/territorios/loteo-norte.json` es un **boceto improvisado** (25 lotes so
 
 Volver atrás es revertir ese PR. El KMZ se abre con `unzip` (ya está en la Mac y en Linux) y se toma su primer `.kml`.
 
+## Planos sin nombres (CAD): el mapeo
+
+El KML de Martín del 3-nov (`datos/planos/261103_Masterplan_KLM.kml`) sale de CAD: 140 líneas, sin nombres ni capas, muchas repetidas. Qué es cada una lo dice un archivo aparte, escrito a mano (`datos/planos/261103_Masterplan_KLM.mapeo.json`), por número de Placemark:
+
+```
+pnpm exec tsx scripts/importar-loteo.ts datos/planos/261103_Masterplan_KLM.kml --mapeo datos/planos/261103_Masterplan_KLM.mapeo.json
+```
+
+Todo Placemark tiene que estar en el mapeo o ser copia exacta de uno que esté: lo que no se usa va en `ignorar`, con su motivo. **El mapeo es nuestra lectura, no un dato de Martín:** la pantalla lo dice. Hoy lee 21 lotes, un sector de 32,3 ha y 27 "parcelas sin uso definido", que se dibujan sin clic y no cuentan como lotes. Los 4 lotes del oeste quedan afuera porque caen fuera del polígono del 7A.
+
 ## Cómo se leen los nombres
 
 Cada polígono (`Placemark`) se clasifica por su nombre, sin distinguir mayúsculas ni acentos:

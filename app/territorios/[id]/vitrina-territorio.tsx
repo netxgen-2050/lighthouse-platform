@@ -81,6 +81,7 @@ function grupos(tx: Tx, vista: VistaId, fase: Fase): Grupo[] {
               ...(zonas.has("uso-comun") ? [{ clase: "mapa-leyenda-uso-comun", texto: lo.leyenda.comun }] : []),
               ...(zonas.has("produccion") ? [{ clase: "mapa-leyenda-produccion", texto: lo.leyenda.produccion }] : []),
               ...(zonas.has("calle") ? [{ clase: "mapa-leyenda-camino", texto: lo.leyenda.camino }] : []),
+              ...(zonas.has("parcela") ? [{ clase: "mapa-leyenda-parcela", texto: lo.leyenda.parcela }] : []),
             ],
           },
         ]
