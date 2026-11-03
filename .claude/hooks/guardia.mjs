@@ -19,6 +19,7 @@ const ramaActual = () => {
 // 1. Mergean Gus y Claude (con scripts/mergear.sh, por los niveles del 2-nov-2026); los agentes nunca. Nadie reescribe historia.
 if (/\bgh\s+pr\s+merge\b|\/merge\b.*-X\s*PUT|-X\s*PUT.*\/merge\b/.test(cmd)) bloquear("los agentes no mergean PRs; lo hacen Gus o Claude con scripts/mergear.sh.");
 if (/\bscripts\/mergear\.sh\b/.test(cmd)) bloquear("mergear lo hacen Gus o Claude, no los agentes.");
+if (/\bscripts\/carril\.sh\b/.test(cmd)) bloquear("lanzar carriles lo hace Claude con el OK de Gus, no los agentes.");
 const protegida = (r) => ["main", "master", "dev"].includes(r);
 if (/\bgit\s+merge\b/.test(cmd) && protegida(ramaActual())) bloquear(`no se mergea en ${ramaActual()}.`);
 if (/\bscripts\/integrar\.sh\b/.test(cmd)) bloquear("integrar a dev o a main lo hacen Gus o Claude con su OK, no los agentes.");
