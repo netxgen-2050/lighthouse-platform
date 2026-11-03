@@ -29,6 +29,16 @@ describe("EstadoAdministrativo", () => {
     expect(t).not.toContain("Aprobación municipal");
   });
 
+  test("Norte usa el ⚖ loteonorte (completo y compacto), con su aviso de borrador", () => {
+    for (const compacto of [false, true]) {
+      const html = renderToStaticMarkup(<EstadoAdministrativo proyecto="lighthouse-norte" compacto={compacto} />);
+      expect(html).toContain("Loteo provisorio de Lighthouse VRN");
+      expect(html).not.toContain("Estado del loteo");
+    }
+    const en = renderToStaticMarkup(<EstadoAdministrativo proyecto="lighthouse-norte" idioma="en" />);
+    expect(en).toContain("Provisional subdivision of Lighthouse VRN");
+  });
+
   test("Soluna no cambia", () => {
     const t = texto(renderToStaticMarkup(<EstadoAdministrativo proyecto="soluna" />));
     expect(t).toContain("Aprobación municipal: pendiente");

@@ -20,7 +20,8 @@ export function EstadoAdministrativo({
   idioma?: Idioma;
 }) {
   const base = ESTADOS_ADMINISTRATIVOS[proyecto];
-  const supuesto = proyecto === "lighthouse-norte";
+  // Se decide por el dato, no por el nombre del proyecto.
+  const supuesto = !!base.supuestoDeTrabajo;
   // Los textos en inglés existen solo para Norte; Soluna no cambia.
   const en = idioma === "en" && !!base.en;
   const idiomaTermino = en ? "en" : "es";
@@ -33,7 +34,7 @@ export function EstadoAdministrativo({
       ? { titular: "Holder", expediente: "File", aprobacion: "Municipal approval", fecha: "Date" }
       : { titular: "Titular", expediente: "Expediente", aprobacion: "Aprobación municipal", fecha: "Fecha" };
   const aprobacion = supuesto
-    ? (e.supuestoDeTrabajo ?? "")
+    ? (e.supuestoDeTrabajo || sinDato)
     : e.aprobacionMunicipal
       ? "aprobada"
       : "pendiente";
