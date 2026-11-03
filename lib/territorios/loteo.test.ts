@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ESTADOS_EJEMPLO, estadoDeLote } from "./loteo-estados";
-import { fuenteDelLoteo, listarLotes, rangoDeSuperficies, sectorNorte, zonasDelLoteo } from "./loteo";
+import { fuenteDelLoteo, listarLotes, loteoDe, rangoDeSuperficies, sectorNorte, zonasDelLoteo } from "./loteo";
 
 describe("loteo (siempre, con cualquier archivo)", () => {
   it("los ids de los lotes son únicos y tienen formato lote-<número>", () => {
@@ -14,10 +14,18 @@ describe("loteo (siempre, con cualquier archivo)", () => {
     expect(n).toEqual([...n].sort((a, b) => a - b));
   });
 
-  it("sectorNorte() es null si el plano no trae sector", () => {
-    const s = sectorNorte();
-    if (s === null) expect(s).toBeNull();
-    else expect(s.tipo).toBe("sector");
+  it("sin sector, sectorNorte() es null y no se cae; sin fuenteId la fuente es el boceto", () => {
+    const sinSector = loteoDe({ features: [] });
+    expect(sinSector.sectorNorte()).toBeNull();
+    expect(sinSector.zonasDelLoteo()).toEqual([]);
+    expect(sinSector.listarLotes()).toEqual([]);
+    expect(sinSector.fuenteDelLoteo()).toBe("ilustrativa");
+    expect(loteoDe({ features: [], metadata: { fuenteId: "martin" } }).fuenteDelLoteo()).toBe("martin");
+  });
+
+  it("el resumen dice sin dato cuando faltan el sector o las superficies, nunca 0", () => {
+    const l = { id: "lote-1", numero: 1, nombre: "Lote 1", anillo: [] };
+    expect(rangoDeSuperficies([l])).toBeNull();
   });
 
   it("un id de estado de ejemplo sin lote se ignora (es un aviso del importador, no un error)", () => {
