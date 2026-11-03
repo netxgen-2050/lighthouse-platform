@@ -1,6 +1,6 @@
 # CLAUDE.md — lighthouse-platform
 
-Plataforma de NetX para el Lighthouse (Soluna, BioPueblo): descubrir el territorio, encontrar tribu, pactos y semillas. **El Congreso de febrero 2027 se canceló (23-oct-2026):** la salida al mercado son eventos de comunidad (`NS_platform`, nota 20); `/congreso` queda como vitrina a reutilizar o retirar. La documentación de producto, legal y de negocio vive en el repo `NS_platform` (carpeta `Documentation/`). Este repo es **solo código**.
+Plataforma de NetX para el Lighthouse (Soluna, BioPueblo): descubrir el territorio, encontrar tribu, pactos y semillas. **Fase 1 (desde el 2-nov-2026): venta simulada de lotes privados en Lighthouse VRN más el modelo híbrido con el procomún (ADR-030).** **El Congreso de febrero 2027 se canceló (23-oct-2026):** la salida al mercado son eventos de comunidad (`NS_platform`, nota 20); `/congreso` queda como vitrina a reutilizar o retirar. La documentación de producto, legal y de negocio vive en el repo `NS_platform` (carpeta `Documentation/`). Este repo es **solo código**.
 
 ## Quién hace qué
 - **Gus (humano)** aprueba specs, prioriza, lee los reportes cada mañana y decide qué entra a `dev` y cuándo `dev` pasa a `main` (ver "Ramas").
@@ -27,9 +27,18 @@ Cada comando que no está en `.claude/settings.json` se rechaza solo. Para no tr
 - **Procesos:** no uses `kill` ni `pkill`; puede haber otro carril en paralelo. Playwright levanta y baja su propio servidor.
 - **Carpetas:** trabajá solo dentro del repo en el que arrancaste (en la noche es `.carriles/N`).
 
+## Fase 1: venta de lotes privados (desde el 2-nov-2026, decisión de Franz)
+Decidió Franz (CEO) en la llamada del 2-nov; Gus lo aceptó. **No se vuelve a discutir** en specs, revisiones ni PRs: el riesgo legal y comercial queda a cargo de Franz (confirmación escrita pedida, sin respuesta todavía). Detalle en `docs/decisiones/ADR-030-fase-1-venta-de-lotes-simulada.md`.
+- **Se puede, solo simulado:** en `lighthouse-norte`, ofrecer lotes, mostrar precio, reservar, pago simulado y boleto de ejemplo. Si la nota 19, el backlog T7, doc 30 o una spec vieja dicen lo contrario, manda ADR-030.
+- **No cambia:** ningún cobro real, pasarela ni KYC real; la aprobación municipal nunca se muestra como otorgada (es un supuesto de trabajo, fecha "sin dato"); `accionesDeLote("soluna")` devuelve solo `consultar`; ningún pase, ticket ni token da prioridad sobre un lote; ninguna página se deja indexar.
+- **Foco solo en VRN:** nada de Lighthouse SMA ni del deck de inversores (USD 111M, TIR, recupero). No usar la nota de las "300 razones" (`NS_permacultura` 17).
+- **Los números de lotes** salen de un solo módulo con versión (`lib/lotes/modelo.ts`), nunca escritos en pantallas. Todos son de ejemplo (`NS_Tokenomics` doc 31, `sim/lot_sale_sim.py`): casas, infraestructura y parte del dueño son estimaciones sin presupuesto, y lo dicen.
+- **Congelado, ni se toca ni se propone:** `fogon-desde-mi-y-guardian`, `fogon-consenso-en-tarjetas`, `fogon-consenso-formal`, `semillas-constancias`, `liderar-varias-tribus`, billeteras, Mi Raíz, EAS, smart contracts, red de nodos. `procomun-tickets` está bloqueado hasta el sí de Franz.
+- **Abrirlo afuera es otro paso** (R14).
+
 ## Fase de prototipo interno (desde el 7-oct-2026, decisión de Gus)
 Esto es un **prototipo para mostrar al equipo y hacer pruebas internas**. Nadie pone plata real. Por eso:
-- **Plata e inversión: permitidas.** Se pueden mostrar planes, precios, Pase Fundador, montos, aportes, inversión y lotes. La plataforma tiene que dejar claro que **va a servir para captar plata de inversores y usuarios**. Ningún flujo cobra de verdad: los pagos son simulados.
+- **Plata e inversión: permitidas.** Se pueden mostrar planes, precios, Pase Fundador, montos, aportes, inversión y lotes. La plataforma tiene que dejar claro que **va a servir para captar plata de inversores y usuarios**. Ningún flujo cobra de verdad: los pagos son simulados. Vale también para los lotes (ver Fase 1).
 - **Textos legales: los pueden redactar los agentes.** Todo término con peso legal sigue llevando el ⚖ (`components/termino-legal.tsx`) con su explicación en palabras simples, y los textos siguen viviendo en un solo catálogo (`lib/legal/terminos.ts`). Un texto nuevo que no venga del mock-up se marca como borrador (`borrador: true`) para revisarlo antes de cualquier uso real.
 - **Aviso visible en todas las páginas:** "Prototipo interno · datos de ejemplo".
 - Antes de mostrar la plataforma fuera del equipo, estas reglas se revisan (pendiente R14 en `NS_platform/Documentation/Desarrollo/Segunda revisión/`).
