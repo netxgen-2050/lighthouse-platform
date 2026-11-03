@@ -209,6 +209,62 @@ export const TERMINOS = {
         "This prototype simulates selling lots in the north sector of Lighthouse VRN. It works on the assumption that the subdivision will be approved: today municipal approval has not been granted and has no date (no data). Mainqué Ordinance 173/2026 does not allow offering, advertising or reserving plots without approval, so this only counts as a test inside the team: it is not an offer, nothing is charged and no lot is really reserved. To be verified with a lawyer.",
     },
   },
+  // Textos de la ficha de un lote (lote-ficha-y-compra): nuevos, no vienen del mock-up. Borrador a revisar antes de cualquier uso real.
+  precioreferencia: {
+    titulo: "Precio de ejemplo",
+    texto:
+      "Un valor provisorio para el prototipo, a confirmar, igual que los precios de las casas: no salen de un presupuesto. No es una oferta ni un precio de venta.",
+    borrador: true,
+    en: {
+      titulo: "Sample price",
+      texto:
+        "A provisional value for the prototype, to be confirmed, like the house prices: they do not come from a quote. It is not an offer or a sale price.",
+    },
+  },
+  aporteunico: {
+    titulo: "Aporte único al procomún",
+    texto:
+      "Una parte del precio que cada lote aportaría una sola vez a lo que es de todos. Es de ejemplo: quién la recibe depende de una entidad que todavía no existe. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "One-off contribution to the commons",
+      texto:
+        "A share of the price that each lot would contribute once to what belongs to everyone. It is a sample: who receives it depends on an entity that does not exist yet. To be verified with a lawyer.",
+    },
+  },
+  expensas: {
+    titulo: "Expensas",
+    texto:
+      "Lo que cada lote pagaría por año para sostener lo común. Es un valor de ejemplo y todavía no hay reglamento que lo fije.",
+    borrador: true,
+    en: {
+      titulo: "Common charges",
+      texto:
+        "What each lot would pay per year to sustain the commons. It is a sample value and no regulation sets it yet.",
+    },
+  },
+  derechosdeberes: {
+    titulo: "Derechos y deberes de un lote",
+    texto:
+      "Borrador de lo que traería comprar un lote en el modelo híbrido. Las servidumbres, el reglamento y la preferencia de reventa todavía no existen. Un lote vendido se rige por su título, las servidumbres y el reglamento: si alguien no cumple, el camino es el de cualquier vecino o barrio con reglamento, no una decisión de la plataforma. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Rights and duties of a lot",
+      texto:
+        "A draft of what buying a lot would bring under the hybrid model. The easements, the regulation and the resale preference do not exist yet. A sold lot is governed by its title, the easements and the regulation: if someone does not comply, the path is that of any neighbor or community with a regulation, not a decision by the platform. To be verified with a lawyer.",
+    },
+  },
+  boletoejemplo: {
+    titulo: "Boleto de ejemplo",
+    texto:
+      "Es una simulación del prototipo: no es un boleto de compraventa, no obliga a nadie, no transfiere ningún derecho y no se pagó nada.",
+    borrador: true,
+    en: {
+      titulo: "Sample purchase agreement",
+      texto:
+        "This is a prototype simulation: it is not a purchase agreement, it binds nobody, it transfers no rights and nothing was paid.",
+    },
+  },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
   contacto: {
     titulo: "Pedir contacto",

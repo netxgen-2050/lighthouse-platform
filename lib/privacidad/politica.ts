@@ -4,6 +4,9 @@
  *
  * 27-oct-2026: se quitaron los compromisos del resumen, de la tabla y de las finalidades sin subir `VERSION_POLITICA`
  * (solo reduce lo descrito; cambio `rail-sin-compromisos`, ADR-017).
+ * 3-nov-2026: se suman los lotes simulados (qué lote reservó o "pagó" la persona en la simulación) a la tabla, al resumen,
+ * a las finalidades y a los términos, y `VERSION_POLITICA` sube a `2026-11-03-borrador` (amplía lo descrito; cambio
+ * `lote-ficha-y-compra`, ADR-017). Cada persona vuelve a aceptar la política una vez.
  */
 
 export const RESPONSABLE = {
@@ -18,7 +21,7 @@ export const UBICACION_DATOS = "Estados Unidos";
 /** Resumen en palabras simples, el mismo en la pantalla de consentimiento y al principio de `/privacidad`. */
 export const RESUMEN: readonly string[] = [
   "Quién se ocupa de tus datos: NetXGen, una entidad registrada en Honduras.",
-  "Qué guardamos: tu email y tu billetera (por el login), y lo que cargues en la plataforma: perfil, comunidades, pactos, Semillas, votos, contactos, verificación de identidad y reportes.",
+  "Qué guardamos: tu email y tu billetera (por el login), y lo que cargues en la plataforma: perfil, comunidades, pactos, Semillas, votos, contactos, lotes simulados, verificación de identidad y reportes.",
   "Para qué: para que la plataforma funcione y para conectar tu presencia con tu perfil. Nada más.",
   "Dónde: los servicios que usamos (Privy, Vercel, Neon y GitHub) están en Estados Unidos. Es una transferencia internacional de datos.",
   "Tus derechos: podés ver y descargar tus datos, borrarlos y retirar tu consentimiento cuando quieras desde Mis datos, y corregirlos desde tu Perfil.",
@@ -59,6 +62,12 @@ export const DATOS_POR_PANTALLA: readonly DatosDePantalla[] = [
     donde: "Hoy, solo en tu navegador. Con la base, en Neon.",
   },
   {
+    pantalla: "Lotes (simulado)",
+    datos:
+      "Qué lote reservaste o “pagaste” en la simulación, la opción que elegiste, las fechas y los valores que viste. Nunca datos de pago ni de identidad.",
+    donde: "Solo en tu navegador: no se envía a ningún lado.",
+  },
+  {
     pantalla: "Pasaporte y verificación de identidad (KYC)",
     datos:
       "Nombre, documento, fecha de nacimiento, nacionalidad, residencia fiscal y origen de los fondos. Son datos sensibles: se piden aparte, con tu consentimiento específico.",
@@ -81,7 +90,7 @@ export const DATOS_POR_PANTALLA: readonly DatosDePantalla[] = [
 
 export const FINALIDADES: readonly string[] = [
   "Reconocerte y que cada persona vea solo lo suyo.",
-  "Mostrarte el territorio, las comunidades y lo que podés hacer según tu plan.",
+  "Mostrarte el territorio, las comunidades y lo que podés hacer según tu plan, y simular la reserva y la compra de un lote.",
   "Registrar tus pactos, Semillas y votos.",
   "Responder a tus pedidos de contacto y a tus reportes.",
   "Cuando exista la versión real: verificar tu identidad antes de que aportes, como exige la prevención de lavado de activos.",
@@ -122,7 +131,7 @@ export const MARCO_LEGAL =
 /** Términos de uso del prototipo (la segunda casilla de la pantalla de consentimiento). */
 export const TERMINOS_DE_USO: readonly string[] = [
   "Esto es un prototipo interno para pruebas del equipo: los datos son de ejemplo y puede cambiar o dejar de funcionar sin aviso.",
-  "Ningún flujo cobra de verdad: planes, Pase Fundador, aportes e inversión son simulados.",
+  "Ningún flujo cobra de verdad: planes, Pase Fundador, aportes, inversión y lotes son simulados.",
   "Lo que ves no es una oferta de inversión ni de venta de lotes.",
   "Usá la plataforma de buena fe: no cargues datos de otras personas sin su permiso.",
 ];

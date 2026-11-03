@@ -62,6 +62,11 @@ describe("catálogo legal", () => {
         "licencia",
         "loteo",
         "loteonorte",
+        "aporteunico",
+        "boletoejemplo",
+        "derechosdeberes",
+        "expensas",
+        "precioreferencia",
         "manifiestovrn",
         "membresia",
         "notasverdes",
@@ -223,6 +228,20 @@ describe("catálogo legal", () => {
     expect(terminoEn("loteonorte")).toBeDefined();
     expect(TERMINOS.loteonorte.texto).toContain("Ordenanza 173");
     expect(terminoEn("loteonorte")?.texto).toContain("Ordinance 173");
+  });
+  it("los términos de la ficha de un lote son borrador y tienen inglés", () => {
+    for (const k of ["precioreferencia", "aporteunico", "expensas", "derechosdeberes", "boletoejemplo"] as const) {
+      expect(esBorrador(k), k).toBe(true);
+      expect(terminoEn(k), k).toBeDefined();
+    }
+  });
+  it("boletoejemplo dice que no se pagó nada, en los dos idiomas", () => {
+    expect(TERMINOS.boletoejemplo.texto).toContain("no se pagó nada");
+    expect(terminoEn("boletoejemplo")?.texto).toContain("nothing was paid");
+  });
+  it("derechosdeberes y aporteunico se verifican con abogado", () => {
+    expect(TERMINOS.derechosdeberes.texto).toContain("A verificar con abogado");
+    expect(TERMINOS.aporteunico.texto).toContain("A verificar con abogado");
   });
   it("contacto es borrador", () => {
     expect(esBorrador("contacto")).toBe(true);

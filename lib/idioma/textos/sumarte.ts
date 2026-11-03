@@ -165,6 +165,7 @@ const es = {
   pedido: {
     motivos: {
       "consulta-lote": { etiqueta: "Consulta por un lote", destino: "BioPueblo, vía NetX como agencia" },
+      "consulta-lote-vrn": { etiqueta: "Consulta por un lote de Lighthouse VRN", destino: "Equipo NetX" },
       "invitacion-circulo": { etiqueta: "Invitación al círculo", destino: "Equipo NetX" },
       "charla-netx": { etiqueta: "Charla para invertir en NetX", destino: "Equipo NetX" },
     },
@@ -344,6 +345,7 @@ const en: Textos<typeof es> = {
   pedido: {
     motivos: {
       "consulta-lote": { etiqueta: "Inquiry about a lot", destino: "BioPueblo, through NetX as agency" },
+      "consulta-lote-vrn": { etiqueta: "Inquiry about a Lighthouse VRN lot", destino: "NetX team" },
       "invitacion-circulo": { etiqueta: "Invitation to the circle", destino: "NetX team" },
       "charla-netx": { etiqueta: "Talk about investing in NetX", destino: "NetX team" },
     },

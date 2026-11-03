@@ -203,7 +203,31 @@ describe("la política sin Compromisos", () => {
     expect(textos.filter((t) => /compromiso/i.test(t))).toEqual([]);
   });
 
-  it("la versión no cambia: la edición solo redujo lo descrito", () => {
-    expect(VERSION_POLITICA).toBe("2026-10-14-borrador");
+  it("la versión sube con los lotes simulados, que amplían lo descrito (ADR-017)", () => {
+    expect(VERSION_POLITICA).toBe("2026-11-03-borrador");
+  });
+});
+
+describe("la política con lotes simulados", () => {
+  it("la tabla tiene la pantalla Lotes (simulado), sin datos de pago ni de identidad", () => {
+    const fila = DATOS_POR_PANTALLA.find((d) => d.pantalla === "Lotes (simulado)");
+    expect(fila).toBeDefined();
+    expect(fila!.datos).toContain("Nunca datos de pago ni de identidad");
+    expect(fila!.donde).toContain("Solo en tu navegador");
+  });
+
+  it("el resumen y las finalidades nombran los lotes simulados", () => {
+    expect(RESUMEN.some((t) => t.includes("lotes simulados"))).toBe(true);
+    expect(FINALIDADES.some((t) => t.includes("simular la reserva y la compra de un lote"))).toBe(true);
+  });
+
+  it("la descarga de Mis datos trae lo de los lotes", () => {
+    const datos = exportarMisDatos({
+      almacen: almacen({ "u:A:lh-lotes": JSON.stringify([{ loteId: "x" }]) }),
+      idPersona: "A",
+      email: null,
+      billetera: null,
+    }).datos as Record<string, unknown>;
+    expect(datos.lotes).toEqual([{ loteId: "x" }]);
   });
 });
