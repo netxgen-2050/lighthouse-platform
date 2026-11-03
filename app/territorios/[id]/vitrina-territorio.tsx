@@ -8,10 +8,15 @@ import { textoEn } from "@/lib/idioma/tipos";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import type { territorio } from "@/lib/idioma/textos/territorio";
 import type { Textos } from "@/lib/idioma/tipos";
-import { listarBarrios, listarFincas, terrenoComun, tribuDeBarrio } from "@/lib/territorios/biopueblo";
+import { listarBarrios, listarFincas, terrenoComun, textoSuperficieM2, tribuDeBarrio } from "@/lib/territorios/biopueblo";
+import { EstadoDeLote, MarcaLoteo } from "./vistas/lotes";
 import { FASE_ACTUAL, FASES, type Fase } from "@/lib/territorios/fases";
+import { listarLotes, sectorNorte, zonasDelLoteo } from "@/lib/territorios/loteo";
+import { estadoDeLote } from "@/lib/territorios/loteo-estados";
+import { resumenDelLoteo } from "@/lib/territorios/loteo-textos";
 import {
   VISTAS,
+  VISTA_POR_DEFECTO,
   elegibles,
   esDeHoy,
   frentesEn,
@@ -28,7 +33,7 @@ type Tx = Textos<typeof territorio.es>;
 type Grupo = {
   id: string;
   titulo: React.ReactNode;
-  items: { clase: string; texto: string }[];
+  items: { clase: string; texto: string; simbolo?: string }[];
   nota?: string;
 };
 
@@ -37,7 +42,10 @@ function grupos(tx: Tx, vista: VistaId, fase: Fase): Grupo[] {
   const l = tx.leyenda;
   const v = tx.leyendaVistas;
   const hayFrenteQueViene = frentesEn(fase).conLugar.some((f) => !esDeHoy(f));
+  const lo = tx.loteo;
+  const zonas = new Set(zonasDelLoteo().map((z) => z.tipo));
   const lighthouse: Record<VistaId, Grupo["items"]> = {
+    lotes: [{ clase: "mapa-leyenda-nucleo", texto: l.comun }],
     ahora: [
       { clase: "mapa-leyenda-frente", texto: v.frente },
       ...(hayFrenteQueViene ? [{ clase: "mapa-leyenda-frente-despues", texto: v.frenteDespues }] : []),
@@ -54,6 +62,29 @@ function grupos(tx: Tx, vista: VistaId, fase: Fase): Grupo[] {
       { clase: "mapa-leyenda-nucleo", texto: l.comun },
     ],
   };
+  const loteo: Grupo[] =
+    vista === "lotes"
+      ? [
+          {
+            id: "leyenda-loteo",
+            titulo: (
+              <>
+                <span translate="no">Lighthouse VRN</span> · {lo.marca}
+              </>
+            ),
+            nota: lo.estadosEjemplo,
+            items: [
+              { clase: "mapa-leyenda-lote-disponible", texto: lo.estado.disponible, simbolo: "●" },
+              { clase: "mapa-leyenda-lote-reservado", texto: lo.estado.reservado, simbolo: "◐" },
+              { clase: "mapa-leyenda-lote-vendido", texto: lo.estado.vendido, simbolo: "✕" },
+              ...(sectorNorte() ? [{ clase: "mapa-leyenda-sector", texto: lo.leyenda.sector }] : []),
+              ...(zonas.has("uso-comun") ? [{ clase: "mapa-leyenda-uso-comun", texto: lo.leyenda.comun }] : []),
+              ...(zonas.has("produccion") ? [{ clase: "mapa-leyenda-produccion", texto: lo.leyenda.produccion }] : []),
+              ...(zonas.has("calle") ? [{ clase: "mapa-leyenda-camino", texto: lo.leyenda.camino }] : []),
+            ],
+          },
+        ]
+      : [];
   return [
     {
       id: "leyenda-lighthouse",
@@ -61,6 +92,7 @@ function grupos(tx: Tx, vista: VistaId, fase: Fase): Grupo[] {
       items: lighthouse[vista],
       nota: vista === "vision" ? v.ejemploTribus : undefined,
     },
+    ...loteo,
     {
       id: "leyenda-soluna",
       titulo: (
@@ -100,7 +132,7 @@ function escribirUrl(vista: VistaId, fase: Fase, sel: string | null) {
 export function VitrinaTerritorio() {
   const idioma = useIdioma();
   const tx = useTextos("territorio");
-  const [vista, setVista] = useState<VistaId>("ahora");
+  const [vista, setVista] = useState<VistaId>(VISTA_POR_DEFECTO);
   const [fase, setFase] = useState<Fase>(FASE_ACTUAL);
   const [fuente, setFuente] = useState<FuentePlanId>("ilustrativa");
   const [seleccion, setSeleccion] = useState<string | null>(null);
@@ -220,6 +252,7 @@ export function VitrinaTerritorio() {
                 {g.items.map((l) => (
                   <li key={l.texto} className="flex items-center gap-2">
                     <span aria-hidden="true" className={`mapa-leyenda ${l.clase}`} />
+                    {l.simbolo && <span aria-hidden="true">{l.simbolo} </span>}
                     {l.texto}
                   </li>
                 ))}
@@ -227,7 +260,9 @@ export function VitrinaTerritorio() {
             </div>
           ))}
         </div>
-        <p className="text-sm text-muted">{vista === "ahora" ? tx.frente.lugarIlustrativo : tx.notaDistribucion}</p>
+        {vista !== "lotes" && (
+          <p className="text-sm text-muted">{vista === "ahora" ? tx.frente.lugarIlustrativo : tx.notaDistribucion}</p>
+        )}
         <p className="text-sm text-muted">
           {tx.notaImagen}{" "}
           <a className="underline" href="https://www.esri.com" target="_blank" rel="noreferrer">
@@ -239,6 +274,24 @@ export function VitrinaTerritorio() {
           <h3 id="elegir-titulo" className="font-semibold">
             {tx.elegir.titulo}
           </h3>
+          {vista === "lotes" && (
+            <div className="grid gap-2">
+              <h4 id="lista-lotes-titulo" className="text-sm font-semibold">
+                {tx.loteo.listaTitulo}
+              </h4>
+              <MarcaLoteo />
+              <p className="text-sm">{resumenDelLoteo(idioma)}</p>
+              <ul aria-labelledby="lista-lotes-titulo" className="flex flex-wrap gap-2">
+                {listarLotes().map((l) => (
+                  <li key={l.id}>
+                    <button type="button" className={botonLista} aria-pressed={seleccion === l.id} onClick={() => elegir(l.id)}>
+                      {tx.loteo.lote(l.numero)} · {textoSuperficieM2(l.superficieM2, idioma)} · <EstadoDeLote estado={estadoDeLote(l.id)} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <ul className="flex flex-wrap gap-2">
             {barrios
               .filter((b) => elegiblesAhora.includes(b.id))

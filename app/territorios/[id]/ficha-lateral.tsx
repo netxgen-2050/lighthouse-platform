@@ -16,6 +16,7 @@ import { ESTADOS_ADMINISTRATIVOS, accionesDeLote } from "@/lib/legal/estado-admi
 import { TerminoLegal } from "@/components/termino-legal";
 import { buscarElemento, textoDeEstadoFinca, textoHectareas, textoSuperficieM2, tribuDeBarrio } from "@/lib/territorios/biopueblo";
 import { FichaFrente, MARCA_EJEMPLO } from "./vistas/ficha-frente";
+import { FichaLote } from "./vistas/lotes";
 import { PANELES, PertenecerAlLighthouse } from "./vistas/paneles";
 import { TEXTO_COMUN, descripcionDeLugar, esNombrePropioDeLugar, nombreDeLugar } from "@/lib/territorios/textos";
 import { listarTribus, rutaProponerComunidad } from "@/lib/tribus/datos";
@@ -95,6 +96,7 @@ export function FichaLateral({ seleccion, consultas, alConsultar, vista, fase, f
   const frente = seleccion ? listarFrentes(idioma).find((f) => f.id === seleccion && f.lugar) : undefined;
 
   if (frente) return <FichaFrente frente={frente} />;
+  if (seleccion?.startsWith("lote-") && vista === "lotes") return <FichaLote id={seleccion} />;
 
   if (el?.tipo === "barrio") {
     const tribu = tribuDeBarrio(el, listarTribus(idioma));

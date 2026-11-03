@@ -26,6 +26,8 @@ const rutas = [
   "/tribus/lighthouse",
   "/tribus/lighthouse/manifiesto",
   "/territorios/lighthouse",
+  "/territorios/lighthouse?vista=lotes",
+  "/territorios/lighthouse?vista=ahora",
   "/territorios/lighthouse?vista=plan",
   "/territorios/lighthouse?vista=vision",
   "/congreso",
@@ -43,8 +45,8 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 39 rutas auditadas", () => {
-  expect(rutas).toHaveLength(39);
+test("hay 41 rutas auditadas", () => {
+  expect(rutas).toHaveLength(41);
 });
 
 async function graves(page: Page) {
@@ -286,7 +288,7 @@ test("axe sin violaciones serias o críticas: /panel/bitacora con entradas", asy
     .poll(() => page.evaluate(() => window.localStorage.getItem("lh-bitacora")))
     .not.toBeNull();
   await page.goto("/panel/bitacora");
-  await expect(page.getByRole("row").filter({ hasText: "Estado del loteo" })).toBeVisible();
+  await expect(page.getByRole("row").filter({ hasText: "Estado del loteo" }).filter({ hasText: "Chacras de Soluna" })).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
@@ -490,7 +492,11 @@ test("axe sin violaciones serias o críticas: /fogon con Ana seleccionada y la l
 for (const ruta of rutas) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);
-    if (ruta === "/territorios/lighthouse") {
+    if (ruta === "/territorios/lighthouse" || ruta === "/territorios/lighthouse?vista=lotes") {
+      // El mapa se arma en el navegador: auditar con el sello del común ya puesto.
+      await expect(page.locator('[aria-label="Terreno común del Lighthouse"][role="button"]')).toHaveCount(1);
+    }
+    if (ruta === "/territorios/lighthouse?vista=ahora") {
       // El mapa se arma en el navegador: auditar con los sellos de los frentes ya puestos.
       await expect(page.locator('[aria-label^="Frente "][role="button"]')).toHaveCount(4);
     }

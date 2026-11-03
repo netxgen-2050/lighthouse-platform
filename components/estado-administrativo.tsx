@@ -66,7 +66,8 @@ export function EstadoAdministrativo({
 
   return (
     <section
-      aria-label={en ? "Administrative status" : "Estado administrativo"}
+      // Dos avisos en la misma página (Soluna y Norte) tienen que poder distinguirse: el nombre incluye el proyecto.
+      aria-label={`${en ? "Administrative status" : "Estado administrativo"} · ${e.proyecto.split(" · ")[0]}`}
       className="mt-4 grid gap-1 rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink"
     >
       <p className="font-semibold">

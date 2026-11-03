@@ -21,7 +21,20 @@ import { nombreDeLugar } from "@/lib/territorios/textos";
 import { esDeHoy, frentesEn, numeroDeFrente, type VistaId } from "@/lib/territorios/vistas";
 import { listarTribus } from "@/lib/tribus/datos";
 import { textoDeEstado } from "@/lib/tribus/tipos";
-import { ORDEN_GRUPOS, aLatLng, estiloBarrio, estiloBarrioPlan, estiloFinca, gruposDeVista, token, type Grupo } from "./capas";
+import { estadoDeLote } from "@/lib/territorios/loteo-estados";
+import { listarLotes, sectorNorte, zonasDelLoteo } from "@/lib/territorios/loteo";
+import {
+  ORDEN_GRUPOS,
+  aLatLng,
+  estiloBarrio,
+  estiloBarrioPlan,
+  estiloElegido,
+  estiloFinca,
+  estiloLote,
+  gruposDeVista,
+  token,
+  type Grupo,
+} from "./capas";
 
 type Props = {
   /** Id del elemento elegido (frente, barrio, común, finca o lugar), o null. */
@@ -45,6 +58,9 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props)
   const mapaRef = useRef<L.Map | null>(null);
   const aplicarVista = useRef<(() => void) | null>(null);
   const ultima = useRef<string | null>(null);
+  const limitesLotes = useRef<L.LatLngBounds | null>(null);
+  const limitesMacro = useRef<L.LatLngBounds | null>(null);
+  const encuadradoEnLotes = useRef(false);
   const seleccionActual = useRef<string | null>(seleccion);
   seleccionActual.current = seleccion;
   const vistaActual = useRef({ vista, fase });
@@ -62,9 +78,9 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props)
     const nueva = capas.current.get(id);
     const m = mapaRef.current;
     if (nueva) {
-      nueva.capa.setStyle({ color: token("ink"), weight: 4, dashArray: undefined, fillOpacity: Math.min(0.85, (nueva.base.fillOpacity ?? 0.4) + 0.3) });
+      nueva.capa.setStyle(estiloElegido(nueva.base, id.startsWith("lote-")));
       nueva.capa.bringToFront();
-      if (m) m.fitBounds(nueva.limites(), { padding: [40, 40], maxZoom: id.startsWith("finca-") ? 17 : 15 });
+      if (m) m.fitBounds(nueva.limites(), { padding: [40, 40], maxZoom: id.startsWith("finca-") || id.startsWith("lote-") ? 17 : 15 });
     } else if (m && puntos.current.has(id)) {
       // Frente: un punto, no un polígono.
       m.setView(puntos.current.get(id)!, Math.max(m.getZoom(), 15));
@@ -90,6 +106,7 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props)
         sellos.current.clear();
         puntos.current.clear();
         ultima.current = null;
+        encuadradoEnLotes.current = false;
       };
       // La vista tiene que existir antes de agregar capas.
       mapa.fitBounds(L.latLngBounds(aLatLng(macro.anillo)), { padding: [8, 8] });
@@ -140,6 +157,38 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props)
       const comun = terrenoComun();
       const baseComun: PathOptions = { color: token("violet"), weight: 2, fillColor: token("violet-soft"), fillOpacity: 0.6 };
       registrar(comun.id, L.polygon(aLatLng(comun.anillo), { renderer, ...baseComun }).addTo(grupos.comun), baseComun);
+
+      // Loteo del sector norte: contorno y zonas sin clic; cada lote se elige como cualquier otro elemento.
+      // Si el plano no trae sector o zonas, simplemente no se dibujan.
+      const sector = sectorNorte();
+      if (sector) {
+        L.polygon(aLatLng(sector.anillo), {
+          renderer,
+          interactive: false,
+          color: token("deep"),
+          weight: 2.5,
+          fillOpacity: 0,
+        }).addTo(grupos["loteo-norte"]);
+      }
+      for (const z of zonasDelLoteo()) {
+        const produccion = z.tipo === "produccion";
+        L.polygon(aLatLng(z.anillo), {
+          renderer,
+          interactive: false,
+          color: produccion ? token("green") : token("faint"),
+          weight: 1.5,
+          dashArray: z.tipo === "uso-comun" ? "6 4" : undefined,
+          fillColor: produccion ? token("green-soft") : token("surface-2"),
+          fillOpacity: 0.5,
+        }).addTo(grupos["loteo-norte"]);
+      }
+      const lotes = listarLotes();
+      for (const lote of lotes) {
+        const base = estiloLote(estadoDeLote(lote.id));
+        registrar(lote.id, L.polygon(aLatLng(lote.anillo), { renderer, ...base }).addTo(grupos["loteo-norte"]), base);
+      }
+      limitesLotes.current = lotes.length > 0 ? L.latLngBounds(lotes.flatMap((l) => aLatLng(l.anillo))) : null;
+      limitesMacro.current = L.latLngBounds(aLatLng(macro.anillo));
 
       const barrios = listarBarrios();
       const tribus = listarTribus(idioma);
@@ -230,6 +279,13 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props)
         const visibles = gruposDeVista(v);
         for (const g of ORDEN_GRUPOS) grupos[g].removeFrom(mapa);
         for (const g of ORDEN_GRUPOS) if (visibles.has(g)) grupos[g].addTo(mapa);
+        // Al entrar a Lotes el mapa se encuadra en los lotes; al salir, vuelve al macrolote. Con una selección, `resaltar` manda.
+        const enLotes = v === "lotes";
+        if (enLotes !== encuadradoEnLotes.current) {
+          encuadradoEnLotes.current = enLotes;
+          const limites = enLotes ? limitesLotes.current : limitesMacro.current;
+          if (limites) mapa.fitBounds(limites, { padding: enLotes ? [24, 24] : [8, 8] });
+        }
         // Los sellos de frentes recién armados vuelven a marcar el elegido.
         const id = seleccionActual.current;
         if (id) sellos.current.get(id)?.classList.add("mapa-sello-elegido");

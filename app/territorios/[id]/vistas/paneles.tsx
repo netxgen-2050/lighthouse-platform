@@ -11,6 +11,7 @@ import type { Fase } from "@/lib/territorios/fases";
 import { FUENTES_PLAN, esDeHoy, frentesEn, numeroDeFrente, type FuentePlanId, type VistaId } from "@/lib/territorios/vistas";
 import { listarTribus } from "@/lib/tribus/datos";
 import { MARCA_EJEMPLO } from "./ficha-frente";
+import { PanelLotes } from "./lotes";
 
 // Panel de la ficha lateral cuando no hay nada elegido, uno por vista (mismo patrón que las lentes de la holarquía).
 // Para sumar una vista: una entrada en `VISTAS` (lib/territorios/vistas.ts) y un componente acá.
@@ -136,6 +137,7 @@ function PanelVision({ fase }: PropsPanel) {
 }
 
 export const PANELES: Record<VistaId, ComponentType<PropsPanel>> = {
+  lotes: PanelLotes,
   ahora: PanelAhora,
   plan: PanelPlan,
   vision: PanelVision,

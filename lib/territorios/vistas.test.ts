@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { listarFrentes } from "@/lib/equipos/frentes";
 import { buscarElemento } from "./biopueblo";
+import { listarLotes } from "./loteo";
 import {
   FUENTES_PLAN,
   VISTAS,
+  VISTA_POR_DEFECTO,
   elegibles,
   esDeHoy,
   frentesEn,
@@ -17,13 +19,15 @@ import {
 const url = (s: string) => new URLSearchParams(s);
 
 describe("vistas", () => {
-  it("el orden de la barra es ahora, plan, vision", () => {
-    expect(VISTAS.map((v) => v.id)).toEqual(["ahora", "plan", "vision"]);
+  it("el orden de la barra es lotes, ahora, plan, vision", () => {
+    expect(VISTAS.map((v) => v.id)).toEqual(["lotes", "ahora", "plan", "vision"]);
   });
 
   it("leerVista: por defecto, desconocida y alias viejo", () => {
-    expect(leerVista(null)).toBe("ahora");
-    expect(leerVista("red")).toBe("ahora");
+    expect(VISTA_POR_DEFECTO).toBe("lotes");
+    expect(leerVista(null)).toBe("lotes");
+    expect(leerVista("red")).toBe("lotes");
+    expect(leerVista("ahora")).toBe("ahora");
     expect(leerVista("vision")).toBe("vision");
     expect(leerVista("permacultura")).toBe("plan");
   });
@@ -75,7 +79,16 @@ describe("vistas", () => {
     expect(elegibles("ahora", 0)).not.toContain("barrio-6");
   });
 
-  it("el común, una finca y un lugar son elegibles en las tres vistas", () => {
+  it("un lote es elegible solo en Lotes", () => {
+    // Cualquier lote del archivo vigente: reemplazarlo por el plano de Martín no puede romper este test.
+    const id = listarLotes()[0].id;
+    expect(elegibles("lotes", 0)).toContain(id);
+    for (const v of ["ahora", "plan", "vision"] as const) expect(elegibles(v, 0)).not.toContain(id);
+    expect(elegibles("lotes", 0)).not.toContain("barrio-6");
+    expect(elegibles("lotes", 0)).not.toContain("agua-cuenca");
+  });
+
+  it("el común, una finca y un lugar son elegibles en todas las vistas", () => {
     const finca = buscarElemento("finca-502") ? "finca-502" : null;
     for (const v of VISTAS) {
       expect(v.elegibles(0)).toContain("comun");
@@ -113,18 +126,24 @@ describe("leerEntrada (compatibilidad de ?sel=)", () => {
     expect(leerEntrada(url("vista=ahora&sel=barrio-6"))).toMatchObject({ vista: "ahora", sel: null });
   });
 
-  it("sel=comun sin vista se queda en ahora", () => {
-    expect(leerEntrada(url("sel=comun"))).toMatchObject({ vista: "ahora", sel: "comun" });
+  it("sel=comun sin vista se queda en la vista por defecto", () => {
+    expect(leerEntrada(url("sel=comun"))).toMatchObject({ vista: "lotes", sel: "comun" });
+  });
+
+  it("sel=<un lote> sin vista abre lotes; con otra vista se limpia", () => {
+    const id = listarLotes()[0].id;
+    expect(leerEntrada(url(`sel=${id}`))).toMatchObject({ vista: "lotes", sel: id });
+    expect(leerEntrada(url(`vista=ahora&sel=${id}`))).toMatchObject({ vista: "ahora", sel: null });
   });
 
   it("sel de frente sin vista abre ahora; en una fase donde no está se limpia", () => {
     expect(leerEntrada(url("sel=agua-cuenca"))).toMatchObject({ vista: "ahora", sel: "agua-cuenca" });
-    expect(leerEntrada(url("sel=primer-obrador"))).toMatchObject({ vista: "ahora", sel: null });
+    expect(leerEntrada(url("sel=primer-obrador"))).toMatchObject({ vista: "lotes", sel: null });
     expect(leerEntrada(url("sel=primer-obrador&fase=1"))).toMatchObject({ vista: "ahora", fase: 1, sel: "primer-obrador" });
   });
 
   it("vista desconocida, fase inválida y sel inexistente", () => {
-    expect(leerEntrada(url("vista=red&fase=9&sel=nada"))).toEqual({ vista: "ahora", fase: 0, sel: null, fuente: "ilustrativa" });
+    expect(leerEntrada(url("vista=red&fase=9&sel=nada"))).toEqual({ vista: "lotes", fase: 0, sel: null, fuente: "ilustrativa" });
   });
 
   it("vista=permacultura abre plan", () => {
