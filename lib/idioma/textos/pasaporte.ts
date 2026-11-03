@@ -31,7 +31,7 @@ const es = {
     habilitado: "Quedaste habilitado/a como inversor/a (simulado).",
     sinResidencia: "Sin dato de tu residencia fiscal: no podemos decir si quedás habilitado/a como inversor/a.",
     loPide:
-      "Lo pide el fiduciario antes de que aportes plata: para pedir la invitación al proyecto del Lote 7 o registrar un aporte en plata en Pactos.",
+      "Lo pide el fiduciario antes de que aportes plata: para pedir la invitación al programa de series o registrar un aporte en plata en Pactos.",
     noHaceFalta: "No hace falta para recorrer, sumarte a una tribu ni proponer pactos de tiempo.",
     enviasteEl: (fecha: string) => `Enviaste tus datos el ${fecha}`,
     simularAprobada: "Simular: verificación aprobada",
@@ -155,7 +155,7 @@ const es = {
     abre: {
       invitacion: "Pedir invitación para invertir en Sumarte",
       aporte: "Registrar un aporte en plata en Pactos",
-      loteSiete: "Sumarte al proyecto del Lote 7, por invitación",
+      loteSiete: "Sumarte al programa de series, por invitación",
     },
     billetera: {
       nombre: "Billetera creada",
@@ -223,7 +223,7 @@ const en: Textos<typeof es> = {
     habilitado: "You are now eligible as an investor (simulated).",
     sinResidencia: "No data on your tax residence: we can't say whether you are eligible as an investor.",
     loPide:
-      "The trustee asks for it before you contribute money: to request the invitation to the Lot 7 project or to record a money contribution in Pacts.",
+      "The trustee asks for it before you contribute money: to request the invitation to the series program or to record a money contribution in Pacts.",
     noHaceFalta: "It is not needed to look around, join a tribe or propose time pacts.",
     enviasteEl: (fecha: string) => `You sent your data on ${fecha}`,
     simularAprobada: "Simulate: verification approved",
@@ -346,7 +346,7 @@ const en: Textos<typeof es> = {
     abre: {
       invitacion: "Request an invitation to invest in Join",
       aporte: "Record a money contribution in Pacts",
-      loteSiete: "Join the Lot 7 project, by invitation",
+      loteSiete: "Join the series program, by invitation",
     },
     billetera: {
       nombre: "Wallet created",

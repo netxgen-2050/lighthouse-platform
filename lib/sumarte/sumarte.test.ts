@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { COHORT, EMISION, FILAS, MEMBRESIA, miles, PASSES, PLAN_TRIBU } from "./datos";
+import { COHORT, FILAS, MEMBRESIA, miles, PASSES, PLAN_TRIBU } from "./datos";
 import { INICIAL, leer, reducir } from "./estado";
 
 const mock = readFileSync(path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"), "utf8");
@@ -12,13 +12,25 @@ describe("datos", () => {
       expect(mock).toContain(`{id:"${p.id}", name:"${p.nombre}", price:${p.precio}, credits:${p.creditos}}`);
     }
     expect(mock).toContain(`const COHORT = {sold:${COHORT.vendidos}, cap:${COHORT.cupo}, raised:${COHORT.recaudado}, min:${COHORT.minimo}};`);
-    expect(mock).toContain(
-      `const EMISION = {total:${EMISION.total}, aportantes:${EMISION.aportantes}, cupo:${EMISION.cupo}, nocalif:${EMISION.noCalificados}, cupoNC:${EMISION.cupoNoCalificados}};`,
-    );
+    expect(MEMBRESIA).toEqual({ mensual: 10, anual: 100 });
+    expect(PLAN_TRIBU).toEqual({ mensual: 60, anual: 600 });
   });
-  it("las filas de la tabla están en el mock-up", () => {
+  it("las filas que no cambiaron están en el mock-up; la 1 y la 7 se reescribieron sin Congreso ni Ronda 0", () => {
     expect(FILAS).toHaveLength(8);
-    for (const f of FILAS) expect(mock).toContain(`["${f.texto.es}",`);
+    FILAS.forEach((f, i) => {
+      if (i === 0 || i === 6) return;
+      expect(mock, f.texto.es).toContain(`["${f.texto.es}",`);
+    });
+    expect(FILAS[0].texto.es).toBe("Mapa, tribus y eventos abiertos");
+    expect(FILAS[6].texto.es).toBe("Influencia en el Fondo Común (próximamente: conviction voting)");
+    expect(FILAS[6].incluye).toEqual([false, false, true]);
+  });
+  it("ninguna fila nombra el Congreso, la Ronda 0 ni el fideicomiso", () => {
+    for (const f of FILAS) {
+      for (const texto of [f.texto.es, f.texto.en ?? ""]) {
+        expect(texto).not.toMatch(/Congreso|Congress|Ronda 0|Round 0|fideicomiso|trust/i);
+      }
+    }
   });
   it("todas las filas tienen su inglés", () => {
     for (const f of FILAS) expect(f.texto.en?.trim(), f.texto.es).toBeTruthy();

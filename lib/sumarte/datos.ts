@@ -1,5 +1,6 @@
-// Datos copiados de V.sumarte, PASSES, COHORT y EMISION en docs/referencia/netx-tribus-mockup-v6.html.
-// Cifras de ejemplo: ningún flujo cobra de verdad.
+// Datos de V.sumarte, PASSES y COHORT de docs/referencia/netx-tribus-mockup-v6.html. Las filas 1 y 7 de la comparativa ya
+// no vienen del mock-up: se reescribieron para el diseño legal vigente (sumarte-diseno-b).
+// Valores de ejemplo, a re-ajustar: ningún flujo cobra de verdad.
 import type { Bilingue } from "@/lib/idioma/tipos";
 
 export type NivelPase = "semilla" | "brote" | "raiz";
@@ -12,8 +13,6 @@ export const PASSES: readonly { id: NivelPase; nombre: string; precio: number; c
 
 export const COHORT = { vendidos: 142, cupo: 300, recaudado: 46000, minimo: 75000 };
 
-export const EMISION = { total: 480000, aportantes: 22, cupo: 35, noCalificados: 11, cupoNoCalificados: 15 };
-
 export const MEMBRESIA = { mensual: 10, anual: 100 };
 
 /** Cifras de ejemplo. El anual sigue la misma regla de "2 meses gratis" que Miembro: 10 × el mensual. */
@@ -25,8 +24,8 @@ export type Fila = { texto: Bilingue; incluye: readonly [boolean, boolean, boole
 export const FILAS: readonly Fila[] = [
   {
     texto: {
-      es: "Mapa, tribus, eventos abiertos y registro de tu ticket del Congreso",
-      en: "Map, tribes, open events and registration of your Congress ticket",
+      es: "Mapa, tribus y eventos abiertos",
+      en: "Map, tribes and open events",
     },
     incluye: [true, true, true],
   },
@@ -58,8 +57,8 @@ export const FILAS: readonly Fila[] = [
   },
   {
     texto: {
-      es: "Voz en la Ronda 0 del Fondo Común (1 persona = 1 voz)",
-      en: "A voice in Round 0 of the Common Fund (1 person = 1 voice)",
+      es: "Influencia en el Fondo Común (próximamente: conviction voting)",
+      en: "Influence in the Common Fund (coming soon: conviction voting)",
     },
     incluye: [false, false, true],
   },

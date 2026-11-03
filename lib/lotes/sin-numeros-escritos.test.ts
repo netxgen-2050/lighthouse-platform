@@ -22,6 +22,8 @@ function archivos(dir: string): string[] {
 const ARCHIVOS = [
   ...archivos(path.join(RAIZ, "app", "lotes")),
   path.join(RAIZ, "lib", "idioma", "textos", "lotes.ts"),
+  // La puerta "Comprar un lote" de Sumarte lee el precio del módulo del modelo.
+  path.join(RAIZ, "lib", "idioma", "textos", "sumarte.ts"),
 ].filter(existsSync);
 
 test("hay pantallas de lotes que vigilar", () => {

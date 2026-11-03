@@ -31,7 +31,7 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "textos/sumarte": {
     estado: "pendiente",
-    que: "Sumarte: planes, niveles del pase (Seed, Sprout, Root, a confirmar), inversores, avisos de nivel, formulario de pedido de contacto y panel Entrar como…",
+    que: "Sumarte: planes, niveles del pase (Seed, Sprout, Root, a confirmar), comprar un lote, invertir, avisos de nivel, formulario de pedido de contacto y panel Entrar como…",
   },
   "lib/sumarte/datos.ts": {
     estado: "pendiente",
