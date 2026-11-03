@@ -210,6 +210,39 @@ test("lo reservado entra en la descarga de Mis datos y desaparece con Borrar tod
   await expect(page.getByText("Reservado (simulado, por vos)")).toHaveCount(0);
 });
 
+test("el boleto y el pago simulado muestran lo guardado al reservar, aunque el modelo sea otro", async ({ page }) => {
+  // Valores que el modelo vigente nunca da: si la pantalla recalculara, se verían los de hoy.
+  const visto = { precio: 111_111, aporte: 2_222, expensa: 333, version: "v0.0-vieja", fuente: "Fuente vieja del modelo", precioCasa: 44_444 };
+  const compra = {
+    loteId: lote.id,
+    opcion: "familiar",
+    paso: "reservado",
+    reservadoEl: "2026-10-01T12:00:00.000Z",
+    vio: visto,
+  };
+  await page.addInitScript((c) => {
+    if (!window.localStorage.getItem("lh-lotes")) window.localStorage.setItem("lh-lotes", JSON.stringify([c]));
+  }, compra);
+  await page.goto(`/lotes/${lote.id}`);
+  await conTeclado(page, page.getByRole("button", { name: "Simular el pago" }));
+  await expect(page.getByText(`Precio elegido: ${usd(visto.precio)}`)).toBeVisible();
+  await expect(page.getByText(new RegExp(`Aporte único al procomún: ${usd(visto.aporte)}`))).toBeVisible();
+  // Volver mueve el foco al título del paso al que se vuelve.
+  await conTeclado(page, page.getByRole("button", { name: "Volver" }));
+  await expect(page.getByRole("heading", { name: "Reserva simulada" })).toBeFocused();
+  await conTeclado(page, page.getByRole("button", { name: "Simular el pago" }));
+  await conTeclado(page, page.getByRole("button", { name: "Confirmar el pago simulado" }));
+  const boleto = page.getByRole("region", { name: /Boleto de ejemplo/ });
+  await expect(boleto).toContainText(usd(visto.precio));
+  await expect(boleto).toContainText(usd(visto.aporte));
+  await expect(boleto).toContainText(usd(visto.expensa));
+  await expect(boleto).toContainText(usd(visto.precioCasa));
+  await expect(boleto).toContainText(visto.fuente);
+  await expect(boleto).toContainText(visto.version);
+  await expect(boleto).not.toContainText(usd(precioCasa("familiar")));
+  await expect(boleto).not.toContainText(VERSION_MODELO_LOTES.fuente);
+});
+
 test("lo guardado que no se puede leer se trata como sin compras", async ({ page }) => {
   await page.addInitScript(() => {
     if (!window.localStorage.getItem("lh-lotes")) window.localStorage.setItem("lh-lotes", "{no es json");

@@ -3,6 +3,7 @@ import { listarLotes } from "@/lib/territorios/loteo";
 import { ESTADOS_EJEMPLO, estadoDeLote } from "@/lib/territorios/loteo-estados";
 import { deshacer, estadoConCompras, leerCompras, pagar, reservar, type CompraLote, type LoVisto } from "./compra";
 import { VERSION_MODELO_LOTES } from "./modelo";
+import { usdEn } from "./formato";
 
 const ids = listarLotes().map((l) => l.id);
 const disponible = ids.find((id) => estadoDeLote(id) === "disponible")!;
@@ -43,6 +44,57 @@ describe("leerCompras", () => {
   it("un lote repetido se lee una sola vez", () => {
     const buena = reservada()[0];
     expect(leerCompras(JSON.stringify([buena, buena]))).toHaveLength(1);
+  });
+});
+
+describe("un boleto muestra lo que se vio", () => {
+  const visto: LoVisto = {
+    precio: 111,
+    aporte: 7,
+    expensa: 3,
+    version: "v0.0-vieja",
+    fuente: "Fuente vieja",
+    precioCasa: 5,
+  };
+
+  it("lo visto, con el precio de la casa y la fuente, sobrevive a guardar y leer, aunque el modelo sea otro", () => {
+    const r = reservar([], disponible, "familiar", visto, ahora);
+    if (!r.ok) throw new Error("no se pudo reservar");
+    const [leida] = leerCompras(JSON.stringify(r.compras));
+    expect(leida.vio).toEqual(visto);
+    // El modelo vigente es otro: el registro no depende de él.
+    expect(leida.vio.version).not.toBe(VERSION_MODELO_LOTES.version);
+    expect(leida.vio.fuente).not.toBe(VERSION_MODELO_LOTES.fuente);
+  });
+
+  it("pagar no cambia lo visto", () => {
+    const r = reservar([], disponible, "familiar", visto, ahora);
+    if (!r.ok) throw new Error("no se pudo reservar");
+    const p = pagar(r.compras, disponible, ahora);
+    if (!p.ok) throw new Error("no pagó");
+    expect(p.compras[0].vio).toEqual(visto);
+  });
+
+  it("un registro guardado antes, sin precio de casa ni fuente, se sigue leyendo", () => {
+    const [vieja] = leerCompras(JSON.stringify([{ ...reservada()[0], vio }]));
+    expect(vieja.vio).toEqual(vio);
+    expect(vieja.vio).not.toHaveProperty("precioCasa");
+    expect(vieja.vio).not.toHaveProperty("fuente");
+  });
+
+  it("un precio de casa o una fuente de tipo raro invalidan el registro", () => {
+    const base = reservada()[0];
+    expect(leerCompras(JSON.stringify([{ ...base, vio: { ...vio, precioCasa: "mucho" } }]))).toEqual([]);
+    expect(leerCompras(JSON.stringify([{ ...base, vio: { ...vio, fuente: 3 } }]))).toEqual([]);
+  });
+});
+
+describe("usdEn", () => {
+  it("el valor que falta se dice según el idioma, nunca 0", () => {
+    expect(usdEn(null, "es")).toBe("sin dato");
+    expect(usdEn(undefined, "en")).toBe("no data");
+    expect(usdEn(Number.NaN, "en")).toBe("no data");
+    expect(usdEn(1_000, "en")).toBe("USD 1.000");
   });
 });
 

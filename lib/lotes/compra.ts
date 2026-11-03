@@ -8,7 +8,16 @@ import { OPCIONES_COMPRA, type OpcionCompra } from "./modelo";
 export type PasoCompra = "reservado" | "pagado";
 
 /** Lo que la persona vio, para que un boleto viejo no cambie si cambia el modelo. */
-export type LoVisto = { precio: number | null; aporte: number | null; expensa: number | null; version: string };
+export type LoVisto = {
+  precio: number | null;
+  aporte: number | null;
+  expensa: number | null;
+  version: string;
+  /** Precio de la casa elegida que vio la persona (opcional: no hay en "solo el lote" ni en lo guardado antes). */
+  precioCasa?: number | null;
+  /** Fuente del modelo con que se calcularon los valores (opcional: lo guardado antes no la tiene). */
+  fuente?: string;
+};
 
 export type CompraLote = {
   loteId: string;
@@ -42,7 +51,9 @@ function esCompra(x: unknown): x is CompraLote {
     esNumeroONull(v.precio) &&
     esNumeroONull(v.aporte) &&
     esNumeroONull(v.expensa) &&
-    typeof v.version === "string"
+    typeof v.version === "string" &&
+    (v.precioCasa === undefined || esNumeroONull(v.precioCasa)) &&
+    (v.fuente === undefined || typeof v.fuente === "string")
   );
 }
 
@@ -64,7 +75,14 @@ export function leerCompras(texto: string | null): CompraLote[] {
           paso,
           reservadoEl,
           ...(pagadoEl ? { pagadoEl } : {}),
-          vio: { precio: vio.precio, aporte: vio.aporte, expensa: vio.expensa, version: vio.version },
+          vio: {
+            precio: vio.precio,
+            aporte: vio.aporte,
+            expensa: vio.expensa,
+            version: vio.version,
+            ...(vio.precioCasa !== undefined ? { precioCasa: vio.precioCasa } : {}),
+            ...(vio.fuente !== undefined ? { fuente: vio.fuente } : {}),
+          },
         },
       ];
     });

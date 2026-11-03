@@ -7,9 +7,9 @@ import { useSesion } from "@/components/sesion/contexto";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { ESTADOS_ADMINISTRATIVOS, accionesDeLote } from "@/lib/legal/estado-administrativo";
 import { deshacer, pagar, reservar, type CompraLote, type LoVisto } from "@/lib/lotes/compra";
-import { VERSION_MODELO_LOTES, precioCasa, type OpcionCompra } from "@/lib/lotes/modelo";
+import { usdEn } from "@/lib/lotes/formato";
+import type { OpcionCompra } from "@/lib/lotes/modelo";
 import { formatearFecha, sinDato } from "@/lib/idioma/formatos";
-import { usd } from "@/lib/series/formato";
 import { textoSuperficieM2 } from "@/lib/territorios/biopueblo";
 import { estadoDeLote } from "@/lib/territorios/loteo-estados";
 
@@ -83,6 +83,12 @@ export function CompraSimulada({ loteId, numero, superficieM2, opcion, vio, comp
     setPagando(true);
   }
 
+  // Volver del pago simulado es un cambio de paso: el foco va al título de la reserva.
+  function alVolver() {
+    mover.current = true;
+    setPagando(false);
+  }
+
   function alConfirmar() {
     const r = pagar(compras, loteId, new Date());
     if (!r.ok) return;
@@ -154,16 +160,16 @@ export function CompraSimulada({ loteId, numero, superficieM2, opcion, vio, comp
             {t.compra.pagoTitulo}
           </h3>
           <p className="text-sm font-medium">{t.compra.pagoAviso}</p>
-          <p className="text-sm">{t.compra.precioElegido(usd(vio.precio))}</p>
+          <p className="text-sm">{t.compra.precioElegido(usdEn(compra?.vio.precio, idioma))}</p>
           <p className="text-sm">
-            {t.compra.aporteAparte(usd(vio.aporte))}
+            {t.compra.aporteAparte(usdEn(compra?.vio.aporte, idioma))}
             <TerminoLegal clave="aporteunico" idioma={idioma} />
           </p>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={alConfirmar} className={PRINCIPAL}>
               {t.compra.confirmar}
             </button>
-            <button type="button" onClick={() => setPagando(false)} className={SECUNDARIO}>
+            <button type="button" onClick={alVolver} className={SECUNDARIO}>
               {t.compra.cancelar}
             </button>
           </div>
@@ -197,20 +203,20 @@ export function CompraSimulada({ loteId, numero, superficieM2, opcion, vio, comp
                   {" · "}
                   {t.boleto.casaEstimacion(
                     t.casa.opciones[compra.opcion],
-                    usd(precioCasa(compra.opcion)),
-                    usd(compra.vio.precio),
+                    usdEn(compra.vio.precioCasa, idioma),
+                    usdEn(compra.vio.precio, idioma),
                   )}
                 </>
               )}
             </li>
             <li>
-              <strong>{t.boleto.precio}</strong> {usd(compra.vio.precio)}
+              <strong>{t.boleto.precio}</strong> {usdEn(compra.vio.precio, idioma)}
             </li>
             <li>
-              <strong>{t.boleto.aporte}</strong> {usd(compra.vio.aporte)}
+              <strong>{t.boleto.aporte}</strong> {usdEn(compra.vio.aporte, idioma)}
             </li>
             <li>
-              <strong>{t.boleto.expensa}</strong> {usd(compra.vio.expensa)}
+              <strong>{t.boleto.expensa}</strong> {usdEn(compra.vio.expensa, idioma)}
             </li>
             <li>{t.boleto.comprador}</li>
             <li>
@@ -230,7 +236,7 @@ export function CompraSimulada({ loteId, numero, superficieM2, opcion, vio, comp
               )}
             </li>
             <li className="text-muted">
-              {t.boleto.modelo}: {VERSION_MODELO_LOTES.fuente} · {compra.vio.version}
+              {t.boleto.modelo}: {compra.vio.fuente ?? sinDato(idioma)} · {compra.vio.version}
             </li>
           </ul>
           <button type="button" onClick={alDeshacer} className={SECUNDARIO}>

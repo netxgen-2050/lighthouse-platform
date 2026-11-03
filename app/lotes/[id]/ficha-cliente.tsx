@@ -27,7 +27,7 @@ import {
   type OpcionCompra,
   type TipoCasa,
 } from "@/lib/lotes/modelo";
-import { usd } from "@/lib/series/formato";
+import { usdEn } from "@/lib/lotes/formato";
 import { textoSuperficieM2 } from "@/lib/territorios/biopueblo";
 import { listarLotes } from "@/lib/territorios/loteo";
 import { CompraSimulada } from "./compra-cliente";
@@ -102,7 +102,15 @@ export function FichaCliente({ id }: { id: string }) {
   const aporte = precio === null ? null : aporteDe(precio);
   const parte = precioDelLote === null ? null : parteDelDuenoDe(precioDelLote);
   const sd = textoSinDato(idioma);
-  const vio = { precio, aporte, expensa: MODELO_LOTES.expensaAnual, version: VERSION_MODELO_LOTES.version };
+  // Lo que la persona ve al reservar queda guardado tal cual: el boleto no se recalcula con un modelo que cambie después.
+  const vio = {
+    precio,
+    aporte,
+    expensa: MODELO_LOTES.expensaAnual,
+    version: VERSION_MODELO_LOTES.version,
+    fuente: VERSION_MODELO_LOTES.fuente,
+    ...(opcion === "solo-lote" ? {} : { precioCasa: precioCasa(opcion) }),
+  };
 
   return (
     <div className="mt-4 grid gap-4">
@@ -123,11 +131,11 @@ export function FichaCliente({ id }: { id: string }) {
           {t.precio.titulo}
         </h2>
         <p className="font-medium">
-          {precioDelLote === null ? t.precio.sinSuperficie : t.precio.valor(usd(precioDelLote))}
+          {precioDelLote === null ? t.precio.sinSuperficie : t.precio.valor(usdEn(precioDelLote, idioma))}
           <TerminoLegal clave="precioreferencia" idioma={idioma} />
         </p>
         <p className="text-sm text-muted">
-          {t.precio.rango(usd(MODELO_LOTES.precioLote.min), usd(MODELO_LOTES.precioLote.max))}
+          {t.precio.rango(usdEn(MODELO_LOTES.precioLote.min, idioma), usdEn(MODELO_LOTES.precioLote.max, idioma))}
         </p>
       </section>
 
@@ -153,7 +161,7 @@ export function FichaCliente({ id }: { id: string }) {
                   <span>{t.casa.opciones[o]}</span>
                   {casa && (
                     <span className="text-sm text-muted">
-                      {t.casa.detalle(casa.m2, usd(precioCasa(o as TipoCasa)))}
+                      {t.casa.detalle(casa.m2, usdEn(precioCasa(o as TipoCasa), idioma))}
                       {o === "familiar" && <> · {t.casa.referenciaMartin}</>}
                     </span>
                   )}
@@ -164,7 +172,7 @@ export function FichaCliente({ id }: { id: string }) {
         </fieldset>
         {opcion !== "solo-lote" && (
           <p className="text-sm font-medium">
-            {t.casa.total(usd(precio))} <span className={MARCA}>{t.casa.estimacion}</span>
+            {t.casa.total(usdEn(precio, idioma))} <span className={MARCA}>{t.casa.estimacion}</span>
           </p>
         )}
       </section>
@@ -192,7 +200,7 @@ export function FichaCliente({ id }: { id: string }) {
                 <TerminoLegal clave="aporteunico" idioma={idioma} />
               </th>
               <td className="py-1.5 break-words">
-                {usd(aporte)} <span className={MARCA}>{t.costos.deEjemplo}</span>
+                {usdEn(aporte, idioma)} <span className={MARCA}>{t.costos.deEjemplo}</span>
               </td>
             </tr>
             <tr className="border-t border-line align-top">
@@ -201,7 +209,7 @@ export function FichaCliente({ id }: { id: string }) {
                 <TerminoLegal clave="expensas" idioma={idioma} />
               </th>
               <td className="py-1.5 break-words">
-                {usd(MODELO_LOTES.expensaAnual)} <span className={MARCA}>{t.costos.deEjemplo}</span>
+                {usdEn(MODELO_LOTES.expensaAnual, idioma)} <span className={MARCA}>{t.costos.deEjemplo}</span>
               </td>
             </tr>
             <tr className="border-t border-line align-top">
@@ -209,7 +217,7 @@ export function FichaCliente({ id }: { id: string }) {
                 {t.costos.infraestructura}
               </th>
               <td className="py-1.5 break-words">
-                {usd(MODELO_LOTES.infraestructuraPorLote)} <span className={MARCA}>{t.costos.deEjemplo}</span>
+                {usdEn(MODELO_LOTES.infraestructuraPorLote, idioma)} <span className={MARCA}>{t.costos.deEjemplo}</span>
                 <span className="block text-muted">{t.costos.estimacion}</span>
               </td>
             </tr>
@@ -218,7 +226,7 @@ export function FichaCliente({ id }: { id: string }) {
                 {t.costos.parteDelDueno}
               </th>
               <td className="py-1.5 break-words">
-                {usd(parte)} <span className={MARCA}>{t.costos.deEjemplo}</span>
+                {usdEn(parte, idioma)} <span className={MARCA}>{t.costos.deEjemplo}</span>
                 <span className="block text-muted">{t.costos.estimacion}</span>
               </td>
             </tr>
