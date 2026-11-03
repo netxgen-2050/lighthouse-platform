@@ -26,3 +26,10 @@ Los cambios de la fase 1 SHALL hablar solo de Lighthouse VRN. MUST NOT mostrar L
 #### Scenario: Revisión de textos
 - **WHEN** se buscan "SMA", "111", "TIR" y "recupero" en los textos que suma la fase 1
 - **THEN** no aparecen
+
+### Requirement: Ninguna página se deja indexar
+Todas las páginas de la plataforma SHALL pedir a los buscadores que no las indexen ni sigan sus enlaces, desde el layout raíz. La regla MUST NOT pedir sesión ni agregar un `robots.txt` con `Disallow`, porque un buscador que no puede entrar a la página no llega a leer el pedido.
+
+#### Scenario: Una página pública
+- **WHEN** alguien sin sesión abre `/`, `/sumarte`, `/territorios/lighthouse` o `/congreso`
+- **THEN** la página responde igual que antes y trae `<meta name="robots" content="noindex, nofollow">`

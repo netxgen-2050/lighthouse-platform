@@ -21,6 +21,7 @@ Franz (CEO) decidió en la llamada del 2-nov-2026 que la fase 1 de la plataforma
   - agrupados como "Lo que viene": Tribus, Pactos, Semillas y Fogón;
   - Congreso oculto (campo `oculto`), con la nota `docs/notas/congreso-en-pausa.md` para volver.
 - **Lotes** se declara con `existe: false`: `/lotes` llega con `lote-ficha-y-compra`, y hasta entonces el rail no lo muestra.
+- **Ninguna página se deja indexar** (P7, R30; confirmado por Gus el 3-nov): `noindex, nofollow` en el layout raíz, sin `robots.txt`. No pide sesión: quien tenga el enlace sigue viendo la página.
 
 ## Fuera de alcance
 
@@ -35,7 +36,7 @@ Franz (CEO) decidió en la llamada del 2-nov-2026 que la fase 1 de la plataforma
 ## Capabilities
 
 ### New Capabilities
-- `fase-1-lotes`: la regla escrita de la fase 1 para quienes trabajan en el repo (ADR y `CLAUDE.md`).
+- `fase-1-lotes`: la regla escrita de la fase 1 para quienes trabajan en el repo (ADR y `CLAUDE.md`), y que ninguna página se deje indexar.
 
 ### Modified Capabilities
 - `estado-administrativo`: el proyecto nuevo, la venta simulada y el supuesto de trabajo. Cambian "Dato del estado administrativo" y "Sin compra ni reserva sin aprobación".
@@ -45,7 +46,7 @@ Franz (CEO) decidió en la llamada del 2-nov-2026 que la fase 1 de la plataforma
 
 ## Impact
 
-- **Código:** `lib/legal/estado-administrativo.ts`, `components/estado-administrativo.tsx`, `lib/legal/terminos.ts`, `lib/navegacion.ts`, `lib/idioma/glosario.ts` (o donde viva `G`), `lib/idioma/textos/marco.ts`, `components/rail.tsx`.
+- **Código:** `lib/legal/estado-administrativo.ts`, `components/estado-administrativo.tsx`, `lib/legal/terminos.ts`, `lib/navegacion.ts`, `lib/idioma/glosario.ts` (o donde viva `G`), `lib/idioma/textos/marco.ts`, `components/rail.tsx`, `app/layout.tsx`.
 - **Documentos:** `CLAUDE.md`, `docs/notas/congreso-en-pausa.md`.
 - **Tests:** `lib/legal/estado-administrativo.test.ts`, `lib/legal/terminos.test.ts`, `lib/navegacion.test.ts`, y los e2e que recorren el rail.
 - **Sin** tablas, migraciones, pedidos de red, dependencias nuevas ni cambios de permisos. `/congreso` y `/tribus` siguen públicas.
