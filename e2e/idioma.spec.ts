@@ -86,9 +86,13 @@ test.describe("sin cuenta", () => {
   test("(a) el enlace del selector sigue la query cambiada sin navegar, al acercar el puntero y al enfocar", async ({ page }) => {
     await page.goto("/tribus");
     const en = selector(page).getByRole("link", { name: "EN · English" });
-    await page.evaluate(() => window.history.replaceState(null, "", "/tribus?sel=valle"));
-    await selector(page).hover();
-    await expect(en).toHaveAttribute("href", "/tribus?sel=valle&lang=en");
+    // Se reintenta entero: un replaceState anterior a la hidratación lo pisa el router de Next al arrancar.
+    await expect(async () => {
+      await page.evaluate(() => window.history.replaceState(null, "", "/tribus?sel=valle"));
+      await page.mouse.move(0, 400);
+      await selector(page).hover();
+      await expect(en).toHaveAttribute("href", "/tribus?sel=valle&lang=en", { timeout: 500 });
+    }).toPass();
     await page.evaluate(() => window.history.replaceState(null, "", "/tribus?sel=otro"));
     await selector(page).getByRole("link", { name: "ES · Español" }).focus();
     await expect(en).toHaveAttribute("href", "/tribus?sel=otro&lang=en");
