@@ -48,6 +48,7 @@ Vale desde `idioma-pendientes`. La plataforma tiene español e inglés y no pued
 ## Herramientas para Gus (y Claude con su OK)
 - `scripts/spec.sh <nombre> "<pedido>"`: especificador → arquitecto → validación → PR de specs contra `dev`, y las preguntas abiertas al issue **🧭 Decisiones de Gus** (etiqueta `decisiones`). Con `--sin-arquitecto` para cambios solo de pantalla; con `--archivo pedido.md` para pedidos largos. Reintenta si se corta la red.
 - `scripts/integrar.sh <n> [<n>…]`: integra PRs en `dev` con verificar, build y e2e local; pushea, comenta y cierra los PRs y espera el deploy. `--a main` para una entrega; `--probar` para todo menos el push. El guardia no deja que un agente lo corra.
+- `scripts/carril.sh <n> <cambio>[,<cambio>…]`: corre la noche de un carril de día, en `.carriles/m<n>`, con reintentos si se corta por límite o red; logs en `.carriles/logs/`. `BASE0` para apilar sobre otra rama, `EXTRA` para sumar instrucciones.
 - `scripts/mergear.sh --nivel <orden|spec|integracion> <n> [<n>…]`: Claude mergea en `dev` con el OK de Gus (ver abajo). El guardia no deja que un agente lo corra.
 - Issue **🧭 Decisiones de Gus**: un solo lugar para contestar preguntas, también desde el celular.
 
