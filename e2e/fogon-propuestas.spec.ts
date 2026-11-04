@@ -169,6 +169,8 @@ test.describe("permisos y niveles", () => {
   });
 
   test("del común en una decisión del común: comenta", async ({ page }) => {
+    // Con el reloj real ya terminó su discusión.
+    await page.clock.setFixedTime(new Date("2026-10-30T15:00:00Z"));
     await page.goto("/fogon/propuestas/regalia");
     await expect(page.getByLabel(NIVEL)).toHaveValue("comun");
     await expect(page.getByRole("region", { name: "Qué podés hacer" })).toContainText("Comentar en la discusión abierta");
@@ -215,6 +217,8 @@ test.describe("correcciones de la revisión", () => {
   });
 
   test("solo-comun: Comentar sale con su condición y la tabla no dice solo Sí", async ({ page }) => {
+    // Con el reloj real ya terminó su discusión.
+    await page.clock.setFixedTime(new Date("2026-10-30T15:00:00Z"));
     await page.goto("/fogon/propuestas/regalia");
     await expect(page.getByRole("region", { name: "Qué podés hacer" })).toContainText("Comentar en la discusión abierta (solo decisiones del común)");
     await page.getByText("Ver la tabla de permisos por nivel").click();
