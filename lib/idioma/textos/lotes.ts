@@ -19,6 +19,8 @@ const es = {
     estado: "Estado:",
     quienVende: "Quién vende:",
     volverAlMapa: "Ver en el mapa",
+    imagenAlt: (lote: string) => `Vista satelital del ${lote}, con su contorno marcado.`,
+    imagenNota: "Vista satelital con el contorno ilustrativo del lote. Imagen: Esri, Maxar, Earthstar Geographics. Las imágenes con cada casa vienen después.",
   },
   estado: {
     disponible: "Disponible",
@@ -58,6 +60,9 @@ const es = {
     deEjemplo: "de ejemplo",
     estimacion: "estimación de ejemplo",
     aporteAparte: "El aporte va aparte del precio, sin sumarlos: si se suma al precio o va incluido, sin dato.",
+    provisoriaTitulo: "Medida provisoria, a hablar con el equipo:",
+    provisoria:
+      "lo que el comprador pone en infraestructura se le retribuiría en tokens del procomún (RAIZ). Todavía no está decidido, y no es una promesa.",
     aporteSobre: "El aporte se calcula sobre lo que elijas arriba.",
     version: (fuente: string, version: string, fecha: string) =>
       `Fuente: ${fuente} · versión ${version} · ${fecha}. Todos los valores son de ejemplo.`,
@@ -140,6 +145,8 @@ const en: Textos<typeof es> = {
     estado: "Status:",
     quienVende: "Who sells:",
     volverAlMapa: "See on the map",
+    imagenAlt: (lote: string) => `Satellite view of ${lote}, with its outline marked.`,
+    imagenNota: "Satellite view with the lot's illustrative outline. Imagery: Esri, Maxar, Earthstar Geographics. Images with each house come later.",
   },
   estado: {
     disponible: "Available",
@@ -179,6 +186,9 @@ const en: Textos<typeof es> = {
     deEjemplo: "sample",
     estimacion: "sample estimate",
     aporteAparte: "The contribution is shown apart from the price, not added: whether it is added or included is no data.",
+    provisoriaTitulo: "Provisional measure, to discuss with the team:",
+    provisoria:
+      "what the buyer puts into infrastructure would be compensated in commons tokens (RAIZ). This is not decided yet, and it is not a promise.",
     aporteSobre: "The contribution is calculated on what you choose above.",
     version: (fuente: string, version: string, fecha: string) =>
       `Source: ${fuente} · version ${version} · ${fecha}. All values are samples.`,

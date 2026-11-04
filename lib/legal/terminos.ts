@@ -289,6 +289,40 @@ export const TERMINOS = {
     borrador: true,
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real (ADR-030).
+  // Textos nuevos (Gus, 4-nov-2026): borrador a revisar antes de cualquier uso real.
+  infraestructuralote: {
+    titulo: "Infraestructura por lote",
+    texto:
+      "Lo que costaría llevar caminos, agua y energía hasta cada lote. Es una estimación de ejemplo, sin presupuesto detrás. En el modelo de ejemplo sale de lo que paga la familia: no se suma aparte. Quién contrata la obra y cuándo se hace: sin dato.",
+    borrador: true,
+    en: {
+      titulo: "Infrastructure per lot",
+      texto:
+        "What it would cost to bring roads, water and power to each lot. It is a sample estimate, with no quote behind it. In the sample model it comes out of what the family pays: it is not added on top. Who contracts the work and when it happens: no data.",
+    },
+  },
+  partedueno: {
+    titulo: "Parte del dueño",
+    texto:
+      "La parte del precio del lote que le correspondería al dueño registral de la tierra, porque NetX no es dueña de la tierra. El porcentaje es un ejemplo: todavía no hay ningún acuerdo. En el modelo de ejemplo sale del precio del lote: no se suma aparte.",
+    borrador: true,
+    en: {
+      titulo: "Owner's share",
+      texto:
+        "The part of the lot price that would go to the registered owner of the land, because NetX does not own the land. The percentage is a sample: there is no agreement yet. In the sample model it comes out of the lot price: it is not added on top.",
+    },
+  },
+  retribucionraiz: {
+    titulo: "Retribución en RAIZ: medida provisoria",
+    texto:
+      "Es una idea a conversar con el equipo, no una decisión. RAIZ sería el token del procomún: membresía y voz, con beneficios en especie como estadías, alimentos y cursos. Todavía no existe. No hay cantidad, ni fecha, ni valor, y no se promete ganancia. Prometer tokens futuros a cambio de plata puede ser un contrato de inversión: hay que revisarlo con un abogado antes de decirlo fuera del equipo.",
+    borrador: true,
+    en: {
+      titulo: "Compensation in RAIZ: provisional measure",
+      texto:
+        "This is an idea to discuss with the team, not a decision. RAIZ would be the commons token: membership and voice, with benefits in kind such as stays, food and courses. It does not exist yet. There is no amount, date or value, and no profit is promised. Promising future tokens in exchange for money can be an investment contract: a lawyer has to review it before it is said outside the team.",
+    },
+  },
   // Texto nuevo (R40): borrador a revisar antes de cualquier uso real.
   primeroslotes: {
     titulo: "Primeros 4 lotes",

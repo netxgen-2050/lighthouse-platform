@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { EstadoAdministrativo } from "@/components/estado-administrativo";
 import { EstadoDeUnLote } from "@/components/lotes/estado-del-lote";
+import { TerminoLegal } from "@/components/termino-legal";
+import { usdEn } from "@/lib/lotes/formato";
+import { precioLote } from "@/lib/lotes/modelo";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { textoSuperficieM2 } from "@/lib/territorios/biopueblo";
 import { fuenteDelLoteo, listarLotes } from "@/lib/territorios/loteo";
@@ -12,7 +15,7 @@ import { fuenteTexto, parcelasPorUso, parcelasSinUso, resumenDePrimeros, resumen
 import { MARCA_EJEMPLO } from "./ficha-frente";
 
 // Vista Lotes (spec loteo-norte): marca provisoria, estado en texto y forma, panel del lote y resumen.
-// Sin precios ni acciones: eso es `lote-ficha-y-compra`.
+// El precio de ejemplo se ve también acá; las acciones están en la ficha (`lote-ficha-y-compra`).
 
 const GLIFO: Record<EstadoLote, string> = { disponible: "●", reservado: "◐", vendido: "✕" };
 
@@ -45,19 +48,25 @@ export function MarcaLoteo({ conFuente = false }: { conFuente?: boolean }) {
   );
 }
 
-/** Ficha de un lote elegido: nombre, superficie, estado, marca y estado administrativo. Sin acciones. */
+/** Ficha de un lote elegido: nombre, superficie, precio de ejemplo, estado, marca y estado administrativo. Sin acciones. */
 export function FichaLote({ id }: { id: string }) {
   const idioma = useIdioma();
   const tx = useTextos("territorio");
   const lt = useTextos("lotes");
   const lote = listarLotes().find((l) => l.id === id);
   if (!lote) return null;
+  const precio = precioLote(lote.superficieM2);
   return (
     <div className="grid gap-3">
       <p className="text-sm text-muted" translate="no">Lighthouse VRN</p>
       <h2 className="text-xl font-semibold">{tx.loteo.lote(lote.numero)}</h2>
       <p className="text-sm">
         <strong>{tx.ficha.superficie}</strong> {textoSuperficieM2(lote.superficieM2, idioma)}
+      </p>
+      <p className="text-sm">
+        <strong>{lt.precio.titulo}:</strong>{" "}
+        {precio === null ? lt.precio.sinSuperficie : lt.precio.valor(usdEn(precio, idioma))}
+        <TerminoLegal clave="precioreferencia" idioma={idioma} />
       </p>
       <p className="text-sm font-medium">
         {tx.ficha.estado} <EstadoDeUnLote id={lote.id} />

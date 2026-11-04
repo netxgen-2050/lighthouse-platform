@@ -369,3 +369,26 @@ test.describe("los primeros 4 lotes", () => {
     await expect(page.getByRole("region", { name: "Administrative status · First 4 lots" })).toContainText("reported, no document on hand");
   });
 });
+
+test.describe("ficha: imagen, explicaciones y medida provisoria", () => {
+  test("la imagen del lote se ve aunque no carguen los mosaicos", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    await expect(page.getByRole("img", { name: `Vista satelital del Lote ${lote.numero}, con su contorno marcado.` })).toBeVisible();
+    await expect(page.getByText(/Imagen: Esri, Maxar, Earthstar Geographics/)).toBeVisible();
+  });
+
+  test("infraestructura y parte del dueño tienen su ⚖, y la retribución en RAIZ dice que es provisoria", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    for (const nombre of ["Infraestructura por lote", "Parte del dueño", "Retribución en RAIZ: medida provisoria"]) {
+      await expect(page.getByRole("button", { name: `Qué significa legalmente: ${nombre}` })).toBeVisible();
+    }
+    await expect(page.getByText(/Medida provisoria, a hablar con el equipo:/)).toBeVisible();
+    await expect(page.getByText(/no es una promesa/)).toBeVisible();
+  });
+
+  test("el panel del mapa muestra el precio del lote elegido", async ({ page }) => {
+    await page.goto(`/territorios/lighthouse?sel=${lote.id}`);
+    await expect(page.getByText(`${usd(precioLote(lote.superficieM2)!)} · precio de ejemplo, a confirmar`)).toBeVisible();
+  });
+});
+
