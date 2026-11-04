@@ -36,6 +36,7 @@ describe("catálogo legal", () => {
         "calificado",
         "chacra",
         "circulo",
+        "circuloinvertir",
         "circulotrabajo",
         "compromisominimo",
         "consejo",
@@ -91,6 +92,7 @@ describe("catálogo legal", () => {
         "ronda0",
         "safe",
         "safu",
+        "safuinvertir",
         "semillas",
         "seriemadre",
         "serieprograma",
@@ -167,8 +169,15 @@ describe("catálogo legal", () => {
       expect(TERMINOS[clave].en.texto).not.toBe(TERMINOS[clave].en.frase);
     }
   });
+  it("los ⚖ de Invertir en Sumarte no mencionan cupos ni descuentos", () => {
+    for (const clave of ["circuloinvertir", "safuinvertir"] as const) {
+      for (const texto of [TERMINOS[clave].texto, TERMINOS[clave].en.texto]) {
+        expect(texto).not.toMatch(/\b35\b|\b15\b|descuento|discount/i);
+      }
+    }
+  });
   it("los ⚖ que quedan en Sumarte tienen inglés y los del mock-up conservan su español", () => {
-    for (const clave of ["membresia", "plantribu", "safe", "circulo", "serieprograma", "safu", "seriemadre", "fundaciontierra"] as const) {
+    for (const clave of ["membresia", "plantribu", "safe", "circulo", "circuloinvertir", "serieprograma", "safu", "safuinvertir", "seriemadre", "fundaciontierra"] as const) {
       expect(terminoEn(clave)?.titulo.trim(), clave).toBeTruthy();
       expect(terminoEn(clave)?.texto.trim(), clave).toBeTruthy();
     }

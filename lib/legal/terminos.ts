@@ -65,6 +65,29 @@ export const TERMINOS = {
         "Private offer: access by invitation, up to 35 contributors per issue and at most 15 non-qualified, with no mass promotion of the instrument (CNV General Resolution 1016/2024, as amended by 1088/2025). Community content is public.",
     },
   },
+  // Para "Invertir" de Sumarte: sin cupos ni descuentos en esa sección (decisión de Gus, 4-nov-2026). Borrador.
+  circuloinvertir: {
+    titulo: "Círculo por invitación",
+    texto:
+      "Oferta privada: acceso por invitación y sin difusión masiva del instrumento, con los topes que fija la CNV (RG CNV 1016/2024, mod. RG 1088/2025). El contenido de comunidad sí es público.",
+    borrador: true,
+    en: {
+      titulo: "Circle by invitation",
+      texto:
+        "Private offer: access by invitation and with no mass promotion of the instrument, within the limits set by the CNV (General Resolution 1016/2024, as amended by 1088/2025). Community content is public.",
+    },
+  },
+  safuinvertir: {
+    titulo: "SAFU",
+    texto:
+      "Acuerdo simple por Unidades futuras: alguien pone plata hoy, antes de que existan las series, y la recibe como Unidades de la Serie Madre cuando abra. Las condiciones y cómo se ofrece legalmente todavía las tiene que confirmar un abogado.",
+    borrador: true,
+    en: {
+      titulo: "SAFU",
+      texto:
+        "A simple agreement for future Units: someone puts in money today, before the series exist, and receives it as Units of the Mother Series when it opens. The terms and how it can legally be offered still have to be confirmed by a lawyer.",
+    },
+  },
   caja: {
     titulo: "La caja del proyecto",
     texto:

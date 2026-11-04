@@ -12,6 +12,7 @@ import { TerminoLegal } from "@/components/termino-legal";
 import { TextoBilingue } from "@/components/texto-bilingue";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { GLOSARIO } from "@/lib/idioma/glosario";
+import { sumarte } from "@/lib/idioma/textos/sumarte";
 import {
   alcanza,
   avisoDeNivel,
@@ -575,14 +576,14 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
           <article aria-labelledby="inv-proyectos" className={`${TARJETA} ${BORDE}`}>
             <p className="text-sm font-medium text-muted">
               {t.invertir.proyectos.etiqueta}
-              <TerminoLegal clave="circulo" idioma={idioma} />
+              <TerminoLegal clave="circuloinvertir" idioma={idioma} />
             </p>
             <h3 id="inv-proyectos" className="text-xl font-semibold">{t.invertir.proyectos.titulo}</h3>
             <p className="text-sm text-muted">
               {t.invertir.proyectos.textoA}
               <TerminoLegal clave="serieprograma" idioma={idioma} />
               {t.invertir.proyectos.textoB}
-              <TerminoLegal clave="safu" idioma={idioma} />
+              <TerminoLegal clave="safuinvertir" idioma={idioma} />
               {t.invertir.proyectos.textoC}
               <TerminoLegal clave="seriemadre" idioma={idioma} />
               {t.invertir.proyectos.textoD}
@@ -618,6 +619,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
               <PedidoContacto
                 motivo="invitacion-circulo"
                 referencia={t.invertir.proyectos.referencia}
+                referenciaGuardada={sumarte.es.invertir.proyectos.referencia}
                 idBoton="boton-invitacion"
                 alEnviar={(pedido) => enviarPedido(pedido, { tipo: "invitacion" })}
                 alCancelar={() => setFormulario(null)}
@@ -652,6 +654,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
               <PedidoContacto
                 motivo="charla-netx"
                 referencia={t.invertir.empresa.referencia}
+                referenciaGuardada={sumarte.es.invertir.empresa.referencia}
                 idBoton="boton-charla"
                 alEnviar={(pedido) => enviarPedido(pedido, { tipo: "charla" })}
                 alCancelar={() => setFormulario(null)}

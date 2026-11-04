@@ -175,6 +175,14 @@ test.describe("Sumarte en inglés con una cuenta Explorer", () => {
     await page.getByRole("button", { name: "Send request (simulated)" }).click();
     await expect(page.getByText("Request received (simulated). It would be seen by: NetX team.")).toBeVisible();
     await expect(page.getByText("Invitation requested (simulated)")).toBeVisible();
+    // En pantalla va en inglés, pero la bandeja lo guarda siempre en español.
+    const guardado = await page.evaluate(() =>
+      Object.keys(window.localStorage)
+        .filter((k) => k.includes("lh-contactos"))
+        .map((k) => window.localStorage.getItem(k))
+        .join(""),
+    );
+    expect(guardado).toContain("Programa de series");
   });
 
   test("sin identidad verificada, el diálogo de verificación se abre en inglés", async ({ page }) => {
