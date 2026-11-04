@@ -80,8 +80,8 @@ const TERRITORIOS: Record<string, TextosTerritorio> = {
       en: "BioPueblo Mainqué, south bank of the Río Negro",
     },
     descripcion: {
-      es: "~993 ha, doce barrios y las tribus que los están formando.",
-      en: "~993 ha, twelve neighborhoods and the tribes forming them.",
+      es: "~990 ha, doce barrios y las tribus que los están formando.",
+      en: "~990 ha, twelve neighborhoods and the tribes forming them.",
     },
     bienesComunes: [
       { es: "Agua: toma, cisterna y riego", en: "Water: intake, cistern and irrigation" },

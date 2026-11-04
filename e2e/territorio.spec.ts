@@ -9,7 +9,7 @@ test("ficha: título, ubicación y superficie", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
   await expect(page.getByRole("heading", { level: 1, name: "Lighthouse" })).toBeVisible();
   await expect(page.getByText("BioPueblo Mainqué")).toBeVisible();
-  await expect(page.getByText("~993 ha", { exact: false }).first()).toBeVisible();
+  await expect(page.getByText("~990 ha", { exact: false }).first()).toBeVisible();
 });
 
 test("territorio inexistente: 404 con vuelta", async ({ page }) => {
