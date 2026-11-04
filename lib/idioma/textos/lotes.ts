@@ -63,7 +63,7 @@ const es = {
     titulo: "Derechos y deberes",
     queDa: "Qué daría el lote",
     queDaItems: [
-      "Usar y construir en tu lote según el reglamento.",
+      "Usar y construir en el lote según el reglamento.",
       "Usar lo común.",
       "Revender, con la preferencia de reventa que fije el reglamento.",
     ],
@@ -181,7 +181,7 @@ const en: Textos<typeof es> = {
     titulo: "Rights and duties",
     queDa: "What the lot would give",
     queDaItems: [
-      "Use and build on your lot under the regulation.",
+      "Use and build on the lot under the regulation.",
       "Use the commons.",
       "Resell, with the resale preference the regulation sets.",
     ],
