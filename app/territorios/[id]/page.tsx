@@ -53,6 +53,9 @@ export default async function TerritorioPage({ params }: Props) {
       <EnEspanol>
         <EstadoAdministrativo proyecto="soluna" />
       </EnEspanol>
+      {/* Norte ya tiene su versión en inglés: va bilingüe, sin EnEspanol. */}
+      <EstadoAdministrativo proyecto="lighthouse-primeros" idioma={idioma} />
+      <EstadoAdministrativo proyecto="lighthouse-norte" idioma={idioma} />
 
       <VitrinaTerritorio />
 

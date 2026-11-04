@@ -260,11 +260,28 @@ test.describe("Vista NetX y Sumarte", () => {
     await expect(bloque.getByRole("link", { name: "Ver el manifiesto de Lighthouse VRN" })).toHaveAttribute("href", "/tribus/lighthouse");
   });
 
-  test("/sumarte no muestra el manifiesto, sus principios ni el aviso de adhesión", async ({ page }) => {
+  test("/sumarte no muestra el texto del manifiesto, sus principios ni el botón Adherir, pero sí la línea de adhesión", async ({ page }) => {
     await page.goto("/sumarte");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     const texto = await page.locator("main").innerText();
-    expect(texto).not.toMatch(/Lighthouse VRN|manifiesto de|Para participar, adherí/i);
+    expect(texto).not.toMatch(/Ponemos la regeneración|15 principios|Tierra: 4 principios/);
+    await expect(page.getByRole("button", { name: "Adherir", exact: true })).toHaveCount(0);
+    const linea = page.getByTestId("adhesion-sumarte");
+    await expect(linea).toContainText("adherir al manifiesto de Lighthouse VRN");
+    await expect(linea.getByRole("link", { name: "Leer el manifiesto" })).toHaveAttribute("href", "/tribus/lighthouse");
+    // La línea queda fuera de las tarjetas de los planes.
+    await expect(page.getByRole("article").getByTestId("adhesion-sumarte")).toHaveCount(0);
+  });
+
+  test.describe("un Explorador", () => {
+    test.use({ rol: "persona", plan: "explorador" });
+
+    test("que sigue el enlace desde /sumarte ve 'Sumate para adherir' en la ficha", async ({ page }) => {
+      await page.goto("/sumarte");
+      await page.getByRole("link", { name: "Leer el manifiesto" }).click();
+      await expect(page).toHaveURL(/\/tribus\/lighthouse$/);
+      await expect(page.getByRole("link", { name: "Sumate para adherir" })).toBeVisible();
+    });
   });
 });
 

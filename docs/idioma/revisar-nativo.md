@@ -6,11 +6,11 @@ Todo el inglés lo escribió un agente y está pendiente hasta que un hablante n
 **Cómo marcar algo como revisado:** en `lib/idioma/revision-nativa.ts`, cambiá el `estado` de la fuente a `"revisado"`
 y sumá `revisadoPor` y `fecha` (AAAA-MM-DD). Después corré `pnpm idioma:pendientes`.
 
-Fuentes pendientes: 41
+Fuentes pendientes: 42
 
 | Fuente | Qué es | Textos en inglés |
 |---|---|---|
-| `glosario` | Glosario de términos de la plataforma (Pase Fundador, Fogón…); confirmado por Gus el 15-oct-2026, falta el nativo | 23 |
+| `glosario` | Glosario de términos de la plataforma (Pase Fundador, Fogón…); confirmado por Gus el 15-oct-2026, falta el nativo | 24 |
 | `lib/compromisos/mercado.ts` | Ofertas de ejemplo del Mercado con su inglés, traducidas del español (las que publica la persona no se traducen) | — |
 | `lib/congreso/evento-ejemplo.ts` | Página del Congreso en inglés (/congreso/en): datos de ejemplo del evento | — |
 | `lib/economia/terminos.ts` | Término económico 🌱 de Semillas en inglés (borrador, sin revisión) | — |
@@ -40,14 +40,15 @@ Fuentes pendientes: 41
 | `textos/fogonConsultas` | Consultas del Fogón: lista, reparto de créditos con voto cuadrático, voto abierto o secreto, padrón, resultado por grupo, acta de ejemplo, gráfico de dona y errores de lectura | 119 |
 | `textos/fogonPropuestas` | Propuestas del Fogón: fases, discusión, concerns y grupos, acuse y quórum, ámbito del consejo, niveles, acciones, condiciones de la matriz, mecanismos y vista sin cuenta | 256 |
 | `textos/gobernanza` | Gobernanza fractal: página Cómo decidimos (estructura, círculos, consejo), marca de validación de la ficha de tribu y Quiénes te validaron en Mi recorrido | 120 |
+| `textos/lotes` | Lotes de Lighthouse VRN: lista, ficha, precio de ejemplo, con casa, costos, derechos y deberes, reserva y pago simulados y boleto de ejemplo | 89 |
 | `textos/manifiestoVrn` | Manifiesto de Lighthouse VRN: ficha del común, tarjeta de Tribus, lectura completa, principios propios de las tribus, aviso de adhesión y bloque de la Vista NetX | 49 |
-| `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 57 |
+| `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 58 |
 | `textos/pactos` | Pactos: pactos de tiempo y de plata, cambios, historial, avisos y anuncios | 286 |
 | `textos/pasaporte` | Pasaporte: sellos y lo que abren, tarjeta y diálogo de verificación de identidad (KYC) con sus errores, sello de la billetera y datos de aporte | 149 |
 | `textos/perfil` | Perfil: encabezado, formulario, tarjetas, errores de validación y las seis preguntas de la entrevista | 58 |
 | `textos/portada` | Portada: título, bajada, los tres caminos y la cantidad de barrios | 17 |
 | `textos/recorrido` | Mi recorrido: próximo paso (cinco pasos), pestañas, línea de tiempo y tabla de la Bitácora | 45 |
 | `textos/semillas` | Semillas: libro por comunidad, detalle, meta de sembrador/a activo/a y ronda de reconocimiento ("Semillas" no se traduce) | 124 |
-| `textos/sumarte` | Sumarte: planes, niveles del pase (Seed, Sprout, Root, a confirmar), inversores, avisos de nivel, formulario de pedido de contacto y panel Entrar como… | 144 |
-| `textos/territorio` | Territorio: vitrina, leyenda y controles del mapa, ficha lateral y marcadores | 105 |
+| `textos/sumarte` | Sumarte: planes, niveles del pase (Seed, Sprout, Root, a confirmar), comprar un lote, invertir, avisos de nivel, formulario de pedido de contacto y panel Entrar como… | 158 |
+| `textos/territorio` | Territorio: vitrina, leyenda y controles del mapa, ficha lateral y marcadores | 147 |
 | `textos/tribus` | Tribus: listado, ficha, botones de membresía, interfaz del manifiesto y postulación de una comunidad (formulario, requisitos y errores) | 208 |

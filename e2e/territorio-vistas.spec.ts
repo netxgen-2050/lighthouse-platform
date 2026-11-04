@@ -12,8 +12,16 @@ const mapa = (page: Page) => page.getByRole("region", { name: /^Mapa del Macrolo
 const frentes = (page: Page) => page.locator('[aria-label^="Frente "][role="button"]');
 const listaFrentes = (page: Page) => ficha(page).getByRole("list", { name: "Dónde podés ayudar" });
 
-test("vista por defecto: Ahora, con frentes y sin barrios", async ({ page }) => {
+test("vista por defecto: Lotes, sin frentes ni barrios", async ({ page }) => {
   await page.goto("/territorios/lighthouse");
+  await expect(vistas(page).getByRole("button", { name: /Lotes · sector norte/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(vistas(page).getByRole("button", { name: /Ahora/ })).toHaveAttribute("aria-pressed", "false");
+  await expect(frentes(page)).toHaveCount(0);
+  await expect(page.locator('[aria-label^="Barrio "]')).toHaveCount(0);
+});
+
+test("enlace compartible: ?vista=ahora muestra los frentes y sin barrios", async ({ page }) => {
+  await page.goto("/territorios/lighthouse?vista=ahora");
   await expect(vistas(page).getByRole("button", { name: /Ahora · frentes de trabajo/ })).toHaveAttribute("aria-pressed", "true");
   await expect(vistas(page).getByRole("button", { name: /Plan · zonas/ })).toHaveAttribute("aria-pressed", "false");
   await expect(frentes(page)).toHaveCount(4);
@@ -28,9 +36,9 @@ test("enlace compartible: ?vista=vision muestra los 12 barrios", async ({ page }
   await expect(frentes(page)).toHaveCount(0);
 });
 
-test("vista desconocida abre Ahora", async ({ page }) => {
+test("vista desconocida abre Lotes", async ({ page }) => {
   await page.goto("/territorios/lighthouse?vista=red");
-  await expect(vistas(page).getByRole("button", { name: /Ahora/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(vistas(page).getByRole("button", { name: /Lotes/ })).toHaveAttribute("aria-pressed", "true");
 });
 
 test("enlace viejo a un barrio abre Visión con el barrio elegido", async ({ page }) => {
@@ -46,7 +54,7 @@ test("con vista explícita, un barrio no se elige en Ahora", async ({ page }) =>
 });
 
 test("cambiar de vista escribe la URL, limpia la selección y no rearma el mapa", async ({ page }) => {
-  await page.goto("/territorios/lighthouse");
+  await page.goto("/territorios/lighthouse?vista=ahora");
   await expect(frentes(page)).toHaveCount(4);
   await page.evaluate(() => document.querySelector(".leaflet-tile-pane")!.setAttribute("data-marca", "1"));
   await listaFrentes(page).getByRole("button", { name: /Agua y cuenca/ }).click();
@@ -60,7 +68,7 @@ test("cambiar de vista escribe la URL, limpia la selección y no rearma el mapa"
 });
 
 test("fase 1 con el teclado: suma Primer obrador y Parque agrovoltaico", async ({ page }) => {
-  await page.goto("/territorios/lighthouse");
+  await page.goto("/territorios/lighthouse?vista=ahora");
   await expect(page.getByRole("radio", { name: /^Fase 0 · hoy/ })).toBeChecked();
   await page.getByRole("radio", { name: /^Fase 0/ }).focus();
   await page.keyboard.press("ArrowRight");
@@ -77,7 +85,7 @@ test("fase de hoy sin ?fase=: la 0 está elegida y dice hoy", async ({ page }) =
 });
 
 test("elegir un frente desde la lista con el teclado", async ({ page }) => {
-  await page.goto("/territorios/lighthouse");
+  await page.goto("/territorios/lighthouse?vista=ahora");
   await listaFrentes(page).getByRole("button", { name: /Agua y cuenca/ }).focus();
   await page.keyboard.press("Enter");
   await expect(page.locator('[aria-label^="Frente 1:"]')).toBeVisible();
@@ -92,7 +100,7 @@ test("elegir un frente desde la lista con el teclado", async ({ page }) => {
 });
 
 test("frentes sin lugar y frentes que vienen en el panel", async ({ page }) => {
-  await page.goto("/territorios/lighthouse");
+  await page.goto("/territorios/lighthouse?vista=ahora");
   const sin = ficha(page).getByRole("list", { name: "Sin lugar en el mapa" });
   await expect(sin.getByText(/Papeles y fideicomiso/)).toBeVisible();
   await expect(sin.getByText(/Comunicación/)).toBeVisible();
@@ -103,7 +111,7 @@ test("frentes sin lugar y frentes que vienen en el panel", async ({ page }) => {
 
 test("frente que viene: dice Más adelante y no ofrece sumarse", async ({ page }) => {
   await conAdhesionAlLighthouse(page);
-  await page.goto("/territorios/lighthouse?fase=1");
+  await page.goto("/territorios/lighthouse?vista=ahora&fase=1");
   await listaFrentes(page).getByRole("button", { name: /Primer obrador/ }).click();
   await expect(ficha(page).getByText("Más adelante · fase 1", { exact: true })).toBeVisible();
   await expect(ficha(page).getByRole("button", { name: /Quiero sumarme/ })).toHaveCount(0);
@@ -111,7 +119,7 @@ test("frente que viene: dice Más adelante y no ofrece sumarse", async ({ page }
 
 test("sumarse desde el mapa", async ({ page }) => {
   await conAdhesionAlLighthouse(page);
-  await page.goto("/territorios/lighthouse");
+  await page.goto("/territorios/lighthouse?vista=ahora");
   await page.locator('[aria-label^="Frente 3:"]').click();
   await ficha(page).getByRole("button", { name: "Quiero sumarme a este frente" }).click();
   await ficha(page).getByRole("button", { name: "Confirmar" }).click();
@@ -140,11 +148,20 @@ test("Visión: barrio 6 con la marca de tribus de ejemplo", async ({ page }) => 
 });
 
 test("finca 502 en la vista Ahora", async ({ page }) => {
+  await page.goto("/territorios/lighthouse?vista=ahora");
+  await page.getByText(/Fincas disponibles de Soluna/).click();
+  await page.getByRole("button", { name: "Finca 502", exact: true }).click();
+  await expect(ficha(page).getByRole("heading", { name: "Finca 502" })).toBeVisible();
+  await expect(ficha(page).getByRole("button", { name: "Consultar por este lote" })).toBeVisible();
+});
+
+test("finca 502 en la vista Lotes: consultar sí, reservar o comprar no", async ({ page }) => {
   await page.goto("/territorios/lighthouse");
   await page.getByText(/Fincas disponibles de Soluna/).click();
   await page.getByRole("button", { name: "Finca 502", exact: true }).click();
   await expect(ficha(page).getByRole("heading", { name: "Finca 502" })).toBeVisible();
   await expect(ficha(page).getByRole("button", { name: "Consultar por este lote" })).toBeVisible();
+  await expect(ficha(page).getByRole("button", { name: /comprar|reservar|señar/i })).toHaveCount(0);
 });
 
 test("Ver en el mapa desde Equipos", async ({ page }) => {
@@ -163,7 +180,7 @@ test("Ver en el mapa de un frente de fase siguiente abre esa fase con el frente 
 
 test("celular 390 px: selector y etapa en el ancho, ficha debajo, sin scroll horizontal", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/territorios/lighthouse");
+  await page.goto("/territorios/lighthouse?vista=ahora");
   await expect(frentes(page)).toHaveCount(4);
   const caja = (await page.locator(".mapa-leaflet").boundingBox())!;
   const cajaFicha = (await ficha(page).boundingBox())!;
@@ -176,7 +193,7 @@ test.describe("en inglés", () => {
   test.use({ locale: "en-US" });
 
   test("selector, etapa, leyenda y frentes en inglés", async ({ page }) => {
-    await page.goto("/territorios/lighthouse");
+    await page.goto("/territorios/lighthouse?vista=ahora");
     await expect(page.getByRole("group", { name: "Map view" }).getByRole("button", { name: /Now · work fronts/ })).toBeVisible();
     await expect(page.getByRole("group", { name: "Stage" })).toBeVisible();
     await expect(page.getByRole("radio", { name: /^Phase 0 · today/ })).toBeChecked();

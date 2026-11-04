@@ -31,7 +31,7 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "textos/sumarte": {
     estado: "pendiente",
-    que: "Sumarte: planes, niveles del pase (Seed, Sprout, Root, a confirmar), inversores, avisos de nivel, formulario de pedido de contacto y panel Entrar como…",
+    que: "Sumarte: planes, niveles del pase (Seed, Sprout, Root, a confirmar), comprar un lote, invertir, avisos de nivel, formulario de pedido de contacto y panel Entrar como…",
   },
   "lib/sumarte/datos.ts": {
     estado: "pendiente",
@@ -40,6 +40,10 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   "textos/tribus": {
     estado: "pendiente",
     que: "Tribus: listado, ficha, botones de membresía, interfaz del manifiesto y postulación de una comunidad (formulario, requisitos y errores)",
+  },
+  "textos/lotes": {
+    estado: "pendiente",
+    que: "Lotes de Lighthouse VRN: lista, ficha, precio de ejemplo, con casa, costos, derechos y deberes, reserva y pago simulados y boleto de ejemplo",
   },
   "textos/territorio": {
     estado: "pendiente",

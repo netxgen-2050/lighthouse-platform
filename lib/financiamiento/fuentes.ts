@@ -24,6 +24,18 @@ export const META_SAFE_USD = {
   aConfirmar: "Vagner",
 } as const;
 
+/**
+ * Rango de tickets del SAFE de la empresa (USD), de ejemplo y a definir con Vagner (pedido de Gus, 2-nov-2026).
+ * `abierto`: el máximo es "o más". Es la única cifra de inversión que muestra Sumarte, que es pública.
+ */
+export const TICKETS_SAFE = {
+  min: 5_000,
+  max: 50_000,
+  abierto: true,
+  fuente: "pedido de Gus, 2-nov-2026 (ejemplo)",
+  aConfirmar: "Vagner",
+} as const;
+
 /** Comisión de desarrollo: fracción del capex, una vez. */
 export const COMISION_DESARROLLO = {
   min: 0.03,

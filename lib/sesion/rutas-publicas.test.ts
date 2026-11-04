@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { esPublica } from "./rutas-publicas";
 
 describe("esPublica", () => {
-  it.each(["/", "/territorios/lighthouse", "/tribus", "/tribus/valle", "/tribus/valle/manifiesto", "/tribus/", "/tribus?x=1", "/sumarte", "/sumarte?volver=/pactos", "/privacidad", "/congreso", "/congreso/", "/congreso?utm_source=x", "/congreso#ticket", "/congreso/en", "/congreso/en/", "/congreso/en?utm_source=pagina-oficial#entradas"])(
+  it.each(["/", "/territorios/lighthouse", "/tribus", "/tribus/valle", "/tribus/valle/manifiesto", "/lotes", "/lotes/", "/lotes/lote-7", "/lotes/lote-7?x=1", "/tribus/","/tribus?x=1", "/sumarte", "/sumarte?volver=/pactos", "/privacidad", "/congreso", "/congreso/", "/congreso?utm_source=x", "/congreso#ticket", "/congreso/en", "/congreso/en/", "/congreso/en?utm_source=pagina-oficial#entradas"])(
     "%s es pública",
     (ruta) => expect(esPublica(ruta)).toBe(true),
   );
@@ -21,6 +21,7 @@ describe("esPublica", () => {
     "/tribus/valle/postular",
     "/territorios",
     "/territorios/lighthouse/otro",
+    "/lotes/lote-7/otro",
     "/api/sesion",
     "",
   ])("%s pide sesión", (ruta) => expect(esPublica(ruta)).toBe(false));

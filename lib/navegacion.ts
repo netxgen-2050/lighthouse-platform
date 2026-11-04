@@ -7,6 +7,7 @@ import {
   Handshake,
   Home,
   IdCard,
+  LandPlot,
   Leaf,
   Map as MapaIcono,
   Settings,
@@ -20,7 +21,7 @@ import {
 import { marco } from "@/lib/idioma/textos/marco";
 import type { Idioma } from "@/lib/idioma/tipos";
 
-export type IdGrupo = "descubrir" | "participar" | "sumarte" | "persona" | "interno";
+export type IdGrupo = "descubrir" | "sumarte" | "viene" | "persona" | "interno";
 
 /** Clave del nombre de un destino en el diccionario del marco (`destinos`); el nombre sale del glosario. */
 export type ClaveDestino = keyof typeof marco.es.destinos;
@@ -37,6 +38,7 @@ export type Destino = {
    * Solo saca el destino de los menús (rail, barra superior, menú del avatar): la página sigue con su URL y su permiso.
    * Compromisos se oculta por decisión de Gus del 27-oct-2026 (el Mercado se lleva fuera de la plataforma);
    * para volver, ver docs/notas/compromisos-en-pausa.md.
+   * Congreso se oculta con el menú de fase 1 (2-nov-2026, ADR-030); para volver, ver docs/notas/congreso-en-pausa.md.
    */
   oculto?: true;
 };
@@ -47,13 +49,14 @@ export type Destino = {
 export const DESTINOS: readonly Destino[] = [
   { href: "/", clave: "inicio", icono: Home, grupo: "descubrir", existe: true },
   { href: "/territorios/lighthouse", clave: "territorio", icono: MapaIcono, grupo: "descubrir", existe: true },
-  { href: "/tribus", clave: "tribus", icono: Users, grupo: "descubrir", existe: true },
-  { href: "/pactos", clave: "pactos", icono: FileSignature, grupo: "participar", existe: true },
-  { href: "/semillas", clave: "semillas", icono: Leaf, grupo: "participar", existe: true },
-  { href: "/fogon", clave: "fogon", icono: Flame, grupo: "participar", existe: true },
-  { href: "/compromisos", clave: "compromisos", icono: Handshake, grupo: "participar", existe: true, oculto: true },
-  { href: "/congreso", clave: "congreso", icono: CalendarDays, grupo: "participar", existe: true },
+  { href: "/lotes", clave: "lotes", icono: LandPlot, grupo: "descubrir", existe: true },
   { href: "/sumarte", clave: "sumarte", icono: Sprout, grupo: "sumarte", existe: true },
+  { href: "/tribus", clave: "tribus", icono: Users, grupo: "viene", existe: true },
+  { href: "/pactos", clave: "pactos", icono: FileSignature, grupo: "viene", existe: true },
+  { href: "/semillas", clave: "semillas", icono: Leaf, grupo: "viene", existe: true },
+  { href: "/fogon", clave: "fogon", icono: Flame, grupo: "viene", existe: true },
+  { href: "/compromisos", clave: "compromisos", icono: Handshake, grupo: "viene", existe: true, oculto: true },
+  { href: "/congreso", clave: "congreso", icono: CalendarDays, grupo: "viene", existe: true, oculto: true },
   { href: "/perfil", clave: "perfil", icono: UserRound, grupo: "persona", existe: true },
   { href: "/pasaporte", clave: "pasaporte", icono: IdCard, grupo: "persona", existe: true },
   { href: "/panel", clave: "miRecorrido", icono: Compass, grupo: "persona", existe: true },
@@ -78,10 +81,10 @@ export function tituloGrupoInterno(idioma: Idioma): string {
 }
 
 /** Grupos que se muestran con título en el rail, en orden. */
-export const GRUPOS_RAIL: readonly { id: "descubrir" | "participar" | "sumarte" }[] = [
+export const GRUPOS_RAIL: readonly { id: "descubrir" | "sumarte" | "viene" }[] = [
   { id: "descubrir" },
-  { id: "participar" },
   { id: "sumarte" },
+  { id: "viene" },
 ];
 
 /** El título de un grupo del rail en un idioma. */

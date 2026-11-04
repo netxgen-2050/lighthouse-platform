@@ -1,12 +1,14 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
+import { textos } from "@/lib/idioma/textos";
 import {
   COMISION_DESARROLLO,
   CONSUMO_MENSUAL_USD,
   CONTRATO_DISENO_BIOPUEBLO_USD,
   META_SAFE_USD,
   SUPUESTO_CONGRESO,
+  TICKETS_SAFE,
   VERSIONES,
 } from "./fuentes";
 import { JUEGO_A, JUEGO_B, PALABRAS_QUE_NO_VAN, PROCOMUN_EN_SIMPLE } from "./juegos";
@@ -30,6 +32,19 @@ describe("fuentes", () => {
     expect(CONSUMO_MENSUAL_USD.fuente).toBe("NS_Tokenomics doc 30 §2b (doc 12)");
     expect(CONSUMO_MENSUAL_USD.aConfirmar).toBe("Vagner");
     expect(SUPUESTO_CONGRESO).toContain("I-15");
+  });
+  test("los tickets del SAFE son de ejemplo, de USD 5.000 a USD 50.000 o más, con fuente y a confirmar con Vagner", () => {
+    expect(TICKETS_SAFE).toMatchObject({ min: 5_000, max: 50_000, abierto: true, aConfirmar: "Vagner" });
+    expect(TICKETS_SAFE.fuente.trim()).toBeTruthy();
+    expect(TICKETS_SAFE.min).toBeLessThan(TICKETS_SAFE.max);
+  });
+  test("el 'o más' de los tickets de Sumarte depende de TICKETS_SAFE.abierto, en los dos idiomas", () => {
+    for (const [idioma, mas] of [["es", " o más"], ["en", " or more"]] as const) {
+      const f = textos("sumarte", idioma).invertir.empresa.tickets;
+      expect(f("A", "B", TICKETS_SAFE.abierto)).toContain(`B${mas}`);
+      expect(f("A", "B", true)).toContain(mas);
+      expect(f("A", "B", false)).not.toContain(mas);
+    }
   });
   test("el contrato de diseño no tiene monto (null, no 0)", () => {
     expect(CONTRATO_DISENO_BIOPUEBLO_USD.valor).toBeNull();

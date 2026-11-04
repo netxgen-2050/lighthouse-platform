@@ -4,6 +4,8 @@
 - **Fecha:** 2026-11-02
 - **Cambio OpenSpec relacionado:** `venta-lotes-regla` (primero de la serie `loteo-norte-7a`, `lote-ficha-y-compra`, `modelo-hibrido-procomun`, `portada-vrn`; `procomun-tickets` queda bloqueado)
 
+> **Actualización del 4-nov-2026 (R40, Gus).** Los primeros lotes que se venden son 4 aledaños al 7A, que siguen el loteo de Chacras de Soluna: son la excepción a "Soluna es vitrina". La aprobación está informada, sin documento: no se muestra como otorgada. Sigue todo simulado. Cambio: `primeros-cuatro-lotes`.
+
 ## Contexto
 Franz (CEO) decidió en la llamada del 2-nov-2026 que la fase 1 de la plataforma es vender lotes privados en Lighthouse VRN, con un modelo híbrido con el procomún. Gus lo aceptó y pidió no volver a discutirlo: el riesgo legal y comercial queda a cargo de Franz (confirmación escrita pedida, todavía sin respuesta al 2-nov). Hasta hoy varias reglas escritas decían lo contrario, y los agentes las aplican: sin este registro, frenarían el trabajo. Hay que dejar claro qué cambia, qué no y cómo se modela en el código sin mostrar una aprobación municipal que no existe.
 

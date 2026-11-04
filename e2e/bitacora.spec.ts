@@ -25,7 +25,7 @@ test("ver el territorio anota el estado del loteo", async ({ page }) => {
     expect(e.huella).toMatch(/^[0-9a-f]{8}$/);
   }
   // La vista completa anota el titular que muestra; la compacta, solo estado y norma corta.
-  const completa = entradas.filter((e) => String(e.mostrado).includes("Chacras de Soluna"));
+  const completa = entradas.filter((e) => String(e.mostrado).includes("Loteo en trámite"));
   expect(completa).toHaveLength(1);
   expect(String(completa[0].mostrado)).toContain("Loteo en trámite");
   expect(String(completa[0].mostrado)).toContain("Titular:");
@@ -38,7 +38,7 @@ test("elegir la finca 502 anota la vista compacta, sin expediente ni titular", a
   await expect(page.getByRole("note", { name: "Estado administrativo" })).toBeVisible();
   const compactas = async () =>
     (await leerBitacora(page)).filter(
-      (e) => e.tipo === "estado-loteo" && !String(e.mostrado).includes("Chacras de Soluna"),
+      (e) => e.tipo === "estado-loteo" && e.clave === "soluna" && !String(e.mostrado).includes("Chacras de Soluna"),
     );
   // Falla si no aparece ninguna entrada compacta: no puede pasar en vacío.
   await expect.poll(async () => (await compactas()).length).toBeGreaterThan(0);
@@ -92,7 +92,8 @@ test("la página muestra la fila del estado del loteo y descarga el JSON", async
   await page.goto("/territorios/lighthouse");
   await expect.poll(async () => (await leerBitacora(page)).length).toBeGreaterThan(0);
   await page.goto("/panel/bitacora");
-  const fila = page.getByRole("row").filter({ hasText: "Estado del loteo" });
+  // Desde Lotes la página también anota el aviso de Norte: la fila de Soluna se distingue por su proyecto.
+  const fila = page.getByRole("row").filter({ hasText: "Estado del loteo" }).filter({ hasText: "Loteo en trámite" });
   await expect(fila).toContainText("Chacras de Soluna");
   await expect(fila).toContainText("Borrador: sí");
   const [descarga] = await Promise.all([
@@ -134,7 +135,7 @@ test("a 390 px la página no tiene scroll horizontal", async ({ page }) => {
   await page.goto("/territorios/lighthouse");
   await expect.poll(async () => (await leerBitacora(page)).length).toBeGreaterThan(0);
   await page.goto("/panel/bitacora");
-  await expect(page.getByRole("row").filter({ hasText: "Estado del loteo" })).toBeVisible();
+  await expect(page.getByRole("row").filter({ hasText: "Estado del loteo" }).first()).toBeVisible();
   const ancho = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
   expect(ancho).toBe(true);
 });

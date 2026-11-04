@@ -26,8 +26,12 @@ const rutas = [
   "/tribus/lighthouse",
   "/tribus/lighthouse/manifiesto",
   "/territorios/lighthouse",
+  "/territorios/lighthouse?vista=lotes",
+  "/territorios/lighthouse?vista=ahora",
   "/territorios/lighthouse?vista=plan",
   "/territorios/lighthouse?vista=vision",
+  "/lotes",
+  "/lotes/lote-1",
   "/congreso",
   "/congreso/en",
   "/territorios/no-existe",
@@ -43,8 +47,8 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 39 rutas auditadas", () => {
-  expect(rutas).toHaveLength(39);
+test("hay 43 rutas auditadas", () => {
+  expect(rutas).toHaveLength(43);
 });
 
 async function graves(page: Page) {
@@ -198,6 +202,23 @@ test("axe sin violaciones serias o críticas: /semillas con la ronda y sus error
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
+test.describe("/sumarte en inglés", () => {
+  test.use({ locale: "en-US" });
+
+  test("axe sin violaciones serias o críticas", async ({ page }) => {
+    await page.goto("/sumarte");
+    await expect(page.getByRole("heading", { level: 2, name: "Invest", exact: true })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+});
+
+test("celular 390 px: /sumarte no tiene desborde horizontal, con la sección Invertir a la vista", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/sumarte");
+  await page.getByRole("heading", { level: 2, name: "Invertir", exact: true }).scrollIntoViewIfNeeded();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+});
+
 test("axe sin violaciones serias o críticas: /sumarte con el formulario de contacto abierto", async ({ page }) => {
   await conIdentidadVerificada(page);
   await page.goto("/sumarte");
@@ -286,7 +307,7 @@ test("axe sin violaciones serias o críticas: /panel/bitacora con entradas", asy
     .poll(() => page.evaluate(() => window.localStorage.getItem("lh-bitacora")))
     .not.toBeNull();
   await page.goto("/panel/bitacora");
-  await expect(page.getByRole("row").filter({ hasText: "Estado del loteo" })).toBeVisible();
+  await expect(page.getByRole("row").filter({ hasText: "Estado del loteo" }).filter({ hasText: "Loteo en trámite" })).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
@@ -490,7 +511,11 @@ test("axe sin violaciones serias o críticas: /fogon con Ana seleccionada y la l
 for (const ruta of rutas) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);
-    if (ruta === "/territorios/lighthouse") {
+    if (ruta === "/territorios/lighthouse" || ruta === "/territorios/lighthouse?vista=lotes") {
+      // El mapa se arma en el navegador: auditar con el sello del común ya puesto.
+      await expect(page.locator('[aria-label="Terreno común del Lighthouse"][role="button"]')).toHaveCount(1);
+    }
+    if (ruta === "/territorios/lighthouse?vista=ahora") {
       // El mapa se arma en el navegador: auditar con los sellos de los frentes ya puestos.
       await expect(page.locator('[aria-label^="Frente "][role="button"]')).toHaveCount(4);
     }
@@ -509,3 +534,29 @@ for (const ruta of rutas) {
     ).toEqual([]);
   });
 }
+
+// Lotes: la lista y una ficha en inglés, y la ficha con la compra simulada en cada paso (lote-ficha-y-compra).
+for (const ruta of ["/lotes?lang=en", "/lotes/lote-1?lang=en"]) {
+  test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
+    await page.goto(ruta);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+}
+
+test("axe sin violaciones serias o críticas: la ficha de un lote en la reserva, el pago simulado y el boleto, en español y en inglés", async ({ page }) => {
+  for (const [ruta, reservar, pagar, confirmar] of [
+    ["/lotes/lote-1", "Reservar (simulado)", "Simular el pago", "Confirmar el pago simulado"],
+    ["/lotes/lote-1?lang=en", "Reserve (simulated)", "Simulate the payment", "Confirm the simulated payment"],
+  ] as const) {
+    await page.goto(ruta);
+    await page.getByRole("button", { name: reservar }).click();
+    expect(await graves(page)).toEqual([]);
+    await page.getByRole("button", { name: pagar }).click();
+    expect(await graves(page)).toEqual([]);
+    await page.getByRole("button", { name: confirmar }).click();
+    await expect(page.getByRole("region", { name: /Boleto de ejemplo|Sample purchase agreement/ })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+    await page.evaluate(() => window.localStorage.removeItem("lh-lotes"));
+  }
+});

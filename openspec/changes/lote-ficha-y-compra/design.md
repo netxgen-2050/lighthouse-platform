@@ -45,7 +45,7 @@ export const MODELO_LOTES = {
 
 export type OpcionCompra = "solo-lote" | "modular" | "familiar" | "amplia";
 
-export const precioLote = (m2: number) => …;            // 1.344 → 15.000; 2.200 → 40.000; fuera de rango, el extremo
+export const precioLote = (m2: number) => …;            // 1.430 → 15.000; 2.798 → 40.000; fuera de rango, el extremo
 export const precioCasa = (tipo: TipoCasa) => …;        // 90.000; 238.000; 500.000
 export const precioPaquete = (m2: number, o: OpcionCompra) => …;
 export const aporteDe = (precio: number) => …;          // 5 % de lo que se paga
@@ -120,7 +120,7 @@ type CompraLote = {
 ### 6. Derechos y deberes (⚖ `derechosdeberes`, borrador)
 Salen de doc 18 §3 y §4, como supuestos del modelo, nunca como promesa.
 
-- **Derechos:** usar y construir en tu lote según el reglamento; usar lo común; revender, con la preferencia de reventa que fije el reglamento.
+- **Derechos:** usar y construir en el lote según el reglamento; usar lo común; revender, con la preferencia de reventa que fije el reglamento.
 - **Deberes:** respetar las servidumbres registradas antes de la primera venta; cumplir el mismo reglamento que todos; pagar el aporte único y las expensas.
 - **Lo que no da:** ningún pase, ticket ni token da prioridad, crédito o reserva sobre un lote.
 - **⚖ es:** "Borrador de lo que traería comprar un lote en el modelo híbrido. Las servidumbres, el reglamento y la preferencia de reventa todavía no existen. Un lote vendido se rige por su título, las servidumbres y el reglamento: si alguien no cumple, el camino es el de cualquier vecino o barrio con reglamento, no una decisión de la plataforma. A verificar con abogado."

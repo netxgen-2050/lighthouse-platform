@@ -69,6 +69,8 @@ test.describe("ficha", () => {
 
 test.describe("fases y discusión", () => {
   test("recorrido importante: ocho fases y la actual marcada con texto y aria-current", async ({ page }) => {
+    // La bomba empieza el 26-oct y sus plazos corren: con el reloj real ya llegó al cierre.
+    await page.clock.setFixedTime(new Date("2026-10-30T15:00:00Z"));
     await page.goto("/fogon/propuestas/consejo-bomba");
     const fases = page.getByRole("list", { name: "Fases de la propuesta" });
     await expect(fases.getByRole("listitem")).toHaveCount(8);
@@ -131,6 +133,8 @@ test.describe("fases y discusión", () => {
   });
 
   test("quien facilita no puede pasar de fase mientras falte responder el desafío, y puede seguir proponiendo", async ({ page }) => {
+    // Con el reloj real la bomba ya llegó al cierre y no queda fase a la que pasar.
+    await page.clock.setFixedTime(new Date("2026-10-30T15:00:00Z"));
     await page.goto("/fogon/propuestas/consejo-bomba");
     await page.getByLabel(NIVEL).selectOption("proceso");
     const hacer = page.getByRole("region", { name: "Qué podés hacer" });
@@ -165,6 +169,8 @@ test.describe("permisos y niveles", () => {
   });
 
   test("del común en una decisión del común: comenta", async ({ page }) => {
+    // Con el reloj real ya terminó su discusión.
+    await page.clock.setFixedTime(new Date("2026-10-30T15:00:00Z"));
     await page.goto("/fogon/propuestas/regalia");
     await expect(page.getByLabel(NIVEL)).toHaveValue("comun");
     await expect(page.getByRole("region", { name: "Qué podés hacer" })).toContainText("Comentar en la discusión abierta");
@@ -211,6 +217,8 @@ test.describe("correcciones de la revisión", () => {
   });
 
   test("solo-comun: Comentar sale con su condición y la tabla no dice solo Sí", async ({ page }) => {
+    // Con el reloj real ya terminó su discusión.
+    await page.clock.setFixedTime(new Date("2026-10-30T15:00:00Z"));
     await page.goto("/fogon/propuestas/regalia");
     await expect(page.getByRole("region", { name: "Qué podés hacer" })).toContainText("Comentar en la discusión abierta (solo decisiones del común)");
     await page.getByText("Ver la tabla de permisos por nivel").click();

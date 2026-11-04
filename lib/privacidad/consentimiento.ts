@@ -11,8 +11,9 @@ import { esPublica } from "@/lib/sesion/rutas-publicas";
 /**
  * Versión de la política vigente. Al cambiarla, todas las personas vuelven a ver la pantalla de consentimiento.
  * Es un borrador: hasta que lo revise Gabriel (pendiente R14) no es una versión legal.
+ * 3-nov-2026: sube a `2026-11-03-borrador` porque se suman los lotes simulados (`lote-ficha-y-compra`, ADR-017).
  */
-export const VERSION_POLITICA = "2026-10-14-borrador";
+export const VERSION_POLITICA = "2026-11-03-borrador";
 
 /** Nombre base de la clave. No está en `NOMBRES_BASE`: "Borrar todo" borra datos de ejemplo, no el consentimiento. */
 export const NOMBRE_CLAVE_CONSENTIMIENTO = "lh-consentimiento";

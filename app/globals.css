@@ -280,6 +280,51 @@ h3 {
   border-radius: 9999px;
 }
 
+/* Lotes del sector norte: la forma del borde dice el estado (lleno, trazos, puntos). */
+.mapa-leyenda-lote-disponible {
+  background: var(--color-green);
+  border-color: var(--color-deep);
+}
+
+.mapa-leyenda-lote-reservado {
+  background: var(--color-gold-soft);
+  border-color: var(--color-gold-ink);
+  border-style: dashed;
+}
+
+.mapa-leyenda-lote-vendido {
+  background: var(--color-gray);
+  border-color: var(--color-muted);
+  border-style: dotted;
+  border-width: 3px;
+}
+
+.mapa-leyenda-sector {
+  background: transparent;
+  border-color: var(--color-deep);
+}
+
+.mapa-leyenda-produccion {
+  background: var(--color-green-soft);
+  border-color: var(--color-green);
+}
+
+.mapa-leyenda-uso-comun {
+  background: var(--color-surface-2);
+  border-color: var(--color-faint);
+  border-style: dashed;
+}
+
+.mapa-leyenda-parcela {
+  background: var(--color-surface-2);
+  border-color: var(--color-faint);
+}
+
+.mapa-leyenda-camino {
+  background: var(--color-surface-2);
+  border-color: var(--color-faint);
+}
+
 /* Vistas del territorio: sellos de frentes y muestras de la leyenda. Lleno = vigente hoy, punteado = viene después. */
 .mapa-sello-frente {
   width: 32px;

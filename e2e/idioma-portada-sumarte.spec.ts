@@ -64,7 +64,8 @@ test.describe("Sumarte en inglés", () => {
     await expect(page.getByText("USD 46,000 of USD 75,000")).toBeVisible();
     await expect(page.getByRole("heading", { name: "What each plan includes" })).toBeVisible();
     await expect(page.locator("tbody tr")).toHaveCount(8);
-    await expect(page.getByRole("heading", { name: "For investors" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Invest", exact: true })).toBeVisible();
+    await expect(page.getByText("This is not an offer")).toBeVisible();
     await expect(page.getByText("Translated from Spanish")).toHaveCount(0);
   });
 
@@ -81,7 +82,7 @@ test.describe("Sumarte en inglés", () => {
 
   test("el contenido no deja español suelto", async ({ page }) => {
     await page.goto("/sumarte");
-    await expect(page.getByRole("heading", { name: "For investors" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Invest", exact: true })).toBeVisible();
     expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
 
@@ -91,19 +92,25 @@ test.describe("Sumarte en inglés", () => {
     await expect(miembro.locator('[translate="no"]', { hasText: "Semillas (seeds)" })).toBeVisible();
   });
 
-  test("el ⚖ de 'Founder Pass' se ve en español con 'Only available in Spanish'", async ({ page }) => {
+  test("el ⚖ de 'Semillas' se ve en español con 'Only available in Spanish'; el del Pase ya está en inglés", async ({ page }) => {
     await page.goto("/sumarte");
-    const pase = tarjeta(page, /Founder Pass/);
-    await pase.getByRole("button", { name: "What it means legally (only in Spanish): Pase Fundador" }).click();
+    await tarjeta(page, /Member of the network/)
+      .getByRole("button", { name: "What it means legally (only in Spanish): Semillas" })
+      .click();
     await expect(page.getByText("Only available in Spanish").first()).toBeVisible();
+    await expect(
+      tarjeta(page, /Founder Pass/).getByRole("button", { name: "What it means legally: Founder Pass" }),
+    ).toBeVisible();
   });
 
-  test("el texto con peso legal queda en español marcado hasta idioma-legal", async ({ page }) => {
+  test("la frase 'no es una inversión' se lee en inglés, sin la marca de solo en español", async ({ page }) => {
     await page.goto("/sumarte");
     const pase = tarjeta(page, /Founder Pass/);
-    const aviso = pase.locator('[lang="es"]', { hasText: "No es una inversión" });
-    await expect(aviso).toBeVisible();
-    await expect(pase.getByText("(only available in Spanish)")).toBeAttached();
+    await expect(
+      pase.getByText("It is not an investment: it gives no land, lots, priority or return, and it cannot be resold."),
+    ).toBeVisible();
+    await expect(pase.locator('[lang="es"]')).toHaveCount(0);
+    await expect(pase.getByText("(only available in Spanish)")).toHaveCount(0);
   });
 
   test("sin cuenta, el panel de ayuda y el aviso de registro están en inglés", async ({ page }) => {
@@ -159,7 +166,7 @@ test.describe("Sumarte en inglés con una cuenta Explorer", () => {
     await conIdentidadVerificada(page);
     await page.goto("/sumarte");
     await page.getByRole("button", { name: "Request an invitation" }).click();
-    await expect(page.getByText("Invitation to the circle · Lote 7")).toBeVisible();
+    await expect(page.getByText("Invitation to the circle · Series program")).toBeVisible();
     await page.getByRole("button", { name: "Send request (simulated)" }).click();
     await expect(page.getByText("Choose how you'd like us to contact you").last()).toBeVisible();
     await page.getByRole("radio", { name: "Email" }).check();
@@ -168,7 +175,14 @@ test.describe("Sumarte en inglés con una cuenta Explorer", () => {
     await page.getByRole("button", { name: "Send request (simulated)" }).click();
     await expect(page.getByText("Request received (simulated). It would be seen by: NetX team.")).toBeVisible();
     await expect(page.getByText("Invitation requested (simulated)")).toBeVisible();
-    await expect(page.getByText("23 of 35")).toBeVisible();
+    // En pantalla va en inglés, pero la bandeja lo guarda siempre en español.
+    const guardado = await page.evaluate(() =>
+      Object.keys(window.localStorage)
+        .filter((k) => k.includes("lh-contactos"))
+        .map((k) => window.localStorage.getItem(k))
+        .join(""),
+    );
+    expect(guardado).toContain("Programa de series");
   });
 
   test("sin identidad verificada, el diálogo de verificación se abre en inglés", async ({ page }) => {

@@ -22,7 +22,9 @@ const jetbrains = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["lati
 // El título y la descripción dependen del idioma del pedido (cookie o navegador).
 export async function generateMetadata(): Promise<Metadata> {
   const t = textos("marco", await idiomaDelPedido());
-  return { title: "Lighthouse", description: t.descripcionSitio };
+  // Ninguna página se deja indexar (P7, ADR-030): lo que un buscador guarda no se borra revirtiendo un PR.
+  // Sin robots.txt: un buscador que no puede entrar no llega a leer el noindex.
+  return { title: "Lighthouse", description: t.descripcionSitio, robots: { index: false, follow: false } };
 }
 
 export default async function RootLayout({

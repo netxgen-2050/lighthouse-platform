@@ -168,7 +168,7 @@ test("la tarjeta de identidad va antes de los sellos y explica para qué sirve, 
   expect(titulos[0]).toContain("Verificá tu identidad (KYC)");
   expect(titulos[1]).toContain("Tus sellos");
   const tarjeta = page.locator("#identidad");
-  await expect(tarjeta).toContainText("Lote 7");
+  await expect(tarjeta).toContainText("programa de series");
   await expect(tarjeta).toContainText("aporte en plata en Pactos");
   await expect(tarjeta).toContainText("No hace falta para recorrer, sumarte a una tribu ni proponer pactos de tiempo");
   await expect(tarjeta.getByRole("listitem").filter({ hasText: "Sin empezar" })).toHaveAttribute("aria-current", "step");

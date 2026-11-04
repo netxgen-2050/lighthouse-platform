@@ -10,6 +10,8 @@ import { origenDelNavegador } from "@/lib/origen/origen";
 type Props = {
   motivo: Motivo;
   referencia: string;
+  /** Lo que queda en la bandeja, si difiere de lo que se lee en pantalla (por ejemplo, siempre en español). */
+  referenciaGuardada?: string;
   /** Estado administrativo que se le muestra (solo en pedidos de lotes). */
   estadoMostrado?: string;
   /** Aviso a mostrar dentro del formulario (por ejemplo, el estado administrativo compacto). */
@@ -29,7 +31,7 @@ const BOTON =
 const CAMPO =
   "w-full rounded-lg border border-muted bg-surface p-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
-export function PedidoContacto({ motivo, referencia, estadoMostrado, aviso, idBoton, alEnviar, alCancelar }: Props) {
+export function PedidoContacto({ motivo, referencia, referenciaGuardada, estadoMostrado, aviso, idBoton, alEnviar, alCancelar }: Props) {
   const id = useId();
   const idioma = useIdioma();
   const t = useTextos("sumarte").pedido;
@@ -70,7 +72,7 @@ export function PedidoContacto({ motivo, referencia, estadoMostrado, aviso, idBo
       return;
     }
     const pedido = crearPedido(
-      { motivo, referencia, canal, momento, mensaje, estadoMostrado, origen: origenDelNavegador() },
+      { motivo, referencia: referenciaGuardada ?? referencia, canal, momento, mensaje, estadoMostrado, origen: origenDelNavegador() },
       new Date(),
       idPedido.current,
     );

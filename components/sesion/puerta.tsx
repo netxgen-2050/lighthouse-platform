@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 import { capacidadDeRuta, nivelMinimoDeRuta, puedeCapacidad, puedeRuta, type Capacidad } from "@/lib/permisos/niveles";
 import {
   corresponderOfrecerImportacion,
@@ -116,7 +116,9 @@ function ConSesion({ children }: { children: ReactNode }) {
   // Cambia al importar para volver a leer los datos ya con el prefijo de la persona.
   const [version, setVersion] = useState(0);
 
-  useEffect(() => {
+  // Layout effect: corre antes de los efectos de las páginas de adentro. Si una página anota algo con el prefijo de la
+  // persona al dibujarse (por ejemplo el aviso del loteo de Sumarte en la bitácora), la oferta ya se decidió con los datos de antes.
+  useLayoutEffect(() => {
     try {
       // Lectura del almacenamiento del navegador tras hidratar.
       setOfrecer(corresponderOfrecerImportacion(window.localStorage, id));

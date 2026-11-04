@@ -23,13 +23,14 @@ test("el orden de la lista es el de la spec", () => {
   expect(DESTINOS.map((d) => etiquetaDeDestino(d, "es"))).toEqual([
     "Inicio",
     "Territorio",
+    "Lotes",
+    "Sumarte",
     "Tribus",
     "Pactos",
     "Semillas",
     "Fogón",
     "Compromisos",
     "Congreso",
-    "Sumarte",
     "Perfil",
     "Pasaporte",
     "Mi recorrido",
@@ -42,19 +43,19 @@ test("el orden de la lista es el de la spec", () => {
 
 test("los grupos del rail y del menú de la persona salen de la lista única", () => {
   const etiquetas = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "es"));
-  expect(GRUPOS_RAIL.map((g) => tituloDeGrupo(g.id, "es"))).toEqual(["Descubrir", "Participar", "Sumarte"]);
-  expect(etiquetas("descubrir")).toEqual(["Inicio", "Territorio", "Tribus"]);
-  expect(etiquetas("participar")).toEqual(["Pactos", "Semillas", "Fogón", "Congreso"]);
+  expect(GRUPOS_RAIL.map((g) => tituloDeGrupo(g.id, "es"))).toEqual(["Descubrir", "Sumarte", "Lo que viene"]);
+  expect(etiquetas("descubrir")).toEqual(["Inicio", "Territorio", "Lotes"]);
   expect(etiquetas("sumarte")).toEqual(["Sumarte"]);
+  expect(etiquetas("viene")).toEqual(["Tribus", "Pactos", "Semillas", "Fogón"]);
   expect(etiquetas("persona")).toEqual(["Perfil", "Pasaporte", "Mi recorrido", "Configuración", "Mis datos"]);
   expect(etiquetas("interno")).toEqual(["NetX", "Admin"]);
 });
 
 test("en inglés el rail dice lo que fija el glosario, y Semillas no se traduce", () => {
   const ingles = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "en"));
-  expect(GRUPOS_RAIL.map((g) => tituloDeGrupo(g.id, "en"))).toEqual(["Discover", "Take part", "Join"]);
-  expect(ingles("descubrir")).toEqual(["Home", "Territory", "Tribes"]);
-  expect(ingles("participar")).toEqual(["Pacts", "Semillas", "Fireside", "Congress"]);
+  expect(GRUPOS_RAIL.map((g) => tituloDeGrupo(g.id, "en"))).toEqual(["Discover", "Join", "Coming next"]);
+  expect(ingles("descubrir")).toEqual(["Home", "Territory", "Lots"]);
+  expect(ingles("viene")).toEqual(["Tribes", "Pacts", "Semillas", "Fireside"]);
   expect(ingles("persona")).toEqual(["Profile", "Passport", "My journey", "Settings", "My data"]);
 });
 
@@ -62,8 +63,22 @@ test("Compromisos existe pero no aparece en ningún grupo", () => {
   const compromisos = DESTINOS.find((d) => d.href === "/compromisos");
   expect(compromisos?.existe).toBe(true);
   expect(compromisos?.oculto).toBe(true);
-  const grupos = ["descubrir", "participar", "sumarte", "persona", "interno"] as const;
+  const grupos = ["descubrir", "viene", "sumarte", "persona", "interno"] as const;
   expect(grupos.flatMap((g) => destinosDeGrupo(g)).some((d) => d.href === "/compromisos")).toBe(false);
+});
+
+test("Congreso existe pero no aparece en ningún grupo", () => {
+  const congreso = DESTINOS.find((d) => d.href === "/congreso");
+  expect(congreso?.existe).toBe(true);
+  expect(congreso?.oculto).toBe(true);
+  const grupos = ["descubrir", "viene", "sumarte", "persona", "interno"] as const;
+  expect(grupos.flatMap((g) => destinosDeGrupo(g)).some((d) => d.href === "/congreso")).toBe(false);
+});
+
+test("Lotes existe y aparece en el grupo Descubrir", () => {
+  const lotes = DESTINOS.find((d) => d.href === "/lotes");
+  expect(lotes?.existe).toBe(true);
+  expect(destinosDeGrupo("descubrir").some((d) => d.href === "/lotes")).toBe(true);
 });
 
 test("todo destino oculto existe", () => {

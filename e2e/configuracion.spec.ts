@@ -41,7 +41,8 @@ test("borrar todo borra la preferencia de idioma de la persona pero la pantalla 
   await expect(html(page)).toHaveAttribute("lang", "en");
   await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-configuracion"))).toContain('"idiomaElegido":"en"');
   page.once("dialog", (d) => void d.accept());
-  await page.getByRole("button", { name: "Borrar todo lo guardado en este navegador" }).click();
+  // Con la pantalla ya en inglés: buscar el botón en español dependía de hacer clic antes de que cambiara el texto.
+  await page.getByRole("button", { name: "Delete everything saved in this browser" }).click();
   await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-configuracion"))).toBeNull();
   await expect(html(page)).toHaveAttribute("lang", "en");
 });
