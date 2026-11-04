@@ -5,7 +5,7 @@ import type { Textos } from "../tipos";
 const es = {
   lista: {
     titulo: "Lotes de Lighthouse VRN",
-    bajada: "Qué se compraría en el sector norte: superficie, precio de ejemplo, estado, derechos y deberes, y costos.",
+    bajada: "Qué se compraría: superficie, precio de ejemplo, estado, derechos y deberes, y costos.",
     listaTitulo: "Todos los lotes",
     verLaFicha: "Ver la ficha",
   },
@@ -126,7 +126,7 @@ const es = {
 const en: Textos<typeof es> = {
   lista: {
     titulo: "Lighthouse VRN lots",
-    bajada: "What would be bought in the north sector: area, sample price, status, rights and duties, and costs.",
+    bajada: "What would be bought: area, sample price, status, rights and duties, and costs.",
     listaTitulo: "All lots",
     verLaFicha: "See the details",
   },
