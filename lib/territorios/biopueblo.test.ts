@@ -7,11 +7,14 @@ import {
   listarFincas,
   listarLugares,
   macrolote7,
+  solunaContorno,
   terrenoComun,
   textoHectareas,
   textoSuperficieM2,
   tribuDeBarrio,
 } from "./biopueblo";
+import { seSuperponen } from "./geometria";
+import { lotesDelGrupo } from "./loteo";
 
 describe("biopueblo", () => {
   it("12 barrios, cada uno con su tribu", () => {
@@ -34,6 +37,16 @@ describe("biopueblo", () => {
     expect(terrenoComun().nombre).toBe("Terreno común del Lighthouse");
     expect(listarLugares()).toHaveLength(6);
     expect(listarContexto().length).toBeGreaterThan(0);
+  });
+
+  it("el 7A no se mete en Chacras de Soluna: ni en la finca 548 ni en los primeros lotes", () => {
+    const siete = macrolote7();
+    const soluna = solunaContorno();
+    expect(siete.areaHa).toBe(990.4);
+    expect(seSuperponen(siete.anillo, soluna.anillo)).toBe(false);
+    expect(seSuperponen(siete.anillo, listarFincas().find((f) => f.id === "finca-548")!.anillo)).toBe(false);
+    for (const l of lotesDelGrupo("primeros")) expect(seSuperponen(siete.anillo, l.anillo), l.id).toBe(false);
+    for (const b of listarBarrios()) expect(seSuperponen(b.anillo, soluna.anillo), b.id).toBe(false);
   });
 
   it("conteo de tribus por estado: 3 activas, 5 en formación, 4 vacantes", () => {

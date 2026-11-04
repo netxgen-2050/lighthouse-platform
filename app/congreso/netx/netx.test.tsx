@@ -119,7 +119,7 @@ describe("Territorio", () => {
   it("tiene los datos del catálogo, la ilustración con texto alternativo y el enlace al mapa", () => {
     const html = renderToStaticMarkup(<Territorio />);
     expect(html).toContain('id="territorio"');
-    expect(html).toContain("~993 ha");
+    expect(html).toContain("~990 ha");
     expect(html).toContain('role="img"');
     expect(html).toContain('aria-label="Ilustración del valle');
     expect(html).toContain('href="/territorios/lighthouse"');

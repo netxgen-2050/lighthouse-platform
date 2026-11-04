@@ -78,7 +78,7 @@ describe("textos del territorio", () => {
     expect(territorioEn(t, "es")).toBe(t);
     const en = territorioEn(t, "en");
     expect(en.nombre).toBe("Lighthouse");
-    expect(en.descripcion).toBe("~993 ha, twelve neighborhoods and the tribes forming them.");
+    expect(en.descripcion).toBe("~990 ha, twelve neighborhoods and the tribes forming them.");
     expect(en.bienesComunes).toHaveLength(t.bienesComunes.length);
     expect(en.superficie).toBe(t.superficie);
   });

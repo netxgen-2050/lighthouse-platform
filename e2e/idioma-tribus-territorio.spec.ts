@@ -164,7 +164,7 @@ test.describe("territorio en inglés", () => {
     await page.goto("/territorios/lighthouse?vista=vision");
     await expect(html(page)).toHaveAttribute("lang", "en");
     await expect(page.getByRole("heading", { level: 1, name: "Lighthouse" })).toBeVisible();
-    await expect(page.getByText("~993 ha, twelve neighborhoods and the tribes forming them.")).toBeVisible();
+    await expect(page.getByText("~990 ha, twelve neighborhoods and the tribes forming them.")).toBeVisible();
     const region = page.getByRole("region", { name: "Map of Macrolote 7", exact: true });
     await expect(region).toBeVisible();
     const leyenda = region.getByRole("group", { name: "Map legend" });

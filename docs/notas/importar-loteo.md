@@ -87,3 +87,7 @@ Los lotes del boceto caen dentro del Barrio 1 de la vista Visión, que lo muestr
 - `primeros` en el mapeo: número de finca de BioPueblo → Placemark y superficie oficial. Salen como `lote-535`, con `grupo: "primeros"`. Si cambian, hay que actualizar `FINCAS_PRIMEROS_LOTES` en `lib/territorios/biopueblo.ts`. Están fuera del 7A a propósito (R40): el validador no se lo exige solo a ellos.
 - `parcelas` pasó de lista a código → Placemark. Los códigos salen de cruzar superficie y posición con la tabla 2.3.2 de la memoria técnica de Martín del 3-nov. Es lectura nuestra, a confirmar con él.
 - Si cambia la superficie mínima o máxima de los lotes, hay que actualizar `precioLote` en `lib/lotes/modelo.ts`: lo vigila un test.
+
+## El borde oeste del 7A (4-nov-2026)
+
+El polígono del KMZ V11 se metía en Chacras de Soluna: pisaba la finca 548, los lotes 536 a 538 y la franja entre ellos. Ahora es el polígono del KMZ menos el contorno de Soluna (990,4 ha), y el barrio 1 se recorta igual. Lo hace `NS_platform/Documentation/datos/generar_territorios.py`. Sigue siendo un dibujo aproximado: la memoria técnica de Martín da 995,96 ha según el plano de mensura.
