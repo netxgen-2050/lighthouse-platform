@@ -341,7 +341,7 @@ test.describe("los primeros 4 lotes", () => {
   test("/lotes los pone primero, con su propio estado administrativo", async ({ page }) => {
     await page.goto("/lotes");
     const enlaces = page.getByRole("region", { name: "Todos los lotes" }).getByRole("link");
-    await expect(enlaces.first()).toContainText("Lote A");
+    await expect(enlaces.first()).toContainText("Lote 535");
     await expect(page.getByRole("heading", { level: 3, name: "Primeros 4 lotes" })).toBeVisible();
     const estado = page.getByRole("region", { name: "Estado administrativo · Primeros 4 lotes" });
     await expect(estado).toContainText("Titular: BioPueblo");
@@ -351,7 +351,7 @@ test.describe("los primeros 4 lotes", () => {
 
   test("la ficha avisa que está fuera del 7A y sin documento; el boleto dice lo mismo", async ({ page }) => {
     await page.goto(`/lotes/${primero.id}`);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lote A");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lote 535");
     await expect(page.getByText(/fuera del polígono del 7A/)).toBeVisible();
     await expect(page.getByText(/Quién vende:/)).toContainText("sin dato");
     await expect(page.getByText(/supuesto de trabajo/)).toHaveCount(0);
@@ -359,13 +359,13 @@ test.describe("los primeros 4 lotes", () => {
     await conTeclado(page, page.getByRole("button", { name: "Simular el pago" }));
     await conTeclado(page, page.getByRole("button", { name: "Confirmar el pago simulado" }));
     const boleto = page.getByRole("region", { name: /Boleto de ejemplo/ });
-    await expect(boleto).toContainText("Lote A");
+    await expect(boleto).toContainText("Lote 535");
     await expect(boleto).toContainText("Aprobación municipal: informada, sin documento a la vista");
   });
 
   test("en inglés", async ({ page }) => {
     await page.goto(`/lotes/${primero.id}?lang=en`);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lot A");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lot 535");
     await expect(page.getByRole("region", { name: "Administrative status · First 4 lots" })).toContainText("reported, no document on hand");
   });
 });

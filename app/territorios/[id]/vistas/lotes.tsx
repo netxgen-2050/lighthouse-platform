@@ -55,7 +55,7 @@ export function FichaLote({ id }: { id: string }) {
   return (
     <div className="grid gap-3">
       <p className="text-sm text-muted" translate="no">Lighthouse VRN</p>
-      <h2 className="text-xl font-semibold">{tx.loteo.lote(lote.etiqueta)}</h2>
+      <h2 className="text-xl font-semibold">{tx.loteo.lote(lote.numero)}</h2>
       <p className="text-sm">
         <strong>{tx.ficha.superficie}</strong> {textoSuperficieM2(lote.superficieM2, idioma)}
       </p>

@@ -26,7 +26,7 @@ type Fase = "inicio" | "reservado" | "pago" | "boleto";
 
 type Props = {
   loteId: string;
-  etiqueta: string;
+  numero: number;
   proyecto: IdProyecto;
   superficieM2?: number;
   opcion: OpcionCompra;
@@ -37,7 +37,7 @@ type Props = {
   compra?: CompraLote;
 };
 
-export function CompraSimulada({ loteId, etiqueta, proyecto, superficieM2, opcion, vio, compras, guardar, compra }: Props) {
+export function CompraSimulada({ loteId, numero, proyecto, superficieM2, opcion, vio, compras, guardar, compra }: Props) {
   const idioma = useIdioma();
   const t = useTextos("lotes");
   const tl = useTextos("territorio").loteo;
@@ -76,7 +76,7 @@ export function CompraSimulada({ loteId, etiqueta, proyecto, superficieM2, opcio
   function alReservar() {
     const r = reservar(compras, loteId, opcion, vio, new Date());
     if (!r.ok) return;
-    aplicar(r.compras, t.compra.anuncioReservado(etiqueta));
+    aplicar(r.compras, t.compra.anuncioReservado(numero));
   }
 
   function alSimularPago() {
@@ -94,12 +94,12 @@ export function CompraSimulada({ loteId, etiqueta, proyecto, superficieM2, opcio
     const r = pagar(compras, loteId, new Date());
     if (!r.ok) return;
     setPagando(false);
-    aplicar(r.compras, t.compra.anuncioPagado(etiqueta));
+    aplicar(r.compras, t.compra.anuncioPagado(numero));
   }
 
   function alDeshacer() {
     setPagando(false);
-    aplicar(deshacer(compras, loteId), t.compra.anuncioDeshecho(etiqueta));
+    aplicar(deshacer(compras, loteId), t.compra.anuncioDeshecho(numero));
     // Si no cambió la fase (por ejemplo, ya estaba en "inicio"), no queda un movimiento de foco pendiente.
     if (!compra) mover.current = false;
   }
@@ -193,7 +193,7 @@ export function CompraSimulada({ loteId, etiqueta, proyecto, superficieM2, opcio
           <p className="text-sm">{t.compra.noSeCobro}</p>
           <ul className="grid gap-1 text-sm break-words">
             <li>
-              <strong>{t.boleto.lote}</strong> {tl.lote(etiqueta)}
+              <strong>{t.boleto.lote}</strong> {tl.lote(numero)}
               {" · "}
               {textoSuperficieM2(superficieM2, idioma)}
             </li>

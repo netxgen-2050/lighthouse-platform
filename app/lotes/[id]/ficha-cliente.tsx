@@ -38,7 +38,7 @@ const BOTON =
 const MARCA = "w-fit rounded-full border border-dashed border-muted px-2 py-0.5 text-xs font-medium";
 
 /** "Hablar con alguien": el mismo pedido de contacto de la plataforma, registrado como consulta por un lote de Lighthouse VRN. */
-function HablarConAlguien({ etiqueta, proyecto }: { etiqueta: string; proyecto: IdProyecto }) {
+function HablarConAlguien({ numero, proyecto }: { numero: number; proyecto: IdProyecto }) {
   const t = useTextos("lotes");
   const tl = useTextos("territorio").loteo;
   const idioma = useIdioma();
@@ -70,7 +70,7 @@ function HablarConAlguien({ etiqueta, proyecto }: { etiqueta: string; proyecto: 
       {abierto && (
         <PedidoContacto
           motivo="consulta-lote-vrn"
-          referencia={tl.lote(etiqueta)}
+          referencia={tl.lote(numero)}
           estadoMostrado={`${estadoLegal.estado} · ${estadoLegal.supuestoDeTrabajo}`}
           aviso={<EstadoAdministrativo proyecto={proyecto} compacto idioma={idioma} />}
           idBoton={idBoton}
@@ -115,7 +115,7 @@ export function FichaCliente({ id }: { id: string }) {
 
   return (
     <div className="mt-4 grid gap-4">
-      <section aria-label={tl.lote(lote.etiqueta)} className={TARJETA}>
+      <section aria-label={tl.lote(lote.numero)} className={TARJETA}>
         <p className="text-sm">
           <strong>{t.ficha.superficie}</strong> {textoSuperficieM2(lote.superficieM2, idioma)}
         </p>
@@ -268,7 +268,7 @@ export function FichaCliente({ id }: { id: string }) {
         </h2>
         <CompraSimulada
           loteId={lote.id}
-          etiqueta={lote.etiqueta}
+          numero={lote.numero}
           proyecto={proyecto}
           superficieM2={lote.superficieM2}
           opcion={opcion}
@@ -277,7 +277,7 @@ export function FichaCliente({ id }: { id: string }) {
           guardar={guardar}
           compra={compra}
         />
-        <HablarConAlguien etiqueta={lote.etiqueta} proyecto={proyecto} />
+        <HablarConAlguien numero={lote.numero} proyecto={proyecto} />
       </section>
 
       <p className="text-sm">

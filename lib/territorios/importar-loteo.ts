@@ -116,8 +116,8 @@ export type MapeoPlano = {
   sector: number;
   /** Número de lote → número de Placemark. */
   lotes: Record<string, number>;
-  /** Letra de lote → número de Placemark: los primeros lotes que se venden, fuera del 7A (R40). */
-  primeros?: Record<string, number>;
+  /** Número de finca de BioPueblo → su Placemark y su superficie oficial: los primeros lotes que se venden, fuera del 7A (R40). */
+  primeros?: Record<string, { placemark: number; m2: number }>;
   /** Código del plano de Martín → número de Placemark. */
   parcelas: Record<string, number>;
   /** Número de Placemark → por qué no se usa. */
@@ -145,7 +145,7 @@ export function convertirConMapeo(xml: string, mapeo: MapeoPlano): Conversion {
   const anotar = (numero: number, clase: string) => clases.set(numero, [...(clases.get(numero) ?? []), clase]);
   anotar(mapeo.sector, "sector");
   for (const [lote, n] of Object.entries(mapeo.lotes)) anotar(n, `lote-${lote}`);
-  for (const [letra, n] of Object.entries(mapeo.primeros ?? {})) anotar(n, `primero-${letra}`);
+  for (const [finca, { placemark }] of Object.entries(mapeo.primeros ?? {})) anotar(placemark, `primero-${finca}`);
   for (const [codigo, n] of Object.entries(mapeo.parcelas)) anotar(n, `parcela-${codigo}`);
   for (const n of Object.keys(mapeo.ignorar)) anotar(Number(n), "ignorar");
 
@@ -181,16 +181,15 @@ export function convertirConMapeo(xml: string, mapeo: MapeoPlano): Conversion {
       continue;
     }
     const lote = clase.match(/^lote-(\d+)$/);
-    const primero = clase.match(/^primero-([a-z])$/);
+    const primero = clase.match(/^primero-(\d+)$/);
     const propiedades: RasgoLoteo["properties"] = primero
       ? {
           tipo: "lote",
           id: `lote-${primero[1]}`,
-          nombre: `Lote ${primero[1].toUpperCase()}`,
-          numero: primero[1].charCodeAt(0) - 96,
-          etiqueta: primero[1].toUpperCase(),
+          nombre: `Lote ${primero[1]}`,
+          numero: Number(primero[1]),
           grupo: "primeros",
-          superficie_m2: redondear(areaM2(anillo)),
+          superficie_m2: mapeo.primeros![primero[1]].m2,
           ilustrativo: true,
         }
       : lote
@@ -248,7 +247,7 @@ export function validarLoteo(
   // Ids de lote: formato y repetidos.
   const vistos = new Map<string, string[]>();
   for (const l of lotes) {
-    if (!/^lote-([1-9]\d*|[a-z])$/.test(l.properties.id)) errores.push(`${l.properties.id}: el id no tiene el formato lote-<número o letra>.`);
+    if (!/^lote-[1-9]\d*$/.test(l.properties.id)) errores.push(`${l.properties.id}: el id no tiene el formato lote-<número>.`);
     vistos.set(l.properties.id, [...(vistos.get(l.properties.id) ?? []), l.properties.nombre]);
   }
   for (const [id, nombres] of vistos) {

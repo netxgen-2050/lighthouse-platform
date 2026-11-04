@@ -61,7 +61,7 @@ describe("estado administrativo", () => {
     expect(de("/territorios/lighthouse")).toEqual(["soluna", "lighthouse-primeros", "lighthouse-norte"]);
     expect(de("/lotes")).toEqual(["lighthouse-primeros", "lighthouse-norte"]);
     expect(de("/lotes/lote-1")).toEqual(["lighthouse-norte"]);
-    expect(de("/lotes/lote-a")).toEqual(["lighthouse-primeros"]);
+    expect(de("/lotes/lote-535")).toEqual(["lighthouse-primeros"]);
   });
   it("los primeros 4 lotes: la aprobación está informada, sin documento, y no figura como otorgada", () => {
     const e = ESTADOS_ADMINISTRATIVOS["lighthouse-primeros"];

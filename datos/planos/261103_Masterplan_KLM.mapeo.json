@@ -1,7 +1,7 @@
 {
-  "nota": "Lectura nuestra del KML de Martín del 3-nov-2026, que viene de CAD sin nombres ni capas: a confirmar con Martín. Las claves son el número del Placemark (…masterplan.<n>). Los códigos de las parcelas salen de cruzar superficie y posición con el cuadro de la memoria técnica del 3-nov (tabla 2.3.2).",
+  "nota": "Lectura nuestra del KML de Martín del 3-nov-2026, que viene de CAD sin nombres ni capas: a confirmar con Martín. Las claves son el número del Placemark (…masterplan.<n>). Los códigos de las parcelas salen de cruzar superficie y posición con el cuadro de la memoria técnica del 3-nov (tabla 2.3.2). Los primeros lotes son las fincas 535 a 538 del loteo de Chacras de Soluna: el número y la superficie son los de BioPueblo, y el dibujo es el de Martín.",
   "sector": 54,
-  "primeros": {"a": 33, "b": 34, "c": 35, "d": 36},
+  "primeros": {"535": {"placemark": 33, "m2": 1867}, "536": {"placemark": 34, "m2": 2061}, "537": {"placemark": 35, "m2": 1964}, "538": {"placemark": 36, "m2": 1430}},
   "lotes": {"1": 29, "2": 26, "3": 25, "4": 23, "5": 20, "6": 19, "7": 17, "8": 14, "9": 12, "10": 28, "11": 27, "12": 24, "13": 22, "14": 21, "15": 18, "16": 16, "17": 15, "18": 13, "19": 32, "20": 31, "21": 30},
   "parcelas": {"CH-01": 63, "CH-02": 43, "CH-03": 58, "CH-04": 59, "CH-05": 61, "CH-06": 60, "RF": 41, "LPE-01": 6, "LPE-02": 5, "LPE-03": 4, "LPE-04": 37, "RE": 53, "LRN-01": 38, "LRN-02": 52, "LRN-03": 51, "LRS-01": 45, "LRS-02": 46, "LRS-03": 47, "CPA": 44, "CI+D": 49, "CE+R": 48, "CP-1": 8, "CP-2": 130, "LR-DM-1": 131, "LR-DM-2": 132, "LR-DM-3": 133, "LR-DM-4": 134, "LR-DM-5": 137},
   "ignorar": {

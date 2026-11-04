@@ -33,14 +33,14 @@ La ficha SHALL mostrar el precio del lote según su superficie, con el texto "pr
 
 #### Scenario: Precio
 - **WHEN** una persona lee la ficha de `lote-1`, de 1.755 m²
-- **THEN** lee "USD 21.064", "precio de ejemplo, a confirmar", el rango de USD 15.000 a USD 40.000 y su ⚖
+- **THEN** lee "USD 20.939", "precio de ejemplo, a confirmar", el rango de USD 15.000 a USD 40.000 y su ⚖
 
 ### Requirement: Costos, aporte y expensas
 La ficha SHALL mostrar el aporte único al procomún, las expensas por año, la infraestructura y la parte del dueño, cada una con su valor marcado "de ejemplo". El aporte MUST mostrarse aparte del precio, sin sumarlos, y decir que no hay dato de si va incluido.
 
 #### Scenario: Valores
 - **WHEN** una persona lee los costos de `lote-1` con "Solo el lote"
-- **THEN** lee el aporte "USD 1.053", las expensas "USD 1.200" por año, la infraestructura "USD 12.000" y la parte del dueño "USD 4.213", todos de ejemplo
+- **THEN** lee el aporte "USD 1.047", las expensas "USD 1.200" por año, la infraestructura "USD 12.000" y la parte del dueño "USD 4.188", todos de ejemplo
 
 #### Scenario: Aporte y precio
 - **WHEN** una persona compara el aporte con el precio
@@ -59,8 +59,8 @@ La ficha SHALL ofrecer elegir entre "Solo el lote", "Casa modular", "Casa famili
 
 #### Scenario: Con casa
 - **WHEN** una persona elige "Casa familiar" con el teclado en `lote-1`
-- **THEN** lee "170 m²", "referencia de Martín", "USD 238.000", el total "USD 259.064" y "estimación de ejemplo"
-- **AND** el aporte pasa a "USD 12.953"
+- **THEN** lee "170 m²", "referencia de Martín", "USD 238.000", el total "USD 258.939" y "estimación de ejemplo"
+- **AND** el aporte pasa a "USD 12.947"
 
 ### Requirement: Hablar con alguien
 La ficha SHALL ofrecer "Hablar con alguien", con el mismo pedido de contacto de la plataforma, registrado como consulta por un lote de Lighthouse VRN, con destino "Equipo NetX". Enviarlo MUST NOT reservar el lote.

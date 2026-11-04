@@ -8,5 +8,5 @@ export const VISTAS_CON_LOTES: readonly { ruta: string; proyectos: readonly IdPr
   { ruta: "/lotes", proyectos: ["lighthouse-primeros", "lighthouse-norte"] },
   // Una ficha de lote, como muestra de todas (`/lotes/[id]`).
   { ruta: "/lotes/lote-1", proyectos: ["lighthouse-norte"] },
-  { ruta: "/lotes/lote-a", proyectos: ["lighthouse-primeros"] },
+  { ruta: "/lotes/lote-535", proyectos: ["lighthouse-primeros"] },
 ];

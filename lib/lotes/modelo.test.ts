@@ -32,8 +32,8 @@ describe("versión", () => {
 });
 
 describe("precio del lote según la superficie", () => {
-  it("da 15.000 con 1.421 m², 40.000 con 2.798 m² y 40.000 con 3.000 m²", () => {
-    expect(precioLote(1_421)).toBe(15_000);
+  it("da 15.000 con 1.430 m², 40.000 con 2.798 m² y 40.000 con 3.000 m²", () => {
+    expect(precioLote(1_430)).toBe(15_000);
     expect(precioLote(2_798)).toBe(40_000);
     expect(precioLote(3_000)).toBe(40_000);
   });

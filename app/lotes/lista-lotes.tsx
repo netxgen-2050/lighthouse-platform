@@ -29,7 +29,7 @@ export function ListaLotes() {
               href={`/lotes/${l.id}`}
               className="block rounded-lg border border-faint bg-surface px-3 py-2 hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
             >
-              <span className="font-medium underline">{tl.lote(l.etiqueta)}</span>
+              <span className="font-medium underline">{tl.lote(l.numero)}</span>
               {" · "}
               {textoSuperficieM2(l.superficieM2, idioma)}
               {" · "}

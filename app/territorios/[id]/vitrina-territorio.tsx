@@ -290,7 +290,7 @@ export function VitrinaTerritorio() {
                 {listarLotes().map((l) => (
                   <li key={l.id}>
                     <button type="button" className={botonLista} aria-pressed={seleccion === l.id} onClick={() => elegir(l.id)}>
-                      {tx.loteo.lote(l.etiqueta)} · {textoSuperficieM2(l.superficieM2, idioma)} · <TextoEstado estado={estadoConCompras(l.id, compras)} />
+                      {tx.loteo.lote(l.numero)} · {textoSuperficieM2(l.superficieM2, idioma)} · <TextoEstado estado={estadoConCompras(l.id, compras)} />
                     </button>
                   </li>
                 ))}

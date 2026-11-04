@@ -6,14 +6,18 @@ La plataforma SHALL mostrar primero los lotes del grupo `primeros`, con su propi
 
 #### Scenario: Lista
 - **WHEN** una persona abre `/lotes`
-- **THEN** el primer lote es "Lote A"
+- **THEN** el primer lote es "Lote 535"
 - **AND** ve el estado administrativo "Primeros 4 lotes" con "Titular: BioPueblo" y "Aprobación municipal: informada, sin documento a la vista"
 
 #### Scenario: Ficha y boleto
-- **WHEN** una persona abre `/lotes/lote-a`
+- **WHEN** una persona abre `/lotes/lote-535`
 - **THEN** lee que el lote está fuera del polígono del 7A, y "Quién vende: sin dato"
 - **AND** no lee "supuesto de trabajo"
 - **AND** el boleto de ejemplo dice "Aprobación municipal: informada, sin documento a la vista"
+
+#### Scenario: Sin doble oferta
+- **WHEN** una persona mira la vitrina de Chacras de Soluna
+- **THEN** las fincas 535 a 538 no figuran: se muestran solo como lotes
 
 ### Requirement: Qué es cada parcela
 

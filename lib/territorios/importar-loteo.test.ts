@@ -239,11 +239,11 @@ describe("plano sin nombres (CAD) con mapeo", () => {
     expect(rasgos.map((r) => r.properties.id)).toEqual(["sector-norte", "lote-7", "parcela-P3"]);
   });
 
-  it("los primeros lotes llevan letra y grupo, y el 7A no se les exige", () => {
-    const { rasgos, errores } = convertirConMapeo(plano, { ...mapeo, lotes: {}, primeros: { a: 2 } });
+  it("los primeros lotes llevan el número y la superficie de la finca, y el 7A no se les exige", () => {
+    const { rasgos, errores } = convertirConMapeo(plano, { ...mapeo, lotes: {}, primeros: { "535": { placemark: 2, m2: 1867 } } });
     expect(errores).toEqual([]);
     const lote = rasgos.find((r) => r.properties.tipo === "lote");
-    expect(lote?.properties).toMatchObject({ id: "lote-a", nombre: "Lote A", etiqueta: "A", grupo: "primeros" });
+    expect(lote?.properties).toMatchObject({ id: "lote-535", nombre: "Lote 535", numero: 535, grupo: "primeros", superficie_m2: 1867 });
     const lejos: Anillo = [[0, 0], [0, 0.0001], [0.0001, 0.0001], [0, 0]];
     expect(validarLoteo([lote!], lejos, [], []).errores).toEqual([]);
     expect(validarLoteo([{ ...lote!, properties: { ...lote!.properties, grupo: undefined } }], lejos, [], []).errores.join()).toContain("queda fuera del polígono del 7A");

@@ -12,8 +12,6 @@ export type TipoRasgoLoteo = "sector" | "parcela" | "produccion" | "uso-comun" |
 export type Lote = {
   id: string;
   numero: number;
-  /** Cómo se llama en pantalla: "7" o "A". */
-  etiqueta: string;
   /** "primeros": los que se venden primero, fuera del 7A (R40). */
   grupo: GrupoLote;
   nombre: string;
@@ -36,7 +34,6 @@ export type PropiedadesLoteo = {
   id: string;
   nombre: string;
   numero?: number;
-  etiqueta?: string;
   grupo?: "primeros";
   clase?: string;
   area_ha?: number;
@@ -62,7 +59,6 @@ export function loteoDe(archivo: ArchivoLoteo) {
       .map((r) => ({
         id: r.properties.id,
         numero: r.properties.numero ?? Number(r.properties.id.replace(/^lote-/, "")),
-        etiqueta: r.properties.etiqueta ?? String(r.properties.numero ?? r.properties.id.replace(/^lote-/, "")),
         grupo: r.properties.grupo ?? ("norte" as const),
         nombre: r.properties.nombre,
         clase: r.properties.clase,

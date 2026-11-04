@@ -6,10 +6,10 @@ Gus informó el 4-nov-2026 que los primeros lotes que se venden son 4 aledaños 
 
 ## What Changes
 
-- **Lotes A, B, C y D** (Placemarks 33 a 36) entran como grupo `primeros`: van primero en la lista, en el mapa y en Sumarte, y el importador no les exige estar dentro del 7A.
+- **Lotes 535 a 538** (Placemarks 33 a 36) entran como grupo `primeros`: van primero en la lista, en el mapa y en Sumarte, y el importador no les exige estar dentro del 7A. Son las fincas 535 a 538 de Chacras de Soluna: el número y la superficie son los de BioPueblo y el dibujo es el de Martín. Esas 4 fincas salen de la vitrina para no ofrecer dos veces el mismo terreno.
 - **Estado administrativo propio** (`lighthouse-primeros`): titular BioPueblo; aprobación "informada, sin documento a la vista"; expediente y fecha "sin dato"; ⚖ `primeroslotes` en borrador. `aprobacionMunicipal` sigue en `false`.
 - **Aviso en la ficha** de cada uno: fuera del polígono del 7A, sin documento, simulación.
-- **La escala de precio** baja su mínimo a 1.421 m². Los precios de los 21 lotes cambian.
+- **La escala de precio** baja su mínimo a 1.430 m². Los precios de los 21 lotes cambian.
 - **Parcelas con código y uso** del cuadro 2.3.2 de la memoria técnica: el mapeo las nombra y el panel del mapa dice qué es cada una. Sigue siendo lectura nuestra, a confirmar con Martín.
 
 ## Fuera de alcance
