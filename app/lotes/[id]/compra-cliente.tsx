@@ -5,7 +5,7 @@ import { TerminoLegal } from "@/components/termino-legal";
 import { EntrarPara } from "@/components/sesion/entrar-para";
 import { useSesion } from "@/components/sesion/contexto";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
-import { ESTADOS_ADMINISTRATIVOS, accionesDeLote } from "@/lib/legal/estado-administrativo";
+import { ESTADOS_ADMINISTRATIVOS, accionesDeLote, type IdProyecto } from "@/lib/legal/estado-administrativo";
 import { deshacer, pagar, reservar, type CompraLote, type LoVisto } from "@/lib/lotes/compra";
 import { usdEn } from "@/lib/lotes/formato";
 import type { OpcionCompra } from "@/lib/lotes/modelo";
@@ -26,7 +26,8 @@ type Fase = "inicio" | "reservado" | "pago" | "boleto";
 
 type Props = {
   loteId: string;
-  numero: number;
+  etiqueta: string;
+  proyecto: IdProyecto;
   superficieM2?: number;
   opcion: OpcionCompra;
   vio: LoVisto;
@@ -36,7 +37,7 @@ type Props = {
   compra?: CompraLote;
 };
 
-export function CompraSimulada({ loteId, numero, superficieM2, opcion, vio, compras, guardar, compra }: Props) {
+export function CompraSimulada({ loteId, etiqueta, proyecto, superficieM2, opcion, vio, compras, guardar, compra }: Props) {
   const idioma = useIdioma();
   const t = useTextos("lotes");
   const tl = useTextos("territorio").loteo;
@@ -75,7 +76,7 @@ export function CompraSimulada({ loteId, numero, superficieM2, opcion, vio, comp
   function alReservar() {
     const r = reservar(compras, loteId, opcion, vio, new Date());
     if (!r.ok) return;
-    aplicar(r.compras, t.compra.anuncioReservado(numero));
+    aplicar(r.compras, t.compra.anuncioReservado(etiqueta));
   }
 
   function alSimularPago() {
@@ -93,18 +94,18 @@ export function CompraSimulada({ loteId, numero, superficieM2, opcion, vio, comp
     const r = pagar(compras, loteId, new Date());
     if (!r.ok) return;
     setPagando(false);
-    aplicar(r.compras, t.compra.anuncioPagado(numero));
+    aplicar(r.compras, t.compra.anuncioPagado(etiqueta));
   }
 
   function alDeshacer() {
     setPagando(false);
-    aplicar(deshacer(compras, loteId), t.compra.anuncioDeshecho(numero));
+    aplicar(deshacer(compras, loteId), t.compra.anuncioDeshecho(etiqueta));
     // Si no cambió la fase (por ejemplo, ya estaba en "inicio"), no queda un movimiento de foco pendiente.
     if (!compra) mover.current = false;
   }
 
-  const norte = ESTADOS_ADMINISTRATIVOS["lighthouse-norte"];
-  const ofreceReservar = accionesDeLote("lighthouse-norte").includes("reservar");
+  const estadoLegal = ESTADOS_ADMINISTRATIVOS[proyecto];
+  const ofreceReservar = accionesDeLote(proyecto).includes("reservar");
 
   return (
     <div className="grid gap-3">
@@ -192,7 +193,7 @@ export function CompraSimulada({ loteId, numero, superficieM2, opcion, vio, comp
           <p className="text-sm">{t.compra.noSeCobro}</p>
           <ul className="grid gap-1 text-sm break-words">
             <li>
-              <strong>{t.boleto.lote}</strong> {tl.lote(numero)}
+              <strong>{t.boleto.lote}</strong> {tl.lote(etiqueta)}
               {" · "}
               {textoSuperficieM2(superficieM2, idioma)}
             </li>
@@ -224,7 +225,7 @@ export function CompraSimulada({ loteId, numero, superficieM2, opcion, vio, comp
             </li>
             <li>
               {t.boleto.aprobacion}{" "}
-              {idioma === "en" && norte.en?.supuestoDeTrabajo ? norte.en.supuestoDeTrabajo : norte.supuestoDeTrabajo}
+              {idioma === "en" && estadoLegal.en?.supuestoDeTrabajo ? estadoLegal.en.supuestoDeTrabajo : estadoLegal.supuestoDeTrabajo}
             </li>
             <li>
               {t.boleto.reservado} {formatearFecha(compra.reservadoEl, idioma, "corto")}

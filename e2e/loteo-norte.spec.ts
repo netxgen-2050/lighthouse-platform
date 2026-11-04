@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "./fixtura";
 import { formatearNumero } from "../lib/idioma/formatos";
-import { fuenteDelLoteo, listarLotes } from "../lib/territorios/loteo";
+import { fuenteDelLoteo, listarLotes, lotesDelGrupo } from "../lib/territorios/loteo";
 import { resumenDelLoteo } from "../lib/territorios/loteo-textos";
 
 // Las teselas satelitales son externas: los tests no dependen de ellas.
@@ -44,9 +44,11 @@ test("con el plano de Martín, dice que qué es un lote es nuestra lectura y sep
   test.skip(!noEsBoceto, "solo con el plano de Martín");
   await page.goto("/territorios/lighthouse");
   await expect(ficha(page).getByText(/Plano de Martín/)).toBeVisible();
-  await expect(ficha(page).getByText(/nuestra lectura, a confirmar con Martín/)).toBeVisible();
-  await expect(ficha(page).getByText(/parcelas sin decir su uso \(sin dato\)/)).toBeVisible();
-  await expect(page.getByRole("group", { name: "Leyenda del mapa" })).toContainText("Otra parcela (uso: sin dato)");
+  await expect(ficha(page).getByText(/nuestra lectura, a confirmar con él/)).toBeVisible();
+  await expect(ficha(page).getByText(/parcelas con otros usos, según la memoria técnica/)).toBeVisible();
+  await ficha(page).getByText("Qué es cada parcela").click();
+  await expect(ficha(page).getByText(/CH-01.*Chacra: vid y olivo/)).toBeVisible();
+  await expect(page.getByRole("group", { name: "Leyenda del mapa" })).toContainText("Otra parcela (no es un lote)");
 });
 
 test("elegir un lote con el teclado: Tab, Enter, panel y URL", async ({ page }) => {
@@ -57,7 +59,7 @@ test("elegir un lote con el teclado: Tab, Enter, panel y URL", async ({ page }) 
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/sel=lote-7/);
   await expect(ficha(page).getByRole("heading", { name: "Lote 7" })).toBeVisible();
-  await expect(ficha(page).getByText(`${formatearNumero(listarLotes()[6].superficieM2!, "es")} m²`)).toBeVisible();
+  await expect(ficha(page).getByText(`${formatearNumero(lotesDelGrupo("norte")[6].superficieM2!, "es")} m²`)).toBeVisible();
   await expect(ficha(page).getByText(/Disponible/)).toBeVisible();
   await expect(ficha(page).getByText("Loteo provisorio, ilustrativo")).toBeVisible();
   await expect(ficha(page).getByText(/supuesto de trabajo, no otorgada/)).toBeVisible();
@@ -67,7 +69,7 @@ test("elegir un lote con el teclado: Tab, Enter, panel y URL", async ({ page }) 
 
 test("cada lote de la lista dice su número, superficie y estado", async ({ page }) => {
   await page.goto("/territorios/lighthouse");
-  const l = listarLotes()[0];
+  const l = lotesDelGrupo("norte")[0];
   const m2 = l.superficieM2 === undefined ? "sin dato" : `${formatearNumero(l.superficieM2, "es")} m²`;
   await expect(lista(page).getByRole("button", { name: `Lote ${l.numero} · ${m2} · Disponible` })).toBeVisible();
 });

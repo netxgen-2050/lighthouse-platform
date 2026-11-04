@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "./fixtura";
 import { formatearNumero } from "../lib/idioma/formatos";
 import { ESTADOS_EJEMPLO, estadoDeLote } from "../lib/territorios/loteo-estados";
-import { listarLotes } from "../lib/territorios/loteo";
+import { lotesDelGrupo } from "../lib/territorios/loteo";
 import {
   MODELO_LOTES,
   VERSION_MODELO_LOTES,
@@ -19,7 +19,8 @@ test.beforeEach(async ({ page }) => {
   await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
 });
 
-const lotes = listarLotes();
+const lotes = lotesDelGrupo("norte");
+const primero = lotesDelGrupo("primeros")[0];
 const disponibles = lotes.filter((l) => estadoDeLote(l.id) === "disponible");
 const lote = disponibles[0];
 const otro = disponibles[1];
@@ -334,4 +335,37 @@ test("/lotes y una ficha no se dejan indexar", async ({ page }) => {
     await page.goto(ruta);
     await expect(page.locator('meta[name="robots"]'), ruta).toHaveAttribute("content", "noindex, nofollow");
   }
+});
+
+test.describe("los primeros 4 lotes", () => {
+  test("/lotes los pone primero, con su propio estado administrativo", async ({ page }) => {
+    await page.goto("/lotes");
+    const enlaces = page.getByRole("region", { name: "Todos los lotes" }).getByRole("link");
+    await expect(enlaces.first()).toContainText("Lote A");
+    await expect(page.getByRole("heading", { level: 3, name: "Primeros 4 lotes" })).toBeVisible();
+    const estado = page.getByRole("region", { name: "Estado administrativo · Primeros 4 lotes" });
+    await expect(estado).toContainText("Titular: BioPueblo");
+    await expect(estado).toContainText("Aprobación municipal: informada, sin documento a la vista");
+    await expect(estado).toContainText("Fecha: sin dato");
+  });
+
+  test("la ficha avisa que está fuera del 7A y sin documento; el boleto dice lo mismo", async ({ page }) => {
+    await page.goto(`/lotes/${primero.id}`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lote A");
+    await expect(page.getByText(/fuera del polígono del 7A/)).toBeVisible();
+    await expect(page.getByText(/Quién vende:/)).toContainText("sin dato");
+    await expect(page.getByText(/supuesto de trabajo/)).toHaveCount(0);
+    await conTeclado(page, page.getByRole("button", { name: "Reservar (simulado)" }));
+    await conTeclado(page, page.getByRole("button", { name: "Simular el pago" }));
+    await conTeclado(page, page.getByRole("button", { name: "Confirmar el pago simulado" }));
+    const boleto = page.getByRole("region", { name: /Boleto de ejemplo/ });
+    await expect(boleto).toContainText("Lote A");
+    await expect(boleto).toContainText("Aprobación municipal: informada, sin documento a la vista");
+  });
+
+  test("en inglés", async ({ page }) => {
+    await page.goto(`/lotes/${primero.id}?lang=en`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lot A");
+    await expect(page.getByRole("region", { name: "Administrative status · First 4 lots" })).toContainText("reported, no document on hand");
+  });
 });

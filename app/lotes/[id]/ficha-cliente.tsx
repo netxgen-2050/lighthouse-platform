@@ -13,7 +13,7 @@ import { guardarPedido } from "@/lib/contactos/almacen";
 import type { Pedido } from "@/lib/contactos/tipos";
 import { sinDato as textoSinDato } from "@/lib/idioma/formatos";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
-import { ESTADOS_ADMINISTRATIVOS } from "@/lib/legal/estado-administrativo";
+import { ESTADOS_ADMINISTRATIVOS, proyectoDeGrupo, type IdProyecto } from "@/lib/legal/estado-administrativo";
 import { compraDe, estadoConCompras } from "@/lib/lotes/compra";
 import {
   MODELO_LOTES,
@@ -38,7 +38,7 @@ const BOTON =
 const MARCA = "w-fit rounded-full border border-dashed border-muted px-2 py-0.5 text-xs font-medium";
 
 /** "Hablar con alguien": el mismo pedido de contacto de la plataforma, registrado como consulta por un lote de Lighthouse VRN. */
-function HablarConAlguien({ numero }: { numero: number }) {
+function HablarConAlguien({ etiqueta, proyecto }: { etiqueta: string; proyecto: IdProyecto }) {
   const t = useTextos("lotes");
   const tl = useTextos("territorio").loteo;
   const idioma = useIdioma();
@@ -46,7 +46,7 @@ function HablarConAlguien({ numero }: { numero: number }) {
   const [abierto, setAbierto] = useState(false);
   const [enviado, setEnviado] = useState(false);
   const idBoton = `hablar-${useId()}`;
-  const norte = ESTADOS_ADMINISTRATIVOS["lighthouse-norte"];
+  const estadoLegal = ESTADOS_ADMINISTRATIVOS[proyecto];
 
   if (estado !== "ok") return <EntrarPara texto={t.acciones.entrarHablar} />;
 
@@ -70,9 +70,9 @@ function HablarConAlguien({ numero }: { numero: number }) {
       {abierto && (
         <PedidoContacto
           motivo="consulta-lote-vrn"
-          referencia={tl.lote(numero)}
-          estadoMostrado={`${norte.estado} · ${norte.supuestoDeTrabajo}`}
-          aviso={<EstadoAdministrativo proyecto="lighthouse-norte" compacto idioma={idioma} />}
+          referencia={tl.lote(etiqueta)}
+          estadoMostrado={`${estadoLegal.estado} · ${estadoLegal.supuestoDeTrabajo}`}
+          aviso={<EstadoAdministrativo proyecto={proyecto} compacto idioma={idioma} />}
           idBoton={idBoton}
           alEnviar={alEnviar}
           alCancelar={() => setAbierto(false)}
@@ -92,6 +92,7 @@ export function FichaCliente({ id }: { id: string }) {
   const lote = listarLotes().find((l) => l.id === id);
   if (!lote) return null;
 
+  const proyecto = proyectoDeGrupo(lote.grupo);
   const estado = estadoConCompras(id, compras);
   // La reserva o el pago simulados fijan la opción: el boleto muestra lo que se vio.
   const compra = estado === "reservado-por-vos" || estado === "vendido-a-vos" ? compraDe(compras, id) : undefined;
@@ -114,7 +115,7 @@ export function FichaCliente({ id }: { id: string }) {
 
   return (
     <div className="mt-4 grid gap-4">
-      <section aria-label={tl.lote(lote.numero)} className={TARJETA}>
+      <section aria-label={tl.lote(lote.etiqueta)} className={TARJETA}>
         <p className="text-sm">
           <strong>{t.ficha.superficie}</strong> {textoSuperficieM2(lote.superficieM2, idioma)}
         </p>
@@ -259,7 +260,7 @@ export function FichaCliente({ id }: { id: string }) {
         <p className="text-sm font-medium">{t.derechos.queNoDa}</p>
       </section>
 
-      <EstadoAdministrativo proyecto="lighthouse-norte" idioma={idioma} />
+      <EstadoAdministrativo proyecto={proyecto} idioma={idioma} />
 
       <section aria-labelledby="ficha-acciones" className={TARJETA}>
         <h2 id="ficha-acciones" className="sr-only">
@@ -267,7 +268,8 @@ export function FichaCliente({ id }: { id: string }) {
         </h2>
         <CompraSimulada
           loteId={lote.id}
-          numero={lote.numero}
+          etiqueta={lote.etiqueta}
+          proyecto={proyecto}
           superficieM2={lote.superficieM2}
           opcion={opcion}
           vio={vio}
@@ -275,7 +277,7 @@ export function FichaCliente({ id }: { id: string }) {
           guardar={guardar}
           compra={compra}
         />
-        <HablarConAlguien numero={lote.numero} />
+        <HablarConAlguien etiqueta={lote.etiqueta} proyecto={proyecto} />
       </section>
 
       <p className="text-sm">

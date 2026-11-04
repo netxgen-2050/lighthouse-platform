@@ -28,7 +28,7 @@ Todo valor del módulo SHALL mostrarse como de ejemplo. Lo que no salga de un pr
 El precio de un lote SHALL ir de forma lineal del mínimo al máximo del rango según su superficie, y MUST quedar en el extremo si la superficie está fuera del rango. Sin superficie, el precio MUST decir "sin dato".
 
 #### Scenario: Extremos
-- **WHEN** se calcula el precio de lotes de 1.680 y 2.798 m²
+- **WHEN** se calcula el precio de lotes de 1.421 y 2.798 m²
 - **THEN** dan USD 15.000 y USD 40.000
 
 #### Scenario: Fuera de rango

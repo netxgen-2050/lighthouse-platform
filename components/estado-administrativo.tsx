@@ -26,7 +26,7 @@ export function EstadoAdministrativo({
   const en = idioma === "en" && !!base.en;
   const idiomaTermino = en ? "en" : "es";
   const e = en && base.en ? { ...base, ...base.en } : base;
-  const clave = supuesto ? "loteonorte" : "loteo";
+  const clave = base.terminoLegal ?? (supuesto ? "loteonorte" : "loteo");
   const sinDato = en ? "no data" : "sin dato";
   const dato = (v: string) => (v === "sin dato" ? sinDato : v);
   const L =

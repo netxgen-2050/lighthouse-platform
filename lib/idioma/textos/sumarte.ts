@@ -155,7 +155,7 @@ const es = {
   comprarLote: {
     titulo: "Comprar un lote",
     texto: (precio: string) =>
-      `Lotes privados en el sector norte de Lighthouse VRN, con un loteo provisorio e ilustrativo. Desde ${precio} el lote, con opción de casa: precios de ejemplo, a confirmar. Es una simulación: no se cobra nada y no reserva ningún lote de verdad.`,
+      `Lotes privados: primero 4 junto a Lighthouse VRN, fuera del 7A, y después el sector norte, con un loteo provisorio e ilustrativo. Desde ${precio} el lote, con opción de casa: precios de ejemplo, a confirmar. Es una simulación: no se cobra nada y no reserva ningún lote de verdad.`,
     enlace: "Ver los lotes",
   },
   invertir: {
@@ -361,7 +361,7 @@ const en: Textos<typeof es> = {
   comprarLote: {
     titulo: "Buy a lot",
     texto: (precio: string) =>
-      `Private lots in the north sector of Lighthouse VRN, on a provisional, illustrative subdivision. From ${precio} per lot, with a house option: sample prices, to be confirmed. It's a simulation: nothing is charged and no lot is really reserved.`,
+      `Private lots: first 4 next to Lighthouse VRN, outside the 7A, then the north sector, on a provisional, illustrative subdivision. From ${precio} per lot, with a house option: sample prices, to be confirmed. It's a simulation: nothing is charged and no lot is really reserved.`,
     enlace: "See the lots",
   },
   invertir: {

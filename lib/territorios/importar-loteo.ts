@@ -116,7 +116,10 @@ export type MapeoPlano = {
   sector: number;
   /** Número de lote → número de Placemark. */
   lotes: Record<string, number>;
-  parcelas: number[];
+  /** Letra de lote → número de Placemark: los primeros lotes que se venden, fuera del 7A (R40). */
+  primeros?: Record<string, number>;
+  /** Código del plano de Martín → número de Placemark. */
+  parcelas: Record<string, number>;
   /** Número de Placemark → por qué no se usa. */
   ignorar: Record<string, string>;
 };
@@ -142,7 +145,8 @@ export function convertirConMapeo(xml: string, mapeo: MapeoPlano): Conversion {
   const anotar = (numero: number, clase: string) => clases.set(numero, [...(clases.get(numero) ?? []), clase]);
   anotar(mapeo.sector, "sector");
   for (const [lote, n] of Object.entries(mapeo.lotes)) anotar(n, `lote-${lote}`);
-  for (const n of mapeo.parcelas) anotar(n, "parcela");
+  for (const [letra, n] of Object.entries(mapeo.primeros ?? {})) anotar(n, `primero-${letra}`);
+  for (const [codigo, n] of Object.entries(mapeo.parcelas)) anotar(n, `parcela-${codigo}`);
   for (const n of Object.keys(mapeo.ignorar)) anotar(Number(n), "ignorar");
 
   const placemarks = leerKml(xml);
@@ -177,11 +181,23 @@ export function convertirConMapeo(xml: string, mapeo: MapeoPlano): Conversion {
       continue;
     }
     const lote = clase.match(/^lote-(\d+)$/);
-    const propiedades: RasgoLoteo["properties"] = lote
-      ? { tipo: "lote", id: clase, nombre: `Lote ${lote[1]}`, numero: Number(lote[1]), superficie_m2: redondear(areaM2(anillo)), ilustrativo: true }
-      : clase === "sector"
-        ? { tipo: "sector", id: "sector-norte", nombre: "Sector norte", area_ha: redondear(areaM2(anillo) / 10_000, 1), ilustrativo: true }
-        : { tipo: "parcela", id: `parcela-${p.numero}`, nombre: "Parcela sin uso definido", ilustrativo: true };
+    const primero = clase.match(/^primero-([a-z])$/);
+    const propiedades: RasgoLoteo["properties"] = primero
+      ? {
+          tipo: "lote",
+          id: `lote-${primero[1]}`,
+          nombre: `Lote ${primero[1].toUpperCase()}`,
+          numero: primero[1].charCodeAt(0) - 96,
+          etiqueta: primero[1].toUpperCase(),
+          grupo: "primeros",
+          superficie_m2: redondear(areaM2(anillo)),
+          ilustrativo: true,
+        }
+      : lote
+        ? { tipo: "lote", id: clase, nombre: `Lote ${lote[1]}`, numero: Number(lote[1]), superficie_m2: redondear(areaM2(anillo)), ilustrativo: true }
+        : clase === "sector"
+          ? { tipo: "sector", id: "sector-norte", nombre: "Sector norte", area_ha: redondear(areaM2(anillo) / 10_000, 1), ilustrativo: true }
+          : { tipo: "parcela", id: clase, nombre: clase.replace(/^parcela-/, ""), ilustrativo: true };
     rasgos.push({ type: "Feature", properties: propiedades, geometry: { type: "Polygon", coordinates: [anillo] } });
   }
   return { rasgos, errores };
@@ -232,7 +248,7 @@ export function validarLoteo(
   // Ids de lote: formato y repetidos.
   const vistos = new Map<string, string[]>();
   for (const l of lotes) {
-    if (!/^lote-[1-9]\d*$/.test(l.properties.id)) errores.push(`${l.properties.id}: el id no tiene el formato lote-<número>.`);
+    if (!/^lote-([1-9]\d*|[a-z])$/.test(l.properties.id)) errores.push(`${l.properties.id}: el id no tiene el formato lote-<número o letra>.`);
     vistos.set(l.properties.id, [...(vistos.get(l.properties.id) ?? []), l.properties.nombre]);
   }
   for (const [id, nombres] of vistos) {
@@ -251,7 +267,8 @@ export function validarLoteo(
   // Geometría: solo de los anillos válidos, para no cascadear errores.
   const geometricos = lotes.filter((l) => anilloValido(l.geometry.coordinates[0] ?? []));
   for (const l of geometricos) {
-    if (!anilloDentro(l.geometry.coordinates[0], anillo7A)) errores.push(`${l.properties.id}: queda fuera del polígono del 7A.`);
+    // Los primeros lotes están fuera del 7A a propósito (R40).
+    if (l.properties.grupo !== "primeros" && !anilloDentro(l.geometry.coordinates[0], anillo7A)) errores.push(`${l.properties.id}: queda fuera del polígono del 7A.`);
   }
   for (let i = 0; i < geometricos.length; i++) {
     for (let j = i + 1; j < geometricos.length; j++) {

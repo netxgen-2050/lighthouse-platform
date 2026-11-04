@@ -1,3 +1,5 @@
+import type { ClaveTermino } from "./terminos";
+
 // Estado administrativo (loteo y aprobación municipal) de los proyectos con lotes.
 // Regla C1: toda vista con lotes muestra este estado. Lo que se ofrece sobre un lote
 // depende de `ventaSimulada` (ADR-030), nunca de `aprobacionMunicipal`: la aprobación
@@ -16,6 +18,8 @@ export type EstadoAdministrativo = {
   ventaSimulada?: true;
   /** Texto que reemplaza a "aprobada/pendiente" cuando se trabaja con un supuesto. */
   supuestoDeTrabajo?: string;
+  /** El ⚖ del aviso, si no es el de siempre. */
+  terminoLegal?: ClaveTermino;
   /** Fecha de la aprobación. Si falta, "sin dato". */
   fechaAprobacion?: string;
   /** Fecha del dato (AAAA-MM-DD). */
@@ -29,7 +33,7 @@ export type EstadoAdministrativo = {
   };
 };
 
-export type IdProyecto = "soluna" | "lighthouse-norte";
+export type IdProyecto = "soluna" | "lighthouse-norte" | "lighthouse-primeros";
 
 export const ESTADOS_ADMINISTRATIVOS: Record<IdProyecto, EstadoAdministrativo> = {
   soluna: {
@@ -60,7 +64,32 @@ export const ESTADOS_ADMINISTRATIVOS: Record<IdProyecto, EstadoAdministrativo> =
       supuestoDeTrabajo: "working assumption, not granted",
     },
   },
+  // Los primeros que se venden, fuera del 7A: la excepción a "Soluna es vitrina" (R40, Gus, 4-nov-2026).
+  // Nos informaron que están aprobados, pero no hay documento: no se muestra como otorgada.
+  "lighthouse-primeros": {
+    proyecto: "Primeros 4 lotes · junto a Lighthouse VRN",
+    titular: "BioPueblo",
+    estado: "Loteo de Chacras de Soluna",
+    norma: "Ord. 173/2026 de Mainqué",
+    normaCorta: "Ord. 173/2026",
+    aprobacionMunicipal: false,
+    ventaSimulada: true,
+    supuestoDeTrabajo: "informada, sin documento a la vista",
+    terminoLegal: "primeroslotes",
+    actualizado: "2026-11-04",
+    en: {
+      proyecto: "First 4 lots · next to Lighthouse VRN",
+      estado: "Chacras de Soluna subdivision",
+      norma: "Ord. 173/2026 of Mainqué",
+      normaCorta: "Ord. 173/2026",
+      supuestoDeTrabajo: "reported, no document on hand",
+    },
+  },
 };
+
+/** El proyecto cuyo estado administrativo le corresponde a un lote. */
+export const proyectoDeGrupo = (grupo: "primeros" | "norte"): IdProyecto =>
+  grupo === "primeros" ? "lighthouse-primeros" : "lighthouse-norte";
 
 export type AccionDeLote = "consultar" | "comprar" | "reservar";
 

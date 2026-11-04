@@ -1,8 +1,9 @@
 {
-  "nota": "Lectura nuestra del KML de Martín del 3-nov-2026, que viene de CAD sin nombres ni capas: a confirmar con Martín. Las claves son el número del Placemark (…masterplan.<n>). Las copias con la misma geometría heredan la clase de su original.",
+  "nota": "Lectura nuestra del KML de Martín del 3-nov-2026, que viene de CAD sin nombres ni capas: a confirmar con Martín. Las claves son el número del Placemark (…masterplan.<n>). Los códigos de las parcelas salen de cruzar superficie y posición con el cuadro de la memoria técnica del 3-nov (tabla 2.3.2).",
   "sector": 54,
+  "primeros": {"a": 33, "b": 34, "c": 35, "d": 36},
   "lotes": {"1": 29, "2": 26, "3": 25, "4": 23, "5": 20, "6": 19, "7": 17, "8": 14, "9": 12, "10": 28, "11": 27, "12": 24, "13": 22, "14": 21, "15": 18, "16": 16, "17": 15, "18": 13, "19": 32, "20": 31, "21": 30},
-  "parcelas": [4, 5, 6, 37, 38, 41, 43, 44, 45, 46, 47, 48, 49, 51, 52, 53, 58, 59, 60, 61, 63, 130, 131, 132, 133, 134, 137],
+  "parcelas": {"CH-01": 63, "CH-02": 43, "CH-03": 58, "CH-04": 59, "CH-05": 61, "CH-06": 60, "RF": 41, "LPE-01": 6, "LPE-02": 5, "LPE-03": 4, "LPE-04": 37, "RE": 53, "LRN-01": 38, "LRN-02": 52, "LRN-03": 51, "LRS-01": 45, "LRS-02": 46, "LRS-03": 47, "CPA": 44, "CI+D": 49, "CE+R": 48, "CP-1": 8, "CP-2": 130, "LR-DM-1": 131, "LR-DM-2": 132, "LR-DM-3": 133, "LR-DM-4": 134, "LR-DM-5": 137},
   "ignorar": {
     "1": "Línea abierta: corredor central del 7A",
     "2": "Línea abierta: división al sur del sector",
@@ -33,13 +34,8 @@
     "135": "Anillo de la rotonda",
     "71": "Anillo de la rotonda",
     "72": "Anillo de la rotonda",
-    "8": "Anillo de la rotonda",
-    "84": "Anillo de la rotonda",
+    "84": "Copia de la parcela CP-1 (Placemark 8)",
     "11": "Copia casi igual de la parcela 130",
-    "65": "Contorno de 83,4 ha al sur del sector: coincide con la zona B de Permacultura",
-    "33": "Fuera del polígono del 7A (hasta 98 m): parece uno de los 4 lotes heredados del Macrolote 5. Nunca se muestra como lote de Lighthouse VRN",
-    "34": "Fuera del polígono del 7A (hasta 98 m): parece uno de los 4 lotes heredados del Macrolote 5. Nunca se muestra como lote de Lighthouse VRN",
-    "35": "Fuera del polígono del 7A (hasta 98 m): parece uno de los 4 lotes heredados del Macrolote 5. Nunca se muestra como lote de Lighthouse VRN",
-    "36": "Fuera del polígono del 7A (hasta 98 m): parece uno de los 4 lotes heredados del Macrolote 5. Nunca se muestra como lote de Lighthouse VRN"
-}
+    "65": "Contorno de 83,4 ha al sur del sector: coincide con la zona B de Permacultura"
+  }
 }

@@ -15,7 +15,7 @@ import { useCompras } from "@/components/lotes/usar-compras";
 import { estadoConCompras } from "@/lib/lotes/compra";
 import { FASE_ACTUAL, FASES, type Fase } from "@/lib/territorios/fases";
 import { listarLotes, sectorNorte, zonasDelLoteo } from "@/lib/territorios/loteo";
-import { resumenDelLoteo } from "@/lib/territorios/loteo-textos";
+import { resumenDelLoteo, resumenDePrimeros } from "@/lib/territorios/loteo-textos";
 import {
   VISTAS,
   VISTA_POR_DEFECTO,
@@ -284,12 +284,13 @@ export function VitrinaTerritorio() {
                 {tx.loteo.listaTitulo}
               </h4>
               <MarcaLoteo />
+              {resumenDePrimeros(idioma) && <p className="text-sm font-medium">{resumenDePrimeros(idioma)}</p>}
               <p className="text-sm">{resumenDelLoteo(idioma)}</p>
               <ul aria-labelledby="lista-lotes-titulo" className="flex flex-wrap gap-2">
                 {listarLotes().map((l) => (
                   <li key={l.id}>
                     <button type="button" className={botonLista} aria-pressed={seleccion === l.id} onClick={() => elegir(l.id)}>
-                      {tx.loteo.lote(l.numero)} · {textoSuperficieM2(l.superficieM2, idioma)} · <TextoEstado estado={estadoConCompras(l.id, compras)} />
+                      {tx.loteo.lote(l.etiqueta)} · {textoSuperficieM2(l.superficieM2, idioma)} · <TextoEstado estado={estadoConCompras(l.id, compras)} />
                     </button>
                   </li>
                 ))}

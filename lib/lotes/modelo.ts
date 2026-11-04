@@ -18,8 +18,8 @@ export const OPCIONES_COMPRA: readonly OpcionCompra[] = ["solo-lote", "modular",
 
 export const MODELO_LOTES = {
   // USD; [NC, llamada sin registro]; lineal entre tamaños. Los extremos de superficie son los del plano de Martín
-  // (21 lotes, 3-nov-2026): un test comprueba que siguen siendo los de `rangoDeSuperficies()`.
-  precioLote: { min: 15_000, max: 40_000, m2Min: 1_680, m2Max: 2_798 },
+  // (21 lotes y los primeros 4, 3-nov-2026): un test comprueba que siguen siendo los de `rangoDeSuperficies()`.
+  precioLote: { min: 15_000, max: 40_000, m2Min: 1_421, m2Max: 2_798 },
   // Estimación [criterio], sin presupuesto detrás; 170 m² es la referencia de Martín.
   casas: {
     modular: { m2: 90, usdPorM2: 1_000 },

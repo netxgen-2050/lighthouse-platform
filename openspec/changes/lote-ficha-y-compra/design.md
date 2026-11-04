@@ -45,7 +45,7 @@ export const MODELO_LOTES = {
 
 export type OpcionCompra = "solo-lote" | "modular" | "familiar" | "amplia";
 
-export const precioLote = (m2: number) => …;            // 1.680 → 15.000; 2.798 → 40.000; fuera de rango, el extremo
+export const precioLote = (m2: number) => …;            // 1.421 → 15.000; 2.798 → 40.000; fuera de rango, el extremo
 export const precioCasa = (tipo: TipoCasa) => …;        // 90.000; 238.000; 500.000
 export const precioPaquete = (m2: number, o: OpcionCompra) => …;
 export const aporteDe = (precio: number) => …;          // 5 % de lo que se paga

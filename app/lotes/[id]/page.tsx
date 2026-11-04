@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const lote = listarLotes().find((l) => l.id === id);
   if (!lote) return {};
-  return { title: textos("territorio", await idiomaDelPedido()).loteo.lote(lote.numero) };
+  return { title: textos("territorio", await idiomaDelPedido()).loteo.lote(lote.etiqueta) };
 }
 
 export default async function LotePage({ params }: Props) {
@@ -40,11 +40,12 @@ export default async function LotePage({ params }: Props) {
         </Link>
       </p>
       <p className="text-sm text-muted">
-        <span translate="no">Lighthouse VRN</span> · {t.ficha.sector}
+        <span translate="no">Lighthouse VRN</span> · {lote.grupo === "primeros" ? t.ficha.primeros : t.ficha.sector}
       </p>
-      <h1 className="text-3xl font-semibold">{tx.loteo.lote(lote.numero)}</h1>
+      <h1 className="text-3xl font-semibold">{tx.loteo.lote(lote.etiqueta)}</h1>
       <div className="mt-2 grid gap-2">
         <MarcaLoteo />
+        {lote.grupo === "primeros" && <p className="text-sm font-medium">{t.ficha.avisoPrimeros}</p>}
         <AvisoEjemplo />
         <p className="w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
           {textos("marco", idioma).aviso}

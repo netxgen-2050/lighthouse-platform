@@ -84,6 +84,7 @@ describe("catálogo legal", () => {
         "pasefundador",
         "personeria",
         "plantribu",
+        "primeroslotes",
         "presencia",
         "primeraperdida",
         "remoto",

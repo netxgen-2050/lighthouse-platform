@@ -5,11 +5,17 @@ import type { FuentePlanId } from "./vistas";
 // Loteo del sector norte de Lighthouse VRN (spec loteo-norte). Es lo ÚNICO que lee `loteo-norte.json`: las pantallas
 // nunca escriben cantidades ni superficies. Hoy el archivo es un boceto; el importador lo reemplaza por el plano de Martín.
 
+export type GrupoLote = "primeros" | "norte";
+
 export type TipoRasgoLoteo = "sector" | "parcela" | "produccion" | "uso-comun" | "calle" | "lote";
 
 export type Lote = {
   id: string;
   numero: number;
+  /** Cómo se llama en pantalla: "7" o "A". */
+  etiqueta: string;
+  /** "primeros": los que se venden primero, fuera del 7A (R40). */
+  grupo: GrupoLote;
   nombre: string;
   clase?: string;
   /** Si falta, la pantalla dice "sin dato": nunca 0. */
@@ -30,6 +36,8 @@ export type PropiedadesLoteo = {
   id: string;
   nombre: string;
   numero?: number;
+  etiqueta?: string;
+  grupo?: "primeros";
   clase?: string;
   area_ha?: number;
   superficie_m2?: number | null;
@@ -54,12 +62,15 @@ export function loteoDe(archivo: ArchivoLoteo) {
       .map((r) => ({
         id: r.properties.id,
         numero: r.properties.numero ?? Number(r.properties.id.replace(/^lote-/, "")),
+        etiqueta: r.properties.etiqueta ?? String(r.properties.numero ?? r.properties.id.replace(/^lote-/, "")),
+        grupo: r.properties.grupo ?? ("norte" as const),
         nombre: r.properties.nombre,
         clase: r.properties.clase,
         superficieM2: r.properties.superficie_m2 ?? undefined,
         anillo: r.geometry.coordinates[0],
       }))
-      .sort((a, b) => a.numero - b.numero);
+      // Los primeros que se venden van primero.
+      .sort((a, b) => Number(b.grupo === "primeros") - Number(a.grupo === "primeros") || a.numero - b.numero);
   }
 
   function zonas(): ZonaLoteo[] {
@@ -80,7 +91,7 @@ export function loteoDe(archivo: ArchivoLoteo) {
     listarLotes,
     /** El contorno del sector, o null si el plano no lo trae. */
     sectorNorte: (): ZonaLoteo | null => zonas().find((z) => z.tipo === "sector") ?? null,
-    /** Uso común, producción, camino y parcelas sin uso definido (los que el plano traiga). */
+    /** Uso común, producción, camino y parcelas con otros usos (los que el plano traiga). */
     zonasDelLoteo: (): ZonaLoteo[] => zonas().filter((z) => z.tipo !== "sector"),
     /** De dónde vienen los datos. Sin `metadata.fuenteId`, es el boceto propio. */
     fuenteDelLoteo: (): FuentePlanId => metadata.fuenteId ?? "ilustrativa",
@@ -96,6 +107,8 @@ export const sectorNorte = vigente.sectorNorte;
 export const zonasDelLoteo = vigente.zonasDelLoteo;
 export const fuenteDelLoteo = vigente.fuenteDelLoteo;
 export const fechaDelLoteo = vigente.fechaDelLoteo;
+
+export const lotesDelGrupo = (grupo: GrupoLote): Lote[] => listarLotes().filter((l) => l.grupo === grupo);
 
 /** Los rasgos tal como están en el archivo vigente (lo usa el validador del importador). */
 export function rasgosDelLoteo(): RasgoLoteo[] {

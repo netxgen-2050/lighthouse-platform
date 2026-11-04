@@ -2,18 +2,23 @@ import { describe, expect, it } from "vitest";
 import { macrolote7 } from "./biopueblo";
 import { anilloDentro } from "./geometria";
 import { ESTADOS_EJEMPLO, estadoDeLote } from "./loteo-estados";
-import { fuenteDelLoteo, listarLotes, loteoDe, rangoDeSuperficies, sectorNorte, zonasDelLoteo } from "./loteo";
+import { fuenteDelLoteo, listarLotes, lotesDelGrupo, loteoDe, rangoDeSuperficies, sectorNorte, zonasDelLoteo } from "./loteo";
+import { parcelasPorUso, resumenDePrimeros, resumenDelLoteo } from "./loteo-textos";
 
 describe("loteo (siempre, con cualquier archivo)", () => {
-  it("los ids de los lotes son únicos y tienen formato lote-<número>", () => {
+  it("los ids de los lotes son únicos y tienen formato lote-<número o letra>", () => {
     const ids = listarLotes().map((l) => l.id);
     expect(new Set(ids).size).toBe(ids.length);
-    for (const l of listarLotes()) expect(l.id).toBe(`lote-${l.numero}`);
+    for (const l of listarLotes()) expect(l.id).toBe(`lote-${l.etiqueta.toLowerCase()}`);
   });
 
-  it("los lotes vienen ordenados por número", () => {
-    const n = listarLotes().map((l) => l.numero);
-    expect(n).toEqual([...n].sort((a, b) => a - b));
+  it("los primeros que se venden van primero y cada grupo sale ordenado por número", () => {
+    const grupos = listarLotes().map((l) => l.grupo);
+    expect(grupos).toEqual([...grupos].sort((a) => (a === "primeros" ? -1 : 1)));
+    for (const grupo of ["primeros", "norte"] as const) {
+      const n = lotesDelGrupo(grupo).map((l) => l.numero);
+      expect(n).toEqual([...n].sort((a, b) => a - b));
+    }
   });
 
   it("sin sector, sectorNorte() es null y no se cae; sin fuenteId la fuente es el boceto", () => {
@@ -26,7 +31,7 @@ describe("loteo (siempre, con cualquier archivo)", () => {
   });
 
   it("el resumen dice sin dato cuando faltan el sector o las superficies, nunca 0", () => {
-    const l = { id: "lote-1", numero: 1, nombre: "Lote 1", anillo: [] };
+    const l = { id: "lote-1", numero: 1, etiqueta: "1", grupo: "norte" as const, nombre: "Lote 1", anillo: [] };
     expect(rangoDeSuperficies([l])).toBeNull();
   });
 
@@ -36,7 +41,7 @@ describe("loteo (siempre, con cualquier archivo)", () => {
   });
 
   it("el rango de superficies ignora los lotes sin dato y es null si ninguno la tiene", () => {
-    const base = { id: "lote-1", numero: 1, nombre: "Lote 1", anillo: [] };
+    const base = { id: "lote-1", numero: 1, etiqueta: "1", grupo: "norte" as const, nombre: "Lote 1", anillo: [] };
     expect(rangoDeSuperficies([])).toBeNull();
     expect(rangoDeSuperficies([base])).toBeNull();
     expect(rangoDeSuperficies([base, { ...base, id: "lote-2", numero: 2, superficieM2: 1500 }])).toEqual({ min: 1500, max: 1500 });
@@ -74,19 +79,34 @@ describe("loteo (cualquier archivo)", () => {
 
 describe.runIf(fuenteDelLoteo() === "martin")("loteo: plano de Martín del 3-nov", () => {
   it("21 lotes de 1.680 a 2.798 m² y un sector de 32,3 ha", () => {
-    const lotes = listarLotes();
+    const lotes = lotesDelGrupo("norte");
     expect(lotes.map((l) => l.id)).toEqual(Array.from({ length: 21 }, (_, i) => `lote-${i + 1}`));
-    expect(rangoDeSuperficies()).toEqual({ min: 1680, max: 2798 });
+    expect(rangoDeSuperficies(lotes)).toEqual({ min: 1680, max: 2798 });
     expect(sectorNorte()?.areaHa).toBe(32.3);
+    expect(resumenDelLoteo("es")).toBe("21 lotes de 1.680 a 2.798 m² en un sector de 32,3 ha");
   });
 
-  it("las demás parcelas no son lotes ni dicen un uso", () => {
+  it("los primeros 4 son A, B, C y D, de 1.421 a 2.049 m², y están fuera del 7A a propósito", () => {
+    const primeros = lotesDelGrupo("primeros");
+    expect(primeros.map((l) => l.id)).toEqual(["lote-a", "lote-b", "lote-c", "lote-d"]);
+    expect(primeros.map((l) => l.etiqueta)).toEqual(["A", "B", "C", "D"]);
+    expect(rangoDeSuperficies(primeros)).toEqual({ min: 1421, max: 2049 });
+    expect(rangoDeSuperficies()).toEqual({ min: 1421, max: 2798 });
+    expect(resumenDePrimeros("es")).toContain("de 1.421 a 2.049 m²");
+    for (const l of primeros) expect(anilloDentro(l.anillo, macrolote7().anillo), l.id).toBe(false);
+  });
+
+  it("las demás parcelas no son lotes y cada una dice su uso, en los dos idiomas", () => {
     const parcelas = zonasDelLoteo().filter((z) => z.tipo === "parcela");
-    expect(parcelas).toHaveLength(27);
-    for (const p of parcelas) expect(p.nombre).toBe("Parcela sin uso definido");
+    expect(parcelas).toHaveLength(28);
+    for (const idioma of ["es", "en"] as const) {
+      const usos = parcelasPorUso(idioma);
+      expect(usos.map((u) => u.uso)).not.toContain(idioma === "es" ? "sin dato" : "no data");
+      expect(usos.flatMap((u) => u.codigos)).toEqual(expect.arrayContaining(["CH-01", "RF", "LPE-04", "CP", "LR-DM"]));
+    }
   });
 
-  it("todos los lotes quedan dentro del 7A", () => {
-    for (const l of listarLotes()) expect(anilloDentro(l.anillo, macrolote7().anillo), l.id).toBe(true);
+  it("los 21 lotes del sector norte quedan dentro del 7A", () => {
+    for (const l of lotesDelGrupo("norte")) expect(anilloDentro(l.anillo, macrolote7().anillo), l.id).toBe(true);
   });
 });

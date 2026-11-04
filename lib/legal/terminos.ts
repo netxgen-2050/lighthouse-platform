@@ -289,6 +289,18 @@ export const TERMINOS = {
     borrador: true,
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real (ADR-030).
+  // Texto nuevo (R40): borrador a revisar antes de cualquier uso real.
+  primeroslotes: {
+    titulo: "Primeros 4 lotes",
+    texto:
+      "Estos 4 lotes están fuera del polígono del 7A, junto a Lighthouse VRN, y siguen el loteo de Chacras de Soluna. Nos informaron que ya están aprobados por la municipalidad, pero todavía no tenemos el documento: por eso no lo mostramos como una aprobación otorgada. Número de expediente y fecha: sin dato. Este prototipo solo simula la venta: no se cobra nada y no se reserva ningún lote de verdad.",
+    borrador: true,
+    en: {
+      titulo: "First 4 lots",
+      texto:
+        "These 4 lots are outside the 7A polygon, next to Lighthouse VRN, and continue the Chacras de Soluna subdivision. We were told they already have municipal approval, but we do not have the document yet, so we do not show it as a granted approval. File number and date: no data. This prototype only simulates the sale: nothing is charged and no lot is really reserved.",
+    },
+  },
   loteonorte: {
     titulo: "Loteo provisorio de Lighthouse VRN",
     texto:

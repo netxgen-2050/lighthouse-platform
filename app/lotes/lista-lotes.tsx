@@ -6,7 +6,7 @@ import { useCompras } from "@/components/lotes/usar-compras";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { estadoConCompras } from "@/lib/lotes/compra";
 import { textoSuperficieM2 } from "@/lib/territorios/biopueblo";
-import { listarLotes } from "@/lib/territorios/loteo";
+import { lotesDelGrupo, type GrupoLote } from "@/lib/territorios/loteo";
 
 /** Todos los lotes con número, superficie y estado en texto y forma, y el enlace a su ficha. */
 export function ListaLotes() {
@@ -19,14 +19,17 @@ export function ListaLotes() {
       <h2 id="lista-lotes-titulo" className="text-lg font-semibold">
         {t.lista.listaTitulo}
       </h2>
+      {(["primeros", "norte"] as GrupoLote[]).map((grupo) => (
+      <div key={grupo} className="grid gap-2">
+      <h3 className="font-semibold">{grupo === "primeros" ? tl.primerosTitulo : tl.listaTitulo}</h3>
       <ul className="grid gap-2 sm:grid-cols-2">
-        {listarLotes().map((l) => (
+        {lotesDelGrupo(grupo).map((l) => (
           <li key={l.id}>
             <Link
               href={`/lotes/${l.id}`}
               className="block rounded-lg border border-faint bg-surface px-3 py-2 hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
             >
-              <span className="font-medium underline">{tl.lote(l.numero)}</span>
+              <span className="font-medium underline">{tl.lote(l.etiqueta)}</span>
               {" · "}
               {textoSuperficieM2(l.superficieM2, idioma)}
               {" · "}
@@ -35,6 +38,8 @@ export function ListaLotes() {
           </li>
         ))}
       </ul>
+      </div>
+      ))}
     </section>
   );
 }

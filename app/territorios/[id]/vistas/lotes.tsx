@@ -7,7 +7,8 @@ import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { textoSuperficieM2 } from "@/lib/territorios/biopueblo";
 import { fuenteDelLoteo, listarLotes } from "@/lib/territorios/loteo";
 import type { EstadoLote } from "@/lib/territorios/loteo-estados";
-import { fuenteTexto, parcelasSinUso, resumenDelLoteo } from "@/lib/territorios/loteo-textos";
+import { proyectoDeGrupo } from "@/lib/legal/estado-administrativo";
+import { fuenteTexto, parcelasPorUso, parcelasSinUso, resumenDePrimeros, resumenDelLoteo } from "@/lib/territorios/loteo-textos";
 import { MARCA_EJEMPLO } from "./ficha-frente";
 
 // Vista Lotes (spec loteo-norte): marca provisoria, estado en texto y forma, panel del lote y resumen.
@@ -54,7 +55,7 @@ export function FichaLote({ id }: { id: string }) {
   return (
     <div className="grid gap-3">
       <p className="text-sm text-muted" translate="no">Lighthouse VRN</p>
-      <h2 className="text-xl font-semibold">{tx.loteo.lote(lote.numero)}</h2>
+      <h2 className="text-xl font-semibold">{tx.loteo.lote(lote.etiqueta)}</h2>
       <p className="text-sm">
         <strong>{tx.ficha.superficie}</strong> {textoSuperficieM2(lote.superficieM2, idioma)}
       </p>
@@ -63,7 +64,7 @@ export function FichaLote({ id }: { id: string }) {
       </p>
       <MarcaLoteo conFuente />
       <p className="text-sm text-muted">{tx.loteo.estadosEjemplo}</p>
-      <EstadoAdministrativo proyecto="lighthouse-norte" compacto idioma={idioma} />
+      <EstadoAdministrativo proyecto={proyectoDeGrupo(lote.grupo)} compacto idioma={idioma} />
       <Link
         href={`/lotes/${lote.id}`}
         className="w-fit rounded-lg bg-deep px-4 py-1.5 text-on-deep hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
@@ -83,8 +84,21 @@ export function PanelLotes() {
     <div className="grid gap-3">
       <h2 className="text-xl font-semibold">{t.panelTitulo}</h2>
       <MarcaLoteo conFuente />
+      {resumenDePrimeros(idioma) && <p className="text-sm font-medium">{resumenDePrimeros(idioma)}</p>}
       <p className="text-sm">{resumenDelLoteo(idioma)}</p>
       {parcelasSinUso(idioma) && <p className="text-sm">{parcelasSinUso(idioma)}</p>}
+      {parcelasPorUso(idioma).length > 0 && (
+        <details className="text-sm">
+          <summary className="cursor-pointer font-medium">{t.parcelasTitulo}</summary>
+          <ul className="mt-1 grid gap-1">
+            {parcelasPorUso(idioma).map((p) => (
+              <li key={p.uso}>
+                <strong>{p.codigos.join(", ")}:</strong> {p.uso}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
       <p className="text-sm font-medium">{t.sinFases}</p>
       <p className="text-sm text-muted">{t.elegiUno}</p>
     </div>

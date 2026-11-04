@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "./fixtura";
 import { VISTAS_CON_LOTES } from "../lib/legal/vistas-con-lotes";
-import { listarLotes } from "../lib/territorios/loteo";
+import { lotesDelGrupo } from "../lib/territorios/loteo";
 
 test.beforeEach(async ({ page }) => {
   await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
@@ -41,7 +41,7 @@ test("el aviso completo de Lighthouse VRN dice que la aprobación es un supuesto
 });
 
 test("un lote: aviso compacto de Norte con su ⚖", async ({ page }) => {
-  await page.goto(`/territorios/lighthouse?sel=${listarLotes()[0].id}`);
+  await page.goto(`/territorios/lighthouse?sel=${lotesDelGrupo("norte")[0].id}`);
   const nota = ficha(page).getByRole("note", { name: "Estado administrativo" });
   await expect(nota).toContainText("Loteo provisorio");
   await expect(nota).toContainText("supuesto de trabajo, no otorgada");

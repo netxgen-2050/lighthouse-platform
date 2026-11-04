@@ -81,3 +81,9 @@ Los tests que dependen de los 25 lotes del boceto (cantidad, 1.344 y 2.200 m², 
 ## Para mirar con el plano real
 
 Los lotes del boceto caen dentro del Barrio 1 de la vista Visión, que lo muestra con su tribu de ejemplo. Con el plano real hay que mirar ese cruce.
+
+## Los primeros 4 lotes y las parcelas (4-nov-2026)
+
+- `primeros` en el mapeo: letra de lote → Placemark. Salen como `lote-a`, con `grupo: "primeros"`. Están fuera del 7A a propósito (R40): el validador no se lo exige solo a ellos.
+- `parcelas` pasó de lista a código → Placemark. Los códigos salen de cruzar superficie y posición con la tabla 2.3.2 de la memoria técnica de Martín del 3-nov. Es lectura nuestra, a confirmar con él.
+- Si cambia la superficie mínima o máxima de los lotes, hay que actualizar `precioLote` en `lib/lotes/modelo.ts`: lo vigila un test.
