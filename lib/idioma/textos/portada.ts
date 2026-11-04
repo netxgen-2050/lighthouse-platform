@@ -13,6 +13,7 @@ const es = {
   explorar: "Explorar el Lighthouse",
   sumarte: "Elegí cómo sumarte",
   porDondeEmpezar: "Por dónde empezar",
+  notaImagen: "Imagen ilustrativa de la Zona A (memoria técnica de Martín): no es una fotografía ni un plano.",
   recomendado: "Recomendado para vos",
   caminos: {
     tribus: {
@@ -48,6 +49,7 @@ const en: Textos<typeof es> = {
   explorar: "Explore the Lighthouse",
   sumarte: "Choose how to join",
   porDondeEmpezar: "Where to start",
+  notaImagen: "Illustrative image of Zone A (Martín's technical report): it is neither a photograph nor a plan.",
   recomendado: "Recommended for you",
   caminos: {
     tribus: {

@@ -30,6 +30,7 @@ import {
 import { usdEn } from "@/lib/lotes/formato";
 import { textoSuperficieM2 } from "@/lib/territorios/biopueblo";
 import { listarLotes } from "@/lib/territorios/loteo";
+import { ImagenLote } from "@/components/lotes/imagen-lote";
 import { CompraSimulada } from "./compra-cliente";
 
 const TARJETA = "grid content-start gap-3 rounded-xl border border-faint bg-surface p-4";
@@ -115,6 +116,7 @@ export function FichaCliente({ id }: { id: string }) {
 
   return (
     <div className="mt-4 grid gap-4">
+      <ImagenLote lote={lote} />
       <section aria-label={tl.lote(lote.numero)} className={TARJETA}>
         <p className="text-sm">
           <strong>{t.ficha.superficie}</strong> {textoSuperficieM2(lote.superficieM2, idioma)}
@@ -216,6 +218,7 @@ export function FichaCliente({ id }: { id: string }) {
             <tr className="border-t border-line align-top">
               <th scope="row" className="py-1.5 pr-2 text-left font-normal break-words">
                 {t.costos.infraestructura}
+                <TerminoLegal clave="infraestructuralote" idioma={idioma} />
               </th>
               <td className="py-1.5 break-words">
                 {usdEn(MODELO_LOTES.infraestructuraPorLote, idioma)} <span className={MARCA}>{t.costos.deEjemplo}</span>
@@ -225,6 +228,7 @@ export function FichaCliente({ id }: { id: string }) {
             <tr className="border-t border-line align-top">
               <th scope="row" className="py-1.5 pr-2 text-left font-normal break-words">
                 {t.costos.parteDelDueno}
+                <TerminoLegal clave="partedueno" idioma={idioma} />
               </th>
               <td className="py-1.5 break-words">
                 {usdEn(parte, idioma)} <span className={MARCA}>{t.costos.deEjemplo}</span>
@@ -235,6 +239,10 @@ export function FichaCliente({ id }: { id: string }) {
         </table>
         <p className="text-sm">{t.costos.aporteSobre}</p>
         <p className="text-sm">{t.costos.aporteAparte}</p>
+        <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+          <strong>{t.costos.provisoriaTitulo}</strong> {t.costos.provisoria}
+          <TerminoLegal clave="retribucionraiz" idioma={idioma} />
+        </p>
         <p className="text-sm text-muted">
           {t.costos.version(VERSION_MODELO_LOTES.fuente, VERSION_MODELO_LOTES.version, VERSION_MODELO_LOTES.fecha)}
         </p>

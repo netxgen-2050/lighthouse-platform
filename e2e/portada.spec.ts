@@ -152,3 +152,11 @@ test("un parámetro no permitido se descarta y los valores del origen se guardan
   expect(o.fuente).toBe("ana@ejemplo.com");
   expect(o.campana).toBe("Promo Feb 2027");
 });
+
+test("la imagen de fondo es decorativa y se aclara que es ilustrativa", async ({ page }) => {
+  await page.goto("/");
+  const imagen = page.locator('img[src*="lighthouse-valle"]');
+  await expect(imagen).toHaveAttribute("alt", "");
+  await expect(page.getByText(/Imagen ilustrativa de la Zona A/)).toBeVisible();
+});
+

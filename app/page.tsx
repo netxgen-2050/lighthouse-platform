@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { caminosDePortada } from "@/lib/portada";
 import { DESTINOS } from "@/lib/navegacion";
@@ -15,17 +16,21 @@ export default async function Home({ searchParams }: Props) {
   const caminos = caminosDePortada(idioma);
   const haySumarte = DESTINOS.some((d) => d.href === "/sumarte" && d.existe);
   return (
-    <div className="mx-auto grid max-w-3xl content-center gap-6 px-6 py-16 sm:px-10">
+    <div className="relative isolate min-h-full">
+      {/* Decorativa: la imagen no agrega información, y la capa del color de fondo sostiene el contraste en los dos temas. */}
+      <Image src="/imagenes/lighthouse-valle.webp" alt="" fill priority sizes="100vw" className="-z-20 object-cover" />
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-bg/75" />
+      <div className="mx-auto grid max-w-3xl content-center gap-6 px-6 py-16 sm:px-10">
       {hayCampana(params) && <GuardarOrigen origen={params} />}
       <p className="w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
         {textos("marco", idioma).aviso}
       </p>
       <div className="grid gap-4">
-        <p className="font-mono text-sm uppercase text-muted">{t.sobretitulo}</p>
+        <p className="font-mono text-sm uppercase text-ink">{t.sobretitulo}</p>
         <h1 className="text-4xl font-bold sm:text-5xl">
           {t.tituloInicio} <span className="text-deep-2">{t.tituloFin}</span>
         </h1>
-        <p className="text-lg text-muted">{t.bajada}</p>
+        <p className="text-lg text-ink">{t.bajada}</p>
         <p className="flex flex-wrap items-center gap-4">
           <Link
             href="/territorios/lighthouse"
@@ -36,7 +41,7 @@ export default async function Home({ searchParams }: Props) {
           {haySumarte && (
             <Link
               href="/sumarte"
-              className="rounded-full border border-line px-5 py-3 font-medium text-ink hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+              className="rounded-full border border-line bg-surface px-5 py-3 font-medium text-ink hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
             >
               {t.sumarte}
             </Link>
@@ -69,6 +74,8 @@ export default async function Home({ searchParams }: Props) {
           ))}
         </ul>
       </section>
+      <p className="text-xs text-ink">{t.notaImagen}</p>
+      </div>
     </div>
   );
 }
