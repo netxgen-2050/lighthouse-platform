@@ -175,7 +175,9 @@ test("comprar un lote: la puerta está antes de Invertir, con el precio del mode
   await expect(puerta).toContainText(`Desde ${usd(MODELO_LOTES.precioLote.min)} el lote`);
   await expect(puerta).toContainText("precios de ejemplo");
   // `/sumarte` no va en `VISTAS_CON_LOTES`: usa el aviso compacto (una nota), no la región completa.
-  await expect(puerta.getByRole("note", { name: "Estado administrativo" })).toContainText("supuesto de trabajo, no otorgada");
+  const avisos = puerta.getByRole("note", { name: "Estado administrativo" });
+  await expect(avisos.filter({ hasText: "supuesto de trabajo, no otorgada" })).toHaveCount(1);
+  await expect(avisos.filter({ hasText: "informada, sin documento a la vista" })).toHaveCount(1);
   await expect(puerta).toContainText("no se cobra nada");
   // Los únicos botones son los ⚖ del aviso: ninguno reserva ni compra.
   await expect(puerta.getByRole("button", { name: /reserv|compr|pagar/i })).toHaveCount(0);

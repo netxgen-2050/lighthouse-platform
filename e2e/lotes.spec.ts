@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "./fixtura";
 import { formatearNumero } from "../lib/idioma/formatos";
 import { ESTADOS_EJEMPLO, estadoDeLote } from "../lib/territorios/loteo-estados";
-import { lotesDelGrupo } from "../lib/territorios/loteo";
+import { listarLotes, lotesDelGrupo } from "../lib/territorios/loteo";
 import {
   MODELO_LOTES,
   VERSION_MODELO_LOTES,
@@ -54,7 +54,7 @@ test.describe("sin sesión", () => {
     await expect(page.getByRole("region", { name: "Estado administrativo · Lighthouse VRN" })).toContainText(
       "supuesto de trabajo, no otorgada",
     );
-    await expect(page.getByRole("region", { name: "Todos los lotes" }).getByRole("link")).toHaveCount(lotes.length);
+    await expect(page.getByRole("region", { name: "Todos los lotes" }).getByRole("link")).toHaveCount(listarLotes().length);
     await page.goto(`/lotes/${lote.id}`);
     await expect(page.getByRole("link", { name: "Lotes", exact: true })).toHaveAttribute("aria-current", "page");
   });
@@ -353,7 +353,7 @@ test.describe("los primeros 4 lotes", () => {
     await page.goto(`/lotes/${primero.id}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lote 535");
     await expect(page.getByText(/fuera del polígono del 7A/)).toBeVisible();
-    await expect(page.getByText(/Quién vende:/)).toContainText("sin dato");
+    await expect(page.getByRole("region", { name: "Lote 535" })).toContainText("Quién vende: sin dato");
     await expect(page.getByText(/supuesto de trabajo/)).toHaveCount(0);
     await conTeclado(page, page.getByRole("button", { name: "Reservar (simulado)" }));
     await conTeclado(page, page.getByRole("button", { name: "Simular el pago" }));

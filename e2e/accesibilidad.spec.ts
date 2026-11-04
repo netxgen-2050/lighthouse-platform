@@ -307,7 +307,7 @@ test("axe sin violaciones serias o críticas: /panel/bitacora con entradas", asy
     .poll(() => page.evaluate(() => window.localStorage.getItem("lh-bitacora")))
     .not.toBeNull();
   await page.goto("/panel/bitacora");
-  await expect(page.getByRole("row").filter({ hasText: "Estado del loteo" }).filter({ hasText: "Chacras de Soluna" })).toBeVisible();
+  await expect(page.getByRole("row").filter({ hasText: "Estado del loteo" }).filter({ hasText: "Loteo en trámite" })).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);

@@ -25,7 +25,7 @@ test("ver el territorio anota el estado del loteo", async ({ page }) => {
     expect(e.huella).toMatch(/^[0-9a-f]{8}$/);
   }
   // La vista completa anota el titular que muestra; la compacta, solo estado y norma corta.
-  const completa = entradas.filter((e) => String(e.mostrado).includes("Chacras de Soluna"));
+  const completa = entradas.filter((e) => String(e.mostrado).includes("Loteo en trámite"));
   expect(completa).toHaveLength(1);
   expect(String(completa[0].mostrado)).toContain("Loteo en trámite");
   expect(String(completa[0].mostrado)).toContain("Titular:");
@@ -93,7 +93,7 @@ test("la página muestra la fila del estado del loteo y descarga el JSON", async
   await expect.poll(async () => (await leerBitacora(page)).length).toBeGreaterThan(0);
   await page.goto("/panel/bitacora");
   // Desde Lotes la página también anota el aviso de Norte: la fila de Soluna se distingue por su proyecto.
-  const fila = page.getByRole("row").filter({ hasText: "Estado del loteo" }).filter({ hasText: "Chacras de Soluna" });
+  const fila = page.getByRole("row").filter({ hasText: "Estado del loteo" }).filter({ hasText: "Loteo en trámite" });
   await expect(fila).toContainText("Chacras de Soluna");
   await expect(fila).toContainText("Borrador: sí");
   const [descarga] = await Promise.all([
