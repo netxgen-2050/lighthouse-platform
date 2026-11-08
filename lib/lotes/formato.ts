@@ -1,4 +1,5 @@
 import { sinDato } from "@/lib/idioma/formatos";
+import { comunes } from "@/lib/idioma/textos/comunes";
 import type { Idioma } from "@/lib/idioma/tipos";
 import { numero, usd } from "@/lib/series/formato";
 
@@ -16,6 +17,8 @@ export function porcentajeEn(fraccion: number | null | undefined, idioma: Idioma
   // Una fracción chica que no es cero nunca se muestra como "0 %": se suman decimales hasta que se vea (0,25 % no es 0 %).
   let d = decimales;
   while (d < 3 && fraccion !== 0 && Number(Math.abs(fraccion * 100).toFixed(d)) === 0) d++;
+  // Por debajo de 0,001 % ni con tres decimales se ve: se dice "menos de", nunca "0,000 %".
+  if (fraccion !== 0 && Number(Math.abs(fraccion * 100).toFixed(d)) === 0) return comunes[idioma].porcentajeMinimo;
   const es = numero(fraccion * 100, d);
   if (idioma !== "en") return `${es} %`;
   const en = es.replace(/[.,]/g, (c) => (c === "." ? "," : "."));

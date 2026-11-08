@@ -130,6 +130,12 @@ describe("porcentajeEn", () => {
     expect(porcentajeEn(0.004, "es", 1)).toBe("0,4 %");
     expect(porcentajeEn(0, "es")).toBe("0 %");
   });
+
+  it("por debajo de 0,001 % dice menos de, nunca 0,000 %", () => {
+    expect(porcentajeEn(1e-9, "es")).toBe("menos de 0,001 %");
+    expect(porcentajeEn(1e-9, "en")).toBe("less than 0.001%");
+    expect(porcentajeEn(0.00001, "es")).toBe("0,001 %");
+  });
 });
 
 describe("reservar", () => {

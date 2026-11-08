@@ -7,6 +7,7 @@ const es = {
   cerrar: "Cerrar",
   guardar: "Guardar",
   sinDato: "sin dato",
+  porcentajeMinimo: "menos de 0,001 %",
   simulado: "(simulado)",
   errorAlmacenamiento:
     "Error: tu navegador no permite guardar datos en este sitio, así que el cambio no se va a recordar al recargar. Revisá la configuración de privacidad o probá en otro navegador.",
@@ -30,6 +31,7 @@ const en: Textos<typeof es> = {
   cerrar: "Close",
   guardar: "Save",
   sinDato: "no data",
+  porcentajeMinimo: "less than 0.001%",
   simulado: "(simulated)",
   errorAlmacenamiento:
     "Error: your browser doesn't allow saving data on this site, so the change won't be remembered after reloading. Check your privacy settings or try another browser.",
