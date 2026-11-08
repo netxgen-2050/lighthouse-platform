@@ -42,7 +42,7 @@ Fuentes pendientes: 45
 | `textos/fogonConsultas` | Consultas del Fogón: lista, reparto de créditos con voto cuadrático, voto abierto o secreto, padrón, resultado por grupo, acta de ejemplo, gráfico de dona y errores de lectura | 119 |
 | `textos/fogonPropuestas` | Propuestas del Fogón: fases, discusión, concerns y grupos, acuse y quórum, ámbito del consejo, niveles, acciones, condiciones de la matriz, mecanismos y vista sin cuenta | 256 |
 | `textos/gobernanza` | Gobernanza fractal: página Cómo decidimos (estructura, círculos, consejo), marca de validación de la ficha de tribu y Quiénes te validaron en Mi recorrido | 120 |
-| `textos/hibrido` | Qué es tuyo y qué es de todos: tabla de lo privado y lo común, aporte de cada lote, tres escenarios de costo del bien común, calculadora, preguntas para Vagner y resguardos | 59 |
+| `textos/hibrido` | Qué es tuyo y qué es de todos: tabla de lo privado y lo común, aporte de cada lote, tres escenarios de costo del bien común, calculadora, preguntas para Vagner y resguardos | 60 |
 | `textos/lotes` | Lotes de Lighthouse VRN: lista, ficha, precio de ejemplo, con casa, costos, derechos y deberes, reserva y pago simulados y boleto de ejemplo | 99 |
 | `textos/manifiestoVrn` | Manifiesto de Lighthouse VRN: ficha del común, tarjeta de Tribus, lectura completa, principios propios de las tribus, aviso de adhesión y bloque de la Vista NetX | 49 |
 | `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 58 |

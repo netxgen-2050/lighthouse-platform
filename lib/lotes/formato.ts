@@ -13,7 +13,10 @@ export function usdEn(n: number | null | undefined, idioma: Idioma): string {
  */
 export function porcentajeEn(fraccion: number | null | undefined, idioma: Idioma, decimales = 0): string {
   if (typeof fraccion !== "number" || !Number.isFinite(fraccion)) return sinDato(idioma);
-  const es = numero(fraccion * 100, decimales);
+  // Una fracción chica que no es cero nunca se muestra como "0 %": se suman decimales hasta que se vea (0,25 % no es 0 %).
+  let d = decimales;
+  while (d < 3 && fraccion !== 0 && Number(Math.abs(fraccion * 100).toFixed(d)) === 0) d++;
+  const es = numero(fraccion * 100, d);
   if (idioma !== "en") return `${es} %`;
   const en = es.replace(/[.,]/g, (c) => (c === "." ? "," : "."));
   return `${en}%`;

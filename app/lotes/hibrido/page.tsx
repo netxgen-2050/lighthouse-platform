@@ -118,7 +118,7 @@ export default async function HibridoPage() {
                     <td className={TD}>
                       {costoDeRubro(r, idioma)}
                       {r.tipo === "privado" && (
-                        <span className="ml-1 text-xs text-muted">({en ? "sample" : "de ejemplo"})</span>
+                        <span className="ml-1 text-xs text-muted">({t.tabla.deEjemplo})</span>
                       )}
                     </td>
                     <td className={TD}>{textoQuienCuida(r, idioma)}</td>

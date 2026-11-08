@@ -20,13 +20,11 @@ export function Calculadora({ expensaInicial, lotesIniciales }: Props) {
   const idCosto = useId();
   const idExpensa = useId();
   const idLotes = useId();
-  const [escenario, setEscenario] = useState<IdEscenario>("arranque");
   const [costo, setCosto] = useState(String(ESCENARIOS_COSTO[0].costoAnual));
   const [expensa, setExpensa] = useState(String(expensaInicial));
   const [lotes, setLotes] = useState(String(lotesIniciales));
 
   function elegir(id: IdEscenario) {
-    setEscenario(id);
     const e = ESCENARIOS_COSTO.find((x) => x.id === id);
     if (e) setCosto(String(e.costoAnual));
   }
@@ -47,7 +45,8 @@ export function Calculadora({ expensaInicial, lotesIniciales }: Props) {
               type="radio"
               name={`${grupo}-escenario`}
               value={e.id}
-              checked={escenario === e.id}
+              // Marcado solo mientras el costo del campo es el del escenario: al editarlo a mano, ninguno queda marcado.
+              checked={costo.trim() !== "" && Number(costo) === e.costoAnual}
               onChange={() => elegir(e.id)}
               className="size-4 accent-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
             />

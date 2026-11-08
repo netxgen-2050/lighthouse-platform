@@ -124,19 +124,19 @@ export function leccionAporte(lotes: number, idioma: Idioma, costoAnual: number 
   const noAlcanza = primero < presupuestoComunAnual;
   if (idioma === "en") {
     return noAlcanza
-      ? `With ${lotes} lots, the ${p} one-off contribution adds up to ${usd(total)} over ${aniosDeVenta} years of sales. In the first year ${usd(primero)} comes in: it is not enough for a common budget of ${usd(presupuestoComunAnual)} a year, and the contribution is not repeated.`
-      : `With ${lotes} lots, the ${p} one-off contribution adds up to ${usd(total)}: it pays for ${decimal(anios, idioma)} years of a common budget of ${usd(presupuestoComunAnual)}, and it is not repeated.`;
+      ? `With ${lotes} lots, the ${p} one-off contribution adds up to ${usd(total)} over ${aniosDeVenta} years of sales. In the first year ${usd(primero)} comes in: it is not enough for a sample yearly cost of the commons of ${usd(presupuestoComunAnual)}, and the contribution is not repeated.`
+      : `With ${lotes} lots, the ${p} one-off contribution adds up to ${usd(total)}: it pays for ${decimal(anios, idioma)} years of a sample yearly cost of the commons of ${usd(presupuestoComunAnual)}, and it is not repeated.`;
   }
   return noAlcanza
-    ? `Con ${lotes} lotes, el aporte único del ${p} suma ${usd(total)} en ${aniosDeVenta} años de ventas. El primer año entran ${usd(primero)}: no alcanza para un presupuesto común de ${usd(presupuestoComunAnual)} por año, y el aporte no se repite.`
-    : `Con ${lotes} lotes, el aporte único del ${p} suma ${usd(total)}: paga ${decimal(anios, idioma)} años de un presupuesto común de ${usd(presupuestoComunAnual)}, y no se repite.`;
+    ? `Con ${lotes} lotes, el aporte único del ${p} suma ${usd(total)} en ${aniosDeVenta} años de ventas. El primer año entran ${usd(primero)}: no alcanza para un costo anual de ejemplo del bien común de ${usd(presupuestoComunAnual)}, y el aporte no se repite.`
+    : `Con ${lotes} lotes, el aporte único del ${p} suma ${usd(total)}: paga ${decimal(anios, idioma)} años de un costo anual de ejemplo del bien común de ${usd(presupuestoComunAnual)}, y no se repite.`;
 }
 
-/** Cuánto pide por lote cubrir el presupuesto común solo con expensas, frente a la expensa de ejemplo. Con cero lotes, null. */
+/** Cuánto pide por lote cubrir el costo anual del bien común solo con expensas, frente a la expensa de ejemplo. Con cero lotes, null. */
 export function leccionExpensas(lotes: number, idioma: Idioma, costoAnual: number = costoPorDefecto): string | null {
   const necesaria = expensaParaCubrir(lotes, costoAnual);
   if (necesaria === null) return null;
   return idioma === "en"
-    ? `Covering that budget with dues alone takes ${usd(necesaria)} per lot per year; the sample due is ${usd(MODELO_LOTES.expensaAnual)}.`
-    : `Cubrir ese presupuesto solo con expensas pide ${usd(necesaria)} por lote al año; la expensa de ejemplo es ${usd(MODELO_LOTES.expensaAnual)}.`;
+    ? `Covering that cost with dues alone takes ${usd(necesaria)} per lot per year; the sample due is ${usd(MODELO_LOTES.expensaAnual)}.`
+    : `Cubrir ese costo solo con expensas pide ${usd(necesaria)} por lote al año; la expensa de ejemplo es ${usd(MODELO_LOTES.expensaAnual)}.`;
 }

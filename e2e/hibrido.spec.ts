@@ -3,7 +3,7 @@ import { formatearNumero } from "../lib/idioma/formatos";
 import { ESCENARIOS_COSTO, cobertura, coberturaDeEscenario, lotesDelSector } from "../lib/lotes/escenarios";
 import { porcentajeEn, usdEn } from "../lib/lotes/formato";
 import { lineasDelResumen } from "../lib/lotes/hibrido";
-import { MODELO_LOTES, aporteDe, paquetePromedio } from "../lib/lotes/modelo";
+import { MODELO_LOTES, aporteDe, paquetePromedio, precioPaquete } from "../lib/lotes/modelo";
 import { estadoDeLote } from "../lib/territorios/loteo-estados";
 import { lotesDelGrupo } from "../lib/territorios/loteo";
 
@@ -62,7 +62,6 @@ test.describe("sin sesión", () => {
 
   test("quién cuida lo común: consorcio y Fundación que todavía no existe, con su ⚖ en borrador", async ({ page }) => {
     await page.goto(RUTA);
-    const tabla = page.getByRole("table", { name: /Qué es privado y qué es común/ });
     for (const r of ["Caminos", "Agua", "Aguas grises y negras", "Basura"]) {
       await expect(filaDe(page, r)).toContainText("Consorcio de propietarios");
     }
@@ -154,6 +153,8 @@ test.describe("sin sesión", () => {
 
     // Cambiar los tres valores recalcula.
     await s.getByLabel("Costo anual del bien común (USD por año)").fill("100000");
+    // Al editar el costo a mano, ningún escenario queda marcado con su monto viejo.
+    await expect(s.getByRole("radio", { checked: true })).toHaveCount(0);
     await s.getByLabel("Expensa por lote (USD por año)").fill("500");
     await s.getByLabel("Cantidad de lotes").fill("10");
     const c3 = cobertura({ costoAnual: 100000, expensa: 500, lotes: 10 })!;
@@ -285,6 +286,12 @@ test.describe("resumen en la ficha y aceptación al reservar", () => {
     await expect(s).toContainText(lineas[0]);
     await expect(s).toContainText(lineas[2]);
     await expect(s).toContainText(`las expensas (${usdEn(MODELO_LOTES.expensaAnual, "es")} por año)`);
+    // La línea 2 muestra el aporte del módulo para la opción elegida (por defecto, solo el lote).
+    const aporte = usdEn(aporteDe(precioPaquete(lote.superficieM2, "solo-lote")!), "es");
+    await expect(s).toContainText(`aporte único al bien común (${aporte})`);
+    await page.getByRole("radio", { name: /Casa familiar/ }).check();
+    const conCasa = usdEn(aporteDe(precioPaquete(lote.superficieM2, "familiar")!), "es");
+    await expect(s).toContainText(`aporte único al bien común (${conCasa})`);
     await expect(s.getByRole("link", { name: "Ver qué es tuyo y qué es de todos" })).toHaveAttribute("href", "/lotes/hibrido");
   });
 

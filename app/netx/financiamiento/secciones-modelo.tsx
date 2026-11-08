@@ -231,8 +231,8 @@ export function SeccionHibrido() {
               La tierra común queda en una Fundación que todavía no existe <TerminoLegal clave="fundaciontierra" />, y los
               lotes privados no quedan en ella.
             </li>
-            <li>{leccionAporte(lotes, "es")}</li>
-            <li>{leccionExpensas(lotes, "es")}</li>
+            <li>{leccionAporte(lotes, "es") ?? `Aporte único: ${SIN_DATO}`}</li>
+            <li>{leccionExpensas(lotes, "es") ?? `Expensas: ${SIN_DATO}`}</li>
           </ul>
           <p className="mt-2 text-xs text-muted">
             Con el costo de la simulación de octubre, de ejemplo: no es un presupuesto. El costo real del bien común no está

@@ -4,7 +4,7 @@ import { ESTADOS_EJEMPLO, estadoDeLote } from "@/lib/territorios/loteo-estados";
 import { deshacer, estadoConCompras, leerCompras, pagar, reservar, type CompraLote, type LoVisto } from "./compra";
 import { VERSION_HIBRIDO } from "./hibrido";
 import { VERSION_MODELO_LOTES } from "./modelo";
-import { usdEn } from "./formato";
+import { porcentajeEn, usdEn } from "./formato";
 
 const ids = listarLotes().map((l) => l.id);
 const disponible = ids.find((id) => estadoDeLote(id) === "disponible")!;
@@ -113,6 +113,22 @@ describe("usdEn", () => {
     expect(usdEn(undefined, "en")).toBe("no data");
     expect(usdEn(Number.NaN, "en")).toBe("no data");
     expect(usdEn(1_000, "en")).toBe("USD 1.000");
+  });
+});
+
+describe("porcentajeEn", () => {
+  it("el valor que falta es sin dato, nunca 0 %", () => {
+    expect(porcentajeEn(null, "es")).toBe("sin dato");
+    expect(porcentajeEn(Number.NaN, "en")).toBe("no data");
+  });
+
+  it("redondea sin decimales, pero una fracción chica que no es cero no se lee 0 %", () => {
+    expect(porcentajeEn(2.61, "es")).toBe("261 %");
+    expect(porcentajeEn(0.0025, "es")).toBe("0,3 %");
+    expect(porcentajeEn(0.0004, "es")).toBe("0,04 %");
+    expect(porcentajeEn(0.0004, "en")).toBe("0.04%");
+    expect(porcentajeEn(0.004, "es", 1)).toBe("0,4 %");
+    expect(porcentajeEn(0, "es")).toBe("0 %");
   });
 });
 

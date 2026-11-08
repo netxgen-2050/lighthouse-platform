@@ -19,6 +19,7 @@ const es = {
     quienPaga: "Quién lo paga",
     costo: "Cuánto cuesta",
     cuida: "Quién lo cuidaría",
+    deEjemplo: "de ejemplo",
     nota: "El costo de cada rubro común todavía no está calculado: sin dato. «Quién lo paga» es un supuesto del modelo, no un acuerdo. Los precios del lote y de la casa son de ejemplo.",
   },
   aporte: {
@@ -107,6 +108,7 @@ const en: Textos<typeof es> = {
     quienPaga: "Who pays",
     costo: "Cost",
     cuida: "Who would look after it",
+    deEjemplo: "sample",
     nota: "The cost of each common item is not calculated yet: no data. \"Who pays\" is an assumption of the model, not an agreement. Lot and house prices are samples.",
   },
   aporte: {
