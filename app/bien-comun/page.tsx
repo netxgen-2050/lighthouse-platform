@@ -42,7 +42,7 @@ export default async function BienComunPage() {
   const tramos = totalPorTramo();
   const usos = parcelasPorUso(idioma);
   const anios = enteroEn(LIBERACION_NETXGEN.anios, idioma);
-  const espera = idioma === "en" ? `${LIBERACION_NETXGEN.esperaAnios} year` : `${LIBERACION_NETXGEN.esperaAnios} año`;
+  const espera = t.esperaAnios(LIBERACION_NETXGEN.esperaAnios);
 
   return (
     <div className="mx-auto max-w-4xl p-6 sm:p-10">

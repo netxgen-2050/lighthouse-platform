@@ -124,6 +124,8 @@ const es = {
       noSePuede: "No se puede comprar: es una simulación.",
     },
   },
+  // Duración de la espera de NetXGen, con su plural ("1 año", "2 años").
+  esperaAnios: (n: number) => `${n} ${n === 1 ? "año" : "años"}`,
   staking: {
     titulo: "Staking, en estudio",
     caption: "Las dos opciones de staking: qué da, a quién favorece y su riesgo",
@@ -321,6 +323,7 @@ const en: Textos<typeof es> = {
       noSePuede: "It cannot be bought: this is a simulation.",
     },
   },
+  esperaAnios: (n: number) => `${n} ${n === 1 ? "year" : "years"}`,
   staking: {
     titulo: "Staking, under study",
     caption: "The two staking options: what it gives, who it favors and its risk",
