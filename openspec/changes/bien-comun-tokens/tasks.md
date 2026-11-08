@@ -3,8 +3,8 @@
 **Corte por noche: noche 4b.** Apilado sobre `modelo-hibrido-procomun`: rama `agente/bien-comun-tokens` desde la rama de ese cambio. Textos y valores en `design.md`.
 
 ## 1. Datos
-- [ ] 1.1 Crear `lib/bien-comun/modelo.ts` con los valores y las funciones de design §1, y su test (reparto 100 %, tramos 30 %, cruce de tramo, monto mínimo, FARO por m²).
-- [ ] 1.2 Sumar los ⚖ de design §5 y reescribir `retribucionraiz` (design §3), con `borrador: true` y `en`. Actualizar `lib/legal/terminos.test.ts`.
+- [x] 1.1 Crear `lib/bien-comun/modelo.ts` con los valores y las funciones de design §1, y su test (reparto 100 %, tramos 30 %, cruce de tramo, monto mínimo, FARO por m²).
+- [x] 1.2 Sumar los ⚖ de design §5 y reescribir `retribucionraiz` (design §3), con `borrador: true` y `en`. Actualizar `lib/legal/terminos.test.ts`.
 
 ## 2. Página
 - [ ] 2.1 Crear `app/bien-comun/page.tsx` con las 9 secciones de design §2 y `lib/idioma/textos/bien-comun.ts` (es/en). Sumar la ruta a las públicas y traducidas.

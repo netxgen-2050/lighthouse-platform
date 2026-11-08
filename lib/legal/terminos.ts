@@ -319,14 +319,70 @@ export const TERMINOS = {
     },
   },
   retribucionraiz: {
-    titulo: "Retribución en RAIZ: medida provisoria",
+    titulo: "Retribución en tokens del bien común: medida provisoria",
     texto:
-      "Es una idea a conversar con el equipo, no una decisión. RAIZ sería el token del bien común: membresía y voz, con beneficios en especie como estadías, alimentos y cursos. Todavía no existe. No hay cantidad, ni fecha, ni valor, y no se promete ganancia. Prometer tokens futuros a cambio de plata puede ser un contrato de inversión: hay que revisarlo con un abogado antes de decirlo fuera del equipo.",
+      "Es una idea a conversar con el equipo, no una decisión. El token del bien común daría voz sobre lo común; su nombre provisorio es FARO y el nombre está en discusión. Todavía no existe. No hay cantidad, ni fecha, ni valor prometido. Prometer tokens futuros a cambio de plata puede ser un contrato de inversión: hay que revisarlo con un abogado antes de decirlo fuera del equipo.",
     borrador: true,
     en: {
-      titulo: "Compensation in RAIZ: provisional measure",
+      titulo: "Compensation in commons tokens: provisional measure",
       texto:
-        "This is an idea to discuss with the team, not a decision. RAIZ would be the commons token: membership and voice, with benefits in kind such as stays, food and courses. It does not exist yet. There is no amount, date or value, and no profit is promised. Promising future tokens in exchange for money can be an investment contract: a lawyer has to review it before it is said outside the team.",
+        "This is an idea to discuss with the team, not a decision. The commons token would give a voice over what is shared; its provisional name is FARO and the name is under discussion. It does not exist yet. There is no amount, date or promised value. Promising future tokens in exchange for money can be an investment contract: a lawyer has to review it before it is said outside the team.",
+    },
+  },
+  // Textos nuevos (Gus, 8-nov-2026, bien-comun-tokens): borrador a revisar antes de cualquier uso real. Todo es simulación.
+  nftlote: {
+    titulo: "NFT del lote",
+    texto:
+      "Un certificado digital, uno por lote privado, que diría su superficie, su contorno, su estado administrativo y sus deberes hacia el bien común. No reemplaza la escritura: el dominio se registra donde corresponde. En este prototipo es una simulación: no se emite nada. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Lot NFT",
+      texto:
+        "A digital certificate, one per private lot, that would state its area, outline, administrative status and duties toward the commons. It does not replace the deed: ownership is registered where it belongs. In this prototype it is a simulation: nothing is issued. To be verified with a lawyer.",
+    },
+  },
+  tokenbiencomun: {
+    titulo: "Token del bien común",
+    texto:
+      "Una unidad que daría voz en las decisiones sobre lo común. Todavía no existe y es una simulación para conversar: no se emite, no se vende y no se promete ningún valor. El nombre FARO es provisorio. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Commons token",
+      texto:
+        "A unit that would give a voice in decisions about what is shared. It does not exist yet and is a simulation to talk about: it is not issued, not sold and no value is promised. The name FARO is provisional. To be verified with a lawyer.",
+    },
+  },
+  ventatramos: {
+    titulo: "Venta temprana por tramos",
+    texto:
+      "Un precio por tramos: cada tramo tiene una cantidad y un precio, y el precio sube de un tramo al siguiente. Es una simulación, no es una oferta y no se puede comprar. Un token con precio creciente puede ser un valor negociable ante la CNV. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Early sale in tranches",
+      texto:
+        "A tiered price: each tranche has an amount and a price, and the price goes up from one tranche to the next. It is a simulation, not an offer, and it cannot be bought. A token with a rising price can be a tradable security before the CNV. To be verified with a lawyer.",
+    },
+  },
+  stakingbiencomun: {
+    titulo: "Staking del bien común",
+    texto:
+      "Bloquear tokens por un tiempo, ya sea para sumar voz o para recibir tokens nuevos. Está en estudio: ninguna de las dos opciones está decidida y es una simulación. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Commons staking",
+      texto:
+        "Locking tokens for a period, either to add voice or to receive new tokens. It is under study: neither option is decided and it is a simulation. To be verified with a lawyer.",
+    },
+  },
+  partenetxgen: {
+    titulo: "Parte de NetXGen",
+    texto:
+      "La parte de los tokens para la empresa que diseña y opera la plataforma. Se liberaría de a poco, con un tiempo de espera, para alinear incentivos. Es un valor de ejemplo, no está decidido. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "NetXGen share",
+      texto:
+        "The share of tokens for the company that designs and runs the platform. It would be released gradually, after a waiting period, to align incentives. It is a sample value and nothing is decided. To be verified with a lawyer.",
     },
   },
   // Texto nuevo (R40): borrador a revisar antes de cualquier uso real.

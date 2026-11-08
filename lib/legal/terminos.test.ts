@@ -90,6 +90,11 @@ describe("catálogo legal", () => {
         "infraestructuralote",
         "partedueno",
         "retribucionraiz",
+        "nftlote",
+        "tokenbiencomun",
+        "ventatramos",
+        "stakingbiencomun",
+        "partenetxgen",
         "presencia",
         "primeraperdida",
         "remoto",
@@ -108,6 +113,18 @@ describe("catálogo legal", () => {
         "unidadesregeneracion",
       ].sort(),
     );
+  });
+  it("los ⚖ de los tokens del bien común son borrador, con inglés, y dicen que es una simulación a verificar", () => {
+    for (const clave of ["nftlote", "tokenbiencomun", "ventatramos", "stakingbiencomun", "partenetxgen", "retribucionraiz"] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+      expect(terminoEn(clave)?.texto.trim(), clave).toBeTruthy();
+      expect(TERMINOS[clave].texto, clave).not.toMatch(/RAIZ|ganancia|retorno|valorizaci/i);
+      expect(terminoEn(clave)?.texto, clave).not.toMatch(/RAIZ|profit|return/i);
+    }
+    for (const clave of ["nftlote", "tokenbiencomun", "ventatramos", "stakingbiencomun", "partenetxgen"] as const) {
+      expect(TERMINOS[clave].texto, clave).toContain("A verificar con abogado");
+      expect(terminoEn(clave)?.texto, clave).toContain("To be verified with a lawyer");
+    }
   });
   it("los términos del simulador de series son borrador", () => {
     for (const clave of [
