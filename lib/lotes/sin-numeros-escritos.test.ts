@@ -7,7 +7,24 @@ import { expect, test } from "vitest";
 const RAIZ = path.resolve(__dirname, "..", "..");
 
 // Valores del modelo, de la superficie de los lotes del plano y términos de la tesis de inversión que no van en estas pantallas.
-const NUMEROS = ["15.000", "40.000", "238.000", "500.000", "1.200", "2.880", "72.000", "1.680", "2.798", "1.344", "152.100"];
+// Incluye los de los tres escenarios del bien común (30.000, 72.000 y 240.000), el aporte del paquete promedio y los de la cobertura.
+const NUMEROS = [
+  "15.000",
+  "40.000",
+  "238.000",
+  "500.000",
+  "1.200",
+  "2.880",
+  "72.000",
+  "1.680",
+  "2.798",
+  "1.344",
+  "152.100",
+  "30.000",
+  "240.000",
+  "7.605",
+  "25.200",
+];
 const TERMINOS = /\b(?:SMA|111|TIR|recupero)\b/;
 
 function archivos(dir: string): string[] {
@@ -22,6 +39,9 @@ function archivos(dir: string): string[] {
 const ARCHIVOS = [
   ...archivos(path.join(RAIZ, "app", "lotes")),
   path.join(RAIZ, "lib", "idioma", "textos", "lotes.ts"),
+  // Qué es tuyo y qué es de todos (`/lotes/hibrido`): sus números salen de los módulos, no del diccionario.
+  path.join(RAIZ, "lib", "idioma", "textos", "hibrido.ts"),
+  path.join(RAIZ, "lib", "lotes", "hibrido.ts"),
   // La puerta "Comprar un lote" de Sumarte lee el precio del módulo del modelo.
   path.join(RAIZ, "lib", "idioma", "textos", "sumarte.ts"),
 ].filter(existsSync);

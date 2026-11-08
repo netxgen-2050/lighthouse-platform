@@ -89,7 +89,7 @@ describe("referencia: Viñedo con los valores de partida", () => {
     });
   });
 
-  test("totales: levanta 570.000; primera pérdida, Unidades, procomún y NetX", () => {
+  test("totales: levanta 570.000; primera pérdida, Unidades, bien común y NetX", () => {
     expect(r.levantado).toBe(570000);
     expect(r.notas).toBeNull();
     cercano(r.primeraPerdida.pone, 85500, 1, "pone primera pérdida");

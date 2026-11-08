@@ -55,7 +55,7 @@ test.describe("la ficha del común", () => {
 
   test("los equipos transversales son los círculos del común y enlazan a la gobernanza", async ({ page }) => {
     await page.goto("/tribus/lighthouse");
-    const equipos = page.getByRole("region", { name: "Equipos transversales: una startup para el procomún" });
+    const equipos = page.getByRole("region", { name: "Equipos transversales: una startup para el bien común" });
     for (const n of [
       "Legal",
       "Permacultura y regeneración",
@@ -248,9 +248,11 @@ test.describe("principios propios de las tribus", () => {
 });
 
 test.describe("Vista NetX y Sumarte", () => {
-  test("Juego A o Juego B trae el bloque con la vida en el centro: 15 principios y el enlace", async ({ page }) => {
+  test("El modelo híbrido trae el bloque con la vida en el centro: 15 principios y el enlace", async ({ page }) => {
     await page.goto("/netx/financiamiento");
-    const bloque = page.getByRole("group", { name: "Las decisiones, con la vida en el centro" });
+    const bloque = page
+      .getByRole("region", { name: "El modelo híbrido", exact: true })
+      .getByRole("group", { name: "Las decisiones, con la vida en el centro" });
     await expect(bloque).toBeVisible();
     await expect(bloque.getByText(/Ponemos la regeneración y la vida en el centro de cada decisión/)).toBeVisible();
     await expect(bloque.getByText("15 principios en total")).toBeVisible();

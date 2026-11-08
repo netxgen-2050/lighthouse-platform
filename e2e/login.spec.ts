@@ -178,7 +178,7 @@ test.describe("persona", () => {
     await expect(barra(page).getByRole("link", { name: /NetX/ })).toBeVisible();
     await expect(page.getByText("Admin de Valle Solar")).toHaveCount(0);
     await page.goto("/netx");
-    await expect(page.getByRole("heading", { level: 1, name: "¿Cómo se financia NetX sin vender lotes?" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "¿Cómo se financia NetX?" })).toBeVisible();
     await expect(page.getByText("¿Vamos a vender en febrero?")).toHaveCount(0);
     const r = await page.goto("/admin");
     expect(r?.status()).toBe(403);

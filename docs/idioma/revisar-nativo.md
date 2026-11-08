@@ -6,7 +6,7 @@ Todo el inglés lo escribió un agente y está pendiente hasta que un hablante n
 **Cómo marcar algo como revisado:** en `lib/idioma/revision-nativa.ts`, cambiá el `estado` de la fuente a `"revisado"`
 y sumá `revisadoPor` y `fecha` (AAAA-MM-DD). Después corré `pnpm idioma:pendientes`.
 
-Fuentes pendientes: 42
+Fuentes pendientes: 45
 
 | Fuente | Qué es | Textos en inglés |
 |---|---|---|
@@ -23,6 +23,8 @@ Fuentes pendientes: 42
 | `lib/fogon/propuestas/principios.ts` | Lista de ejemplo (borrador) de 16 principios del Lighthouse con su explicación en inglés | — |
 | `lib/gobernanza/datos.ts` | Nombres, propósitos y 'Decide sobre' de los círculos de ejemplo del común, de cada tribu y del círculo transversal, con su inglés | — |
 | `lib/legal/terminos.ts` | Catálogo de términos legales (⚖) con su explicación en inglés; borradores sin revisión legal | — |
+| `lib/lotes/escenarios.ts` | Nombre y fuente de los tres escenarios de costo del bien común, con su inglés | — |
+| `lib/lotes/hibrido.ts` | Rubros privados y comunes, quién los cuida, resguardos y las tres líneas del resumen de la ficha de lote, con su inglés | — |
 | `lib/manifiestos/datos.ts` | Manifiestos de ejemplo (el del Lighthouse y siete de tribus) traducidos del español: voz de la comunidad, a revisar también con quien los escriba de verdad | — |
 | `lib/manifiestos/lighthouse-vrn.ts` | Texto del manifiesto de Lighthouse VRN (propósito, 15 principios, 7 derechos de la tierra, compromisos, cómo se cambia) y nombre visible del común; traducidos del español, borrador a ratificar | — |
 | `lib/pactos/datos.ts` | Roles de ejemplo (nombre y descripción), pestañas y pasos de un pacto, con su inglés | — |
@@ -40,7 +42,8 @@ Fuentes pendientes: 42
 | `textos/fogonConsultas` | Consultas del Fogón: lista, reparto de créditos con voto cuadrático, voto abierto o secreto, padrón, resultado por grupo, acta de ejemplo, gráfico de dona y errores de lectura | 119 |
 | `textos/fogonPropuestas` | Propuestas del Fogón: fases, discusión, concerns y grupos, acuse y quórum, ámbito del consejo, niveles, acciones, condiciones de la matriz, mecanismos y vista sin cuenta | 256 |
 | `textos/gobernanza` | Gobernanza fractal: página Cómo decidimos (estructura, círculos, consejo), marca de validación de la ficha de tribu y Quiénes te validaron en Mi recorrido | 120 |
-| `textos/lotes` | Lotes de Lighthouse VRN: lista, ficha, precio de ejemplo, con casa, costos, derechos y deberes, reserva y pago simulados y boleto de ejemplo | 93 |
+| `textos/hibrido` | Qué es tuyo y qué es de todos: tabla de lo privado y lo común, aporte de cada lote, tres escenarios de costo del bien común, calculadora, preguntas para Vagner y resguardos | 59 |
+| `textos/lotes` | Lotes de Lighthouse VRN: lista, ficha, precio de ejemplo, con casa, costos, derechos y deberes, reserva y pago simulados y boleto de ejemplo | 99 |
 | `textos/manifiestoVrn` | Manifiesto de Lighthouse VRN: ficha del común, tarjeta de Tribus, lectura completa, principios propios de las tribus, aviso de adhesión y bloque de la Vista NetX | 49 |
 | `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 58 |
 | `textos/pactos` | Pactos: pactos de tiempo y de plata, cambios, historial, avisos y anuncios | 286 |

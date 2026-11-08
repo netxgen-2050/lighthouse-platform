@@ -123,7 +123,7 @@ test("valores de ejemplo: el aviso se lee antes de los planes y los precios sigu
 
 test("a dónde va la plata de cada plan", async ({ page }) => {
   await page.goto("/sumarte");
-  await expect(tarjetaPase(page)).toContainText("Va al Fondo Común del procomún, no a NetX.");
+  await expect(tarjetaPase(page)).toContainText("Va al Fondo Común del bien común, no a NetX.");
   await expect(page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Miembro de la red/ }) })).toContainText("La cobra NetX: es un servicio.");
   await expect(page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Plan Tribu/ }) })).toContainText("Lo cobra NetX: un servicio que le factura a la tribu.");
 });

@@ -15,6 +15,7 @@ import { sinDato as textoSinDato } from "@/lib/idioma/formatos";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { ESTADOS_ADMINISTRATIVOS, proyectoDeGrupo, type IdProyecto } from "@/lib/legal/estado-administrativo";
 import { compraDe, estadoConCompras } from "@/lib/lotes/compra";
+import { VERSION_HIBRIDO, lineasDelResumen } from "@/lib/lotes/hibrido";
 import {
   MODELO_LOTES,
   OPCIONES_COMPRA,
@@ -111,6 +112,8 @@ export function FichaCliente({ id }: { id: string }) {
     expensa: MODELO_LOTES.expensaAnual,
     version: VERSION_MODELO_LOTES.version,
     fuente: VERSION_MODELO_LOTES.fuente,
+    // La versión del texto "Lo que compartís y lo que pagás" que se ve en esta ficha: la reserva exige marcar que se leyó.
+    hibridoAceptado: VERSION_HIBRIDO,
     ...(opcion === "solo-lote" ? {} : { precioCasa: precioCasa(opcion) }),
   };
 
@@ -269,6 +272,24 @@ export function FichaCliente({ id }: { id: string }) {
       </section>
 
       <EstadoAdministrativo proyecto={proyecto} idioma={idioma} />
+
+      <section aria-labelledby="ficha-resumen" className={TARJETA}>
+        <h2 id="ficha-resumen" className="text-lg font-semibold">
+          {t.resumen.titulo}
+        </h2>
+        <ul className="list-disc pl-5 text-sm">
+          {lineasDelResumen(idioma, { aporte: usdEn(aporte, idioma), expensa: usdEn(MODELO_LOTES.expensaAnual, idioma) }).map(
+            (l) => (
+              <li key={l}>{l}</li>
+            ),
+          )}
+        </ul>
+        <p className="text-sm">
+          <Link className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/lotes/hibrido">
+            {t.resumen.ver}
+          </Link>
+        </p>
+      </section>
 
       <section aria-labelledby="ficha-acciones" className={TARJETA}>
         <h2 id="ficha-acciones" className="sr-only">

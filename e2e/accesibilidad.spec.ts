@@ -32,6 +32,7 @@ const rutas = [
   "/territorios/lighthouse?vista=vision",
   "/lotes",
   "/lotes/lote-1",
+  "/lotes/hibrido",
   "/congreso",
   "/congreso/en",
   "/territorios/no-existe",
@@ -47,8 +48,8 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 43 rutas auditadas", () => {
-  expect(rutas).toHaveLength(43);
+test("hay 44 rutas auditadas", () => {
+  expect(rutas).toHaveLength(44);
 });
 
 async function graves(page: Page) {
@@ -536,7 +537,7 @@ for (const ruta of rutas) {
 }
 
 // Lotes: la lista y una ficha en inglés, y la ficha con la compra simulada en cada paso (lote-ficha-y-compra).
-for (const ruta of ["/lotes?lang=en", "/lotes/lote-1?lang=en"]) {
+for (const ruta of ["/lotes?lang=en", "/lotes/lote-1?lang=en", "/lotes/hibrido?lang=en"]) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -545,11 +546,18 @@ for (const ruta of ["/lotes?lang=en", "/lotes/lote-1?lang=en"]) {
 }
 
 test("axe sin violaciones serias o críticas: la ficha de un lote en la reserva, el pago simulado y el boleto, en español y en inglés", async ({ page }) => {
-  for (const [ruta, reservar, pagar, confirmar] of [
-    ["/lotes/lote-1", "Reservar (simulado)", "Simular el pago", "Confirmar el pago simulado"],
-    ["/lotes/lote-1?lang=en", "Reserve (simulated)", "Simulate the payment", "Confirm the simulated payment"],
+  for (const [ruta, reservar, pagar, confirmar, leido] of [
+    ["/lotes/lote-1", "Reservar (simulado)", "Simular el pago", "Confirmar el pago simulado", "Leí lo que comparto y lo que me comprometo a pagar"],
+    [
+      "/lotes/lote-1?lang=en",
+      "Reserve (simulated)",
+      "Simulate the payment",
+      "Confirm the simulated payment",
+      "I read what I share and what I commit to pay",
+    ],
   ] as const) {
     await page.goto(ruta);
+    await page.getByLabel(leido).check();
     await page.getByRole("button", { name: reservar }).click();
     expect(await graves(page)).toEqual([]);
     await page.getByRole("button", { name: pagar }).click();

@@ -10,6 +10,7 @@ import { fogon } from "./textos/fogon";
 import { fogonConsultas } from "./textos/fogon-consultas";
 import { fogonPropuestas } from "./textos/fogon-propuestas";
 import { gobernanza } from "./textos/gobernanza";
+import { hibrido } from "./textos/hibrido";
 import { lotes } from "./textos/lotes";
 import { manifiestoVrn } from "./textos/manifiesto-vrn";
 import { marco } from "./textos/marco";
@@ -33,6 +34,7 @@ export const DICCIONARIOS = {
   fogonConsultas,
   fogonPropuestas,
   gobernanza,
+  hibrido,
   lotes,
   manifiestoVrn,
   marco,

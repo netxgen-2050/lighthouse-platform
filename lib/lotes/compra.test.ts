@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { listarLotes } from "@/lib/territorios/loteo";
 import { ESTADOS_EJEMPLO, estadoDeLote } from "@/lib/territorios/loteo-estados";
 import { deshacer, estadoConCompras, leerCompras, pagar, reservar, type CompraLote, type LoVisto } from "./compra";
+import { VERSION_HIBRIDO } from "./hibrido";
 import { VERSION_MODELO_LOTES } from "./modelo";
 import { usdEn } from "./formato";
 
@@ -80,6 +81,23 @@ describe("un boleto muestra lo que se vio", () => {
     expect(vieja.vio).toEqual(vio);
     expect(vieja.vio).not.toHaveProperty("precioCasa");
     expect(vieja.vio).not.toHaveProperty("fuente");
+  });
+
+  it("la versión del texto aceptado (hibridoAceptado) sobrevive a guardar, leer y pagar; un registro sin ella sigue leyéndose", () => {
+    const aceptado: LoVisto = { ...vio, hibridoAceptado: VERSION_HIBRIDO };
+    const r = reservar([], disponible, "solo-lote", aceptado, ahora);
+    if (!r.ok) throw new Error("no se pudo reservar");
+    const [leida] = leerCompras(JSON.stringify(r.compras));
+    expect(leida.vio.hibridoAceptado).toBe(VERSION_HIBRIDO);
+    const p = pagar(r.compras, disponible, ahora);
+    if (!p.ok) throw new Error("no pagó");
+    expect(p.compras[0].vio.hibridoAceptado).toBe(VERSION_HIBRIDO);
+    const [vieja] = leerCompras(JSON.stringify(reservada()));
+    expect(vieja.vio).not.toHaveProperty("hibridoAceptado");
+  });
+
+  it("una versión aceptada de tipo raro invalida el registro", () => {
+    expect(leerCompras(JSON.stringify([{ ...reservada()[0], vio: { ...vio, hibridoAceptado: 7 } }]))).toEqual([]);
   });
 
   it("un precio de casa o una fuente de tipo raro invalidan el registro", () => {

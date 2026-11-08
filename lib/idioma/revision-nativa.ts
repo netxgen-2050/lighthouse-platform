@@ -45,6 +45,18 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Lotes de Lighthouse VRN: lista, ficha, precio de ejemplo, con casa, costos, derechos y deberes, reserva y pago simulados y boleto de ejemplo",
   },
+  "textos/hibrido": {
+    estado: "pendiente",
+    que: "Qué es tuyo y qué es de todos: tabla de lo privado y lo común, aporte de cada lote, tres escenarios de costo del bien común, calculadora, preguntas para Vagner y resguardos",
+  },
+  "lib/lotes/hibrido.ts": {
+    estado: "pendiente",
+    que: "Rubros privados y comunes, quién los cuida, resguardos y las tres líneas del resumen de la ficha de lote, con su inglés",
+  },
+  "lib/lotes/escenarios.ts": {
+    estado: "pendiente",
+    que: "Nombre y fuente de los tres escenarios de costo del bien común, con su inglés",
+  },
   "textos/territorio": {
     estado: "pendiente",
     que: "Territorio: vitrina, leyenda y controles del mapa, ficha lateral y marcadores",

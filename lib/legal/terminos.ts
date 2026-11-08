@@ -37,6 +37,12 @@ export const TERMINOS = {
     titulo: "Tierra ribereña",
     texto:
       "Ley 26.737 de Tierras Rurales: una persona extranjera no puede adquirir dominio de tierra rural ribereña de cuerpos de agua de envergadura. El derecho de superficie es la etapa favorable; la conversión a dominio es la sensible. A confirmar si el predio queda en el ejido urbano.",
+    // Traducción nueva: borrador a revisar antes de cualquier uso real.
+    en: {
+      titulo: "Riverside land",
+      texto:
+        "Law 26,737 on Rural Land: a foreign person cannot acquire ownership of rural land on the banks of large bodies of water. The surface right is the favorable stage; conversion to ownership is the sensitive one. To be confirmed whether the property falls within the urban boundary.",
+    },
   },
   obra: {
     titulo: "Horas de obra",

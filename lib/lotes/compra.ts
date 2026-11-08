@@ -17,6 +17,8 @@ export type LoVisto = {
   precioCasa?: number | null;
   /** Fuente del modelo con que se calcularon los valores (opcional: lo guardado antes no la tiene). */
   fuente?: string;
+  /** Versión del texto "Lo que compartís y lo que pagás" que la persona aceptó al reservar (opcional: lo guardado antes no la tiene, sin dato). */
+  hibridoAceptado?: string;
 };
 
 export type CompraLote = {
@@ -53,7 +55,8 @@ function esCompra(x: unknown): x is CompraLote {
     esNumeroONull(v.expensa) &&
     typeof v.version === "string" &&
     (v.precioCasa === undefined || esNumeroONull(v.precioCasa)) &&
-    (v.fuente === undefined || typeof v.fuente === "string")
+    (v.fuente === undefined || typeof v.fuente === "string") &&
+    (v.hibridoAceptado === undefined || typeof v.hibridoAceptado === "string")
   );
 }
 
@@ -82,6 +85,7 @@ export function leerCompras(texto: string | null): CompraLote[] {
             version: vio.version,
             ...(vio.precioCasa !== undefined ? { precioCasa: vio.precioCasa } : {}),
             ...(vio.fuente !== undefined ? { fuente: vio.fuente } : {}),
+            ...(vio.hibridoAceptado !== undefined ? { hibridoAceptado: vio.hibridoAceptado } : {}),
           },
         },
       ];

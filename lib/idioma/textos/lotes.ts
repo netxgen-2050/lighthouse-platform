@@ -8,8 +8,13 @@ const es = {
     bajada: "Qué se compraría: superficie, precio de ejemplo, estado, derechos y deberes, y costos.",
     listaTitulo: "Todos los lotes",
     verLaFicha: "Ver la ficha",
+    hibrido: "Ver qué es tuyo y qué es de todos",
   },
   volverALista: "Volver a la lista de lotes",
+  resumen: {
+    titulo: "Lo que compartís y lo que pagás",
+    ver: "Ver qué es tuyo y qué es de todos",
+  },
   ficha: {
     sector: "Sector norte",
     primeros: "Primeros 4 lotes",
@@ -86,6 +91,8 @@ const es = {
   acciones: {
     titulo: "Qué podés hacer",
     reservar: "Reservar (simulado)",
+    aceptar: "Leí lo que comparto y lo que me comprometo a pagar",
+    aceptarPrimero: "Para reservar, marcá que leíste lo que compartís y lo que pagás.",
     entrarReservar: "Entrá para reservar este lote",
     hablar: "Hablar con alguien",
     entrarHablar: "Entrá para hablar con alguien",
@@ -125,6 +132,7 @@ const es = {
     reservado: "Reservado el",
     pagado: "Pago simulado el",
     modelo: "Modelo",
+    hibrido: "Texto de lo que se comparte y se paga que aceptaste:",
   },
 } as const;
 
@@ -134,8 +142,13 @@ const en: Textos<typeof es> = {
     bajada: "What would be bought: area, sample price, status, rights and duties, and costs.",
     listaTitulo: "All lots",
     verLaFicha: "See the details",
+    hibrido: "See what is yours and what belongs to everyone",
   },
   volverALista: "Back to the lot list",
+  resumen: {
+    titulo: "What you share and what you pay",
+    ver: "See what is yours and what belongs to everyone",
+  },
   ficha: {
     sector: "North sector",
     primeros: "First 4 lots",
@@ -212,6 +225,8 @@ const en: Textos<typeof es> = {
   acciones: {
     titulo: "What you can do",
     reservar: "Reserve (simulated)",
+    aceptar: "I read what I share and what I commit to pay",
+    aceptarPrimero: "To reserve, check that you read what you share and what you pay.",
     entrarReservar: "Sign in to reserve this lot",
     hablar: "Talk to someone",
     entrarHablar: "Sign in to talk to someone",
@@ -251,6 +266,7 @@ const en: Textos<typeof es> = {
     reservado: "Reserved on",
     pagado: "Simulated payment on",
     modelo: "Model",
+    hibrido: "Version of the shared-and-paid text you accepted:",
   },
 };
 

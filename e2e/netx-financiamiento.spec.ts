@@ -1,3 +1,5 @@
+import { leccionAporte, leccionExpensas } from "../lib/lotes/modelo";
+import { lotesDelGrupo } from "../lib/territorios/loteo";
 import { expect, test, type Page } from "./fixtura";
 
 const RUTA = "/netx/financiamiento";
@@ -9,7 +11,7 @@ const H2 = [
   "Dinero temprano",
   "Recorridos de inversores",
   "¿Y si sale mal?",
-  "Juego A o Juego B",
+  "El modelo híbrido",
   "Supuestos a confirmar",
 ];
 
@@ -42,9 +44,10 @@ test.describe("estructura", () => {
     await expect(main(page).getByRole("heading", { level: 2 })).toHaveText(H2);
     const indice = page.getByRole("navigation", { name: "Índice de la página" });
     await expect(indice.getByRole("link")).toHaveText(H2);
-    await indice.getByRole("link", { name: "Juego A o Juego B" }).click();
-    await expect(page).toHaveURL(/#m-juegos$/);
-    await expect(page.getByRole("heading", { level: 2, name: "Juego A o Juego B" })).toBeInViewport();
+    await indice.getByRole("link", { name: "El modelo híbrido" }).click();
+    await expect(page).toHaveURL(/#m-hibrido$/);
+    await expect(page.getByRole("heading", { level: 2, name: "El modelo híbrido" })).toBeInViewport();
+    await expect(indice.getByRole("link", { name: "Juego A o Juego B" })).toHaveCount(0);
   });
 
   test("desde el Resumen, 'Ver el modelo completo' abre la pestaña", async ({ page }) => {
@@ -66,10 +69,10 @@ test.describe("contenido", () => {
     await expect(s).toContainText("USD 8.550 por año (viñedo) · USD 40.000 por año (agrovoltaica)");
   });
 
-  test("bolsillos: la Fundación es del Juego B, todavía no existe y NetX nunca toma un porcentaje", async ({ page }) => {
+  test("bolsillos: la Fundación es del modelo híbrido, todavía no existe y NetX nunca toma un porcentaje", async ({ page }) => {
     await page.goto(RUTA);
     const fila = seccion(page, "Quién es quién con la plata").getByRole("row", { name: /Fundación/ });
-    await expect(fila).toContainText("en el Juego B");
+    await expect(fila).toContainText("en el modelo híbrido, la tierra común queda en ella (todavía no existe)");
     await expect(fila).toContainText("todavía no existe");
     await expect(fila).toContainText("nunca un porcentaje");
   });
@@ -80,7 +83,7 @@ test.describe("contenido", () => {
     const pasos = s.getByRole("list").first().getByRole("listitem");
     await expect(pasos).toHaveCount(7);
     await expect(pasos.nth(0)).toContainText("Costos de operación");
-    await expect(pasos.nth(6)).toContainText("80 % procomún · 20 % Unidades");
+    await expect(pasos.nth(6)).toContainText("80 % bien común · 20 % Unidades");
     await expect(s.getByRole("listitem").filter({ hasText: "Centro de materia orgánica" })).toContainText("sin modelo todavía");
     await expect(s.getByRole("link", { name: "Viñedo · 10 ha" })).toHaveAttribute("href", "/netx/simulador");
   });
@@ -116,13 +119,23 @@ test.describe("contenido", () => {
     await expect(tabla.getByRole("row", { name: /Viñedo/ })).toContainText("−2,6 %");
   });
 
-  test("Juego A o Juego B: columnas, comisión e ingresos", async ({ page }) => {
+  test("El modelo híbrido: tres bloques, lecciones leídas del módulo, quién cobra y la comisión", async ({ page }) => {
     await page.goto(RUTA);
-    const s = seccion(page, "Juego A o Juego B");
-    await expect(s.getByRole("columnheader")).toHaveText(["Tema", "Juego A · vender lotes ahora", "Juego B · el procomún"]);
-    await expect(s.getByRole("row", { name: /^Comisión/ })).toContainText("matrícula de corredor");
-    await expect(s.getByRole("row", { name: /^Ingresos/ })).toContainText("una sola vez");
-    await expect(s.getByRole("row", { name: /^Ley/ })).toBeVisible();
+    const s = seccion(page, "El modelo híbrido");
+    await expect(s.getByRole("heading", { level: 3, name: "Lotes privados" })).toBeVisible();
+    await expect(s.getByRole("heading", { level: 3, name: "Bien común" })).toBeVisible();
+    await expect(s.getByRole("heading", { level: 3, name: "Series y NetX" })).toBeVisible();
+    await expect(s).toContainText("La venta es una simulación sobre un supuesto de trabajo");
+    await expect(s).toContainText("Quién cobra la venta: sin dato");
+    await expect(s).toContainText("Comisión por vender lotes: NetX no puede cobrarla sin matrícula de corredor");
+    await expect(s).toContainText("una Fundación que todavía no existe");
+    // Las lecciones salen de lib/lotes/modelo.ts con los lotes del sector norte, sin números escritos en el test.
+    const lotes = lotesDelGrupo("norte").length;
+    await expect(s).toContainText(leccionAporte(lotes, "es")!);
+    await expect(s).toContainText(leccionExpensas(lotes, "es")!);
+    await expect(s.getByRole("link", { name: "Ver qué es tuyo y qué es de todos" })).toHaveAttribute("href", "/lotes/hibrido");
+    // El bloque del manifiesto se conserva al final de la sección.
+    await expect(s.getByRole("group", { name: "Las decisiones, con la vida en el centro" })).toBeVisible();
   });
 
   test("palabras que no van; 'diseño B' solo junto a doc 28", async ({ page }) => {
@@ -130,6 +143,7 @@ test.describe("contenido", () => {
     const texto = await textoMain(page);
     for (const p of ["capitalista", "extractivista", "colonialista"]) expect(texto.toLowerCase()).not.toContain(p);
     expect(texto).not.toMatch(/reservá|reservar tu/);
+    for (const p of ["Juego A", "Juego B", "atajo", "vender lotes no es", "procomún"]) expect(texto).not.toContain(p);
     const apariciones = texto.match(/diseño B/g) ?? [];
     expect(apariciones).toHaveLength(1);
     expect(texto).toContain("doc 28 (diseño B)");
