@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { VERSIONES, fechaCorta } from "@/lib/financiamiento/fuentes";
 import { FUTUROS_SIMULADOS } from "@/lib/financiamiento/riesgo";
 import { TERMINOS } from "@/lib/legal/terminos";
+import { VERSION_MODELO_LOTES } from "@/lib/lotes/modelo";
 import { VERSION_MODELO } from "@/lib/series/escenarios";
 import { numero } from "@/lib/series/formato";
 import { FOCO } from "./estilos";
-import { SeccionRecorridos, SeccionRiesgo, SeccionJuegos, SeccionSupuestos } from "./secciones-modelo";
+import { SeccionHibrido, SeccionRecorridos, SeccionRiesgo, SeccionSupuestos } from "./secciones-modelo";
 import { SeccionBolsillos, SeccionCascada, SeccionDineroTemprano, SeccionEtapas } from "./secciones-plata";
 
 export const metadata: Metadata = { title: "Vista NetX · Modelo de financiamiento" };
@@ -19,7 +20,7 @@ const INDICE = [
   { id: "m-temprano", texto: "Dinero temprano" },
   { id: "m-recorridos", texto: "Recorridos de inversores" },
   { id: "m-riesgo", texto: "¿Y si sale mal?" },
-  { id: "m-juegos", texto: "Juego A o Juego B" },
+  { id: "m-hibrido", texto: "El modelo híbrido" },
   { id: "m-supuestos", texto: "Supuestos a confirmar" },
 ] as const;
 
@@ -35,7 +36,7 @@ export default function ModeloFinanciamientoPage() {
 
       <p className="mb-4 max-w-3xl text-lg">
         El detalle de cómo entra la plata: en qué orden cobra cada uno, cómo se puede invertir hoy, qué pasa si sale mal y
-        por qué vender lotes no es el atajo.
+        cómo conviven la venta de lotes y el bien común.
       </p>
 
       <nav aria-label="Índice de la página" className="mb-6">
@@ -56,14 +57,15 @@ export default function ModeloFinanciamientoPage() {
       <SeccionDineroTemprano />
       <SeccionRecorridos />
       <SeccionRiesgo />
-      <SeccionJuegos />
+      <SeccionHibrido />
       <SeccionSupuestos />
 
       <p className="text-xs text-muted">
         Fuentes: NS_Tokenomics doc 28 (diseño B) y 29 ({VERSIONES.capitalizacion.version},{" "}
         {fechaCorta(VERSIONES.capitalizacion.fecha)}) y doc 30; series_waterfall_sim.py {VERSION_MODELO.version},{" "}
         {fechaCorta(VERSION_MODELO.fecha)}; series_montecarlo_sim.py {VERSIONES.monteCarlo.version},{" "}
-        {fechaCorta(VERSIONES.monteCarlo.fecha)} ({numero(FUTUROS_SIMULADOS)} futuros, semilla 7). Los textos legales son
+        {fechaCorta(VERSIONES.monteCarlo.fecha)} ({numero(FUTUROS_SIMULADOS)} futuros, semilla 7); {VERSION_MODELO_LOTES.fuente}{" "}
+        {VERSION_MODELO_LOTES.version} (lotes, de ejemplo). Los textos legales son
         borradores a verificar con abogado.
       </p>
     </div>

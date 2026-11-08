@@ -28,7 +28,7 @@ export const MODELO_LOTES = {
   },
   // Proporción de compradores [criterio].
   mezcla: { "solo-lote": 0.4, modular: 0.3, familiar: 0.2, amplia: 0.1 },
-  aporteUnico: 0.05, // proporción de lo que se paga, al procomún
+  aporteUnico: 0.05, // proporción de lo que se paga, al bien común
   expensaAnual: 1_200, // USD por lote por año
   presupuestoComunAnual: 72_000, // USD por año
   aniosDeVenta: 3, // los lotes se venden parejo en estos años
@@ -63,7 +63,7 @@ export function precioPaquete(m2: number | null | undefined, opcion: OpcionCompr
   return opcion === "solo-lote" ? lote : lote + precioCasa(opcion);
 }
 
-/** Aporte único al procomún sobre lo que se paga. */
+/** Aporte único al bien común sobre lo que se paga. */
 export const aporteDe = (precio: number): number => redondear(precio * MODELO_LOTES.aporteUnico);
 
 /** Paquete promedio de la mezcla de compradores, con el lote en el medio del rango (USD 27.500). */
@@ -90,13 +90,20 @@ export const aportePrimerAnio = (lotes: number): number | null => {
 export const expensasTotales = (lotes: number): number | null =>
   hay(lotes) ? lotes * MODELO_LOTES.expensaAnual : null;
 
-/** Expensa por lote y por año que cubriría sola el presupuesto común. */
-export const expensaParaCubrir = (lotes: number): number | null =>
-  hay(lotes) ? redondear(MODELO_LOTES.presupuestoComunAnual / lotes) : null;
+/**
+ * Costo anual del bien común con el que se calcula si no se pide otro: el de la simulación de octubre. No es un
+ * presupuesto: el costo real no está calculado (`lib/lotes/escenarios.ts` ofrece tres escenarios).
+ */
+const costoPorDefecto = MODELO_LOTES.presupuestoComunAnual;
+const costoValido = (c: number) => Number.isFinite(c) && c > 0;
 
-export const aniosQueCubreElAporte = (lotes: number): number | null => {
+/** Expensa por lote y por año que cubriría sola un costo anual del bien común (por defecto, el de la simulación). */
+export const expensaParaCubrir = (lotes: number, costoAnual: number = costoPorDefecto): number | null =>
+  hay(lotes) && costoValido(costoAnual) ? redondear(costoAnual / lotes) : null;
+
+export const aniosQueCubreElAporte = (lotes: number, costoAnual: number = costoPorDefecto): number | null => {
   const total = aporteTotal(lotes);
-  return total === null ? null : total / MODELO_LOTES.presupuestoComunAnual;
+  return total === null || !costoValido(costoAnual) ? null : total / costoAnual;
 };
 
 /** Parte del dueño sobre el precio del lote. */
@@ -105,13 +112,14 @@ export const parteDelDuenoDe = (precio: number): number => redondear(precio * MO
 /** Años con un decimal: "2,6" en español y "2.6" en inglés (los años son un número chico: sin miles). */
 const decimal = (n: number, idioma: Idioma) => (idioma === "en" ? numero(n, 1).replace(",", ".") : numero(n, 1));
 
-/** La lección del aporte sale de la cuenta, no de una frase fija. Con cero lotes, null. */
-export function leccionAporte(lotes: number, idioma: Idioma): string | null {
+/** La lección del aporte sale de la cuenta, no de una frase fija. Con cero lotes o un costo inválido, null. */
+export function leccionAporte(lotes: number, idioma: Idioma, costoAnual: number = costoPorDefecto): string | null {
   const total = aporteTotal(lotes);
   const primero = aportePrimerAnio(lotes);
-  const anios = aniosQueCubreElAporte(lotes);
+  const anios = aniosQueCubreElAporte(lotes, costoAnual);
   if (total === null || primero === null || anios === null) return null;
-  const { aporteUnico, aniosDeVenta, presupuestoComunAnual } = MODELO_LOTES;
+  const { aporteUnico, aniosDeVenta } = MODELO_LOTES;
+  const presupuestoComunAnual = costoAnual;
   const p = `${numero(aporteUnico * 100)} %`;
   const noAlcanza = primero < presupuestoComunAnual;
   if (idioma === "en") {
@@ -125,8 +133,8 @@ export function leccionAporte(lotes: number, idioma: Idioma): string | null {
 }
 
 /** Cuánto pide por lote cubrir el presupuesto común solo con expensas, frente a la expensa de ejemplo. Con cero lotes, null. */
-export function leccionExpensas(lotes: number, idioma: Idioma): string | null {
-  const necesaria = expensaParaCubrir(lotes);
+export function leccionExpensas(lotes: number, idioma: Idioma, costoAnual: number = costoPorDefecto): string | null {
+  const necesaria = expensaParaCubrir(lotes, costoAnual);
   if (necesaria === null) return null;
   return idioma === "en"
     ? `Covering that budget with dues alone takes ${usd(necesaria)} per lot per year; the sample due is ${usd(MODELO_LOTES.expensaAnual)}.`

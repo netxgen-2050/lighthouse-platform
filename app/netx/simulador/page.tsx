@@ -17,9 +17,9 @@ export default function SimuladorPage() {
       </p>
       <p className="text-sm font-medium text-muted">Vista NetX</p>
       <h1 className="text-3xl font-semibold">Simulador de la tokenomics</h1>
-      <p className="mt-2 text-muted">Modelo de NS_Tokenomics doc 28 (diseño B): el Juego B en números.</p>
+      <p className="mt-2 text-muted">Modelo de NS_Tokenomics doc 28 (diseño B): el bien común en números.</p>
       <p className="mt-2 mb-6 max-w-2xl text-muted">
-        Movés un valor y ves cuánto recibe el procomún, cuánto cada clase de inversor y cuánto NetX en una serie{" "}
+        Movés un valor y ves cuánto recibe el bien común, cuánto cada clase de inversor y cuánto NetX en una serie{" "}
         <TerminoLegal clave="serieprograma" /> del programa de fideicomisos. Separamos lo que se decide de lo que se mide.
         Nada se guarda: al recargar vuelven los valores de partida.
       </p>

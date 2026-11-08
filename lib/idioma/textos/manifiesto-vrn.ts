@@ -28,7 +28,7 @@ const es = {
     derechosIntro:
       "La tierra tiene derechos, y los asumimos como propios. No es un texto jurídico: es lo que nos comprometemos a respetar.",
     cuidaPrincipios: "Lo cuidan:",
-    equipos: "Equipos transversales: una startup para el procomún",
+    equipos: "Equipos transversales: una startup para el bien común",
     equiposIntro:
       "Son los círculos del común: no son una entidad aparte. Cada equipo cuida algo para todo el Lighthouse.",
     verGobernanza: "Ver cómo decidimos",

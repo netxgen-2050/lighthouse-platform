@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BarrasReparto } from "@/components/barras-reparto";
 import { TerminoLegal } from "@/components/termino-legal";
 import { SUPUESTO_CONGRESO, VERSIONES, fechaCorta } from "@/lib/financiamiento/fuentes";
-import { JUEGO_A, JUEGO_B, PROCOMUN_EN_SIMPLE } from "@/lib/financiamiento/juegos";
+import { HIBRIDO, PROCOMUN_EN_SIMPLE } from "@/lib/financiamiento/hibrido";
 import { PALANCAS, type IdPalanca } from "@/lib/financiamiento/palancas";
 import { usdMillones } from "@/lib/financiamiento/pista";
 import { armarResumen } from "@/lib/financiamiento/resumen";
@@ -49,7 +49,7 @@ export default function ResumenPage() {
   const vin = repartoDe("vinedo");
   const agro = repartoDe("agrovoltaica");
   const destinos: { id: string; etiqueta: string }[] = [
-    { id: "procomun", etiqueta: "Procomún" },
+    { id: "procomun", etiqueta: "Bien común" },
     { id: "netx", etiqueta: "NetX" },
     { id: "unidades", etiqueta: "Unidades de Regeneración" },
     { id: "primeraPerdida", etiqueta: "Primera pérdida" },
@@ -67,47 +67,42 @@ export default function ResumenPage() {
   return (
     <div>
       <p className="text-sm font-medium text-muted">Vista NetX · para el equipo de NetXGen</p>
-      <h1 className="text-3xl font-semibold">¿Cómo se financia NetX sin vender lotes?</h1>
+      <h1 className="text-3xl font-semibold">¿Cómo se financia NetX?</h1>
 
       <p className="mt-3 mb-4 max-w-3xl rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
         {TERMINOS.avisosimulador.texto}
       </p>
 
       <p className="mb-6 max-w-3xl text-lg">
-        NetX es la empresa que diseña, gestiona y opera la plataforma. Cobra por su trabajo, no por vender tierra: en el
-        Juego B, la tierra queda en una Fundación y la plata de los proyectos entra por series{" "}
-        <TerminoLegal clave="serieprograma" /> del programa de fideicomisos.{" "}
+        NetX es la empresa que diseña, gestiona y opera la plataforma, y cobra por su trabajo. La fase 1 suma la venta de
+        lotes privados en Lighthouse VRN, simulada en este prototipo; la tierra común queda en una Fundación que todavía no
+        existe y la plata de los proyectos entra por series <TerminoLegal clave="serieprograma" /> del programa de
+        fideicomisos.{" "}
         <Link href="/netx/financiamiento" className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
           Ver el modelo completo
         </Link>
       </p>
 
-      <section aria-labelledby="t-juegos" className="mb-6">
-        <h2 id="t-juegos" className="mb-3 text-xl font-semibold">
-          Dos juegos
+      <section aria-labelledby="t-hibrido" className="mb-6">
+        <h2 id="t-hibrido" className="mb-3 text-xl font-semibold">
+          {HIBRIDO.titulo}
         </h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className={CARTA}>
-            <h3 className="text-lg font-semibold">{JUEGO_A.titulo}</h3>
-            <p className="mt-1">{JUEGO_A.idea}</p>
-            <ul className="mt-2 grid list-disc gap-1 pl-5 text-sm">
-              {JUEGO_A.costos.map((c) => (
-                <li key={c}>{c}</li>
-              ))}
-            </ul>
-            <p className="mt-2 text-sm">
-              Qué dice la Ordenanza 173 <TerminoLegal clave="ordenanza173" />
-            </p>
-          </div>
-          <div className={CARTA}>
-            <h3 className="text-lg font-semibold">{JUEGO_B.titulo}</h3>
-            <p className="mt-1">{JUEGO_B.idea}</p>
-            <ul className="mt-2 grid list-disc gap-1 pl-5 text-sm">
-              {JUEGO_B.suma.map((c) => (
-                <li key={c}>{c}</li>
-              ))}
-            </ul>
-          </div>
+        <div className={CARTA}>
+          <p>{HIBRIDO.idea}</p>
+          <ul className="mt-2 grid list-disc gap-1 pl-5 text-sm">
+            {HIBRIDO.puntos.map((p) => (
+              <li key={p}>{p}</li>
+            ))}
+          </ul>
+          <p className="mt-2 text-sm">
+            Qué dice la Ordenanza 173 <TerminoLegal clave="ordenanza173" />
+          </p>
+          <p className="mt-2 text-sm text-muted">Fuente: {HIBRIDO.fuente}</p>
+          <p className="mt-2 text-sm">
+            <Link href="/lotes/hibrido" className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
+              Ver qué es tuyo y qué es de todos
+            </Link>
+          </p>
         </div>
         <p className="mt-3 text-sm text-muted">{PROCOMUN_EN_SIMPLE}</p>
       </section>
@@ -143,7 +138,7 @@ export default function ResumenPage() {
 
           <section aria-labelledby="t-procomun" className={CARTA}>
             <h3 id="t-procomun" className="mb-2 text-lg font-semibold">
-              Procomún · Fundación
+              Bien común · Fundación
             </h3>
             <ul className="grid gap-2 text-sm">
               <li>Viñedo: {usd(r.procomun.vinedo.total)} en {r.procomun.vinedo.anios} años</li>
@@ -153,7 +148,7 @@ export default function ResumenPage() {
               </li>
               <li>
                 Pase Fundador <TerminoLegal clave="pasefundador" />: {usd(pase.bajo.recaudado)} · {numero(pase.base.recaudado)}{" "}
-                · {numero(pase.bueno.recaudado)} (bajo · base · bueno) — va al procomún, no a NetX
+                · {numero(pase.bueno.recaudado)} (bajo · base · bueno) — va al bien común, no a NetX
                 {pase.bajo.alcanzaMinimo ? "" : "; el escenario bajo no llega al mínimo de USD 75.000"}. {SUPUESTO_CONGRESO}
               </li>
             </ul>
@@ -255,26 +250,12 @@ export default function ResumenPage() {
         </ol>
       </section>
 
-      <section aria-labelledby="t-lotes" className={`mb-6 ${CARTA}`}>
-        <h2 id="t-lotes" className="mb-2 text-xl font-semibold">
-          ¿Y vender lotes?
-        </h2>
-        <ul className="grid list-disc gap-1 pl-5">
-          <li>
-            No se puede: antes de la aprobación municipal no se ofrecen, reservan ni prometen lotes{" "}
-            <TerminoLegal clave="ordenanza173" />.
-          </li>
-          <li>No hace falta: la plata entra por las series y por el trabajo de NetX.</li>
-          <li>En el Juego B, la tierra queda en una Fundación: no hay lotes de NetX para vender.</li>
-        </ul>
-      </section>
-
       <p className="text-xs text-muted">
         Fuentes: NS_Tokenomics doc 28 (diseño B), 29 y 30 ({VERSIONES.capitalizacion.version},{" "}
         {fechaCorta(VERSIONES.capitalizacion.fecha)}); series_waterfall_sim.py {VERSION_MODELO.version},{" "}
         {fechaCorta(VERSION_MODELO.fecha)}; platform_revenue_sim.py {VERSIONES.plataforma.version},{" "}
         {fechaCorta(VERSIONES.plataforma.fecha)}; series_montecarlo_sim.py {VERSIONES.monteCarlo.version},{" "}
-        {fechaCorta(VERSIONES.monteCarlo.fecha)} ({numero(FUTUROS_SIMULADOS)} futuros, semilla 7). La idea de procomún sigue
+        {fechaCorta(VERSIONES.monteCarlo.fecha)} ({numero(FUTUROS_SIMULADOS)} futuros, semilla 7). La idea de bien común sigue
         el trabajo de Elinor Ostrom sobre bienes comunes.
       </p>
     </div>

@@ -10,15 +10,16 @@ import {
   type SerieRiesgo,
 } from "@/lib/financiamiento/riesgo";
 import { RETORNO_SERIE_MADRE, recorridoVino, valorFuturo } from "@/lib/financiamiento/recorridos";
+import { HIBRIDO } from "@/lib/financiamiento/hibrido";
 import {
   A_VERIFICAR_CON_ABOGADO,
+  COMISION_POR_VENDER_LOTES,
   GRUPOS_SUPUESTOS,
   HALLAZGOS_RIESGO,
-  LOTES_INTRO,
-  LOTES_VS_MODELO,
-  PROPUESTA_PARA_QUIEN_VENDE,
   SUPUESTOS_A_CONFIRMAR,
 } from "@/lib/financiamiento/relato";
+import { lotesDelSector } from "@/lib/lotes/escenarios";
+import { MODELO_LOTES, VERSION_MODELO_LOTES, leccionAporte, leccionExpensas } from "@/lib/lotes/modelo";
 import { SIN_DATO, multiplo, numero, pct, usd } from "@/lib/series/formato";
 import { CARTA, H2, SECCION, TD, TH, pctEntero, signoMenos } from "./estilos";
 
@@ -194,50 +195,74 @@ export function SeccionRiesgo() {
   );
 }
 
-export function SeccionJuegos() {
+export function SeccionHibrido() {
+  const lotes = lotesDelSector();
+  const { precioLote, aporteUnico, expensaAnual } = MODELO_LOTES;
   return (
-    <section aria-labelledby="m-juegos" className={SECCION}>
-      <h2 id="m-juegos" className={H2}>
-        Juego A o Juego B
+    <section aria-labelledby="m-hibrido" className={SECCION}>
+      <h2 id="m-hibrido" className={H2}>
+        {HIBRIDO.titulo}
       </h2>
-      <p className="mb-3 max-w-3xl">{LOTES_INTRO}</p>
-      <div className={`overflow-x-auto ${CARTA}`}>
-        <table className="w-full min-w-[40rem] text-sm">
-          <caption className="sr-only">Comparación entre el Juego A y el Juego B</caption>
-          <thead>
-            <tr>
-              <th scope="col" className={TH}>
-                Tema
-              </th>
-              <th scope="col" className={TH}>
-                Juego A · vender lotes ahora
-              </th>
-              <th scope="col" className={TH}>
-                Juego B · el procomún
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {LOTES_VS_MODELO.map((f) => (
-              <tr key={f.id}>
-                <th scope="row" className={`${TD} text-left font-semibold`}>
-                  {f.titulo}
-                </th>
-                <td className={TD}>
-                  {f.juegoA} {f.id === "ley" && <TerminoLegal clave="ordenanza173" />}
-                  {f.aVerificar && <span className="block text-xs text-muted">{A_VERIFICAR_CON_ABOGADO}</span>}
-                </td>
-                <td className={TD}>
-                  {f.juegoB} {f.id === "tierra" && <TerminoLegal clave="fundaciontierra" />}
-                  {f.aVerificar && <span className="block text-xs text-muted">{A_VERIFICAR_CON_ABOGADO}</span>}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <p className="mb-3 max-w-3xl">{HIBRIDO.idea}</p>
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className={CARTA}>
+          <h3 className="text-lg font-semibold">Lotes privados</h3>
+          <ul className="mt-2 grid list-disc gap-1 pl-5 text-sm">
+            <li>
+              El sector norte de Lighthouse VRN, con {numero(lotes)} lotes. La venta es una simulación sobre un supuesto de
+              trabajo <TerminoLegal clave="ordenanza173" />.
+            </li>
+            <li>
+              Precio de ejemplo: {usd(precioLote.min)} a {usd(precioLote.max)} según la superficie.
+            </li>
+            <li>
+              Aporte único al bien común: {numero(aporteUnico * 100)} % de lo que se paga <TerminoLegal clave="aporteunico" />.
+              Expensas: {usd(expensaAnual)} por lote por año <TerminoLegal clave="expensas" />.
+            </li>
+            <li>Quién cobra la venta: {SIN_DATO}.</li>
+          </ul>
+          <p className="mt-2 text-xs text-muted">{A_VERIFICAR_CON_ABOGADO}</p>
+        </div>
+
+        <div className={CARTA}>
+          <h3 className="text-lg font-semibold">Bien común</h3>
+          <ul className="mt-2 grid list-disc gap-1 pl-5 text-sm">
+            <li>
+              La tierra común queda en una Fundación que todavía no existe <TerminoLegal clave="fundaciontierra" />, y los
+              lotes privados no quedan en ella.
+            </li>
+            <li>{leccionAporte(lotes, "es")}</li>
+            <li>{leccionExpensas(lotes, "es")}</li>
+          </ul>
+          <p className="mt-2 text-xs text-muted">
+            Con el costo de la simulación de octubre, de ejemplo: no es un presupuesto. El costo real del bien común no está
+            calculado y falta el dato de Vagner.{" "}
+            <Link href="/lotes/hibrido" className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
+              Ver los tres escenarios y la calculadora
+            </Link>
+          </p>
+        </div>
+
+        <div className={CARTA}>
+          <h3 className="text-lg font-semibold">Series y NetX</h3>
+          <ul className="mt-2 grid list-disc gap-1 pl-5 text-sm">
+            <li>
+              La plata de los proyectos entra por series <TerminoLegal clave="serieprograma" />.
+            </li>
+            <li>NetX cobra por diseñar, gestionar y operar.</li>
+            <li>{COMISION_POR_VENDER_LOTES}</li>
+          </ul>
+          <p className="mt-2 text-xs text-muted">{A_VERIFICAR_CON_ABOGADO}</p>
+        </div>
       </div>
-      <p className="mt-3 max-w-3xl">
-        <strong>Para quien quiere vender.</strong> {PROPUESTA_PARA_QUIEN_VENDE}
+      <p className="mt-3 text-sm">
+        <Link href="/lotes/hibrido" className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
+          Ver qué es tuyo y qué es de todos
+        </Link>
+      </p>
+      <p className="mt-1 text-xs text-muted">
+        Fuente: {HIBRIDO.fuente}; {VERSION_MODELO_LOTES.fuente}, versión {VERSION_MODELO_LOTES.version}, {VERSION_MODELO_LOTES.fecha}.
+        Todos los valores de lotes son de ejemplo.
       </p>
       <BloqueManifiesto />
     </section>

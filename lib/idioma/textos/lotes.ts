@@ -53,7 +53,7 @@ const es = {
     titulo: "Costos",
     concepto: "Concepto",
     valor: "Valor",
-    aporte: "Aporte único al procomún",
+    aporte: "Aporte único al bien común",
     expensas: "Expensas por año",
     infraestructura: "Infraestructura por lote",
     parteDelDueno: "Parte del dueño",
@@ -62,7 +62,7 @@ const es = {
     aporteAparte: "El aporte va aparte del precio, sin sumarlos: si se suma al precio o va incluido, sin dato.",
     provisoriaTitulo: "Medida provisoria, a hablar con el equipo:",
     provisoria:
-      "lo que el comprador pone en infraestructura se le retribuiría en tokens del procomún (RAIZ). Todavía no está decidido, y no es una promesa.",
+      "lo que el comprador pone en infraestructura se le retribuiría en tokens del bien común (RAIZ). Todavía no está decidido, y no es una promesa.",
     aporteSobre: "El aporte se calcula sobre lo que elijas arriba.",
     version: (fuente: string, version: string, fecha: string) =>
       `Fuente: ${fuente} · versión ${version} · ${fecha}. Todos los valores son de ejemplo.`,
@@ -100,7 +100,7 @@ const es = {
     pagoTitulo: "Pago simulado",
     pagoAviso: "No se cobra nada. No ingreses datos de pago: no hay ningún campo.",
     precioElegido: (monto: string) => `Precio elegido: ${monto}`,
-    aporteAparte: (monto: string) => `Aporte único al procomún: ${monto} · si se suma al precio o va incluido: sin dato`,
+    aporteAparte: (monto: string) => `Aporte único al bien común: ${monto} · si se suma al precio o va incluido: sin dato`,
     confirmar: "Confirmar el pago simulado",
     cancelar: "Volver",
     anuncioReservado: (n: number) => `Reservaste el lote ${n} en la simulación. Seguí con el pago simulado.`,
