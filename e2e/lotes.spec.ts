@@ -4,6 +4,8 @@ import { formatearNumero } from "../lib/idioma/formatos";
 import { ESTADOS_EJEMPLO, estadoDeLote } from "../lib/territorios/loteo-estados";
 import { listarLotes, lotesDelGrupo } from "../lib/territorios/loteo";
 import { VERSION_HIBRIDO } from "../lib/lotes/hibrido";
+import { faroEn } from "../lib/bien-comun/formato";
+import { centroDeAnillo, faroDeLote } from "../lib/bien-comun/modelo";
 import {
   MODELO_LOTES,
   VERSION_MODELO_LOTES,
@@ -171,6 +173,8 @@ test("reservar, simular el pago y ver el boleto solo con teclado; recarga y desh
   await expect(boleto).toContainText("supuesto de trabajo, no otorgada");
   await expect(boleto).toContainText(`Lote ${lote.numero}`);
   await expect(boleto).toContainText(VERSION_MODELO_LOTES.version);
+  // El boleto dice que se acuñaría el NFT y se asignarían los FARO del lote (simulado).
+  await expect(boleto).toContainText(`Se acuñaría el NFT del lote ${lote.numero} y se asignarían ${faroEn(faroDeLote(lote.superficieM2), "es")} (simulado)`);
   // El boleto muestra la versión del texto de lo que se comparte y se paga, que se aceptó al reservar.
   await expect(boleto).toContainText(`Texto de lo que se comparte y se paga que aceptaste: ${VERSION_HIBRIDO}`);
   // La marca va antes que cualquier dato.
@@ -401,13 +405,30 @@ test.describe("ficha: imagen, explicaciones y medida provisoria", () => {
     await expect(page.getByText(/Imagen: Esri, Maxar, Earthstar Geographics/)).toBeVisible();
   });
 
-  test("infraestructura y parte del dueño tienen su ⚖, y la retribución en RAIZ dice que es provisoria", async ({ page }) => {
+  test("infraestructura y parte del dueño tienen su ⚖, y la retribución en tokens del bien común dice que es provisoria", async ({ page }) => {
     await page.goto(`/lotes/${lote.id}`);
-    for (const nombre of ["Infraestructura por lote", "Parte del dueño", "Retribución en RAIZ: medida provisoria"]) {
+    for (const nombre of ["Infraestructura por lote", "Parte del dueño", "Retribución en tokens del bien común: medida provisoria"]) {
       await expect(page.getByRole("button", { name: `Qué significa legalmente: ${nombre}` })).toBeVisible();
     }
+    await expect(page.getByText(/nombre provisorio: FARO/)).toBeVisible();
+    await expect(page.getByText(/RAIZ/)).toHaveCount(0);
     await expect(page.getByText(/Medida provisoria, a hablar con el equipo:/)).toBeVisible();
     await expect(page.getByText(/no es una promesa/)).toBeVisible();
+  });
+
+  test("la ficha muestra el NFT del lote (simulado) con su metadata y los FARO que traería", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    const nft = page.getByRole("region", { name: /NFT del lote \(simulado\)/ });
+    await expect(nft).toBeVisible();
+    const c = centroDeAnillo(lote.anillo)!;
+    await expect(nft).toContainText(`${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}`);
+    await expect(nft).toContainText("reglamento, aporte único, expensas");
+    await expect(nft).toContainText("Red");
+    await expect(nft).toContainText("sin definir");
+    await expect(nft).toContainText("FARO que trae");
+    await expect(nft).toContainText(faroEn(faroDeLote(lote.superficieM2), "es"));
+    await expect(page.getByRole("button", { name: "Qué significa legalmente: NFT del lote" })).toBeVisible();
+    await expect(nft.getByRole("link", { name: "Ver el bien común" })).toHaveAttribute("href", "/bien-comun");
   });
 
   test("el panel del mapa muestra el precio del lote elegido", async ({ page }) => {

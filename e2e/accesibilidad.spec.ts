@@ -33,6 +33,7 @@ const rutas = [
   "/lotes",
   "/lotes/lote-1",
   "/lotes/hibrido",
+  "/bien-comun",
   "/congreso",
   "/congreso/en",
   "/territorios/no-existe",
@@ -48,8 +49,8 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 44 rutas auditadas", () => {
-  expect(rutas).toHaveLength(44);
+test("hay 45 rutas auditadas", () => {
+  expect(rutas).toHaveLength(45);
 });
 
 async function graves(page: Page) {
@@ -537,7 +538,7 @@ for (const ruta of rutas) {
 }
 
 // Lotes: la lista y una ficha en inglés, y la ficha con la compra simulada en cada paso (lote-ficha-y-compra).
-for (const ruta of ["/lotes?lang=en", "/lotes/lote-1?lang=en", "/lotes/hibrido?lang=en"]) {
+for (const ruta of ["/lotes?lang=en", "/lotes/lote-1?lang=en", "/lotes/hibrido?lang=en", "/bien-comun?lang=en"]) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();

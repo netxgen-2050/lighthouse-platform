@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
 import { EntrarPara } from "@/components/sesion/entrar-para";
 import { useSesion } from "@/components/sesion/contexto";
+import { faroEn } from "@/lib/bien-comun/formato";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { ESTADOS_ADMINISTRATIVOS, accionesDeLote, type IdProyecto } from "@/lib/legal/estado-administrativo";
 import { deshacer, pagar, reservar, type CompraLote, type LoVisto } from "@/lib/lotes/compra";
@@ -41,6 +42,7 @@ export function CompraSimulada({ loteId, numero, proyecto, superficieM2, opcion,
   const idioma = useIdioma();
   const t = useTextos("lotes");
   const tl = useTextos("territorio").loteo;
+  const tb = useTextos("biencomun");
   const { estado: estadoSesion } = useSesion();
   const [pagando, setPagando] = useState(false);
   const [anuncio, setAnuncio] = useState("");
@@ -267,6 +269,7 @@ export function CompraSimulada({ loteId, numero, proyecto, superficieM2, opcion,
             <li>
               {t.boleto.hibrido} {compra.vio.hibridoAceptado ?? sinDato(idioma)}
             </li>
+            <li>{tb.boleto(String(numero), faroEn(compra.vio.faro, idioma))}</li>
             <li className="text-muted">
               {t.boleto.modelo}: {compra.vio.fuente ?? sinDato(idioma)} · {compra.vio.version}
             </li>

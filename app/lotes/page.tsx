@@ -30,6 +30,11 @@ export default async function LotesPage() {
             {t.lista.hibrido}
           </Link>
         </p>
+        <p className="text-sm">
+          <Link className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/bien-comun">
+            {textos("biencomun", idioma).enlace}
+          </Link>
+        </p>
         <AvisoEjemplo />
         <p className="w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
           {textos("marco", idioma).aviso}

@@ -56,6 +56,17 @@ export function faroDeLote(m2: number | null | undefined): number | null {
   return Math.round(m2 * FARO_POR_M2);
 }
 
+/** Centro de un contorno [longitud, latitud]: el promedio de sus vértices (sin contar el que cierra el anillo). Sin vértices, null. */
+export function centroDeAnillo(anillo: readonly (readonly [number, number])[]): { lat: number; lng: number } | null {
+  const abierto = anillo.length > 1 && anillo[0][0] === anillo[anillo.length - 1][0] && anillo[0][1] === anillo[anillo.length - 1][1]
+    ? anillo.slice(0, -1)
+    : anillo;
+  if (abierto.length === 0) return null;
+  const lng = abierto.reduce((s, p) => s + p[0], 0) / abierto.length;
+  const lat = abierto.reduce((s, p) => s + p[1], 0) / abierto.length;
+  return { lat, lng };
+}
+
 /** Cantidad de tokens de un grupo del reparto. */
 export const faroDeGrupo = (id: IdGrupoReparto): number =>
   Math.round((SUMINISTRO * (REPARTO.find((g) => g.id === id)?.pct ?? 0)) / 100);

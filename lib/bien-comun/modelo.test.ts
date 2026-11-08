@@ -6,6 +6,7 @@ import {
   REPARTO,
   SUMINISTRO,
   TRAMOS,
+  centroDeAnillo,
   cotizar,
   disponiblePorTramo,
   faroDeGrupo,
@@ -33,6 +34,19 @@ describe("modelo del bien común", () => {
     expect(faroDeLote(100)).toBe(100 * FARO_POR_M2);
     expect(faroDeLote(undefined)).toBeNull();
     expect(faroDeLote(0)).toBeNull();
+  });
+
+  it("centroDeAnillo promedia los vértices y no cuenta dos veces el que cierra", () => {
+    expect(
+      centroDeAnillo([
+        [0, 0],
+        [2, 0],
+        [2, 2],
+        [0, 2],
+        [0, 0],
+      ]),
+    ).toEqual({ lat: 1, lng: 1 });
+    expect(centroDeAnillo([])).toBeNull();
   });
 
   it("cotizar parte del avance de ejemplo y se queda en el tramo 1 con un monto chico", () => {

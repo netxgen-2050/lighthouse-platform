@@ -217,6 +217,12 @@ export default async function HibridoPage() {
           </ul>
         </section>
 
+        <p className="text-sm">
+          <Link className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/bien-comun">
+            {textos("biencomun", idioma).enlace}
+          </Link>
+        </p>
+
         <section aria-labelledby="h-resguardos" className={TARJETA}>
           <h2 id="h-resguardos" className="text-xl font-semibold">
             {t.resguardos.titulo}

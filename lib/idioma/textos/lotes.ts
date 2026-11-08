@@ -67,7 +67,7 @@ const es = {
     aporteAparte: "El aporte va aparte del precio, sin sumarlos: si se suma al precio o va incluido, sin dato.",
     provisoriaTitulo: "Medida provisoria, a hablar con el equipo:",
     provisoria:
-      "lo que el comprador pone en infraestructura se le retribuiría en tokens del bien común (RAIZ). Todavía no está decidido, y no es una promesa.",
+      "lo que el comprador pone en infraestructura se le retribuiría en tokens del bien común (nombre provisorio: FARO). Todavía no está decidido, y no es una promesa.",
     aporteSobre: "El aporte se calcula sobre lo que elijas arriba.",
     version: (fuente: string, version: string, fecha: string) =>
       `Fuente: ${fuente} · versión ${version} · ${fecha}. Todos los valores son de ejemplo.`,
@@ -201,7 +201,7 @@ const en: Textos<typeof es> = {
     aporteAparte: "The contribution is shown apart from the price, not added: whether it is added or included is no data.",
     provisoriaTitulo: "Provisional measure, to discuss with the team:",
     provisoria:
-      "what the buyer puts into infrastructure would be compensated in commons tokens (RAIZ). This is not decided yet, and it is not a promise.",
+      "what the buyer puts into infrastructure would be compensated in commons tokens (provisional name: FARO). This is not decided yet, and it is not a promise.",
     aporteSobre: "The contribution is calculated on what you choose above.",
     version: (fuente: string, version: string, fecha: string) =>
       `Source: ${fuente} · version ${version} · ${fecha}. All values are samples.`,

@@ -45,6 +45,10 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Lotes de Lighthouse VRN: lista, ficha, precio de ejemplo, con casa, costos, derechos y deberes, reserva y pago simulados y boleto de ejemplo",
   },
+  "textos/biencomun": {
+    estado: "pendiente",
+    que: "El bien común de Lighthouse VRN: principios de Ostrom, NFT del lote y token del bien común (FARO), reparto, venta por tramos con calculadora, staking, CAPEX y OPEX, riesgos, tarjeta de la ficha y línea del boleto",
+  },
   "textos/hibrido": {
     estado: "pendiente",
     que: "Qué es tuyo y qué es de todos: tabla de lo privado y lo común, aporte de cada lote, tres escenarios de costo del bien común, calculadora, preguntas para Vagner y resguardos",

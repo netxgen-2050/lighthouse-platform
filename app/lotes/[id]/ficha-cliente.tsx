@@ -9,6 +9,8 @@ import { EntrarPara } from "@/components/sesion/entrar-para";
 import { TerminoLegal } from "@/components/termino-legal";
 import { TextoEstado } from "@/components/lotes/estado-del-lote";
 import { useCompras } from "@/components/lotes/usar-compras";
+import { faroEn } from "@/lib/bien-comun/formato";
+import { centroDeAnillo, faroDeLote } from "@/lib/bien-comun/modelo";
 import { guardarPedido } from "@/lib/contactos/almacen";
 import type { Pedido } from "@/lib/contactos/tipos";
 import { sinDato as textoSinDato } from "@/lib/idioma/formatos";
@@ -88,6 +90,7 @@ export function FichaCliente({ id }: { id: string }) {
   const idioma = useIdioma();
   const t = useTextos("lotes");
   const tl = useTextos("territorio").loteo;
+  const tb = useTextos("biencomun");
   const { compras, guardar } = useCompras();
   const [elegida, setElegida] = useState<OpcionCompra>("solo-lote");
   const grupo = useId();
@@ -105,6 +108,11 @@ export function FichaCliente({ id }: { id: string }) {
   const aporte = precio === null ? null : aporteDe(precio);
   const parte = precioDelLote === null ? null : parteDelDuenoDe(precioDelLote);
   const sd = textoSinDato(idioma);
+  const faro = faroDeLote(lote.superficieM2);
+  const centro = centroDeAnillo(lote.anillo);
+  const estadoLegal = ESTADOS_ADMINISTRATIVOS[proyecto];
+  const estadoLegalTexto = idioma === "en" && estadoLegal.en?.estado ? estadoLegal.en.estado : estadoLegal.estado;
+  const nft = tb.ficha;
   // Lo que la persona ve al reservar queda guardado tal cual: el boleto no se recalcula con un modelo que cambie después.
   const vio = {
     precio,
@@ -114,6 +122,8 @@ export function FichaCliente({ id }: { id: string }) {
     fuente: VERSION_MODELO_LOTES.fuente,
     // La versión del texto "Lo que compartís y lo que pagás" que se ve en esta ficha: la reserva exige marcar que se leyó.
     hibridoAceptado: VERSION_HIBRIDO,
+    // Los FARO que traería el lote, simulados (bien-comun-tokens): se guardan para que el boleto no cambie con el modelo.
+    faro,
     ...(opcion === "solo-lote" ? {} : { precioCasa: precioCasa(opcion) }),
   };
 
@@ -129,6 +139,35 @@ export function FichaCliente({ id }: { id: string }) {
         </p>
         <p className="text-sm">
           <strong>{t.ficha.quienVende}</strong> {sd}
+        </p>
+      </section>
+
+      <section aria-labelledby="ficha-nft" className={TARJETA}>
+        <h2 id="ficha-nft" className="text-lg font-semibold">
+          {nft.titulo}
+          <TerminoLegal clave="nftlote" idioma={idioma} />
+        </h2>
+        <dl className="grid gap-1 text-sm sm:grid-cols-[auto_1fr] sm:gap-x-4">
+          <dt className="font-semibold">{nft.token}</dt>
+          <dd>{lote.numero}</dd>
+          <dt className="font-semibold">{nft.superficie}</dt>
+          <dd>{textoSuperficieM2(lote.superficieM2, idioma)}</dd>
+          <dt className="font-semibold">{nft.centro}</dt>
+          <dd>{centro ? `${centro.lat.toFixed(5)}, ${centro.lng.toFixed(5)}` : sd}</dd>
+          <dt className="font-semibold">{nft.estado}</dt>
+          <dd>{estadoLegalTexto}</dd>
+          <dt className="font-semibold">{nft.deberes}</dt>
+          <dd>{nft.deberesValor}</dd>
+          <dt className="font-semibold">{nft.faro}</dt>
+          <dd>{faroEn(faro, idioma)}</dd>
+          <dt className="font-semibold">{nft.red}</dt>
+          <dd>{nft.redValor}</dd>
+        </dl>
+        <p className="text-sm text-muted">{nft.nota}</p>
+        <p className="text-sm">
+          <Link className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/bien-comun">
+            {nft.ver}
+          </Link>
         </p>
       </section>
 

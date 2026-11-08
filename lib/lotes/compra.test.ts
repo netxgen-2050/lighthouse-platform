@@ -96,6 +96,14 @@ describe("un boleto muestra lo que se vio", () => {
     expect(vieja.vio).not.toHaveProperty("hibridoAceptado");
   });
 
+  it("el FARO simulado (faro) sobrevive a guardar y leer; un registro sin él se lee igual y uno de tipo raro se descarta", () => {
+    const r = reservar([], disponible, "solo-lote", { ...vio, faro: 18560 }, ahora);
+    if (!r.ok) throw new Error("no se pudo reservar");
+    expect(leerCompras(JSON.stringify(r.compras))[0].vio.faro).toBe(18560);
+    expect(leerCompras(JSON.stringify(reservada()))[0].vio).not.toHaveProperty("faro");
+    expect(leerCompras(JSON.stringify([{ ...reservada()[0], vio: { ...vio, faro: "mucho" } }]))).toEqual([]);
+  });
+
   it("una versión aceptada de tipo raro invalida el registro", () => {
     expect(leerCompras(JSON.stringify([{ ...reservada()[0], vio: { ...vio, hibridoAceptado: 7 } }]))).toEqual([]);
   });
