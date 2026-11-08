@@ -49,14 +49,21 @@ Debajo: "El costo de cada rubro todavía no está calculado: sin dato. El presup
 ### 3. Cuánto aporta cada lote
 Tres datos, leídos del módulo: aporte único (el 5 % de lo que se paga, ⚖ `aporteunico`, con el ejemplo del paquete promedio: {7.605}), expensas por año ({1.200}, ⚖ `expensas`), y "si el aporte se suma al precio o va incluido: sin dato".
 
-### 4. Por qué la venta sola no alcanza
-Con `n = listarLotes().length`:
+### 4. Por qué la venta sola no alcanza: tres escenarios (reescrito el 8-nov)
+**No se usa `leccionFaltante` ni ninguna cifra de "lo que falta".** El costo anual del bien común no existe: el USD 72.000 de `lib/lotes/modelo.ts` salió de una simulación de octubre (`NS_Tokenomics/sim/RESULTS.md`, "Commons opex USD 6k/month ❓") y nadie lo costeó. La página lo dice con esas palabras.
 
-1. `leccionAporte(n)`: hoy, "Con 25 lotes, el aporte único del 5 % suma USD 190.125 en 3 años de ventas. El primer año entran USD 63.375: no alcanza para un presupuesto común de USD 72.000 por año, y el aporte no se repite."
-2. `leccionExpensas(n)`: "Cubrir ese presupuesto solo con expensas pide USD 2.880 por lote al año; la expensa de ejemplo es USD 1.200."
-3. `leccionFaltante(n)`, nueva: "Con las expensas de ejemplo entran USD 30.000 por año: faltan USD 42.000 por año, y de dónde salen: sin dato."
+**Qué se muestra:**
+1. **Para qué es la plata:** el bien común es el 100 % de la tierra, no solo el sector de lotes. Los lotes privados son el 0,4 % del 7A (superficie de los 21 lotes sobre la del 7A, calculada del loteo y del polígono, nunca escrita a mano), y todo lo demás hay que diseñarlo, restaurarlo y mantenerlo.
+2. **Qué cuesta, con fuente:** una lista de rubros (masterplan de permacultura, mantenimiento del corredor y de las reservas, agua, energía, caminos, personal, seguros y tasas). Todos dicen "sin dato · a confirmar con Vagner", salvo el masterplan: **"más de USD 30.000 el primer año (Gus, 8-nov, estimación)"**.
+3. **Tres escenarios de costo anual**, en `lib/lotes/escenarios.ts`, cada uno con su fuente y la marca "de ejemplo, no es un presupuesto":
+   - **Arranque:** USD 30.000, el masterplan del primer año (Gus, 8-nov).
+   - **Simulación de octubre:** USD 72.000 (`NS_Tokenomics/sim/RESULTS.md`).
+   - **Alternativa alta:** USD 240.000 (`NS_Tokenomics/sim/lot_sale_sim.py`, `COMMONS_BUDGETS`).
+4. **Qué cubre la venta en cada escenario**, calculado con el módulo: el aporte único repartido en los años de venta y las expensas de los 21 lotes del sector norte. Para cada escenario: qué parte cubre la venta, en porcentaje y en dólares, y "el resto saldría de: token del bien común, ingresos del bien común (huerta, cocina, alojamiento) u otros aportes: sin dato". Los primeros 4 lotes no se suman: "si aportan al bien común de Lighthouse: sin dato" (R40).
+5. **Calculadora:** tres controles accesibles con teclado (costo anual del bien común, expensa por lote, cantidad de lotes), con los valores del escenario elegido como punto de partida. Muestra lo mismo que el punto 4 y se recalcula al cambiar. No guarda nada. Una región `aria-live="polite"` anuncia el resultado.
+6. **Lo que hay que preguntarle a Vagner**, como lista: costo de cada rubro, cuánto del costo es inversión inicial (CAPEX) y cuánto es mantenimiento (OPEX), y desde qué año.
 
-**El título "Por qué la venta sola no alcanza" se sostiene con los números de hoy:** el primer año no alcanza, el aporte no se repite y las expensas cubren menos de la mitad. Si cambian los valores, las frases cambian solas (`lote-ficha-y-compra`, design §2).
+`leccionAporte` y `leccionExpensas` siguen, pero reciben el costo del escenario en lugar del presupuesto fijo.
 
 ### 5. Resguardos
 Cuatro, de doc 18 §4 (los que pidió Gus), cada uno con la línea "Estado: todavía no está hecho":
@@ -101,6 +108,23 @@ Doc 18 §4 también pide un **tope a la parte vendible** (punto 1) y que ningún
 ### 8. ⚖ `ordenanza173` (borrador)
 - es: "Hasta que el municipio apruebe un loteo, nadie puede ofrecer, vender, reservar ni dar prioridad sobre esos lotes. Por eso, en este prototipo, la venta de lotes de Lighthouse VRN es una simulación sobre un supuesto de trabajo: la aprobación no está otorgada y no tiene fecha. A verificar con abogado."
 - en: "Until the municipality approves a subdivision, nobody can offer, sell, reserve or give priority over those lots. That is why, in this prototype, selling Lighthouse VRN lots is a simulation on a working assumption: approval has not been granted and has no date. To be verified with a lawyer."
+
+### 9. "Bien común" en vez de "procomún" (8-nov)
+En todo texto visible en español, "procomún" pasa a "bien común" y "Procomún" a "Bien común", con la concordancia que haga falta ("del procomún" → "del bien común"; "Fondo del Procomún" → "Fondo del Bien Común"). Incluye los ⚖ de `lib/legal/terminos.ts`, `lib/idioma/textos/`, `lib/series/`, `lib/financiamiento/`, `lib/manifiestos/`, `lib/gobernanza/datos.ts` y `app/netx/`. En inglés sigue "commons". **Los identificadores del código no cambian** (`PROCOMUN_EN_SIMPLE`, `procomun-tickets`). Al terminar, `grep -rIn "procomún\|Procomún" app lib components` no da nada fuera de comentarios.
+
+### 10. Quién es "todos" (opción C, 8-nov)
+La tabla de §2 suma una columna o una línea por rubro que diga quién lo cuidaría:
+- **Consorcio de propietarios:** caminos internos, agua, aguas grises y negras, basura.
+- **Fundación (todavía no existe):** restauración, corredor, producción, escuela.
+Arriba de la tabla: "Proponemos repartir lo común en dos: lo que los vecinos usan todos los días lo cuida un consorcio de propietarios; lo que cuida el territorio queda en una Fundación al servicio de la comunidad que adhiere al manifiesto. Es una propuesta para el equipo, a verificar con abogado." ⚖ nuevo `consorciofundacion`, en borrador, es/en.
+
+### 11. Resumen en la ficha y aceptación al reservar (8-nov)
+En `/lotes/[id]`, antes de "Qué podés hacer", una tarjeta "Lo que compartís y lo que pagás" con tres líneas leídas de `lib/lotes/hibrido.ts`:
+1. "Tu lote y tu casa son tuyos; caminos, agua, corredor y producción son de todos."
+2. "Pagás el aporte único al bien común y las expensas por año" (con los valores del módulo).
+3. "Cumplís el mismo reglamento que todos", con el enlace "Ver qué es tuyo y qué es de todos" a `/lotes/hibrido`.
+
+"Reservar (simulado)" queda deshabilitado hasta marcar una casilla "Leí lo que comparto y lo que me comprometo a pagar". La reserva guarda en `vio` la versión del texto aceptado (`hibridoAceptado: VERSION_HIBRIDO`), y el boleto la muestra. Un registro viejo sin ese campo se sigue leyendo ("sin dato"). La casilla tiene su etiqueta, se maneja con el teclado y el botón deshabilitado dice por qué.
 
 ## Risks / Trade-offs
 
