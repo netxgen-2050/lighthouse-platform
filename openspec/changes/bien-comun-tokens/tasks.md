@@ -16,4 +16,4 @@
 
 ## 4. Calidad e integración
 - [x] 4.1 Sumar `/bien-comun` a `e2e/accesibilidad.spec.ts` y al test de números escritos; 390 px sin scroll horizontal; `?lang=en` sin español suelto; ninguna aparición de "ganancia", "retorno" ni "valorización".
-- [ ] 4.2 `pnpm verificar`, `pnpm build` y los e2e tocados en verde. Abrir el PR con `scripts/pr.sh` hacia la rama base, aclarando que es una simulación y que rompe la regla 5 a pedido de Gus (R42).
+- [x] 4.2 `pnpm verificar`, `pnpm build` y los e2e tocados en verde. Abrir el PR con `scripts/pr.sh` hacia la rama base, aclarando que es una simulación y que rompe la regla 5 a pedido de Gus (R42).
