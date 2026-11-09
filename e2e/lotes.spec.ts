@@ -434,6 +434,8 @@ test.describe("ficha: imagen, explicaciones y medida provisoria", () => {
   test("el panel del mapa muestra el precio del lote elegido", async ({ page }) => {
     await page.goto(`/territorios/lighthouse?sel=${lote.id}`);
     await expect(page.getByText(`${usd(precioLote(lote.superficieM2)!)} · precio de ejemplo, a confirmar`)).toBeVisible();
+    // También los FARO que trae el lote, simulados (pedido de Gus, 9-nov).
+    await expect(page.getByText(`FARO que trae (simulado): ${faroEn(faroDeLote(lote.superficieM2), "es")}`)).toBeVisible();
   });
 });
 
