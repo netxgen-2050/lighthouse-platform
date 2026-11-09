@@ -7,7 +7,7 @@ export type Fase = 0 | 1 | 2;
 export const FASES: readonly { fase: Fase; nombre: BilingueConOriginal; cuando: BilingueConOriginal | null }[] = [
   { fase: 0, nombre: { es: "Equipos semilla", en: "Seed teams" }, cuando: { es: "hoy", en: "today" } },
   { fase: 1, nombre: { es: "Primeras comunidades", en: "First communities" }, cuando: { es: "2027", en: "2027" } },
-  { fase: 2, nombre: { es: "Barrios con tribus", en: "Neighborhoods with tribes" }, cuando: null },
+  { fase: 2, nombre: { es: "Barrios con comunidades", en: "Neighborhoods with communities" }, cuando: null },
 ];
 
 export const FASE_ACTUAL: Fase = 0;

@@ -4,14 +4,14 @@ import type { BilingueConOriginal } from "@/lib/idioma/tipos";
 import { buscarManifiesto, buscarManifiestoBilingue, idsConManifiesto } from "./datos";
 
 describe("manifiestos de ejemplo", () => {
-  it("hay uno por cada tribu activa o en formación y uno del Lighthouse", () => {
+  it("hay uno por cada comunidad activa o en formación y uno del Lighthouse", () => {
     const esperados = listarTribus()
       .filter((t) => t.estado !== "vacante")
       .map((t) => t.id);
     expect(idsConManifiesto().sort()).toEqual([...esperados, "lighthouse"].sort());
   });
 
-  it("las tribus vacantes no tienen manifiesto", () => {
+  it("las comunidades vacantes no tienen manifiesto", () => {
     for (const t of listarTribus().filter((t) => t.estado === "vacante")) {
       expect(buscarManifiesto(t.id)).toBeUndefined();
     }

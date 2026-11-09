@@ -7,7 +7,7 @@ const G = GLOSARIO;
 
 const es = {
   saltar: "Saltar al contenido",
-  descripcionSitio: "Plataforma del Lighthouse: territorio y tribus.",
+  descripcionSitio: "Plataforma del Lighthouse: territorio y comunidades.",
   aviso: "Prototipo interno · datos de ejemplo",
   rail: {
     navegacion: "Principal",
@@ -42,7 +42,7 @@ const es = {
     explorador: G.explorador.es,
     miembro: G.miembro.es,
     fundador: "Fundador",
-    lider: "Líder de tribu",
+    lider: "Líder de comunidad",
     superadmin: "Super admin",
   },
   barra: {
@@ -64,7 +64,7 @@ const es = {
   },
   noEncontrada: {
     titulo: "No encontramos esa página",
-    volver: "Volver a las tribus",
+    volver: "Volver a las comunidades",
   },
   puerta: {
     sinAccesoTitulo: "Todavía no tenés acceso",
@@ -83,7 +83,7 @@ const es = {
 
 const en: Textos<typeof es> = {
   saltar: "Skip to content",
-  descripcionSitio: "Lighthouse platform: territory and tribes.",
+  descripcionSitio: "Lighthouse platform: territory and communities.",
   aviso: "Internal prototype · sample data",
   rail: {
     navegacion: "Main",
@@ -118,7 +118,7 @@ const en: Textos<typeof es> = {
     explorador: G.explorador.en,
     miembro: G.miembro.en,
     fundador: "Founder",
-    lider: "Tribe leader",
+    lider: "Community leader",
     superadmin: "Super admin",
   },
   barra: {
@@ -140,7 +140,7 @@ const en: Textos<typeof es> = {
   },
   noEncontrada: {
     titulo: "We couldn't find that page",
-    volver: "Back to the tribes",
+    volver: "Back to the communities",
   },
   puerta: {
     sinAccesoTitulo: "You don't have access yet",

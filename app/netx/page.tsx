@@ -131,7 +131,7 @@ export default function ResumenPage() {
                 {usd(r.netx.gestionAnual.agrovoltaica)} por año (agrovoltaica)
               </li>
               <li>
-                Membresías y Plan Tribu: {usd(mp.base.ingreso)} por mes al mes 36 (escenario base). {SUPUESTO_CONGRESO}
+                Membresías y Plan Comunidad: {usd(mp.base.ingreso)} por mes al mes 36 (escenario base). {SUPUESTO_CONGRESO}
               </li>
             </ul>
           </section>
@@ -228,7 +228,7 @@ export default function ResumenPage() {
             <p>
               Las membresías cubren {pct(r.incomodos.membresiasPct.bajo)} · {pct(r.incomodos.membresiasPct.base)} ·{" "}
               {pct(r.incomodos.membresiasPct.bueno)} del consumo al mes 36 (bajo · base · bueno): la plataforma vale por lo
-              que trae (miembros, inversores, tribus) y por lo que se puede licenciar, no por sus suscripciones.{" "}
+              que trae (miembros, inversores, comunidades) y por lo que se puede licenciar, no por sus suscripciones.{" "}
               {SUPUESTO_CONGRESO}
             </p>
             <Palanca id="membresias" />

@@ -1,10 +1,9 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
+import { leerMockupV6 } from "../referencia/mockup";
 import { describe, expect, it } from "vitest";
 import { COHORT, FILAS, MEMBRESIA, miles, PASSES, PLAN_TRIBU } from "./datos";
 import { INICIAL, leer, reducir } from "./estado";
 
-const mock = readFileSync(path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"), "utf8");
+const mock = leerMockupV6();
 
 describe("datos", () => {
   it("coinciden con el mock-up", () => {
@@ -21,7 +20,7 @@ describe("datos", () => {
       if (i === 0 || i === 6) return;
       expect(mock, f.texto.es).toContain(`["${f.texto.es}",`);
     });
-    expect(FILAS[0].texto.es).toBe("Mapa, tribus y eventos abiertos");
+    expect(FILAS[0].texto.es).toBe("Mapa, comunidades y eventos abiertos");
     expect(FILAS[6].texto.es).toBe("Influencia en el Fondo Común (próximamente: conviction voting)");
     expect(FILAS[6].incluye).toEqual([false, false, true]);
   });
@@ -68,12 +67,12 @@ describe("estado", () => {
     const a = reducir(INICIAL, { tipo: "pase" });
     expect(reducir(a, { tipo: "nivel", nivel: "raiz" })).toEqual(a);
   });
-  it("el pedido de Plan Tribu se guarda y se lee", () => {
+  it("el pedido de Plan Comunidad se guarda y se lee", () => {
     const t = reducir(INICIAL, { tipo: "tribu" });
     expect(t.tribu).toBe(true);
     expect(leer(JSON.stringify(t)).tribu).toBe(true);
   });
-  it("el Plan Tribu guarda la tribu elegida y cambiar de plan la quita", () => {
+  it("el Plan Comunidad guarda la comunidad elegida y cambiar de plan la quita", () => {
     const t = reducir(INICIAL, { tipo: "tribu", tribuId: "valle" });
     expect(t).toMatchObject({ plan: "miembro", tribu: true, tribuId: "valle" });
     expect(leer(JSON.stringify(t))).toMatchObject({ tribu: true, tribuId: "valle" });

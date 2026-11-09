@@ -1,6 +1,6 @@
 // Principios del Lighthouse (C2) y su costura. Las pantallas, la validación de bloqueos, el Guardián y los tests leen SOLO de
 // `fuentePrincipios`. Hoy es una lista inicial de ejemplo, en borrador, a ratificar por el común; cuando exista el manifiesto
-// de la meta-tribu Lighthouse se suma un adaptador y se cambia la línea de `fuentePrincipios`. Los ids son estables.
+// de la comunidad madre Lighthouse se suma un adaptador y se cambia la línea de `fuentePrincipios`. Los ids son estables.
 // Las comunidades de referencia no se nombran (decisión de Gus); la Declaración Universal de los Derechos de la Madre Tierra sí.
 import type { Bi, PrincipioId } from "./tipos";
 
@@ -91,7 +91,7 @@ export const principiosDeEjemplo: FuentePrincipios = {
   origen: "ejemplo",
 };
 
-/** Único punto que cambia cuando exista el manifiesto de la meta-tribu Lighthouse. */
+/** Único punto que cambia cuando exista el manifiesto de la comunidad madre Lighthouse. */
 export const fuentePrincipios: FuentePrincipios = principiosDeEjemplo;
 
 /** null → la pantalla muestra "principio fuera de la lista vigente" con el id. */

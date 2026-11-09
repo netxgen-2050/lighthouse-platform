@@ -4,12 +4,12 @@ export const TERMINOS = {
   ritual: {
     titulo: "Ritual de entrada",
     texto:
-      "Cada tribu decide quién entra según su propio estatuto (por ejemplo, asociación civil o SAS). Eso no condiciona tu derecho a sumarte al proyecto del territorio: ese acceso no filtra por ideas ni valores (Ley 23.592).",
+      "Cada comunidad decide quién entra según su propio estatuto (por ejemplo, asociación civil o SAS). Eso no condiciona tu derecho a sumarte al proyecto del territorio: ese acceso no filtra por ideas ni valores (Ley 23.592).",
   },
   personeria: {
     titulo: "Comunidad con personería",
     texto:
-      "Una tribu puede sumarse como asociación civil (sin fin de lucro, con estatuto que regula ingreso y salida) o como SAS (si hay retorno).",
+      "Una comunidad puede sumarse como asociación civil (sin fin de lucro, con estatuto que regula ingreso y salida) o como SAS (si hay retorno).",
   },
   ticket: {
     titulo: "Ticket del Congreso",
@@ -121,11 +121,11 @@ export const TERMINOS = {
   },
   membresia: {
     titulo: "Membresía de la red",
-    texto: "Un servicio: acceso a la red, a las tribus y a los eventos. No da derechos sobre la tierra.",
+    texto: "Un servicio: acceso a la red, a las comunidades y a los eventos. No da derechos sobre la tierra.",
     // Traducción nueva: borrador a revisar antes de cualquier uso real.
     en: {
       titulo: "Network membership",
-      texto: "A service: access to the network, the tribes and the events. It gives no rights over the land.",
+      texto: "A service: access to the network, the communities and the events. It gives no rights over the land.",
     },
   },
   pasefundador: {
@@ -142,23 +142,23 @@ export const TERMINOS = {
   guardian: {
     titulo: "El Fondo Común",
     texto:
-      "La plata del bien común para agua, energía, vivero e incubación de tribus. Recibe el pago del Pase directamente. NetX nunca toma un porcentaje: como mucho cobra una tarifa de servicio fija y publicada, si se la contrata para operar la plataforma. En el modelo híbrido lo administra la Fundación de la tierra, que todavía no existe. A verificar con abogado.",
+      "La plata del bien común para agua, energía, vivero e incubación de comunidades. Recibe el pago del Pase directamente. NetX nunca toma un porcentaje: como mucho cobra una tarifa de servicio fija y publicada, si se la contrata para operar la plataforma. En el modelo híbrido lo administra la Fundación de la tierra, que todavía no existe. A verificar con abogado.",
     borrador: true,
     en: {
       titulo: "The Common Fund",
       texto:
-        "The commons' money for water, energy, the nursery and incubating tribes. It receives the Pass payment directly. NetX never takes a percentage: at most it charges a fixed, published service fee, if it is hired to operate the platform. Under the hybrid model it is managed by the land Foundation, which does not exist yet. To be verified with a lawyer.",
+        "The commons' money for water, energy, the nursery and incubating communities. It receives the Pass payment directly. NetX never takes a percentage: at most it charges a fixed, published service fee, if it is hired to operate the platform. Under the hybrid model it is managed by the land Foundation, which does not exist yet. To be verified with a lawyer.",
     },
   },
   creditos: {
     titulo: "Créditos comunes y de estadía",
     texto:
-      "Un saldo con un solo emisor, quien custodie el Fondo Común: se canjea por productos de las tribus y por estadías. Se libera por partes en 3 años y cada parte vence a los 12 meses. No se transfiere y no se rescata en dinero, para no ser un medio de pago. Valores de ejemplo, a re-ajustar.",
+      "Un saldo con un solo emisor, quien custodie el Fondo Común: se canjea por productos de las comunidades y por estadías. Se libera por partes en 3 años y cada parte vence a los 12 meses. No se transfiere y no se rescata en dinero, para no ser un medio de pago. Valores de ejemplo, a re-ajustar.",
     borrador: true,
     en: {
       titulo: "Common and stay credits",
       texto:
-        "A balance with a single issuer, whoever holds the Common Fund: it can be redeemed for tribe products and stays. It is released in parts over 3 years and each part expires after 12 months. It cannot be transferred or cashed out, so that it is not a means of payment. Sample values, to be re-tuned.",
+        "A balance with a single issuer, whoever holds the Common Fund: it can be redeemed for community products and stays. It is released in parts over 3 years and each part expires after 12 months. It cannot be transferred or cashed out, so that it is not a means of payment. Sample values, to be re-tuned.",
     },
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real. La frase es la que se ve en la
@@ -193,16 +193,16 @@ export const TERMINOS = {
   ronda0: {
     titulo: "Ronda 0",
     texto:
-      "En el Congreso, quienes tienen el Pase reparten fondos de incubación entre propuestas de tribus con financiamiento cuadrático (pesa más el apoyo amplio que el monto). El Consejo de Regeneración revisa que respeten los principios. Se apoya en el estatuto del Guardián.",
+      "En el Congreso, quienes tienen el Pase reparten fondos de incubación entre propuestas de comunidades con financiamiento cuadrático (pesa más el apoyo amplio que el monto). El Consejo de Regeneración revisa que respeten los principios. Se apoya en el estatuto del Guardián.",
   },
   plantribu: {
-    titulo: "Plan Tribu",
-    texto: "Un servicio de software que NetX le factura a la tribu (asociación civil o SAS). No es un aporte ni una inversión.",
+    titulo: "Plan Comunidad",
+    texto: "Un servicio de software que NetX le factura a la comunidad (asociación civil o SAS). No es un aporte ni una inversión.",
     // Traducción nueva: borrador a revisar antes de cualquier uso real.
     en: {
-      titulo: "Tribe Plan",
+      titulo: "Community Plan",
       texto:
-        "A software service that NetX bills to the tribe (a nonprofit association or a simplified company). It is not a contribution or an investment.",
+        "A software service that NetX bills to the community (a nonprofit association or a simplified company). It is not a contribution or an investment.",
     },
   },
   remoto: {
@@ -251,9 +251,9 @@ export const TERMINOS = {
     borrador: true,
   },
   estatuto: {
-    titulo: "Estatuto de la tribu",
+    titulo: "Estatuto de la comunidad",
     texto:
-      "La tribu se organiza como asociación civil: elige autoridades y decide ingresos según su estatuto. Solo puede excluir con causa y con derecho de defensa (art. 180 CCyCN).",
+      "La comunidad se organiza como asociación civil: elige autoridades y decide ingresos según su estatuto. Solo puede excluir con causa y con derecho de defensa (art. 180 CCyCN).",
   },
   pasaporte: {
     titulo: "Pasaporte",
@@ -273,12 +273,12 @@ export const TERMINOS = {
   licencia: {
     titulo: "Licencia de uso",
     texto:
-      "La tribu no compra tierra: recibe una licencia de uso de su barrio otorgada por el fideicomiso del Lote 7 (un derecho de superficie no puede darse sobre otro, art. 2118 CCyCN). Plazo y renovación atados a conducta. Forma exacta a confirmar con el equipo legal.",
+      "La comunidad no compra tierra: recibe una licencia de uso de su barrio otorgada por el fideicomiso del Lote 7 (un derecho de superficie no puede darse sobre otro, art. 2118 CCyCN). Plazo y renovación atados a conducta. Forma exacta a confirmar con el equipo legal.",
   },
   adherente: {
-    titulo: "Tribu adherente",
+    titulo: "Comunidad adherente",
     texto:
-      "Una tribu con personería (asociación civil o SAS) podría adherir al proyecto del Lote 7 y recibir la licencia de su barrio. A confirmar con el equipo legal: si adhiere al fideicomiso y con qué rol.",
+      "Una comunidad con personería (asociación civil o SAS) podría adherir al proyecto del Lote 7 y recibir la licencia de su barrio. A confirmar con el equipo legal: si adhiere al fideicomiso y con qué rol.",
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
   agencia: {
@@ -482,18 +482,18 @@ export const TERMINOS = {
   adhesion: {
     titulo: "Adherir a un manifiesto",
     texto:
-      "Adherir es aceptar por escrito los principios y las reglas de convivencia de una comunidad. No te hace dueño de nada ni te obliga a pagar: te compromete a cuidar esos acuerdos, y en una tribu la comunidad decide si te acepta. En Lighthouse VRN, adherir al manifiesto es lo que te permite participar en las decisiones; la adhesión vale desde que adherís, y si el manifiesto cambia de versión tenés que volver a adherir. Podés retirarte siguiendo lo que diga el propio manifiesto. En el prototipo todo es simulado y queda solo en este navegador.",
+      "Adherir es aceptar por escrito los principios y las reglas de convivencia de una comunidad. No te hace dueño de nada ni te obliga a pagar: te compromete a cuidar esos acuerdos, y en una comunidad la comunidad decide si te acepta. En Lighthouse VRN, adherir al manifiesto es lo que te permite participar en las decisiones; la adhesión vale desde que adherís, y si el manifiesto cambia de versión tenés que volver a adherir. Podés retirarte siguiendo lo que diga el propio manifiesto. En el prototipo todo es simulado y queda solo en este navegador.",
     borrador: true,
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
   manifiestovrn: {
     titulo: "Manifiesto de Lighthouse VRN",
     texto:
-      "Es el texto donde Lighthouse VRN, la meta-tribu de la que forman parte todas las tribus, dice qué cuida y cómo decide: propósito, principios, derechos de la tierra y compromisos. Hoy es un borrador escrito por un agente: el común todavía no lo ratificó, y solo vale como ejemplo. No es un contrato ni un reglamento legal.",
+      "Es el texto donde Lighthouse VRN, la comunidad madre de la que forman parte todas las comunidades, dice qué cuida y cómo decide: propósito, principios, derechos de la tierra y compromisos. Hoy es un borrador escrito por un agente: el común todavía no lo ratificó, y solo vale como ejemplo. No es un contrato ni un reglamento legal.",
     en: {
       titulo: "Lighthouse VRN manifesto",
       texto:
-        "This is the text where Lighthouse VRN, the meta-tribe all tribes belong to, says what it looks after and how it decides: purpose, principles, rights of the land and commitments. Today it is a draft written by an agent: the commons has not ratified it yet, and it only counts as an example. It is not a contract or a legal rulebook.",
+        "This is the text where Lighthouse VRN, the parent community all communities belong to, says what it looks after and how it decides: purpose, principles, rights of the land and commitments. Today it is a draft written by an agent: the commons has not ratified it yet, and it only counts as an example. It is not a contract or a legal rulebook.",
     },
     borrador: true,
   },
@@ -646,57 +646,57 @@ export const TERMINOS = {
   circulotrabajo: {
     titulo: "Círculo de trabajo",
     texto:
-      "Un grupo de personas que se hace cargo de un tema (por ejemplo, el cuidado de la tierra o la comunicación) dentro de una tribu, o entre varias tribus. Decide lo suyo sin pedir permiso arriba. Los círculos de esta página son un ejemplo: cómo se forman y qué pueden decidir lo define el reglamento, que todavía no existe.",
+      "Un grupo de personas que se hace cargo de un tema (por ejemplo, el cuidado de la tierra o la comunicación) dentro de una comunidad, o entre varias comunidades. Decide lo suyo sin pedir permiso arriba. Los círculos de esta página son un ejemplo: cómo se forman y qué pueden decidir lo define el reglamento, que todavía no existe.",
     borrador: true,
     en: {
       titulo: "Working circle",
       texto:
-        "A group of people who take charge of a topic (for example, land care or communications) inside a tribe, or across several tribes. It decides its own matters without asking for permission above. The circles on this page are an example: how they form and what they can decide is set by the rules, which do not exist yet.",
+        "A group of people who take charge of a topic (for example, land care or communications) inside a community, or across several communities. It decides its own matters without asking for permission above. The circles on this page are an example: how they form and what they can decide is set by the rules, which do not exist yet.",
     },
   },
   consejo: {
-    titulo: "Consejo de las tribus",
+    titulo: "Consejo de las comunidades",
     texto:
-      "Un espacio de coordinación con un lugar por tribu validada por el común. Cada tribu decide primero adentro y después lleva al consejo lo que no puede resolver sola, por ejemplo pedir plata del fondo común. No es un órgano del fideicomiso. En el prototipo todo es de ejemplo; cómo vota el consejo y con qué mayoría lo define el diseño legal, que todavía hay que confirmar con el equipo legal.",
+      "Un espacio de coordinación con un lugar por comunidad validada por el común. Cada comunidad decide primero adentro y después lleva al consejo lo que no puede resolver sola, por ejemplo pedir plata del fondo común. No es un órgano del fideicomiso. En el prototipo todo es de ejemplo; cómo vota el consejo y con qué mayoría lo define el diseño legal, que todavía hay que confirmar con el equipo legal.",
     borrador: true,
     en: {
-      titulo: "Council of the tribes",
+      titulo: "Council of the communities",
       texto:
-        "A coordination space with one seat for each tribe validated by the commons. Each tribe first decides internally and then brings to the council what it cannot solve alone, for example asking for money from the common fund. It is not a body of the trust. In the prototype everything is an example; how the council votes and with what majority is set by the legal design, which still has to be confirmed with the legal team.",
+        "A coordination space with one seat for each community validated by the commons. Each community first decides internally and then brings to the council what it cannot solve alone, for example asking for money from the common fund. It is not a body of the trust. In the prototype everything is an example; how the council votes and with what majority is set by the legal design, which still has to be confirmed with the legal team.",
     },
   },
   representante: {
-    titulo: "Representante de la tribu",
+    titulo: "Representante de la comunidad",
     texto:
-      "La persona que ocupa el lugar de su tribu en el consejo y lleva lo que la tribu votó adentro. En el prototipo no se eligió a nadie: por eso dice «Sin representante elegido». Cómo se elige y por cuánto tiempo lo define el reglamento, que todavía hay que escribir.",
+      "La persona que ocupa el lugar de su comunidad en el consejo y lleva lo que la comunidad votó adentro. En el prototipo no se eligió a nadie: por eso dice «Sin representante elegido». Cómo se elige y por cuánto tiempo lo define el reglamento, que todavía hay que escribir.",
     borrador: true,
     en: {
-      titulo: "Tribe representative",
+      titulo: "Community representative",
       texto:
-        "The person who holds the tribe's seat on the council and carries what the tribe voted on internally. In the prototype nobody was elected, which is why it says \"No representative chosen\". How they are chosen and for how long is set by the rules, which still have to be written.",
+        "The person who holds the community's seat on the council and carries what the community voted on internally. In the prototype nobody was elected, which is why it says \"No representative chosen\". How they are chosen and for how long is set by the rules, which still have to be written.",
     },
   },
   validacioncomun: {
     titulo: "Validación del común",
     texto:
-      "Una afirmación de que el común (Lighthouse) reconoce a una tribu, y de que una tribu reconoce a una persona. Se guarda como un registro que no se edita: si se retira, se agrega otro registro que lo anula y el original queda a la vista. En el prototipo vive solo en este navegador y no tiene valor legal; qué efectos tiene una validación lo define el diseño legal, que todavía hay que confirmar con el equipo legal.",
+      "Una afirmación de que el común (Lighthouse) reconoce a una comunidad, y de que una comunidad reconoce a una persona. Se guarda como un registro que no se edita: si se retira, se agrega otro registro que lo anula y el original queda a la vista. En el prototipo vive solo en este navegador y no tiene valor legal; qué efectos tiene una validación lo define el diseño legal, que todavía hay que confirmar con el equipo legal.",
     borrador: true,
     en: {
       titulo: "Validation by the commons",
       texto:
-        "A statement that the commons (Lighthouse) recognizes a tribe, and that a tribe recognizes a person. It is kept as a record that is never edited: if it is withdrawn, another record is added that cancels it and the original stays visible. In the prototype it lives only in this browser and has no legal value; what effects a validation has is set by the legal design, which still has to be confirmed with the legal team.",
+        "A statement that the commons (Lighthouse) recognizes a community, and that a community recognizes a person. It is kept as a record that is never edited: if it is withdrawn, another record is added that cancels it and the original stays visible. In the prototype it lives only in this browser and has no legal value; what effects a validation has is set by the legal design, which still has to be confirmed with the legal team.",
     },
   },
   // Textos nuevos de la holarquía de la gobernanza, no vienen del mock-up: borradores a revisar antes de cualquier uso real.
   dobleenlace: {
     titulo: "Doble enlace",
     texto:
-      "Cada tribu manda un enlace al consejo y el común manda un enlace a cada tribu, así lo que se decide arriba y lo que se decide abajo se conectan en las dos direcciones. En el prototipo nadie fue elegido: los enlaces que ves son de ejemplo. Cómo se eligen y qué pueden hacer lo define el reglamento, que todavía no existe.",
+      "Cada comunidad manda un enlace al consejo y el común manda un enlace a cada comunidad, así lo que se decide arriba y lo que se decide abajo se conectan en las dos direcciones. En el prototipo nadie fue elegido: los enlaces que ves son de ejemplo. Cómo se eligen y qué pueden hacer lo define el reglamento, que todavía no existe.",
     borrador: true,
     en: {
       titulo: "Double link",
       texto:
-        "Each tribe sends a link to the council and the commons sends a link to each tribe, so what is decided above and what is decided below are connected in both directions. In the prototype nobody was elected: the links you see are examples. How they are chosen and what they can do is set by the rules, which do not exist yet.",
+        "Each community sends a link to the council and the commons sends a link to each community, so what is decided above and what is decided below are connected in both directions. In the prototype nobody was elected: the links you see are examples. How they are chosen and what they can do is set by the rules, which do not exist yet.",
     },
   },
   dominio: {
@@ -774,11 +774,11 @@ export const TERMINOS = {
   pactoDosPartes: {
     titulo: "Pacto aceptado por las dos partes",
     texto:
-      "Un acuerdo social entre vos y tu tribu, registrado en la plataforma: vos lo propusiste y quien lidera la tribu lo aceptó. No es un contrato de trabajo ni de inversión, y cada tribu lo revisa según su estatuto. En el prototipo la constancia queda solo en este navegador.",
+      "Un acuerdo social entre vos y tu comunidad, registrado en la plataforma: vos lo propusiste y quien lidera la comunidad lo aceptó. No es un contrato de trabajo ni de inversión, y cada comunidad lo revisa según su estatuto. En el prototipo la constancia queda solo en este navegador.",
     en: {
       titulo: "Pact accepted by both parties",
       texto:
-        "A social agreement between you and your tribe, recorded on the platform: you proposed it and whoever leads the tribe accepted it. It is not an employment or investment contract, and each tribe reviews it according to its own bylaws. In the prototype the record stays only in this browser.",
+        "A social agreement between you and your community, recorded on the platform: you proposed it and whoever leads the community accepted it. It is not an employment or investment contract, and each community reviews it according to its own bylaws. In the prototype the record stays only in this browser.",
     },
     borrador: true,
   },
@@ -787,11 +787,11 @@ export const TERMINOS = {
   pactopuntual: {
     titulo: "Pacto puntual",
     texto:
-      "Es un acuerdo voluntario para colaborar con una sola tarea. No es un contrato de trabajo: no tenés horario impuesto, nadie te da órdenes sobre cómo hacerla y no hay pago en dinero. Vos proponés las horas y la fecha. El círculo o la tribu decide si te la deja tomar y, al final, verifica que la tarea quedó hecha. Tus horas verificadas se reconocen con Semillas, que no son un sueldo: no se compran ni se venden.",
+      "Es un acuerdo voluntario para colaborar con una sola tarea. No es un contrato de trabajo: no tenés horario impuesto, nadie te da órdenes sobre cómo hacerla y no hay pago en dinero. Vos proponés las horas y la fecha. El círculo o la comunidad decide si te la deja tomar y, al final, verifica que la tarea quedó hecha. Tus horas verificadas se reconocen con Semillas, que no son un sueldo: no se compran ni se venden.",
     en: {
       titulo: "One-off pact",
       texto:
-        "It is a voluntary agreement to help with a single task. It is not an employment contract: you have no imposed schedule, nobody gives you orders on how to do it and there is no payment in money. You propose the hours and the date. The circle or the tribe decides whether to let you take it and, at the end, checks that the task was done. Your verified hours are recognized with Semillas, which are not a salary: they cannot be bought or sold.",
+        "It is a voluntary agreement to help with a single task. It is not an employment contract: you have no imposed schedule, nobody gives you orders on how to do it and there is no payment in money. You propose the hours and the date. The circle or the community decides whether to let you take it and, at the end, checks that the task was done. Your verified hours are recognized with Semillas, which are not a salary: they cannot be bought or sold.",
     },
     borrador: true,
   },
@@ -801,11 +801,11 @@ export const TERMINOS = {
   compromisominimo: {
     titulo: "Compromiso mínimo",
     texto:
-      "Es el tiempo mínimo que te comprometés a sostener este pacto (de 1 a 3 meses, lo fija la tribu). Es un compromiso voluntario, de palabra: no es un contrato de trabajo ni un período de prueba, no hay horario impuesto ni pago en dinero, y podés dejarlo antes avisando. Las horas de cada mes las confirma la tribu y generan Semillas pendientes, que recibís al cumplir el compromiso (o, si lo dejás antes avisando, las de los meses confirmados). Las Semillas no son un sueldo.",
+      "Es el tiempo mínimo que te comprometés a sostener este pacto (de 1 a 3 meses, lo fija la comunidad). Es un compromiso voluntario, de palabra: no es un contrato de trabajo ni un período de prueba, no hay horario impuesto ni pago en dinero, y podés dejarlo antes avisando. Las horas de cada mes las confirma la comunidad y generan Semillas pendientes, que recibís al cumplir el compromiso (o, si lo dejás antes avisando, las de los meses confirmados). Las Semillas no son un sueldo.",
     en: {
       titulo: "Minimum commitment",
       texto:
-        "It is the minimum time you commit to sustaining this pact (1 to 3 months, set by the tribe). It is a voluntary commitment, by word: it is not an employment contract or a probationary period, there is no imposed schedule or payment in money, and you can leave earlier by giving notice. The tribe confirms the hours of each month and they generate pending Semillas, which you receive when you complete the commitment (or, if you leave earlier giving notice, those of the confirmed months). Semillas are not a salary.",
+        "It is the minimum time you commit to sustaining this pact (1 to 3 months, set by the community). It is a voluntary commitment, by word: it is not an employment contract or a probationary period, there is no imposed schedule or payment in money, and you can leave earlier by giving notice. The community confirms the hours of each month and they generate pending Semillas, which you receive when you complete the commitment (or, if you leave earlier giving notice, those of the confirmed months). Semillas are not a salary.",
     },
     borrador: true,
   },
@@ -925,11 +925,11 @@ export const TERMINOS = {
   principios: {
     titulo: "Principios del Lighthouse",
     texto:
-      "La lista de principios que se citan para bloquear una propuesta. Es un punto de partida: el común tiene que ratificarla, y va a vivir en el manifiesto de la meta-tribu Lighthouse. Hoy es una lista de ejemplo.",
+      "La lista de principios que se citan para bloquear una propuesta. Es un punto de partida: el común tiene que ratificarla, y va a vivir en el manifiesto de la comunidad madre Lighthouse. Hoy es una lista de ejemplo.",
     en: {
       titulo: "Lighthouse principles",
       texto:
-        "The list of principles cited to block a proposal. It is a starting point: the common has to ratify it, and it will live in the Lighthouse meta-tribe manifesto. Today it is a sample list.",
+        "The list of principles cited to block a proposal. It is a starting point: the common has to ratify it, and it will live in the Lighthouse parent community manifesto. Today it is a sample list.",
     },
     borrador: true,
   },

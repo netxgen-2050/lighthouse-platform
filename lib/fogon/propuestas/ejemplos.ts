@@ -293,8 +293,8 @@ const cisterna: Propuesta = {
     "Agua Clara and Valle Solar both want a cistern in the same place and there is no agreed way of sharing it.",
   ),
   propone: b(
-    "Construir una sola cisterna compartida y acordar entre las dos tribus la ubicación y el uso.",
-    "Build a single shared cistern and agree between the two tribes on its location and use.",
+    "Construir una sola cisterna compartida y acordar entre las dos comunidades la ubicación y el uso.",
+    "Build a single shared cistern and agree between the two communities on its location and use.",
   ),
   inicio: "2026-10-28",
   tema: "cuidado-conflicto",

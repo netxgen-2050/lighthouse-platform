@@ -162,7 +162,7 @@ test.describe("permisos y niveles", () => {
     await expect(hacer).not.toContainText("Levantar un concern");
   });
 
-  test("de la red en una decisión de tribu: lee y no comenta", async ({ page }) => {
+  test("de la red en una decisión de comunidad: lee y no comenta", async ({ page }) => {
     await page.goto("/fogon/propuestas/siembra");
     await page.getByLabel(NIVEL).selectOption("red");
     const hacer = page.getByRole("region", { name: "Qué podés hacer" });
@@ -209,7 +209,7 @@ test.describe("correcciones de la revisión", () => {
     await expect(page).not.toHaveTitle(new RegExp(titulo));
   });
 
-  test("una persona de la red no lee la discusión de una decisión de tribu", async ({ page }) => {
+  test("una persona de la red no lee la discusión de una decisión de comunidad", async ({ page }) => {
     await page.goto("/fogon/propuestas/huerta");
     await expect(page.getByLabel(NIVEL)).toHaveValue("red");
     await expect(page.getByText("Tu nivel no puede leer la discusión de esta decisión.")).toBeVisible();

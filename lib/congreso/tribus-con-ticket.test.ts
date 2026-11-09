@@ -4,7 +4,7 @@ import { tribusConTicket } from "./tribus-con-ticket";
 describe("tribusConTicket", () => {
   const lista = tribusConTicket();
 
-  it("trae tres tribus del catálogo", () => {
+  it("trae tres comunidades del catálogo", () => {
     expect(lista.map((t) => t.tribu.id)).toEqual(["valle", "agua", "taller"]);
   });
 
@@ -15,7 +15,7 @@ describe("tribusConTicket", () => {
     }
   });
 
-  it("el total es el de roles cubiertos de la tribu", () => {
+  it("el total es el de roles cubiertos de la comunidad", () => {
     for (const t of lista) expect(t.total).toBe(t.tribu.roles.cubiertos);
   });
 

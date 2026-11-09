@@ -1,5 +1,4 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
+import { leerMockupV6 } from "../referencia/mockup";
 import { describe, expect, it } from "vitest";
 import { buscarNodo, construirHolarquia, recorrer } from "@/lib/gobernanza/holarquia";
 import { textos } from "@/lib/idioma/textos";
@@ -28,7 +27,7 @@ import {
   type Condicion,
 } from "./estado";
 
-const mock = readFileSync(path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"), "utf8");
+const mock = leerMockupV6();
 const raiz = construirHolarquia("es");
 const huerta = DECISIONES[0];
 const presupuesto = DECISIONES[1];
@@ -75,7 +74,7 @@ describe("datos", () => {
     expect(DECISIONES_DEL_COMUN.map((d) => d.ambito)).toEqual(["comun", "comun"]);
     expect(DECISIONES_DEL_COMUN.map((d) => d.requisito)).toEqual(["ninguno", "ninguno"]);
   });
-  it("las decisiones nuevas de gobernanza son de círculo, de tribu y de consejo", () => {
+  it("las decisiones nuevas de gobernanza son de círculo, de comunidad y de consejo", () => {
     expect(DECISIONES_DE_GOBERNANZA.map((d) => d.ambito)).toEqual(["circulo", "tribu", "consejo"]);
     const consejo = DECISIONES_DE_GOBERNANZA[2];
     expect(consejo.origen).toEqual({ tribuId: "valle", aprobadaEn: "Valle Solar" });
@@ -146,7 +145,7 @@ const exterior: Condicion = { residencia: "exterior", adhirio: true };
 const argentina: Condicion = { residencia: "argentina", adhirio: true };
 
 describe("quién puede votar (residencia cargada)", () => {
-  it("con residencia en el exterior vota en tribu y común; no en una decisión que pide residentes", () => {
+  it("con residencia en el exterior vota en comunidad y común; no en una decisión que pide residentes", () => {
     expect(motivoSinVoto(huerta, exterior)).toBeNull();
     expect(motivoSinVoto(presupuesto, exterior)).toBeNull();
     expect(motivoSinVoto(bomba, exterior)).toBe("residentes");
@@ -219,14 +218,14 @@ describe("decisionesDelHolon (lista al lado de la holarquía)", () => {
     expect(ids(r.pasa)).toContain("regalia");
     expect(r.aca).toEqual([]);
   });
-  it("el común: acá la bomba, los animales, la regalía y el presupuesto; adentro la siembra con su círculo y su tribu", () => {
+  it("el común: acá la bomba, los animales, la regalía y el presupuesto; adentro la siembra con su círculo y su comunidad", () => {
     const r = decisionesDelHolon(raiz, "lighthouse");
     expect(ids(r.aca).sort()).toEqual(["animales", "bomba", "presupuesto-fondo-comun", "regalia"]);
     const siembra = r.adentro.find((x) => x.decision.id === "siembra")!;
     expect(siembra.tribu).toBe("Valle Solar");
     expect(siembra.circulo).not.toBe("");
   });
-  it("una tribu no repite su propio nombre en la etiqueta de adentro", () => {
+  it("una comunidad no repite su propio nombre en la etiqueta de adentro", () => {
     const r = decisionesDelHolon(raiz, "semilla");
     const h = r.adentro.find((x) => x.decision.id === "huerta")!;
     expect(h.tribu).toBeNull();
@@ -264,13 +263,13 @@ describe("llevar al consejo", () => {
     // La original sigue en la tribu.
     expect(decisionesVisibles(e).map((d) => d.id)).toContain("cisterna");
   });
-  it("quien no lidera esa tribu no puede, ni quien no lidera ninguna", () => {
+  it("quien no lidera esa comunidad no puede, ni quien no lidera ninguna", () => {
     expect(puedeLlevarAlConsejo(INICIAL, cisterna, lideraTaller)).toBe(false);
     expect(puedeLlevarAlConsejo(INICIAL, cisterna, NEUTRA)).toBe(false);
     expect(llevarAlConsejo(INICIAL, "cisterna", lideraTaller)).toBe(INICIAL);
     expect(llevarAlConsejo(INICIAL, "cisterna", NEUTRA)).toBe(INICIAL);
   });
-  it("solo se llevan las decisiones de tribu que piden algo al común, y una sola vez", () => {
+  it("solo se llevan las decisiones de comunidad que piden algo al común, y una sola vez", () => {
     expect(llevarAlConsejo(INICIAL, "huerta", lideraValle)).toBe(INICIAL);
     expect(llevarAlConsejo(INICIAL, "facilitador", lideraValle)).toBe(INICIAL);
     const e = llevarAlConsejo(INICIAL, "cisterna", lideraValle);

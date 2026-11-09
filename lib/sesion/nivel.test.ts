@@ -38,18 +38,18 @@ describe("calcularNivel", () => {
     const conPase = reducir(INICIAL, { tipo: "pase" });
     expect(calcularNivel(reducir(conPase, { tipo: "plan", plan: "explorador" }), persona).nivel).toBe("explorador");
   });
-  it("con Pase y Plan Tribu el nivel es Líder, y conserva el Pase", () => {
+  it("con Pase y Plan Comunidad el nivel es Líder, y conserva el Pase", () => {
     const e = reducir(reducir(INICIAL, { tipo: "pase" }), { tipo: "tribu", tribuId: "valle" });
     expect(calcularNivel(e, persona)).toEqual({ nivel: "lider", tribuLider: "valle" });
     expect(e.pase).toBe("brote");
   });
-  it("el Plan Tribu hace líder de la tribu elegida", () => {
+  it("el Plan Comunidad hace líder de la comunidad elegida", () => {
     expect(calcularNivel(reducir(INICIAL, { tipo: "tribu", tribuId: "valle" }), persona)).toEqual({ nivel: "lider", tribuLider: "valle" });
   });
-  it("proponer una tribu nueva es líder sin tribu todavía", () => {
+  it("proponer una comunidad nueva es líder sin comunidad todavía", () => {
     expect(calcularNivel(reducir(INICIAL, { tipo: "tribu" }), persona)).toEqual({ nivel: "lider", tribuLider: null });
   });
-  it("bajar de plan quita Participar y la tribu", () => {
+  it("bajar de plan quita Participar y la comunidad", () => {
     const lider = reducir(INICIAL, { tipo: "tribu", tribuId: "valle" });
     expect(calcularNivel(reducir(lider, { tipo: "plan", plan: "explorador" }), persona)).toEqual({ nivel: "explorador", tribuLider: null });
     expect(calcularNivel(reducir(lider, { tipo: "plan", plan: "miembro" }), persona).nivel).toBe("miembro");

@@ -100,7 +100,7 @@ describe("quién puede responder", () => {
     expect(comunidadesQueResponde(superAdmin)).toEqual(["lighthouse"]);
   });
 
-  it("falso para la propia persona, otra tribu y una persona común; verdadero para quien lidera", () => {
+  it("falso para la propia persona, otra comunidad y una persona común; verdadero para quien lidera", () => {
     const [p] = propone([]);
     expect(puedeResponder(lider, "valle", p)).toBe(true);
     expect(puedeResponder(otraTribu, "valle", p)).toBe(false);
@@ -108,7 +108,7 @@ describe("quién puede responder", () => {
     expect(puedeResponder({ ...lider, idPersona: PERSONA }, "valle", p)).toBe(false);
   });
 
-  it("el super admin responde en lighthouse y no en una tribu común", () => {
+  it("el super admin responde en lighthouse y no en una comunidad común", () => {
     const [enLh] = propone([], "lighthouse");
     const [enValle] = propone([]);
     expect(puedeResponder(superAdmin, "lighthouse", enLh)).toBe(true);

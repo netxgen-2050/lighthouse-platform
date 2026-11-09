@@ -198,7 +198,7 @@ describe("constancias de la postulación", () => {
     expect(lista[0].datos.iniciales).toBe("A");
   });
 
-  it("una pre-admisión del holón deja la postulación acordada; la de otra tribu, otro círculo o de la misma persona no", () => {
+  it("una pre-admisión del holón deja la postulación acordada; la de otra comunidad, otro círculo o de la misma persona no", () => {
     const base = publica([], enviado());
     const acepta = (afirma: string, por: string) =>
       agregar(base, { esquema: "pacto-acepta", afirma, por, sobre: base[0].sobre, version: 1, apuntaA: base[0].id }, T);

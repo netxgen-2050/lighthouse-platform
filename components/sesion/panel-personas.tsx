@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { PersonaGestionada } from "@/lib/sesion/gestion";
 import { useSesion } from "./contexto";
 
-const ROL: Record<string, string> = { superadmin: "Super admin", "admin-tribu": "Admin de tribu", persona: "Persona" };
+const ROL: Record<string, string> = { superadmin: "Super admin", "admin-tribu": "Admin de comunidad", persona: "Persona" };
 const PERFIL: Record<string, string> = { usuario: "Usuario", inversor: "Inversor", comunidad: "Comunidad" };
 
 const CAMPO =
@@ -104,7 +104,7 @@ export function PanelPersonas() {
         Personas y roles
       </h2>
       <p className="mb-3 text-sm text-muted">
-        Cambiá el rol, el perfil de prueba, la tribu o el acceso. Cada cambio queda registrado con quién lo hizo. Quien no está en la lista
+        Cambiá el rol, el perfil de prueba, la comunidad o el acceso. Cada cambio queda registrado con quién lo hizo. Quien no está en la lista
         entra como persona común.
       </p>
       <p role="status" className={`mb-3 min-h-5 text-sm ${aviso?.error ? "font-medium text-warn-ink" : ""}`}>
@@ -121,13 +121,13 @@ export function PanelPersonas() {
             // relative: los textos sr-only de la tabla se posicionan acá y no ensanchan la página a 390 px
             <div className="relative overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <caption className="sr-only">Personas con acceso a la plataforma: rol, perfil de prueba, tribu que administra y acceso</caption>
+                <caption className="sr-only">Personas con acceso a la plataforma: rol, perfil de prueba, comunidad que administra y acceso</caption>
                 <thead>
                   <tr className="border-b border-line">
                     <th scope="col" className="py-1 pr-4 font-medium">Email</th>
                     <th scope="col" className="py-1 pr-4 font-medium">Rol</th>
                     <th scope="col" className="py-1 pr-4 font-medium">Perfil de prueba</th>
-                    <th scope="col" className="py-1 pr-4 font-medium">Tribu que administra</th>
+                    <th scope="col" className="py-1 pr-4 font-medium">Comunidad que administra</th>
                     <th scope="col" className="py-1 pr-4 font-medium">Acceso</th>
                     <th scope="col" className="py-1 font-medium">Guardar</th>
                   </tr>
@@ -215,7 +215,7 @@ function FilaPersona({ p, guardar }: { p: PersonaGestionada; guardar: (p: Person
         </select>
       </td>
       <td className="py-1 pr-4">
-        <span className="sr-only">Tribu que administra {p.email}: </span>
+        <span className="sr-only">Comunidad que administra {p.email}: </span>
         {tribuAdmin === "valle" ? "Valle Solar" : "Ninguna"}
       </td>
       <td className="py-1 pr-4">

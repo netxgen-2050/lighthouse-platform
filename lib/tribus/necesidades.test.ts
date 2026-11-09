@@ -44,7 +44,7 @@ describe("datos de las necesidades", () => {
     expect(new Set(todas.map((n) => n.id)).size).toBe(todas.length);
     for (const n of todas) expect(n.que.en?.trim(), n.id).toBeTruthy();
   });
-  it("círculo de otra tribu: error", () => {
+  it("círculo de otra comunidad: error", () => {
     expect(validarNecesidades([base({ id: "x", tribuId: "semilla", circuloId: "valle-3" })], [])).not.toEqual([]);
   });
   it("nombre del círculo en cada idioma", () => {

@@ -73,7 +73,7 @@ describe("holones y relación", () => {
     expect(holonDeId("cualquier-cosa")).toBeNull();
   });
 
-  it("las tribus de cada holón", () => {
+  it("las comunidades de cada holón", () => {
     expect(tribusDelHolon({ tipo: "circulo", id: "valle-3", transversal: false })).toEqual(["valle"]);
     expect(tribusDelHolon({ tipo: "circulo", id: "comunicacion-comun", transversal: true })).toEqual(["valle", "taller"]);
     expect(tribusDelHolon({ tipo: "tribu", id: "valle" })).toEqual(["valle"]);
@@ -90,7 +90,7 @@ describe("holones y relación", () => {
     expect(relacionConHolon({ semilla: "miembro" }, valle3)).toBeNull();
   });
 
-  it("en un círculo transversal vale la membresía en cualquiera de las tribus que participan, y gana miembro", () => {
+  it("en un círculo transversal vale la membresía en cualquiera de las comunidades que participan, y gana miembro", () => {
     expect(relacionConHolon({ taller: "miembro" }, comunicacion)).toBe("miembro");
     expect(relacionConHolon({ valle: "pedido", taller: "miembro" }, comunicacion)).toBe("miembro");
     expect(relacionConHolon({ valle: "pedido" }, comunicacion)).toBe("aspirante");
@@ -98,7 +98,7 @@ describe("holones y relación", () => {
 });
 
 describe("quién responde", () => {
-  it("una tribu o su círculo lo responde la tribu; un transversal o el común, el Lighthouse", () => {
+  it("una comunidad o su círculo lo responde la comunidad; un transversal o el común, el Lighthouse", () => {
     expect(comunidadQueResponde(holonDeId("circulo:valle-3")!)).toBe("valle");
     expect(comunidadQueResponde(holonDeId("tribu:valle")!)).toBe("valle");
     expect(comunidadQueResponde(holonDeId("circulo:comunicacion-comun")!)).toBe("lighthouse");
@@ -110,14 +110,14 @@ describe("quién responde", () => {
     expect(loAdministraHifa(holonDeId("circulo:valle-3")!)).toBe(false);
   });
 
-  it("quien lidera la tribu responde la de su círculo; el super admin no (salvo la propia de quien lidera)", () => {
+  it("quien lidera la comunidad responde la de su círculo; el super admin no (salvo la propia de quien lidera)", () => {
     const [p] = postula([]).slice(-1);
     expect(puedeResponderPostulacion(lider, p)).toBe(true);
     expect(puedeResponderPostulacion(superAdmin, p)).toBe(false);
     expect(puedeResponderPostulacion(otraTribu, p)).toBe(false);
   });
 
-  it("un círculo transversal lo responde solo el super admin (respaldo de Hifa), no quien lidera una tribu", () => {
+  it("un círculo transversal lo responde solo el super admin (respaldo de Hifa), no quien lidera una comunidad", () => {
     const [p] = postula([], { necesidad: "valle-eventos", holon: "circulo:comunicacion-comun" }).slice(-1);
     expect(puedeResponderPostulacion(superAdmin, p)).toBe(true);
     expect(puedeResponderPostulacion(lider, p)).toBe(false);
@@ -154,7 +154,7 @@ describe("quién responde", () => {
     expect(r2.lista[r2.lista.length - 1].datos.respaldoDeHifa).toBeUndefined();
   });
 
-  it("cada sesión ve lo que le toca y la ficha cuenta las de su tribu y sus círculos", () => {
+  it("cada sesión ve lo que le toca y la ficha cuenta las de su comunidad y sus círculos", () => {
     let lista = postula([]);
     lista = postula(lista, { persona: "prueba:otra@prueba.test", necesidad: "valle-eventos", holon: "circulo:comunicacion-comun" });
     expect(postulacionesParaVer(lista, lider)).toHaveLength(1);
@@ -171,7 +171,7 @@ describe("abrir una postulación (la URL de /pactos)", () => {
     expect(aperturaDePostulacion({ valle: "miembro" }, "valle", "valle-solar")).toMatchObject({ tipo: "crear", relacion: "miembro" });
     expect(aperturaDePostulacion({ valle: "pedido" }, "valle", "valle-solar")).toMatchObject({ tipo: "crear", relacion: "aspirante" });
   });
-  it("sin relación no se crea nada y se pide sumarse como aspirante a la tribu", () => {
+  it("sin relación no se crea nada y se pide sumarse como aspirante a la comunidad", () => {
     expect(aperturaDePostulacion({}, "valle", "valle-solar")).toEqual({ tipo: "sin-relacion", tribu: "valle" });
   });
   it("una necesidad que no existe, de otra comunidad, tomada, hecha o de diseño sin aval no se puede tomar", () => {
@@ -182,7 +182,7 @@ describe("abrir una postulación (la URL de /pactos)", () => {
     expect(aperturaDePostulacion(m, "valle", "valle-bioconstruccion")).toEqual({ tipo: "no-se-puede" });
     expect(aperturaDePostulacion(m, "puerto", "puerto-marketing")).toEqual({ tipo: "no-se-puede" });
   });
-  it("una tribu que no toma puntuales (Barda) no deja postularse", () => {
+  it("una comunidad que no toma puntuales (Barda) no deja postularse", () => {
     expect(aperturaDePostulacion({ barda: "miembro" }, "barda", "barda-riego")).toEqual({ tipo: "no-se-puede" });
   });
   it("de diseño con aval sí se puede", () => {

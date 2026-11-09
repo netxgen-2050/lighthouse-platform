@@ -170,7 +170,7 @@ test("la tarjeta de identidad va antes de los sellos y explica para qué sirve, 
   const tarjeta = page.locator("#identidad");
   await expect(tarjeta).toContainText("programa de series");
   await expect(tarjeta).toContainText("aporte en plata en Pactos");
-  await expect(tarjeta).toContainText("No hace falta para recorrer, sumarte a una tribu ni proponer pactos de tiempo");
+  await expect(tarjeta).toContainText("No hace falta para recorrer, sumarte a una comunidad ni proponer pactos de tiempo");
   await expect(tarjeta.getByRole("listitem").filter({ hasText: "Sin empezar" })).toHaveAttribute("aria-current", "step");
   for (const paso of ["Datos personales", "Residencia fiscal y nacionalidad", "Origen de los fondos", "Tipo de inversor", "Revisión y envío"]) {
     await expect(tarjeta.getByRole("listitem").filter({ hasText: paso })).toBeVisible();

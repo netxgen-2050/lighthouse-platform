@@ -19,7 +19,7 @@ const ES = {
       speakers: "speakers",
       temas: "temas",
       mapa: "mapa del territorio",
-      tribus: "tribus",
+      tribus: "comunidades",
       tickets: "tickets y Stripe",
       ticketVinculado: "ticket vinculado y presencia",
       faq: "FAQ",
@@ -50,20 +50,20 @@ const ES = {
     alternativa: "Ilustración del valle: el Río Negro atraviesa la estepa y el Lighthouse está en su orilla",
     boton: "Explorar el mapa en NetX",
     superficie: "de superficie",
-    barrios: "barrios con tribu",
+    barrios: "barrios con comunidad",
     sinDato: "sin dato",
   },
 
   tribus: {
-    titulo: "No vengas solo. Llegá con tu tribu.",
+    titulo: "No vengas solo. Llegá con tu comunidad.",
     bajada:
-      "Las tribus son los grupos que se forman en NetX para vivir y construir juntos. Si llegan juntas, tienen precio especial y su primera minga en el territorio.",
-    encontrar: "Encontrar mi tribu",
-    precio: "Precio de tribu",
-    lista: "Tribus con tickets vinculados (ejemplo)",
+      "Las comunidades son los grupos que se forman en NetX para vivir y construir juntos. Si llegan juntas, tienen precio especial y su primera minga en el territorio.",
+    encontrar: "Encontrar mi comunidad",
+    precio: "Precio de comunidad",
+    lista: "Comunidades con tickets vinculados (ejemplo)",
     ejemplo: "ejemplo",
     van: (n: number, m: number) => `${n} de ${m} van`,
-    estado: { activa: "Activa", formacion: "En formación", vacante: "Busca tribu" },
+    estado: { activa: "Activa", formacion: "En formación", vacante: "Busca comunidad" },
   },
 
   ticket: {
@@ -101,14 +101,14 @@ const ES = {
     recorrido: "Recorrido",
     voces: "Voces",
     territorio: "El territorio",
-    tribus: "Tribus",
+    tribus: "Comunidades",
     preguntas: "Preguntas",
   },
 
   /** Título y descripción de la página (metadata). */
   pagina: {
     sufijoTitulo: "Congreso",
-    descripcion: "El Congreso de febrero de 2027 en el Lighthouse: recorrido, voces, entradas y cómo llegar con tu tribu.",
+    descripcion: "El Congreso de febrero de 2027 en el Lighthouse: recorrido, voces, entradas y cómo llegar con tu comunidad.",
   },
 };
 
@@ -137,7 +137,7 @@ const EN: TextosNetx = {
       speakers: "speakers",
       temas: "themes",
       mapa: "territory map",
-      tribus: "tribes",
+      tribus: "communities",
       tickets: "tickets and Stripe",
       ticketVinculado: "linked ticket and presence",
       faq: "FAQ",
@@ -167,20 +167,20 @@ const EN: TextosNetx = {
     alternativa: "Illustration of the valley: the Río Negro crosses the steppe and the Lighthouse sits on its bank",
     boton: "Explore the map in NetX (in Spanish)",
     superficie: "of surface area",
-    barrios: "neighborhoods with a tribe",
+    barrios: "neighborhoods with a community",
     sinDato: "no data",
   },
 
   tribus: {
-    titulo: "Don't come alone. Arrive with your tribe.",
+    titulo: "Don't come alone. Arrive with your community.",
     bajada:
-      "Tribes are the groups formed in NetX to live and build together. If they arrive together, they get a special price and their first minga (community work day) in the territory.",
-    encontrar: "Find my tribe (in Spanish)",
-    precio: "Tribe price",
-    lista: "Tribes with linked tickets (sample)",
+      "Communities are the groups formed in NetX to live and build together. If they arrive together, they get a special price and their first minga (community work day) in the territory.",
+    encontrar: "Find my community (in Spanish)",
+    precio: "Community price",
+    lista: "Communities with linked tickets (sample)",
     ejemplo: "sample",
     van: (n: number, m: number) => `${n} of ${m} are going`,
-    estado: { activa: "Active", formacion: "Forming", vacante: "Looking for a tribe" },
+    estado: { activa: "Active", formacion: "Forming", vacante: "Looking for a community" },
   },
 
   ticket: {
@@ -217,13 +217,13 @@ const EN: TextosNetx = {
     recorrido: "Itinerary",
     voces: "Voices",
     territorio: "The territory",
-    tribus: "Tribes",
+    tribus: "Communities",
     preguntas: "Questions",
   },
 
   pagina: {
     sufijoTitulo: "Congress",
-    descripcion: "The February 2027 Congress at the Lighthouse: itinerary, voices, tickets and how to arrive with your tribe.",
+    descripcion: "The February 2027 Congress at the Lighthouse: itinerary, voices, tickets and how to arrive with your community.",
   },
 };
 

@@ -49,7 +49,7 @@ describe("manifiesto de Lighthouse VRN", () => {
     expect(m.versionId.length).toBeGreaterThan(0);
   });
 
-  it("tiene el proceso de cambio y la regla de las tribus", () => {
+  it("tiene el proceso de cambio y la regla de las comunidades", () => {
     expect(m.comoSeCambia.length).toBeGreaterThanOrEqual(4);
     expect(m.reglaTribus.es).toMatch(/contradecir/);
   });

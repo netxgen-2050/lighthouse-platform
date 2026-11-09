@@ -72,29 +72,29 @@ const BASES: Base[] = [
     ],
     titulo: v("Manifiesto de Semilla Viva", "Semilla Viva Manifesto"),
     introduccion: v(
-      "Somos una tribu que cuida el suelo y las semillas criollas para que todo el Lighthouse coma bien. Sumarte es aceptar un ritmo de campo: se siembra, se espera y se comparte la cosecha.",
-      "We are a tribe that looks after the soil and the native seeds so that all of the Lighthouse eats well. Joining means accepting the rhythm of the field: we sow, we wait, and we share the harvest.",
+      "Somos una comunidad que cuida el suelo y las semillas criollas para que todo el Lighthouse coma bien. Sumarte es aceptar un ritmo de campo: se siembra, se espera y se comparte la cosecha.",
+      "We are a community that looks after the soil and the native seeds so that all of the Lighthouse eats well. Joining means accepting the rhythm of the field: we sow, we wait, and we share the harvest.",
     ),
     compromisos: [
       {
         titulo: v("Nos cuidamos como se cuida una huerta", "We look after each other the way a garden is looked after"),
         texto: v(
-          "Miramos cómo está cada persona de la tribu igual que miramos cómo está el suelo. Una persona cansada o desanimada es motivo de una charla, no de un reproche.",
-          "We check in on each person in the tribe the way we check on the soil. A tired or discouraged person is a reason for a conversation, not a reproach.",
+          "Miramos cómo está cada persona de la comunidad igual que miramos cómo está el suelo. Una persona cansada o desanimada es motivo de una charla, no de un reproche.",
+          "We check in on each person in the community the way we check on the soil. A tired or discouraged person is a reason for a conversation, not a reproach.",
         ),
       },
       {
         titulo: v("Decidimos en la ronda de palabra", "We decide in the talking circle"),
         texto: v(
-          "Las decisiones de la tribu se toman en rondas donde habla cada persona. Buscamos que nadie se oponga con firmeza; si alguien lo hace, lo escuchamos hasta entender qué cuida.",
-          "The tribe's decisions are made in circles where every person speaks. We aim for no one to object firmly; if someone does, we listen until we understand what they are protecting.",
+          "Las decisiones de la comunidad se toman en rondas donde habla cada persona. Buscamos que nadie se oponga con firmeza; si alguien lo hace, lo escuchamos hasta entender qué cuida.",
+          "The community's decisions are made in circles where every person speaks. We aim for no one to object firmly; if someone does, we listen until we understand what they are protecting.",
         ),
       },
       {
         titulo: v("Resolvemos los conflictos en la minga", "We resolve conflicts at the work party"),
         texto: v(
-          "Trabajar codo a codo ablanda las diferencias. Si una tensión persiste, la llevamos a la ronda con alguien de la tribu que acompañe la conversación.",
-          "Working side by side softens differences. If a tension persists, we take it to the circle with someone from the tribe who accompanies the conversation.",
+          "Trabajar codo a codo ablanda las diferencias. Si una tensión persiste, la llevamos a la ronda con alguien de la comunidad que acompañe la conversación.",
+          "Working side by side softens differences. If a tension persists, we take it to the circle with someone from the community who accompanies the conversation.",
         ),
       },
       {
@@ -107,8 +107,8 @@ const BASES: Base[] = [
       {
         titulo: v("Aportamos verdura y plantines", "We contribute vegetables and seedlings"),
         texto: v(
-          "Compartimos con el Lighthouse la verdura y los plantines que la tribu se propone cada temporada, y cada persona colabora con sus jornadas de huerta.",
-          "We share with the Lighthouse the vegetables and seedlings the tribe sets out to grow each season, and each person helps with their days in the garden.",
+          "Compartimos con el Lighthouse la verdura y los plantines que la comunidad se propone cada temporada, y cada persona colabora con sus jornadas de huerta.",
+          "We share with the Lighthouse the vegetables and seedlings the community sets out to grow each season, and each person helps with their days in the garden.",
         ),
       },
       {
@@ -132,8 +132,8 @@ const BASES: Base[] = [
       {
         titulo: v("Cuidamos a los socios y a sus familias", "We look after the partners and their families"),
         texto: v(
-          "Cada hogar es parte de la tribu, no solo una firma en la sociedad. Estamos atentos a las épocas difíciles de la cosecha y nos damos una mano.",
-          "Each household is part of the tribe, not just a signature in the company. We are mindful of the hard times of the harvest and we lend each other a hand.",
+          "Cada hogar es parte de la comunidad, no solo una firma en la sociedad. Estamos atentos a las épocas difíciles de la cosecha y nos damos una mano.",
+          "Each household is part of the community, not just a signature in the company. We are mindful of the hard times of the harvest and we lend each other a hand.",
         ),
       },
       {
@@ -178,8 +178,8 @@ const BASES: Base[] = [
     comunidad: "Monte Nuevo",
     titulo: v("Manifiesto de Monte Nuevo", "Monte Nuevo Manifesto"),
     introduccion: v(
-      "Plantamos el bosque que va a dar la madera y la paja de las casas del Lighthouse. Un bosque tarda décadas: pertenecer a esta tribu es pensar en lo que va a quedar cuando ya no estemos.",
-      "We are planting the forest that will provide the timber and straw for the Lighthouse homes. A forest takes decades: belonging to this tribe means thinking about what will remain when we are no longer here.",
+      "Plantamos el bosque que va a dar la madera y la paja de las casas del Lighthouse. Un bosque tarda décadas: pertenecer a esta comunidad es pensar en lo que va a quedar cuando ya no estemos.",
+      "We are planting the forest that will provide the timber and straw for the Lighthouse homes. A forest takes decades: belonging to this community means thinking about what will remain when we are no longer here.",
     ),
     compromisos: [
       {
@@ -199,8 +199,8 @@ const BASES: Base[] = [
       {
         titulo: v("Los conflictos se hablan en la caminata", "Conflicts are talked through on a walk"),
         texto: v(
-          "Salimos a caminar el bosque juntas y juntos para conversar lo difícil. Si no se resuelve, lo llevamos a la reunión de la tribu con alguien que modere.",
-          "We walk the forest together to talk about the difficult things. If it is not resolved, we take it to the tribe's meeting with someone to moderate.",
+          "Salimos a caminar el bosque juntas y juntos para conversar lo difícil. Si no se resuelve, lo llevamos a la reunión de la comunidad con alguien que modere.",
+          "We walk the forest together to talk about the difficult things. If it is not resolved, we take it to the community's meeting with someone to moderate.",
         ),
       },
       {
@@ -220,8 +220,8 @@ const BASES: Base[] = [
       {
         titulo: v("Despedirse con un árbol", "Saying goodbye with a tree"),
         texto: v(
-          "Quien se va lo hace avisando con tiempo, terminando lo que empezó o entregándolo en orden, y planta un árbol como señal de que su paso por la tribu no se borra.",
-          "Whoever leaves gives notice in good time, finishes what they started or hands it over in order, and plants a tree as a sign that their time in the tribe is not erased.",
+          "Quien se va lo hace avisando con tiempo, terminando lo que empezó o entregándolo en orden, y planta un árbol como señal de que su paso por la comunidad no se borra.",
+          "Whoever leaves gives notice in good time, finishes what they started or hands it over in order, and plants a tree as a sign that their time in the community is not erased.",
         ),
       },
     ],
@@ -302,8 +302,8 @@ const BASES: Base[] = [
       {
         titulo: v("Cuidamos a los chicos y a los grandes", "We look after the children and the grown-ups"),
         texto: v(
-          "Los niños y las niñas son responsabilidad de toda la tribu. Los adultos nos cuidamos también: cuando una familia pasa por una crisis, las demás se acercan.",
-          "The children are the responsibility of the whole tribe. We adults look after each other too: when a family goes through a crisis, the others draw near.",
+          "Los niños y las niñas son responsabilidad de toda la comunidad. Los adultos nos cuidamos también: cuando una familia pasa por una crisis, las demás se acercan.",
+          "The children are the responsibility of the whole community. We adults look after each other too: when a family goes through a crisis, the others draw near.",
         ),
       },
       {
@@ -316,8 +316,8 @@ const BASES: Base[] = [
       {
         titulo: v("Los conflictos se hablan en familia", "Conflicts are talked through as a family"),
         texto: v(
-          "Si hay un malestar, lo conversamos primero entre las personas involucradas, después con alguien de confianza de la tribu y, si hace falta, en el círculo completo, sin reproches y con tiempo.",
-          "If something is bothering us, we talk about it first among the people involved, then with someone the tribe trusts and, if needed, in the full circle, without reproach and taking our time.",
+          "Si hay un malestar, lo conversamos primero entre las personas involucradas, después con alguien de confianza de la comunidad y, si hace falta, en el círculo completo, sin reproches y con tiempo.",
+          "If something is bothering us, we talk about it first among the people involved, then with someone the community trusts and, if needed, in the full circle, without reproach and taking our time.",
         ),
       },
       {
@@ -390,8 +390,8 @@ const BASES: Base[] = [
       {
         titulo: v("Cuando te vas, devolvés y enseñás", "When you leave, you return and you teach"),
         texto: v(
-          "Quien deja la tribu devuelve las herramientas prestadas y, antes de irse, deja enseñado a alguien lo que sabía hacer solo.",
-          "Whoever leaves the tribe returns any borrowed tools and, before going, teaches someone what only they knew how to do.",
+          "Quien deja la comunidad devuelve las herramientas prestadas y, antes de irse, deja enseñado a alguien lo que sabía hacer solo.",
+          "Whoever leaves the community returns any borrowed tools and, before going, teaches someone what only they knew how to do.",
         ),
       },
     ],
@@ -461,8 +461,8 @@ const BASES: Base[] = [
       {
         titulo: v("Recibimos con el mismo cuidado con que nos cuidamos", "We welcome with the same care with which we look after each other"),
         texto: v(
-          "Tratamos a las visitas y a la tribu con la misma amabilidad. Nadie se lleva un mal trato por estar cansado ni por ser nuevo.",
-          "We treat visitors and the tribe with the same kindness. No one gets poor treatment for being tired or for being new.",
+          "Tratamos a las visitas y a la comunidad con la misma amabilidad. Nadie se lleva un mal trato por estar cansado ni por ser nuevo.",
+          "We treat visitors and the community with the same kindness. No one gets poor treatment for being tired or for being new.",
         ),
       },
       {
@@ -496,8 +496,8 @@ const BASES: Base[] = [
       {
         titulo: v("Salir dejando la puerta abierta", "Leaving with the door open"),
         texto: v(
-          "Quien deja la tribu avisa con tiempo, cumple los compromisos de los eventos ya confirmados y puede volver a trabajar con nosotros más adelante.",
-          "Whoever leaves the tribe gives notice in good time, honors the commitments for events already confirmed, and may come back to work with us later on.",
+          "Quien deja la comunidad avisa con tiempo, cumple los compromisos de los eventos ya confirmados y puede volver a trabajar con nosotros más adelante.",
+          "Whoever leaves the community gives notice in good time, honors the commitments for events already confirmed, and may come back to work with us later on.",
         ),
       },
     ],

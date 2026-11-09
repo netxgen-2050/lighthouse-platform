@@ -102,7 +102,7 @@ test.describe("Propuestas del holón al lado de la holarquía", () => {
     await expect(s.getByRole("heading", { level: 4, name: "Elegir facilitador/a de Valle Solar" })).toBeVisible();
     await expect(s.getByRole("heading", { level: 4, name: /Pedir al Fondo Común una cisterna/ })).toBeVisible();
     await expect(s.getByRole("heading", { level: 4, name: /Pedido de Valle Solar al Fondo Común para la bomba solar/ })).toBeVisible();
-    await expect(tarjeta(page, /Pedido de Valle Solar al Fondo Común/)).toContainText("Se decide en Consejo de tribus");
+    await expect(tarjeta(page, /Pedido de Valle Solar al Fondo Común/)).toContainText("Se decide en Consejo de comunidades");
   });
 
   test("Tokenomics y Semillas: la regalía nace acá y se decide en Lighthouse VRN", async ({ page }) => {
@@ -198,7 +198,7 @@ test.describe("Llevar al consejo", () => {
     await expect(page.getByRole("button", { name: "Llevar al consejo" })).toHaveCount(0);
   });
 
-  test("quien lidera otra tribu tampoco", async ({ page }) => {
+  test("quien lidera otra comunidad tampoco", async ({ page }) => {
     await page.addInitScript(() => {
       window.localStorage.setItem("lh-sumarte", JSON.stringify({ plan: "miembro", tribu: true, tribuId: "taller" }));
     });
@@ -224,12 +224,12 @@ test.describe("Llevar al consejo", () => {
     await expect(cisterna(page).getByText("Ya está en el consejo")).toBeVisible();
     await expect(page.getByRole("button", { name: "Llevar al consejo" })).toHaveCount(0);
     await page.goto("/fogon?holon=consejo");
-    const acá = seccion(page, "Consejo de tribus");
+    const acá = seccion(page, "Consejo de comunidades");
     await expect(acá.getByRole("heading", { level: 4, name: /Pedir al Fondo Común una cisterna/ })).toBeVisible();
-    await expect(acá.getByText("Viene de Valle Solar (aprobada en la tribu)")).toHaveCount(2);
+    await expect(acá.getByText("Viene de Valle Solar (aprobada en la comunidad)")).toHaveCount(2);
     expect(pedidos).toEqual([]);
     await page.reload();
-    await expect(acá.getByText("Viene de Valle Solar (aprobada en la tribu)")).toHaveCount(2);
+    await expect(acá.getByText("Viene de Valle Solar (aprobada en la comunidad)")).toHaveCount(2);
     // El registro con forma de attestation quedó en el navegador.
     const registros = await page.evaluate(() => JSON.parse(window.localStorage.getItem("lh-gobernanza") ?? "[]"));
     expect(registros).toHaveLength(1);
@@ -432,7 +432,7 @@ test.describe("Portada accesible y bilingüe", () => {
   test.describe("en inglés", () => {
     test.use({ locale: "en-US" });
 
-    test("la sección, sus grupos y el botón salen en inglés y el nombre de la tribu no se traduce", async ({ page }) => {
+    test("la sección, sus grupos y el botón salen en inglés y el nombre de la comunidad no se traduce", async ({ page }) => {
       await page.goto("/fogon?holon=valle");
       await expect(page.getByRole("heading", { level: 1, name: "How we decide" })).toBeVisible();
       const s = page.getByRole("region", { name: "Proposals in Valle Solar" });

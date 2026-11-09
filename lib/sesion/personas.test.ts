@@ -10,7 +10,7 @@ describe("parsearPersonas", () => {
     ]);
   });
 
-  it("el super admin no administra una tribu", () => {
+  it("el super admin no administra una comunidad", () => {
     expect(parsearPersonas("s@x.com=superadmin:comunidad")[0]?.tribuAdmin).toBeNull();
   });
 

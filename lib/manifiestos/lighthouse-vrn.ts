@@ -1,4 +1,4 @@
-// Manifiesto de la meta-tribu Lighthouse VRN (cambio `manifiesto-lighthouse-vrn`). BORRADOR a ratificar por el común y
+// Manifiesto de la comunidad madre Lighthouse VRN (cambio `manifiesto-lighthouse-vrn`). BORRADOR a ratificar por el común y
 // datos de EJEMPLO: lo redactó un agente a partir del design (§3). El español es el original; el inglés lo tradujo un
 // agente y está pendiente de revisión nativa. No nombra a las comunidades de referencia de las que salieron los
 // principios (un test lo vigila).
@@ -347,8 +347,8 @@ export const MANIFIESTO_VRN: ManifiestoVrn = {
     ),
   ],
   reglaTribus: v(
-    "Cada tribu puede sumar principios propios para cuidar más. Ninguno puede contradecir, aflojar ni reemplazar los de Lighthouse VRN. Si a una tribu un principio de este manifiesto no le sirve, propone cambiarlo en el Fogón del común.",
-    "Each tribe can add its own principles to care for more. None can contradict, loosen or replace those of Lighthouse VRN. If a principle of this manifesto does not work for a tribe, it proposes changing it in the Fogón of the commons.",
+    "Cada comunidad puede sumar principios propios para cuidar más. Ninguno puede contradecir, aflojar ni reemplazar los de Lighthouse VRN. Si a una comunidad un principio de este manifiesto no le sirve, propone cambiarlo en el Fogón del común.",
+    "Each community can add its own principles to care for more. None can contradict, loosen or replace those of Lighthouse VRN. If a principle of this manifesto does not work for a community, it proposes changing it in the Fogón of the commons.",
   ),
   maquinasSugieren: v(
     "Hifa y el Guardián (IA) pueden sugerir desde estos principios; nunca deciden.",

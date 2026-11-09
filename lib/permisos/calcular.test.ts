@@ -20,7 +20,7 @@ describe("servicio de permisos", () => {
     expect(abiertas).toEqual(["mapa-tribus-eventos", "registrar-ticket"]);
   });
 
-  it("miembro sin tribu visita salas de tribu", () => {
+  it("miembro sin comunidad visita salas de comunidad", () => {
     const r = puede(con({ plan: "miembro" }), "sala-tribu");
     expect(r.abierta).toBe(true);
     expect(r.grado).toBe("visita");
@@ -32,13 +32,13 @@ describe("servicio de permisos", () => {
     expect(puede(p, "sala-tribu", "rio")).toMatchObject({ abierta: true, grado: "visita" });
   });
 
-  it("aceptado en valle sin plan ni pase: cerrada en otras tribus", () => {
+  it("aceptado en valle sin plan ni pase: cerrada en otras comunidades", () => {
     const p = con({ tribus: ["valle"] });
     expect(puede(p, "sala-tribu", "valle").grado).toBe("completa");
     expect(puede(p, "sala-tribu", "rio").abierta).toBe(false);
   });
 
-  it("sin tribuId no se concede más de lo que vale para cualquier tribu", () => {
+  it("sin tribuId no se concede más de lo que vale para cualquier comunidad", () => {
     const p = con({ plan: "miembro", tribus: ["valle"] });
     expect(puede(p, "sala-tribu").grado).toBe("visita");
     expect(calcularPermisos(p)["sala-tribu"].grado).toBe("visita");
@@ -101,7 +101,7 @@ describe("servicio de permisos", () => {
     expect(puede(con({ pase: "semilla" }), "voz-fondo-comun").refuerzoPresencia).toBeUndefined();
   });
 
-  it("tribusPropias: solo la tribu donde fue aceptada y solo en puertas acotadas a su tribu", () => {
+  it("tribusPropias: solo la comunidad donde fue aceptada y solo en puertas acotadas a su comunidad", () => {
     const p = con({ plan: "miembro", tribus: ["valle"] });
     expect(puede(p, "foros-red", "rio").tribusPropias).toBeUndefined();
     expect(puede(p, "foros-red", "valle").tribusPropias).toBeUndefined();
@@ -118,14 +118,14 @@ describe("servicio de permisos", () => {
   });
 });
 
-describe("residentes y tribus (decisión del 7-oct-2026)", () => {
-  it("ser residente no abre la sala ni la voz de una tribu ajena", () => {
+describe("residentes y comunidades (decisión del 7-oct-2026)", () => {
+  it("ser residente no abre la sala ni la voz de una comunidad ajena", () => {
     const residente = con({ residente: true });
     expect(puede(residente, "sala-tribu", "valle").abierta).toBe(false);
     expect(puede(residente, "voz-tribu", "valle").abierta).toBe(false);
   });
 
-  it("un residente miembro de dos tribus entra a esas dos y a ninguna otra", () => {
+  it("un residente miembro de dos comunidades entra a esas dos y a ninguna otra", () => {
     const residente = con({ residente: true, tribus: ["valle", "taller"] });
     expect(puede(residente, "sala-tribu", "valle")).toMatchObject({ abierta: true, grado: "completa" });
     expect(puede(residente, "sala-tribu", "taller")).toMatchObject({ abierta: true, grado: "completa" });

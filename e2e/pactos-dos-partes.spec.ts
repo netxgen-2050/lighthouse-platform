@@ -145,7 +145,7 @@ test("un pacto nuevo no aceptado vuelve a Borrador con su contenido", async ({ p
   await expect(page.getByText("Valle Solar no aceptó tu pacto")).toBeVisible();
 });
 
-test("retirar saca el pendiente de la tribu y la propuesta queda revocada en el registro", async ({ page, context, baseURL }) => {
+test("retirar saca el pendiente de la comunidad y la propuesta queda revocada en el registro", async ({ page, context, baseURL }) => {
   await enviarPacto(page, "valle", "Valle Solar");
   await page.getByRole("button", { name: "Retirar y editar" }).click();
   await expect(page.getByRole("button", { name: "Enviar a la comunidad" })).toBeFocused();
@@ -189,7 +189,7 @@ test("otra persona no ve el pacto de Valle Solar; quien no lidera nada ve que no
   await expect(page.getByRole("article")).toHaveCount(0);
 });
 
-test("Plan Tribu: quien crea su tribu responde el pacto enviado a ella, sin aprobación de nadie", async ({ page, context, baseURL }) => {
+test("Plan Comunidad: quien crea su comunidad responde el pacto enviado a ella, sin aprobación de nadie", async ({ page, context, baseURL }) => {
   await enviarPacto(page, "semilla", "Semilla Viva");
   await entrarComo(page, context, baseURL, NUEVA, "/pactos/responder");
   await expect(page.getByRole("heading", { level: 2, name: "Pactos para Semilla Viva" })).toBeVisible();
@@ -219,21 +219,21 @@ test("quien lidera no responde su propio pacto; el super admin sí, y no ve el d
   await enviarPacto(page, "valle", "Valle Solar");
   await entrarComo(page, context, baseURL, ADMIN, "/pactos?comunidad=valle");
   await page.getByLabel(/Rol que asumís/).selectOption({ label: "Coordinación o project management" });
-  await page.getByLabel("Tu descripción: qué vas a hacer").fill("Coordino la tribu");
+  await page.getByLabel("Tu descripción: qué vas a hacer").fill("Coordino la comunidad");
   await page.getByRole("button", { name: "Enviar a la comunidad" }).click();
   await expect(page.getByText("Esperando la respuesta de Valle Solar")).toBeVisible();
 
   await page.goto("/pactos/responder");
   await expect(page.getByRole("article")).toHaveCount(2);
-  const propio = page.getByRole("article").filter({ hasText: "Coordino la tribu" });
-  await expect(propio).toContainText("Es tu propio pacto: lo responde otra persona que lidere la tribu o, si no hay, el super admin");
+  const propio = page.getByRole("article").filter({ hasText: "Coordino la comunidad" });
+  await expect(propio).toContainText("Es tu propio pacto: lo responde otra persona que lidere la comunidad o, si no hay, el super admin");
   await expect(propio.getByRole("button")).toHaveCount(0);
   await expect(page.getByRole("article").filter({ hasText: "Facilito las asambleas" }).getByRole("button", { name: "Aceptar", exact: true })).toBeVisible();
 
   await entrarComo(page, context, baseURL, SUPER, "/pactos/responder");
   await expect(page.getByRole("article")).toHaveCount(1);
   const delLider = page.getByRole("article");
-  await expect(delLider).toContainText("Coordino la tribu");
+  await expect(delLider).toContainText("Coordino la comunidad");
   await expect(delLider).toContainText("Lo propone quien lidera Valle Solar");
   await expect(page.getByText("Facilito las asambleas")).toHaveCount(0);
   await delLider.getByRole("button", { name: "Aceptar", exact: true }).click();
@@ -253,7 +253,7 @@ test("borrar los datos de la demo saca solo las constancias de quien borra", asy
   await enviarPacto(page, "valle", "Valle Solar");
   await entrarComo(page, context, baseURL, ADMIN, "/pactos?comunidad=valle");
   await page.getByLabel(/Rol que asumís/).selectOption({ label: "Coordinación o project management" });
-  await page.getByLabel("Tu descripción: qué vas a hacer").fill("Coordino la tribu");
+  await page.getByLabel("Tu descripción: qué vas a hacer").fill("Coordino la comunidad");
   await page.getByRole("button", { name: "Enviar a la comunidad" }).click();
   await expect(page.getByText("Esperando la respuesta de Valle Solar")).toBeVisible();
   // Configuración > Borrar datos de la demo saca solo lo del líder del registro compartido.

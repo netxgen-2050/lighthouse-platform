@@ -11,7 +11,7 @@ describe("nivelInicial (design §3)", () => {
   it("miembro de Valle Solar → ámbito en la siembra (holón valle-0)", () => {
     expect(nivelInicial(P("siembra"), valle)).toBe("ambito");
   });
-  it("quien lidera la tribu también es del ámbito", () => {
+  it("quien lidera la comunidad también es del ámbito", () => {
     expect(nivelInicial(P("siembra"), { membresias: [], tribuLider: "valle" })).toBe("ambito");
   });
   it("miembro de Valle Solar → red en la bomba: decide el consejo y vos no está en su lista", () => {

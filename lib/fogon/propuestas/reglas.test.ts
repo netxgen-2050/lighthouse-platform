@@ -102,7 +102,7 @@ describe("concernAbierto", () => {
 });
 
 describe("nivelDeArriba", () => {
-  it("sale de la holarquía: círculo → tribu → consejo → común", () => {
+  it("sale de la holarquía: círculo → comunidad → consejo → común", () => {
     expect(nivelDeArriba("valle-0")).toBe("valle");
     expect(nivelDeArriba("valle")).toBe("consejo");
     expect(nivelDeArriba("consejo")).toBe("lighthouse");
@@ -156,7 +156,7 @@ describe("alVencer · decisión importante (D1)", () => {
   it("validada con bloqueo legítimo → como sin mayoría", () => {
     expect(alVencer(hechos({ urgencia: "validada", bloqueo: true, bloqueoLegitimo: true }))).toEqual({ tipo: "sube", a: "valle" });
   });
-  it("validada sin mayoría sube un nivel: círculo → tribu, tribu → consejo, consejo → común", () => {
+  it("validada sin mayoría sube un nivel: círculo → comunidad, comunidad → consejo, consejo → común", () => {
     const sinMayoria = { urgencia: "validada" as const, apoyan: 2, cuenta: 6 };
     expect(alVencer(hechos({ ...sinMayoria, holonId: "valle-0" }))).toEqual({ tipo: "sube", a: "valle" });
     expect(alVencer(hechos({ ...sinMayoria, holonId: "valle" }))).toEqual({ tipo: "sube", a: "consejo" });

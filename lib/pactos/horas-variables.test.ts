@@ -195,14 +195,14 @@ describe("el registro de las horas de cada mes", () => {
     expect(declara([], "2026-13", 10).resultado).toBe("mes-invalido");
     expect(declara([], "2026-11", 41).lista).toEqual([]);
   });
-  it("corregir antes de la respuesta revoca la anterior: la tribu ve una sola declaración del mes", () => {
+  it("corregir antes de la respuesta revoca la anterior: la comunidad ve una sola declaración del mes", () => {
     const a = declara([]).lista;
     const b = declara(a, "2026-11", 20).lista;
     expect(declaracionVigente(b, PERSONA, COM, "2026-11")?.datos.horas).toBe("20");
     expect(declaracionesParaVer(b, sesionLider)).toHaveLength(1);
     expect(declaracionesParaVer(b, sesionLider)[0].h.datos.horas).toBe("20");
   });
-  it("la tribu confirma: queda una confirmación con las mismas horas y el mes", () => {
+  it("la comunidad confirma: queda una confirmación con las mismas horas y el mes", () => {
     const a = declara([]).lista;
     const id = a[0].id;
     const r = responderMes(a, { declaracionId: id, confirma: true, sesion: sesionLider }, DIC);
@@ -218,7 +218,7 @@ describe("el registro de las horas de cada mes", () => {
     expect(dos.resultado).toBe("ya-respondida");
     expect(dos.lista).toHaveLength(r.lista.length);
   });
-  it("nadie confirma sus propias horas ni lo hace otra tribu", () => {
+  it("nadie confirma sus propias horas ni lo hace otra comunidad", () => {
     const a = declara([]).lista;
     const propio: QuienResponde = { idPersona: PERSONA, esSuperAdmin: false, tribuLider: COM };
     expect(responderMes(a, { declaracionId: a[0].id, confirma: true, sesion: propio }, DIC).resultado).toBe("sin-permiso");
@@ -269,7 +269,7 @@ describe("el registro de las horas de cada mes", () => {
     const propia = agregar(a, { ...base, afirma: afirmaComunidad(COM), por: PERSONA, datos: { horas: "24", mes: "2026-11" } }, DIC);
     expect(respuestaDeMes(propia, a[0])).toBeNull();
   });
-  it("tras pedir revisar, la persona vuelve a declarar el mes y la tribu ve solo la nueva", () => {
+  it("tras pedir revisar, la persona vuelve a declarar el mes y la comunidad ve solo la nueva", () => {
     const a = declara([]).lista;
     const rev = responderMes(a, { declaracionId: a[0].id, confirma: false, motivo: "Fueron 20", sesion: sesionLider }, DIC).lista;
     const de_nuevo = declara(rev, "2026-11", 20, DIC);
@@ -299,7 +299,7 @@ describe("conciliar las horas de cada mes", () => {
     return { e, lista: r.lista, id: r.id! };
   }
 
-  it("la confirmación de la tribu confirma el mes, una sola vez", () => {
+  it("la confirmación de la comunidad confirma el mes, una sola vez", () => {
     const { e, lista, id } = escenario();
     const conf = responderMes(lista, { declaracionId: id, confirma: true, sesion: sesionLider }, DIC).lista;
     const r = conciliar(e, conf, PERSONA);
@@ -400,7 +400,7 @@ describe("cambiar de modalidad o de rango", () => {
 describe("tras pasar a horas fijas (interino, P.1: la validación sigue pendiente de Gus)", () => {
   const declaracion = () => declararMes([], { idPersona: PERSONA, comunidad: COM, mes: "2026-12", horas: 20 }, DIC);
 
-  it("la tribu no ve ni puede confirmar los meses cuando la versión vigente ya no es variable", () => {
+  it("la comunidad no ve ni puede confirmar los meses cuando la versión vigente ya no es variable", () => {
     const d = declaracion();
     const variable = conPactoAceptado(d.lista);
     expect(declaracionesParaVer(variable, sesionLider)).toHaveLength(1);
@@ -458,7 +458,7 @@ describe("compatibilidad con lo guardado", () => {
     const crudo = JSON.stringify({ comunidades: { agua: { tiempo: { ...t, compromisoMeses: undefined }, aportes: [] } } });
     expect(deComunidad(leer(crudo, NOV), "agua").tiempo.compromisoMeses).toBe(2);
   });
-  it("la propuesta del pacto lleva modalidad, rango y compromiso, y la aceptación toma lo que la tribu vio", () => {
+  it("la propuesta del pacto lleva modalidad, rango y compromiso, y la aceptación toma lo que la comunidad vio", () => {
     const e = reducir(borradorVariable(), { tipo: "avanzar", comunidad: COM });
     const t = deComunidad(e, COM).tiempo;
     const datos = datosDePropuesta({ tipo: "nuevo", contenido: t, nombre: "Ana", iniciales: "A", proponeLider: false });

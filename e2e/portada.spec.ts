@@ -6,8 +6,8 @@ import { tribusDeTerritorio } from "@/lib/territorios/datos";
 test.use({ plan: "ninguno" });
 
 const CAMINOS = [
-  { titulo: "Ver las tribus", href: "/tribus" },
-  { titulo: "Encontrar mi tribu", href: "/perfil" },
+  { titulo: "Ver las comunidades", href: "/tribus" },
+  { titulo: "Encontrar mi comunidad", href: "/perfil" },
   { titulo: "Congreso · Feb 2027", href: "/congreso" },
 ];
 
@@ -18,7 +18,7 @@ test("la portada responde", async ({ page }) => {
 
 test("muestra los tres caminos en orden, con titular y botón", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Encontrá tu tribu");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Encontrá tu comunidad");
   const principal = page.getByRole("link", { name: "Explorar el Lighthouse", exact: true });
   await expect(principal).toBeVisible();
   await expect(principal).toHaveAttribute("href", "/territorios/lighthouse");
@@ -73,7 +73,7 @@ test("se recorre con Tab y Enter lleva a /perfil", async ({ page }) => {
 test("la cantidad de barrios sale de los datos", async ({ page }) => {
   await page.goto("/");
   const n = tribusDeTerritorio("lighthouse").length;
-  await expect(page.getByRole("link", { name: /Ver las tribus/ }).last()).toContainText(
+  await expect(page.getByRole("link", { name: /Ver las comunidades/ }).last()).toContainText(
     `${n} barrios`,
   );
 });
@@ -93,8 +93,8 @@ test("camino recomendado: /?camino=congreso marca solo esa tarjeta, sin cambiar 
   const seccion = page.getByRole("region", { name: "Por dónde empezar" });
   await expect(seccion.getByText("Recomendado para vos")).toHaveCount(1);
   await expect(seccion.getByRole("link", { name: /Congreso · Feb 2027/ })).toContainText("Recomendado para vos");
-  await expect(seccion.getByRole("link", { name: /Ver las tribus/ })).not.toContainText("Recomendado para vos");
-  await expect(seccion.getByRole("link", { name: /Encontrar mi tribu/ })).not.toContainText("Recomendado para vos");
+  await expect(seccion.getByRole("link", { name: /Ver las comunidades/ })).not.toContainText("Recomendado para vos");
+  await expect(seccion.getByRole("link", { name: /Encontrar mi comunidad/ })).not.toContainText("Recomendado para vos");
   const titulos = await seccion.getByRole("heading", { level: 3 }).allTextContents();
   expect(titulos).toEqual(CAMINOS.map((c) => c.titulo));
   expect(await leerOrigenGuardado(page)).toBeNull();

@@ -87,7 +87,7 @@ test("no se puede enviar sin rol y descripción", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Enviar a la comunidad" })).toBeEnabled();
 });
 
-test("enviar, esperar a la tribu, ver el pacto aceptado y seguir aceptado al recargar", async ({ page }) => {
+test("enviar, esperar a la comunidad, ver el pacto aceptado y seguir aceptado al recargar", async ({ page }) => {
   await comoMiembro(page);
   await page.goto("/pactos");
   await expect(page.getByText("Pacto aceptado")).toHaveCount(0);

@@ -9,7 +9,7 @@ const TITULOS_EN_ORDEN = [
   "Voces que ya imaginaron",
   "Ocho conversaciones",
   "Un valle que aprende",
-  "No vengas solo. Llegá con tu tribu.",
+  "No vengas solo. Llegá con tu comunidad.",
   "Reservá tu lugar bajo el anillo",
   "Tu ticket también abre la puerta a NetX",
   "Antes de armar la mochila",
@@ -68,13 +68,13 @@ test("El encuentro lleva el ⚖ de encuentro educativo y Entradas el del ticket"
   await expect(page.locator("#entradas").getByRole("button", { name: "Qué significa legalmente: Ticket del Congreso" })).toBeVisible();
 });
 
-test("Tribus: título en voseo, N de M van en texto, ejemplo y enlace a /tribus", async ({ page }) => {
+test("Comunidades: título en voseo, N de M van en texto, ejemplo y enlace a /tribus", async ({ page }) => {
   await page.goto("/congreso");
   const tribus = page.locator("#tribus");
-  await expect(tribus.getByRole("heading", { name: "No vengas solo. Llegá con tu tribu." })).toBeVisible();
+  await expect(tribus.getByRole("heading", { name: "No vengas solo. Llegá con tu comunidad." })).toBeVisible();
   await expect(tribus.getByText(/^\d+ de \d+ van$/)).toHaveCount(3);
   await expect(tribus.getByText(/ejemplo/).first()).toBeVisible();
-  await expect(tribus.getByRole("link", { name: "Encontrar mi tribu" })).toHaveAttribute("href", "/tribus");
+  await expect(tribus.getByRole("link", { name: "Encontrar mi comunidad" })).toHaveAttribute("href", "/tribus");
   await expect(page.locator("#territorio").getByRole("link", { name: "Explorar el mapa en NetX" })).toHaveAttribute(
     "href",
     "/territorios/lighthouse",
@@ -89,7 +89,7 @@ test("el modo de origen se activa con aria-pressed, muestra el texto de origen y
   await boton.click();
   await expect(boton).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByText("Viene de UnityHub · agenda")).toBeVisible();
-  await expect(page.getByText("Viene de NetX · tribus")).toBeVisible();
+  await expect(page.getByText("Viene de NetX · comunidades")).toBeVisible();
   await expect(page.getByText("Viene de NetX · ticket vinculado y presencia")).toBeVisible();
   await page.reload();
   await expect(page.getByRole("button", { name: /¿Qué viene de UnityHub\?/ })).toHaveAttribute("aria-pressed", "false");
@@ -135,7 +135,7 @@ test("Comprar abre el diálogo de demostración: sin nombrar quién cobra, sin n
 
 test("el diálogo también se cierra con Entendido y el foco queda dentro mientras está abierto", async ({ page }) => {
   await page.goto("/congreso");
-  const comprar = page.getByRole("button", { name: "Comprar pase de tribu" });
+  const comprar = page.getByRole("button", { name: "Comprar pase de comunidad" });
   await comprar.click();
   const dialogo = page.getByRole("dialog", { name: "Acá se abriría la compra del ticket" });
   await expect(dialogo).toBeVisible();
@@ -173,7 +173,7 @@ test("las preguntas se abren con el teclado", async ({ page }) => {
 test("el cierre tiene las dos acciones y el pie", async ({ page }) => {
   await page.goto("/congreso");
   await expect(page.getByRole("link", { name: "Reservar mi lugar" })).toHaveAttribute("href", "#entradas");
-  await expect(page.getByRole("link", { name: "Llegar con mi tribu" })).toHaveAttribute("href", "#tribus");
+  await expect(page.getByRole("link", { name: "Llegar con mi comunidad" })).toHaveAttribute("href", "#tribus");
   await expect(page.getByText("Convocan NetX Gen, BioPueblo y Rubania")).toBeVisible();
   await expect(page.getByText("Entradas y check-in con UnityHub")).toBeVisible();
 });
@@ -331,7 +331,7 @@ test.describe("visitante sin cuenta", () => {
     await expect(page.getByRole("heading", { level: 1, name: /Solarpunk Patagonia/ })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Reservá tu lugar bajo el anillo" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Tu ticket también abre la puerta a NetX" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "No vengas solo. Llegá con tu tribu." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "No vengas solo. Llegá con tu comunidad." })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Antes de armar la mochila" })).toBeVisible();
     await expect(page.locator("#ticket ol > li")).toHaveCount(5);
     await expect(page.getByText("Código de tu ticket")).toHaveCount(0);

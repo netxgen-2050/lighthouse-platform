@@ -24,17 +24,17 @@ export type Fila = { texto: Bilingue; incluye: readonly [boolean, boolean, boole
 export const FILAS: readonly Fila[] = [
   {
     texto: {
-      es: "Mapa, tribus y eventos abiertos",
-      en: "Map, tribes and open events",
+      es: "Mapa, comunidades y eventos abiertos",
+      en: "Map, communities and open events",
     },
     incluye: [true, true, true],
   },
   {
-    texto: { es: "Entrevista con el agente y tribus sugeridas", en: "Interview with the agent and suggested tribes" },
+    texto: { es: "Entrevista con el agente y comunidades sugeridas", en: "Interview with the agent and suggested communities" },
     incluye: [true, true, true],
   },
   {
-    texto: { es: "Salas de tribu y foros de la red", en: "Tribe rooms and network forums" },
+    texto: { es: "Salas de comunidad y foros de la red", en: "Community rooms and network forums" },
     incluye: [false, true, true],
   },
   {
@@ -43,8 +43,8 @@ export const FILAS: readonly Fila[] = [
   },
   {
     texto: {
-      es: "Voz en las decisiones de tu tribu (según su estatuto)",
-      en: "A voice in your tribe's decisions (according to its bylaws)",
+      es: "Voz en las decisiones de tu comunidad (según su estatuto)",
+      en: "A voice in your community's decisions (according to its bylaws)",
     },
     incluye: [false, true, true],
   },

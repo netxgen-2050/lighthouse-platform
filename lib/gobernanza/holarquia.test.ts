@@ -54,7 +54,7 @@ describe("datos de ejemplo de roles", () => {
 });
 
 describe("construirHolarquia", () => {
-  it("el común contiene sus 9 círculos, el consejo, el transversal y las 12 tribus", () => {
+  it("el común contiene sus 9 círculos, el consejo, el transversal y las 12 comunidades", () => {
     const h = hijosDe(raiz);
     expect(h.filter((x) => x.id.startsWith("comun-"))).toHaveLength(CIRCULOS_DEL_COMUN.length);
     expect(h.filter((x) => x.tipo === "consejo")).toHaveLength(1);
@@ -71,7 +71,7 @@ describe("construirHolarquia", () => {
     expect(comun(vacantes[0]).decide).toEqual([]);
   });
 
-  it("el consejo tiene un lugar por tribu validada y ninguno con representante", () => {
+  it("el consejo tiene un lugar por comunidad validada y ninguno con representante", () => {
     const consejo = buscarNodo(raiz, "consejo")!;
     const lugares = hijosDe(consejo);
     expect(lugares).toHaveLength(8);
@@ -120,20 +120,20 @@ describe("construirHolarquia", () => {
     expect(nombres(buscarNodo(en, "comun-permacultura")!)).toContain("You");
   });
 
-  it("Barrio 3 busca tribu, sin círculos y sin lugar en el consejo", () => {
+  it("Barrio 3 busca comunidad, sin círculos y sin lugar en el consejo", () => {
     const b3 = hijosDe(raiz).find((x) => x.tipo === "tribu" && x.nombre === "Barrio 3")!;
     expect(comun(b3).estado).toBe("vacante");
     expect(comun(b3).validada).toBe(false);
     expect(hijosDe(buscarNodo(raiz, "consejo")!).map((l) => l.id)).not.toContain(`consejo-${b3.id}`);
   });
 
-  it("el transversal muestra las tribus que participan y cuelga del común", () => {
+  it("el transversal muestra las comunidades que participan y cuelga del común", () => {
     const t = comun(buscarNodo(raiz, "comunicacion-comun")!);
     expect(t.tribus).toEqual(["valle", "taller"]);
     expect(caminoHasta(raiz, t.id)).toHaveLength(2);
   });
 
-  it("cada tribu activa o en formación trae sus círculos", () => {
+  it("cada comunidad activa o en formación trae sus círculos", () => {
     for (const t of listarTribusBilingues().filter((x) => x.estado !== "vacante")) {
       expect(hijosDe(buscarNodo(raiz, t.id)!).length, t.id).toBeGreaterThanOrEqual(2);
     }

@@ -79,7 +79,7 @@ export const DECISIONES: readonly Decision[] = [
     titulo: b("Elegir facilitador/a de Valle Solar", "Choose a facilitator for Valle Solar"),
     donde: b("Valle Solar", "Valle Solar"),
     tribu: "Valle Solar",
-    regla: b("Según el estatuto de la tribu", "As set by the tribe's bylaws"),
+    regla: b("Según el estatuto de la comunidad", "As set by the community's bylaws"),
     base: "estatuto",
     ambito: "tribu",
     holonId: "valle",
@@ -125,7 +125,7 @@ export const DECISIONES_DEL_COMUN: readonly Decision[] = EJEMPLOS_COMUN.map((d) 
 
 /** Regla de ejemplo del consejo: el reglamento real lo define el diseño legal. */
 export const REGLA_CONSEJO = b("Consenso de los representantes (ejemplo)", "Consensus of the representatives (sample)");
-export const DONDE_CONSEJO = b("Consejo de las tribus", "Council of the tribes");
+export const DONDE_CONSEJO = b("Consejo de las comunidades", "Council of the communities");
 
 /** Decisiones de ejemplo nuevas (no vienen del mock-up): de un círculo, de una tribu que pide al común y del consejo. */
 export const DECISIONES_DE_GOBERNANZA: readonly Decision[] = [
@@ -149,7 +149,7 @@ export const DECISIONES_DE_GOBERNANZA: readonly Decision[] = [
     ),
     donde: b("Valle Solar", "Valle Solar"),
     tribu: "Valle Solar",
-    regla: b("Según el estatuto de la tribu", "As set by the tribe's bylaws"),
+    regla: b("Según el estatuto de la comunidad", "As set by the community's bylaws"),
     base: "estatuto",
     ambito: "tribu",
     holonId: "valle",

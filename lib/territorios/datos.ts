@@ -12,7 +12,7 @@ const TERRITORIOS: Territorio[] = [
     nombre: "Lighthouse",
     ubicacion: "BioPueblo Mainqué, margen sur del Río Negro",
     superficie: "~990 ha",
-    descripcion: "~990 ha, doce barrios y las tribus que los están formando.",
+    descripcion: "~990 ha, doce barrios y las comunidades que los están formando.",
     bienesComunes: [
       "Agua: toma, cisterna y riego",
       "Energía: parque solar comunitario",

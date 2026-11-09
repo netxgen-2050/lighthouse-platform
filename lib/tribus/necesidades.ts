@@ -304,8 +304,8 @@ export function validarNecesidades(
     if ((n.habilidad === "otro") !== (n.habilidadOtra !== undefined)) errores.push(`${n.id}: habilidadOtra solo con "otro"`);
     if (n.circuloId) {
       const c = circuloDe(n);
-      if (!c) errores.push(`${n.id}: el círculo ${n.circuloId} no es de la tribu ni transversal con ella`);
-      else if (c.tribus.length !== 1 && !c.tribus.includes(n.tribuId)) errores.push(`${n.id}: el círculo transversal no incluye a la tribu`);
+      if (!c) errores.push(`${n.id}: el círculo ${n.circuloId} no es de la comunidad ni transversal con ella`);
+      else if (c.tribus.length !== 1 && !c.tribus.includes(n.tribuId)) errores.push(`${n.id}: el círculo transversal no incluye a la comunidad`);
     }
     if (n.tope && !entero(n.tope.valor)) errores.push(`${n.id}: máximo por persona inválido`);
     if (n.topeTotal && !entero(n.topeTotal.valor)) errores.push(`${n.id}: máximo total inválido`);

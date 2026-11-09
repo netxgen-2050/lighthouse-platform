@@ -21,7 +21,7 @@ describe("GET /api/sesion (modo de prueba, con la base)", () => {
     vi.unstubAllEnvs();
   });
 
-  it("carga las personas de LH_PERSONAS y devuelve rol, perfil, tribu y personaId", async () => {
+  it("carga las personas de LH_PERSONAS y devuelve rol, perfil, comunidad y personaId", async () => {
     const r = await GET(pedido("ADMIN@prueba.test"));
     expect(r.status).toBe(200);
     const cuerpo = await r.json();

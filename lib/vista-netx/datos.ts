@@ -6,7 +6,7 @@ import type { Tribu } from "@/lib/tribus/tipos";
 
 export const INDICADORES = [
   { numero: "412", etiqueta: "perfiles completos" },
-  { numero: String(listarTribus().filter((t) => t.estado === "activa").length), etiqueta: "tribus activas" },
+  { numero: String(listarTribus().filter((t) => t.estado === "activa").length), etiqueta: "comunidades activas" },
   { numero: "37", etiqueta: "pactos aceptados" },
   { numero: "USD 1,2 M", etiqueta: "en el espejo de aportes" },
   { numero: "640 h", etiqueta: "horas comprometidas por mes" },
@@ -15,7 +15,7 @@ export const INDICADORES = [
 export const EMBUDO: readonly { etiqueta: string; valor: number }[] = [
   { etiqueta: "Visitas al sitio", valor: 3240 },
   { etiqueta: "Perfiles completos", valor: 412 },
-  { etiqueta: "En una tribu", valor: 186 },
+  { etiqueta: "En una comunidad", valor: 186 },
   { etiqueta: "Con pacto propuesto", valor: 58 },
   { etiqueta: "Con pacto aceptado", valor: 37 },
 ];

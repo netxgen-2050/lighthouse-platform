@@ -25,7 +25,7 @@ export const TEXTO_ERROR_PRINCIPIO: Record<ErrorPrincipio, string> = {
   contradice: "contradice un principio de Lighthouse VRN",
   "profundiza-inexistente": "cita un principio de Lighthouse VRN que no existe",
   "texto-vacio": "tiene un texto vacío",
-  "id-repetido": "repite el id de otro principio de la tribu",
+  "id-repetido": "repite el id de otro principio de la comunidad",
 };
 
 const vacio = (t: BilingueConOriginal) => t.es.trim() === "" || (t.en ?? "").trim() === "";

@@ -59,7 +59,7 @@ describe("sellos", () => {
   });
 
   it("no cuenta como abierto lo que ya tiene un Explorador", () => {
-    expect(por(vacia)["miembro-red"].abre.join(" | ")).not.toContain("Mapa, tribus");
+    expect(por(vacia)["miembro-red"].abre.join(" | ")).not.toContain("Mapa, comunidades");
   });
 
   it("membresía de comunidad: pedido es en trámite, miembro es obtenido", () => {

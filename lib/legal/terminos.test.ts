@@ -1,13 +1,9 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
+import { leerMockupV6 } from "../referencia/mockup";
 import { describe, expect, it } from "vitest";
 import { fraseDeTermino } from "./mostrar-termino";
 import { TERMINOS, esBorrador, terminoEn, type ClaveTermino } from "./terminos";
 
-const mock = readFileSync(
-  path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"),
-  "utf8",
-);
+const mock = leerMockupV6();
 
 describe("catálogo legal", () => {
   it("las claves del catálogo", () => {

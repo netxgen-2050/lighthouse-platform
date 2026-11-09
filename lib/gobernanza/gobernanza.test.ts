@@ -23,12 +23,12 @@ describe("círculos de ejemplo", () => {
     expect(c?.decide?.map((x) => x.es)).toEqual(["Convocatorias y contratos de obra", "Seguimiento de entregas"]);
   });
 
-  it("hay doce tribus y cuatro buscan tribu", () => {
+  it("hay doce comunidades y cuatro buscan comunidad", () => {
     expect(listarTribusBilingues()).toHaveLength(12);
     expect(vacantes.map((t) => t.nombre)).toEqual(["Barrio 3", "Barrio 8", "Barrio 9", "Barrio 12"]);
   });
 
-  it("las tribus activas o en formación traen círculos y las vacantes no", () => {
+  it("las comunidades activas o en formación traen círculos y las vacantes no", () => {
     for (const t of listarTribusBilingues()) {
       const n = circulosDe(t.id).length;
       if (t.estado === "vacante") expect(n, t.id).toBe(0);
@@ -55,7 +55,7 @@ describe("círculos transversales", () => {
     expect(nodoDe(c, "es").padreId).toBe(COMUN_ID);
   });
 
-  it("un círculo de una sola tribu cuelga de esa tribu", () => {
+  it("un círculo de una sola comunidad cuelga de esa comunidad", () => {
     const [c] = circulosDe("valle");
     expect(padreDe(c)).toBe("valle");
   });
@@ -65,13 +65,13 @@ describe("círculos transversales", () => {
     expect(JSON.stringify(circulosTransversales())).not.toMatch(/lote|\b0\b/i);
   });
 
-  it("un círculo sin ninguna tribu también cuelga del común", () => {
+  it("un círculo sin ninguna comunidad también cuelga del común", () => {
     expect(padreDe({ id: "x", nombre: { es: "X" }, tribus: [] })).toBe(COMUN_ID);
   });
 });
 
 describe("consejo", () => {
-  it("tiene un lugar por tribu validada y ninguno para las vacantes", () => {
+  it("tiene un lugar por comunidad validada y ninguno para las vacantes", () => {
     const lugares = lugaresDelConsejo();
     expect(lugares).toHaveLength(8);
     for (const v of vacantes) expect(lugares.map((l) => l.tribuId)).not.toContain(v.id);
@@ -134,7 +134,7 @@ describe("registros de solo agregar", () => {
     expect(tribusQueValidan("yo", sincronizarValidaciones(b, "yo", ["taller"], AHORA))).toEqual([]);
   });
 
-  it("sincronizar suma una validación por cada tribu nueva", () => {
+  it("sincronizar suma una validación por cada comunidad nueva", () => {
     const a = sincronizarValidaciones([], "yo", ["taller", "valle"], AHORA);
     expect(tribusQueValidan("yo", a).sort()).toEqual(["taller", "valle"]);
   });

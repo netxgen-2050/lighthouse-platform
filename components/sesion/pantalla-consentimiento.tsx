@@ -165,7 +165,7 @@ export function PantallaConsentimiento() {
           </button>
         </div>
         <p className="text-sm text-muted">
-          Si no aceptás, podés seguir mirando las páginas públicas de Descubrir (el mapa, las tribus) sin cuenta.
+          Si no aceptás, podés seguir mirando las páginas públicas de Descubrir (el mapa, las comunidades) sin cuenta.
         </p>
       </form>
     </div>

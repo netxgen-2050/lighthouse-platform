@@ -63,7 +63,7 @@ describe("/api/personas", () => {
     expect(cambio?.cambiadoAt).toBeInstanceOf(Date);
   });
 
-  it("pasar a persona borra la tribu; el perfil y el acceso también se cambian y se auditan", async () => {
+  it("pasar a persona borra la comunidad; el perfil y el acceso también se cambian y se auditan", async () => {
     await pedir("GET", "super@prueba.test");
     const id = await idDe("ana@prueba.test");
     await pedir("PATCH", "super@prueba.test", { id, rol: "admin-tribu" });
@@ -94,7 +94,7 @@ describe("/api/personas", () => {
     expect((await pedir("PATCH", "super@prueba.test", { id: "00000000-0000-0000-0000-000000000000", rol: "persona" })).status).toBe(404);
   });
 
-  it("rechaza campos desconocidos y una tribu que no corresponde al rol (no la corrige en silencio)", async () => {
+  it("rechaza campos desconocidos y una comunidad que no corresponde al rol (no la corrige en silencio)", async () => {
     await pedir("GET", "super@prueba.test");
     const id = await idDe("ana@prueba.test");
     expect((await pedir("PATCH", "super@prueba.test", { id, nombre: "X" })).status).toBe(400);

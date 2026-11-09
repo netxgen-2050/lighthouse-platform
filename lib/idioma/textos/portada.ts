@@ -6,8 +6,8 @@ const G = GLOSARIO;
 
 const es = {
   sobretitulo: "Corredor regenerativo patagónico",
-  tituloInicio: "Encontrá tu tribu.",
-  tituloFin: "Construí en común.",
+  tituloInicio: "Un lugar para vivir.",
+  tituloFin: "Un bien común para cuidar.",
   bajada:
     "Conocé a las personas con quienes vale la pena invertir, trabajar y quizás vivir. Pónganse de acuerdo antes de comprometer capital, y avancen juntos sobre un territorio real. Explorar es gratis.",
   explorar: "Explorar el Lighthouse",
@@ -18,32 +18,32 @@ const es = {
   caminos: {
     tribus: {
       etiqueta: G.descubrir.es,
-      titulo: "Ver las tribus",
+      titulo: "Ver las comunidades",
     },
     perfil: {
       etiqueta: "Encontrarse",
-      titulo: "Encontrar mi tribu",
+      titulo: "Encontrar mi comunidad",
       descripcion: "Armá tu perfil: quién sos, qué sabés hacer y cómo te gusta decidir.",
     },
     congreso: {
       etiqueta: "Encontrarse en persona",
       titulo: `${G.congreso.es} · Feb 2027`,
-      descripcion: "Visita al Lighthouse, encuentros de tribus y mingas.",
+      descripcion: "Visita al Lighthouse, encuentros de comunidades y mingas.",
     },
   },
   /** Descripción del camino "Explorar": con `cantidad` 0 no hay dato y no se muestra número. */
   barrios: (cantidad: number) =>
     cantidad === 1
-      ? "1 barrio y las tribus que lo están formando."
+      ? "1 barrio y las comunidades que lo están formando."
       : cantidad > 0
-        ? `${cantidad} barrios y las tribus que los están formando.`
-        : "Los barrios y las tribus que los están formando.",
+        ? `${cantidad} barrios y las comunidades que los están formando.`
+        : "Los barrios y las comunidades que los están formando.",
 };
 
 const en: Textos<typeof es> = {
   sobretitulo: "Patagonian regenerative corridor",
-  tituloInicio: "Find your tribe.",
-  tituloFin: "Build in common.",
+  tituloInicio: "A place to live.",
+  tituloFin: "A commons to care for.",
   bajada:
     "Meet the people you'd want to invest, work and maybe live with. Reach agreement before committing capital, and move forward together on a real territory. Exploring is free.",
   explorar: "Explore the Lighthouse",
@@ -54,25 +54,25 @@ const en: Textos<typeof es> = {
   caminos: {
     tribus: {
       etiqueta: G.descubrir.en,
-      titulo: "See the tribes",
+      titulo: "See the communities",
     },
     perfil: {
       etiqueta: "Meet up",
-      titulo: "Find my tribe",
+      titulo: "Find my community",
       descripcion: "Build your profile: who you are, what you know how to do and how you like to decide.",
     },
     congreso: {
       etiqueta: "Meet in person",
       titulo: `${G.congreso.en} · Feb 2027`,
-      descripcion: "A visit to the Lighthouse, tribe meetings and community work parties (mingas).",
+      descripcion: "A visit to the Lighthouse, community meetings and community work parties (mingas).",
     },
   },
   barrios: (cantidad: number) =>
     cantidad === 1
-      ? "1 neighborhood and the tribes forming it."
+      ? "1 neighborhood and the communities forming it."
       : cantidad > 0
-        ? `${cantidad} neighborhoods and the tribes forming them.`
-        : "The neighborhoods and the tribes forming them.",
+        ? `${cantidad} neighborhoods and the communities forming them.`
+        : "The neighborhoods and the communities forming them.",
 };
 
 export const portada = { es, en };

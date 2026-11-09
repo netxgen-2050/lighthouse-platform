@@ -5,7 +5,7 @@ import { esNeutro } from "@/lib/idioma/neutros";
 import type { BilingueConOriginal } from "@/lib/idioma/tipos";
 import { agruparPorEstado, buscarTribu, listarTribus, listarTribusBilingues, rutaProponerComunidad } from "./datos";
 
-describe("datos de tribus", () => {
+describe("datos de comunidades", () => {
   const tribus = listarTribus();
   it("son 12", () => expect(tribus).toHaveLength(12));
   it("ids únicos", () => expect(new Set(tribus.map((t) => t.id)).size).toBe(12));
@@ -69,7 +69,7 @@ describe("datos de tribus", () => {
   });
 });
 
-describe("textos de tribus en inglés", () => {
+describe("textos de comunidades en inglés", () => {
   const CAMPOS_TEXTO = ["foco", "hogares", "subtitulo", "declaracion", "ritual", "formaJuridica", "etapa"] as const;
   const CAMPOS_LISTA = ["tiene", "busca", "areas", "areasAbiertas", "pozo"] as const;
 
@@ -88,13 +88,13 @@ describe("textos de tribus en inglés", () => {
     }
   });
 
-  it("la declaración es la voz de la tribu: original en español", () => {
+  it("la declaración es la voz de la comunidad: original en español", () => {
     const conDeclaracion = listarTribusBilingues().filter((t) => t.declaracion);
     expect(conDeclaracion.length).toBeGreaterThan(0);
     for (const t of conDeclaracion) expect(t.declaracion?.original, t.id).toBe("es");
   });
 
-  it("las áreas abiertas son áreas de la tribu", () => {
+  it("las áreas abiertas son áreas de la comunidad", () => {
     for (const t of listarTribusBilingues()) {
       const areas = (t.areas ?? []).map((a) => a.es);
       for (const a of t.areasAbiertas ?? []) expect(areas, t.id).toContain(a.es);

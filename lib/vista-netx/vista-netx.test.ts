@@ -1,14 +1,13 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
+import { leerMockupV6 } from "../referencia/mockup";
 import { describe, expect, it } from "vitest";
 import { TERMINOS } from "@/lib/legal/terminos";
 import { anchoBarra, anchoMedidor, conversiones, formatear, porcentaje } from "./calculos";
 import { ALERTAS, armarFilas, EMBUDO, TRIBUS_POR_PROYECTO } from "./datos";
 
-const mock = readFileSync(path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"), "utf8");
+const mock = leerMockupV6();
 
 describe("conversión del embudo", () => {
-  it("de 412 perfiles a 186 en una tribu es 45 %", () => {
+  it("de 412 perfiles a 186 en una comunidad es 45 %", () => {
     expect(porcentaje(186, 412)).toBe(45);
   });
   it("calcula cada etapa contra la anterior", () => {
@@ -37,7 +36,7 @@ describe("barras y formato", () => {
 });
 
 describe("datos", () => {
-  it("el embudo y las tribus coinciden con el mock-up", () => {
+  it("el embudo y las comunidades coinciden con el mock-up", () => {
     for (const e of EMBUDO) expect(mock).toContain(`["${e.etiqueta}",${e.valor}]`);
     expect(TRIBUS_POR_PROYECTO).toHaveLength(12);
     for (const t of TRIBUS_POR_PROYECTO) {
@@ -48,13 +47,13 @@ describe("datos", () => {
       expect(mock).toContain(`hum:[${t.roles![0]},${t.roles![1]}]`);
     }
   });
-  it("una tribu sin avance queda con plata y roles en null (sin dato), sin romper", () => {
+  it("una comunidad sin avance queda con plata y roles en null (sin dato), sin romper", () => {
     const nueva = { id: "nueva", nombre: "Nueva", barrio: 13, formaJuridica: "A definir" };
     const filas = armarFilas([nueva], {});
     expect(filas).toEqual([{ nombre: "Nueva", fincas: 13, plata: null, roles: null, ritual: "A definir" }]);
     expect(armarFilas([{ ...nueva, id: "toString" }], {})[0].plata).toBeNull();
   });
-  it("todas las tribus de lib/tribus tienen avance", () => {
+  it("todas las comunidades de lib/tribus tienen avance", () => {
     for (const f of TRIBUS_POR_PROYECTO) {
       expect(f.plata).not.toBeNull();
       expect(f.roles).not.toBeNull();

@@ -26,7 +26,7 @@ const es = {
     titulo: "Tus Semillas por comunidad",
     sinComunidad: "Todavía no sos miembro de ninguna comunidad, así que no tenés Semillas.",
     sinComunidadAyuda:
-      "Para empezar, entrá a una comunidad (el Lighthouse o una tribu) y pedí ser miembro. Después podés proponer tu pacto y tus Semillas aparecen acá, una tarjeta por comunidad.",
+      "Para empezar, entrá a una comunidad (el Lighthouse o una comunidad) y pedí ser miembro. Después podés proponer tu pacto y tus Semillas aparecen acá, una tarjeta por comunidad.",
     verComunidades: "Ver las comunidades",
     listaAria: "Comunidades donde sos miembro",
     tiempo: "Tiempo",
@@ -182,7 +182,7 @@ const en: Textos<typeof es> = {
   panel: {
     titulo: `Your ${G.semillas.en} by community`,
     sinComunidad: `You are not a member of any community yet, so you have no ${G.semillas.en}.`,
-    sinComunidadAyuda: `To start, go into a community (the Lighthouse or a tribe) and ask to become a member. Then you can propose your pact and your ${G.semillas.en} show up here, one card per community.`,
+    sinComunidadAyuda: `To start, go into a community (the Lighthouse or a community) and ask to become a member. Then you can propose your pact and your ${G.semillas.en} show up here, one card per community.`,
     verComunidades: "See the communities",
     listaAria: "Communities where you are a member",
     tiempo: "Time",

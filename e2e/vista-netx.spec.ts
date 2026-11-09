@@ -65,7 +65,7 @@ test.describe("rol persona", () => {
     await page.goto("/netx/comunidad");
     await expect(page.getByRole("heading", { level: 1, name: "Comunidad y embudo" })).toBeVisible();
     const embudo = page.getByRole("region", { name: /Embudo/ });
-    await expect(embudo.getByRole("listitem").filter({ hasText: "En una tribu" })).toContainText("186");
+    await expect(embudo.getByRole("listitem").filter({ hasText: "En una comunidad" })).toContainText("186");
     await expect(page.getByText("Pedidos de contacto")).toHaveCount(0);
     await expect(page.getByText("Postulaciones de comunidades")).toHaveCount(0);
     await expect(page.getByRole("region", { name: "Personas y roles" })).toHaveCount(0);
@@ -101,12 +101,12 @@ test.describe("lo mismo como super admin: las operaciones solo están en /admin"
     await expect(page.getByRole("region", { name: "Personas y roles" })).toHaveCount(0);
   });
 
-  test("Comunidad y embudo: indicadores, embudo, cumplimiento y tribus", async ({ page }) => {
+  test("Comunidad y embudo: indicadores, embudo, cumplimiento y comunidades", async ({ page }) => {
     await page.goto("/netx/comunidad");
     await expect(page.getByText("Todos los datos de esta vista son de ejemplo.")).toBeVisible();
     for (const [n, l] of [
       ["412", "perfiles completos"],
-      ["3", "tribus activas"],
+      ["3", "comunidades activas"],
       ["37", "pactos aceptados"],
       ["USD 1,2 M", "en el espejo de aportes"],
       ["640 h", "horas comprometidas por mes"],
@@ -115,13 +115,13 @@ test.describe("lo mismo como super admin: las operaciones solo están en /admin"
     }
     const embudo = page.getByRole("region", { name: /Embudo/ });
     await expect(embudo.getByRole("listitem")).toHaveCount(5);
-    const enTribu = embudo.getByRole("listitem").filter({ hasText: "En una tribu" });
+    const enTribu = embudo.getByRole("listitem").filter({ hasText: "En una comunidad" });
     await expect(enTribu).toContainText("186");
     await expect(enTribu).toContainText("45% de la etapa anterior");
     await expect(page.getByText("22 / 35 · 63%")).toBeVisible();
     await expect(page.getByRole("button", { name: "Qué significa legalmente: Tierra ribereña" })).toBeVisible();
-    const tabla = page.getByRole("table", { name: /Tribus por proyecto/ });
-    await expect(tabla.getByRole("columnheader")).toHaveText(["Tribu", "Fincas", "Plata", "Roles", "Ritual"]);
+    const tabla = page.getByRole("table", { name: /Comunidades por proyecto/ });
+    await expect(tabla.getByRole("columnheader")).toHaveText(["Comunidad", "Fincas", "Plata", "Roles", "Ritual"]);
     await expect(tabla.getByRole("row")).toHaveCount(13);
     await expect(tabla.getByRole("row", { name: /Valle Solar/ }).getByRole("cell").nth(1)).toHaveText("65%");
   });

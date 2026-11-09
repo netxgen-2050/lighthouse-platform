@@ -57,7 +57,7 @@ describe("estaTraducida", () => {
     }
   });
 
-  test("las tribus, el manifiesto, la postulación y el territorio están traducidos", () => {
+  test("las comunidades, el manifiesto, la postulación y el territorio están traducidos", () => {
     for (const ruta of [
       "/tribus",
       "/tribus/",

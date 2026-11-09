@@ -149,7 +149,7 @@ export function construirHolarquia(idioma: Idioma, registros: readonly Registro[
   const consejo: NodoContenedor = {
     tipo: "consejo",
     id: CONSEJO_ID,
-    nombre: idioma === "en" ? "Council of tribes" : "Consejo de tribus",
+    nombre: idioma === "en" ? "Council of communities" : "Consejo de comunidades",
     proposito: "gobierno",
     decide: DECIDE_CONSEJO.map((x) => tx(x, idioma)),
     ejemplo: true,

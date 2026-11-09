@@ -10,7 +10,7 @@ test("muestra título, aviso de prototipo, cuatro planes y la tabla", async ({ p
   expect(respuesta?.status()).toBe(200);
   await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
   await expect(page.getByText("Prototipo interno · datos de ejemplo")).toBeVisible();
-  for (const plan of ["Explorador", "Miembro de la red", "Pase Fundador", "Plan Tribu"]) {
+  for (const plan of ["Explorador", "Miembro de la red", "Pase Fundador", "Plan Comunidad"]) {
     await expect(page.getByRole("heading", { level: 2, name: new RegExp(`^${plan}`) })).toBeVisible();
   }
   await expect(page.getByRole("heading", { name: "Qué incluye cada plan" })).toBeVisible();
@@ -32,7 +32,7 @@ test("cambiar a anual / mensual", async ({ page }) => {
 test("el período aplica a todos los planes periódicos; el pase no cambia", async ({ page }) => {
   await page.goto("/sumarte");
   const miembro = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Miembro de la red/ }) });
-  const tribu = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Plan Tribu/ }) });
+  const tribu = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Plan Comunidad/ }) });
   const pase = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Pase Fundador/ }) });
   await page.getByRole("button", { name: /^Mensual/ }).click();
   await expect(tribu).toContainText("USD 60/mes");
@@ -59,7 +59,7 @@ test("moneda en pesos: con Anual los dos precios periódicos se convierten y dic
   });
   await page.goto("/sumarte");
   const miembro = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Miembro de la red/ }) });
-  const tribu = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Plan Tribu/ }) });
+  const tribu = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Plan Comunidad/ }) });
   await page.getByRole("button", { name: /^Anual/ }).click();
   await expect(miembro).toContainText("ARS 140.000/año");
   await expect(tribu).toContainText("ARS 840.000/año");
@@ -112,7 +112,7 @@ test("valores de ejemplo: el aviso se lee antes de los planes y los precios sigu
   expect(avisoY).toBeLessThan(planesY);
   await page.getByRole("button", { name: /^Mensual/ }).click();
   await expect(page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Miembro de la red/ }) })).toContainText("USD 10/mes");
-  await expect(page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Plan Tribu/ }) })).toContainText("USD 60/mes");
+  await expect(page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Plan Comunidad/ }) })).toContainText("USD 60/mes");
   for (const nivel of ["Semilla", "Brote", "Raíz"]) {
     await expect(tarjetaPase(page).getByRole("radio", { name: new RegExp(nivel) })).toBeAttached();
   }
@@ -125,7 +125,7 @@ test("a dónde va la plata de cada plan", async ({ page }) => {
   await page.goto("/sumarte");
   await expect(tarjetaPase(page)).toContainText("Va al Fondo Común del bien común, no a NetX.");
   await expect(page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Miembro de la red/ }) })).toContainText("La cobra NetX: es un servicio.");
-  await expect(page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Plan Tribu/ }) })).toContainText("Lo cobra NetX: un servicio que le factura a la tribu.");
+  await expect(page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Plan Comunidad/ }) })).toContainText("Lo cobra NetX: un servicio que le factura a la comunidad.");
 });
 
 test("planes sin Congreso: ni el Explorador ni la comparativa lo ofrecen y la cohorte no tiene fecha", async ({ page }) => {
@@ -134,7 +134,7 @@ test("planes sin Congreso: ni el Explorador ni la comparativa lo ofrecen y la co
   await expect(explorador).not.toContainText(/Congreso|ticket/i);
   const comparativa = page.getByRole("region", { name: "Qué incluye cada plan" });
   await expect(comparativa).not.toContainText(/Congreso|ticket/i);
-  await expect(comparativa.getByRole("row").filter({ hasText: "Mapa, tribus y eventos abiertos" })).toBeVisible();
+  await expect(comparativa.getByRole("row").filter({ hasText: "Mapa, comunidades y eventos abiertos" })).toBeVisible();
   const fila = comparativa.getByRole("row").filter({ hasText: "Influencia en el Fondo Común (próximamente: conviction voting)" });
   await expect(fila.getByText("Incluido", { exact: true })).toHaveCount(1);
   await expect(fila.getByText("No incluido", { exact: true })).toHaveCount(2);
@@ -330,7 +330,7 @@ test("los ⚖ del catálogo están en la pantalla", async ({ page }) => {
   for (const t of [
     "Pase Fundador",
     "Membresía de la red",
-    "Plan Tribu",
+    "Plan Comunidad",
     "Invertir en la empresa",
     "Círculo por invitación",
     "Serie",
@@ -401,13 +401,13 @@ test("teclado: se puede activar el pase solo con teclado", async ({ page }) => {
   await expect(page.getByText("Pase Brote activo (simulado)")).toBeFocused();
 });
 
-test("teclado: elegir la tribu con el Plan Tribu deja el foco en el aviso, que se guarda al recargar", async ({ page }) => {
+test("teclado: elegir la comunidad con el Plan Comunidad deja el foco en el aviso, que se guarda al recargar", async ({ page }) => {
   await page.goto("/sumarte");
-  await page.getByRole("button", { name: "Sumar mi tribu" }).focus();
+  await page.getByRole("button", { name: "Sumar mi comunidad" }).focus();
   await page.keyboard.press("Enter");
   await page.getByRole("radio", { name: /Valle Solar/ }).focus();
   await page.keyboard.press("Space");
-  await page.getByRole("button", { name: "Ser líder de esta tribu" }).focus();
+  await page.getByRole("button", { name: "Ser líder de esta comunidad" }).focus();
   await page.keyboard.press("Enter");
   const aviso = page.getByText("Sos líder de Valle Solar (simulado)");
   await expect(aviso).toBeFocused();

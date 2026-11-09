@@ -48,7 +48,7 @@ test.describe("Fogón en inglés", () => {
     expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
 
-  test("el acta de ejemplo tras votar también marca el nombre de la tribu con translate=no", async ({ page }) => {
+  test("el acta de ejemplo tras votar también marca el nombre de la comunidad con translate=no", async ({ page }) => {
     await page.goto("/fogon?holon=valle");
     const valle = decision(page, "Choose a facilitator for Valle Solar");
     await valle.getByRole("button", { name: "Vote" }).click();
@@ -73,7 +73,7 @@ test.describe("Fogón en inglés", () => {
     await expect(page.getByRole("button", { name: "Take to the council" })).toHaveCount(0);
   });
 
-  test("la líder de Valle Solar la lleva al consejo: anuncio en inglés, origen y chip con la tribu sin traducir", async ({ page }) => {
+  test("la líder de Valle Solar la lleva al consejo: anuncio en inglés, origen y chip con la comunidad sin traducir", async ({ page }) => {
     await page.addInitScript(() => {
       window.localStorage.setItem("lh-sumarte", JSON.stringify({ plan: "miembro", tribu: true, tribuId: "valle" }));
     });
@@ -85,7 +85,7 @@ test.describe("Fogón en inglés", () => {
     await expect(cisterna(page).getByText("Already in the council")).toBeVisible();
     await page.goto("/fogon?holon=consejo");
     const copia = cisterna(page);
-    await expect(copia).toContainText("Comes from Valle Solar (approved in the tribe)");
+    await expect(copia).toContainText("Comes from Valle Solar (approved in the community)");
     await expect(copia.locator('[translate="no"]', { hasText: /^Valle Solar$/ })).toHaveCount(2);
     expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
@@ -133,7 +133,7 @@ test.describe("Compromisos y Mercado en inglés", () => {
     await expect(campo).toHaveAccessibleDescription("Error: Write a description.");
   });
 
-  test("las ofertas de ejemplo van traducidas con su nota; nombres de tribus y barrios no se tocan", async ({ page }) => {
+  test("las ofertas de ejemplo van traducidas con su nota; nombres de comunidades y barrios no se tocan", async ({ page }) => {
     const mercado = page.getByRole("region", { name: "Market" });
     const oferta = mercado.getByRole("listitem").filter({ hasText: "Support setting up family vegetable gardens" });
     await expect(oferta).toBeVisible();

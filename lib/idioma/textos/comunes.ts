@@ -18,9 +18,9 @@ const es = {
   /** Nombre accesible de la marca "ES" de un texto que todavía no tiene traducción. */
   soloEnEspanol: "(solo disponible en español)",
   /** Aviso de que las tribus, las personas y las cifras de una página son de ejemplo. */
-  avisoEjemplo: "Tribus, personas y cifras de ejemplo.",
+  avisoEjemplo: "Comunidades, personas y cifras de ejemplo.",
   /** Estado de una tribu (lo usan Sumarte, tribus y territorio). */
-  estadoTribu: { activa: "Activa", formacion: "En formación", vacante: "Busca tribu" },
+  estadoTribu: { activa: "Activa", formacion: "En formación", vacante: "Busca comunidad" },
   /** "3 de 10" en los medidores. */
   de: "de",
 };
@@ -38,8 +38,8 @@ const en: Textos<typeof es> = {
   notaTipoDeCambio: (tipo: string) => `Sample exchange rate: 1 USD = ${tipo} ARS. This is not a real quote.`,
   traducidoDelOriginal: "Translated from Spanish",
   soloEnEspanol: "(only available in Spanish)",
-  avisoEjemplo: "Sample tribes, people and figures.",
-  estadoTribu: { activa: "Active", formacion: "Forming", vacante: "Looking for a tribe" },
+  avisoEjemplo: "Sample communities, people and figures.",
+  estadoTribu: { activa: "Active", formacion: "Forming", vacante: "Looking for a community" },
   de: "of",
 };
 

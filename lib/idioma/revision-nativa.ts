@@ -39,7 +39,7 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "textos/tribus": {
     estado: "pendiente",
-    que: "Tribus: listado, ficha, botones de membresía, interfaz del manifiesto y postulación de una comunidad (formulario, requisitos y errores)",
+    que: "Comunidades: listado, ficha, botones de membresía, interfaz del manifiesto y postulación de una comunidad (formulario, requisitos y errores)",
   },
   "textos/lotes": {
     estado: "pendiente",
@@ -67,11 +67,11 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "textos/gobernanza": {
     estado: "pendiente",
-    que: "Gobernanza fractal: página Cómo decidimos (estructura, círculos, consejo), marca de validación de la ficha de tribu y Quiénes te validaron en Mi recorrido",
+    que: "Gobernanza fractal: página Cómo decidimos (estructura, círculos, consejo), marca de validación de la ficha de comunidad y Quiénes te validaron en Mi recorrido",
   },
   "lib/gobernanza/datos.ts": {
     estado: "pendiente",
-    que: "Nombres, propósitos y 'Decide sobre' de los círculos de ejemplo del común, de cada tribu y del círculo transversal, con su inglés",
+    que: "Nombres, propósitos y 'Decide sobre' de los círculos de ejemplo del común, de cada comunidad y del círculo transversal, con su inglés",
   },
   "lib/equipos/frentes.ts": {
     estado: "pendiente",
@@ -79,19 +79,19 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "lib/tribus/datos.ts": {
     estado: "pendiente",
-    que: "Datos de ejemplo de las 12 tribus con su inglés (foco, qué tiene, qué busca, ritual, forma jurídica…) y la declaración de cada tribu, traducida del español",
+    que: "Datos de ejemplo de las 12 comunidades con su inglés (foco, qué tiene, qué busca, ritual, forma jurídica…) y la declaración de cada comunidad, traducida del español",
   },
   "lib/tribus/necesidades.ts": {
     estado: "pendiente",
-    que: "Necesidades de ejemplo de las tribus como tareas (título, qué es y habilidad extra) con su inglés",
+    que: "Necesidades de ejemplo de las comunidades como tareas (título, qué es y habilidad extra) con su inglés",
   },
   "lib/manifiestos/datos.ts": {
     estado: "pendiente",
-    que: "Manifiestos de ejemplo (el del Lighthouse y siete de tribus) traducidos del español: voz de la comunidad, a revisar también con quien los escriba de verdad",
+    que: "Manifiestos de ejemplo (el del Lighthouse y siete de comunidades) traducidos del español: voz de la comunidad, a revisar también con quien los escriba de verdad",
   },
   "textos/manifiestoVrn": {
     estado: "pendiente",
-    que: "Manifiesto de Lighthouse VRN: ficha del común, tarjeta de Tribus, lectura completa, principios propios de las tribus, aviso de adhesión y bloque de la Vista NetX",
+    que: "Manifiesto de Lighthouse VRN: ficha del común, tarjeta de Comunidades, lectura completa, principios propios de las comunidades, aviso de adhesión y bloque de la Vista NetX",
   },
   "lib/manifiestos/lighthouse-vrn.ts": {
     estado: "pendiente",
@@ -179,7 +179,7 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "lib/fogon/datos.ts": {
     estado: "pendiente",
-    que: "Decisiones de ejemplo del Fogón (título, lugar y regla; incluye las de círculo, tribu, común y consejo) con su inglés, traducidas del español",
+    que: "Decisiones de ejemplo del Fogón (título, lugar y regla; incluye las de círculo, comunidad, común y consejo) con su inglés, traducidas del español",
   },
   "lib/compromisos/mercado.ts": {
     estado: "pendiente",

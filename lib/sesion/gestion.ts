@@ -45,8 +45,8 @@ function tribuSegunRol(rol: RolSesion, pedida: "valle" | null | undefined): "val
 /** Rechaza (en vez de corregir en silencio) una tribu que no corresponde al rol resultante. */
 function exigirTribuCoherente(rol: RolSesion, pedida: "valle" | null | undefined) {
   if (pedida === undefined) return;
-  if (rol === "admin-tribu" && pedida === null) throw new ErrorDeGestion(400, "Un admin de tribu administra Valle Solar: no puede quedar sin tribu.");
-  if (rol !== "admin-tribu" && pedida !== null) throw new ErrorDeGestion(400, "Solo un admin de tribu administra una tribu.");
+  if (rol === "admin-tribu" && pedida === null) throw new ErrorDeGestion(400, "Un admin de comunidad administra Valle Solar: no puede quedar sin comunidad.");
+  if (rol !== "admin-tribu" && pedida !== null) throw new ErrorDeGestion(400, "Solo un admin de comunidad administra una comunidad.");
 }
 
 const CAMPOS_CAMBIABLES = ["rol", "perfil", "tribuAdmin", "acceso"];
@@ -65,7 +65,7 @@ export function validarCambios(entrada: unknown): Cambios {
     c.perfil = e.perfil as PerfilPrueba;
   }
   if (e.tribuAdmin !== undefined) {
-    if (e.tribuAdmin !== null && e.tribuAdmin !== "valle") throw new ErrorDeGestion(400, "Tribu inválida.");
+    if (e.tribuAdmin !== null && e.tribuAdmin !== "valle") throw new ErrorDeGestion(400, "Comunidad inválida.");
     c.tribuAdmin = e.tribuAdmin;
   }
   if (e.acceso !== undefined) {

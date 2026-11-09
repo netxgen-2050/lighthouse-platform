@@ -45,7 +45,7 @@ describe("validarPrincipiosDeTribu", () => {
   });
 });
 
-describe("principios propios de las tribus de ejemplo", () => {
+describe("principios propios de las comunidades de ejemplo", () => {
   it("todas pasan la validación y ninguna se declara excepción", () => {
     for (const id of idsConManifiesto()) {
       const propios = buscarManifiestoBilingue(id)?.principiosPropios ?? [];

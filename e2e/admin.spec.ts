@@ -84,7 +84,7 @@ test.describe("super admin", () => {
     await expect(panel.getByLabel(`Rol de ${EMAILS.persona}`)).toBeVisible();
   });
 
-  test("Comunidades: tabla con encabezados y un enlace a la ficha de una tribu", async ({ page }) => {
+  test("Comunidades: tabla con encabezados y un enlace a la ficha de una comunidad", async ({ page }) => {
     await page.goto("/admin/comunidades");
     const tabla = page.getByRole("table", { name: "Comunidades del directorio" });
     await expect(tabla.getByRole("columnheader")).toHaveText(["Comunidad", "Barrio", "Estado", "Hogares", "Roles", "Forma jurídica"]);

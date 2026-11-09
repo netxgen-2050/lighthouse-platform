@@ -29,12 +29,12 @@ describe("territorios", () => {
     expect(buscarTerritorio("lighthouse")?.nombre).toBe("Lighthouse");
   });
 
-  it("las tribus del Lighthouse son 12, ordenadas por barrio", () => {
+  it("las comunidades del Lighthouse son 12, ordenadas por barrio", () => {
     const tribus = tribusDeTerritorio("lighthouse");
     expect(tribus.map((t) => t.barrio)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
   });
 
-  it("cada tribu apunta a un territorio existente", () => {
+  it("cada comunidad apunta a un territorio existente", () => {
     const ids = listarTerritorios().map((t) => t.id);
     for (const t of listarTribus()) expect(ids).toContain(t.territorioId);
   });

@@ -17,7 +17,7 @@ import { seSuperponen } from "./geometria";
 import { lotesDelGrupo } from "./loteo";
 
 describe("biopueblo", () => {
-  it("12 barrios, cada uno con su tribu", () => {
+  it("12 barrios, cada uno con su comunidad", () => {
     const barrios = listarBarrios();
     expect(barrios.map((b) => b.barrio)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
     for (const b of barrios) expect(tribuDeBarrio(b)?.barrio).toBe(b.barrio);
@@ -49,7 +49,7 @@ describe("biopueblo", () => {
     for (const b of listarBarrios()) expect(seSuperponen(b.anillo, soluna.anillo), b.id).toBe(false);
   });
 
-  it("conteo de tribus por estado: 3 activas, 5 en formación, 4 vacantes", () => {
+  it("conteo de comunidades por estado: 3 activas, 5 en formación, 4 vacantes", () => {
     expect(contarTribusPorEstado()).toEqual({ activa: 3, formacion: 5, vacante: 4, total: 12 });
   });
 

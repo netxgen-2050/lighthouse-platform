@@ -79,8 +79,8 @@ describe("contenido del evento", () => {
 
   it("detecta el tuteo de la lista cerrada", () => {
     expect(TUTEO.test("Si quieres ir")).toBe(true);
-    expect(TUTEO.test("Llega con tu tribu")).toBe(true);
-    expect(TUTEO.test("Llegá con tu tribu")).toBe(false);
+    expect(TUTEO.test("Llega con tu comunidad")).toBe(true);
+    expect(TUTEO.test("Llegá con tu comunidad")).toBe(false);
     expect(TUTEO.test("Si querés ir, vinculás tu ticket")).toBe(false);
   });
 

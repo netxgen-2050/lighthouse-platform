@@ -38,13 +38,13 @@ const CIRCULOS_POR_TRIBU: Record<string, Def[]> = {
     d(b("Bioconstrucción", "Natural building"), "conocimiento", b("Técnicas de obra", "Building techniques"), b("Capacitaciones", "Training")),
   ],
   agua: [
-    d(b("Toma y cisterna", "Intake and cistern"), "agua", b("Toma de agua", "Water intake"), b("Cisternas de la tribu", "Tribe cisterns")),
+    d(b("Toma y cisterna", "Intake and cistern"), "agua", b("Toma de agua", "Water intake"), b("Cisternas de la comunidad", "Community cisterns")),
     d(b("Tratamiento de aguas", "Water treatment"), "agua", b("Aguas grises", "Greywater"), b("Humedales filtrantes", "Filter wetlands")),
   ],
   valle: [
     d(b("Cuidado de la tierra", "Land care"), "tierra", b("Calendario de siembra", "Sowing calendar"), b("Manejo del suelo", "Soil management")),
     d(b("Arquitectura", "Architecture"), "conocimiento", b("Diseño de viviendas", "Housing design"), b("Normas de obra", "Building rules")),
-    d(b("Comunicación", "Communications"), "comunidad", b("Boletín de la tribu", "Tribe newsletter"), b("Bienvenida a quien llega", "Welcoming newcomers")),
+    d(b("Comunicación", "Communications"), "comunidad", b("Boletín de la comunidad", "Community newsletter"), b("Bienvenida a quien llega", "Welcoming newcomers")),
     d(b("Energía solar", "Solar energy"), "economia", b("Instalaciones solares", "Solar installations"), b("Mantenimiento de bombas", "Pump maintenance")),
   ],
   taller: [
@@ -61,16 +61,16 @@ const CIRCULOS_POR_TRIBU: Record<string, Def[]> = {
 
 /** Propósito y "Decide sobre" de cada área de Avelan Kerum (el nombre sale de las `areas` de la tribu, en el mismo orden). */
 const AREAS_AVELAN: { proposito: Proposito; decide: BilingueConOriginal[] }[] = [
-  { proposito: "tierra", decide: [b("Alimentación de la tribu", "Tribe food")] },
+  { proposito: "tierra", decide: [b("Alimentación de la comunidad", "Community food")] },
   { proposito: "conocimiento", decide: [b("Propuestas educativas", "Educational proposals")] },
   { proposito: "comunidad", decide: [b("Prácticas de sanación", "Healing practices")] },
   { proposito: "economia", decide: [b("Fuentes de energía", "Energy sources")] },
   { proposito: "economia", decide: [b("Trueque y moneda propia", "Barter and own currency")] },
-  { proposito: "gobierno", decide: [b("Acuerdos de la tribu", "Tribe agreements")] },
+  { proposito: "gobierno", decide: [b("Acuerdos de la comunidad", "Community agreements")] },
   { proposito: "comunidad", decide: [b("Cuidado de las personas", "Care of people")] },
   { proposito: "comunidad", decide: [b("Comunicación interna", "Internal communication")] },
   { proposito: "conocimiento", decide: [b("Herramientas digitales", "Digital tools")] },
-  { proposito: "comunidad", decide: [b("Encuentros de la tribu", "Tribe gatherings")] },
+  { proposito: "comunidad", decide: [b("Encuentros de la comunidad", "Community gatherings")] },
 ];
 
 const delComun = (id: string, x: Def, paraTodoElLighthouse: BilingueConOriginal): Circulo => ({
@@ -139,15 +139,15 @@ export const CIRCULOS_DEL_COMUN: Circulo[] = [
 export const DECIDE_COMUN: BilingueConOriginal[] = [
   b("Fondo común", "Common fund"),
   b("Reglas del territorio", "Rules of the territory"),
-  b("Validar tribus", "Validating tribes"),
+  b("Validar comunidades", "Validating communities"),
 ];
 export const DECIDE_CONSEJO: BilingueConOriginal[] = [
   b("Pedidos al fondo común", "Requests to the common fund"),
-  b("Lo que ninguna tribu decide sola", "What no tribe decides alone"),
+  b("Lo que ninguna comunidad decide sola", "What no community decides alone"),
 ];
 export const DECIDE_TRIBU: BilingueConOriginal[] = [
   b("Su barrio", "Its neighborhood"),
-  b("Quién entra a la tribu", "Who joins the tribe"),
+  b("Quién entra a la comunidad", "Who joins the community"),
   b("Su manifiesto", "Its manifesto"),
 ];
 
@@ -158,7 +158,7 @@ const TRANSVERSALES: Circulo[] = [
     nombre: b("Comunicación del común", "Communications of the commons"),
     tribus: ["valle", "taller"],
     proposito: "comunidad",
-    decide: [b("Mensajes entre tribus", "Messages between tribes"), b("Agenda compartida", "Shared calendar")],
+    decide: [b("Mensajes entre comunidades", "Messages between communities"), b("Agenda compartida", "Shared calendar")],
   },
 ];
 

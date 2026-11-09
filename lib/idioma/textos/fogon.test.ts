@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { fogon, nombreDelLugar } from "./fogon";
 
-test("el nombre del lugar junta círculo y tribu, y sin tribu es solo el círculo", () => {
+test("el nombre del lugar junta círculo y comunidad, y sin comunidad es solo el círculo", () => {
   expect(nombreDelLugar("Economía", "Valle Solar")).toBe("Economía · Valle Solar");
   expect(nombreDelLugar("Economía", null)).toBe("Economía");
 });

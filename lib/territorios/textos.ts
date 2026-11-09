@@ -6,12 +6,12 @@ import type { Territorio } from "./tipos";
 
 export const TEXTO_COMUN: { para: BilingueConOriginal; cuida: BilingueConOriginal } = {
   para: {
-    es: "Agua, energía, vivero y los espacios que usan todas las tribus (ejemplo).",
-    en: "Water, energy, a plant nursery and the spaces used by all the tribes (sample).",
+    es: "Agua, energía, vivero y los espacios que usan todas las comunidades (ejemplo).",
+    en: "Water, energy, a plant nursery and the spaces used by all the communities (sample).",
   },
   cuida: {
-    es: "El Consejo de la Fundación, con la participación de todas las tribus (ejemplo).",
-    en: "The Foundation Council, with the participation of all the tribes (sample).",
+    es: "El Consejo de la Fundación, con la participación de todas las comunidades (ejemplo).",
+    en: "The Foundation Council, with the participation of all the communities (sample).",
   },
 };
 
@@ -80,8 +80,8 @@ const TERRITORIOS: Record<string, TextosTerritorio> = {
       en: "BioPueblo Mainqué, south bank of the Río Negro",
     },
     descripcion: {
-      es: "~990 ha, doce barrios y las tribus que los están formando.",
-      en: "~990 ha, twelve neighborhoods and the tribes forming them.",
+      es: "~990 ha, doce barrios y las comunidades que los están formando.",
+      en: "~990 ha, twelve neighborhoods and the communities forming them.",
     },
     bienesComunes: [
       { es: "Agua: toma, cisterna y riego", en: "Water: intake, cistern and irrigation" },

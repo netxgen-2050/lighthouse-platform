@@ -236,7 +236,7 @@ describe("qué confirmación cuenta", () => {
 });
 
 describe("círculos transversales administrados por Hifa", () => {
-  it("la verificación del super admin lleva respaldoDeHifa; la de una tribu no", () => {
+  it("la verificación del super admin lleva respaldoDeHifa; la de una comunidad no", () => {
     const hifa = tarea([], ANA, EVENTOS_TRANSVERSAL, 5);
     expect(hifa.find((x) => x.esquema === "pacto-confirma-horas")!.datos.respaldoDeHifa).toBe("1");
     const comun = tarea([], ANA, SOLAR, 5);

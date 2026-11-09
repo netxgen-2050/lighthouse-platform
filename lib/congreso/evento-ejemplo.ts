@@ -179,16 +179,16 @@ export const EVENTO_EJEMPLO: Evento<Bilingue> = {
       },
       {
         id: "pase-de-tribu",
-        nombre: { es: "Pase de tribu", en: "Tribe pass" },
+        nombre: { es: "Pase de comunidad", en: "Community pass" },
         etiqueta: { es: "Desde 4 personas", en: "From 4 people" },
         descripcion: {
-          es: "El pase completo para quienes llegan juntos desde una tribu de NetX.",
-          en: "The full pass for those arriving together from a NetX tribe.",
+          es: "El pase completo para quienes llegan juntos desde una comunidad de NetX.",
+          en: "The full pass for those arriving together from a NetX community.",
         },
         precio: { monto: 250, moneda: "USD", unidad: { es: "c/u", en: "each" } },
         esEjemplo: true,
         destacado: false,
-        textoBoton: { es: "Comprar pase de tribu", en: "Buy tribe pass" },
+        textoBoton: { es: "Comprar pase de comunidad", en: "Buy community pass" },
       },
       {
         id: "gathering-en-biopueblo",

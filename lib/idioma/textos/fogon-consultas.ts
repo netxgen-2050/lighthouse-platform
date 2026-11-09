@@ -27,7 +27,7 @@ const es = {
     yaRepartiste: "Ya repartiste",
   },
   modo: { prioridades: "Prioridades", presupuesto: "Presupuesto" },
-  ambito: { equipo: "Equipo", tribu: "Tribu", asamblea: "Asamblea" },
+  ambito: { equipo: "Equipo", tribu: "Comunidad", asamblea: "Asamblea" },
   voto: { abierto: "Voto abierto", secreto: "Voto secreto" },
   estado: { abierta: "Abierta", cerrada: "Cerrada" },
   cierre: {
@@ -183,7 +183,7 @@ const en: Textos<typeof es> = {
     yaRepartiste: "You already split your credits",
   },
   modo: { prioridades: "Priorities", presupuesto: "Budget" },
-  ambito: { equipo: "Team", tribu: "Tribe", asamblea: "Assembly" },
+  ambito: { equipo: "Team", tribu: "Community", asamblea: "Assembly" },
   voto: { abierto: "Open vote", secreto: "Secret vote" },
   estado: { abierta: "Open", cerrada: "Closed" },
   cierre: {

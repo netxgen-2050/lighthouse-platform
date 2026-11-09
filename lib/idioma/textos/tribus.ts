@@ -8,18 +8,18 @@ import type { Textos } from "../tipos";
 const G = GLOSARIO;
 
 const es = {
-  titulo: "Tribus del Lighthouse",
+  titulo: "Comunidades del Lighthouse",
   volverInicio: `← ${G.inicio.es}`,
   volverTribus: `← ${G.tribus.es}`,
-  intro: "Doce barrios, una tribu en cada uno. Encontrá la tuya.",
+  intro: "Doce barrios, una comunidad en cada uno. Encontrá la tuya.",
   ejemplo: "(ejemplo)",
   barrio: (n: number) => `Barrio ${n}`,
   barrioFoco: (n: number, foco: string) => `Barrio ${n} · ${foco}`,
-  barrioBuscaTribu: (n: number) => `Barrio ${n} busca tribu`,
+  barrioBuscaTribu: (n: number) => `Barrio ${n} busca comunidad`,
   estado: "Estado:",
   listado: {
     activas: {
-      titulo: "Tribus activas",
+      titulo: "Comunidades activas",
       explicacion: "Ya tienen un compromiso con el Lighthouse y están construyendo su barrio.",
     },
     formacion: {
@@ -41,17 +41,17 @@ const es = {
   ficha: {
     vacante: {
       // Las piezas se arman en la página con un ⚖ entre cada una: "…licencia de uso⚖ y adhiere al proyecto⚖."
-      introAntes: "Un barrio del Lighthouse para una tribu de ",
+      introAntes: "Un barrio del Lighthouse para una comunidad de ",
       introConHogares: ", con ",
-      introLicencia: ". La tribu recibe una licencia de uso",
+      introLicencia: ". La comunidad recibe una licencia de uso",
       introAdhiere: " y adhiere al proyecto",
       introFin: ".",
       necesita: "Lo que el Lighthouse necesita de este barrio",
       plataParaArrancar: "Plata para arrancar",
       roles: "Roles",
-      tieneTribu: "¿Tenés una tribu?",
+      tieneTribu: "¿Tenés una comunidad?",
       proponelaAntes:
-        "Proponela: contá quiénes son, qué van a producir y qué van a aportar al pozo común. La tribu define su propio ritual de entrada",
+        "Proponela: contá quiénes son, qué van a producir y qué van a aportar al pozo común. La comunidad define su propio ritual de entrada",
       proponelaFin: ".",
     },
     enFormacion: (etapa: string | null) =>
@@ -70,13 +70,13 @@ const es = {
     suBarrio: "Su barrio:",
     licenciaDelBarrio: (n: number) => `licencia de uso del Barrio ${n}`,
     redDeConfianza: "Red de confianza",
-    avalan: (n: number) => `${n} ${n === 1 ? "persona de la red avala" : "personas de la red avalan"} a esta tribu`,
+    avalan: (n: number) => `${n} ${n === 1 ? "persona de la red avala" : "personas de la red avalan"} a esta comunidad`,
     cita: "Si confiás en quien confía en ellos, empezás con confianza.",
     verBarrio: "Ver su barrio en el mapa",
     necesidad: {
       tipoDiseno: "De diseño",
       tipoCampo: "De campo",
-      explicacionDiseno: "planificar o diseñar algo para la tribu",
+      explicacionDiseno: "planificar o diseñar algo para la comunidad",
       explicacionCampo: "trabajo con las manos en el lugar",
       abierta: "Abierta",
       tomada: "Tomada",
@@ -87,8 +87,8 @@ const es = {
       paraCuando: "Para cuándo",
       habilidad: "Habilidad",
       circulo: "Círculo",
-      avalada: (nombre: string, circulo: boolean) => `Avalada por ${circulo ? "el círculo" : "la tribu"} ${nombre} (ejemplo)`,
-      esperandoAval: (nombre: string, circulo: boolean) => `Esperando el aval ${circulo ? "del círculo" : "de la tribu"} ${nombre}`,
+      avalada: (nombre: string, circulo: boolean) => `Avalada por ${circulo ? "el círculo" : "la comunidad"} ${nombre} (ejemplo)`,
+      esperandoAval: (nombre: string, circulo: boolean) => `Esperando el aval ${circulo ? "del círculo" : "de la comunidad"} ${nombre}`,
       maximoHoras: (n: number) => `Máximo por persona: ${n} h`,
       maximoSemillas: (n: number) => `Máximo por persona: ${n} Semillas`,
       maximoTotalHoras: (n: number) => `Máximo total de la tarea: ${n} h`,
@@ -105,20 +105,20 @@ const es = {
       borrador: "Tenés un borrador para postularte",
       verBorrador: "Ver tu borrador",
       postulaste: (nombre: string, tipo: "circulo" | "tribu") =>
-        `Te postulaste · esperando ${tipo === "circulo" ? "al círculo" : "a la tribu"} ${nombre}`,
+        `Te postulaste · esperando ${tipo === "circulo" ? "al círculo" : "a la comunidad"} ${nombre}`,
       tomaste: "Pre-admitida: la tomaste",
       noPreadmitida: (holon: string) => `${holon} no pre-admitió tu postulación`,
       tomaron: (n: number) => (n === 1 ? "La tomó 1 persona" : `La tomaron ${n} personas`),
       hechaEsperando: "Hecha · esperando verificación",
       hechaPorVos: "Hecha por vos",
       hicieron: (n: number) => (n === 1 ? "La hizo 1 persona" : `La hicieron ${n} personas`),
-      elHolon: (nombre: string, tipo: "circulo" | "tribu") => (tipo === "circulo" ? `el círculo ${nombre}` : `la tribu ${nombre}`),
+      elHolon: (nombre: string, tipo: "circulo" | "tribu") => (tipo === "circulo" ? `el círculo ${nombre}` : `la comunidad ${nombre}`),
     },
   },
   membresia: {
-    leerManifiesto: (lighthouse: boolean) => (lighthouse ? "Leer el manifiesto de Lighthouse VRN" : "Leer el manifiesto de la tribu"),
+    leerManifiesto: (lighthouse: boolean) => (lighthouse ? "Leer el manifiesto de Lighthouse VRN" : "Leer el manifiesto de la comunidad"),
     adherirManifiesto: (lighthouse: boolean) =>
-      lighthouse ? "Adherir al manifiesto de Lighthouse VRN" : "Adherir al manifiesto de la tribu",
+      lighthouse ? "Adherir al manifiesto de Lighthouse VRN" : "Adherir al manifiesto de la comunidad",
     sumateAdherir: "Sumate para adherir",
     puedesLeer: `Podés leer el manifiesto sin cuenta. Para adherir, sumate como ${G.miembro.es}.`,
     pedidoLlego: (lighthouse: boolean, nombre: string) =>
@@ -128,7 +128,7 @@ const es = {
     yaSosParte: (lighthouse: boolean, nombre: string) => (lighthouse ? "Ya sos parte de Lighthouse VRN." : `Ya sos parte de ${nombre}.`),
     proponerPacto: "Proponer mi pacto",
     salaLighthouse: "Abriríamos la sala del Lighthouse en Telegram. Podés salir cuando quieras.",
-    salaTribu: "Abriríamos la sala de la tribu en Telegram. Podés salir cuando quieras.",
+    salaTribu: "Abriríamos la sala de la comunidad en Telegram. Podés salir cuando quieras.",
     entrarSala: "Entrar a la sala",
     simularAcepta: "Simular: la comunidad me acepta",
     antesDeAdherir: "Para adherir hay que leer el manifiesto hasta el final. Es el primer paso antes de cualquier pacto.",
@@ -152,13 +152,13 @@ const es = {
     volver: "Volver",
   },
   equipos: {
-    pestanas: { aria: "Secciones de Tribus", equipos: "Equipos · ahora", tribus: "Tribus · visión" },
+    pestanas: { aria: "Secciones de Comunidades", equipos: "Equipos · ahora", tribus: "Comunidades · visión" },
     marca: "Ejemplo · a definir",
-    visionAviso: "Ejemplo, a definir: estas tribus son ejemplos para pensar hacia dónde va el Lighthouse, no tribus reales.",
+    visionAviso: "Ejemplo, a definir: estas comunidades son ejemplos para pensar hacia dónde va el Lighthouse, no comunidades reales.",
     explicacion:
       "Hoy el Lighthouse se arma con equipos de trabajo. Un equipo es un círculo del común: un grupo que se ocupa de algo urgente. Cada equipo tiene frentes, que son lo que hace en un lugar del territorio.",
     ejemploAviso: "Ejemplo, a definir: los equipos, los frentes y los puntos del mapa son datos de ejemplo.",
-    tribuAdelante: "Un equipo puede volverse una tribu más adelante; el proceso está por definir.",
+    tribuAdelante: "Un equipo puede volverse una comunidad más adelante; el proceso está por definir.",
     decideSobre: "Decide sobre:",
     frentes: "Frentes de trabajo",
     sinFrentes: "Sin frentes abiertos por ahora",
@@ -189,7 +189,7 @@ const es = {
     titulo: (n: number) => `Proponer una comunidad para el Barrio ${n}`,
     volver: (n: number) => `← Barrio ${n}`,
     // "El barrio busca una tribu de <foco>, con <hogares>. Contanos quiénes son."
-    introAntes: "El barrio busca una tribu de ",
+    introAntes: "El barrio busca una comunidad de ",
     introConHogares: ", con ",
     introFin: ". Contanos quiénes son.",
     requisitos: "Requisitos para postular",
@@ -264,18 +264,18 @@ const es = {
 };
 
 const en: Textos<typeof es> = {
-  titulo: "Lighthouse tribes",
+  titulo: "Lighthouse communities",
   volverInicio: `← ${G.inicio.en}`,
   volverTribus: `← ${G.tribus.en}`,
-  intro: "Twelve neighborhoods, one tribe in each. Find yours.",
+  intro: "Twelve neighborhoods, one community in each. Find yours.",
   ejemplo: "(sample)",
   barrio: (n: number) => `Neighborhood ${n}`,
   barrioFoco: (n: number, foco: string) => `Neighborhood ${n} · ${foco}`,
-  barrioBuscaTribu: (n: number) => `Neighborhood ${n} is looking for a tribe`,
+  barrioBuscaTribu: (n: number) => `Neighborhood ${n} is looking for a community`,
   estado: "Status:",
   listado: {
     activas: {
-      titulo: "Active tribes",
+      titulo: "Active communities",
       explicacion: "They already have a commitment to the Lighthouse and are building their neighborhood.",
     },
     formacion: {
@@ -296,17 +296,17 @@ const en: Textos<typeof es> = {
   },
   ficha: {
     vacante: {
-      introAntes: "A Lighthouse neighborhood for a tribe focused on ",
+      introAntes: "A Lighthouse neighborhood for a community focused on ",
       introConHogares: ", with ",
-      introLicencia: ". The tribe receives a license of use",
+      introLicencia: ". The community receives a license of use",
       introAdhiere: " and adheres to the project",
       introFin: ".",
       necesita: "What the Lighthouse needs from this neighborhood",
       plataParaArrancar: "Starting funds",
       roles: "Roles needed",
-      tieneTribu: "Do you have a tribe?",
+      tieneTribu: "Do you have a community?",
       proponelaAntes:
-        "Propose it: tell us who they are, what they will produce and what they will contribute to the common pool. The tribe defines its own entry ritual",
+        "Propose it: tell us who they are, what they will produce and what they will contribute to the common pool. The community defines its own entry ritual",
       proponelaFin: ".",
     },
     enFormacion: (etapa: string | null) =>
@@ -325,13 +325,13 @@ const en: Textos<typeof es> = {
     suBarrio: "Its neighborhood:",
     licenciaDelBarrio: (n: number) => `license of use for Neighborhood ${n}`,
     redDeConfianza: "Trust network",
-    avalan: (n: number) => `${n} ${n === 1 ? "person from the network vouches" : "people from the network vouch"} for this tribe`,
+    avalan: (n: number) => `${n} ${n === 1 ? "person from the network vouches" : "people from the network vouch"} for this community`,
     cita: "If you trust whoever trusts them, you start with trust.",
     verBarrio: "See its neighborhood on the map",
     necesidad: {
       tipoDiseno: "Design work",
       tipoCampo: "Field work",
-      explicacionDiseno: "planning or designing something for the tribe",
+      explicacionDiseno: "planning or designing something for the community",
       explicacionCampo: "hands-on work on site",
       abierta: "Open",
       tomada: "Taken",
@@ -342,8 +342,8 @@ const en: Textos<typeof es> = {
       paraCuando: "Due",
       habilidad: "Skill",
       circulo: "Circle",
-      avalada: (nombre: string, circulo: boolean) => `Endorsed by the ${nombre} ${circulo ? "circle" : "tribe"} (example)`,
-      esperandoAval: (nombre: string, circulo: boolean) => `Waiting for the endorsement of the ${nombre} ${circulo ? "circle" : "tribe"}`,
+      avalada: (nombre: string, circulo: boolean) => `Endorsed by the ${nombre} ${circulo ? "circle" : "community"} (example)`,
+      esperandoAval: (nombre: string, circulo: boolean) => `Waiting for the endorsement of the ${nombre} ${circulo ? "circle" : "community"}`,
       maximoHoras: (n: number) => `Maximum per person: ${n} h`,
       maximoSemillas: (n: number) => `Maximum per person: ${n} Semillas`,
       maximoTotalHoras: (n: number) => `Maximum for the whole task: ${n} h`,
@@ -360,20 +360,20 @@ const en: Textos<typeof es> = {
       borrador: "You have a draft application",
       verBorrador: "See your draft",
       postulaste: (nombre: string, tipo: "circulo" | "tribu") =>
-        `You applied · waiting for the ${nombre} ${tipo === "circulo" ? "circle" : "tribe"}`,
+        `You applied · waiting for the ${nombre} ${tipo === "circulo" ? "circle" : "community"}`,
       tomaste: "Pre-admitted: you took it",
       noPreadmitida: (holon: string) => `${holon} did not pre-admit your application`,
       tomaron: (n: number) => (n === 1 ? "1 person took it" : `${n} people took it`),
       hechaEsperando: "Done · waiting for verification",
       hechaPorVos: "Done by you",
       hicieron: (n: number) => (n === 1 ? "1 person did it" : `${n} people did it`),
-      elHolon: (nombre: string, tipo: "circulo" | "tribu") => (tipo === "circulo" ? `the ${nombre} circle` : `the ${nombre} tribe`),
+      elHolon: (nombre: string, tipo: "circulo" | "tribu") => (tipo === "circulo" ? `the ${nombre} circle` : `the ${nombre} community`),
     },
   },
   membresia: {
-    leerManifiesto: (lighthouse: boolean) => (lighthouse ? "Read the Lighthouse VRN manifesto" : "Read the tribe's manifesto"),
+    leerManifiesto: (lighthouse: boolean) => (lighthouse ? "Read the Lighthouse VRN manifesto" : "Read the community's manifesto"),
     adherirManifiesto: (lighthouse: boolean) =>
-      lighthouse ? "Sign on to the Lighthouse VRN manifesto" : "Sign on to the tribe's manifesto",
+      lighthouse ? "Sign on to the Lighthouse VRN manifesto" : "Sign on to the community's manifesto",
     sumateAdherir: "Join to sign on",
     puedesLeer: `You can read the manifesto without an account. To sign on, join as a ${G.miembro.en}.`,
     pedidoLlego: (lighthouse: boolean, nombre: string) =>
@@ -383,7 +383,7 @@ const en: Textos<typeof es> = {
     yaSosParte: (lighthouse: boolean, nombre: string) => (lighthouse ? "You are now part of Lighthouse VRN." : `You are now part of ${nombre}.`),
     proponerPacto: "Propose my pact",
     salaLighthouse: "We would open the Lighthouse room on Telegram. You can leave whenever you like.",
-    salaTribu: "We would open the tribe's room on Telegram. You can leave whenever you like.",
+    salaTribu: "We would open the community's room on Telegram. You can leave whenever you like.",
     entrarSala: "Enter the room",
     simularAcepta: "Simulate: the community accepts me",
     antesDeAdherir: "To sign on you have to read the manifesto to the end. It is the first step before any pact.",
@@ -407,13 +407,13 @@ const en: Textos<typeof es> = {
     volver: "Back",
   },
   equipos: {
-    pestanas: { aria: "Tribes sections", equipos: "Teams · now", tribus: "Tribes · vision" },
+    pestanas: { aria: "Communities sections", equipos: "Teams · now", tribus: "Communities · vision" },
     marca: "Sample · to be defined",
-    visionAviso: "Sample, to be defined: these tribes are examples to think about where the Lighthouse is heading, not real tribes.",
+    visionAviso: "Sample, to be defined: these communities are examples to think about where the Lighthouse is heading, not real communities.",
     explicacion:
       "Today the Lighthouse is built with work teams. A team is a circle of the commons: a group that takes care of something urgent. Each team has fronts, which are what it does in a place of the territory.",
     ejemploAviso: "Sample, to be defined: the teams, the fronts and the map points are sample data.",
-    tribuAdelante: "A team may become a tribe later on; the process is yet to be defined.",
+    tribuAdelante: "A team may become a community later on; the process is yet to be defined.",
     decideSobre: "Decides on:",
     frentes: "Work fronts",
     sinFrentes: "No open fronts for now",
@@ -443,7 +443,7 @@ const en: Textos<typeof es> = {
   postulacion: {
     titulo: (n: number) => `Propose a community for Neighborhood ${n}`,
     volver: (n: number) => `← Neighborhood ${n}`,
-    introAntes: "The neighborhood is looking for a tribe focused on ",
+    introAntes: "The neighborhood is looking for a community focused on ",
     introConHogares: ", with ",
     introFin: ". Tell us who you are.",
     requisitos: "Requirements to apply",

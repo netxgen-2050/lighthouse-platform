@@ -42,7 +42,7 @@ export const DATOS_POR_PANTALLA: readonly DatosDePantalla[] = [
     donde: "Hoy, solo en tu navegador. Con la base, en Neon.",
   },
   {
-    pantalla: "Comunidades y tribus",
+    pantalla: "Comunidades y comunidades",
     datos: "A qué comunidades pedís entrar o adherís, y tus postulaciones.",
     donde: "Hoy, solo en tu navegador. Con la base, en Neon.",
   },

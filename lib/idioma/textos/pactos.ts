@@ -182,18 +182,18 @@ const es = {
     aspirante: (tribu: string) =>
       `Sos aspirante a ${tribu}: podés postularte a sus tareas; el pacto de tiempo es para miembros`,
     porOtraTribu: (tribu: string) =>
-      `Estas tareas son de ${tribu}, pero las compartís con otra tribu tuya. El pacto de tiempo es para miembros`,
+      `Estas tareas son de ${tribu}, pero las compartís con otra comunidad tuya. El pacto de tiempo es para miembros`,
     sinRelacion: (tribu: string) => `Para postularte, primero sumate como aspirante a ${tribu}`,
     verManifiesto: "Adherir como aspirante",
     noSePuede: "Esa necesidad no se puede tomar",
     creada: (tarea: string) => `Se creó tu borrador de postulación para ${tarea}.`,
     holon: (nombre: string, tipo: "circulo" | "tribu" | "comun") =>
-      tipo === "circulo" ? `el círculo ${nombre}` : tipo === "tribu" ? `la tribu ${nombre}` : `el ${nombre}`,
+      tipo === "circulo" ? `el círculo ${nombre}` : tipo === "tribu" ? `la comunidad ${nombre}` : `el ${nombre}`,
     responde: (nombre: string, tipo: "circulo" | "tribu" | "comun") =>
-      `Responde: ${tipo === "circulo" ? "círculo " : tipo === "tribu" ? "tribu " : ""}${nombre}`,
+      `Responde: ${tipo === "circulo" ? "círculo " : tipo === "tribu" ? "comunidad " : ""}${nombre}`,
     administraHifa:
       "Este círculo lo administra y facilita Hifa (experimental, simulado). Si Hifa no está disponible, responde el super admin.",
-    verTarea: "Ver la tarea en la ficha de la tribu",
+    verTarea: "Ver la tarea en la ficha de la comunidad",
     estado: "Estado",
     pasoBorrador: "Borrador",
     pasoEnviada: "Enviada",
@@ -307,7 +307,7 @@ const es = {
     sobretitulo: G.pactos.es,
     h1: "Pactos esperando tu respuesta",
     intro:
-      "Acá ves los pactos que las personas enviaron a la tribu que liderás. Podés aceptarlos o no aceptarlos con un motivo. Todo es simulado y queda solo en este navegador.",
+      "Acá ves los pactos que las personas enviaron a la comunidad que liderás. Podés aceptarlos o no aceptarlos con un motivo. Todo es simulado y queda solo en este navegador.",
     cargando: "Cargando los pactos…",
     sinPermiso: "No tenés pactos para responder",
     sinPendientes: "No hay pactos esperando tu respuesta",
@@ -315,7 +315,7 @@ const es = {
     deComunidad: (nombre: string) => `Pactos para ${nombre}`,
     loProponeLider: (tribu: string) => `Lo propone quien lidera ${tribu}`,
     propioPacto:
-      "Es tu propio pacto: lo responde otra persona que lidere la tribu o, si no hay, el super admin",
+      "Es tu propio pacto: lo responde otra persona que lidere la comunidad o, si no hay, el super admin",
     propone: "Propone",
     quienSinDato: "sin dato",
     nuevo: (version: number) => `Pacto nuevo · propone la versión ${version}`,
@@ -534,18 +534,18 @@ const en: Textos<typeof es> = {
     aspirante: (tribu: string) =>
       `You are an applicant to ${tribu}: you can apply for its tasks; the time pact is for members`,
     porOtraTribu: (tribu: string) =>
-      `These tasks belong to ${tribu}, but you share them through another tribe of yours. The time pact is for members`,
+      `These tasks belong to ${tribu}, but you share them through another community of yours. The time pact is for members`,
     sinRelacion: (tribu: string) => `To apply, first join ${tribu} as an applicant`,
     verManifiesto: "Join as an applicant",
     noSePuede: "That need cannot be taken",
     creada: (tarea: string) => `Your draft application for ${tarea} was created.`,
     holon: (nombre: string, tipo: "circulo" | "tribu" | "comun") =>
-      tipo === "circulo" ? `the ${nombre} circle` : tipo === "tribu" ? `the ${nombre} tribe` : `the ${nombre}`,
+      tipo === "circulo" ? `the ${nombre} circle` : tipo === "tribu" ? `the ${nombre} community` : `the ${nombre}`,
     responde: (nombre: string, tipo: "circulo" | "tribu" | "comun") =>
-      `Answered by: ${nombre}${tipo === "circulo" ? " circle" : tipo === "tribu" ? " tribe" : ""}`,
+      `Answered by: ${nombre}${tipo === "circulo" ? " circle" : tipo === "tribu" ? " community" : ""}`,
     administraHifa:
       "This circle is managed and facilitated by Hifa (experimental, simulated). If Hifa is not available, the super admin answers.",
-    verTarea: "See the task on the tribe's page",
+    verTarea: "See the task on the community's page",
     estado: "Status",
     pasoBorrador: "Draft",
     pasoEnviada: "Sent",
@@ -657,7 +657,7 @@ const en: Textos<typeof es> = {
     sobretitulo: G.pactos.en,
     h1: "Pacts waiting for your answer",
     intro:
-      "Here you see the pacts people sent to the tribe you lead. You can accept them or not accept them with a reason. Everything is simulated and stays only in this browser.",
+      "Here you see the pacts people sent to the community you lead. You can accept them or not accept them with a reason. Everything is simulated and stays only in this browser.",
     cargando: "Loading the pacts…",
     sinPermiso: "You have no pacts to answer",
     sinPendientes: "No pacts are waiting for your answer",
@@ -665,7 +665,7 @@ const en: Textos<typeof es> = {
     deComunidad: (nombre: string) => `Pacts for ${nombre}`,
     loProponeLider: (tribu: string) => `Proposed by whoever leads ${tribu}`,
     propioPacto:
-      "This is your own pact: another person who leads the tribe answers it or, if there is none, the super admin",
+      "This is your own pact: another person who leads the community answers it or, if there is none, the super admin",
     propone: "Proposed by",
     quienSinDato: "no data",
     nuevo: (version: number) => `New pact · proposes version ${version}`,

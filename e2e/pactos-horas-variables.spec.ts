@@ -62,7 +62,7 @@ async function declarar(page: Page, mes: string, horas: number, boton = "Declara
   await page.getByRole("button", { name: boton, exact: true }).click();
 }
 
-test("rango, compromiso de Valle Solar, la tribu lo ve, declarar, corregir, confirmar y Semillas pendientes", async ({ page, context, baseURL }) => {
+test("rango, compromiso de Valle Solar, la comunidad lo ve, declarar, corregir, confirmar y Semillas pendientes", async ({ page, context, baseURL }) => {
   await page.clock.setFixedTime(new Date("2026-11-10T15:00:00Z"));
   await page.goto("/pactos?comunidad=valle");
   await page.getByRole("radio", { name: /Horas variables/ }).check();

@@ -53,7 +53,7 @@ describe("MATRIZ (design §2)", () => {
 });
 
 describe("permiso()", () => {
-  it("solo-comun da sí en el común y no en una tribu", () => {
+  it("solo-comun da sí en el común y no en una comunidad", () => {
     expect(permiso("comentar", ["comun"], ctxComun).estado).toBe("si");
     expect(permiso("comentar", ["comun"], ctxTribu).estado).toBe("no");
   });
