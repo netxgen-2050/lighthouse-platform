@@ -2,8 +2,9 @@ import { describe, expect, it } from "vitest";
 import { listarLotes } from "@/lib/territorios/loteo";
 import { ESTADOS_EJEMPLO, estadoDeLote } from "@/lib/territorios/loteo-estados";
 import { deshacer, estadoConCompras, leerCompras, pagar, reservar, type CompraLote, type LoVisto } from "./compra";
+import { VERSION_HIBRIDO } from "./hibrido";
 import { VERSION_MODELO_LOTES } from "./modelo";
-import { usdEn } from "./formato";
+import { porcentajeEn, usdEn } from "./formato";
 
 const ids = listarLotes().map((l) => l.id);
 const disponible = ids.find((id) => estadoDeLote(id) === "disponible")!;
@@ -82,6 +83,31 @@ describe("un boleto muestra lo que se vio", () => {
     expect(vieja.vio).not.toHaveProperty("fuente");
   });
 
+  it("la versión del texto aceptado (hibridoAceptado) sobrevive a guardar, leer y pagar; un registro sin ella sigue leyéndose", () => {
+    const aceptado: LoVisto = { ...vio, hibridoAceptado: VERSION_HIBRIDO };
+    const r = reservar([], disponible, "solo-lote", aceptado, ahora);
+    if (!r.ok) throw new Error("no se pudo reservar");
+    const [leida] = leerCompras(JSON.stringify(r.compras));
+    expect(leida.vio.hibridoAceptado).toBe(VERSION_HIBRIDO);
+    const p = pagar(r.compras, disponible, ahora);
+    if (!p.ok) throw new Error("no pagó");
+    expect(p.compras[0].vio.hibridoAceptado).toBe(VERSION_HIBRIDO);
+    const [vieja] = leerCompras(JSON.stringify(reservada()));
+    expect(vieja.vio).not.toHaveProperty("hibridoAceptado");
+  });
+
+  it("el FARO simulado (faro) sobrevive a guardar y leer; un registro sin él se lee igual y uno de tipo raro se descarta", () => {
+    const r = reservar([], disponible, "solo-lote", { ...vio, faro: 18560 }, ahora);
+    if (!r.ok) throw new Error("no se pudo reservar");
+    expect(leerCompras(JSON.stringify(r.compras))[0].vio.faro).toBe(18560);
+    expect(leerCompras(JSON.stringify(reservada()))[0].vio).not.toHaveProperty("faro");
+    expect(leerCompras(JSON.stringify([{ ...reservada()[0], vio: { ...vio, faro: "mucho" } }]))).toEqual([]);
+  });
+
+  it("una versión aceptada de tipo raro invalida el registro", () => {
+    expect(leerCompras(JSON.stringify([{ ...reservada()[0], vio: { ...vio, hibridoAceptado: 7 } }]))).toEqual([]);
+  });
+
   it("un precio de casa o una fuente de tipo raro invalidan el registro", () => {
     const base = reservada()[0];
     expect(leerCompras(JSON.stringify([{ ...base, vio: { ...vio, precioCasa: "mucho" } }]))).toEqual([]);
@@ -95,6 +121,28 @@ describe("usdEn", () => {
     expect(usdEn(undefined, "en")).toBe("no data");
     expect(usdEn(Number.NaN, "en")).toBe("no data");
     expect(usdEn(1_000, "en")).toBe("USD 1.000");
+  });
+});
+
+describe("porcentajeEn", () => {
+  it("el valor que falta es sin dato, nunca 0 %", () => {
+    expect(porcentajeEn(null, "es")).toBe("sin dato");
+    expect(porcentajeEn(Number.NaN, "en")).toBe("no data");
+  });
+
+  it("redondea sin decimales, pero una fracción chica que no es cero no se lee 0 %", () => {
+    expect(porcentajeEn(2.61, "es")).toBe("261 %");
+    expect(porcentajeEn(0.0025, "es")).toBe("0,3 %");
+    expect(porcentajeEn(0.0004, "es")).toBe("0,04 %");
+    expect(porcentajeEn(0.0004, "en")).toBe("0.04%");
+    expect(porcentajeEn(0.004, "es", 1)).toBe("0,4 %");
+    expect(porcentajeEn(0, "es")).toBe("0 %");
+  });
+
+  it("por debajo de 0,001 % dice menos de, nunca 0,000 %", () => {
+    expect(porcentajeEn(1e-9, "es")).toBe("menos de 0,001 %");
+    expect(porcentajeEn(1e-9, "en")).toBe("less than 0.001%");
+    expect(porcentajeEn(0.00001, "es")).toBe("0,001 %");
   });
 });
 

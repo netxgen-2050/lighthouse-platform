@@ -64,7 +64,7 @@ test("(b) se ven los dos avisos arriba de los controles", async ({ page }) => {
 
 test("(c) con los valores de partida del viñedo se ven los números de referencia", async ({ page }) => {
   await irAlSimulador(page);
-  await expect(fila(page, "Procomún")).toContainText("USD 306.970");
+  await expect(fila(page, "Bien común")).toContainText("USD 306.970");
   const unidades = fila(page, "Unidades de Regeneración");
   await expect(unidades).toContainText("USD 484.500");
   await expect(unidades).toContainText("USD 1.290.250");
@@ -72,7 +72,7 @@ test("(c) con los valores de partida del viñedo se ven los números de referenc
   await expect(unidades).toContainText("9,2 %");
   await expect(fila(page, "NetX")).toContainText("USD 128.250");
   await expect(page.getByText("USD 1.000 en Unidades del viñedo devuelven USD 2.663")).toBeVisible();
-  await expect(page.getByText("Procomún USD 306.970, Unidades TIR 9,2 %, NetX USD 128.250")).toBeVisible();
+  await expect(page.getByText("Bien común USD 306.970, Unidades TIR 9,2 %, NetX USD 128.250")).toBeVisible();
   await expect(page.getByText(/Modelo: NS_Tokenomics\/sim\/series_waterfall_sim\.py · v0\.1/)).toBeVisible();
 });
 
@@ -97,11 +97,11 @@ test("(d) con el teclado, la flecha arriba en la regalía la lleva a 5,5 % y cam
   await expect(anio7()).not.toContainText("16.750");
 });
 
-test("(e) el reparto del excedente a 30 % muestra 70 % procomún · 30 % Unidades", async ({ page }) => {
+test("(e) el reparto del excedente a 30 % muestra 70 % bien común · 30 % Unidades", async ({ page }) => {
   await irAlSimulador(page);
-  await expect(page.getByText("80 % procomún · 20 % Unidades")).toBeVisible();
+  await expect(page.getByText("80 % bien común · 20 % Unidades")).toBeVisible();
   await control(page, /Reparto del excedente/).fill("30");
-  await expect(page.getByText("70 % procomún · 30 % Unidades")).toBeVisible();
+  await expect(page.getByText("70 % bien común · 30 % Unidades")).toBeVisible();
 });
 
 test("(f) Volver a los valores de partida restablece todo y lo anuncia", async ({ page }) => {
@@ -226,7 +226,7 @@ test("(l) recargar vuelve a los valores de partida", async ({ page }) => {
 
 test("el gráfico lista las clases y la tabla equivalente", async ({ page }) => {
   await irAlSimulador(page);
-  await expect(page.getByText(/1 · Procomún · Fundación · \d+ %/)).toBeVisible();
+  await expect(page.getByText(/1 · Bien común · Fundación · \d+ %/)).toBeVisible();
   await page.getByText("Ver como tabla").click();
   await expect(page.getByRole("figure").getByRole("columnheader", { name: "Clase" })).toBeVisible();
 });
@@ -256,12 +256,12 @@ test("(d2) con la regalía en 10 %, lo de la Fundación sube en cada año con ve
   await expect(page.locator("output").filter({ hasText: "10 % de los ingresos brutos" })).toBeVisible();
   const despues = await fundacion();
   despues.forEach((v, i) => expect(v).toBeGreaterThan(antes[i]));
-  await expect(fila(page, "Procomún")).not.toContainText("USD 306.970");
+  await expect(fila(page, "Bien común")).not.toContainText("USD 306.970");
 });
 
 test("(m) una clase sin capital muestra — y la nota lo explica", async ({ page }) => {
   await irAlSimulador(page);
-  await expect(fila(page, "Procomún").getByRole("cell").first()).toHaveText("—");
+  await expect(fila(page, "Bien común").getByRole("cell").first()).toHaveText("—");
   await expect(fila(page, "NetX").getByRole("cell").first()).toHaveText("—");
   await elegirAgrovoltaica(page);
   await control(page, "Parte de Notas Verdes").fill("0");

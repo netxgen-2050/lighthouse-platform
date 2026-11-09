@@ -76,6 +76,8 @@ describe("catálogo legal", () => {
         "notasverdes",
         "obra",
         "ordenanza173",
+        "resguardoshibrido",
+        "consorciofundacion",
         "pactoDosPartes",
         "pactopuntual",
         "pacto",
@@ -88,6 +90,11 @@ describe("catálogo legal", () => {
         "infraestructuralote",
         "partedueno",
         "retribucionraiz",
+        "nftlote",
+        "tokenbiencomun",
+        "ventatramos",
+        "stakingbiencomun",
+        "partenetxgen",
         "presencia",
         "primeraperdida",
         "remoto",
@@ -106,6 +113,18 @@ describe("catálogo legal", () => {
         "unidadesregeneracion",
       ].sort(),
     );
+  });
+  it("los ⚖ de los tokens del bien común son borrador, con inglés, y dicen que es una simulación a verificar", () => {
+    for (const clave of ["nftlote", "tokenbiencomun", "ventatramos", "stakingbiencomun", "partenetxgen", "retribucionraiz"] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+      expect(terminoEn(clave)?.texto.trim(), clave).toBeTruthy();
+      expect(TERMINOS[clave].texto, clave).not.toMatch(/RAIZ|ganancia|retorno|valorizaci/i);
+      expect(terminoEn(clave)?.texto, clave).not.toMatch(/RAIZ|profit|return/i);
+    }
+    for (const clave of ["nftlote", "tokenbiencomun", "ventatramos", "stakingbiencomun", "partenetxgen"] as const) {
+      expect(TERMINOS[clave].texto, clave).toContain("A verificar con abogado");
+      expect(terminoEn(clave)?.texto, clave).toContain("To be verified with a lawyer");
+    }
   });
   it("los términos del simulador de series son borrador", () => {
     for (const clave of [
@@ -232,9 +251,21 @@ describe("catálogo legal", () => {
 
   it("ordenanza173 es borrador y dice que se verifica con abogado", () => {
     expect(esBorrador("ordenanza173")).toBe(true);
-    expect(TERMINOS.ordenanza173.texto).toContain("en el Juego B");
+    expect(TERMINOS.ordenanza173.texto).toContain("es una simulación sobre un supuesto de trabajo");
     expect(TERMINOS.ordenanza173.texto).toContain("A verificar con abogado");
+    expect(TERMINOS.ordenanza173.texto).not.toContain("Juego B");
     expect(TERMINOS.ordenanza173.texto).not.toContain("diseño B");
+    expect(terminoEn("ordenanza173")?.texto).toContain("working assumption");
+  });
+  it("resguardoshibrido y consorciofundacion son borrador, con inglés, y dicen que todavía no existen", () => {
+    for (const clave of ["resguardoshibrido", "consorciofundacion"] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+      expect(terminoEn(clave)?.texto.trim(), clave).toBeTruthy();
+      expect(TERMINOS[clave].texto, clave).toContain("A verificar con abogado");
+      expect(TERMINOS[clave].texto, clave).not.toMatch(/procomún/i);
+    }
+    expect(TERMINOS.resguardoshibrido.texto).toContain("Ninguna existe todavía");
+    expect(TERMINOS.consorciofundacion.texto).toContain("Ninguna de las dos existe todavía");
   });
   it("seriemadre y fundaciontierra son borrador y la Fundación se verifica con abogado", () => {
     expect(esBorrador("seriemadre")).toBe(true);

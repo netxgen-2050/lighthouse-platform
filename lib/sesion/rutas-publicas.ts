@@ -11,6 +11,8 @@ export const RUTAS_PUBLICAS: readonly RegExp[] = [
   // Lotes de Lighthouse VRN: la lista y la ficha se ven sin sesión; reservar y hablar con alguien piden entrar (lote-ficha-y-compra).
   /^\/lotes$/,
   /^\/lotes\/[^/]+$/,
+  // El bien común con tokens: simulación para el equipo, se lee sin sesión (bien-comun-tokens).
+  /^\/bien-comun$/,
   // La vitrina del Congreso se ve sin cuenta; vincular el ticket pide cuenta (decisión de Gus, 14-oct-2026).
   // Y su versión en inglés (`/congreso/en`), la dirección que enlazan los organizadores.
   /^\/congreso(\/en)?$/,

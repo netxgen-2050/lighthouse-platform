@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
 import { EntrarPara } from "@/components/sesion/entrar-para";
 import { useSesion } from "@/components/sesion/contexto";
+import { faroEn } from "@/lib/bien-comun/formato";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { ESTADOS_ADMINISTRATIVOS, accionesDeLote, type IdProyecto } from "@/lib/legal/estado-administrativo";
 import { deshacer, pagar, reservar, type CompraLote, type LoVisto } from "@/lib/lotes/compra";
@@ -41,10 +42,14 @@ export function CompraSimulada({ loteId, numero, proyecto, superficieM2, opcion,
   const idioma = useIdioma();
   const t = useTextos("lotes");
   const tl = useTextos("territorio").loteo;
+  const tb = useTextos("biencomun");
   const { estado: estadoSesion } = useSesion();
   const [pagando, setPagando] = useState(false);
   const [anuncio, setAnuncio] = useState("");
   const [falloGuardar, setFalloGuardar] = useState(false);
+  // La casilla "Leí lo que comparto y lo que me comprometo a pagar": sin marcarla no se puede reservar.
+  const [leido, setLeido] = useState(false);
+  const idAyuda = useId();
   const mover = useRef(false);
   const titulos = {
     inicio: useRef<HTMLHeadingElement>(null),
@@ -74,6 +79,7 @@ export function CompraSimulada({ loteId, numero, proyecto, superficieM2, opcion,
   }
 
   function alReservar() {
+    if (!leido) return;
     const r = reservar(compras, loteId, opcion, vio, new Date());
     if (!r.ok) return;
     aplicar(r.compras, t.compra.anuncioReservado(numero));
@@ -99,6 +105,8 @@ export function CompraSimulada({ loteId, numero, proyecto, superficieM2, opcion,
 
   function alDeshacer() {
     setPagando(false);
+    // Un lote que vuelve a estar disponible pide aceptar de nuevo.
+    setLeido(false);
     aplicar(deshacer(compras, loteId), t.compra.anuncioDeshecho(numero));
     // Si no cambió la fase (por ejemplo, ya estaba en "inicio"), no queda un movimiento de foco pendiente.
     if (!compra) mover.current = false;
@@ -127,9 +135,31 @@ export function CompraSimulada({ loteId, numero, proyecto, superficieM2, opcion,
           {!ofreceReservar || estadoDeLote(loteId) !== "disponible" ? (
             <p className="text-sm">{t.acciones.noSeOfrece}</p>
           ) : estadoSesion === "ok" ? (
-            <button type="button" onClick={alReservar} className={PRINCIPAL}>
-              {t.acciones.reservar}
-            </button>
+            <div className="grid gap-2">
+              <label className="flex items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={leido}
+                  onChange={(e) => setLeido(e.target.checked)}
+                  className="mt-1 size-4 accent-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+                />
+                <span>{t.acciones.aceptar}</span>
+              </label>
+              <button
+                type="button"
+                onClick={alReservar}
+                disabled={!leido}
+                aria-describedby={leido ? undefined : idAyuda}
+                className={`${PRINCIPAL} disabled:cursor-not-allowed disabled:opacity-60`}
+              >
+                {t.acciones.reservar}
+              </button>
+              {!leido && (
+                <p id={idAyuda} className="text-sm text-muted">
+                  {t.acciones.aceptarPrimero}
+                </p>
+              )}
+            </div>
           ) : (
             <EntrarPara texto={t.acciones.entrarReservar} />
           )}
@@ -236,6 +266,10 @@ export function CompraSimulada({ loteId, numero, proyecto, superficieM2, opcion,
                 </>
               )}
             </li>
+            <li>
+              {t.boleto.hibrido} {compra.vio.hibridoAceptado ?? sinDato(idioma)}
+            </li>
+            <li>{tb.boleto(String(numero), faroEn(compra.vio.faro, idioma))}</li>
             <li className="text-muted">
               {t.boleto.modelo}: {compra.vio.fuente ?? sinDato(idioma)} · {compra.vio.version}
             </li>

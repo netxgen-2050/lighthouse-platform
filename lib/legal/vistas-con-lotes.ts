@@ -9,4 +9,5 @@ export const VISTAS_CON_LOTES: readonly { ruta: string; proyectos: readonly IdPr
   // Una ficha de lote, como muestra de todas (`/lotes/[id]`).
   { ruta: "/lotes/lote-1", proyectos: ["lighthouse-norte"] },
   { ruta: "/lotes/lote-535", proyectos: ["lighthouse-primeros"] },
+  // `/lotes/hibrido` no va acá: usa el aviso compacto (una nota), no la región completa.
 ];

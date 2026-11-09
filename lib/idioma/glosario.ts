@@ -15,6 +15,7 @@ export const GLOSARIO = {
   viene: { es: "Lo que viene", en: "Coming next" },
   territorio: { es: "Territorio", en: "Territory" },
   lotes: { es: "Lotes", en: "Lots" },
+  biencomun: { es: "Bien común", en: "Commons" },
   tribus: { es: "Tribus", en: "Tribes" },
   pactos: { es: "Pactos", en: "Pacts" },
   semillas: { es: "Semillas", en: "Semillas", explicada: { en: "Semillas (seeds)" } },

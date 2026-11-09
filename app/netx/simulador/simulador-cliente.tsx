@@ -36,7 +36,7 @@ function Control({
   meta: Metadato;
   valor: number;
   alCambiar: (v: number) => void;
-  /** Reemplaza el texto del valor (por ejemplo el reparto "80 % procomún · 20 % Unidades"). */
+  /** Reemplaza el texto del valor (por ejemplo el reparto "80 % bien común · 20 % Unidades"). */
   textoActual?: string;
 }) {
   const id = useId();
@@ -136,14 +136,14 @@ export function SimuladorCliente() {
   const haySinCapital = clases.some((c) => c.pone === 0);
 
   const porciones: PorcionDonut[] = [
-    { id: "procomun", etiqueta: "Procomún · Fundación", valor: resultado.procomun.recibe },
+    { id: "procomun", etiqueta: "Bien común · Fundación", valor: resultado.procomun.recibe },
     { id: "unidades", etiqueta: "Unidades de Regeneración", valor: resultado.unidades.recibe },
     { id: "primera-perdida", etiqueta: "Primera pérdida", valor: resultado.primeraPerdida.recibe },
     ...(resultado.notas ? [{ id: "notas", etiqueta: "Notas Verdes", valor: resultado.notas.recibe }] : []),
     { id: "netx", etiqueta: "NetX", valor: resultado.netx.recibe },
   ];
 
-  const resumen = `Procomún ${usd(resultado.procomun.recibe)}, Unidades TIR ${pct(resultado.unidades.tir)}, NetX ${usd(resultado.netx.recibe)}`;
+  const resumen = `Bien común ${usd(resultado.procomun.recibe)}, Unidades TIR ${pct(resultado.unidades.tir)}, NetX ${usd(resultado.netx.recibe)}`;
   const horizonte = def.horizonte;
   const idCurva = "curva-escalada";
 
@@ -191,7 +191,7 @@ export function SimuladorCliente() {
             alCambiar={(v) => setDecidido(k, v)}
             textoActual={
               k === "parteExcedenteUnidades"
-                ? `${numeroCorto(100 - parteExcedente)} % procomún · ${numeroCorto(parteExcedente)} % Unidades`
+                ? `${numeroCorto(100 - parteExcedente)} % bien común · ${numeroCorto(parteExcedente)} % Unidades`
                 : undefined
             }
           />
@@ -304,7 +304,7 @@ export function SimuladorCliente() {
               </tr>
             </thead>
             <tbody>
-              <FilaClase nombre="Procomún · Fundación" recibe={resultado.procomun.recibe} />
+              <FilaClase nombre="Bien común · Fundación" recibe={resultado.procomun.recibe} />
               <FilaClase
                 nombre={<>Unidades de Regeneración <TerminoLegal clave="unidadesregeneracion" /></>}
                 clase={resultado.unidades}
@@ -322,7 +322,7 @@ export function SimuladorCliente() {
         </div>
         {hayTirSinDato && <p className="text-sm">{NOTA_TIR}</p>}
         <p className="text-sm text-muted">
-          «—» en Pone, Múltiplo o TIR: no aplica. El procomún y NetX no ponen capital
+          «—» en Pone, Múltiplo o TIR: no aplica. El bien común y NetX no ponen capital
           {haySinCapital ? "; una clase con 0 % del capital tampoco puso nada, así que no hay qué dividir" : ""}.
         </p>
 
@@ -359,7 +359,7 @@ export function SimuladorCliente() {
                   {resultado.notas && <th scope="col" className="py-1 pr-4 text-right">Notas Verdes</th>}
                   <th scope="col" className="py-1 pr-4 text-right">Unidades</th>
                   <th scope="col" className="py-1 pr-4 text-right">Primera pérdida</th>
-                  <th scope="col" className="py-1 pr-4 text-right">Excedente al procomún</th>
+                  <th scope="col" className="py-1 pr-4 text-right">Excedente al bien común</th>
                 </tr>
               </thead>
               <tbody>

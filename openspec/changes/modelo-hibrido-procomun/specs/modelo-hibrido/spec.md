@@ -32,11 +32,17 @@ La página SHALL mostrar el aporte único y las expensas por lote, leídos del m
 - **THEN** lee que el aporte único es el 5 % de lo que se paga, "USD 1.200" por año y "sin dato" sobre si el aporte va incluido
 
 ### Requirement: Por qué la venta sola no alcanza
-La página SHALL mostrar las lecciones calculadas por el módulo: qué paga el aporte único, cuánta expensa haría falta para cubrir el presupuesto común y cuánto falta por año con la expensa de ejemplo. De dónde sale lo que falta MUST decir "sin dato". Ningún número MUST estar escrito en la página.
+La página SHALL mostrar tres escenarios de costo anual del bien común (Arranque, Simulación de octubre y Alternativa alta), cada uno con su fuente y la marca "de ejemplo, no es un presupuesto", y qué parte cubre la venta en cada uno. MUST decir que el costo real no está calculado y falta el dato de Vagner, y que el bien común es el 100 % de la tierra. MUST NOT mostrar una cifra de "lo que falta" como si fuera un dato. Ningún número MUST estar escrito en la página.
 
-#### Scenario: Con los valores de hoy
-- **WHEN** una persona lee esa sección con 25 lotes
-- **THEN** lee "USD 190.125", "USD 63.375", "USD 72.000", "USD 2.880", "USD 1.200" y "USD 42.000"
+#### Scenario: Tres escenarios
+- **WHEN** una persona lee esa sección
+- **THEN** lee "Arranque", "Simulación de octubre" y "Alternativa alta", cada uno con su fuente y "de ejemplo, no es un presupuesto"
+- **AND** lee que el costo real del bien común falta y que hay que pedírselo a Vagner
+- **AND** no lee "USD 42.000" ni "USD 46.800"
+
+#### Scenario: Calculadora
+- **WHEN** la persona cambia con el teclado el costo anual, la expensa o la cantidad de lotes
+- **THEN** cambia qué parte cubre la venta, y una región que se anuncia lo dice
 
 #### Scenario: Cambia el modelo
 - **WHEN** cambia un valor del módulo
@@ -63,3 +69,29 @@ La página SHALL listar los resguardos del modelo: servidumbres antes de la prim
 #### Scenario: Celular
 - **WHEN** la página se ve a 390 × 844 px
 - **THEN** no hay scroll horizontal en la página
+
+### Requirement: Quién cuida lo común
+La página SHALL proponer, como opción para el equipo, que un consorcio de propietarios cuide caminos, agua, aguas grises y negras y basura, y que la Fundación cuide restauración, corredor, producción y escuela, con un ⚖ en borrador. MUST decir que la Fundación todavía no existe.
+
+#### Scenario: Rubro del consorcio
+- **WHEN** una persona lee la fila "Caminos"
+- **THEN** lee "Consorcio de propietarios"
+
+### Requirement: Resumen en la ficha y aceptación al reservar
+La ficha de cada lote SHALL mostrar "Lo que compartís y lo que pagás" en tres líneas, con un enlace a `/lotes/hibrido`. "Reservar (simulado)" MUST quedar deshabilitado hasta marcar "Leí lo que comparto y lo que me comprometo a pagar", y la reserva MUST guardar la versión aceptada, que el boleto muestra.
+
+#### Scenario: Sin marcar
+- **WHEN** una persona con sesión abre un lote disponible y no marca la casilla
+- **THEN** "Reservar (simulado)" está deshabilitado y dice por qué
+
+#### Scenario: Marcando
+- **WHEN** la persona marca la casilla con el teclado y reserva
+- **THEN** el boleto de ejemplo muestra la versión del texto aceptado
+
+### Requirement: Bien común en los textos
+Todo texto visible en español SHALL decir "bien común" donde decía "procomún". Los identificadores del código MUST NOT cambiar.
+
+#### Scenario: Sin procomún
+- **WHEN** se busca "procomún" en los textos visibles de `app/`, `lib/` y `components/`
+- **THEN** no aparece fuera de comentarios
+

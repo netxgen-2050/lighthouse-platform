@@ -37,6 +37,12 @@ export const TERMINOS = {
     titulo: "Tierra ribereña",
     texto:
       "Ley 26.737 de Tierras Rurales: una persona extranjera no puede adquirir dominio de tierra rural ribereña de cuerpos de agua de envergadura. El derecho de superficie es la etapa favorable; la conversión a dominio es la sensible. A confirmar si el predio queda en el ejido urbano.",
+    // Traducción nueva: borrador a revisar antes de cualquier uso real.
+    en: {
+      titulo: "Riverside land",
+      texto:
+        "Law 26,737 on Rural Land: a foreign person cannot acquire ownership of rural land on the banks of large bodies of water. The surface right is the favorable stage; conversion to ownership is the sensitive one. To be confirmed whether the property falls within the urban boundary.",
+    },
   },
   obra: {
     titulo: "Horas de obra",
@@ -125,7 +131,7 @@ export const TERMINOS = {
   pasefundador: {
     titulo: "Pase Fundador",
     texto:
-      "Una membresía no transferible del procomún del Lighthouse. Da influencia en el Fondo Común, acceso y créditos de servicios. No da tierra, lotes, prioridad ni rendimiento, y no se puede revender. La plata del Pase va al Fondo Común, no a NetX. En el modelo híbrido la recibe la Fundación de la tierra, que todavía no existe; quién la recibiría mientras tanto está sin definir. A verificar con abogado.",
+      "Una membresía no transferible del bien común del Lighthouse. Da influencia en el Fondo Común, acceso y créditos de servicios. No da tierra, lotes, prioridad ni rendimiento, y no se puede revender. La plata del Pase va al Fondo Común, no a NetX. En el modelo híbrido la recibe la Fundación de la tierra, que todavía no existe; quién la recibiría mientras tanto está sin definir. A verificar con abogado.",
     borrador: true,
     en: {
       titulo: "Founder Pass",
@@ -136,7 +142,7 @@ export const TERMINOS = {
   guardian: {
     titulo: "El Fondo Común",
     texto:
-      "La plata del procomún para agua, energía, vivero e incubación de tribus. Recibe el pago del Pase directamente. NetX nunca toma un porcentaje: como mucho cobra una tarifa de servicio fija y publicada, si se la contrata para operar la plataforma. En el modelo híbrido lo administra la Fundación de la tierra, que todavía no existe. A verificar con abogado.",
+      "La plata del bien común para agua, energía, vivero e incubación de tribus. Recibe el pago del Pase directamente. NetX nunca toma un porcentaje: como mucho cobra una tarifa de servicio fija y publicada, si se la contrata para operar la plataforma. En el modelo híbrido lo administra la Fundación de la tierra, que todavía no existe. A verificar con abogado.",
     borrador: true,
     en: {
       titulo: "The Common Fund",
@@ -161,7 +167,7 @@ export const TERMINOS = {
     titulo: "No es una inversión",
     frase: "No es una inversión: no da tierra, lotes, prioridad ni rendimiento, y no se revende.",
     texto:
-      "El Pase Fundador es una membresía: pagás para sostener el procomún y recibís acceso, influencia y créditos de servicios. No esperes una ganancia en plata. Invertir es otro camino, separado y con otros documentos.",
+      "El Pase Fundador es una membresía: pagás para sostener el bien común y recibís acceso, influencia y créditos de servicios. No esperes una ganancia en plata. Invertir es otro camino, separado y con otros documentos.",
     borrador: true,
     en: {
       titulo: "It is not an investment",
@@ -313,14 +319,70 @@ export const TERMINOS = {
     },
   },
   retribucionraiz: {
-    titulo: "Retribución en RAIZ: medida provisoria",
+    titulo: "Retribución en tokens del bien común: medida provisoria",
     texto:
-      "Es una idea a conversar con el equipo, no una decisión. RAIZ sería el token del procomún: membresía y voz, con beneficios en especie como estadías, alimentos y cursos. Todavía no existe. No hay cantidad, ni fecha, ni valor, y no se promete ganancia. Prometer tokens futuros a cambio de plata puede ser un contrato de inversión: hay que revisarlo con un abogado antes de decirlo fuera del equipo.",
+      "Es una idea a conversar con el equipo, no una decisión. El token del bien común daría voz sobre lo común; su nombre provisorio es FARO y el nombre está en discusión. Todavía no existe. No hay cantidad, ni fecha, ni valor prometido. Prometer tokens futuros a cambio de plata puede ser un contrato de inversión: hay que revisarlo con un abogado antes de decirlo fuera del equipo.",
     borrador: true,
     en: {
-      titulo: "Compensation in RAIZ: provisional measure",
+      titulo: "Compensation in commons tokens: provisional measure",
       texto:
-        "This is an idea to discuss with the team, not a decision. RAIZ would be the commons token: membership and voice, with benefits in kind such as stays, food and courses. It does not exist yet. There is no amount, date or value, and no profit is promised. Promising future tokens in exchange for money can be an investment contract: a lawyer has to review it before it is said outside the team.",
+        "This is an idea to discuss with the team, not a decision. The commons token would give a voice over what is shared; its provisional name is FARO and the name is under discussion. It does not exist yet. There is no amount, date or promised value. Promising future tokens in exchange for money can be an investment contract: a lawyer has to review it before it is said outside the team.",
+    },
+  },
+  // Textos nuevos (Gus, 8-nov-2026, bien-comun-tokens): borrador a revisar antes de cualquier uso real. Todo es simulación.
+  nftlote: {
+    titulo: "NFT del lote",
+    texto:
+      "Un certificado digital, uno por lote privado, que diría su superficie, su contorno, su estado administrativo y sus deberes hacia el bien común. No reemplaza la escritura: el dominio se registra donde corresponde. En este prototipo es una simulación: no se emite nada. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Lot NFT",
+      texto:
+        "A digital certificate, one per private lot, that would state its area, outline, administrative status and duties toward the commons. It does not replace the deed: ownership is registered where it belongs. In this prototype it is a simulation: nothing is issued. To be verified with a lawyer.",
+    },
+  },
+  tokenbiencomun: {
+    titulo: "Token del bien común",
+    texto:
+      "Una unidad que daría voz en las decisiones sobre lo común. No está respaldada por la tierra ni da una parte de ella. Todavía no existe y es una simulación para conversar: no se emite, no se vende y no se promete ningún valor. El nombre FARO es provisorio. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Commons token",
+      texto:
+        "A unit that would give a voice in decisions about what is shared. It is not backed by the land and gives no share of it. It does not exist yet and is a simulation to talk about: it is not issued, not sold and no value is promised. The name FARO is provisional. To be verified with a lawyer.",
+    },
+  },
+  ventatramos: {
+    titulo: "Venta temprana por tramos",
+    texto:
+      "Un precio por tramos: cada tramo tiene una cantidad y un precio, y el precio sube de un tramo al siguiente. Es una simulación, no es una oferta y no se puede comprar. Un token con precio creciente puede ser un valor negociable ante la CNV. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Early sale in tranches",
+      texto:
+        "A tiered price: each tranche has an amount and a price, and the price goes up from one tranche to the next. It is a simulation, not an offer, and it cannot be bought. A token with a rising price can be a tradable security before the CNV. To be verified with a lawyer.",
+    },
+  },
+  stakingbiencomun: {
+    titulo: "Staking del bien común",
+    texto:
+      "Bloquear tokens por un tiempo, ya sea para sumar voz o para recibir tokens nuevos. Está en estudio: ninguna de las dos opciones está decidida y es una simulación. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Commons staking",
+      texto:
+        "Locking tokens for a period, either to add voice or to receive new tokens. It is under study: neither option is decided and it is a simulation. To be verified with a lawyer.",
+    },
+  },
+  partenetxgen: {
+    titulo: "Parte de NetXGen",
+    texto:
+      "La parte de los tokens para la empresa que diseña y opera la plataforma. Se liberaría de a poco, con un tiempo de espera, para alinear incentivos. Es un valor de ejemplo, no está decidido. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "NetXGen share",
+      texto:
+        "The share of tokens for the company that designs and runs the platform. It would be released gradually, after a waiting period, to align incentives. It is a sample value and nothing is decided. To be verified with a lawyer.",
     },
   },
   // Texto nuevo (R40): borrador a revisar antes de cualquier uso real.
@@ -359,7 +421,7 @@ export const TERMINOS = {
     },
   },
   aporteunico: {
-    titulo: "Aporte único al procomún",
+    titulo: "Aporte único al bien común",
     texto:
       "Una parte del precio que cada lote aportaría una sola vez a lo que es de todos. Es de ejemplo: quién la recibe depende de una entidad que todavía no existe. A verificar con abogado.",
     borrador: true,
@@ -539,7 +601,7 @@ export const TERMINOS = {
   unidadesregeneracion: {
     titulo: "Unidades de Regeneración",
     texto:
-      "Participaciones en una serie del programa de fideicomisos. Cobran después de la Fundación y de las Notas Verdes, y solo hasta un tope por año; lo que sobra va casi todo al procomún. No dan ningún derecho sobre la tierra, que sigue siendo de la Fundación.",
+      "Participaciones en una serie del programa de fideicomisos. Cobran después de la Fundación y de las Notas Verdes, y solo hasta un tope por año; lo que sobra va casi todo al bien común. No dan ningún derecho sobre la tierra, que sigue siendo de la Fundación.",
     borrador: true,
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
@@ -664,7 +726,7 @@ export const TERMINOS = {
   fundaciontierra: {
     titulo: "Fundación de la tierra",
     texto:
-      "En el modelo híbrido, la entidad en la que queda la tierra común del Lighthouse. Todavía no existe: se crea si se acepta el diseño y el dueño actual le pasa esa tierra. Los lotes privados no quedan en ella. Su estatuto le prohibiría vender, hipotecar o dar en garantía la tierra común (cómo hacer que eso valga frente a terceros está a verificar con abogado). Cobra un canon y una regalía de cada serie antes que cualquier inversor y con eso paga el procomún. NetX no puede tomar un porcentaje de su plata.",
+      "En el modelo híbrido, la entidad en la que queda la tierra común del Lighthouse. Todavía no existe: se crea si se acepta el diseño y el dueño actual le pasa esa tierra. Los lotes privados no quedan en ella. Su estatuto le prohibiría vender, hipotecar o dar en garantía la tierra común (cómo hacer que eso valga frente a terceros está a verificar con abogado). Cobra un canon y una regalía de cada serie antes que cualquier inversor y con eso paga el bien común. NetX no puede tomar un porcentaje de su plata.",
     borrador: true,
     en: {
       titulo: "Land Foundation",
@@ -676,8 +738,37 @@ export const TERMINOS = {
   ordenanza173: {
     titulo: "Ordenanza 173/2026 de Mainqué",
     texto:
-      "Hasta que el municipio apruebe un loteo, nadie puede ofrecer, vender, reservar ni dar prioridad sobre esos lotes. Por eso NetX no se financia vendiendo lotes: no puede, y en el Juego B la tierra del Lighthouse queda en una Fundación que no la vende. A verificar con abogado.",
+      "Hasta que el municipio apruebe un loteo, nadie puede ofrecer, vender, reservar ni dar prioridad sobre esos lotes. Por eso, en este prototipo, la venta de lotes de Lighthouse VRN es una simulación sobre un supuesto de trabajo: la aprobación no está otorgada y no tiene fecha. A verificar con abogado.",
     borrador: true,
+    en: {
+      titulo: "Mainqué Ordinance 173/2026",
+      texto:
+        "Until the municipality approves a subdivision, nobody can offer, sell, reserve or give priority over those lots. That is why, in this prototype, selling Lighthouse VRN lots is a simulation on a working assumption: approval has not been granted and has no date. To be verified with a lawyer.",
+    },
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real (modelo-hibrido-procomun, design §5).
+  resguardoshibrido: {
+    titulo: "Resguardos del modelo híbrido",
+    texto:
+      "Son condiciones que el modelo híbrido pide para que vender un lote no le saque derechos a la tierra ni al bien común. Ninguna existe todavía. Una preferencia contractual sobre un inmueble dura poco; la forma duradera depende del régimen del barrio. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Hybrid model safeguards",
+      texto:
+        "These are conditions the hybrid model asks for, so that selling a lot does not take rights away from the land or the commons. None of them exists yet. A contractual preference over real estate is short-lived; the lasting form depends on the community's legal regime. To be verified with a lawyer.",
+    },
+  },
+  // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real (modelo-hibrido-procomun, design §10).
+  consorciofundacion: {
+    titulo: "Consorcio y Fundación",
+    texto:
+      "Propuesta para el equipo, no una decisión: lo que los vecinos usan todos los días (caminos, agua, aguas grises y negras, basura) lo cuidaría un consorcio de propietarios, y lo que cuida el territorio (restauración, corredor, producción, escuela) quedaría en una Fundación al servicio de la comunidad que adhiere al manifiesto. Ninguna de las dos existe todavía. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Owners' association and Foundation",
+      texto:
+        "A proposal for the team, not a decision: what neighbors use every day (roads, water, grey and black water, waste) would be looked after by an owners' association, and what looks after the land (restoration, corridor, production, school) would stay in a Foundation serving the community that adheres to the manifesto. Neither of them exists yet. To be verified with a lawyer.",
+    },
   },
   // Texto nuevo, no viene del mock-up: borrador a revisar antes de cualquier uso real.
   pactoDosPartes: {

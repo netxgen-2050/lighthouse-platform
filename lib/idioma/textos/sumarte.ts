@@ -101,7 +101,7 @@ const es = {
     pagoUnico: " · pago único · de por vida",
     financias: "Sostenés el Fondo Común",
     financiasFin: " y entrás a la cohorte fundadora. La misma influencia en los tres niveles.",
-    plata: "Va al Fondo Común del procomún, no a NetX.",
+    plata: "Va al Fondo Común del bien común, no a NetX.",
     todoMiembro: `Todo lo de ${G.miembro.es}, 1 año incluido`,
     creditos: (monto: string) => `${monto} en créditos comunes y de estadía`,
     creditosFin: ", se liberan en 3 años y vencen a los 12 meses de liberarse",

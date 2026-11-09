@@ -1,11 +1,13 @@
 // Textos del relato de la pestaña "Modelo de financiamiento", como datos tipados con su fuente (NS_Tokenomics doc 28, 29
 // y 30, v0.1, 17-oct-2026). Los montos NO se escriben acá: se piden por referencia (`ref`) y la página los toma de
 // lib/financiamiento y lib/series, para que haya una sola copia de cada número. Sin React ni Next.
-// Tono: el Juego A es "el camino conocido", con datos y sin nombrar a nadie.
+// Tono: descriptivo, con datos y sin nombrar a nadie. El modelo híbrido (lotes privados y bien común) vive en `hibrido.ts`
+// y en `lib/lotes/`; sus montos salen del módulo de lotes.
 
+import { MODELO_LOTES, VERSION_MODELO_LOTES } from "@/lib/lotes/modelo";
 import { ESCENARIOS } from "@/lib/series/escenarios";
 import { SIN_DATO, numero, usd } from "@/lib/series/formato";
-import { COMISION_DESARROLLO, CONSUMO_MENSUAL_USD, META_SAFE_USD } from "./fuentes";
+import { COMISION_DESARROLLO, CONSUMO_MENSUAL_USD, META_SAFE_USD, TICKETS_SAFE } from "./fuentes";
 import { RETORNO_SERIE_MADRE } from "./recorridos";
 
 /** Un tamaño es un texto o una referencia a un número que arma la página. */
@@ -24,7 +26,7 @@ export const ETAPAS: readonly Etapa[] = [
     cuando: "Ahora a marzo 2027",
     items: [
       {
-        que: "SAFE en el holding nuevo (tickets de USD 5.000)",
+        que: `SAFE en el holding nuevo (tickets de ${usd(TICKETS_SAFE.min)} a ${numero(TICKETS_SAFE.max)}${TICKETS_SAFE.abierto ? " o más" : ""})`,
         tamano: { ref: "metaSafe" },
         depende: "Holding nuevo fuera de Próspera; abogado; presentación",
         fuente: F30_2,
@@ -105,8 +107,8 @@ export const BOLSILLOS: readonly Bolsillo[] = [
   },
   {
     id: "fundacion",
-    nombre: "Fundación (procomún)",
-    queEs: "Fondo del Procomún; en el Juego B, la tierra queda en ella (todavía no existe)",
+    nombre: "Fundación (bien común)",
+    queEs: "Fondo del Bien Común; en el modelo híbrido, la tierra común queda en ella (todavía no existe)",
     plata: "Canon, regalía, excedente, subsidios, RAIZ",
     netxPuedeTomar:
       "No: nunca un porcentaje; solo una tarifa fija y pública si la Fundación contrata la plataforma",
@@ -139,7 +141,7 @@ export const CASCADA: readonly PasoCascada[] = [
   { id: "notas", texto: "Notas Verdes: interés y capital" },
   { id: "unidades", texto: "Unidades de Regeneración: hasta el tope" },
   { id: "primeraperdida", texto: "Primera pérdida: hasta su meta" },
-  { id: "excedente", texto: "Excedente sobre los topes: 80 % procomún · 20 % Unidades" },
+  { id: "excedente", texto: "Excedente sobre los topes: 80 % bien común · 20 % Unidades" },
 ].map((p, i) => ({ ...p, orden: i + 1, fuente: "NS_Tokenomics doc 28 §1" }));
 
 export const CASCADA_NOTA =
@@ -258,7 +260,7 @@ export const HALLAZGOS_RIESGO: readonly { id: string; titulo: string; texto: str
   },
   {
     id: "procomun-gana",
-    titulo: "El procomún gana mucho en los buenos futuros",
+    titulo: "El bien común gana mucho en los buenos futuros",
     texto:
       "Su P90 es 8 a 11 veces su P50. Es el propósito, pero hay que afinar el tope y el reparto del excedente con inversores reales.",
     fuente: "NS_Tokenomics doc 29 §5, hallazgo 2",
@@ -272,69 +274,8 @@ export const HALLAZGOS_RIESGO: readonly { id: string; titulo: string; texto: str
   },
 ];
 
-export const LOTES_INTRO =
-  "El Juego A es el camino conocido y lo que hace la mayoría. Acá están sus costos y lo que cambia en el Juego B.";
-
-export type FilaLotes = {
-  id: "ley" | "tierra" | "ingresos" | "aguaTierra" | "comision" | "quienVende";
-  titulo: string;
-  juegoA: string;
-  juegoB: string;
-  aVerificar: boolean;
-  fuente: string;
-};
-
-export const LOTES_VS_MODELO: readonly FilaLotes[] = [
-  {
-    id: "ley",
-    titulo: "Ley",
-    juegoA: "Antes de la aprobación municipal no se puede vender, reservar ni dar prioridad (Ordenanza 173)",
-    juegoB: "Nada a la venta antes de la aprobación; la plata viene de inversores y contratos",
-    aVerificar: true,
-  },
-  {
-    id: "tierra",
-    titulo: "La tierra",
-    juegoA: "Se vende una vez y deja de ser del proyecto",
-    juegoB:
-      "Queda en una Fundación que no la vende; viviendas más adelante en derecho de superficie (entrada + canon anual), después de la aprobación",
-    aVerificar: true,
-  },
-  {
-    id: "ingresos",
-    titulo: "Ingresos",
-    juegoA: "Entran una sola vez, el día de la venta",
-    juegoB:
-      "Siguen entrando: comisiones de desarrollo y de gestión, contratos de diseño y de operación; cada serie paga al procomún antes que a cualquier inversor",
-    aVerificar: false,
-  },
-  {
-    id: "aguaTierra",
-    titulo: "Tierra y agua",
-    juegoA:
-      "Lotes dibujados antes de leer el agua: algunos sin agua, otros se inundan; quien compra lo descubre y el valor cae",
-    juegoB: "Primero el diseño (agua, suelo, accesos), después la venta",
-    aVerificar: false,
-  },
-  {
-    id: "comision",
-    titulo: "Comisión",
-    juegoA: "NetX no puede cobrar comisión por venta de lotes sin matrícula de corredor",
-    juegoB: "NetX cobra por diseño y regeneración, no por venta",
-    aVerificar: true,
-  },
-  {
-    id: "quienVende",
-    titulo: "Quién vende",
-    juegoA: "—",
-    juegoB:
-      "BioPueblo vende sus propios lotes en sus otras ~9.000 ha, ya diseñados y aprobados; una contribución por lote va a la Fundación",
-    aVerificar: false,
-  },
-].map((f) => ({ ...f, fuente: "NS_Tokenomics doc 30 §3" })) as readonly FilaLotes[];
-
-export const PROPUESTA_PARA_QUIEN_VENDE =
-  "La forma más rápida de vender más y mejor es diseñar la tierra primero. NetX y su socio de permacultura hacen ese diseño, cobrado ahora. BioPueblo vende después, con agua, árboles y una comunidad que se puede visitar, y cada venta financia el procomún que hace más fácil la venta siguiente.";
+/** Comisión por vender lotes: sigue valiendo en el modelo híbrido (a verificar con abogado). */
+export const COMISION_POR_VENDER_LOTES = "Comisión por vender lotes: NetX no puede cobrarla sin matrícula de corredor";
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Supuestos a confirmar. Los valores numéricos se arman desde las constantes existentes.
@@ -490,5 +431,23 @@ export const SUPUESTOS_A_CONFIRMAR: readonly SupuestoAConfirmar[] = [
     valor: `${SIN_DATO} (a cotizar)`,
     quien: "biopueblo",
     fuente: `${F30} §2`,
+  },
+  {
+    etiqueta: "Precio de referencia de los lotes",
+    valor: `${usd(MODELO_LOTES.precioLote.min)} a ${numero(MODELO_LOTES.precioLote.max)} según la superficie (de ejemplo)`,
+    quien: "martinFranz",
+    fuente: `${VERSION_MODELO_LOTES.fuente}, ${VERSION_MODELO_LOTES.version}`,
+  },
+  {
+    etiqueta: "Aporte único y expensas de los lotes",
+    valor: `${numero(MODELO_LOTES.aporteUnico * 100)} % de lo que se paga, y ${usd(MODELO_LOTES.expensaAnual)} por lote por año (de ejemplo)`,
+    quien: "vagner",
+    fuente: `${VERSION_MODELO_LOTES.fuente}, ${VERSION_MODELO_LOTES.version}`,
+  },
+  {
+    etiqueta: "Quién vende los lotes y si el aporte se suma al precio",
+    valor: SIN_DATO,
+    quien: "abogado",
+    fuente: `${VERSION_MODELO_LOTES.fuente}, ${VERSION_MODELO_LOTES.version}`,
   },
 ];

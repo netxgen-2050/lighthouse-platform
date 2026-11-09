@@ -83,7 +83,7 @@ const delComun = (id: string, x: Def, paraTodoElLighthouse: BilingueConOriginal)
 });
 
 /**
- * Los círculos del común (de ejemplo): son los equipos transversales de Lighthouse VRN, "una startup para el procomún"
+ * Los círculos del común (de ejemplo): son los equipos transversales de Lighthouse VRN, "una startup para el bien común"
  * (cambio `manifiesto-lighthouse-vrn`, design §6). Su id lleva prefijo `comun-` para no chocar con una tribu.
  * Los ids de los siete primeros no cambian; `comun-contratistas` y `comun-gobernanza` son nuevos.
  */

@@ -3,6 +3,9 @@ import { expect, test, type Page } from "./fixtura";
 import { formatearNumero } from "../lib/idioma/formatos";
 import { ESTADOS_EJEMPLO, estadoDeLote } from "../lib/territorios/loteo-estados";
 import { listarLotes, lotesDelGrupo } from "../lib/territorios/loteo";
+import { VERSION_HIBRIDO } from "../lib/lotes/hibrido";
+import { faroEn } from "../lib/bien-comun/formato";
+import { centroDeAnillo, faroDeLote } from "../lib/bien-comun/modelo";
 import {
   MODELO_LOTES,
   VERSION_MODELO_LOTES,
@@ -27,6 +30,10 @@ const otro = disponibles[1];
 const idVendido = Object.keys(ESTADOS_EJEMPLO).find((id) => ESTADOS_EJEMPLO[id] === "vendido")!;
 const idReservadoEjemplo = Object.keys(ESTADOS_EJEMPLO).find((id) => ESTADOS_EJEMPLO[id] === "reservado")!;
 const m2 = (l: { superficieM2?: number }) => `${formatearNumero(l.superficieM2!, "es")} m²`;
+
+// La casilla que hay que marcar para reservar (modelo-hibrido-procomun, design §11).
+const LEI = "Leí lo que comparto y lo que me comprometo a pagar";
+const marcarLeido = (page: Page) => page.getByLabel(LEI).check();
 
 async function conTeclado(page: Page, boton: ReturnType<Page["getByRole"]>) {
   await boton.focus();
@@ -85,11 +92,11 @@ test("los costos muestran sus valores de ejemplo, la versión del modelo y el ap
   await page.goto(`/lotes/${lote.id}`);
   const costos = page.getByRole("region", { name: "Costos" });
   const solo = precioLote(lote.superficieM2)!;
-  await expect(costos.getByRole("row", { name: /Aporte único al procomún/ })).toContainText(usd(aporteDe(solo)));
+  await expect(costos.getByRole("row", { name: /Aporte único al bien común/ })).toContainText(usd(aporteDe(solo)));
   await expect(costos.getByRole("row", { name: /Expensas por año/ })).toContainText(usd(MODELO_LOTES.expensaAnual));
   await expect(costos.getByRole("row", { name: /Infraestructura por lote/ })).toContainText(usd(MODELO_LOTES.infraestructuraPorLote));
   await expect(costos.getByRole("row", { name: /Parte del dueño/ })).toContainText(usd(parteDelDuenoDe(solo)));
-  for (const fila of ["Aporte único al procomún", "Expensas por año", "Infraestructura por lote", "Parte del dueño"]) {
+  for (const fila of ["Aporte único al bien común", "Expensas por año", "Infraestructura por lote", "Parte del dueño"]) {
     await expect(costos.getByRole("row", { name: new RegExp(fila) })).toContainText("de ejemplo");
   }
   await expect(costos).toContainText(`versión ${VERSION_MODELO_LOTES.version}`);
@@ -120,7 +127,7 @@ test("elegir Casa familiar con el teclado muestra m², referencia, precio, total
   const total = precioPaquete(lote.superficieM2, "familiar")!;
   await expect(casa).toContainText(usd(total));
   await expect(casa).toContainText("estimación de ejemplo");
-  await expect(page.getByRole("row", { name: /Aporte único al procomún/ })).toContainText(usd(aporteDe(total)));
+  await expect(page.getByRole("row", { name: /Aporte único al bien común/ })).toContainText(usd(aporteDe(total)));
 });
 
 test("reservar, simular el pago y ver el boleto solo con teclado; recarga y deshacer", async ({ page }) => {
@@ -129,12 +136,21 @@ test("reservar, simular el pago y ver el boleto solo con teclado; recarga y desh
   page.on("request", (r) => {
     if (r.method() !== "GET" || /compra|reserva|boleto|lh-lotes/i.test(r.url())) pedidos.push(`${r.method()} ${r.url()}`);
   });
+  // Ningún campo de pago ni de identidad: lo único que hay es la casilla de aceptación.
   const camposDeLaCompra = page.locator(
-    "section[aria-labelledby=ficha-acciones] :is(input, textarea, select)",
+    "section[aria-labelledby=ficha-acciones] :is(input:not([type=checkbox]), textarea, select)",
   );
   await expect(camposDeLaCompra).toHaveCount(0);
 
-  await conTeclado(page, page.getByRole("button", { name: "Reservar (simulado)" }));
+  // Sin marcar la casilla, reservar está deshabilitado y dice por qué; la casilla se marca con el teclado.
+  const reservar = page.getByRole("button", { name: "Reservar (simulado)" });
+  await expect(reservar).toBeDisabled();
+  await expect(reservar).toHaveAccessibleDescription(/marcá que leíste lo que compartís y lo que pagás/);
+  await page.getByLabel(LEI).focus();
+  await page.keyboard.press("Space");
+  await expect(page.getByLabel(LEI)).toBeChecked();
+  await expect(reservar).toBeEnabled();
+  await conTeclado(page, reservar);
   await expect(page.getByText("Reserva simulada: no reserva ningún lote de verdad.")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Reserva simulada" })).toBeFocused();
   await expect(page.getByText("Reservado (simulado, por vos)").first()).toBeVisible();
@@ -143,7 +159,7 @@ test("reservar, simular el pago y ver el boleto solo con teclado; recarga y desh
   await expect(page.getByRole("heading", { name: "Pago simulado" })).toBeFocused();
   await expect(page.getByText("No se cobra nada. No ingreses datos de pago: no hay ningún campo.")).toBeVisible();
   await expect(page.getByText(/Precio elegido:/)).toBeVisible();
-  await expect(page.getByText(/Aporte único al procomún: .* · si se suma al precio o va incluido: sin dato/)).toBeVisible();
+  await expect(page.getByText(/Aporte único al bien común: .* · si se suma al precio o va incluido: sin dato/)).toBeVisible();
   await expect(camposDeLaCompra).toHaveCount(0);
 
   await conTeclado(page, page.getByRole("button", { name: "Confirmar el pago simulado" }));
@@ -157,6 +173,10 @@ test("reservar, simular el pago y ver el boleto solo con teclado; recarga y desh
   await expect(boleto).toContainText("supuesto de trabajo, no otorgada");
   await expect(boleto).toContainText(`Lote ${lote.numero}`);
   await expect(boleto).toContainText(VERSION_MODELO_LOTES.version);
+  // El boleto dice que se acuñaría el NFT y se asignarían los FARO del lote (simulado).
+  await expect(boleto).toContainText(`Se acuñaría el NFT del lote ${lote.numero} y se asignarían ${faroEn(faroDeLote(lote.superficieM2), "es")} (simulado)`);
+  // El boleto muestra la versión del texto de lo que se comparte y se paga, que se aceptó al reservar.
+  await expect(boleto).toContainText(`Texto de lo que se comparte y se paga que aceptaste: ${VERSION_HIBRIDO}`);
   // La marca va antes que cualquier dato.
   const textoBoleto = (await boleto.innerText()).replace(/\s+/g, " ");
   expect(textoBoleto.indexOf("SIMULADO")).toBeLessThan(textoBoleto.indexOf("Comprador"));
@@ -179,6 +199,7 @@ test("reservar, simular el pago y ver el boleto solo con teclado; recarga y desh
 test("con Casa familiar el boleto dice la opción, el precio de la casa y el total como estimación", async ({ page }) => {
   await page.goto(`/lotes/${lote.id}`);
   await page.getByRole("radio", { name: /Casa familiar/ }).check();
+  await marcarLeido(page);
   await page.getByRole("button", { name: "Reservar (simulado)" }).click();
   await page.getByRole("button", { name: "Simular el pago" }).click();
   await page.getByRole("button", { name: "Confirmar el pago simulado" }).click();
@@ -191,6 +212,7 @@ test("con Casa familiar el boleto dice la opción, el precio de la casa y el tot
 
 test("lo reservado entra en la descarga de Mis datos y desaparece con Borrar todo", async ({ page }) => {
   await page.goto(`/lotes/${lote.id}`);
+  await marcarLeido(page);
   await page.getByRole("button", { name: "Reservar (simulado)" }).click();
   await expect(page.getByText("Reservado (simulado, por vos)").first()).toBeVisible();
 
@@ -227,7 +249,7 @@ test("el boleto y el pago simulado muestran lo guardado al reservar, aunque el m
   await page.goto(`/lotes/${lote.id}`);
   await conTeclado(page, page.getByRole("button", { name: "Simular el pago" }));
   await expect(page.getByText(`Precio elegido: ${usd(visto.precio)}`)).toBeVisible();
-  await expect(page.getByText(new RegExp(`Aporte único al procomún: ${usd(visto.aporte)}`))).toBeVisible();
+  await expect(page.getByText(new RegExp(`Aporte único al bien común: ${usd(visto.aporte)}`))).toBeVisible();
   // Volver mueve el foco al título del paso al que se vuelve.
   await conTeclado(page, page.getByRole("button", { name: "Volver" }));
   await expect(page.getByRole("heading", { name: "Reserva simulada" })).toBeFocused();
@@ -240,6 +262,8 @@ test("el boleto y el pago simulado muestran lo guardado al reservar, aunque el m
   await expect(boleto).toContainText(usd(visto.precioCasa));
   await expect(boleto).toContainText(visto.fuente);
   await expect(boleto).toContainText(visto.version);
+  // Un registro viejo, sin la versión aceptada, se sigue leyendo: dice sin dato.
+  await expect(boleto).toContainText("Texto de lo que se comparte y se paga que aceptaste: sin dato");
   await expect(boleto).not.toContainText(usd(precioCasa("familiar")));
   await expect(boleto).not.toContainText(VERSION_MODELO_LOTES.fuente);
 });
@@ -267,6 +291,7 @@ test("lo reservado se ve en el mapa, en la lista y en la ficha, y el panel del m
   const ficha = page.getByRole("complementary", { name: "Ficha del territorio" });
   await ficha.getByRole("link", { name: "Ver la ficha" }).click();
   await expect(page).toHaveURL(new RegExp(`/lotes/${lote.id}$`));
+  await marcarLeido(page);
   await page.getByRole("button", { name: "Reservar (simulado)" }).click();
   await expect(page.getByText("Reservado (simulado, por vos)").first()).toBeVisible();
 
@@ -307,6 +332,7 @@ test.describe("en inglés", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(`Lot ${lote.numero}`);
     await expect(page.getByText("Who sells: no data")).toBeVisible();
     await expect(page.getByRole("region", { name: "Costs" })).toContainText("sample");
+    await page.getByLabel("I read what I share and what I commit to pay").check();
     await page.getByRole("button", { name: "Reserve (simulated)" }).click();
     await page.getByRole("button", { name: "Simulate the payment" }).click();
     await page.getByRole("button", { name: "Confirm the simulated payment" }).click();
@@ -323,6 +349,7 @@ test("celular 390 px: sin scroll horizontal en la lista, la ficha, los costos y 
   await page.goto(`/lotes/${lote.id}`);
   await page.getByRole("radio", { name: /Casa amplia/ }).check();
   expect(await sobra()).toBeLessThanOrEqual(0);
+  await marcarLeido(page);
   await page.getByRole("button", { name: "Reservar (simulado)" }).click();
   await page.getByRole("button", { name: "Simular el pago" }).click();
   await page.getByRole("button", { name: "Confirmar el pago simulado" }).click();
@@ -355,6 +382,7 @@ test.describe("los primeros 4 lotes", () => {
     await expect(page.getByText(/fuera del polígono del 7A/)).toBeVisible();
     await expect(page.getByRole("region", { name: "Lote 535" })).toContainText("Quién vende: sin dato");
     await expect(page.getByText(/supuesto de trabajo/)).toHaveCount(0);
+    await marcarLeido(page);
     await conTeclado(page, page.getByRole("button", { name: "Reservar (simulado)" }));
     await conTeclado(page, page.getByRole("button", { name: "Simular el pago" }));
     await conTeclado(page, page.getByRole("button", { name: "Confirmar el pago simulado" }));
@@ -377,13 +405,30 @@ test.describe("ficha: imagen, explicaciones y medida provisoria", () => {
     await expect(page.getByText(/Imagen: Esri, Maxar, Earthstar Geographics/)).toBeVisible();
   });
 
-  test("infraestructura y parte del dueño tienen su ⚖, y la retribución en RAIZ dice que es provisoria", async ({ page }) => {
+  test("infraestructura y parte del dueño tienen su ⚖, y la retribución en tokens del bien común dice que es provisoria", async ({ page }) => {
     await page.goto(`/lotes/${lote.id}`);
-    for (const nombre of ["Infraestructura por lote", "Parte del dueño", "Retribución en RAIZ: medida provisoria"]) {
+    for (const nombre of ["Infraestructura por lote", "Parte del dueño", "Retribución en tokens del bien común: medida provisoria"]) {
       await expect(page.getByRole("button", { name: `Qué significa legalmente: ${nombre}` })).toBeVisible();
     }
+    await expect(page.getByText(/nombre provisorio: FARO/)).toBeVisible();
+    await expect(page.getByText(/RAIZ/)).toHaveCount(0);
     await expect(page.getByText(/Medida provisoria, a hablar con el equipo:/)).toBeVisible();
     await expect(page.getByText(/no es una promesa/)).toBeVisible();
+  });
+
+  test("la ficha muestra el NFT del lote (simulado) con su metadata y los FARO que traería", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    const nft = page.getByRole("region", { name: /NFT del lote \(simulado\)/ });
+    await expect(nft).toBeVisible();
+    const c = centroDeAnillo(lote.anillo)!;
+    await expect(nft).toContainText(`${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}`);
+    await expect(nft).toContainText("reglamento, aporte único, expensas");
+    await expect(nft).toContainText("Red");
+    await expect(nft).toContainText("sin definir");
+    await expect(nft).toContainText("FARO que trae");
+    await expect(nft).toContainText(faroEn(faroDeLote(lote.superficieM2), "es"));
+    await expect(page.getByRole("button", { name: "Qué significa legalmente: NFT del lote" })).toBeVisible();
+    await expect(nft.getByRole("link", { name: "Ver el bien común" })).toHaveAttribute("href", "/bien-comun");
   });
 
   test("el panel del mapa muestra el precio del lote elegido", async ({ page }) => {

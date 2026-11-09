@@ -94,7 +94,7 @@ describe("construirHolarquia", () => {
 
   it("el camino hasta Cuidado de la tierra es común › Valle Solar › Cuidado de la tierra", () => {
     expect(caminoHasta(raiz, "valle-0").map((n) => ("nombre" in n ? n.nombre : n.id))).toEqual([
-      "Lighthouse VRN Procomún",
+      "Lighthouse VRN Bien común",
       "Valle Solar",
       "Cuidado de la tierra",
     ]);

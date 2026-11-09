@@ -1,5 +1,12 @@
 # Proposal
 
+> **Actualización del 8-nov-2026 (decisiones de Gus en el chat).** Manda sobre lo que se contradiga más abajo:
+> 1. **"Bien común" en vez de "procomún"** en todo texto visible, en español (en inglés sigue "commons"). Los nombres en el código no cambian.
+> 2. **Quién es "todos": opción C.** Un consorcio de propietarios para calles y servicios, y la Fundación (que todavía no existe) para restauración y producción, al servicio de la meta-comunidad que adhiere al manifiesto. Es una propuesta para el equipo, a verificar con abogado.
+> 3. **No hay "faltante" de USD 42.000 ni de USD 46.800.** El costo anual del bien común no está calculado: falta el dato de Vagner, y tiene que ser para el 100 % de la tierra, no solo para el sector de lotes. En su lugar, **tres escenarios explicados**, con la fuente de cada número, y una calculadora para cambiar el costo, la expensa y la cantidad de lotes.
+> 4. **La página y un resumen en la ficha (opción C):** la ficha muestra en tres líneas lo que se comparte y lo que se paga, y **reservar pide aceptarlo**.
+> 5. Los tokens y los NFT van en otro cambio, apilado sobre este: `bien-comun-tokens`.
+
 ## Why
 
 Quien mira un lote tiene que entender qué compra y qué sigue siendo de todos. Además, la Vista NetX todavía dice lo contrario de la fase 1 (ADR-030): su título pregunta cómo financiarse "sin vender lotes", y compara un "Juego A" de vender lotes con un "Juego B". Este cambio cuenta el modelo híbrido en un solo relato.

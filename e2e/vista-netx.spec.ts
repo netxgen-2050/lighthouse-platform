@@ -21,7 +21,7 @@ test.describe("estructura", () => {
   test("h1 nuevo, un solo h1 y un solo main; el título viejo no está en ninguna pestaña", async ({ page }) => {
     const respuesta = await page.goto("/netx");
     expect(respuesta?.status()).toBe(200);
-    await expect(page.getByRole("heading", { level: 1, name: "¿Cómo se financia NetX sin vender lotes?" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "¿Cómo se financia NetX?" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
     await expect(page.locator("main")).toHaveCount(1);
     await expect(page.getByText("Prototipo interno · datos de ejemplo")).toBeVisible();
@@ -55,7 +55,7 @@ test.describe("rol persona", () => {
 
   test("ve las mismas pestañas y el enlace NetX de la barra superior", async ({ page }) => {
     await page.goto("/netx");
-    await expect(page.getByRole("heading", { level: 1, name: "¿Cómo se financia NetX sin vender lotes?" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "¿Cómo se financia NetX?" })).toBeVisible();
     await expect(page.getByRole("banner").getByRole("link", { name: /NetX/ })).toHaveAttribute("href", "/netx");
     await expect(navegacion(page).getByRole("link")).toHaveText(PESTANAS);
     await expect(navegacion(page).getByRole("link", { name: "Resumen" })).toHaveAttribute("aria-current", "page");
@@ -128,15 +128,24 @@ test.describe("lo mismo como super admin: las operaciones solo están en /admin"
 });
 
 test.describe("Resumen", () => {
-  test("Juego A y Juego B, con respeto y sin acusar", async ({ page }) => {
+  test("respuesta corta: NetX cobra por su trabajo, la venta de lotes es simulada y la Fundación todavía no existe", async ({ page }) => {
     await page.goto("/netx");
     const main = page.locator("main");
-    await expect(main.getByRole("heading", { name: "Juego A · el camino conocido" })).toBeVisible();
-    await expect(main).toContainText(/la tierra se va/i);
-    await expect(main.getByRole("heading", { name: "Juego B · el procomún" })).toBeVisible();
+    await expect(main).toContainText("cobra por su trabajo");
+    await expect(main).toContainText("venta de lotes privados en Lighthouse VRN, simulada en este prototipo");
+    await expect(main).toContainText("una Fundación que todavía no existe");
+  });
+
+  test("el modelo híbrido: un bloque, sin Juego A, Juego B ni ¿Y vender lotes?, y un enlace a la página", async ({ page }) => {
+    await page.goto("/netx");
+    const main = page.locator("main");
+    await expect(main.getByRole("heading", { level: 2, name: "El modelo híbrido" })).toBeVisible();
     await expect(main).toContainText("lo que es de todos y se cuida entre todos");
-    await expect(main).toContainText(/la tierra queda/i);
-    await expect(main).toContainText("en el Juego B, la tierra queda en una Fundación");
+    await expect(main.getByRole("link", { name: "Ver qué es tuyo y qué es de todos" })).toHaveAttribute("href", "/lotes/hibrido");
+    const texto = await textoMain(page);
+    for (const p of ["Juego A", "Juego B", "¿Y vender lotes?", "sin vender lotes", "procomún"]) {
+      expect(texto, p).not.toContain(p);
+    }
   });
 
   test("palabras que no van en /netx ni en /netx/simulador; 'diseño B' solo junto a doc 28", async ({ page }) => {
@@ -162,8 +171,8 @@ test.describe("Resumen", () => {
     for (const t of ["USD 375.000 a 500.000", "USD 8.550 por año", "USD 40.000 por año", "USD 120.000 a 200.000", "USD 1.336", "sin dato (a cotizar)"]) {
       expect(texto, t).toContain(t);
     }
-    // Procomún
-    for (const t of ["USD 306.970", "USD 1.357.031", "USD 49.500", "va al procomún, no a NetX", "Congreso de febrero 2027"]) {
+    // Bien común
+    for (const t of ["USD 306.970", "USD 1.357.031", "USD 49.500", "va al bien común, no a NetX", "Congreso de febrero 2027"]) {
       expect(texto, t).toContain(t);
     }
     // Inversores
@@ -221,7 +230,7 @@ test.describe("Resumen", () => {
       if (u.pathname.startsWith("/api/")) pedidos.push(u.pathname);
     });
     await page.goto("/netx");
-    await expect(page.getByRole("heading", { level: 1, name: "¿Cómo se financia NetX sin vender lotes?" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "¿Cómo se financia NetX?" })).toBeVisible();
     await page.waitForLoadState("networkidle");
     expect(pedidos.filter((p) => p !== "/api/sesion")).toEqual([]);
   });

@@ -56,8 +56,8 @@ describe("manifiesto de Lighthouse VRN", () => {
 });
 
 describe("el nombre del común", () => {
-  it("es bilingüe: Procomún en español y Commons en inglés", () => {
-    expect(nombreDelComun("es")).toBe("Lighthouse VRN Procomún");
+  it("es bilingüe: Bien común en español y Commons en inglés", () => {
+    expect(nombreDelComun("es")).toBe("Lighthouse VRN Bien común");
     expect(nombreDelComun("en")).toBe("Lighthouse VRN Commons");
     expect(NOMBRE_DEL_COMUN.es).toContain(NOMBRE_META_TRIBU);
   });

@@ -24,6 +24,7 @@ test("el orden de la lista es el de la spec", () => {
     "Inicio",
     "Territorio",
     "Lotes",
+    "Bien común",
     "Sumarte",
     "Tribus",
     "Pactos",
@@ -44,7 +45,7 @@ test("el orden de la lista es el de la spec", () => {
 test("los grupos del rail y del menú de la persona salen de la lista única", () => {
   const etiquetas = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "es"));
   expect(GRUPOS_RAIL.map((g) => tituloDeGrupo(g.id, "es"))).toEqual(["Descubrir", "Sumarte", "Lo que viene"]);
-  expect(etiquetas("descubrir")).toEqual(["Inicio", "Territorio", "Lotes"]);
+  expect(etiquetas("descubrir")).toEqual(["Inicio", "Territorio", "Lotes", "Bien común"]);
   expect(etiquetas("sumarte")).toEqual(["Sumarte"]);
   expect(etiquetas("viene")).toEqual(["Tribus", "Pactos", "Semillas", "Fogón"]);
   expect(etiquetas("persona")).toEqual(["Perfil", "Pasaporte", "Mi recorrido", "Configuración", "Mis datos"]);
@@ -54,7 +55,7 @@ test("los grupos del rail y del menú de la persona salen de la lista única", (
 test("en inglés el rail dice lo que fija el glosario, y Semillas no se traduce", () => {
   const ingles = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "en"));
   expect(GRUPOS_RAIL.map((g) => tituloDeGrupo(g.id, "en"))).toEqual(["Discover", "Join", "Coming next"]);
-  expect(ingles("descubrir")).toEqual(["Home", "Territory", "Lots"]);
+  expect(ingles("descubrir")).toEqual(["Home", "Territory", "Lots", "Commons"]);
   expect(ingles("viene")).toEqual(["Tribes", "Pacts", "Semillas", "Fireside"]);
   expect(ingles("persona")).toEqual(["Profile", "Passport", "My journey", "Settings", "My data"]);
 });

@@ -86,6 +86,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
   const idioma = useIdioma();
   const t = useTextos("sumarte");
   const marco = useTextos("marco");
+  const biencomun = useTextos("biencomun");
   const comunes = useTextos("comunes");
   const pasaporte = useTextos("pasaporte");
   const { estado: estadoSesion, nivel: nivelCuenta, nivelListo, tribuLider, entrar } = useSesion();
@@ -573,6 +574,9 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
           {fraseDeTermino("noesoferta", idioma)}
           <TerminoLegal clave="noesoferta" idioma={idioma} />
         </p>
+        <Link className="w-fit text-sm underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/bien-comun">
+          {biencomun.enlace}
+        </Link>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <article aria-labelledby="inv-proyectos" className={`${TARJETA} ${BORDE}`}>
             <p className="text-sm font-medium text-muted">

@@ -11,7 +11,7 @@ import {
   TICKETS_SAFE,
   VERSIONES,
 } from "./fuentes";
-import { JUEGO_A, JUEGO_B, PALABRAS_QUE_NO_VAN, PROCOMUN_EN_SIMPLE } from "./juegos";
+import { HIBRIDO, PALABRAS_QUE_NO_VAN, PROCOMUN_EN_SIMPLE } from "./hibrido";
 import { PALANCAS } from "./palancas";
 import {
   ESCENARIOS_PLATAFORMA,
@@ -105,7 +105,7 @@ describe("plataforma", () => {
     expect(redondearComoPython(2.4)).toBe(2);
   });
 
-  test("Pase Fundador: 49.500 / 96.000 / 171.000 y va al procomún", () => {
+  test("Pase Fundador: 49.500 / 96.000 / 171.000 y va al bien común", () => {
     expect(recaudacionPase("bajo")).toMatchObject({ recaudado: 49500, alcanzaMinimo: false, destino: "procomun" });
     expect(recaudacionPase("base")).toMatchObject({ recaudado: 96000, alcanzaMinimo: true });
     expect(recaudacionPase("bueno")).toMatchObject({ recaudado: 171000, alcanzaMinimo: true });
@@ -171,10 +171,9 @@ describe("riesgo (Monte Carlo copiado, ADR-014)", () => {
   });
 });
 
-describe("juegos y palancas", () => {
+describe("modelo híbrido y palancas", () => {
   test("tienen fuente", () => {
-    expect(JUEGO_A.fuente).toBeTruthy();
-    expect(JUEGO_B.fuente).toBeTruthy();
+    expect(HIBRIDO.fuente).toBeTruthy();
     for (const p of PALANCAS) expect(p.fuente.trim()).toBeTruthy();
   });
   test("cuatro palancas con los ids esperados", () => {
@@ -185,20 +184,20 @@ describe("juegos y palancas", () => {
   });
   test("ningún texto usa una palabra que no va", () => {
     const textos = [
-      JUEGO_A.titulo,
-      JUEGO_A.idea,
-      ...JUEGO_A.costos,
-      JUEGO_B.titulo,
-      JUEGO_B.idea,
-      ...JUEGO_B.suma,
+      HIBRIDO.titulo,
+      HIBRIDO.idea,
+      ...HIBRIDO.puntos,
       PROCOMUN_EN_SIMPLE,
       ...PALANCAS.flatMap((p) => [p.numero, p.supuesto, p.direccion, p.fuente]),
     ].map((t) => t.toLowerCase());
     for (const t of textos) for (const palabra of PALABRAS_QUE_NO_VAN) expect(t).not.toContain(palabra.toLowerCase());
   });
-  test("los juegos dicen dónde queda la tierra", () => {
-    expect(JSON.stringify(JUEGO_A).toLowerCase()).toContain("la tierra se va");
-    expect(JSON.stringify(JUEGO_B).toLowerCase()).toContain("la tierra queda");
+  test("el modelo híbrido dice dónde queda la tierra común, que la Fundación no existe y que lo privado es simulado", () => {
+    const t = JSON.stringify(HIBRIDO).toLowerCase();
+    expect(t).toContain("la tierra común queda en una fundación que todavía no existe");
+    expect(t).toContain("simulados");
+    expect(t).not.toMatch(/procomún|juego [ab]/);
+    expect(PROCOMUN_EN_SIMPLE).toContain("Bien común: lo que es de todos y se cuida entre todos");
   });
 });
 

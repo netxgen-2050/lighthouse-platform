@@ -1,16 +1,15 @@
 import { describe, expect, test } from "vitest";
-import { PALABRAS_QUE_NO_VAN } from "./juegos";
+import { MODELO_LOTES } from "@/lib/lotes/modelo";
+import { HIBRIDO, PALABRAS_QUE_NO_VAN, PROCOMUN_EN_SIMPLE } from "./hibrido";
 import {
   AL_LADO_DE_LA_ESCALERA,
   BOLSILLOS,
   CASCADA,
+  COMISION_POR_VENDER_LOTES,
   ESCALERA_SAFU,
   ETAPAS,
   HALLAZGOS_RIESGO,
   INSTRUMENTOS,
-  LOTES_INTRO,
-  LOTES_VS_MODELO,
-  PROPUESTA_PARA_QUIEN_VENDE,
   SERIES_POSIBLES,
   SUPUESTOS_A_CONFIRMAR,
   num,
@@ -41,9 +40,10 @@ function textos(x: unknown): string[] {
 describe("relato", () => {
   test("cada ítem tiene fuente", () => {
     for (const e of ETAPAS) for (const i of e.items) expect(i.fuente.trim()).toBeTruthy();
-    for (const lista of [BOLSILLOS, CASCADA, SERIES_POSIBLES, ESCALERA_SAFU, AL_LADO_DE_LA_ESCALERA, INSTRUMENTOS, HALLAZGOS_RIESGO, LOTES_VS_MODELO, SUPUESTOS_A_CONFIRMAR]) {
+    for (const lista of [BOLSILLOS, CASCADA, SERIES_POSIBLES, ESCALERA_SAFU, AL_LADO_DE_LA_ESCALERA, INSTRUMENTOS, HALLAZGOS_RIESGO, SUPUESTOS_A_CONFIRMAR]) {
       for (const i of lista) expect(i.fuente.trim()).toBeTruthy();
     }
+    expect(HIBRIDO.fuente.trim()).toBeTruthy();
   });
   test("las etapas son Semilla, Construir y Escalar, en ese orden", () => {
     expect(ETAPAS.map((e) => e.nombre)).toEqual(["Semilla", "Construir", "Escalar"]);
@@ -52,7 +52,7 @@ describe("relato", () => {
     expect(CASCADA).toHaveLength(7);
     expect(CASCADA.map((p) => p.id)).toEqual(["costos", "fundacion", "comision", "notas", "unidades", "primeraperdida", "excedente"]);
     expect(CASCADA.map((p) => p.orden)).toEqual([1, 2, 3, 4, 5, 6, 7]);
-    expect(CASCADA[6].texto).toContain("80 % procomún · 20 % Unidades");
+    expect(CASCADA[6].texto).toContain("80 % bien común · 20 % Unidades");
   });
   test("solo la agrovoltaica y el viñedo tienen modelo", () => {
     expect(SERIES_POSIBLES.filter((s) => s.conModelo).map((s) => s.modelo)).toEqual(["agrovoltaica", "vinedo"]);
@@ -74,24 +74,39 @@ describe("relato", () => {
     expect(vagner).toContain("6 veces (viñedo) · 3 veces (agrovoltaica)");
     expect(vagner).toContain("3 · 6 · 9 %");
   });
-  test("la comparación tiene las seis filas y ninguna palabra que no va", () => {
-    expect(LOTES_VS_MODELO.map((f) => f.titulo)).toEqual(["Ley", "La tierra", "Ingresos", "Tierra y agua", "Comisión", "Quién vende"]);
-    const t = textos([LOTES_INTRO, PROPUESTA_PARA_QUIEN_VENDE, LOTES_VS_MODELO]).map((x) => x.toLowerCase());
+  test("los textos del modelo híbrido no tienen ninguna palabra que no va", () => {
+    const t = textos([HIBRIDO, PROCOMUN_EN_SIMPLE, COMISION_POR_VENDER_LOTES]).map((x) => x.toLowerCase());
     for (const x of t) for (const p of PALABRAS_QUE_NO_VAN) expect(x).not.toContain(p.toLowerCase());
   });
-  test("la Fundación es del Juego B y todavía no existe", () => {
+  test("la Fundación es parte del modelo híbrido y todavía no existe", () => {
     const f = BOLSILLOS.find((b) => b.id === "fundacion")!;
-    expect(f.queEs).toContain("en el Juego B");
-    expect(f.queEs).toContain("todavía no existe");
+    expect(f.queEs).toContain("en el modelo híbrido, la tierra común queda en ella (todavía no existe)");
     expect(f.netxPuedeTomar).toContain("nunca un porcentaje");
   });
-  test("ningún texto dice diseño B ni invita a reservar", () => {
-    const todo = textos([ETAPAS, BOLSILLOS, CASCADA, SERIES_POSIBLES, ESCALERA_SAFU, AL_LADO_DE_LA_ESCALERA, INSTRUMENTOS, HALLAZGOS_RIESGO, LOTES_VS_MODELO, SUPUESTOS_A_CONFIRMAR, LOTES_INTRO, PROPUESTA_PARA_QUIEN_VENDE]);
+  test("ningún texto dice Juego A, Juego B, procomún, diseño B ni invita a reservar", () => {
+    const todo = textos([ETAPAS, BOLSILLOS, CASCADA, SERIES_POSIBLES, ESCALERA_SAFU, AL_LADO_DE_LA_ESCALERA, INSTRUMENTOS, HALLAZGOS_RIESGO, SUPUESTOS_A_CONFIRMAR, HIBRIDO, PROCOMUN_EN_SIMPLE]);
     for (const x of todo) {
+      expect(x).not.toContain("Juego A");
+      expect(x).not.toContain("Juego B");
+      expect(x.toLowerCase()).not.toContain("procomún");
       expect(x).not.toContain("diseño B");
       expect(x).not.toContain("reservá");
       expect(x).not.toContain("reservar tu");
     }
+  });
+  test("el SAFE toma sus tickets de TICKETS_SAFE y los supuestos del modelo híbrido salen del módulo de lotes", () => {
+    const safe = ETAPAS[0].items[0].que;
+    expect(safe).toContain("USD 5.000 a 50.000 o más");
+    const de = (etiqueta: string) => SUPUESTOS_A_CONFIRMAR.find((s) => s.etiqueta === etiqueta)!;
+    const precio = de("Precio de referencia de los lotes");
+    expect(precio.quien).toBe("martinFranz");
+    expect(precio.valor).toContain(`USD ${MODELO_LOTES.precioLote.min.toLocaleString("es-AR")}`);
+    const aporte = de("Aporte único y expensas de los lotes");
+    expect(aporte.quien).toBe("vagner");
+    expect(aporte.valor).toContain(`${MODELO_LOTES.aporteUnico * 100} %`);
+    const quien = de("Quién vende los lotes y si el aporte se suma al precio");
+    expect(quien.quien).toBe("abogado");
+    expect(quien.valor).toBe("sin dato");
   });
   test("los instrumentos tienen forma legal", () => {
     expect(INSTRUMENTOS).toHaveLength(5);

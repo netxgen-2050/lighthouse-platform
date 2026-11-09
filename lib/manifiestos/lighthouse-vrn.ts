@@ -13,11 +13,11 @@ const v = (es: string, en: string): BilingueConOriginal => ({ es, en, original: 
 export const NOMBRE_META_TRIBU = "Lighthouse VRN";
 
 /**
- * Nombre visible del común (ficha, tarjeta de Tribus, raíz de la holarquía). Decisión de Gus (29-oct-2026): "Procomún" en
- * español y "Commons" en inglés. Es el único lugar donde se escribe: ninguna pantalla lo repite a mano.
+ * Nombre visible del común (ficha, tarjeta de Tribus, raíz de la holarquía). Decisión de Gus (8-nov-2026, antes "Procomún"):
+ * "Bien común" en español y "Commons" en inglés. Es el único lugar donde se escribe: ninguna pantalla lo repite a mano.
  */
 export const NOMBRE_DEL_COMUN: Record<Idioma, string> = {
-  es: "Lighthouse VRN Procomún",
+  es: "Lighthouse VRN Bien común",
   en: "Lighthouse VRN Commons",
 };
 

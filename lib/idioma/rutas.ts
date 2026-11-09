@@ -20,6 +20,8 @@ export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   // Lotes de Lighthouse VRN: la lista y la ficha (lote-ficha-y-compra).
   /^\/lotes$/,
   /^\/lotes\/[^/]+$/,
+  // El bien común con tokens (bien-comun-tokens).
+  /^\/bien-comun$/,
   // Pasaporte (con la verificación de identidad), Semillas y Pactos (idioma-pasaporte-semillas-pactos).
   /^\/pasaporte$/,
   /^\/semillas$/,

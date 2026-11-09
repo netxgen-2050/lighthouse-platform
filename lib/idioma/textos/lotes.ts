@@ -8,8 +8,13 @@ const es = {
     bajada: "Qué se compraría: superficie, precio de ejemplo, estado, derechos y deberes, y costos.",
     listaTitulo: "Todos los lotes",
     verLaFicha: "Ver la ficha",
+    hibrido: "Ver qué es tuyo y qué es de todos",
   },
   volverALista: "Volver a la lista de lotes",
+  resumen: {
+    titulo: "Lo que compartís y lo que pagás",
+    ver: "Ver qué es tuyo y qué es de todos",
+  },
   ficha: {
     sector: "Sector norte",
     primeros: "Primeros 4 lotes",
@@ -53,7 +58,7 @@ const es = {
     titulo: "Costos",
     concepto: "Concepto",
     valor: "Valor",
-    aporte: "Aporte único al procomún",
+    aporte: "Aporte único al bien común",
     expensas: "Expensas por año",
     infraestructura: "Infraestructura por lote",
     parteDelDueno: "Parte del dueño",
@@ -62,7 +67,7 @@ const es = {
     aporteAparte: "El aporte va aparte del precio, sin sumarlos: si se suma al precio o va incluido, sin dato.",
     provisoriaTitulo: "Medida provisoria, a hablar con el equipo:",
     provisoria:
-      "lo que el comprador pone en infraestructura se le retribuiría en tokens del procomún (RAIZ). Todavía no está decidido, y no es una promesa.",
+      "lo que el comprador pone en infraestructura se le retribuiría en tokens del bien común (nombre provisorio: FARO). Todavía no está decidido, y no es una promesa.",
     aporteSobre: "El aporte se calcula sobre lo que elijas arriba.",
     version: (fuente: string, version: string, fecha: string) =>
       `Fuente: ${fuente} · versión ${version} · ${fecha}. Todos los valores son de ejemplo.`,
@@ -86,6 +91,8 @@ const es = {
   acciones: {
     titulo: "Qué podés hacer",
     reservar: "Reservar (simulado)",
+    aceptar: "Leí lo que comparto y lo que me comprometo a pagar",
+    aceptarPrimero: "Para reservar, marcá que leíste lo que compartís y lo que pagás.",
     entrarReservar: "Entrá para reservar este lote",
     hablar: "Hablar con alguien",
     entrarHablar: "Entrá para hablar con alguien",
@@ -100,7 +107,7 @@ const es = {
     pagoTitulo: "Pago simulado",
     pagoAviso: "No se cobra nada. No ingreses datos de pago: no hay ningún campo.",
     precioElegido: (monto: string) => `Precio elegido: ${monto}`,
-    aporteAparte: (monto: string) => `Aporte único al procomún: ${monto} · si se suma al precio o va incluido: sin dato`,
+    aporteAparte: (monto: string) => `Aporte único al bien común: ${monto} · si se suma al precio o va incluido: sin dato`,
     confirmar: "Confirmar el pago simulado",
     cancelar: "Volver",
     anuncioReservado: (n: number) => `Reservaste el lote ${n} en la simulación. Seguí con el pago simulado.`,
@@ -125,6 +132,7 @@ const es = {
     reservado: "Reservado el",
     pagado: "Pago simulado el",
     modelo: "Modelo",
+    hibrido: "Texto de lo que se comparte y se paga que aceptaste:",
   },
 } as const;
 
@@ -134,8 +142,13 @@ const en: Textos<typeof es> = {
     bajada: "What would be bought: area, sample price, status, rights and duties, and costs.",
     listaTitulo: "All lots",
     verLaFicha: "See the details",
+    hibrido: "See what is yours and what belongs to everyone",
   },
   volverALista: "Back to the lot list",
+  resumen: {
+    titulo: "What you share and what you pay",
+    ver: "See what is yours and what belongs to everyone",
+  },
   ficha: {
     sector: "North sector",
     primeros: "First 4 lots",
@@ -188,7 +201,7 @@ const en: Textos<typeof es> = {
     aporteAparte: "The contribution is shown apart from the price, not added: whether it is added or included is no data.",
     provisoriaTitulo: "Provisional measure, to discuss with the team:",
     provisoria:
-      "what the buyer puts into infrastructure would be compensated in commons tokens (RAIZ). This is not decided yet, and it is not a promise.",
+      "what the buyer puts into infrastructure would be compensated in commons tokens (provisional name: FARO). This is not decided yet, and it is not a promise.",
     aporteSobre: "The contribution is calculated on what you choose above.",
     version: (fuente: string, version: string, fecha: string) =>
       `Source: ${fuente} · version ${version} · ${fecha}. All values are samples.`,
@@ -212,6 +225,8 @@ const en: Textos<typeof es> = {
   acciones: {
     titulo: "What you can do",
     reservar: "Reserve (simulated)",
+    aceptar: "I read what I share and what I commit to pay",
+    aceptarPrimero: "To reserve, check that you read what you share and what you pay.",
     entrarReservar: "Sign in to reserve this lot",
     hablar: "Talk to someone",
     entrarHablar: "Sign in to talk to someone",
@@ -251,6 +266,7 @@ const en: Textos<typeof es> = {
     reservado: "Reserved on",
     pagado: "Simulated payment on",
     modelo: "Model",
+    hibrido: "Version of the shared-and-paid text you accepted:",
   },
 };
 

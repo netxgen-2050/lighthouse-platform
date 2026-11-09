@@ -7,7 +7,7 @@ const grupos = [
     id: "a",
     etiqueta: "Serie A",
     items: [
-      { id: "p", etiqueta: "Procomún", valor: 300 },
+      { id: "p", etiqueta: "Bien común", valor: 300 },
       { id: "n", etiqueta: "NetX", valor: 100 },
       { id: "x", etiqueta: "Notas Verdes", valor: null },
     ],
@@ -16,7 +16,7 @@ const grupos = [
     id: "b",
     etiqueta: "Serie B",
     items: [
-      { id: "p", etiqueta: "Procomún", valor: 1000 },
+      { id: "p", etiqueta: "Bien común", valor: 1000 },
       { id: "n", etiqueta: "NetX", valor: 800 },
       { id: "x", etiqueta: "Notas Verdes", valor: 3688 },
     ],
@@ -31,7 +31,7 @@ describe("BarrasReparto", () => {
     expect(html).not.toContain("Notas Verdes · sin dato");
   });
   test("una serie sin ningún monto dice 'sin dato' y no 'total USD 0'", () => {
-    const vacio = [{ id: "v", etiqueta: "Serie V", items: [{ id: "p", etiqueta: "Procomún", valor: null }] }];
+    const vacio = [{ id: "v", etiqueta: "Serie V", items: [{ id: "p", etiqueta: "Bien común", valor: null }] }];
     const html = renderToStaticMarkup(<BarrasReparto titulo="T" grupos={vacio} formatoValor={(n) => `USD ${n}`} />);
     expect(html).toContain("Serie V · total sin dato");
     expect(html).not.toContain("USD 0");
@@ -42,7 +42,7 @@ describe("BarrasReparto", () => {
   test("el SVG es aria-hidden y el texto lleva nombre, monto y porcentaje", () => {
     const html = renderToStaticMarkup(<BarrasReparto titulo="T" grupos={grupos} formatoValor={(n) => `USD ${n}`} />);
     expect(html).toContain('aria-hidden="true"');
-    expect(html).toContain("Procomún · USD 300 · 75 %");
+    expect(html).toContain("Bien común · USD 300 · 75 %");
     expect(html).toContain("NetX · USD 100 · 25 %");
   });
 });

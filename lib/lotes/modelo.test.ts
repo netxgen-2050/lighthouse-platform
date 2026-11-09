@@ -179,3 +179,19 @@ describe("lección de las expensas", () => {
     expect(en).toContain("per lot per year");
   });
 });
+
+describe("lecciones con el costo de un escenario", () => {
+  it("usan el costo que reciben en lugar del presupuesto fijo", () => {
+    expect(leccionAporte(25, "es", 240_000)).toContain("USD 240.000");
+    expect(leccionAporte(25, "es", 240_000)).not.toContain("USD 72.000");
+    expect(leccionExpensas(25, "es", 240_000)).toContain("USD 9.600");
+    expect(leccionExpensas(25, "en", 30_000)).toContain("USD 1.200");
+  });
+
+  it("un costo inválido da null: sin dato, nunca cero", () => {
+    for (const malo of [0, -1, Number.NaN]) {
+      expect(leccionAporte(25, "es", malo)).toBeNull();
+      expect(leccionExpensas(25, "es", malo)).toBeNull();
+    }
+  });
+});
