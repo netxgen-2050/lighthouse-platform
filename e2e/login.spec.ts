@@ -208,7 +208,7 @@ test.describe("email fuera de LH_PERSONAS (acceso abierto)", () => {
     expect(await r.json()).toMatchObject({ email: EMAIL_FUERA_DE_LISTA, rol: "persona", tribuAdmin: null });
     // Salir vuelve a Descubrir sin cuenta.
     await page.locator("#menu-persona").getByRole("button", { name: "Salir" }).click();
-    await expect(page.getByRole("heading", { level: 1, name: /Encontrá tu comunidad/ })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /Un lugar para vivir/ })).toBeVisible();
     await expect(barra(page).getByRole("button", { name: "Entrar" })).toBeVisible();
   });
 });

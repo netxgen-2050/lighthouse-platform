@@ -18,7 +18,7 @@ test("la portada responde", async ({ page }) => {
 
 test("muestra los tres caminos en orden, con titular y botón", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Encontrá tu comunidad");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Un lugar para vivir");
   const principal = page.getByRole("link", { name: "Explorar el Lighthouse", exact: true });
   await expect(principal).toBeVisible();
   await expect(principal).toHaveAttribute("href", "/territorios/lighthouse");

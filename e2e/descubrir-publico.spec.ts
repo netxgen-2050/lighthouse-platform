@@ -26,7 +26,7 @@ test.describe("páginas públicas sin sesión", () => {
 
   test("Inicio y Comunidades se ven sin entrar", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1, name: /Encontrá tu comunidad/ })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /Un lugar para vivir/ })).toBeVisible();
     await page.goto("/tribus?ver=tribus");
     await expect(page.getByRole("heading", { level: 1, name: "Comunidades del Lighthouse" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Sumate para proponer una comunidad" }).first()).toBeVisible();
