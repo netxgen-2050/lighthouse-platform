@@ -56,6 +56,12 @@ test.describe("sin sesión", () => {
     await expect(s).toContainText("Cocinas comunitarias");
   });
 
+  test("FARO dice para qué serviría y cómo viene con el lote", async ({ page }) => {
+    await page.goto(RUTA);
+    await expect(page.getByText(/noches de alojamiento, productos de la huerta/)).toBeVisible();
+    await expect(page.getByText(/vendrían incluidos en el precio, sin pagarse aparte/)).toBeVisible();
+  });
+
   test("el reparto de FARO tiene los cuatro grupos en una tabla", async ({ page }) => {
     await page.goto(RUTA);
     const tabla = page.getByRole("table", { name: /Reparto de FARO por grupo/ });

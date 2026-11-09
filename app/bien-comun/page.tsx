@@ -120,6 +120,8 @@ export default async function BienComunPage() {
                 <TerminoLegal clave="tokenbiencomun" idioma={idioma} />
               </h3>
               <p>{t.tokens.faro.texto}</p>
+              <p>{t.tokens.faro.usos}</p>
+              <p className="text-sm text-muted">{t.tokens.faro.conElLote}</p>
             </article>
           </div>
         </section>

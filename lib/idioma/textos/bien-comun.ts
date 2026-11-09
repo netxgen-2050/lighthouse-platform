@@ -70,6 +70,8 @@ const es = {
       titulo: "Token del bien común (FARO, nombre provisorio)",
       texto:
         "Es el único token de todo el bien común: daría voz sobre todas las parcelas comunes, el tesoro y las reglas. No está respaldado por la tierra ni da una parte de ella. Podría usarse para pagar parte de las expensas (una opción a conversar). Todavía no existe.",
+      usos: "También podría usarse en lo que ofrezca el Lighthouse: noches de alojamiento, productos de la huerta, talleres o espacios comunes (a conversar).",
+      conElLote: "Los FARO de cada lote vendrían incluidos en el precio, sin pagarse aparte, y seguirían al lote si se revende (propuesta a conversar).",
     },
   },
   parcelas: {
@@ -197,6 +199,7 @@ const es = {
     deberes: "Deberes",
     deberesValor: "reglamento, aporte único, expensas",
     faro: "FARO que trae",
+    faroPanel: "FARO que trae (simulado)",
     red: "Red",
     redValor: "sin definir",
     ver: "Ver el bien común",
@@ -270,6 +273,8 @@ const en: Textos<typeof es> = {
       titulo: "Commons token (FARO, provisional name)",
       texto:
         "It is the only token for the whole commons: it would give a voice over every common plot, the treasury and the rules. It is not backed by the land and gives no share of it. It could be used to pay part of the common charges (an option to discuss). It does not exist yet.",
+      usos: "It could also be used for what Lighthouse offers: nights of accommodation, produce from the gardens, workshops or shared spaces (to be discussed).",
+      conElLote: "The FARO of each lot would come included in the price, not paid for separately, and would stay with the lot if it is resold (a proposal to discuss).",
     },
   },
   parcelas: {
@@ -395,6 +400,7 @@ const en: Textos<typeof es> = {
     deberes: "Duties",
     deberesValor: "regulation, one-off contribution, common charges",
     faro: "FARO it brings",
+    faroPanel: "FARO it brings (simulated)",
     red: "Network",
     redValor: "not defined",
     ver: "See the commons",

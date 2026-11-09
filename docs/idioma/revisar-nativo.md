@@ -34,7 +34,7 @@ Fuentes pendientes: 46
 | `lib/tribus/datos.ts` | Datos de ejemplo de las 12 tribus con su inglés (foco, qué tiene, qué busca, ritual, forma jurídica…) y la declaración de cada tribu, traducida del español | — |
 | `lib/tribus/necesidades.ts` | Necesidades de ejemplo de las tribus como tareas (título, qué es y habilidad extra) con su inglés | — |
 | `textos/bandeja` | Bandeja y notificaciones: textos de cada evento de la actividad, que se arman al mostrarlos en el idioma actual | 37 |
-| `textos/biencomun` | El bien común de Lighthouse VRN: principios de Ostrom, NFT del lote y token del bien común (FARO), reparto, venta por tramos con calculadora, staking, CAPEX y OPEX, riesgos, tarjeta de la ficha y línea del boleto | 132 |
+| `textos/biencomun` | El bien común de Lighthouse VRN: principios de Ostrom, NFT del lote y token del bien común (FARO), reparto, venta por tramos con calculadora, staking, CAPEX y OPEX, riesgos, tarjeta de la ficha y línea del boleto | 135 |
 | `textos/canales` | Canales: por qué se abre cada puerta, qué la abre, refuerzo por presencia y nombres de planes y niveles del pase | 31 |
 | `textos/compromisos` | Compromisos y Mercado: formulario, validaciones, tipos y medios de intercambio, filtros y avisos | 58 |
 | `textos/comunes` | Textos que se repiten en todas las zonas (cargando, cancelar, sin dato, notas de traducción…) | 16 |
