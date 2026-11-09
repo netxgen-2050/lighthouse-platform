@@ -344,12 +344,12 @@ export const TERMINOS = {
   tokenbiencomun: {
     titulo: "Token del bien común",
     texto:
-      "Una unidad que daría voz en las decisiones sobre lo común. Todavía no existe y es una simulación para conversar: no se emite, no se vende y no se promete ningún valor. El nombre FARO es provisorio. A verificar con abogado.",
+      "Una unidad que daría voz en las decisiones sobre lo común. No está respaldada por la tierra ni da una parte de ella. Todavía no existe y es una simulación para conversar: no se emite, no se vende y no se promete ningún valor. El nombre FARO es provisorio. A verificar con abogado.",
     borrador: true,
     en: {
       titulo: "Commons token",
       texto:
-        "A unit that would give a voice in decisions about what is shared. It does not exist yet and is a simulation to talk about: it is not issued, not sold and no value is promised. The name FARO is provisional. To be verified with a lawyer.",
+        "A unit that would give a voice in decisions about what is shared. It is not backed by the land and gives no share of it. It does not exist yet and is a simulation to talk about: it is not issued, not sold and no value is promised. The name FARO is provisional. To be verified with a lawyer.",
     },
   },
   ventatramos: {

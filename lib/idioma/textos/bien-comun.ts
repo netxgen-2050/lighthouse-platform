@@ -69,13 +69,13 @@ const es = {
     faro: {
       titulo: "Token del bien común (FARO, nombre provisorio)",
       texto:
-        "Daría voz en las decisiones sobre lo común y podría usarse para pagar parte de las expensas (una opción a conversar). Todavía no existe.",
+        "Es el único token de todo el bien común: daría voz sobre todas las parcelas comunes, el tesoro y las reglas. No está respaldado por la tierra ni da una parte de ella. Podría usarse para pagar parte de las expensas (una opción a conversar). Todavía no existe.",
     },
   },
   parcelas: {
     titulo: "Las parcelas comunes",
     texto:
-      "Huertas, bosques, talleres, cocinas, vías, escuela: cada parcela común sería un token semi-fungible (ERC-1155) del tesoro del bien común, dividido en cuotas de cuidado y uso. La comunidad asigna las cuotas a quienes cuidan y usan esa parcela, y no se venden ni se transfieren: la parcela sigue siendo de todos.",
+      "Huertas, bosques, talleres, cocinas, vías, escuela: las parcelas comunes no son tokens. Quedan en un registro del tesoro del bien común, con su uso y lo que se mide de cada una. FARO da voz sobre todas, y quien cuida cada parcela tiene un rol que le da la comunidad, que no se compra ni se vende. Ninguna parcela común se vende.",
     delPlano: "Parcelas del plano, por uso",
     aSumar: "A sumar, todavía sin parcela en el plano:",
     aSumarItems: ["Bosques", "Cocinas comunitarias", "Escuela"],
@@ -175,7 +175,7 @@ const es = {
     items: [
       "Un token que sube de precio o da derechos sobre plata puede ser un valor negociable ante la CNV (a verificar con abogado).",
       "El NFT no es la escritura.",
-      "Si las cuotas de las parcelas comunes se pueden transferir (hoy: no).",
+      "FARO no está respaldado por la tierra: si lo estuviera y se pudiera vender, el bien común se vendería en partes.",
       "Quién emite y en qué país.",
       "La red y las billeteras.",
       "La verificación de identidad.",
@@ -269,13 +269,13 @@ const en: Textos<typeof es> = {
     faro: {
       titulo: "Commons token (FARO, provisional name)",
       texto:
-        "It would give a voice in decisions about the commons and could be used to pay part of the common charges (an option to discuss). It does not exist yet.",
+        "It is the only token for the whole commons: it would give a voice over every common plot, the treasury and the rules. It is not backed by the land and gives no share of it. It could be used to pay part of the common charges (an option to discuss). It does not exist yet.",
     },
   },
   parcelas: {
     titulo: "The common plots",
     texto:
-      "Gardens, forests, workshops, kitchens, roads, a school: each common plot would be a semi-fungible token (ERC-1155) of the commons treasury, split into care and use shares. The community assigns the shares to those who care for and use that plot, and they cannot be sold or transferred: the plot stays everyone's.",
+      "Gardens, forests, workshops, kitchens, roads, a school: the common plots are not tokens. They are kept in a register of the commons treasury, with their use and what is measured on each one. FARO gives a voice over all of them, and whoever looks after each plot holds a role given by the community, which is not bought or sold. No common plot is sold.",
     delPlano: "Plots on the plan, by use",
     aSumar: "To be added, not yet a plot on the plan:",
     aSumarItems: ["Forests", "Community kitchens", "School"],
@@ -374,7 +374,7 @@ const en: Textos<typeof es> = {
     items: [
       "A token whose price rises or that gives rights over money can be a tradable security before the CNV (to be verified with a lawyer).",
       "The NFT is not the deed.",
-      "Whether the common plot shares can be transferred (for now: no).",
+      "FARO is not backed by the land: if it were and could be sold, the commons would be sold in pieces.",
       "Who issues it and in which country.",
       "The network and the wallets.",
       "Identity verification.",

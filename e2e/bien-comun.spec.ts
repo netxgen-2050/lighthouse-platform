@@ -47,11 +47,11 @@ test.describe("sin sesión", () => {
     }
   });
 
-  test("las parcelas comunes se leen del plano y sus cuotas no se venden", async ({ page }) => {
+  test("las parcelas comunes se leen del plano, no son tokens y no se venden", async ({ page }) => {
     await page.goto(RUTA);
     const s = page.getByRole("region", { name: "Las parcelas comunes" });
-    await expect(s).toContainText("semi-fungible (ERC-1155)");
-    await expect(s).toContainText("no se venden ni se transfieren");
+    await expect(s).toContainText("no son tokens");
+    await expect(s).toContainText("Ninguna parcela común se vende");
     await expect(s.getByRole("listitem").first()).toBeVisible();
     await expect(s).toContainText("Cocinas comunitarias");
   });

@@ -28,11 +28,11 @@ La página SHALL explicar el NFT del lote (deberes, metadata, que no reemplaza l
 - **THEN** lee "FARO" y "nombre provisorio"
 
 ### Requirement: Reparto y parcelas comunes
-La página SHALL mostrar el reparto del token (que suma 100 %, con tabla además de las barras) y las parcelas comunes leídas del loteo, como tokens semi-fungibles (ERC-1155) del tesoro, divididos en cuotas de cuidado y uso que no se venden ni se transfieren.
+La página SHALL mostrar el reparto del token (que suma 100 %, con tabla además de las barras) y las parcelas comunes leídas del loteo, como un registro del tesoro que no son tokens y no se venden. MUST decir que FARO es el único token del bien común y que no está respaldado por la tierra.
 
-#### Scenario: Parcelas comunes como cuotas
+#### Scenario: Parcelas comunes sin token
 - **WHEN** una persona lee las parcelas comunes
-- **THEN** lee que cada parcela sería un token semi-fungible (ERC-1155) con cuotas de cuidado y uso que no se venden ni se transfieren
+- **THEN** lee que no son tokens, que quedan en un registro del tesoro y que ninguna se vende
 
 #### Scenario: Reparto
 - **WHEN** una persona lee el reparto
