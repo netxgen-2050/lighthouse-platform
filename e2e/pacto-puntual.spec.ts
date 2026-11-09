@@ -143,12 +143,12 @@ test("miembro de Taller Común se postula al círculo transversal de Valle Solar
   await expect(eventos.getByRole("link", { name: "Postularme para tomarla" })).toBeVisible();
 });
 
-test("miembro de Taller Común ve en Pactos que las tareas de Valle Solar le llegan por otra tribu", async ({ page }) => {
+test("miembro de Taller Común ve en Pactos que las tareas de Valle Solar le llegan por otra comunidad", async ({ page }) => {
   await page.goto("/tribus/valle");
   await membresia(page, { taller: "miembro" });
   await page.goto("/pactos?comunidad=valle&necesidad=valle-eventos");
   await expect(page.getByTestId("nota-aspirante")).toHaveText(
-    "Estas tareas son de Valle Solar, pero las compartís con otra tribu tuya. El pacto de tiempo es para miembros",
+    "Estas tareas son de Valle Solar, pero las compartís con otra comunidad tuya. El pacto de tiempo es para miembros",
   );
   await expect(page.getByRole("article").filter({ hasText: "Eventos y comunidad" })).toBeVisible();
   await expect(page.getByLabel(/Rol que asumís/)).toHaveCount(0);
@@ -287,7 +287,7 @@ test("otra persona ve que ya la tomaron y puede postularse también", async ({ p
   await expect(solar.getByRole("link", { name: "Postularme para tomarla" })).toBeVisible();
 });
 
-test("un círculo transversal lo responde el super admin (respaldo de Hifa) y no quien lidera la tribu", async ({ page, context, baseURL }) => {
+test("un círculo transversal lo responde el super admin (respaldo de Hifa) y no quien lidera la comunidad", async ({ page, context, baseURL }) => {
   await postular(page, "valle-eventos", "el círculo Comunicación del común");
   await expect(page.getByText(/Hifa \(experimental, simulado\)/)).toBeVisible();
 

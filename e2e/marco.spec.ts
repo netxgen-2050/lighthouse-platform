@@ -1,18 +1,18 @@
 import { expect, test } from "./fixtura";
 
-test("navegar de la portada a Tribus marca aria-current", async ({ page }) => {
+test("navegar de la portada a Comunidades marca aria-current", async ({ page }) => {
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Principal" });
   await expect(nav.getByRole("link", { name: "Inicio" })).toHaveAttribute("aria-current", "page");
-  await nav.getByRole("link", { name: "Tribus" }).click();
+  await nav.getByRole("link", { name: "Comunidades" }).click();
   await expect(page).toHaveURL(/\/tribus$/);
-  await expect(nav.getByRole("link", { name: "Tribus" })).toHaveAttribute("aria-current", "page");
+  await expect(nav.getByRole("link", { name: "Comunidades" })).toHaveAttribute("aria-current", "page");
 });
 
-test("en una tribu, Tribus sigue marcado", async ({ page }) => {
+test("en una comunidad, Comunidades sigue marcado", async ({ page }) => {
   await page.goto("/tribus/valle");
   const nav = page.getByRole("navigation", { name: "Principal" });
-  await expect(nav.getByRole("link", { name: "Tribus" })).toHaveAttribute("aria-current", "page");
+  await expect(nav.getByRole("link", { name: "Comunidades" })).toHaveAttribute("aria-current", "page");
 });
 
 test("el rail trae solo la navegación, en orden", async ({ page }) => {
@@ -21,12 +21,12 @@ test("el rail trae solo la navegación, en orden", async ({ page }) => {
   await expect(nav).toBeVisible();
   const textos = (await nav.getByRole("link").allInnerTexts()).map((t) => t.trim().split("\n")[0]);
   // "Admin" va al final, en el grupo "Interno", y solo lo ve el super admin (el rol por defecto de estas pruebas).
-  const orden = ["Inicio", "Territorio", "Lotes", "Bien común", "Sumarte", "Tribus", "Pactos", "Semillas", "Fogón", "Admin"];
+  const orden = ["Inicio", "Territorio", "Lotes", "Bien común", "Sumarte", "Comunidades", "Pactos", "Semillas", "Fogón", "Admin"];
   expect(textos).toEqual(orden.filter((o) => textos.includes(o)));
   // Compromisos (27-oct-2026) y Congreso (menú de fase 1, 2-nov-2026) están en pausa: no aparecen en el rail.
   await expect(nav.getByRole("link", { name: "Compromisos" })).toHaveCount(0);
   await expect(nav.getByRole("link", { name: "Congreso" })).toHaveCount(0);
-  expect(textos).toEqual(expect.arrayContaining(["Inicio", "Tribus", "Sumarte"]));
+  expect(textos).toEqual(expect.arrayContaining(["Inicio", "Comunidades", "Sumarte"]));
   // Perfil, Pasaporte, Mi recorrido y Configuración viven en el menú del avatar; NetX y la campanita, en la barra superior.
   await expect(nav.getByRole("link", { name: "Perfil" })).toHaveCount(0);
   await expect(nav.getByRole("link", { name: "NetX" })).toHaveCount(0);
@@ -166,7 +166,7 @@ test("celular 390 x 844: rail a la izquierda, 72 px o menos, sin scroll horizont
     await expect(nav.getByRole("link", { name: "Inicio" })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Compromisos" })).toHaveCount(0);
     // El título del grupo se oculta en el rail angosto; la lista conserva su nombre accesible.
-    await expect(nav.getByRole("list", { name: "Lo que viene" }).getByRole("link", { name: "Tribus" })).toBeVisible();
+    await expect(nav.getByRole("list", { name: "Lo que viene" }).getByRole("link", { name: "Comunidades" })).toBeVisible();
     const desborde = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     expect(desborde, `scroll horizontal en ${ruta}`).toBe(false);
   }
@@ -260,8 +260,8 @@ test("el HTML del servidor ya trae un año en el pie (sin JS)", async ({ request
 
 test("portada con titular y botón a /tribus", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Encontrá tu tribu\.\s*Construí en común\./);
-  await page.getByRole("link", { name: "Ver las tribus" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Un lugar para vivir\.\s*Un bien común para cuidar\./);
+  await page.getByRole("link", { name: "Ver las comunidades" }).click();
   await expect(page).toHaveURL(/\/tribus$/);
 });
 

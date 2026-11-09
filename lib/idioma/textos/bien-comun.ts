@@ -3,6 +3,7 @@
 // Todo es una simulación para conversar en el equipo: no se emite, no se cobra y no está decidido. En español se dice
 // "bien común"; en inglés, "commons". Ningún texto promete rendimientos de ningún tipo (lo vigila `lib/lotes/sin-numeros-escritos.test.ts`).
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const es = {
   titulo: "El bien común de Lighthouse VRN",
@@ -409,4 +410,4 @@ const en: Textos<typeof es> = {
   boleto: (n: string, faro: string) => `The NFT of lot ${n} would be minted and ${faro} would be assigned (simulated).`,
 };
 
-export const biencomun = { es, en };
+export const biencomun = conVocabulario({ es, en });

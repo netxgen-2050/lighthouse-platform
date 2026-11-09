@@ -26,7 +26,7 @@ test("el orden de la lista es el de la spec", () => {
     "Lotes",
     "Bien común",
     "Sumarte",
-    "Tribus",
+    "Comunidades",
     "Pactos",
     "Semillas",
     "Fogón",
@@ -47,7 +47,7 @@ test("los grupos del rail y del menú de la persona salen de la lista única", (
   expect(GRUPOS_RAIL.map((g) => tituloDeGrupo(g.id, "es"))).toEqual(["Descubrir", "Sumarte", "Lo que viene"]);
   expect(etiquetas("descubrir")).toEqual(["Inicio", "Territorio", "Lotes", "Bien común"]);
   expect(etiquetas("sumarte")).toEqual(["Sumarte"]);
-  expect(etiquetas("viene")).toEqual(["Tribus", "Pactos", "Semillas", "Fogón"]);
+  expect(etiquetas("viene")).toEqual(["Comunidades", "Pactos", "Semillas", "Fogón"]);
   expect(etiquetas("persona")).toEqual(["Perfil", "Pasaporte", "Mi recorrido", "Configuración", "Mis datos"]);
   expect(etiquetas("interno")).toEqual(["NetX", "Admin"]);
 });
@@ -56,7 +56,7 @@ test("en inglés el rail dice lo que fija el glosario, y Semillas no se traduce"
   const ingles = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "en"));
   expect(GRUPOS_RAIL.map((g) => tituloDeGrupo(g.id, "en"))).toEqual(["Discover", "Join", "Coming next"]);
   expect(ingles("descubrir")).toEqual(["Home", "Territory", "Lots", "Commons"]);
-  expect(ingles("viene")).toEqual(["Tribes", "Pacts", "Semillas", "Fireside"]);
+  expect(ingles("viene")).toEqual(["Communities", "Pacts", "Semillas", "Fireside"]);
   expect(ingles("persona")).toEqual(["Profile", "Passport", "My journey", "Settings", "My data"]);
 });
 
@@ -108,7 +108,7 @@ test("solo destinos que existen: sin la ruta /panel no se muestra Mi recorrido",
   const etiquetas = destinosDisponibles().map((d) => etiquetaDeDestino(d, "es"));
   // Mientras app/ no tenga /panel; el día que exista, el test de coincidencia obliga a poner existe: true.
   expect(atiende("/panel", rutasDeApp())).toBe(etiquetas.includes("Mi recorrido"));
-  expect(etiquetas).toContain("Tribus");
+  expect(etiquetas).toContain("Comunidades");
   expect(destinosDisponibles().every((d) => d.existe)).toBe(true);
 });
 

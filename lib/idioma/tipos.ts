@@ -1,6 +1,7 @@
 // Tipos del idioma de la plataforma. La fuente sigue siendo la del Congreso (módulo puro y portable):
 // la plataforma depende de ella y no al revés.
 import type { Idioma } from "@/lib/congreso/idioma";
+import { vocabulario } from "./vocabulario";
 
 export { esIdioma, IDIOMAS, resolver } from "@/lib/congreso/idioma";
 export type { Bilingue, Idioma } from "@/lib/congreso/idioma";
@@ -13,7 +14,7 @@ export type BilingueConOriginal = { es: string; en?: string; original?: Idioma }
  * español: nunca devuelve vacío. Para mostrar la caída marcada ("ES") se usa `<TextoBilingue>`.
  */
 export function textoEn(valor: BilingueConOriginal, idioma: Idioma): string {
-  return idioma === "en" && valor.en !== undefined && valor.en.trim() !== "" ? valor.en : valor.es;
+  return vocabulario(idioma === "en" && valor.en !== undefined && valor.en.trim() !== "" ? valor.en : valor.es);
 }
 
 /**

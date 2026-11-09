@@ -3,6 +3,7 @@
 // Lo que escribe la persona (nombre, frase, respuestas) nunca se traduce. Los nombres de los roles salen de `lib/pactos/datos.ts`.
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
 
@@ -146,4 +147,4 @@ const en: Textos<typeof es> = {
   ],
 };
 
-export const perfil = { es, en };
+export const perfil = conVocabulario({ es, en });

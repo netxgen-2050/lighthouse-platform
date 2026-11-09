@@ -84,14 +84,14 @@ describe("BloqueFuente en inglés", () => {
   });
 });
 
-describe("Territorio y Tribus en inglés", () => {
+describe("Territorio y Comunidades en inglés", () => {
   it("traducen los textos y avisan que el destino está en español", () => {
     const terr = renderToStaticMarkup(<Territorio idioma="en" />);
     expect(terr).toContain("Explore the map in NetX (in Spanish)");
     expect(terr).toContain('hrefLang="es"');
     expect(terr).toContain("of surface area");
     const tribus = renderToStaticMarkup(<Tribus idioma="en" />);
-    expect(tribus).toContain("Don&#x27;t come alone. Arrive with your tribe.");
+    expect(tribus).toContain("Don&#x27;t come alone. Arrive with your community.");
     expect(tribus.match(/\d+ of \d+ are going/g)).toHaveLength(3);
     expect(tribus).not.toMatch(/\d+ de \d+ van/);
     expect(tribus).toContain('href="/tribus"');
@@ -128,10 +128,10 @@ describe("Territorio", () => {
   });
 });
 
-describe("Tribus", () => {
+describe("Comunidades", () => {
   it("muestra 'N de M van' en texto, la marca de ejemplo y el enlace a /tribus", () => {
     const html = renderToStaticMarkup(<Tribus />);
-    expect(html).toContain("No vengas solo. Llegá con tu tribu.");
+    expect(html).toContain("No vengas solo. Llegá con tu comunidad.");
     expect(html.match(/\d+ de \d+ van/g)).toHaveLength(3);
     expect(html.match(/ejemplo/g)?.length).toBeGreaterThanOrEqual(3);
     expect(html).toContain('href="/tribus"');

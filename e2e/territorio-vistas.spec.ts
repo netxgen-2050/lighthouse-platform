@@ -31,7 +31,7 @@ test("enlace compartible: ?vista=ahora muestra los frentes y sin barrios", async
 
 test("enlace compartible: ?vista=vision muestra los 12 barrios", async ({ page }) => {
   await page.goto("/territorios/lighthouse?vista=vision");
-  await expect(vistas(page).getByRole("button", { name: /Visión · tribus por barrio/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(vistas(page).getByRole("button", { name: /Visión · comunidades por barrio/ })).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator('[aria-label^="Barrio "][role="button"]')).toHaveCount(12);
   await expect(frentes(page)).toHaveCount(0);
 });
@@ -126,7 +126,7 @@ test("sumarse desde el mapa", async ({ page }) => {
   await expect(ficha(page).getByText(/Pediste sumarte a .*Permacultura.* · aspirante/)).toBeVisible();
 });
 
-test("Plan: zonas sin tribus y la fuente que todavía no está", async ({ page }) => {
+test("Plan: zonas sin comunidades y la fuente que todavía no está", async ({ page }) => {
   await page.goto("/territorios/lighthouse");
   await vistas(page).getByRole("button", { name: /Plan · zonas/ }).click();
   await expect(page.locator('[aria-label^="Barrio "]')).toHaveCount(0);
@@ -137,14 +137,14 @@ test("Plan: zonas sin tribus y la fuente que todavía no está", async ({ page }
   await expect(page.getByRole("button", { name: /^Barrio 6/ })).toHaveCount(0);
 });
 
-test("Visión: barrio 6 con la marca de tribus de ejemplo", async ({ page }) => {
+test("Visión: barrio 6 con la marca de comunidades de ejemplo", async ({ page }) => {
   await page.goto("/territorios/lighthouse?vista=vision");
-  await expect(ficha(page).getByText("En la fase 0 todavía no hay tribus: hay equipos.")).toBeVisible();
+  await expect(ficha(page).getByText("En la fase 0 todavía no hay comunidades: hay equipos.")).toBeVisible();
   await page.getByRole("region", { name: "Elegir en el mapa" }).getByRole("button", { name: /^Barrio 6/ }).click();
   await expect(ficha(page).getByRole("heading", { name: "Valle Solar" })).toBeVisible();
   await expect(ficha(page).getByText("Estado: Activa")).toBeVisible();
-  await expect(ficha(page).getByText("Tribus de ejemplo, a definir")).toBeVisible();
-  await expect(ficha(page).getByRole("link", { name: "Conocer la tribu" })).toBeVisible();
+  await expect(ficha(page).getByText("Comunidades de ejemplo, a definir")).toBeVisible();
+  await expect(ficha(page).getByRole("link", { name: "Conocer la comunidad" })).toBeVisible();
 });
 
 test("finca 502 en la vista Ahora", async ({ page }) => {

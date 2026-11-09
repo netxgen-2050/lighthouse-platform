@@ -11,7 +11,7 @@ export default async function AdminComunidadesPage() {
   return (
     <>
       <h1 className="text-3xl font-semibold">Comunidades</h1>
-      <p className="mt-2 mb-4 max-w-2xl text-muted">Tribus del directorio (datos de ejemplo). Solo lectura.</p>
+      <p className="mt-2 mb-4 max-w-2xl text-muted">Comunidades del directorio (datos de ejemplo). Solo lectura.</p>
       <div className="overflow-x-auto rounded-xl border border-faint bg-surface p-4">
         <table className="w-full text-sm">
           <caption className="sr-only">Comunidades del directorio</caption>

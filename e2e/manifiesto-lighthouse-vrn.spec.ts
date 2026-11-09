@@ -36,7 +36,7 @@ test.describe("la ficha del común", () => {
     await expect(page).toHaveURL(/\/tribus\/lighthouse$/);
     await expect(page.getByRole("heading", { level: 1, name: COMUN })).toBeVisible();
     await expect(page.getByText(/Ponemos la regeneración y la vida en el centro de cada decisión/).first()).toBeVisible();
-    await expect(page.getByText("Es la meta-tribu de la que forman parte todas las tribus.")).toBeVisible();
+    await expect(page.getByText("Es la comunidad madre de la que forman parte todas las comunidades.")).toBeVisible();
     await expect(page.getByText("Prototipo interno · datos de ejemplo")).toBeVisible();
     await expect(page.getByText("Borrador, a ratificar por el común").first()).toBeVisible();
     await expect(page.locator("main")).toHaveCount(1);
@@ -99,7 +99,7 @@ test.describe("leer y adherir", () => {
       /^Derechos de la tierra/,
       "Compromisos de quien adhiere",
       "Cómo se cambia este manifiesto",
-      "Los principios de cada tribu",
+      "Los principios de cada comunidad",
       "Las máquinas sugieren; las personas deciden",
     ]) {
       await expect(texto.getByRole("heading", { name: h })).toBeAttached();
@@ -226,7 +226,7 @@ test.describe("con adhesión se participa", () => {
   });
 });
 
-test.describe("principios propios de las tribus", () => {
+test.describe("principios propios de las comunidades", () => {
   test("Semilla Viva suma los suyos, con el principio que profundiza y el enlace al común", async ({ page }) => {
     await page.goto("/tribus/semilla/manifiesto");
     const texto = page.getByRole("region", { name: "Texto del manifiesto" });
@@ -242,7 +242,7 @@ test.describe("principios propios de las tribus", () => {
   test("Taller Común todavía no sumó principios propios", async ({ page }) => {
     await page.goto("/tribus/taller/manifiesto");
     const texto = page.getByRole("region", { name: "Texto del manifiesto" });
-    await expect(texto.getByText("Esta tribu todavía no sumó principios propios.")).toBeVisible();
+    await expect(texto.getByText("Esta comunidad todavía no sumó principios propios.")).toBeVisible();
     await expect(texto.getByRole("link", { name: "Leer el manifiesto de Lighthouse VRN" })).toBeVisible();
   });
 });

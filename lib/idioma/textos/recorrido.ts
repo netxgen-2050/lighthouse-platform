@@ -2,6 +2,7 @@
 // Los textos de la línea de tiempo (lo que hizo la persona) salen del diccionario `bandeja`, que arma cada evento.
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
 
@@ -138,4 +139,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const recorrido = { es, en };
+export const recorrido = conVocabulario({ es, en });

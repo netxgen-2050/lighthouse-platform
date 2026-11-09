@@ -3,6 +3,7 @@
 // avisos. Los datos de ejemplo (problema, propuesta, registros, guiones) viven en `lib/fogon/propuestas/ejemplos.ts` con su inglés.
 // Los textos legales (⚖) viven en `lib/legal/terminos.ts`. Proceso de ejemplo: las reglas son de prueba para el prototipo.
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const es = {
   pagina: {
@@ -610,4 +611,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const fogonPropuestas = { es, en };
+export const fogonPropuestas = conVocabulario({ es, en });

@@ -8,11 +8,11 @@ const tarjeta = (page: Page, nombre: string): Locator =>
 
 test("pestaña por defecto: Equipos · ahora, marcada como actual, con la lista de equipos", async ({ page }) => {
   await page.goto("/tribus");
-  const nav = page.getByRole("navigation", { name: "Secciones de Tribus" });
+  const nav = page.getByRole("navigation", { name: "Secciones de Comunidades" });
   await expect(nav.getByRole("link", { name: "Equipos · ahora" })).toHaveAttribute("aria-current", "page");
-  await expect(nav.getByRole("link", { name: "Tribus · visión" })).not.toHaveAttribute("aria-current", "page");
+  await expect(nav.getByRole("link", { name: "Comunidades · visión" })).not.toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("heading", { level: 3 })).toHaveCount(9);
-  await expect(page.getByText("Un equipo puede volverse una tribu más adelante; el proceso está por definir.")).toBeVisible();
+  await expect(page.getByText("Un equipo puede volverse una comunidad más adelante; el proceso está por definir.")).toBeVisible();
   await expect(page.locator("main")).toHaveCount(1);
 });
 
@@ -24,7 +24,7 @@ test("un valor raro de ver muestra los equipos", async ({ page }) => {
 
 test("cambiar de pestaña con el teclado", async ({ page }) => {
   await page.goto("/tribus");
-  const visión = page.getByRole("link", { name: "Tribus · visión" });
+  const visión = page.getByRole("link", { name: "Comunidades · visión" });
   let llego = false;
   for (let i = 0; i < 40 && !llego; i++) {
     await page.keyboard.press("Tab");
@@ -33,18 +33,18 @@ test("cambiar de pestaña con el teclado", async ({ page }) => {
   expect(llego).toBe(true);
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/tribus\?ver=tribus$/);
-  await expect(page.getByRole("link", { name: "Tribus · visión" })).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("heading", { level: 2, name: "Tribus activas" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Comunidades · visión" })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("heading", { level: 2, name: "Comunidades activas" })).toBeVisible();
 });
 
-test("Tribus · visión: las 12 tribus con la marca y el aviso", async ({ page }) => {
+test("Comunidades · visión: las 12 comunidades con la marca y el aviso", async ({ page }) => {
   await page.goto("/tribus?ver=tribus");
-  await expect(page.getByText(/^Ejemplo, a definir: estas tribus son ejemplos para pensar hacia dónde va el Lighthouse, no tribus reales/)).toBeVisible();
+  await expect(page.getByText(/^Ejemplo, a definir: estas comunidades son ejemplos para pensar hacia dónde va el Lighthouse, no comunidades reales/)).toBeVisible();
   await expect(page.locator("main ul > li > a[href^='/tribus/']:not([aria-label])")).toHaveCount(12);
   await expect(page.locator("main a[href^='/tribus/']").getByText("Ejemplo · a definir")).toHaveCount(12);
 });
 
-test("ficha de una tribu y de una vacante: marca Ejemplo · a definir", async ({ page }) => {
+test("ficha de una comunidad y de una vacante: marca Ejemplo · a definir", async ({ page }) => {
   await page.goto("/tribus/valle");
   await expect(page.getByText("Ejemplo · a definir")).toBeVisible();
   await page.goto("/tribus/grano");
@@ -198,7 +198,7 @@ test.describe("con adhesión al Lighthouse", () => {
 test("axe sin violaciones serias o críticas en las dos pestañas", async ({ page }) => {
   for (const ruta of ["/tribus", "/tribus?ver=tribus"]) {
     await page.goto(ruta);
-    await expect(page.getByRole("navigation", { name: "Secciones de Tribus" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Secciones de Comunidades" })).toBeVisible();
     const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
     const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
     expect(graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) })), ruta).toEqual([]);
@@ -210,11 +210,11 @@ test.describe("en inglés a 390 px", () => {
 
   test("pestañas y tarjetas en inglés y sin scroll horizontal", async ({ page }) => {
     await page.goto("/tribus");
-    await expect(page.getByRole("navigation", { name: "Tribes sections" }).getByRole("link", { name: "Teams · now" })).toHaveAttribute(
+    await expect(page.getByRole("navigation", { name: "Communities sections" }).getByRole("link", { name: "Teams · now" })).toHaveAttribute(
       "aria-current",
       "page",
     );
-    await expect(page.getByRole("link", { name: "Tribes · vision" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Communities · vision" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 3, name: "Water", exact: true })).toBeVisible();
     await expect(page.getByText("No place on the map").first()).toBeVisible();
     await expect(page.getByText("Later on · phase 1").first()).toBeVisible();

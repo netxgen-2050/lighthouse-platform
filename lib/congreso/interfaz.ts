@@ -1,6 +1,7 @@
 // Textos fijos de las piezas portables del evento (los que no vienen del contenido), en español (voseo) y en inglés.
 // TypeScript obliga a que el inglés tenga todas las claves del español. Módulo puro, sin dependencias de NetX.
 import type { Idioma } from "./idioma";
+import { conVocabulario } from "@/lib/idioma/vocabulario";
 
 const ES = {
   seccionesDelEvento: "Secciones del evento",
@@ -53,8 +54,8 @@ const EN: Textos = {
 export type TextosEvento = Textos;
 
 export function textosEvento(idioma: Idioma = "es"): TextosEvento {
-  return idioma === "en" ? EN : ES;
+  return DICCIONARIOS_EVENTO[idioma];
 }
 
 /** Los dos diccionarios, para los tests de completitud. */
-export const DICCIONARIOS_EVENTO: Record<Idioma, TextosEvento> = { es: ES, en: EN };
+export const DICCIONARIOS_EVENTO: Record<Idioma, TextosEvento> = conVocabulario({ es: ES, en: EN });

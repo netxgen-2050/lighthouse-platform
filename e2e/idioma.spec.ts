@@ -18,7 +18,7 @@ test.describe("sin cuenta", () => {
     await selector(page).getByRole("link", { name: "EN · English" }).click();
     await expect(page).toHaveURL(/\/tribus$/);
     await expect(html(page)).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Tribes" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Communities" })).toBeVisible();
     await expect(barra(page).getByRole("button", { name: "Sign in" })).toBeVisible();
     await expect(page.getByRole("contentinfo")).toContainText("Prototype under development. Sample data.");
     await expect(page.getByRole("link", { name: "Skip to content" })).toBeAttached();
@@ -163,7 +163,7 @@ test.describe("el Congreso", () => {
     await expect(page).toHaveURL(/\/congreso\/en$/);
     await expect(html(page)).toHaveAttribute("lang", "en");
     await page.goto("/tribus");
-    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Tribes" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Communities" })).toBeVisible();
   });
 
   test("(c) el selector de la barra en el Congreso lleva a la dirección del idioma", async ({ page }) => {

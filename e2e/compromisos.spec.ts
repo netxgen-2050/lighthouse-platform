@@ -181,7 +181,7 @@ test("avisos de la página y nota de plata", async ({ page }) => {
   await expect(
     page.getByText("Modo demostración: lo que registres queda solo en este navegador."),
   ).toBeVisible();
-  await expect(page.getByText("Tribus, personas y cifras de ejemplo.")).toBeVisible();
+  await expect(page.getByText("Comunidades, personas y cifras de ejemplo.")).toBeVisible();
   await expect(page.getByText("no se cobra ni se paga nada")).toHaveCount(0);
   await page.getByRole("radio", { name: "Plata" }).check();
   await expect(page.getByText(/no se cobra ni se paga nada/)).toBeVisible();

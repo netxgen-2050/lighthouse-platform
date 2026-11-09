@@ -4,6 +4,7 @@
 // `lib/manifiestos/lighthouse-vrn.ts` con su inglés. El nombre del común sale de `nombreDelComun` (una sola constante).
 import { NOMBRE_META_TRIBU } from "@/lib/manifiestos/lighthouse-vrn";
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const es = {
   borrador: "Borrador, a ratificar por el común",
@@ -147,4 +148,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const manifiestoVrn = { es, en };
+export const manifiestoVrn = conVocabulario({ es, en });

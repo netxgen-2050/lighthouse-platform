@@ -4,6 +4,7 @@
 // (`lib/legal/terminos.ts`). Los montos tampoco: salen de `lib/lotes/modelo.ts` y de `lib/financiamiento/fuentes.ts`.
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
 
@@ -423,4 +424,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const sumarte = { es, en };
+export const sumarte = conVocabulario({ es, en });

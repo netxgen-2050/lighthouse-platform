@@ -5,6 +5,7 @@
 // muestra en español marcado.
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
 
@@ -391,4 +392,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const pasaporte = { es, en };
+export const pasaporte = conVocabulario({ es, en });

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { TerminoLegal } from "@/components/termino-legal";
 import { anchoBarra, anchoMedidor, conversiones, formatear, porcentaje } from "@/lib/vista-netx/calculos";
 import { ALERTAS, EMBUDO, EMISION, INDICADORES, TRIBUS_POR_PROYECTO } from "@/lib/vista-netx/datos";
+import { vocabulario } from "@/lib/idioma/vocabulario";
 
 export const metadata: Metadata = { title: "Vista NetX · Comunidad y embudo" };
 
@@ -36,14 +37,14 @@ export default function ComunidadPage() {
       <p className="text-sm font-medium text-muted">Vista NetX · para el equipo de NetXGen</p>
       <h1 className="text-3xl font-semibold">Comunidad y embudo</h1>
       <p className="mt-2 mb-4 max-w-2xl text-muted">
-        Embudo, tribus y cumplimiento. Todos los datos de esta vista son de ejemplo.
+        Embudo, comunidades y cumplimiento. Todos los datos de esta vista son de ejemplo.
       </p>
 
       <ul className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {INDICADORES.map((i) => (
           <li key={i.etiqueta} className={CARTA}>
             <span className="block text-2xl font-semibold">{i.numero}</span>
-            <span className="block text-sm text-muted">{i.etiqueta}</span>
+            <span className="block text-sm text-muted">{vocabulario(i.etiqueta)}</span>
           </li>
         ))}
       </ul>
@@ -57,7 +58,7 @@ export default function ComunidadPage() {
             {EMBUDO.map((e, i) => (
               <li key={e.etiqueta}>
                 <p className="flex justify-between gap-2 text-sm">
-                  <span>{e.etiqueta}</span>
+                  <span>{vocabulario(e.etiqueta)}</span>
                   <span>
                     <strong>{formatear(e.valor)}</strong>
                     {i > 0 && (
@@ -112,14 +113,14 @@ export default function ComunidadPage() {
 
       <section aria-labelledby="t-tribus" className={CARTA}>
         <h2 id="t-tribus" className="mb-3 text-lg font-semibold">
-          Tribus por proyecto <span className="text-sm font-normal text-muted">(ejemplo)</span>
+          Comunidades por proyecto <span className="text-sm font-normal text-muted">(ejemplo)</span>
         </h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <caption className="sr-only">Tribus por proyecto: fincas, plata, roles y ritual</caption>
+            <caption className="sr-only">Comunidades por proyecto: fincas, plata, roles y ritual</caption>
             <thead>
               <tr className="text-left">
-                <th scope="col" className="py-1.5 pr-3">Tribu</th>
+                <th scope="col" className="py-1.5 pr-3">Comunidad</th>
                 <th scope="col" className="py-1.5 pr-3">Fincas</th>
                 <th scope="col" className="py-1.5 pr-3 text-right">Plata</th>
                 <th scope="col" className="py-1.5 pr-3 text-right">Roles</th>

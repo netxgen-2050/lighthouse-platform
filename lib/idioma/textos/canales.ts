@@ -5,6 +5,7 @@ import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
 import { pasaporte } from "./pasaporte";
 import { sumarte } from "./sumarte";
+import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
 
@@ -65,4 +66,4 @@ const en: Textos<typeof es> = {
   aDecidir: "to be decided",
 };
 
-export const canales = { es, en };
+export const canales = conVocabulario({ es, en });
