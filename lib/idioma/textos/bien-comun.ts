@@ -75,7 +75,7 @@ const es = {
   parcelas: {
     titulo: "Las parcelas comunes",
     texto:
-      "Huertas, bosques, talleres, cocinas, vías, escuela: cada parcela común sería un NFT del tesoro del bien común. No se vende: su uso lo decide la comunidad.",
+      "Huertas, bosques, talleres, cocinas, vías, escuela: cada parcela común sería un token semi-fungible (ERC-1155) del tesoro del bien común, dividido en cuotas de cuidado y uso. La comunidad asigna las cuotas a quienes cuidan y usan esa parcela, y no se venden ni se transfieren: la parcela sigue siendo de todos.",
     delPlano: "Parcelas del plano, por uso",
     aSumar: "A sumar, todavía sin parcela en el plano:",
     aSumarItems: ["Bosques", "Cocinas comunitarias", "Escuela"],
@@ -175,6 +175,7 @@ const es = {
     items: [
       "Un token que sube de precio o da derechos sobre plata puede ser un valor negociable ante la CNV (a verificar con abogado).",
       "El NFT no es la escritura.",
+      "Si las cuotas de las parcelas comunes se pueden transferir (hoy: no).",
       "Quién emite y en qué país.",
       "La red y las billeteras.",
       "La verificación de identidad.",
@@ -274,7 +275,7 @@ const en: Textos<typeof es> = {
   parcelas: {
     titulo: "The common plots",
     texto:
-      "Gardens, forests, workshops, kitchens, roads, a school: each common plot would be an NFT of the commons treasury. It is not sold: the community decides how it is used.",
+      "Gardens, forests, workshops, kitchens, roads, a school: each common plot would be a semi-fungible token (ERC-1155) of the commons treasury, split into care and use shares. The community assigns the shares to those who care for and use that plot, and they cannot be sold or transferred: the plot stays everyone's.",
     delPlano: "Plots on the plan, by use",
     aSumar: "To be added, not yet a plot on the plan:",
     aSumarItems: ["Forests", "Community kitchens", "School"],
@@ -373,6 +374,7 @@ const en: Textos<typeof es> = {
     items: [
       "A token whose price rises or that gives rights over money can be a tradable security before the CNV (to be verified with a lawyer).",
       "The NFT is not the deed.",
+      "Whether the common plot shares can be transferred (for now: no).",
       "Who issues it and in which country.",
       "The network and the wallets.",
       "Identity verification.",
