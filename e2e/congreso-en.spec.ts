@@ -54,7 +54,7 @@ test("la página en inglés no deja textos en español fuera de lo marcado con l
   expect(texto).toContain("February 2027");
 });
 
-test("textos clave en inglés: precios, tribus, territorio y modo de origen", async ({ page }) => {
+test("textos clave en inglés: precios, comunidades, territorio y modo de origen", async ({ page }) => {
   await page.goto("/congreso/en");
   await expect(page.getByRole("heading", { name: "Reserve your spot under the ring" })).toBeVisible();
   await expect(page.locator("#entradas [data-entrada]")).toHaveCount(6);
@@ -62,8 +62,8 @@ test("textos clave en inglés: precios, tribus, territorio y modo de origen", as
   await expect(page.locator("#entradas")).toContainText("USD 250 each");
   const tribus = page.locator("#tribus");
   await expect(tribus.getByText(/^\d+ of \d+ are going$/)).toHaveCount(3);
-  await expect(tribus.getByRole("link", { name: "Find my tribe (in Spanish)" })).toHaveAttribute("href", "/tribus");
-  await expect(tribus.getByRole("link", { name: "Find my tribe (in Spanish)" })).toHaveAttribute("hreflang", "es");
+  await expect(tribus.getByRole("link", { name: "Find my community (in Spanish)" })).toHaveAttribute("href", "/tribus");
+  await expect(tribus.getByRole("link", { name: "Find my community (in Spanish)" })).toHaveAttribute("hreflang", "es");
   await expect(page.locator("#territorio").getByRole("link", { name: "Explore the map in NetX (in Spanish)" })).toHaveAttribute(
     "href",
     "/territorios/lighthouse",
@@ -87,11 +87,11 @@ test("el selector se usa con teclado, va y vuelve conservando #tribus", async ({
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/congreso#tribus$/);
   await expect(page.locator(".tema-evento")).toHaveAttribute("lang", "es");
-  await expect(page.getByRole("heading", { name: "No vengas solo. Llegá con tu tribu." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "No vengas solo. Llegá con tu comunidad." })).toBeVisible();
   await grupo.getByRole("link", { name: "EN · English" }).focus();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/congreso\/en#tribus$/);
-  await expect(page.getByRole("heading", { name: "Don't come alone. Arrive with your tribe." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Don't come alone. Arrive with your community." })).toBeVisible();
 });
 
 test("el selector conserva la query (UTM) al cambiar de idioma", async ({ page }) => {
@@ -250,7 +250,7 @@ test.describe("visitante sin cuenta", () => {
     await expect(page).toHaveURL(/\/congreso\/en$/);
     await page.goto("/tribus");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Tribes" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Communities" })).toBeVisible();
   });
 
   test("la preferencia vieja del Congreso (lh-congreso-idioma) se usa una vez si no hay cookie", async ({ page }) => {

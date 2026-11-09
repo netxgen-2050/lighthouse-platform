@@ -22,7 +22,7 @@ describe("alcanza", () => {
 });
 
 describe("nivel Fundador", () => {
-  it("está entre Miembro y Líder: tiene todo lo de Miembro y no la administración de tribu", () => {
+  it("está entre Miembro y Líder: tiene todo lo de Miembro y no la administración de comunidad", () => {
     expect(alcanza("fundador", "miembro")).toBe(true);
     expect(alcanza("lider", "fundador")).toBe(true);
     expect(alcanza("miembro", "fundador")).toBe(false);
@@ -48,7 +48,7 @@ describe("capacidades por nivel", () => {
     for (const c of ["hifa", "congreso", "personal", "reportar", "vista-netx"] as const) expect(puedeCapacidad("explorador", c)).toBe(true);
     for (const c of ["participar", "adherir", "admin-tribu", "admin"] as const) expect(puedeCapacidad("explorador", c)).toBe(false);
   });
-  it("Miembro participa y adhiere; Líder suma la administración de su tribu; NetX es solo del super admin", () => {
+  it("Miembro participa y adhiere; Líder suma la administración de su comunidad; NetX es solo del super admin", () => {
     expect(puedeCapacidad("miembro", "participar")).toBe(true);
     expect(puedeCapacidad("miembro", "adherir")).toBe(true);
     expect(puedeCapacidad("miembro", "admin-tribu")).toBe(false);
@@ -115,7 +115,7 @@ describe("rutas", () => {
 
   it("el aviso de una acción en inglés", () => {
     expect(avisoDeNivel("miembro", "en")).toBe("This action is unlocked with the Member plan.");
-    expect(avisoDeNivel("lider", "en")).toBe("This action is unlocked with the Tribe Plan.");
+    expect(avisoDeNivel("lider", "en")).toBe("This action is unlocked with the Community Plan.");
     expect(avisoDeNivel("superadmin", "en")).toBe("This action can't be unlocked from here.");
     expect(avisoDeNivel("miembro")).toBe("Esta acción se habilita con el plan Miembro.");
   });

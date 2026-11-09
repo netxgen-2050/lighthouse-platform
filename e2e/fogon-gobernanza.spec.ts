@@ -30,7 +30,7 @@ async function irDesdeLista(page: Page, nombre: string) {
 const foco = (page: Page, id: string) => expect(dibujo(page)).toHaveAttribute("data-foco", id);
 
 test.describe("Estructura de gobernanza visible", () => {
-  test("muestra el común con sus círculos, el consejo y las doce tribus con su estado en texto", async ({ page }) => {
+  test("muestra el común con sus círculos, el consejo y las doce comunidades con su estado en texto", async ({ page }) => {
     const respuesta = await page.goto("/fogon");
     expect(respuesta?.status()).toBe(200);
     await expect(page.getByRole("heading", { level: 1, name: "Cómo decidimos" })).toBeVisible();
@@ -41,7 +41,7 @@ test.describe("Estructura de gobernanza visible", () => {
     await expect(dibujo(page)).toBeVisible();
     await abrirLista(page);
     const l = arbol(page);
-    for (const n of ["Agua", "Tokenomics y Semillas", "Consejo de tribus", "Comunicación del común"]) {
+    for (const n of ["Agua", "Tokenomics y Semillas", "Consejo de comunidades", "Comunicación del común"]) {
       await expect(l.getByRole("button", { name: n, exact: true })).toBeVisible();
     }
     await expect(l.getByText(/^Estado:/)).toHaveCount(12);
@@ -51,22 +51,22 @@ test.describe("Estructura de gobernanza visible", () => {
     await expect(barda).toContainText("En formación");
   });
 
-  test("Barrio 3 busca tribu, con Lugar libre, sin círculos y sin lugar en el consejo", async ({ page }) => {
+  test("Barrio 3 busca comunidad, con Lugar libre, sin círculos y sin lugar en el consejo", async ({ page }) => {
     await page.goto("/fogon");
     await abrirLista(page);
     const b3 = arbol(page).getByRole("listitem").filter({ has: page.getByRole("button", { name: "Barrio 3", exact: true }) }).last();
-    await expect(b3).toContainText("Busca tribu");
+    await expect(b3).toContainText("Busca comunidad");
     await expect(b3).toContainText("Lugar libre");
     await arbol(page).getByRole("button", { name: "Barrio 3", exact: true }).click();
     await foco(page, "grano");
-    await expect(panel(page)).toContainText("Tipo: Tribu");
+    await expect(panel(page)).toContainText("Tipo: Comunidad");
     await expect(panel(page)).toContainText("Lugar libre");
     await expect(panel(page)).toContainText("Sin lugar en el consejo todavía");
     await expect(panel(page).getByRole("button", { name: "Cuidado de la tierra" })).toHaveCount(0);
     await expect(arbol(page).getByText("Lugar de Barrio 3")).toHaveCount(0);
   });
 
-  test("el consejo tiene un lugar por tribu validada, sin representante y sin nombres inventados", async ({ page }) => {
+  test("el consejo tiene un lugar por comunidad validada, sin representante y sin nombres inventados", async ({ page }) => {
     await page.goto("/fogon");
     await tocarCirculo(page, "consejo");
     await foco(page, "consejo");
@@ -78,7 +78,7 @@ test.describe("Estructura de gobernanza visible", () => {
     await expect(panel(page).getByRole("button", { name: /\(ejemplo\)/ })).toHaveCount(0);
   });
 
-  test("el círculo transversal cuelga del común, lista sus tribus y no inventa una zona", async ({ page }) => {
+  test("el círculo transversal cuelga del común, lista sus comunidades y no inventa una zona", async ({ page }) => {
     await page.goto("/fogon");
     await irDesdeLista(page, "Comunicación del común");
     await expect(panel(page)).toContainText("Tipo: Círculo transversal");
@@ -111,7 +111,7 @@ test.describe("Gráfico accesible", () => {
     await foco(page, "valle");
     await expect(migas(page).getByRole("listitem")).toHaveText([`${COMUN}›`, "Valle Solar"]);
     await expect(panel(page)).toContainText("Valle Solar");
-    await expect(panel(page)).toContainText("Tipo: Tribu");
+    await expect(panel(page)).toContainText("Tipo: Comunidad");
   });
 
   test("en 390 px no hay scroll horizontal, con el dibujo arriba y el panel abajo", async ({ page }) => {
@@ -198,21 +198,21 @@ test.describe("Panel de detalle", () => {
     await expect(p.getByRole("heading", { name: /Roles del círculo/ })).toBeVisible();
   });
 
-  test("una tribu dice tipo, estado, validación, de qué decide y sus círculos navegables", async ({ page }) => {
+  test("una comunidad dice tipo, estado, validación, de qué decide y sus círculos navegables", async ({ page }) => {
     await page.goto("/fogon");
     await irDesdeLista(page, "Valle Solar");
     const p = panel(page);
-    await expect(p).toContainText("Tipo: Tribu");
+    await expect(p).toContainText("Tipo: Comunidad");
     await expect(p).toContainText("Activa");
     await expect(p).toContainText("Validada por el común (ejemplo)");
     await expect(p.getByText("Su barrio")).toBeVisible();
     for (const c of ["Cuidado de la tierra", "Arquitectura", "Comunicación", "Energía solar"]) {
       await expect(p.getByRole("button", { name: c, exact: true })).toBeVisible();
     }
-    await expect(p.getByRole("link", { name: "Ver la ficha de la tribu" })).toHaveAttribute("href", "/tribus/valle");
+    await expect(p.getByRole("link", { name: "Ver la ficha de la comunidad" })).toHaveAttribute("href", "/tribus/valle");
   });
 
-  test("un dato que falta dice sin dato: una tribu que busca tribu no decide nada todavía", async ({ page }) => {
+  test("un dato que falta dice sin dato: una comunidad que busca comunidad no decide nada todavía", async ({ page }) => {
     await page.goto("/fogon");
     await irDesdeLista(page, "Barrio 3");
     await expect(panel(page)).toContainText("Propósito: sin dato");
@@ -360,7 +360,7 @@ test.describe("Lente Decisiones que suben", () => {
     await expect(page.getByTestId("camino-texto").getByRole("listitem")).toHaveText([
       "1. Cuidado de la tierra ›",
       "2. Valle Solar ›",
-      "3. Consejo de tribus ›",
+      "3. Consejo de comunidades ›",
       `4. ${COMUN}`,
     ]);
     await expect(dibujo(page).locator("g[aria-hidden] text").filter({ hasText: /^[1-4]$/ })).toHaveText(["1", "2", "3", "4"]);
@@ -402,7 +402,7 @@ test.describe("Lente Decisiones que suben", () => {
     await page.goto("/fogon");
     await decisiones(page).click();
     await panel(page).getByRole("button", { name: /Pedir al Fondo Común una cisterna/ }).click();
-    await expect(page.getByTestId("camino-texto").getByRole("listitem")).toHaveText(["1. Valle Solar ›", "2. Consejo de tribus"]);
+    await expect(page.getByTestId("camino-texto").getByRole("listitem")).toHaveText(["1. Valle Solar ›", "2. Consejo de comunidades"]);
   });
 });
 
@@ -447,7 +447,7 @@ test.describe("Lente Desde mí", () => {
     await expect(panel(page).getByRole("button", { name: "Ir a este círculo" })).toHaveCount(2);
   });
 
-  test("liderar una tribu en Sumarte suma el rol Facilita", async ({ page }) => {
+  test("liderar una comunidad en Sumarte suma el rol Facilita", async ({ page }) => {
     await page.addInitScript(() => {
       window.localStorage.setItem("lh-sumarte", JSON.stringify({ plan: "miembro", tribu: true, tribuId: "valle" }));
     });
@@ -539,10 +539,10 @@ test.describe("Validaciones visibles", () => {
     await expect(page.getByText("Todavía no validada por el común")).toBeVisible();
   });
 
-  test("Mi recorrido sin membresías dice que ninguna tribu validó todavía", async ({ page }) => {
+  test("Mi recorrido sin membresías dice que ninguna comunidad validó todavía", async ({ page }) => {
     await page.goto("/panel");
     await expect(page.getByRole("heading", { name: /Quiénes te validaron/ })).toBeVisible();
-    await expect(page.getByText("Todavía ninguna tribu te validó.")).toBeVisible();
+    await expect(page.getByText("Todavía ninguna comunidad te validó.")).toBeVisible();
   });
 
   test("con la membresía de Taller Común aceptada, Mi recorrido dice Validada por Taller Común y deja un registro", async ({ page }) => {

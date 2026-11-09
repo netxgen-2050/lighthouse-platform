@@ -14,7 +14,7 @@ const buscar =(filas: ReturnType<typeof filasDePuertas>, nombre: string) => {
 };
 
 describe("personaDesdeSumarte", () => {
-  it("sin nada guardado: Explorador sin pase, sin tribu, sin presencia, no residente", () => {
+  it("sin nada guardado: Explorador sin pase, sin comunidad, sin presencia, no residente", () => {
     expect(base).toEqual({ plan: "explorador", pase: null, tribus: [], presenciaGenesis: false, residente: false });
   });
 
@@ -34,7 +34,7 @@ describe("filasDePuertas en inglés", () => {
     expect(fundadores.abreCon).toBe("Founder Pass");
     expect(buscarEn(filas, "Vote in the Residents' Assembly").abreCon).toBe("being a resident");
     expect(buscarEn(filas, "Network forums").abreCon).toBe(
-      "Member plan, Founder Pass, being accepted into a tribe, Genesis presence or being a resident",
+      "Member plan, Founder Pass, being accepted into a community, Genesis presence or being a resident",
     );
   });
 
@@ -57,7 +57,7 @@ describe("filasDePuertas", () => {
     const filas = filasDePuertas(base);
     expect(filas).toHaveLength(10);
     expect(filas.filter((f) => f.abierta).map((f) => f.nombre)).toEqual([
-      "Mapa, tribus y eventos abiertos",
+      "Mapa, comunidades y eventos abiertos",
       "Registrar tu ticket del Congreso",
     ]);
     expect(filas.every((f) => /^(Abierta|Cerrada)/.test(f.estado))).toBe(true);
@@ -98,36 +98,36 @@ describe("filasDePuertas", () => {
   it("la pista sale de la tabla y no incluye lo que solo refuerza", () => {
     expect(buscar(filasDePuertas(base), "Voz en el Fondo Común").abreCon).toBe("Pase Fundador");
     expect(buscar(filasDePuertas(base), "Foros de la red").abreCon).toBe(
-      "plan Miembro, Pase Fundador, ser aceptado en una tribu, presencia Genesis o ser residente",
+      "plan Miembro, Pase Fundador, ser aceptado en una comunidad, presencia Genesis o ser residente",
     );
   });
 
-  it("Miembro entra a las salas de tribu como visita", () => {
-    const f = buscar(filasDePuertas(con({ plan: "miembro" })), "Salas de tribu");
+  it("Miembro entra a las salas de comunidad como visita", () => {
+    const f = buscar(filasDePuertas(con({ plan: "miembro" })), "Salas de comunidad");
     expect(f.estado).toBe("Abierta como visita");
   });
 
-  it("tribu aceptada: sala propia abierta por la tribu y otras tribus cerradas", () => {
+  it("comunidad aceptada: sala propia abierta por la comunidad y otras comunidades cerradas", () => {
     const filas = filasDePuertas(con({ tribus: ["valle"] }), [VALLE]);
     const propia = buscar(filas, "Sala de Valle Solar");
     expect(propia.estado).toBe("Abierta");
-    expect(propia.motivos).toEqual(["por tu tribu"]);
-    expect(buscar(filas, "Salas de otras tribus").estado).toBe("Cerrada");
+    expect(propia.motivos).toEqual(["por tu comunidad"]);
+    expect(buscar(filas, "Salas de otras comunidades").estado).toBe("Cerrada");
     expect(buscar(filas, "Voz en Valle Solar").estado).toBe("Abierta · según estatuto");
-    expect(buscar(filas, "Voz en otras tribus").estado).toBe("Cerrada");
+    expect(buscar(filas, "Voz en otras comunidades").estado).toBe("Cerrada");
     expect(filas).toHaveLength(12);
   });
 
-  it("las filas de otras tribus hablan de otra tribu, no de esa", () => {
+  it("las filas de otras comunidades hablan de otra comunidad, no de esa", () => {
     const filas = filasDePuertas(con({ tribus: ["valle"] }), [VALLE]);
-    expect(buscar(filas, "Voz en otras tribus").abreCon).toBe("ser aceptado en otra tribu");
-    expect(buscar(filas, "Salas de otras tribus").abreCon).toBe(
-      "plan Miembro (como visita), Pase Fundador (como visita) o ser aceptado en otra tribu",
+    expect(buscar(filas, "Voz en otras comunidades").abreCon).toBe("ser aceptado en otra comunidad");
+    expect(buscar(filas, "Salas de otras comunidades").abreCon).toBe(
+      "plan Miembro (como visita), Pase Fundador (como visita) o ser aceptado en otra comunidad",
     );
-    expect(JSON.stringify(filas)).not.toContain("esa tribu");
+    expect(JSON.stringify(filas)).not.toContain("esa comunidad");
   });
 
-  it("una tribu que no es de la persona no aparece", () => {
+  it("una comunidad que no es de la persona no aparece", () => {
     expect(filasDePuertas(base, [VALLE])).toHaveLength(10);
   });
 

@@ -29,9 +29,9 @@ test("leyenda con texto para cada estado", async ({ page }) => {
     await expect(leyenda.getByRole("list", { name: g })).toBeVisible();
   }
   for (const t of [
-    "Barrio con tribu activa",
-    "Barrio con tribu en formación",
-    "Barrio que busca tribu",
+    "Barrio con comunidad activa",
+    "Barrio con comunidad en formación",
+    "Barrio que busca comunidad",
     "Terreno común",
     "Finca disponible",
     "Finca reservada",
@@ -71,25 +71,25 @@ test("colores distintos: ningún color de borde ni de relleno se repite entre gr
   }
 });
 
-test("sin selección: resumen y conteos, sin el listado de tribus", async ({ page }) => {
+test("sin selección: resumen y conteos, sin el listado de comunidades", async ({ page }) => {
   await abrir(page);
   const valor = async (etiqueta: string) =>
     Number(await ficha(page).locator("dl > div", { hasText: etiqueta }).locator("dd").innerText());
   expect(await valor("Activas")).toBe(3);
   expect(await valor("En formación")).toBe(5);
   expect(await valor("Vacantes")).toBe(4);
-  await expect(page.getByRole("heading", { name: "Tribus del territorio" })).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: "Comunidades del territorio" })).toHaveCount(1);
   await expect(page.locator("main a[href^='/tribus/']:not([href$='/manifiesto'])")).toHaveCount(0);
 });
 
-test("elegir Valle Solar en el mapa y ir a la tribu", async ({ page }) => {
+test("elegir Valle Solar en el mapa y ir a la comunidad", async ({ page }) => {
   await abrir(page);
   await marcador(page, "Barrio 6 ").click();
   await expect(ficha(page).getByRole("heading", { name: "Valle Solar" })).toBeVisible();
   await expect(ficha(page).getByText("Estado: Activa")).toBeVisible();
   // Sigue en la misma página; la selección queda en ?sel= para no perderse al entrar.
   await expect(page).toHaveURL(/\/territorios\/lighthouse\?vista=vision&sel=barrio-6$/);
-  await ficha(page).getByRole("link", { name: "Conocer la tribu" }).click();
+  await ficha(page).getByRole("link", { name: "Conocer la comunidad" }).click();
   await expect(page).toHaveURL(/\/tribus\/valle$/);
 });
 
@@ -140,11 +140,11 @@ test("finca reservada: sin botón de consulta", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Finca 501", exact: true })).toHaveCount(0);
 });
 
-test("lista Elegir en el mapa: Barrio 3 busca tribu", async ({ page }) => {
+test("lista Elegir en el mapa: Barrio 3 busca comunidad", async ({ page }) => {
   await abrir(page);
   await page.getByRole("button", { name: "Barrio 3", exact: true }).focus();
   await page.keyboard.press("Enter");
-  await expect(ficha(page).getByRole("heading", { name: "Barrio 3 busca tribu" })).toBeVisible();
+  await expect(ficha(page).getByRole("heading", { name: "Barrio 3 busca comunidad" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Barrio 3", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(ficha(page)).toHaveAttribute("aria-live", "polite");
 });

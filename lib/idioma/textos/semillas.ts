@@ -5,6 +5,7 @@
 // Los textos con peso legal (⚖) no están acá: los trae el catálogo legal.
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
 
@@ -323,4 +324,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const semillas = { es, en };
+export const semillas = conVocabulario({ es, en });

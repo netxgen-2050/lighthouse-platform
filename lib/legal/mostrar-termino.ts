@@ -1,6 +1,7 @@
 // Qué muestra el ⚖ de un término en cada idioma, y qué se anota en la bitácora. Funciones puras (design de
 // congreso-bilingue §8): `TerminoLegal` solo las usa y dibuja.
 import { huella } from "@/lib/demo/bitacora";
+import { conVocabulario } from "@/lib/idioma/vocabulario";
 import { esBorrador, TERMINOS, terminoEn, type ClaveTermino } from "./terminos";
 
 export type IdiomaTermino = "es" | "en";
@@ -18,7 +19,12 @@ export type TerminoMostrado = {
   aviso?: { texto: string; lang: "en" };
 };
 
+/** Lo que muestra el ⚖, con el vocabulario de pantalla aplicado ("comunidad" en lugar de "tribu"). */
 export function terminoMostrado(clave: ClaveTermino, idiomaPagina: IdiomaTermino = "es"): TerminoMostrado {
+  return conVocabulario(terminoSinVocabulario(clave, idiomaPagina));
+}
+
+function terminoSinVocabulario(clave: ClaveTermino, idiomaPagina: IdiomaTermino): TerminoMostrado {
   const es = TERMINOS[clave];
   if (idiomaPagina === "en") {
     const en = terminoEn(clave);

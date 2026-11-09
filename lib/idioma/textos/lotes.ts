@@ -1,6 +1,7 @@
 // Textos de la lista de lotes y de la ficha de cada lote (lote-ficha-y-compra). Ningún número del modelo se escribe acá:
 // los valores llegan por parámetro desde `lib/lotes/modelo.ts` y el loteo (lo vigila `lib/lotes/sin-numeros-escritos.test.ts`).
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const es = {
   lista: {
@@ -270,4 +271,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const lotes = { es, en };
+export const lotes = conVocabulario({ es, en });

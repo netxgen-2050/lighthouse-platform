@@ -1,13 +1,14 @@
 // Textos de la portada (`/`): título, bajada, los tres caminos y los enlaces.
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
 
 const es = {
   sobretitulo: "Corredor regenerativo patagónico",
-  tituloInicio: "Encontrá tu tribu.",
-  tituloFin: "Construí en común.",
+  tituloInicio: "Un lugar para vivir.",
+  tituloFin: "Un bien común para cuidar.",
   bajada:
     "Conocé a las personas con quienes vale la pena invertir, trabajar y quizás vivir. Pónganse de acuerdo antes de comprometer capital, y avancen juntos sobre un territorio real. Explorar es gratis.",
   explorar: "Explorar el Lighthouse",
@@ -42,8 +43,8 @@ const es = {
 
 const en: Textos<typeof es> = {
   sobretitulo: "Patagonian regenerative corridor",
-  tituloInicio: "Find your tribe.",
-  tituloFin: "Build in common.",
+  tituloInicio: "A place to live.",
+  tituloFin: "A commons to care for.",
   bajada:
     "Meet the people you'd want to invest, work and maybe live with. Reach agreement before committing capital, and move forward together on a real territory. Exploring is free.",
   explorar: "Explore the Lighthouse",
@@ -75,4 +76,4 @@ const en: Textos<typeof es> = {
         : "The neighborhoods and the tribes forming them.",
 };
 
-export const portada = { es, en };
+export const portada = conVocabulario({ es, en });

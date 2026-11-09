@@ -4,6 +4,7 @@
 // "Semillas" no se traduce; la primera mención del contenido va como "Semillas (seeds)" (glosario).
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
 
@@ -711,4 +712,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const pactos = { es, en };
+export const pactos = conVocabulario({ es, en });

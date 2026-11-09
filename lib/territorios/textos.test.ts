@@ -75,10 +75,10 @@ describe("textos del territorio", () => {
 
   it("el territorio en inglés traduce la descripción y deja el nombre", () => {
     const t = buscarTerritorio("lighthouse")!;
-    expect(territorioEn(t, "es")).toBe(t);
+    expect(territorioEn(t, "es")).toEqual({ ...t, descripcion: "~990 ha, doce barrios y las comunidades que los están formando." });
     const en = territorioEn(t, "en");
     expect(en.nombre).toBe("Lighthouse");
-    expect(en.descripcion).toBe("~990 ha, twelve neighborhoods and the tribes forming them.");
+    expect(en.descripcion).toBe("~990 ha, twelve neighborhoods and the communities forming them.");
     expect(en.bienesComunes).toHaveLength(t.bienesComunes.length);
     expect(en.superficie).toBe(t.superficie);
   });

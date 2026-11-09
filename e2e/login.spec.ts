@@ -142,17 +142,17 @@ test.describe("super admin", () => {
     await expect(page.getByText(`Tu cuenta: ${EMAILS.superadmin}`)).toBeVisible();
   });
 
-  test("/api/sesion devuelve rol, perfil y tribu con el header de prueba", async ({ request }) => {
+  test("/api/sesion devuelve rol, perfil y comunidad con el header de prueba", async ({ request }) => {
     const r = await request.get("/api/sesion", { headers: { "x-lh-prueba": EMAILS["admin-tribu"].toUpperCase() } });
     expect(r.status()).toBe(200);
     expect(await r.json()).toMatchObject({ email: EMAILS["admin-tribu"], rol: "admin-tribu", perfil: "usuario", tribuAdmin: "valle" });
   });
 });
 
-test.describe("admin de tribu", () => {
+test.describe("admin de comunidad", () => {
   test.use({ rol: "admin-tribu" });
 
-  test("ve NetX (toda persona con sesión) y la marca Admin de Valle Solar en la tribu y en su menú", async ({ page }) => {
+  test("ve NetX (toda persona con sesión) y la marca Admin de Valle Solar en la comunidad y en su menú", async ({ page }) => {
     await page.goto("/tribus/valle");
     await expect(barra(page).getByRole("link", { name: /NetX/ })).toBeVisible();
     await expect(page.getByRole("main").getByText("Admin de Valle Solar")).toBeVisible();
@@ -208,7 +208,7 @@ test.describe("email fuera de LH_PERSONAS (acceso abierto)", () => {
     expect(await r.json()).toMatchObject({ email: EMAIL_FUERA_DE_LISTA, rol: "persona", tribuAdmin: null });
     // Salir vuelve a Descubrir sin cuenta.
     await page.locator("#menu-persona").getByRole("button", { name: "Salir" }).click();
-    await expect(page.getByRole("heading", { level: 1, name: /Encontrá tu tribu/ })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /Un lugar para vivir/ })).toBeVisible();
     await expect(barra(page).getByRole("button", { name: "Entrar" })).toBeVisible();
   });
 });
@@ -264,7 +264,7 @@ test.describe("salir y cambiar de cuenta", () => {
     await page.getByRole("button", { name: EMAILS.superadmin }).click();
     await expect(menuAvatar(page)).toBeVisible();
     await page.goto("/tribus/valle");
-    await expect(page.getByRole("link", { name: "Adherir al manifiesto de la tribu" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Adherir al manifiesto de la comunidad" })).toBeVisible();
     await expect(page.getByText("Tu pedido llegó a Valle Solar.")).toHaveCount(0);
 
     // A vuelve a entrar y su pedido sigue ahí.

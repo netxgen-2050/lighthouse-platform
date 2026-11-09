@@ -2,6 +2,7 @@
 // La nota del tipo de cambio sale de `comunes` (`notaTipoDeCambio` en `lib/configuracion/preferencias.ts`).
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
 
@@ -122,4 +123,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const configuracion = { es, en };
+export const configuracion = conVocabulario({ es, en });

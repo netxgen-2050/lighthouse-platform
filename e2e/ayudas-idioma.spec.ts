@@ -4,7 +4,7 @@ import { textosEnEspanol } from "./ayudas-idioma";
 // La ayuda que detecta textos en español dentro de una página en inglés: se prueba con una página armada a mano.
 
 test("detecta 'Elegí un plan' suelto en una página en inglés", async ({ page }) => {
-  await page.setContent('<div id="r"><p>Choose your tribe</p><p>Elegí un plan</p></div>');
+  await page.setContent('<div id="r"><p>Choose your community</p><p>Elegí un plan</p></div>');
   expect(await textosEnEspanol(page, "#r")).toEqual(["un"]);
   await page.setContent('<div id="r"><p>Elegí un plan para ti</p></div>');
   expect(await textosEnEspanol(page, "#r")).toEqual(["un", "para"]);
@@ -19,7 +19,7 @@ test("ignora lo marcado con lang es y con translate no", async ({ page }) => {
   await page.setContent(
     `<div id="r">
        <p>Plain English text</p>
-       <p lang="es">Elegí un plan para tu tribu</p>
+       <p lang="es">Elegí un plan para tu comunidad</p>
        <p><span translate="no">Valle del Sol con sus ñandúes</span></p>
      </div>`,
   );

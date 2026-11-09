@@ -3,6 +3,7 @@
 // `lib/compromisos/mercado.ts` con su inglés. Lo que escribe la persona (descripción, cantidad de bienes) nunca se traduce.
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
 
@@ -154,4 +155,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const compromisos = { es, en };
+export const compromisos = conVocabulario({ es, en });

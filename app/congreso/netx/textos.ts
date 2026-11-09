@@ -2,6 +2,7 @@
 // TypeScript obliga a que el inglés tenga todas las claves del español. Un solo lugar para cambiarlos cuando se sepa
 // quién cobra el ticket (pregunta abierta para Gabriel).
 import type { Idioma } from "@/lib/congreso/idioma";
+import { conVocabulario } from "@/lib/idioma/vocabulario";
 
 const ES = {
   cinta: {
@@ -227,7 +228,7 @@ const EN: TextosNetx = {
   },
 };
 
-export const TEXTOS_NETX: Record<Idioma, TextosNetx> = { es: ES, en: EN };
+export const TEXTOS_NETX: Record<Idioma, TextosNetx> = conVocabulario({ es: ES, en: EN });
 
 export function textosNetx(idioma: Idioma = "es"): TextosNetx {
   return TEXTOS_NETX[idioma];

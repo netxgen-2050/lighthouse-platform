@@ -1,5 +1,6 @@
 // Textos que se repiten en todas las zonas: cada zona usa estos en lugar de repetirlos.
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const es = {
   cargando: "Cargando…",
@@ -43,4 +44,4 @@ const en: Textos<typeof es> = {
   de: "of",
 };
 
-export const comunes = { es, en };
+export const comunes = conVocabulario({ es, en });

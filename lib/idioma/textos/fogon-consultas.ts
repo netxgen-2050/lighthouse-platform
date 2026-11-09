@@ -5,6 +5,7 @@
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
 import type { AvisoPresupuesto } from "../../cuadratico/motor";
+import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
 
@@ -320,4 +321,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const fogonConsultas = { es, en };
+export const fogonConsultas = conVocabulario({ es, en });

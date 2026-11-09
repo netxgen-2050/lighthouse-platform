@@ -4,6 +4,7 @@
 import { nombreDelMes } from "../formatos";
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
 
@@ -108,4 +109,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const bandeja = { es, en };
+export const bandeja = conVocabulario({ es, en });

@@ -14,14 +14,14 @@ test.describe("portada en inglés", () => {
   test("título, los tres caminos y los enlaces", async ({ page }) => {
     await page.goto("/");
     await expect(html(page)).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Find your tribe.");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("A place to live.");
     await expect(page.getByText("Internal prototype · sample data")).toBeVisible();
-    for (const camino of ["See the tribes", "Find my tribe", "Congress · Feb 2027"]) {
+    for (const camino of ["See the communities", "Find my community", "Congress · Feb 2027"]) {
       await expect(page.getByRole("heading", { level: 3, name: camino })).toBeVisible();
     }
     await expect(page.getByRole("link", { name: "Explore the Lighthouse" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Choose how to join" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /See the tribes/ })).toContainText(/\d+ neighborhoods and the tribes forming them\./);
+    await expect(page.getByRole("link", { name: /See the communities/ })).toContainText(/\d+ neighborhoods and the communities forming them\./);
     expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
 
@@ -35,7 +35,7 @@ test("?lang=en&utm_source=deck muestra la portada en inglés y guarda el origen"
   await page.goto("/?lang=en&utm_source=deck");
   await expect(page).toHaveURL(/\/\?utm_source=deck$/);
   await expect(html(page)).toHaveAttribute("lang", "en");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Find your tribe.");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("A place to live.");
   await expect
     .poll(async () => JSON.parse((await page.evaluate(() => window.localStorage.getItem("lh-origen"))) ?? "{}").fuente)
     .toBe("deck");
@@ -51,7 +51,7 @@ test.describe("Sumarte en inglés", () => {
     await expect(html(page)).toHaveAttribute("lang", "en");
     await expect(page.getByRole("heading", { level: 1, name: "Choose how to join" })).toBeVisible();
     await expect(page.getByText("Internal prototype · sample data")).toBeVisible();
-    for (const plan of ["Explorer", "Member of the network", "Founder Pass", "Tribe Plan"]) {
+    for (const plan of ["Explorer", "Member of the network", "Founder Pass", "Community Plan"]) {
       await expect(page.getByRole("heading", { level: 2, name: new RegExp(`^${plan}`) })).toBeVisible();
     }
     const pase = tarjeta(page, /Founder Pass/);
@@ -77,7 +77,7 @@ test.describe("Sumarte en inglés", () => {
     await page.getByRole("button", { name: /^Yearly/ }).click();
     await expect(miembro).toContainText("USD 100/year");
     await expect(miembro).toContainText("2 months free");
-    await expect(tarjeta(page, /Tribe Plan/)).toContainText("2 months free");
+    await expect(tarjeta(page, /Community Plan/)).toContainText("2 months free");
   });
 
   test("el contenido no deja español suelto", async ({ page }) => {
@@ -141,13 +141,13 @@ test.describe("Sumarte en inglés con una cuenta Explorer", () => {
     await expect(page.getByText("Your current plan:")).toContainText("Member");
   });
 
-  test("el Plan Tribu muestra el estado de las tribus en inglés", async ({ page }) => {
+  test("el Plan Comunidad muestra el estado de las comunidades en inglés", async ({ page }) => {
     await page.goto("/sumarte");
-    await page.getByRole("button", { name: "Add my tribe" }).click();
-    await expect(page.getByRole("group", { name: "Which tribe will you lead?" })).toBeVisible();
+    await page.getByRole("button", { name: "Add my community" }).click();
+    await expect(page.getByRole("group", { name: "Which community will you lead?" })).toBeVisible();
     await expect(page.getByText("(Active)").first()).toBeVisible();
-    await page.getByRole("radio", { name: /Propose a new tribe/ }).check();
-    await expect(page.getByRole("button", { name: "Become leader of this tribe" })).toBeEnabled();
+    await page.getByRole("radio", { name: /Propose a new community/ }).check();
+    await expect(page.getByRole("button", { name: "Become leader of this community" })).toBeEnabled();
   });
 
   test("pesos: los montos y la nota del tipo de cambio van en inglés", async ({ page }) => {

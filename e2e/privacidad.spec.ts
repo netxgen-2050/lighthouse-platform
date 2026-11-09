@@ -69,7 +69,7 @@ test.describe("consentimiento al entrar", () => {
     await expect(dialogo.getByLabel(/Tu email/)).toBeVisible();
     await page.keyboard.press("Escape");
     await page.goto("/tribus");
-    await expect(page.getByRole("heading", { level: 1, name: "Tribus del Lighthouse" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Comunidades del Lighthouse" })).toBeVisible();
     await page.goto("/privacidad");
     await expect(page.getByRole("heading", { level: 1, name: "Política de privacidad" })).toBeVisible();
   });

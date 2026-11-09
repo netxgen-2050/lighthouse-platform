@@ -4,6 +4,7 @@
 // texto de los manifiestos viven en `lib/tribus/datos.ts` y `lib/manifiestos/datos.ts` (con su inglés).
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
 
@@ -517,4 +518,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const tribus = { es, en };
+export const tribus = conVocabulario({ es, en });

@@ -3,6 +3,7 @@
 // dibujan con `translate="no"`. El texto del terreno común y de los lugares vive en `lib/territorios/textos.ts`.
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
 
@@ -360,4 +361,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const territorio = { es, en };
+export const territorio = conVocabulario({ es, en });

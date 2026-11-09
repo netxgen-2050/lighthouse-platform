@@ -30,7 +30,7 @@ test("horas y fecha que faltan dicen sin dato, nunca 0", async ({ page }) => {
   await expect(m).toContainText("Tomada");
 });
 
-test("valle: hecha, círculo de la tribu, transversal con Hifa, máximos y sin máximo", async ({ page }) => {
+test("valle: hecha, círculo de la comunidad, transversal con Hifa, máximos y sin máximo", async ({ page }) => {
   await page.goto("/tribus/valle");
   await expect(necesidad(page, "valle-bioconstruccion").locator("summary")).toContainText("Hecha");
   const bio = await abrir(page, "valle-bioconstruccion");

@@ -2,6 +2,7 @@
 // (pendiente de revisión nativa). Los nombres propios de los lugares (Temazcal, Gaia Sapiens Institute) no se traducen.
 import { sinDato } from "@/lib/idioma/formatos";
 import { textoEn, type BilingueConOriginal, type Idioma } from "@/lib/idioma/tipos";
+import { vocabulario } from "@/lib/idioma/vocabulario";
 import type { Territorio } from "./tipos";
 
 export const TEXTO_COMUN: { para: BilingueConOriginal; cuida: BilingueConOriginal } = {
@@ -95,7 +96,7 @@ const TERRITORIOS: Record<string, TextosTerritorio> = {
 /** El territorio con ubicación, descripción y bienes comunes en un idioma. El nombre es propio y no se traduce. */
 export function territorioEn(t: Territorio, idioma: Idioma): Territorio {
   const textos = Object.hasOwn(TERRITORIOS, t.id) ? TERRITORIOS[t.id] : undefined;
-  if (idioma === "es" || !textos) return t;
+  if (idioma === "es" || !textos) return { ...t, descripcion: vocabulario(t.descripcion) };
   return {
     ...t,
     ubicacion: textoEn(textos.ubicacion, idioma),

@@ -2,6 +2,7 @@
 // marca de validación de la ficha de tribu y la sección "Quiénes te validaron" de Mi recorrido. Los nombres de tribus y
 // de círculos de ejemplo viven en `lib/tribus/datos.ts` y `lib/gobernanza/datos.ts` (con su inglés).
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const es = {
   titulo: "Cómo decidimos",
@@ -323,4 +324,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const gobernanza = { es, en };
+export const gobernanza = conVocabulario({ es, en });

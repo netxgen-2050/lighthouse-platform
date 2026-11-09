@@ -13,22 +13,22 @@ const barra =(page: Page) => page.getByRole("banner");
 const rail = (page: Page) => page.getByRole("navigation", { name: "Principal" });
 
 test.describe("páginas públicas sin sesión", () => {
-  test("Territorio: se ve el mapa, la ficha lateral y el panel de tribus", async ({ page }) => {
+  test("Territorio: se ve el mapa, la ficha lateral y el panel de comunidades", async ({ page }) => {
     await page.goto("/territorios/lighthouse?vista=vision");
     await expect(page.getByRole("heading", { name: "Mapa del Macrolote 7" })).toBeVisible();
     const ficha = page.getByRole("complementary", { name: "Ficha del territorio" });
     await expect(ficha).toBeVisible();
-    await expect(ficha.getByRole("heading", { name: "Tribus del territorio" })).toBeVisible();
+    await expect(ficha.getByRole("heading", { name: "Comunidades del territorio" })).toBeVisible();
     await expect(ficha.getByRole("link", { name: "Sumate para adherir" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toHaveCount(0);
     await expect(page.getByText("Prototipo interno · datos de ejemplo").first()).toBeVisible();
   });
 
-  test("Inicio y Tribus se ven sin entrar", async ({ page }) => {
+  test("Inicio y Comunidades se ven sin entrar", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1, name: /Encontrá tu tribu/ })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /Un lugar para vivir/ })).toBeVisible();
     await page.goto("/tribus?ver=tribus");
-    await expect(page.getByRole("heading", { level: 1, name: "Tribus del Lighthouse" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Comunidades del Lighthouse" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Sumate para proponer una comunidad" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /Proponer una comunidad para el Barrio/ })).toHaveCount(0);
   });
@@ -46,11 +46,11 @@ test.describe("páginas públicas sin sesión", () => {
 
   test("Adherir sin cuenta: se lee el manifiesto y en lugar de Adherir hay un llamado a sumarse", async ({ page }) => {
     await page.goto("/tribus/valle");
-    await expect(page.getByRole("link", { name: "Leer el manifiesto de la tribu" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Leer el manifiesto de la comunidad" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Sumate para adherir" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Adherir al manifiesto de la tribu" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Adherir al manifiesto de la comunidad" })).toHaveCount(0);
 
-    await page.getByRole("link", { name: "Leer el manifiesto de la tribu" }).click();
+    await page.getByRole("link", { name: "Leer el manifiesto de la comunidad" }).click();
     await expect(page).toHaveURL(/\/tribus\/valle\/manifiesto$/);
     await expect(page.getByRole("region", { name: "Texto del manifiesto" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Sumate para adherir" })).toBeVisible();
@@ -73,14 +73,14 @@ test.describe("páginas públicas sin sesión", () => {
     await expect(ficha).toBeVisible();
     // El botón "Barrio N" a secas es el de un barrio vacante (los que tienen tribu llevan su nombre).
     await expect(ficha.getByRole("link", { name: "Sumate para proponer una comunidad" })).toBeVisible();
-    await expect(ficha.getByRole("link", { name: "Conocer la tribu" })).toHaveCount(0);
+    await expect(ficha.getByRole("link", { name: "Conocer la comunidad" })).toHaveCount(0);
   });
 });
 
 test.describe("navegación sin sesión", () => {
   test("el rail muestra Descubrir y Sumarte completos y el resto deshabilitado con 'Sumate…'", async ({ page }) => {
     await page.goto("/");
-    for (const nombre of ["Inicio", "Territorio", "Tribus", "Sumarte"]) {
+    for (const nombre of ["Inicio", "Territorio", "Comunidades", "Sumarte"]) {
       await expect(rail(page).getByRole("link", { name: nombre, exact: true })).toBeVisible();
     }
     await expect(rail(page).getByRole("link", { name: "Compromisos", exact: true })).toHaveCount(0);

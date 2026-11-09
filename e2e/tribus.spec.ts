@@ -11,14 +11,14 @@ test("listado: 12 tarjetas en orden con estado escrito", async ({ page }) => {
   await expect(links.first()).toHaveAttribute("href", "/tribus/semilla");
   await expect(page.getByText("Estado: Activa").first()).toBeVisible();
   await expect(page.getByText("Estado: En formación").first()).toBeVisible();
-  await expect(page.getByText("Estado: Busca tribu").first()).toBeVisible();
-  await expect(page.getByText("Tribus, personas y cifras de ejemplo.")).toBeVisible();
+  await expect(page.getByText("Estado: Busca comunidad").first()).toBeVisible();
+  await expect(page.getByText("Comunidades, personas y cifras de ejemplo.")).toBeVisible();
 });
 
 test("listado: tres secciones con 3, 5 y 4 tarjetas", async ({ page }) => {
   await page.goto("/tribus?ver=tribus");
   const secciones = [
-    ["Tribus activas", "Ya tienen un compromiso con el Lighthouse y están construyendo su barrio.", 3],
+    ["Comunidades activas", "Ya tienen un compromiso con el Lighthouse y están construyendo su barrio.", 3],
     ["En formación", "Se están organizando para postularse a un barrio del Lighthouse.", 5],
     ["Barrios vacantes", "Buscan una comunidad. ¿Tenés una?", 4],
   ] as const;
@@ -53,7 +53,7 @@ test("monte: aviso de comunidad en formación; valle no lo tiene", async ({ page
   await expect(page.getByText("Esta comunidad está en formación")).toHaveCount(0);
 });
 
-test("valle: tribu activa", async ({ page }) => {
+test("valle: comunidad activa", async ({ page }) => {
   await page.goto("/tribus/valle");
   await expect(page.getByRole("heading", { name: "Valle Solar" })).toBeVisible();
   for (const h of ["Lo que tiene", "Lo que busca", "Lo que aporta al pozo común", "Cómo se entra"]) {
@@ -72,7 +72,7 @@ test("avelan: áreas abiertas marcadas con texto", async ({ page }) => {
 
 test("grano: barrio vacante", async ({ page }) => {
   await page.goto("/tribus/grano");
-  await expect(page.getByRole("heading", { name: "Barrio 3 busca tribu" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Barrio 3 busca comunidad" })).toBeVisible();
   for (const n of ["Agricultura extensiva", "Animales", "Molienda"]) {
     await expect(page.getByText(n)).toBeVisible();
   }
@@ -84,7 +84,7 @@ test("id desconocido: 404 con vuelta al listado", async ({ page }) => {
   // Desde `idioma-base` las páginas se arman por pedido y el estado HTTP ya no es 404 (ver ADR-004): se comprueba la pantalla.
   await page.goto("/tribus/no-existe");
   await expect(page.getByRole("heading", { level: 1, name: "No encontramos esa página" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Volver a las tribus" })).toHaveAttribute("href", "/tribus");
+  await expect(page.getByRole("link", { name: "Volver a las comunidades" })).toHaveAttribute("href", "/tribus");
 });
 
 const RITUAL = "Qué significa legalmente: Ritual de entrada";
@@ -288,7 +288,7 @@ test.describe("ficha completa", () => {
     await expect(page.getByText("USD 310.000 de USD 480.000 · 65%")).toBeVisible();
     await expect(page.getByText("9 de 14 · 64%")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Red de confianza" })).toBeVisible();
-    await expect(page.getByText("5 personas de la red avalan a esta tribu")).toBeVisible();
+    await expect(page.getByText("5 personas de la red avalan a esta comunidad")).toBeVisible();
     await expect(page.getByText("Prototipo interno · datos de ejemplo")).toBeVisible();
     await expect(page.locator("main")).toHaveCount(1);
   });
@@ -310,7 +310,7 @@ test.describe("ficha completa", () => {
     await expect(boton).toBeFocused();
     const tooltip = page.getByRole("tooltip");
     await expect(tooltip).toContainText("Licencia de uso");
-    await expect(tooltip).toContainText("La tribu no compra tierra");
+    await expect(tooltip).toContainText("La comunidad no compra tierra");
   });
 
   test("sala simulada (siendo miembro): anuncia y no cambia la URL", async ({ page }) => {
@@ -334,7 +334,7 @@ test.describe("ficha completa", () => {
     await page.goto("/tribus/grano");
     await expect(page.getByText("USD 0 de USD 260.000 · 0%")).toBeVisible();
     await expect(page.getByText("0 de 10 · 0%")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "¿Tenés una tribu?" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "¿Tenés una comunidad?" })).toBeVisible();
     await expect(page.getByText("Red de confianza")).toHaveCount(0);
     await page.getByRole("link", { name: "Proponer una comunidad" }).click();
     await expect(page).toHaveURL(/\/tribus\/grano\/postular$/);

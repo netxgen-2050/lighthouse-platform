@@ -2,6 +2,7 @@
 // Los nombres de las secciones salen del glosario (una sola fuente).
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
 
@@ -157,4 +158,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const marco = { es, en };
+export const marco = conVocabulario({ es, en });

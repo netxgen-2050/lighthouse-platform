@@ -2,6 +2,7 @@
 // llegan por parámetro desde `lib/lotes/modelo.ts` y `lib/lotes/escenarios.ts` (lo vigila `lib/lotes/sin-numeros-escritos.test.ts`).
 // En español se dice "bien común"; en inglés, "commons". Los tres escenarios son de ejemplo y ninguno es un presupuesto.
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const es = {
   titulo: "Qué es tuyo y qué es de todos",
@@ -181,4 +182,4 @@ const en: Textos<typeof es> = {
     `Source of the lot values: ${fuente} · version ${version} · ${fecha}. All of them are samples.`,
 };
 
-export const hibrido = { es, en };
+export const hibrido = conVocabulario({ es, en });
