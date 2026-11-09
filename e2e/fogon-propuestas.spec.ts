@@ -152,6 +152,8 @@ test.describe("fases y discusión", () => {
 
 test.describe("permisos y niveles", () => {
   test("cambiar de nivel cambia las acciones: en preguntas el ámbito no ve levantar un concern", async ({ page }) => {
+    // Con el reloj real ya pasó la fase de preguntas (empezó el 28-oct).
+    await page.clock.setFixedTime(new Date("2026-10-30T15:00:00Z"));
     await page.goto("/fogon/propuestas/cisterna-compartida");
     await page.getByLabel(NIVEL).selectOption("ambito");
     const hacer = page.getByRole("region", { name: "Qué podés hacer" });
