@@ -178,8 +178,11 @@ export default async function HibridoPage() {
               return (
                 <li key={e.id} className="grid content-start gap-2 rounded-lg border border-faint p-3 text-sm">
                   <h4 className="font-semibold">{en ? e.nombre.en : e.nombre.es}</h4>
-                  <p className="font-medium">{t.alcanza.costoAnual(usdEn(e.costoAnual, idioma))}</p>
+                  <p className="font-medium">
+                    {(e.soloPrimerAnio ? t.alcanza.costoPrimerAnio : t.alcanza.costoAnual)(usdEn(e.costoAnual, idioma))}
+                  </p>
                   <p className={MARCA}>{t.alcanza.marca}</p>
+                  {e.soloPrimerAnio && <p className="text-muted">{t.alcanza.notaPrimerAnio}</p>}
                   <p className="text-muted">
                     {t.alcanza.fuente} {en ? e.fuente.en : e.fuente.es}
                   </p>

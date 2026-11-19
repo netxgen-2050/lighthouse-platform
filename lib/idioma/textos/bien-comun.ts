@@ -105,7 +105,7 @@ const es = {
     titulo: "Venta temprana por tramos",
     avance: (pct: string, tramo: string) => `Avance de ejemplo: el tramo ${tramo} está vendido al ${pct}.`,
     intro:
-      "Es una curva escalonada: el precio sube de tramo en tramo, así quien llega antes paga menos. La mostramos por tramos porque es más fácil de entender que una curva continua.",
+      "Es una curva escalonada de ejemplo: el precio cambia de tramo en tramo. Es un mecanismo para conversar en el equipo, no una expectativa de que FARO valga más. La mostramos por tramos porque es más fácil de entender que una curva continua.",
     caption: "Tramos de la venta temprana: cantidad, precio y total en USD",
     tramo: "Tramo",
     cantidad: "Cantidad",
@@ -144,9 +144,9 @@ const es = {
     },
     b: {
       nombre: "Opción B",
-      que: (anual: string) => `Bloquear da ${anual} anual en tokens nuevos.`,
+      que: (anual: string) => `Mecanismo de ejemplo: bloquear daría ${anual} anual en tokens nuevos.`,
       favorece: "A quien bloquea.",
-      riesgo: "Emitir tokens nuevos diluye a quien no bloquea.",
+      riesgo: "Emitir tokens nuevos diluye a quien no bloquea, y puede leerse como un rendimiento: a verificar con abogado.",
     },
     cierre: "Para conversar: la opción A premia el compromiso sin emitir más.",
   },
@@ -308,7 +308,7 @@ const en: Textos<typeof es> = {
     titulo: "Early sale in tranches",
     avance: (pct: string, tramo: string) => `Sample progress: tranche ${tramo} is ${pct} sold.`,
     intro:
-      "It is a stepped curve: the price goes up from tranche to tranche, so whoever arrives early pays less. We show it by tranches because it is easier to understand than a continuous curve.",
+      "It is a sample stepped curve: the price changes from tranche to tranche. It is a mechanism for the team to talk about, not an expectation that FARO will be worth more. We show it by tranches because it is easier to understand than a continuous curve.",
     caption: "Early sale tranches: amount, price and total in USD",
     tramo: "Tranche",
     cantidad: "Amount",
@@ -346,9 +346,9 @@ const en: Textos<typeof es> = {
     },
     b: {
       nombre: "Option B",
-      que: (anual: string) => `Locking gives ${anual} a year in new tokens.`,
+      que: (anual: string) => `Sample mechanism: locking would give ${anual} a year in new tokens.`,
       favorece: "Whoever locks.",
-      riesgo: "Issuing new tokens dilutes whoever does not lock.",
+      riesgo: "Issuing new tokens dilutes whoever does not lock, and it can read as a yield: to be verified with a lawyer.",
     },
     cierre: "To talk about: option A rewards commitment without issuing more.",
   },

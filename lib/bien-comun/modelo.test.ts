@@ -11,6 +11,7 @@ import {
   disponiblePorTramo,
   faroDeGrupo,
   faroDeLote,
+  loteTraeFaro,
   reparto,
   totalPorTramo,
 } from "./modelo";
@@ -34,6 +35,11 @@ describe("modelo del bien común", () => {
     expect(faroDeLote(100)).toBe(100 * FARO_POR_M2);
     expect(faroDeLote(undefined)).toBeNull();
     expect(faroDeLote(0)).toBeNull();
+  });
+
+  it("los primeros 4 lotes no traen NFT ni FARO; los del sector norte sí", () => {
+    expect(loteTraeFaro("primeros")).toBe(false);
+    expect(loteTraeFaro("norte")).toBe(true);
   });
 
   it("centroDeAnillo promedia los vértices y no cuenta dos veces el que cierra", () => {

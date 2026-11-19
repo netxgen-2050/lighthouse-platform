@@ -31,12 +31,14 @@ La página SHALL mostrar el aporte único y las expensas por lote, leídos del m
 - **WHEN** una persona lee "Cuánto aporta cada lote"
 - **THEN** lee que el aporte único es el 5 % de lo que se paga, "USD 1.200" por año y "sin dato" sobre si el aporte va incluido
 
-### Requirement: Por qué la venta sola no alcanza
-La página SHALL mostrar tres escenarios de costo anual del bien común (Arranque, Simulación de octubre y Alternativa alta), cada uno con su fuente y la marca "de ejemplo, no es un presupuesto", y qué parte cubre la venta en cada uno. MUST decir que el costo real no está calculado y falta el dato de Vagner, y que el bien común es el 100 % de la tierra. MUST NOT mostrar una cifra de "lo que falta" como si fuera un dato. Ningún número MUST estar escrito en la página.
+### Requirement: Qué cubre la venta y qué queda después
+(Antes "Por qué la venta sola no alcanza". Gus, 19-nov: el título cambia porque, con los valores de ejemplo, la venta sí cubre dos escenarios mientras dura; lo que no alcanza es lo que queda después.)
+La página SHALL mostrar tres escenarios de costo del bien común (Arranque, Simulación de octubre y Alternativa alta), cada uno con su fuente y la marca "de ejemplo, no es un presupuesto", y qué parte cubre la venta en cada uno, durante la venta y después. Arranque MUST rotularse "el primer año", no "por año", y decir que es un gasto del primer año que la cuenta trata como si se repitiera. MUST decir que el costo real no está calculado y falta el dato de Vagner, y que el bien común es el 100 % de la tierra. MUST NOT mostrar una cifra de "lo que falta" como si fuera un dato. Ningún número MUST estar escrito en la página.
 
 #### Scenario: Tres escenarios
 - **WHEN** una persona lee esa sección
 - **THEN** lee "Arranque", "Simulación de octubre" y "Alternativa alta", cada uno con su fuente y "de ejemplo, no es un presupuesto"
+- **AND** el monto de Arranque dice "el primer año" y los otros dos "por año"
 - **AND** lee que el costo real del bien común falta y que hay que pedírselo a Vagner
 - **AND** no lee "USD 42.000" ni "USD 46.800"
 
