@@ -2,6 +2,8 @@
 
 - **Estado:** Propuesta
 - **Fecha:** 2026-10-23
+- **Revisión 2026-11-12 (solo referencia desde el 19-nov):** se estudió qué cambiaría si la tokenización fuera por Hadron (Tether). **No es una decisión:** Hadron fue una posibilidad que salió en una llamada y hoy está parada (Gus, 19-nov; R44 de Segunda revisión, backlog D44 abierto). Las reglas de este ADR no cambian. Ver la sección "Revisión del 12-nov-2026: Hadron (referencia)".
+- **Nota 2026-11-19 sobre el login:** este ADR da por decidido Neon Auth, pero el login sigue abierto entre Privy y Neon Auth (R17 de Segunda revisión). La billetera **no necesita integrarse con el OAuth** de ninguno de los dos: la passkey no es un login y Candide no consume nuestro token. Se une por `personas.id`, que el servidor saca de la sesión, sea cual sea el proveedor. Si queda Privy, la opción B (Privy con cuentas Safe) vuelve a competir con la A.
 - **Cambio OpenSpec relacionado:** ninguno todavía (`billeteras-safe` a especificar si se acepta). Completa el punto 2 de ADR-009 ("el proveedor de billeteras se elige en noviembre con una prueba"); no cambia el login de `login-neon-auth`.
 
 ## Contexto
@@ -56,6 +58,36 @@ Gus prefiere Candide (23-oct). Este ADR lo compara con las alternativas y fija c
 - Riesgo: ningún proveedor de la lista pudo verificarse con Neon Auth en la práctica. Con Candide no hace falta, porque no consume nuestro JWT.
 - **Revisar:** con el resultado de la prueba de noviembre (fecha de ADR-009: 15-nov-2026); si Candide cambia el plan gratis o los términos; antes de la primera operación en red real.
 
+## Revisión del 12-nov-2026: Hadron (referencia)
+> **19-nov-2026: esta sección es solo referencia.** Hadron fue una posibilidad, no una decisión, y está parada; la intuición de Gus (a confirmar) es que no se va a usar. Nada de lo que sigue se aplica a las reglas de arriba, y la prueba de billetera no depende del sandbox de Hadron. Queda escrito por si la opción vuelve.
+
+**Contexto (12-nov).** Se planteó que lo tokenizable lo emitiera y operara **Hadron**, la plataforma de tokenización de Tether, con Gus a cargo de la UX (backlog D44, R44). Como la plata de las ventas la cobra NetXGen (R43), NetXGen sería el emisor en Hadron **[criterio]**.
+
+**Lo que pide Hadron (documentación pública, consultada el 10-nov-2026):**
+| Tema | Dato | Qué implica acá |
+|---|---|---|
+| Rol de Hadron | Solo da la tecnología. No custodia llaves y no hace el KYC ni el AML por el emisor (términos §3, §4.3) | El emisor (NetXGen) responde por el cumplimiento **[verificar]** |
+| Autenticación | Par API-KEY + API-SECRET del emisor que firma cada pedido. Hay sandbox (`api.hadron-beta.tether.to`). Límite: 100 pedidos por minuto | Las claves van **solo en el servidor**, igual que la URL de Candide (regla 5) |
+| Billetera de la persona | Dirección EVM `0x…` registrada como "external wallet", por defecto vía WalletConnect. La API **no pide prueba de titularidad** | La prueba la hacemos nosotros (firma verificada en el servidor) antes de registrar la dirección |
+| Transferencias | Hadron devuelve un `rawTransaction` (from, to, data, nonce, gas, chainId) para que lo firme la billetera de la persona | Es el formato de una EOA. **Una Safe no lo firma tal cual**: hay que tomar `to` + `data` y mandarlos como operación de la Safe (UserOperation). No está documentado cómo Hadron registra después la transacción **[NC]** |
+| Lista blanca | Contrato de permisos y alta de direcciones con propuesta multifirma | La dirección de una Safe se puede agregar aunque todavía no esté desplegada |
+| KYC del inversor | `kyc/investor/initiate` devuelve un `kycUrl` del portal de cumplimiento de Hadron | Derivar al portal y guardar solo el resultado (Ley 25.326, R29) |
+| Redes | Al lanzar: Ethereum, Avalanche y Liquid; una fuente agrega BSC y TON estaba anunciada **[S]**. Base y Optimism **no aparecen** **[NC]** | Choca con la regla 6 |
+
+**Cambios a este ADR si se fuera por Hadron (no aplicados):**
+1. **Regla 6:** la red ya no se elige entre Base y Optimism. Es la red donde el emisor emita en Hadron. Candide soporta Ethereum, Avalanche, BSC y Plasma (la red de Tether), entre otras.
+2. **Adaptador de firma:** el servidor traduce el `rawTransaction` de Hadron a una operación de la Safe. El navegador sigue firmando solo con la passkey.
+3. **Los tres caminos siguen.** El de "web3 sin Safe" (billetera propia por WalletConnect) es el que Hadron trae por defecto, así que sale casi sin trabajo.
+4. **La prueba del 15-nov se hace en el sandbox de Hadron**, no solo en una testnet: una transferencia de punta a punta firmada desde una Safe con passkey. Si no anda, los planes B son, en orden: una Safe cuya dueña sea una EOA, o una billetera embebida EOA (Privy) solo para los activos de Hadron.
+5. **Riesgo nuevo:** si Hadron pide mensajes firmados, una Safe con passkey firma con EIP-1271 + WebAuthn, y muchos servidores solo verifican firmas de EOA. Hay que preguntarlo.
+
+**Preguntas para Hadron (vía Juanpi, solo si la opción vuelve):**
+- ¿En qué red se emitiría el activo? ¿Hay Base, Optimism o Plasma?
+- ¿Aceptan billeteras de contrato (Safe, ERC-4337) como billetera del inversor? ¿Verifican firmas EIP-1271?
+- ¿Cómo se informa la transacción firmada (hash, `PATCH /transactions`)?
+- ¿De dónde sale el token `bearerAuth` de las Client APIs? ¿El flujo del inversor puede ser todo marca blanca, o necesita una cuenta en Hadron?
+- ¿Quién es responsable de los datos del portal de KYC? ¿Tienen PSAV o un socio registrado en Argentina?
+
 ## En palabras simples
 Para entrar a la plataforma seguís usando tu email o Google, como ya estaba decidido. Lo nuevo es la "cuenta" donde van a quedar tus Semillas y tus constancias: en vez de una llave que guarda una empresa, es una caja fuerte (Safe) que se abre con tu huella o tu cara. Si perdés el teléfono, hay un mecanismo de recuperación con espera. Si un día cambiamos de proveedor, la caja fuerte es la misma: solo cambia quién tiene la llave. Y si Ana ya usa MetaMask, puede usar la suya.
 
@@ -66,3 +98,4 @@ Para entrar a la plataforma seguís usando tu email o Google, como ya estaba dec
 - MetaMask Embedded Wallets: `metamask.io/developer/embedded-wallets`. Pimlico: `pimlico.io/pricing`.
 - Neon Auth: `neon.com/docs/auth/guides/plugins/jwt`, `/auth/migrate/from-stack-auth`.
 - Consultoría con Bertrand, 23-oct-2026 (nota en `NS_platform/Documentation/reuniones/`).
+- Revisión del 12-nov (consultado el 10-nov-2026): Hadron API `api-docs.hadron.tether.to` (`llms.txt`, `/docs/requirements-and-limitations`, `/docs/authenticated-endpoints`, `/docs/roles`, `/reference/post_integrations-users-wallets`, `/reference/posttokenclienttransfer`, `/reference/postpermissioncontrolwhitelistuser`, `/reference/post_kyc-investor-initiate`, `/reference/post_transaction`, `/reference/getblockchainsall`); términos `hadron.tether.to/en/terms-of-use`; redes al lanzamiento según CoinDesk y Blockhead (nov-2024); `docs.candide.dev/wallet/api/supported-networks`.
