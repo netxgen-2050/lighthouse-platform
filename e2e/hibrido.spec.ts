@@ -88,7 +88,7 @@ test.describe("sin sesión", () => {
 
   test("tres escenarios con fuente, la marca de ejemplo, lo que cubre la venta y ninguna cifra de faltante", async ({ page }) => {
     await page.goto(RUTA);
-    const s = seccion(page, "Por qué la venta sola no alcanza");
+    const s = seccion(page, "Qué cubre la venta y qué queda después");
     await expect(s).toContainText("falta el dato de Vagner");
     await expect(s).toContainText("el 100 % de la tierra");
     await expect(s).toContainText("más de USD");
@@ -107,7 +107,9 @@ test.describe("sin sesión", () => {
     for (const e of ESCENARIOS_COSTO) {
       const c = coberturaDeEscenario(e.id)!;
       const tarjeta = s.getByRole("listitem").filter({ has: page.getByRole("heading", { level: 4, name: e.nombre.es }) });
-      await expect(tarjeta).toContainText(`${usdEn(e.costoAnual, "es")} por año`);
+      // Arranque es un gasto del primer año: se rotula así y lo dice (decisión B), los otros dos son por año.
+      await expect(tarjeta).toContainText(`${usdEn(e.costoAnual, "es")} ${e.soloPrimerAnio ? "el primer año" : "por año"}`);
+      if (e.soloPrimerAnio) await expect(tarjeta).toContainText("Es un gasto del primer año, no de todos los años");
       await expect(tarjeta).toContainText(
         `suman ${usdEn(c.duranteLaVenta, "es")} por año: cubren el ${porcentajeEn(c.fraccionDuranteLaVenta, "es")} de este costo`,
       );
@@ -122,7 +124,7 @@ test.describe("sin sesión", () => {
 
   test("lo que hay que preguntarle a Vagner", async ({ page }) => {
     await page.goto(RUTA);
-    const s = seccion(page, "Por qué la venta sola no alcanza");
+    const s = seccion(page, "Qué cubre la venta y qué queda después");
     await expect(s.getByRole("heading", { level: 3, name: "Lo que hay que preguntarle a Vagner" })).toBeVisible();
     await expect(s).toContainText("CAPEX");
     await expect(s).toContainText("OPEX");
@@ -131,7 +133,7 @@ test.describe("sin sesión", () => {
 
   test("calculadora con el teclado: elegir escenario, cambiar costo, expensa y lotes, y la región anuncia el resultado", async ({ page }) => {
     await page.goto(RUTA);
-    const s = seccion(page, "Por qué la venta sola no alcanza");
+    const s = seccion(page, "Qué cubre la venta y qué queda después");
     const resultado = s.getByRole("status");
     await expect(resultado).toHaveAttribute("aria-live", "polite");
     const [arranque, simulacion] = ESCENARIOS_COSTO;
@@ -176,7 +178,7 @@ test.describe("sin sesión", () => {
     page.on("request", (r) => {
       if (r.method() !== "GET") pedidos.push(`${r.method()} ${r.url()}`);
     });
-    const s = seccion(page, "Por qué la venta sola no alcanza");
+    const s = seccion(page, "Qué cubre la venta y qué queda después");
     await s.getByLabel("Cantidad de lotes").fill("7");
     await expect(s.getByRole("status")).toContainText("Durante la venta entran");
     expect(pedidos).toEqual([]);
@@ -264,7 +266,7 @@ test.describe("en inglés", () => {
 
   test("la calculadora y los cuatro resguardos se leen en inglés", async ({ page }) => {
     await page.goto(`${RUTA}?lang=en`);
-    const s = page.getByRole("region", { name: "Why selling alone is not enough" });
+    const s = page.getByRole("region", { name: "What the sales cover and what is left after" });
     await expect(s.getByLabel("Number of lots")).toBeVisible();
     await s.getByLabel("Number of lots").fill("0");
     await expect(s.getByRole("status")).toContainText("there is no data");

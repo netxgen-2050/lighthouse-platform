@@ -32,7 +32,7 @@ const es = {
     primeros: "Los primeros 4 lotes no se suman: si aportan al bien común de Lighthouse, sin dato.",
   },
   alcanza: {
-    titulo: "Por qué la venta sola no alcanza",
+    titulo: "Qué cubre la venta y qué queda después",
     intro:
       "El costo real del bien común todavía no está calculado: falta el dato de Vagner. Lo que sigue son tres escenarios de ejemplo, cada uno con su fuente. Ninguno es un presupuesto.",
     paraQueTitulo: "Para qué es la plata",
@@ -50,9 +50,11 @@ const es = {
       "Seguros y tasas",
     ],
     rubroSinDato: (rubro: string) => `${rubro}: sin dato · a confirmar con Vagner`,
-    escenariosTitulo: "Tres escenarios de costo anual del bien común",
+    escenariosTitulo: "Tres escenarios de costo del bien común",
     marca: "de ejemplo, no es un presupuesto",
     costoAnual: (monto: string) => `${monto} por año`,
+    costoPrimerAnio: (monto: string) => `${monto} el primer año`,
+    notaPrimerAnio: "Es un gasto del primer año, no de todos los años. Para comparar, la cuenta lo trata como si se repitiera.",
     fuente: "Fuente:",
     cubreVenta: (anios: string, lotes: string, monto: string, pct: string) =>
       `Durante los ${anios} años de venta, el aporte único repartido y las expensas de los ${lotes} lotes suman ${monto} por año: cubren el ${pct} de este costo.`,
@@ -121,7 +123,7 @@ const en: Textos<typeof es> = {
     primeros: "The first 4 lots are not added: whether they contribute to the Lighthouse commons is no data.",
   },
   alcanza: {
-    titulo: "Why selling alone is not enough",
+    titulo: "What the sales cover and what is left after",
     intro:
       "The real cost of the commons is not calculated yet: Vagner's figure is missing. What follows are three sample scenarios, each with its source. None of them is a budget.",
     paraQueTitulo: "What the money is for",
@@ -139,9 +141,11 @@ const en: Textos<typeof es> = {
       "Insurance and fees",
     ],
     rubroSinDato: (rubro: string) => `${rubro}: no data · to be confirmed with Vagner`,
-    escenariosTitulo: "Three scenarios of yearly cost of the commons",
+    escenariosTitulo: "Three scenarios of the cost of the commons",
     marca: "sample, not a budget",
     costoAnual: (monto: string) => `${monto} per year`,
+    costoPrimerAnio: (monto: string) => `${monto} in the first year`,
+    notaPrimerAnio: "It is a first-year cost, not a yearly one. To compare, the calculation treats it as if it repeated.",
     fuente: "Source:",
     cubreVenta: (anios: string, lotes: string, monto: string, pct: string) =>
       `During the ${anios} years of sales, the one-off contribution spread out and the common charges of the ${lotes} lots add up to ${monto} per year: ${pct} of this cost.`,

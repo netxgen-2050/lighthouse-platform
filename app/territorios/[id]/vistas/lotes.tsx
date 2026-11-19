@@ -7,7 +7,7 @@ import { TerminoLegal } from "@/components/termino-legal";
 import { usdEn } from "@/lib/lotes/formato";
 import { precioLote } from "@/lib/lotes/modelo";
 import { faroEn } from "@/lib/bien-comun/formato";
-import { faroDeLote } from "@/lib/bien-comun/modelo";
+import { faroDeLote, loteTraeFaro } from "@/lib/bien-comun/modelo";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { textoSuperficieM2 } from "@/lib/territorios/biopueblo";
 import { fuenteDelLoteo, listarLotes } from "@/lib/territorios/loteo";
@@ -71,10 +71,12 @@ export function FichaLote({ id }: { id: string }) {
         {precio === null ? lt.precio.sinSuperficie : lt.precio.valor(usdEn(precio, idioma))}
         <TerminoLegal clave="precioreferencia" idioma={idioma} />
       </p>
-      <p className="text-sm">
-        <strong>{tb.ficha.faroPanel}:</strong> {faroEn(faroDeLote(lote.superficieM2), idioma)}
-        <TerminoLegal clave="tokenbiencomun" idioma={idioma} />
-      </p>
+      {loteTraeFaro(lote.grupo) && (
+        <p className="text-sm">
+          <strong>{tb.ficha.faroPanel}:</strong> {faroEn(faroDeLote(lote.superficieM2), idioma)}
+          <TerminoLegal clave="tokenbiencomun" idioma={idioma} />
+        </p>
+      )}
       <p className="text-sm font-medium">
         {tx.ficha.estado} <EstadoDeUnLote id={lote.id} />
       </p>

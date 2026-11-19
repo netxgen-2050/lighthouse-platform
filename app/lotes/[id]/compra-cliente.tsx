@@ -29,6 +29,8 @@ type Props = {
   loteId: string;
   numero: number;
   proyecto: IdProyecto;
+  /** Si el lote trae NFT y FARO (`loteTraeFaro`): los primeros 4 no, y el boleto no lo menciona. */
+  traeFaro: boolean;
   superficieM2?: number;
   opcion: OpcionCompra;
   vio: LoVisto;
@@ -38,7 +40,7 @@ type Props = {
   compra?: CompraLote;
 };
 
-export function CompraSimulada({ loteId, numero, proyecto, superficieM2, opcion, vio, compras, guardar, compra }: Props) {
+export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM2, opcion, vio, compras, guardar, compra }: Props) {
   const idioma = useIdioma();
   const t = useTextos("lotes");
   const tl = useTextos("territorio").loteo;
@@ -269,7 +271,7 @@ export function CompraSimulada({ loteId, numero, proyecto, superficieM2, opcion,
             <li>
               {t.boleto.hibrido} {compra.vio.hibridoAceptado ?? sinDato(idioma)}
             </li>
-            <li>{tb.boleto(String(numero), faroEn(compra.vio.faro, idioma))}</li>
+            {traeFaro && <li>{tb.boleto(String(numero), faroEn(compra.vio.faro, idioma))}</li>}
             <li className="text-muted">
               {t.boleto.modelo}: {compra.vio.fuente ?? sinDato(idioma)} · {compra.vio.version}
             </li>

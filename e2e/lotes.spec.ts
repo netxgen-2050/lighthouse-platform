@@ -389,6 +389,18 @@ test.describe("los primeros 4 lotes", () => {
     const boleto = page.getByRole("region", { name: /Boleto de ejemplo/ });
     await expect(boleto).toContainText("Lote 535");
     await expect(boleto).toContainText("Aprobación municipal: informada, sin documento a la vista");
+    // Los primeros 4 no traen NFT ni FARO (decisión D, 19-nov): el boleto no los menciona.
+    await expect(boleto).not.toContainText("NFT");
+    await expect(boleto).not.toContainText("FARO");
+  });
+
+  test("no muestran la tarjeta del NFT ni FARO, en la ficha ni en el panel del mapa", async ({ page }) => {
+    await page.goto(`/lotes/${primero.id}`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lote 535");
+    await expect(page.getByRole("region", { name: /NFT del lote/ })).toHaveCount(0);
+    await page.goto(`/territorios/lighthouse?sel=${primero.id}`);
+    await expect(page.getByRole("heading", { level: 2, name: "Lote 535" })).toBeVisible();
+    await expect(page.getByText(/FARO que trae/)).toHaveCount(0);
   });
 
   test("en inglés", async ({ page }) => {

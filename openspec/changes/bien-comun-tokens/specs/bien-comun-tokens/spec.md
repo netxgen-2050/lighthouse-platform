@@ -7,7 +7,7 @@ Mostrar, como simulación para el equipo, cómo un NFT por lote y un token del b
 ## ADDED Requirements
 
 ### Requirement: Página del bien común
-`/bien-comun` SHALL mostrar "El bien común de Lighthouse VRN" con un aviso fijo de que es una simulación, no se emite ningún token, nada se cobra y nada está decidido. MUST ser pública, bilingüe y estar enlazada desde el rail, `/lotes`, `/lotes/hibrido`, cada ficha y la sección Invertir de Sumarte.
+`/bien-comun` SHALL mostrar "El bien común de Lighthouse VRN" con un aviso fijo de que es una simulación, no se emite ningún token, nada se cobra y nada está decidido. MUST ser pública, bilingüe y estar enlazada desde el rail, `/lotes`, `/lotes/hibrido`, cada ficha de `lighthouse-norte` y la sección Invertir de Sumarte.
 
 #### Scenario: Aviso
 - **WHEN** una persona sin sesión abre `/bien-comun`
@@ -39,7 +39,7 @@ La página SHALL mostrar el reparto del token (que suma 100 %, con tabla además
 - **THEN** lee los cuatro grupos con su porcentaje en una tabla
 
 ### Requirement: Venta temprana por tramos
-La página SHALL mostrar los tramos y una calculadora accesible que, para un monto en USD, diga cuántos tokens recibiría, el precio promedio, los tramos que toca y lo que iría al tesoro. MUST decir que no se puede comprar y MUST NOT guardar nada.
+La página SHALL mostrar los tramos y una calculadora accesible que, para un monto en USD, diga cuántos tokens recibiría, el precio promedio, los tramos que toca y lo que iría al tesoro. MUST decir que no se puede comprar y MUST NOT guardar nada. MUST presentar los tramos como un mecanismo de ejemplo y MUST NOT sugerir que FARO vale más con el tiempo ni que quien llega antes paga menos (Gus, 19-nov).
 
 #### Scenario: Calcular
 - **WHEN** una persona escribe un monto con el teclado
@@ -50,18 +50,22 @@ La página SHALL mostrar los tramos y una calculadora accesible que, para un mon
 - **THEN** lee el monto mínimo, sin resultado
 
 ### Requirement: Staking, CAPEX y OPEX, riesgos
-La página SHALL comparar las dos opciones de staking, decir de dónde saldría la plata para inversión inicial y para mantenimiento (montos "sin dato"), nombrar los referentes como "a verificar" y listar los riesgos legales y las decisiones pendientes. MUST NOT hablar de ganancia, retorno ni valorización.
+La página SHALL comparar las dos opciones de staking, decir de dónde saldría la plata para inversión inicial y para mantenimiento (montos "sin dato"), nombrar los referentes como "a verificar" y listar los riesgos legales y las decisiones pendientes. La opción B (tokens nuevos por bloquear) MUST presentarse como mecanismo de ejemplo y decir que puede leerse como un rendimiento, a verificar con abogado (Gus, 19-nov). MUST NOT hablar de ganancia, retorno ni valorización.
 
 #### Scenario: Sin promesas
 - **WHEN** se busca "ganancia", "retorno" o "valorización" en la página
 - **THEN** no aparece
 
 ### Requirement: NFT en la ficha y en el boleto
-Cada ficha SHALL mostrar "NFT del lote (simulado)" con su metadata y los tokens que traería, leídos del módulo. El boleto de ejemplo SHALL decir que se acuñaría el NFT y se asignarían esos tokens, todo simulado. La nota provisoria de costos MUST NOT decir "RAIZ".
+Cada ficha de `lighthouse-norte` SHALL mostrar "NFT del lote (simulado)" con su metadata y los tokens que traería, leídos del módulo. El boleto de ejemplo SHALL decir que se acuñaría el NFT y se asignarían esos tokens, todo simulado. Los primeros 4 lotes (`lighthouse-primeros`) MUST NOT mostrar la tarjeta ni FARO en la ficha, el boleto ni el panel del mapa: si aportan al bien común es "sin dato" (R40; Gus, 19-nov). La nota provisoria de costos MUST NOT decir "RAIZ".
 
 #### Scenario: Ficha
-- **WHEN** una persona abre `/lotes/lote-535`
+- **WHEN** una persona abre `/lotes/lote-1`
 - **THEN** lee "NFT del lote (simulado)" y los FARO que trae ese lote
+
+#### Scenario: Primeros 4 lotes
+- **WHEN** una persona abre `/lotes/lote-535`, reserva y simula el pago, o lo elige en el mapa
+- **THEN** no lee "NFT del lote" ni FARO
 
 #### Scenario: Boleto
 - **WHEN** reserva y simula el pago

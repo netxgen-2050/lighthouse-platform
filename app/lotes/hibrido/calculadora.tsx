@@ -51,7 +51,8 @@ export function Calculadora({ expensaInicial, lotesIniciales }: Props) {
               className="size-4 accent-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
             />
             <span>
-              {idioma === "en" ? e.nombre.en : e.nombre.es} · {t.alcanza.costoAnual(usdEn(e.costoAnual, idioma))}
+              {idioma === "en" ? e.nombre.en : e.nombre.es} ·{" "}
+              {(e.soloPrimerAnio ? t.alcanza.costoPrimerAnio : t.alcanza.costoAnual)(usdEn(e.costoAnual, idioma))}
             </span>
           </label>
         ))}

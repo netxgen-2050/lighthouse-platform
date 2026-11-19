@@ -10,7 +10,7 @@ import { TerminoLegal } from "@/components/termino-legal";
 import { TextoEstado } from "@/components/lotes/estado-del-lote";
 import { useCompras } from "@/components/lotes/usar-compras";
 import { faroEn } from "@/lib/bien-comun/formato";
-import { centroDeAnillo, faroDeLote } from "@/lib/bien-comun/modelo";
+import { centroDeAnillo, faroDeLote, loteTraeFaro } from "@/lib/bien-comun/modelo";
 import { guardarPedido } from "@/lib/contactos/almacen";
 import type { Pedido } from "@/lib/contactos/tipos";
 import { sinDato as textoSinDato } from "@/lib/idioma/formatos";
@@ -108,7 +108,9 @@ export function FichaCliente({ id }: { id: string }) {
   const aporte = precio === null ? null : aporteDe(precio);
   const parte = precioDelLote === null ? null : parteDelDuenoDe(precioDelLote);
   const sd = textoSinDato(idioma);
-  const faro = faroDeLote(lote.superficieM2);
+  // Los primeros 4 lotes no traen NFT ni FARO (loteTraeFaro): no se muestra la tarjeta ni se guarda en la reserva.
+  const traeFaro = loteTraeFaro(lote.grupo);
+  const faro = traeFaro ? faroDeLote(lote.superficieM2) : null;
   const centro = centroDeAnillo(lote.anillo);
   const estadoLegal = ESTADOS_ADMINISTRATIVOS[proyecto];
   const estadoLegalTexto = idioma === "en" && estadoLegal.en?.estado ? estadoLegal.en.estado : estadoLegal.estado;
@@ -123,7 +125,7 @@ export function FichaCliente({ id }: { id: string }) {
     // La versión del texto "Lo que compartís y lo que pagás" que se ve en esta ficha: la reserva exige marcar que se leyó.
     hibridoAceptado: VERSION_HIBRIDO,
     // Los FARO que traería el lote, simulados (bien-comun-tokens): se guardan para que el boleto no cambie con el modelo.
-    faro,
+    ...(traeFaro ? { faro } : {}),
     ...(opcion === "solo-lote" ? {} : { precioCasa: precioCasa(opcion) }),
   };
 
@@ -142,6 +144,7 @@ export function FichaCliente({ id }: { id: string }) {
         </p>
       </section>
 
+      {traeFaro && (
       <section aria-labelledby="ficha-nft" className={TARJETA}>
         <h2 id="ficha-nft" className="text-lg font-semibold">
           {nft.titulo}
@@ -170,6 +173,7 @@ export function FichaCliente({ id }: { id: string }) {
           </Link>
         </p>
       </section>
+      )}
 
       <section aria-labelledby="ficha-precio" className={TARJETA}>
         <h2 id="ficha-precio" className="text-lg font-semibold">
@@ -338,6 +342,7 @@ export function FichaCliente({ id }: { id: string }) {
           loteId={lote.id}
           numero={lote.numero}
           proyecto={proyecto}
+          traeFaro={traeFaro}
           superficieM2={lote.superficieM2}
           opcion={opcion}
           vio={vio}

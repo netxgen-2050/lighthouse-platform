@@ -17,6 +17,9 @@ export type EscenarioCosto = {
   nombre: Bilingue;
   /** USD por año, de ejemplo. */
   costoAnual: number;
+  /** El monto es un gasto del primer año, no de todos los años: se rotula "el primer año" y la cuenta lo trata como si se
+   * repitiera, solo para comparar (decisión B de Gus sobre la noche del 8-nov). */
+  soloPrimerAnio?: true;
   fuente: Bilingue;
 };
 
@@ -25,6 +28,7 @@ export const ESCENARIOS_COSTO: readonly EscenarioCosto[] = [
     id: "arranque",
     nombre: { es: "Arranque", en: "Start-up" },
     costoAnual: 30_000,
+    soloPrimerAnio: true,
     fuente: {
       es: "el masterplan de permacultura del primer año (Gus, 8-nov-2026, estimación)",
       en: "the permaculture masterplan for the first year (Gus, 8 Nov 2026, estimate)",

@@ -56,6 +56,12 @@ export function faroDeLote(m2: number | null | undefined): number | null {
   return Math.round(m2 * FARO_POR_M2);
 }
 
+/**
+ * Si un lote trae NFT y FARO. Los primeros 4 (fincas 535 a 538, fuera del 7A) no: si aportan al bien común de Lighthouse es
+ * "sin dato" (R40), así que ni la ficha, ni el boleto, ni el panel del mapa les asignan FARO (decisión D de Gus, 19-nov).
+ */
+export const loteTraeFaro = (grupo: "primeros" | "norte"): boolean => grupo !== "primeros";
+
 /** Centro de un contorno [longitud, latitud]: el promedio de sus vértices (sin contar el que cierra el anillo). Sin vértices, null. */
 export function centroDeAnillo(anillo: readonly (readonly [number, number])[]): { lat: number; lng: number } | null {
   const abierto = anillo.length > 1 && anillo[0][0] === anillo[anillo.length - 1][0] && anillo[0][1] === anillo[anillo.length - 1][1]
