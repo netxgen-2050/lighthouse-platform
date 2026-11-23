@@ -103,13 +103,17 @@ test("cada cifra muestra su fuente", async ({ page }) => {
   for (let i = 0; i < n; i++) await expect(cifras.nth(i)).toContainText("Fuente: NS_permacultura");
 });
 
-test("no aparece nada fuera del alcance de Lighthouse VRN", async ({ page }) => {
-  await page.goto("/");
-  const texto = (await page.locator("main").innerText()) ?? "";
-  for (const t of [/Congreso/, /\bSMA\b/, /San Martín de los Andes/, /Atlántico Sur/, /111/, /\bTIR\b/, /recupero/i]) {
-    expect(texto, String(t)).not.toMatch(t);
-  }
-});
+for (const idioma of ["es", "en"]) {
+  test(`no aparece nada fuera del alcance de Lighthouse VRN (${idioma})`, async ({ page }) => {
+    await page.goto(idioma === "es" ? "/" : "/?lang=en");
+    const texto = (await page.locator("main").innerText()) ?? "";
+    for (const t of [/Congreso/i, /Congress/i, /\bSMA\b/, /San Martín de los Andes/, /Atlántico Sur/, /South Atlantic/i, /111/, /\bTIR\b/, /\bIRR\b/, /recupero/i, /payback/i]) {
+      expect(texto, String(t)).not.toMatch(t);
+    }
+    // Ningún enlace de la portada lleva a /congreso.
+    await expect(page.locator('main a[href^="/congreso"]')).toHaveCount(0);
+  });
+}
 
 test("en 390 px no hay scroll horizontal", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
