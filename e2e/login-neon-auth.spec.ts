@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { aceptarPaso } from "./ayudas";
 import type { Route } from "@playwright/test";
-import { expect, test, type Page } from "./fixtura";
+import { expect, test, VERSION_PRUEBA, type Page } from "./fixtura";
 
 // Corre contra el build con NEXT_PUBLIC_LH_LOGIN=neon-auth (proyecto "neon-auth" de playwright.config.ts), sin Neon Auth
 // configurado en el servidor: lo que responde Neon Auth se simula desde el navegador interceptando /api/auth/**.
@@ -116,6 +116,12 @@ test.describe("el formulario", () => {
           tribuAdmin: null,
         }),
       });
+    });
+    // El consentimiento lo guarda el servidor, que acá no conoce esta sesión simulada: lo confirma esta respuesta (el POST de la
+    // aceptación del paso y el GET del estado).
+    await page.route("**/api/consentimientos", async (ruta) => {
+      const estado = { general: "vigente", version: VERSION_PRUEBA, registradoAt: new Date().toISOString(), canal: "al-entrar", novedades: false, novedadesRegistro: null };
+      await ruta.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, estado }) });
     });
     await page.route("**/api/auth/**", async (ruta: Route) => {
       const { pathname } = new URL(ruta.request().url());

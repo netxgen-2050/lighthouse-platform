@@ -598,7 +598,8 @@ test.describe("pasos previos al login (consentimiento-alta)", () => {
 });
 
 test.describe("Mis datos: novedades por email", () => {
-  test.use({ rol: "persona" });
+  // Cambia las novedades de la persona en el servidor, que comparten todos los tests: entra con un email propio.
+  test.use({ rol: "persona", identidad: "propia" });
 
   test("axe sin violaciones serias o críticas con el bloque de novedades", async ({ page }) => {
     await page.goto("/mis-datos");

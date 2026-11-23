@@ -3,7 +3,7 @@ import { cargaInicial, personaDeLaSesion } from "./base";
 import { entornoDeSesion } from "./entorno";
 import { parsearPersonas, type Persona } from "./personas";
 import { proveedoresDelEntorno, type ClienteIdentidad } from "./proveedores";
-import { pedidoDeCabeceras, resolverIdentidad } from "./verificar";
+import { pedidoDeCabeceras, resolverIdentidad, type Verificada } from "./verificar";
 
 /** Personas de `LH_PERSONAS`: solo la carga inicial de la tabla; las entradas mal formadas se avisan en el log del servidor. */
 export function personasDelEntorno() {
@@ -11,7 +11,15 @@ export function personasDelEntorno() {
 }
 
 export type ResultadoSesion =
-  | { estado: 200; persona: Persona; idPersona: string; personaId: string | null; clavesAnteriores: string[]; nombre?: string | null }
+  | {
+      estado: 200;
+      persona: Persona;
+      idPersona: string;
+      personaId: string | null;
+      clavesAnteriores: string[];
+      nombre?: string | null;
+      verificada: Verificada;
+    }
   | { estado: 401 | 403 | 503 };
 
 /**
@@ -27,7 +35,9 @@ export async function sesionDelPedido(req: Request, proveedores: ClienteIdentida
   try {
     const base = await db();
     await cargaInicial(base, personasDelEntorno());
-    return await personaDeLaSesion(base, verificada, entorno);
+    const r = await personaDeLaSesion(base, verificada, entorno);
+    // Se devuelve también la identidad verificada: `registrar` y `exigirConsentimiento` (consentimiento-en-la-base) la necesitan.
+    return r.estado === 200 ? { ...r, verificada } : { estado: 403 };
   } catch (e) {
     console.error(
       e instanceof ErrorDeConfiguracionDeBase ? `[sesion] ${e.message}` : "[sesion] la base no respondió al buscar a la persona",
