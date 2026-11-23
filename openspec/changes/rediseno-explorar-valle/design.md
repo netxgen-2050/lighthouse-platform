@@ -10,7 +10,7 @@
 ## Decisiones
 
 ### 1. La foto
-Se usa la portada de la Memoria Técnica y Masterplan de Martín (3-nov-2026) exportada a WebP en `public/imagenes/valle-memoria.webp`, con `next/image`, `alt=""` y una leyenda visible: "Imagen ilustrativa · Memoria Técnica y Masterplan (3-nov-2026)". **El archivo no está en el repo**: si Gus no lo pasa antes de construir, se usa `lighthouse-valle.webp` con la leyenda "Imagen ilustrativa" sin fuente, y el PR lo dice. Un degradado con tokens (`bg` con opacidad) bajo el título asegura el contraste, y el test de contraste del cambio 1 prueba `ink` sobre ese degradado mezclado con blanco.
+Se usa `public/imagenes/lighthouse-valle.webp`, la imagen que ya está en el repo y usa la portada, con `next/image`, `alt=""` y una leyenda visible: "Imagen ilustrativa" (**decisión de Gus, 23-nov-2026**). Si más adelante Gus pasa otra imagen, se cambia el archivo y la leyenda sin tocar el diseño. Un degradado con tokens (`bg` con opacidad) bajo el título asegura el contraste, y el test de contraste del cambio 1 prueba `ink` sobre ese degradado mezclado con blanco.
 
 ### 2. Foto a sangre dentro del contenido
 "A sangre" es dentro del área de contenido (a la derecha del rail), no debajo del rail ni de la barra superior: se anula el padding del contenedor solo en el héroe. Alto: 60–70 vh en computadora, menos en celular para que el título y el botón entren en la primera pantalla.

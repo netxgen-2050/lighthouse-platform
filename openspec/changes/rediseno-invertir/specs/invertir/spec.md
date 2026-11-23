@@ -18,7 +18,7 @@ Invertir muestra a quien invierte, con la claridad de una app financiera, qué b
 - **THEN** ve el barrio en financiamiento con sus indicadores, la curva y el libro
 
 ### Requirement: Sellos de Invertir
-Con sesión, la página SHALL mostrar antes de cualquier número "Propuesta v0.1 · en discusión", "Prototipo interno · datos de ejemplo", "venta simulada · aprobación municipal pendiente" y que no es una oferta. La aprobación municipal MUST NOT mostrarse como otorgada.
+Con sesión, la página SHALL mostrar antes de cualquier número "Propuesta v0.1 · en discusión", "Prototipo interno · datos de ejemplo", "venta simulada · aprobación municipal pendiente" y "No es una oferta". El sello "No es una oferta" SHALL llevar el ⚖ `nooferta` del catálogo de términos legales, marcado como borrador a verificar con abogado. La aprobación municipal MUST NOT mostrarse como otorgada.
 
 #### Scenario: Sellos primero
 - **WHEN** una persona con sesión abre `/invertir`
@@ -36,7 +36,7 @@ Por cada barrio en financiamiento, la página SHALL mostrar como indicadores, co
 - **THEN** el barrio lleva el chip "En financiamiento" con su texto e ícono
 
 ### Requirement: Curva de devolución
-La página SHALL mostrar la curva de lo devuelto al inversor, acumulado mes a mes, frente a lo que trajo, calculada por el módulo del barrio. El gráfico MUST tener título y descripción para el lector de pantalla, distinguir las dos series por forma o trazo además del color, y venir acompañado de una tabla equivalente por trimestre.
+La página SHALL mostrar la curva de lo devuelto al inversor, acumulado mes a mes, frente a lo que trajo, calculada por el módulo del barrio. La curva SHALL mostrarse completa, con las dos series hasta el final del horizonte del modelo, y su título MUST decir que es un caso de ejemplo. El gráfico MUST tener título y descripción para el lector de pantalla, distinguir las dos series por forma o trazo además del color, y venir acompañado de una tabla equivalente por trimestre.
 
 #### Scenario: Tabla equivalente
 - **WHEN** una persona con lector de pantalla llega a la curva
@@ -80,3 +80,21 @@ Todos los números de Invertir SHALL salir de los módulos del bien común y de 
 #### Scenario: Celular
 - **WHEN** una persona con sesión abre `/invertir` a 390 × 844
 - **THEN** los indicadores, la curva y el libro se ven sin scroll horizontal en la página
+
+### Requirement: Prima objetivo
+Con sesión, la página SHALL mostrar la prima objetivo del Token Inversor leída del módulo del barrio (el mismo parámetro que usa la curva), con la etiqueta "objetivo · ejemplo · en discusión, no es una promesa". MUST NOT escribirse en la pantalla, llamarse rendimiento ni mostrarse como rendimiento anual. Sin sesión MUST NOT aparecer.
+
+#### Scenario: Prima con sesión
+- **WHEN** una persona con sesión abre `/invertir`
+- **THEN** ve la prima objetivo con el valor del módulo y la etiqueta "objetivo · ejemplo · en discusión, no es una promesa"
+
+#### Scenario: Prima sin sesión
+- **WHEN** una persona sin sesión abre `/invertir`
+- **THEN** el HTML no contiene la prima objetivo
+
+### Requirement: Sello "No es una oferta" con ⚖
+El sello "No es una oferta" SHALL abrir el término ⚖ `nooferta`, que explica en palabras simples que la página muestra una propuesta en discusión con datos de ejemplo y que no se ofrece ni se vende nada, marcado como borrador a verificar con abogado.
+
+#### Scenario: Abrir el término
+- **WHEN** la persona activa el ⚖ de "No es una oferta"
+- **THEN** ve la explicación en el idioma elegido y la marca de borrador

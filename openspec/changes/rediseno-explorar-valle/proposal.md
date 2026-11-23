@@ -9,7 +9,7 @@ Es el **tercero de los cinco cambios** del pedido `rediseno-defi-tierra`. Depend
 ## What Changes
 
 - **Inicio (`/`) con la dirección A:** mismo contenido que deja `portada-vrn` (promesa a 2030, Argentina, cinco capitales, cifras con fuente, por dónde empezar), repintado:
-  - foto aérea del valle a sangre dentro del área de contenido, con la leyenda "Imagen ilustrativa" y su fuente (portada de la Memoria Técnica y Masterplan de Martín, 3-nov-2026);
+  - foto aérea del valle a sangre dentro del área de contenido, con la leyenda "Imagen ilustrativa" (`lighthouse-valle.webp`, la que ya está en el repo; decisión de Gus, 23-nov-2026);
   - título y llamado "Ver los lotes" sobre la foto;
   - las cifras con fuente de `portada-vrn` en paneles de vidrio, con la fuente visible;
   - el sello "Prototipo interno · datos de ejemplo".
@@ -44,3 +44,8 @@ Es el **tercero de los cinco cambios** del pedido `rediseno-defi-tierra`. Depend
 - **Tests:** `lib/lotes/sin-numeros-escritos.test.ts` vigila los archivos nuevos; `e2e/portada.spec.ts`, `e2e/accesibilidad.spec.ts`, `e2e/descubrir-publico.spec.ts`.
 - **Ruta pública nueva** (`/barrios/norte`): se suma a la lista de rutas públicas; el panel de la obra se muestra solo con sesión.
 - **Sin** tablas, migraciones, integraciones, datos personales ni dependencias nuevas.
+
+## Decisiones de Gus (23-nov-2026)
+
+- **Imagen:** `lighthouse-valle.webp`, la que ya está en el repo, con la leyenda "Imagen ilustrativa". Se cambia después si hay otra.
+- **Tema oscuro también en la Vista NetX:** toda la app usa el tema oscuro por defecto; quien prefiera el claro lo elige en Configuración.

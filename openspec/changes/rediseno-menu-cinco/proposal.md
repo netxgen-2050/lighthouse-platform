@@ -43,3 +43,7 @@ Es el **segundo de los cinco cambios** del pedido `rediseno-defi-tierra`. Depend
 - **Nuevo:** `components/subnav-explorar.tsx`, `components/menu-celular.tsx`.
 - **Tests:** `e2e/marco.spec.ts`, e2e que hoy buscan enlaces de Participar en el rail (`e2e/compromisos.spec.ts`, `e2e/fogon*.spec.ts`, `e2e/pactos*.spec.ts`, `e2e/semillas.spec.ts`), `e2e/accesibilidad.spec.ts`.
 - **Sin** tablas, migraciones, permisos, integraciones, datos personales ni dependencias nuevas. Ningún permiso de página cambia.
+
+## Decisiones de Gus (23-nov-2026)
+
+- **"Comunidades" en el menú, "Tribus" dentro de `/tribus`:** los textos de `/tribus` pasan a "comunidad" en un cambio aparte, más adelante. Este cambio solo toca el menú.

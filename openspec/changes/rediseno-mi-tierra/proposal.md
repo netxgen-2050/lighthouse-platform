@@ -44,3 +44,8 @@ Es el **cuarto de los cinco cambios** del pedido `rediseno-defi-tierra`. Depende
 - **Cambia:** `components/lotes/usar-compras.ts` (lee por la función única), `lib/navegacion.ts` (`/mi-tierra` existe), `lib/lotes/sin-numeros-escritos.test.ts` (vigila `app/mi-tierra/`).
 - **Datos personales:** lee las compras simuladas de la persona en sesión, guardadas en su navegador, como hoy; no las manda a ningún lado y no suma campos. Sin sesión no se lee nada.
 - **Sin** tablas, migraciones, permisos nuevos, integraciones ni dependencias nuevas.
+
+## Decisiones de Gus (23-nov-2026)
+
+- **Voz:** "una persona, un voto en asuntos de residentes" se muestra como lo que propone el doc 34, **en discusión (decisión 5)**. ADR-031 no lo decide: solo dice que FARO no da voto ni membresía. El pedido original lo atribuía mal al ADR-031.
+- **`/mi-tierra` es pública:** sin sesión muestra el aviso para entrar y ningún dato.

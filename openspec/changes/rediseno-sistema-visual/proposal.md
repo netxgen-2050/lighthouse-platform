@@ -55,3 +55,7 @@ Este es el **primero de cinco cambios** en los que se partió el pedido `redisen
 - **Nuevo:** `components/ui/` con los seis componentes y sus tests; `lib/tema-contraste.test.ts`; textos de estados y del sello en `lib/idioma/textos/marco.ts`.
 - **Toda la app cambia de aspecto** porque los tokens cambian de valor: hay que revisar axe en todas las páginas y los dos temas.
 - **Sin** tablas, migraciones, permisos, integraciones, datos personales ni dependencias nuevas.
+
+## Decisiones de Gus (23-nov-2026)
+
+- **Tema oscuro por defecto en toda la app**, incluida la Vista NetX y las páginas en pausa. El tema claro (paleta B) sigue disponible en Configuración, y lo que cada persona ya eligió se respeta.

@@ -4,7 +4,7 @@ Tercero de los cinco cambios del rediseño. **Orden:** requiere en `dev` `redise
 
 ## 0. Antes de empezar
 
-- [ ] 0.1 Pedir a Gus la portada de la Memoria Técnica exportada (o su visto bueno para usar `lighthouse-valle.webp`). **Verifica:** el archivo existe en `public/imagenes/` o el PR anota que se usó el de reemplazo.
+- [x] 0.1 Imagen decidida por Gus (23-nov-2026): `public/imagenes/lighthouse-valle.webp` con la leyenda "Imagen ilustrativa". No hay que pedir otro archivo.
 
 ## 1. Inicio
 

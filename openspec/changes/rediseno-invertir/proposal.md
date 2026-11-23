@@ -14,7 +14,7 @@ Es el **quinto de los cinco cambios** del pedido `rediseno-defi-tierra`. Depende
   - **Curva de devolución:** cuánto se le devolvió al inversor, acumulado mes a mes, frente a lo que trajo, calculada con `lib/bien-comun/barrio.ts`. Gráfico accesible con una tabla equivalente.
   - **Libro del barrio:** los movimientos del fideicomiso del caso de ejemplo, por trimestre (cuotas que entran, lo que se devuelve al inversor, lo que va al común), con "mes N" en lugar de fechas inventadas.
   - **Cómo funciona, en tres líneas:** qué financia, cómo cobra (a medida que entran las cuotas), por qué no hay fecha fija; con los ⚖ `tokeninversor` y `fideicomisobarrio`.
-- **Sellos:** "Propuesta v0.1 · en discusión", "Prototipo interno · datos de ejemplo", "venta simulada · aprobación municipal pendiente" y "no es una oferta".
+- **Sellos:** "Propuesta v0.1 · en discusión", "Prototipo interno · datos de ejemplo", "venta simulada · aprobación municipal pendiente" y "No es una oferta" (con ⚖ `nooferta`, borrador).
 - **Enlaces** a `/bien-comun` (la propuesta y la calculadora) y, para quien tiene permiso, a `/netx/financiamiento`.
 - **"Invertir" aparece en el menú** (la lista única pasa `/invertir` a `existe: true`).
 - **Test de "sin rendimiento"** sobre los archivos de Invertir.
@@ -40,3 +40,10 @@ Es el **quinto de los cinco cambios** del pedido `rediseno-defi-tierra`. Depende
 - **Nuevo:** `app/invertir/page.tsx` y sus componentes (incluida la curva en SVG), `lib/invertir/barrios.ts` (arma indicadores, curva y libro desde `lib/bien-comun/barrio.ts`) y su test, `lib/invertir/sin-rendimiento.test.ts`, `lib/idioma/textos/invertir.ts`, `e2e/invertir.spec.ts`.
 - **Cambia:** `lib/navegacion.ts` (`/invertir` existe), `lib/lotes/sin-numeros-escritos.test.ts` (vigila `app/invertir/` y `lib/invertir/`).
 - **Sin** tablas, migraciones, permisos nuevos (solo pide sesión, como la calculadora), integraciones, datos personales ni dependencias nuevas.
+
+## Decisiones de Gus (23-nov-2026)
+
+- **Prima objetivo:** se muestra, como en `/netx/financiamiento`: "objetivo · ejemplo · en discusión, no es una promesa", leída del módulo y solo con sesión.
+- **Curva completa:** las dos líneas hasta el final, como caso de ejemplo y solo con sesión. El mes en que se termina de devolver se muestra; la regla de no mostrar el recupero vale para la portada y las páginas públicas.
+- **"No es una oferta"** lleva ⚖, como término legal en borrador.
+- **`/invertir` es pública:** sin sesión muestra el aviso para entrar y ningún número, como la calculadora de `/bien-comun`.

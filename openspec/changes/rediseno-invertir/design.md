@@ -45,13 +45,13 @@ Sin librerías de gráficos. `<svg role="img" aria-labelledby>` con `<title>` y 
 El simulador trabaja por mes sin fecha de inicio real; inventar fechas sería un dato falso. Se agrupa por trimestre y se rotula "mes 3", "mes 6"… Montos en JetBrains Mono, alineados a la derecha.
 
 ### 5. Prima del inversor
-El cálculo usa la prima anual del inversor como parámetro. Invertir **no la muestra** como porcentaje ni como "rendimiento": muestra la meta, el plazo, la forma de devolución y la curva. Si Gus quiere mostrar la prima objetivo (como hace `/netx/financiamiento`), es una pregunta abierta.
+El cálculo usa la prima anual del inversor como parámetro. **Decisión de Gus (23-nov-2026):** Invertir muestra la prima objetivo como `/netx/financiamiento`, leída del mismo parámetro del módulo (nunca escrita en la pantalla) y siempre con la etiqueta "objetivo · ejemplo · en discusión, no es una promesa". Solo con sesión. Nunca se la llama rendimiento ni se la muestra como APY: es la prima objetivo del Token Inversor según el doc 34.
 
 ### 6. Test de sin rendimiento
 `lib/invertir/sin-rendimiento.test.ts`: recorre `app/invertir/`, `lib/invertir/` y `lib/idioma/textos/invertir.ts`, y falla con `rendimiento|APY|TIR|IRR|ganancia|profit|yield|recupero|payback|valorizaci[oó]n|appreciation` (palabra entera, sin distinguir mayúsculas). Por eso los textos de Invertir tampoco dicen "sin rendimiento": dicen "plazo y forma de devolución".
 
 ## Riesgos
 
-- **La curva puede leerse como promesa.** Mitigación: sellos antes de los números, "caso de ejemplo" en el título de la curva y sin prima a la vista.
-- <!-- arquitecto: la curva deja ver la prima --> **La curva muestra la prima sin nombrarla.** Si lo devuelto termina por encima de lo aportado, la diferencia entre las dos líneas *es* la prima: el test de palabras no la atrapa. Cortar la curva en lo aportado, o mostrar las dos líneas completas, es una decisión de producto que queda para Gus. El implementador no la resuelve por su cuenta: construye la curva completa y lo anota en el PR.
+- **La curva y la prima pueden leerse como promesa.** Mitigación: sellos antes de los números, "caso de ejemplo" en el título de la curva, la prima siempre como "objetivo, no es una promesa", todo detrás de la sesión y del aviso de prototipo interno (R14).
+- <!-- arquitecto: la curva deja ver la prima --> **La curva muestra la prima.** **Decisión de Gus (23-nov-2026):** la curva va **completa**, con las dos líneas hasta el final del horizonte del modelo, titulada "caso de ejemplo". El indicador del mes en que se termina de devolver también se muestra. La regla de no mostrar el recupero vale para la portada y las páginas públicas; Invertir no dibuja ningún número sin sesión.
 - **Depende de dos cambios todavía sin construir.** Va último en el orden.
