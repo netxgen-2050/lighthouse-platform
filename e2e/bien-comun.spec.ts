@@ -1,5 +1,14 @@
 import { expect, test, type Page } from "./fixtura";
+import {
+  ENTRADAS_DE_PARTIDA,
+  alComunPorAnio,
+  cobrandoConLasCuotas,
+  coberturaAFechaFija,
+  montoALevantar,
+  parteDelPresupuestoQueCubren,
+} from "../lib/bien-comun/barrio";
 import { enteroEn, faroEn } from "../lib/bien-comun/formato";
+import { porcentajeEn } from "../lib/lotes/formato";
 import { CAMBIOS_DESDE_V_ANTERIOR, DECISIONES, FARO_POR_M2, POLITICA, PUENTES, PUERTAS } from "../lib/bien-comun/modelo";
 
 // La propuesta v0.1 del bien común (bien-comun-propuesta): propuesta en discusión. Los valores que se esperan salen del
@@ -202,6 +211,141 @@ test.describe("sin sesión", () => {
       DECISIONES.length,
     );
     expect(texto).not.toMatch(/procom[uú]n|\btribe|\btribu|Hadron/i);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  });
+});
+
+// Los números del barrio (bien-comun-numeros-barrio): solo con sesión. Los valores esperados salen del cálculo, no se escriben.
+const usdEs = (n: number) => `USD ${enteroEn(n, "es")}`;
+const usdEnIngles = (n: number) => `USD ${enteroEn(n, "en")}`;
+const okDe = <T extends { ok: boolean }>(r: T) => {
+  if (!r.ok) throw new Error("se esperaba ok");
+  return r as Extract<T, { ok: true }>;
+};
+const CASO_BASE = ENTRADAS_DE_PARTIDA;
+
+test.describe("números del barrio sin sesión", () => {
+  test.use({ rol: "ninguno" });
+
+  test("no hay calculadora ni números del barrio, solo un aviso para entrar", async ({ page }) => {
+    await page.goto(RUTA);
+    const s = page.getByRole("region", { name: "Los números del barrio" });
+    await expect(s).toContainText("solo para personas con sesión");
+    await expect(s.getByRole("link", { name: "Entrá para ver los números del barrio" })).toBeVisible();
+    await expect(page.getByLabel("Precio del lote (USD)")).toHaveCount(0);
+    const monto = okDe(montoALevantar(CASO_BASE)).valor;
+    expect(await plano(page)).not.toContain(enteroEn(monto, "es"));
+    expect(await plano(page)).not.toContain("barrio_stack_sim");
+  });
+});
+
+test.describe("números del barrio con sesión", () => {
+  const seccion = (page: Page) => page.getByRole("region", { name: "Los números del barrio" });
+  const resultados = (page: Page) => seccion(page).locator("[data-resultados]");
+
+  test("valores de partida, fuente y aviso de ejemplo", async ({ page }) => {
+    await page.goto(RUTA);
+    const s = seccion(page);
+    await expect(s.getByLabel("Precio del lote (USD)")).toHaveValue(String(CASO_BASE.precioLote));
+    await expect(s.getByLabel("Lotes vendidos por trimestre")).toHaveValue(String(CASO_BASE.ritmo));
+    await expect(s.getByLabel(/Cantidad de cuotas/)).toHaveValue(String(CASO_BASE.cuotas));
+    await expect(s.getByLabel("Infraestructura por lote (USD)")).toHaveValue(String(CASO_BASE.infraestructuraPorLote));
+    await expect(s.getByLabel("Prima anual del inversor (%)")).toHaveValue(String(CASO_BASE.prima * 100));
+    await expect(s).toContainText("barrio_stack_sim.py v0.1");
+    await expect(s).toContainText("números de ejemplo");
+    await expect(s).toContainText("sin dato");
+    await expect(s).toContainText(`de partida: ${enteroEn(CASO_BASE.precioLote, "es")}`);
+  });
+
+  test("caso base: monto, mes 48, total y cobertura a 12 meses", async ({ page }) => {
+    await page.goto(RUTA);
+    const r = resultados(page);
+    const cobrando = okDe(cobrandoConLasCuotas(CASO_BASE));
+    await expect(r).toContainText(usdEs(okDe(montoALevantar(CASO_BASE)).valor));
+    await expect(r).toContainText(`mes ${cobrando.mes}`);
+    await expect(r).toContainText(usdEs(cobrando.totalRecibido));
+    await expect(r).toContainText(porcentajeEn(okDe(coberturaAFechaFija(CASO_BASE, 12)).valor, "es"));
+  });
+
+  test("precio 40000 pasa al mes que calcula el módulo y lo anuncia en la región en vivo", async ({ page }) => {
+    await page.goto(RUTA);
+    await seccion(page).getByLabel("Precio del lote (USD)").fill("40000");
+    const esperado = okDe(cobrandoConLasCuotas({ ...CASO_BASE, precioLote: 40_000 })).mes;
+    await expect(resultados(page)).toContainText(`mes ${esperado}`);
+    // La región en vivo es corta (monto, mes y total); la tabla queda fuera.
+    const enVivo = resultados(page).locator('[aria-live="polite"]');
+    await expect(enVivo).toContainText(`mes ${esperado}`);
+    await expect(enVivo.locator("table")).toHaveCount(0);
+  });
+
+  test("1 lote por trimestre: no en 6 años y ningún mes", async ({ page }) => {
+    await page.goto(RUTA);
+    await seccion(page).getByLabel("Lotes vendidos por trimestre").fill("1");
+    await expect(resultados(page)).toContainText("no en 6 años");
+    await expect(resultados(page)).not.toContainText(/mes \d/);
+  });
+
+  test("campo vacío: dice qué revisar y los resultados dicen sin dato, nunca 0", async ({ page }) => {
+    await page.goto(RUTA);
+    const s = seccion(page);
+    await s.getByLabel("Precio del lote (USD)").fill("");
+    await expect(s).toContainText("Revisá el precio del lote");
+    await expect(s.getByLabel("Precio del lote (USD)")).toHaveAttribute("aria-invalid", "true");
+    const r = resultados(page);
+    await expect(r.locator('[data-dato="monto"]')).toContainText("sin dato");
+    await expect(r.locator('[data-dato="mes"]')).toContainText("sin dato");
+    await expect(r.locator('[data-dato="total"]')).toContainText("sin dato");
+    await expect(r.getByRole("table")).toHaveCount(0);
+    await expect(r.locator('[data-dato="fija"]')).toContainText("sin dato");
+    await expect(r.locator('[data-dato="fideicomiso"]')).toContainText("sin dato");
+  });
+
+  test("recargar vuelve a los valores de partida; el botón también", async ({ page }) => {
+    await page.goto(RUTA);
+    const campo = seccion(page).getByLabel("Precio del lote (USD)");
+    await campo.fill("40000");
+    await page.reload();
+    await expect(seccion(page).getByLabel("Precio del lote (USD)")).toHaveValue(String(CASO_BASE.precioLote));
+    await seccion(page).getByLabel("Cantidad de cuotas (0 es pago al contado)").fill("0");
+    await seccion(page).getByRole("button", { name: "Volver a los valores de partida" }).click();
+    await expect(seccion(page).getByLabel(/Cantidad de cuotas/)).toHaveValue(String(CASO_BASE.cuotas));
+  });
+
+  test("la tabla del común tiene seis años y el total de cada uno", async ({ page }) => {
+    await page.goto(RUTA);
+    const tabla = seccion(page).getByRole("table", { name: /llega al común/ });
+    const filas = okDe(alComunPorAnio(CASO_BASE)).filas;
+    await expect(tabla.getByRole("row")).toHaveCount(filas.length + 1);
+    expect(filas).toHaveLength(6);
+    for (const f of filas) await expect(tabla).toContainText(usdEs(f.total));
+    await expect(seccion(page)).toContainText(porcentajeEn(parteDelPresupuestoQueCubren(), "es"));
+    await expect(seccion(page)).not.toContainText("FARO");
+  });
+
+  test("en inglés se usa con teclado, sin español suelto", async ({ page }) => {
+    await page.goto(`${RUTA}?lang=en`);
+    const s = page.getByRole("region", { name: "The neighborhood numbers" });
+    const campo = s.getByLabel("Lot price (USD)");
+    await campo.focus();
+    await expect(campo).toBeFocused();
+    await page.keyboard.press("ControlOrMeta+A");
+    await page.keyboard.type("40000");
+    await page.keyboard.press("Tab");
+    await expect(s.getByLabel("Lots sold per quarter")).toBeFocused();
+    const esperado = okDe(cobrandoConLasCuotas({ ...CASO_BASE, precioLote: 40_000 })).mes;
+    await expect(s).toContainText(`month ${esperado}`);
+    await expect(s).toContainText(usdEnIngles(okDe(montoALevantar(CASO_BASE)).valor));
+    const texto = await s.innerText();
+    for (const suelto of [/sin dato/i, /Revisá/, /de partida/, /\bmes\b/, /Volver/, /Prima anual/]) {
+      expect(texto, String(suelto)).not.toMatch(suelto);
+    }
+    await expect(s).toContainText("no data");
+  });
+
+  test("a 390 px no hay scroll horizontal", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(RUTA);
+    await expect(seccion(page).getByLabel("Precio del lote (USD)")).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
   });
 });

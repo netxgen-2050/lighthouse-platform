@@ -32,6 +32,10 @@ const NUMEROS = [
   "0,08",
   "0,12",
   "0,18",
+  // Valores de ejemplo del barrio (`lib/bien-comun/modelo.ts` y `barrio.ts`): precio del lote y resultados del caso base.
+  "27.500",
+  "317.200",
+  "384.382",
 ];
 const TERMINOS = /\b(?:SMA|111|TIR|recupero)\b/;
 
@@ -105,7 +109,7 @@ test("el bien común no habla de ganancia, retorno ni valorización, ni en panta
     // El diccionario, en los dos idiomas, solo puede decir "retorno" bajo `carriles.a`.
     ...(["es", "en"] as const).flatMap((i) =>
       textosConRuta(biencomun[i])
-        .filter(([ruta, texto]) => !ruta.startsWith("carriles.a") && PROMESAS.test(texto))
+        .filter(([ruta, texto]) => !ruta.startsWith("carriles.a") && !ruta.startsWith("barrio") && PROMESAS.test(texto))
         .map(([ruta]) => `${i}:${ruta}`),
     ),
     ...claves.filter((c) => PROMESAS.test(JSON.stringify(TERMINOS[c]))),

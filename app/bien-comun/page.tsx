@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
+import { SeccionBarrio } from "@/components/bien-comun/calculadora-barrio";
 import { DiagramaCarriles } from "@/components/bien-comun/diagrama-carriles";
 import { ListaCambios } from "@/components/bien-comun/lista-cambios";
 import { ListaPuertas } from "@/components/bien-comun/lista-puertas";
@@ -9,6 +10,7 @@ import { TARJETA, TD, TH, REGION } from "@/components/bien-comun/estilos";
 import { TablaDecisiones } from "@/components/bien-comun/tabla-decisiones";
 import { TarjetasPolitica } from "@/components/bien-comun/tarjetas-politica";
 import { TerminoLegal } from "@/components/termino-legal";
+import { ENTRADAS_DE_PARTIDA } from "@/lib/bien-comun/barrio";
 import { textoDeEstado } from "@/lib/bien-comun/estado-decision";
 import { enteroEn, faroEn } from "@/lib/bien-comun/formato";
 import {
@@ -190,6 +192,9 @@ export default async function BienComunPage() {
         </div>
 
         <TarjetasPolitica titulo={t.politica.titulo} intro={t.politica.intro(cantidadReglas)}deDondeEtiqueta={t.politica.deDonde} tarjetas={tarjetas} />
+
+        {/* Solo con sesión, hasta la revisión R14: sin sesión el componente muestra un aviso y ningún número del barrio. */}
+        <SeccionBarrio partida={ENTRADAS_DE_PARTIDA} />
 
         <TablaDecisiones
           titulo={t.decisiones.titulo}

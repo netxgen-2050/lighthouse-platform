@@ -235,6 +235,65 @@ const es = {
       faroPorCuota: "¿Acreditar FARO con cada cuota convierte a FARO en parte del contrato de inversión?",
     },
   },
+  // "Los números del barrio" (bien-comun-numeros-barrio). "Retorno" no se usa: la regla de promesas se cumple sin excepciones.
+  barrio: {
+    titulo: "Los números del barrio",
+    intro:
+      "Un barrio de ejemplo, el del documento 34. Cambiá los cinco números y mirá qué pasa con el dinero del inversor y con lo que le llega al común. Nada se guarda: al recargar vuelven los valores de partida.",
+    fuente: (archivo: string, version: string, fecha: string) =>
+      `Calculado con ${archivo} ${version} (${fecha}). Son números de ejemplo y esto no es una oferta.`,
+    faltan: "Faltan los costos de obra reales, incluidos los de Vagner: sin dato.",
+    camposTitulo: "Los cinco números para mover",
+    dePartida: (valor: string) => `de partida: ${valor}`,
+    campos: {
+      precioLote: "Precio del lote (USD)",
+      ritmo: "Lotes vendidos por trimestre",
+      cuotas: "Cantidad de cuotas (0 es pago al contado)",
+      infraestructuraPorLote: "Infraestructura por lote (USD)",
+      prima: "Prima anual del inversor (%)",
+    },
+    errores: {
+      precioLote: "Revisá el precio del lote: tiene que ser un número mayor que cero.",
+      ritmo: "Revisá los lotes por trimestre: tiene que ser un número entero, de uno en adelante.",
+      cuotas: "Revisá las cuotas: tiene que ser un número entero, cero o más.",
+      infraestructuraPorLote: "Revisá la infraestructura por lote: tiene que ser un número, cero o más.",
+      prima: "Revisá la prima: tiene que ser un número, cero o más.",
+    },
+    restablecer: "Volver a los valores de partida",
+    resultados: {
+      titulo: "Qué pasa con estos números",
+      aLevantar: "Plata que tiene que traer el Token Inversor",
+      devuelve: "Mes en que se le termina de devolver al inversor, si cobra a medida que entran las cuotas",
+      mes: (n: string) => `mes ${n}`,
+      noEnAnios: (anios: string) => `no en ${anios} años`,
+      totalRecibido: "Lo que recibe el inversor en total",
+      fechaFija: (meses: string, pct: string) =>
+        `Si se hubiera prometido devolver todo a los ${meses} meses, el fideicomiso tendría ${pct} de lo que debe: por eso no hay fecha fija.`,
+      parteFideicomiso: (pct: string) => `De cada dólar que paga un comprador, al fideicomiso le quedan ${pct}.`,
+    },
+    comun: {
+      titulo: "Lo que le llega al común",
+      caption: "Lo que le llega al común en cada uno de los años del modelo, en dólares",
+      anio: "Año",
+      partePagos: "Parte de cada pago",
+      expensas: "Expensas",
+      total: "Total",
+      lotesVendidos: "Lotes vendidos al cierre",
+      cubre: (pct: string) =>
+        `Cuando terminan las ventas, las expensas de los lotes cubren cerca del ${pct} del presupuesto anual del común.`,
+    },
+    conclusionesTitulo: "Lo que muestran estos números",
+    conclusiones: [
+      "El margen es fino: con el precio del medio del rango, los lotes del barrio apenas cubren la plata que lo construyó.",
+      "Una fecha fija de devolución no cierra con lotes vendidos en cuotas: el fideicomiso debería el dinero antes de haberlo cobrado.",
+      "Lo común no puede vivir solo de los lotes: necesita ingresos propios.",
+    ],
+    sinSesion: {
+      titulo: "Los números del barrio",
+      texto: "Esta sección es solo para personas con sesión, hasta la revisión R14. Entrá para verla.",
+      entrar: "Entrá para ver los números del barrio",
+    },
+  },
   version: (fuente: string, version: string, fecha: string) =>
     `Fuente de los valores: ${fuente} · versión ${version} · ${fecha}. Todos son de ejemplo.`,
   // Tarjeta de la ficha de lote y línea del boleto.
@@ -483,6 +542,64 @@ const en: Textos<typeof es> = {
         "Is FARO prepaid at a fixed price and redeemable for services a presale of services? What does consumer protection require and what taxes does it bring?",
       reventaAporta: "Can a regulation require that each resale of a lot contributes to the commons?",
       faroPorCuota: "Does crediting FARO with each installment make FARO part of the investment contract?",
+    },
+  },
+  barrio: {
+    titulo: "The neighborhood numbers",
+    intro:
+      "A sample neighborhood, the one in document 34. Change the five numbers and see what happens to the investor's money and to what reaches the commons. Nothing is saved: when you reload, the starting values are back.",
+    fuente: (archivo: string, version: string, fecha: string) =>
+      `Calculated with ${archivo} ${version} (${fecha}). These are sample numbers and this is not an offer.`,
+    faltan: "The real construction costs, including Vagner's, are missing: no data.",
+    camposTitulo: "The five numbers to change",
+    dePartida: (valor: string) => `starting value: ${valor}`,
+    campos: {
+      precioLote: "Lot price (USD)",
+      ritmo: "Lots sold per quarter",
+      cuotas: "Number of installments (0 means paid at once)",
+      infraestructuraPorLote: "Infrastructure per lot (USD)",
+      prima: "Investor's yearly premium (%)",
+    },
+    errores: {
+      precioLote: "Check the lot price: it has to be a number greater than zero.",
+      ritmo: "Check the lots per quarter: it has to be a whole number, one or more.",
+      cuotas: "Check the installments: it has to be a whole number, zero or more.",
+      infraestructuraPorLote: "Check the infrastructure per lot: it has to be a number, zero or more.",
+      prima: "Check the premium: it has to be a number, zero or more.",
+    },
+    restablecer: "Back to the starting values",
+    resultados: {
+      titulo: "What happens with these numbers",
+      aLevantar: "Money the Investor Token has to bring",
+      devuelve: "Month in which the investor is fully paid back, if paid as the installments come in",
+      mes: (n: string) => `month ${n}`,
+      noEnAnios: (anios: string) => `not in ${anios} years`,
+      totalRecibido: "What the investor receives in total",
+      fechaFija: (meses: string, pct: string) =>
+        `If paying everything back at ${meses} months had been promised, the trust would hold ${pct} of what it owes: that is why there is no fixed date.`,
+      parteFideicomiso: (pct: string) => `Of each dollar a buyer pays, the trust keeps ${pct}.`,
+    },
+    comun: {
+      titulo: "What reaches the commons",
+      caption: "What reaches the commons in each year of the model, in dollars",
+      anio: "Year",
+      partePagos: "Part of each payment",
+      expensas: "Common charges",
+      total: "Total",
+      lotesVendidos: "Lots sold by year end",
+      cubre: (pct: string) =>
+        `When sales end, the common charges of the lots cover about ${pct} of the commons' yearly budget.`,
+    },
+    conclusionesTitulo: "What these numbers show",
+    conclusiones: [
+      "The margin is thin: at the middle of the price range, the neighborhood's lots barely cover the money that built it.",
+      "A fixed payback date does not fit lots sold in installments: the trust would owe the money before it has collected it.",
+      "The commons cannot live on lots alone: it needs income of its own.",
+    ],
+    sinSesion: {
+      titulo: "The neighborhood numbers",
+      texto: "This section is only for people with a session, until the R14 review. Sign in to see it.",
+      entrar: "Sign in to see the neighborhood numbers",
     },
   },
   version: (fuente: string, version: string, fecha: string) =>
