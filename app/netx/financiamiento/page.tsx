@@ -7,6 +7,7 @@ import { VERSION_MODELO } from "@/lib/series/escenarios";
 import { numero } from "@/lib/series/formato";
 import { FOCO } from "./estilos";
 import { SeccionHibrido, SeccionRecorridos, SeccionRiesgo, SeccionSupuestos } from "./secciones-modelo";
+import { SeccionTokenInversor } from "./seccion-token-inversor";
 import { SeccionBolsillos, SeccionCascada, SeccionDineroTemprano, SeccionEtapas } from "./secciones-plata";
 
 export const metadata: Metadata = { title: "Vista NetX · Modelo de financiamiento" };
@@ -18,6 +19,7 @@ const INDICE = [
   { id: "m-bolsillos", texto: "Quién es quién con la plata" },
   { id: "m-cascada", texto: "Cómo paga una serie" },
   { id: "m-temprano", texto: "Dinero temprano" },
+  { id: "m-token-inversor", texto: "Token Inversor (propuesta v0.1, en discusión)" },
   { id: "m-recorridos", texto: "Recorridos de inversores" },
   { id: "m-riesgo", texto: "¿Y si sale mal?" },
   { id: "m-hibrido", texto: "El modelo híbrido" },
@@ -55,6 +57,7 @@ export default function ModeloFinanciamientoPage() {
       <SeccionBolsillos />
       <SeccionCascada />
       <SeccionDineroTemprano />
+      <SeccionTokenInversor />
       <SeccionRecorridos />
       <SeccionRiesgo />
       <SeccionHibrido />

@@ -20,6 +20,9 @@ import { convertirSafu } from "@/lib/series/safu";
 import type { ClaveTermino } from "@/lib/legal/terminos";
 import { CARTA, FOCO, H2, SECCION, TD, TH } from "./estilos";
 
+const LINEA_PROPUESTA =
+  "La propuesta v0.1 (doc 34) ubica el fideicomiso de cada barrio como una serie y suma el Token Inversor: en discusión (ver más abajo).";
+
 function Tabla({ titulo, columnas, children }: { titulo: string; columnas: readonly string[]; children: React.ReactNode }) {
   return (
     <div className="overflow-x-auto">
@@ -130,6 +133,7 @@ export function SeccionCascada() {
         ))}
       </ol>
       <p className="mt-2 max-w-3xl text-sm text-muted">{CASCADA_NOTA}</p>
+      <p className="mt-2 max-w-3xl text-sm">{LINEA_PROPUESTA}</p>
 
       <h3 className="mt-5 mb-2 text-lg font-semibold">Series posibles</h3>
       <ul className={`grid gap-2 ${CARTA}`}>
@@ -168,6 +172,7 @@ export function SeccionDineroTemprano() {
       <p className="mb-3 max-w-3xl text-muted">
         Cómo se puede poner plata hoy, antes de que existan las series. Es una escalera: cada escalón lleva al siguiente.
       </p>
+      <p className="mb-3 max-w-3xl text-sm">{LINEA_PROPUESTA}</p>
       <div className="grid gap-4 md:grid-cols-3">
         <ol className={`grid list-decimal gap-2 pl-8 md:col-span-2 ${CARTA}`}>
           {ESCALERA_SAFU.map((p, i) => (

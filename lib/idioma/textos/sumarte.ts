@@ -162,6 +162,8 @@ const es = {
   invertir: {
     titulo: "Invertir",
     intro: "Invertir es distinto de sumarte: es otro camino, con otros documentos.",
+    tokenInversor:
+      "Token Inversor: una propuesta en discusión para financiar la infraestructura de un barrio. Todavía no se ofrece.",
     proyectos: {
       etiqueta: "Por invitación",
       titulo: "En los proyectos de regeneración",
@@ -368,6 +370,8 @@ const en: Textos<typeof es> = {
   invertir: {
     titulo: "Invest",
     intro: "Investing is not the same as joining: it's a different path, with different documents.",
+    tokenInversor:
+      "Investor Token: a proposal under discussion to fund a neighborhood's infrastructure. It is not offered yet.",
     proyectos: {
       etiqueta: "By invitation",
       titulo: "In the regeneration projects",

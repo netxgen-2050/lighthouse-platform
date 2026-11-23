@@ -188,6 +188,18 @@ test("comprar un lote: la puerta está antes de Invertir, con el precio del mode
   await expect(invertir.getByRole("heading", { name: "Comprar un lote" })).toHaveCount(0);
 });
 
+test("invertir: nombra al Token Inversor como propuesta en discusión, sin ofrecerlo, con enlace a /bien-comun", async ({ page }) => {
+  await page.goto("/sumarte");
+  const invertir = page.getByRole("region", { name: "Invertir", exact: true });
+  await expect(invertir).toContainText("Token Inversor");
+  await expect(invertir).toContainText("en discusión");
+  await expect(invertir).toContainText("Todavía no se ofrece");
+  await expect(invertir.getByRole("link", { name: "El bien común y los tokens: ver la propuesta en discusión" })).toHaveAttribute(
+    "href",
+    "/bien-comun",
+  );
+});
+
 test("comprar un lote: el enlace a los lotes se alcanza con el teclado", async ({ page }) => {
   await page.goto("/sumarte");
   const enlace = page.getByRole("region", { name: "Comprar un lote" }).getByRole("link", { name: "Ver los lotes" });

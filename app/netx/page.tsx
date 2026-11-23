@@ -151,6 +151,11 @@ export default function ResumenPage() {
                 · {numero(pase.bueno.recaudado)} (bajo · base · bueno) — va al bien común, no a NetX
                 {pase.bajo.alcanzaMinimo ? "" : "; el escenario bajo no llega al mínimo de USD 75.000"}. {SUPUESTO_CONGRESO}
               </li>
+              <li>
+                <Link href="/bien-comun" className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
+                  Propuesta v0.1 del bien común: en discusión
+                </Link>
+              </li>
             </ul>
           </section>
 

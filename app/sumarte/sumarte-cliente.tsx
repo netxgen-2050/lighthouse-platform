@@ -579,6 +579,10 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
           {fraseDeTermino("noesoferta", idioma)}
           <TerminoLegal clave="noesoferta" idioma={idioma} />
         </p>
+        <p className="max-w-3xl text-sm">
+          {t.invertir.tokenInversor}
+          <TerminoLegal clave="tokeninversor" idioma={idioma} />
+        </p>
         <Link className="w-fit text-sm underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/bien-comun">
           {biencomun.enlace}
         </Link>
