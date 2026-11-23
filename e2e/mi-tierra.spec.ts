@@ -75,7 +75,8 @@ test.describe("sin sesión", () => {
     await expect(page.getByText("Mi tierra se ve con una cuenta")).toBeVisible();
     await expect(page.getByRole("link", { name: "Sumate para ver tu tierra" })).toBeVisible();
     const texto = await main(page).innerText();
-    expect(texto).not.toMatch(/cuotas|FARO|Reservado|Lote \d/);
+    // Ningún dato: ni lotes, ni cuotas pagadas, ni FARO acreditados (la bajada nombra los temas, sin números).
+    expect(texto).not.toMatch(/\d|Reservado|En cuotas|acreditad/);
     const claves = await page.evaluate(() => Object.keys(window.localStorage).filter((k) => k.includes("lh-lotes")));
     expect(claves).toEqual([]);
   });

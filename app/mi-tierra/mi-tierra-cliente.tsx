@@ -43,10 +43,7 @@ export function MiTierraCliente() {
   if (estado === "cargando") return <p className="text-sm text-muted">{comunes.cargando}</p>;
   if (estado !== "ok") {
     return (
-      <section aria-labelledby="mt-sin-sesion" className={TARJETA}>
-        <h2 id="mt-sin-sesion" className="sr-only">
-          {t.titulo}
-        </h2>
+      <section aria-label={t.titulo} className={TARJETA}>
         <p className="max-w-3xl">{t.sinSesion.aviso}</p>
         <EntrarPara texto={t.sinSesion.entrar} />
       </section>
