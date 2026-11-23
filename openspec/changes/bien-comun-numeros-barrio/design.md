@@ -40,6 +40,10 @@ Funciones puras, sin React, que traducen el simulador línea por línea (incluid
 
 Entradas inválidas (vacías, negativas, no numéricas, cuotas o ritmo no enteros) devuelven `{ ok: false }`: la pantalla muestra "sin dato" y ningún número.
 
+<!-- arquitecto: dos precisiones de la revisión del 23-nov -->
+- **Cuotas = 0 es válido** y significa contado (el simulador lo tiene: columna "Paid at once" de `RESULTS_barrio_stack.md`). Ritmo = 0 es inválido (nunca se vende nada: no hay resultado que mostrar).
+- **"No en 6 años" no se escribe**: el texto recibe los años por parámetro, calculados de `BARRIO.horizonteMeses / 12`, para que el diccionario no tenga números del modelo y un cambio de horizonte no deje el texto mintiendo.
+
 ### Tests contra `RESULTS_barrio_stack.md`
 
 - Monto a levantar: 317.200.

@@ -43,6 +43,15 @@ Es el primer contenido después del `<h1>`, antes de cualquier número. **No es 
 
 `ventatramos`, `stakingbiencomun` y `partenetxgen` se borran del catálogo y de sus tests. Ningún otro archivo los usa (verificado con `grep` el 23-nov: solo `app/bien-comun/page.tsx` y los tests). `tokenbiencomun` se reescribe: membresía del común, emisión solo por las tres puertas, sin precio, sin mercado, sin respaldo en la tierra, que en la versión 1 solo viaja con el lote, propuesta v0.1, a verificar con abogado.
 
+<!-- arquitecto: §5 bis agregado por la revisión de arquitectura del 23-nov (ADR-031). -->
+### 5 bis. FARO no tiene efectos en la plataforma (ADR-031)
+
+El doc 34 llama a FARO "membresía que crece" y le da voz sobre el tesoro; la plataforma dice que ser miembro del común sale de adherir al manifiesto (ADR-025) y que la adhesión es la llave de la gobernanza (ADR-023). Para no tener dos verdades:
+
+- `tokenbiencomun` y los textos de "qué da" / "voz" dicen que es **lo que propone** la v0.1, y suman una línea: "Hoy, en la plataforma, ser parte del común sale de adherir al manifiesto; FARO no cambia eso." No dicen, como hecho, "FARO es la membresía del común".
+- Ningún helper nuevo de `lib/bien-comun/` devuelve membresía, voto, nivel ni rol. `faroDeLote` y los demás siguen siendo números para mostrar.
+- `DECISIONES` pasa a `"decidida"` solo con `fecha` y `quien`, en un cambio OpenSpec aprobado por Gus (ADR-031, regla 2).
+
 ### 6. Nota de archivo
 
 `bien-comun-tokens` está implementado pero no archivado. Al archivar, primero `bien-comun-tokens`, después este; y en `openspec/specs/bien-comun-tokens/spec.md` se quitan los requisitos que este reemplaza (tramos, staking, reparto). Se deja escrito porque el delta de este cambio no puede marcar como `REMOVED` requisitos de una spec que todavía no existe en `openspec/specs/`.

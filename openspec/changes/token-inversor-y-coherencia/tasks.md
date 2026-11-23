@@ -11,7 +11,7 @@ Requiere `bien-comun-propuesta` y `bien-comun-numeros-barrio` implementados.
 
 - [ ] 2.1 Reescribir el texto del resto del costo en `lib/idioma/textos/hibrido.ts` (es/en) y sumar el enlace a `/bien-comun` en `app/lotes/hibrido/page.tsx`. **Verifica:** `pnpm test lib/idioma` y `lib/lotes/sin-numeros-escritos` en verde.
 - [ ] 2.2 Enlace a `/bien-comun` en la tarjeta "Bien común" de `app/netx/page.tsx`. **Verifica:** e2e de la tarea 4.1.
-- [ ] 2.3 Línea del Token Inversor en `invertir` de `lib/idioma/textos/sumarte.ts` (es/en) y nuevo texto de `enlace` en `lib/idioma/textos/bien-comun.ts`. **Verifica:** `pnpm test lib/idioma` en verde.
+- [ ] 2.3 Línea del Token Inversor en `invertir` de `lib/idioma/textos/sumarte.ts` (es/en), sin números y diciendo que todavía no se ofrece <!-- arquitecto: Sumarte es pública -->, y nuevo texto de `enlace` en `lib/idioma/textos/bien-comun.ts`. **Verifica:** `pnpm test lib/idioma` en verde.
 
 ## 3. Barrido
 

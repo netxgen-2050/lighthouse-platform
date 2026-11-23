@@ -9,11 +9,11 @@ Requiere `bien-comun-propuesta` implementado (módulo y página nuevos).
 
 ## 2. Cálculo
 
-- [ ] 2.1 Crear `lib/bien-comun/barrio.ts` con `montoALevantar`, `cobrosPorMes`, `cobrandoConLasCuotas`, `coberturaAFechaFija`, `alComunPorAnio` y `parteQueQuedaEnElFideicomiso`, traduciendo `NS_Tokenomics/sim/barrio_stack_sim.py` v0.1. Entradas inválidas → `{ ok: false }`. **Verifica:** `lib/bien-comun/barrio.test.ts` con los casos de `design.md` ("Tests contra RESULTS_barrio_stack.md") en verde.
+- [ ] 2.1 Crear `lib/bien-comun/barrio.ts` con `montoALevantar`, `cobrosPorMes`, `cobrandoConLasCuotas`, `coberturaAFechaFija`, `alComunPorAnio` y `parteQueQuedaEnElFideicomiso`, traduciendo `NS_Tokenomics/sim/barrio_stack_sim.py` v0.1. Entradas inválidas → `{ ok: false }`; cuotas = 0 es contado y es válido (`design.md`). <!-- arquitecto: caso contado --> **Verifica:** un caso más con 2 por trimestre, contado, 27.500 → mes 27; además, `lib/bien-comun/barrio.test.ts` con los casos de `design.md` ("Tests contra RESULTS_barrio_stack.md") en verde.
 
 ## 3. Pantalla
 
-- [ ] 3.1 Sumar la clave `barrio` (es/en) a `lib/idioma/textos/bien-comun.ts`: título, aviso, etiquetas, "de partida", resultados, "no en 6 años", "sin dato", errores por campo, conclusiones del doc 34 §4. Sin números escritos. **Verifica:** `pnpm test lib/idioma` en verde.
+- [ ] 3.1 Sumar la clave `barrio` (es/en) a `lib/idioma/textos/bien-comun.ts`: título, aviso, etiquetas, "de partida", resultados, "no en {años} años" (los años llegan por parámetro desde `BARRIO.horizonteMeses`; <!-- arquitecto --> sin escribir el 6), "sin dato", errores por campo, conclusiones del doc 34 §4. Sin números escritos. **Verifica:** `pnpm test lib/idioma` en verde.
 - [ ] 3.2 Crear `components/bien-comun/calculadora-barrio.tsx` (cliente) según `design.md` ("Presentación"). **Verifica:** `grep -n "localStorage\|sessionStorage\|useSearchParams" components/bien-comun/calculadora-barrio.tsx` sin resultados.
 - [ ] 3.3 Sumar la sección a `app/bien-comun/page.tsx`, después de la política de FARO. **Verifica:** `pnpm build` en verde.
 

@@ -8,6 +8,7 @@
 ## 2. ⚖
 
 - [ ] 2.1 En `lib/legal/terminos.ts`: borrar `ventatramos`, `stakingbiencomun`, `partenetxgen`; reescribir `tokenbiencomun`; sumar `fideicomisobarrio`, `tokentierra`, `tokeninversor`, `tesorocomun`, todos con `borrador: true` y `en`. **Verifica:** `pnpm test lib/legal` en verde con `terminos.test.ts` actualizado (claves nuevas presentes y en borrador; claves viejas ausentes; `tokentierra` menciona la Ordenanza 173; `tokeninversor` dice que no hay fecha fija).
+- [ ] 2.2 <!-- arquitecto: ADR-031 --> `tokenbiencomun` y los textos de "qué da" / "voz" presentan la membresía y la voz por FARO como propuesta y dicen que hoy ser parte del común sale de adherir al manifiesto (`design.md` §5 bis). **Verifica:** test en `terminos.test.ts` que exige "manifiesto" en `tokenbiencomun` (es) y "manifesto" (en); `grep -rn "bien-comun/modelo" lib/membresia lib/pactos lib/permisos lib/fogon` sin resultados.
 
 ## 3. Textos
 
