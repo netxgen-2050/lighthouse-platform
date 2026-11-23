@@ -3,7 +3,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Tres caminos en la portada
-The system SHALL show at `/`, below the narrative of Lighthouse VRN, a section titled "Por dónde empezar" with exactly three links, in this order: "Ver los lotes" to `/lotes` (label "Comprar"), "Explorar el territorio" to `/territorios/lighthouse` (label "Descubrir") and "Ver las tribus" to `/tribus` (label "Lo que viene"). Each link MUST include a one-line description.
+The system SHALL show at `/`, below the narrative of Lighthouse VRN, a section titled "Por dónde empezar" with exactly three links, in this order: "Ver los lotes" to `/lotes` (label "Comprar"), "Explorar el territorio" to `/territorios/lighthouse` (label "Descubrir") and "Ver las comunidades" to `/tribus` (label "Lo que viene"). Each link MUST include a one-line description.
 
 #### Scenario: Ver los tres caminos
 - **WHEN** una persona abre `/`
@@ -11,7 +11,7 @@ The system SHALL show at `/`, below the narrative of Lighthouse VRN, a section t
 - **AND** no ve ningún camino al Congreso
 
 #### Scenario: Cada camino lleva a su página
-- **WHEN** una persona activa "Ver los lotes", "Explorar el territorio" o "Ver las tribus"
+- **WHEN** una persona activa "Ver los lotes", "Explorar el territorio" o "Ver las comunidades"
 - **THEN** llega a `/lotes`, `/territorios/lighthouse` o `/tribus`, respectivamente, y la página responde 200
 
 ### Requirement: Caminos usables con teclado
@@ -23,11 +23,11 @@ Each path SHALL be a single focusable link whose accessible name includes its ti
 - **AND** al apretar Enter sobre "Explorar el territorio" llega a `/territorios/lighthouse`
 
 ### Requirement: Cantidad de barrios desde los datos
-The description of "Ver las tribus" SHALL derive the number of neighborhoods from the territory data, not from a hard-coded number.
+The description of "Ver las comunidades" SHALL derive the number of neighborhoods from the territory data, not from a hard-coded number.
 
 #### Scenario: Cantidad de barrios desde los datos
 - **WHEN** el territorio Lighthouse tiene 12 tribus en sus datos
-- **THEN** la descripción de "Ver las tribus" dice "12 barrios"
+- **THEN** la descripción de "Ver las comunidades" dice "12 barrios"
 
 ## REMOVED Requirements
 

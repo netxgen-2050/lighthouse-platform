@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { caminosDePortada } from "@/lib/portada";
-import { capitalesDePortada, cifrasDePortada } from "@/lib/portada-vrn";
+import { capitalesDePortada, cifrasDePortada, FUENTE_CAPITALES } from "@/lib/portada-vrn";
 import { TerminoLegal } from "@/components/termino-legal";
 import { DESTINOS } from "@/lib/navegacion";
 import { GuardarOrigen } from "@/components/guardar-origen";
@@ -80,6 +80,9 @@ export default async function Home({ searchParams }: Props) {
             </li>
           ))}
         </ul>
+        <p className="text-xs text-muted">
+          {t.capitales.fuente}: <span lang="es">{FUENTE_CAPITALES}</span>
+        </p>
       </section>
       {cifras.length > 0 && (
         <section aria-labelledby="cifras" className="grid gap-3">

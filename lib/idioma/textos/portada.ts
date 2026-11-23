@@ -8,7 +8,7 @@ const es = {
   tituloInicio: "Regenerar desde el agua.",
   tituloFin: "Una promesa a 2030.",
   bajada:
-    "Para 2030, Lighthouse VRN quiere ser un territorio que se regenera desde el agua, en el corazón de Vaca Muerta: con trabajo en industrias regenerativas y una comunidad que lo vive y lo cuida. Es nuestra meta, no una garantía.",
+    "Para 2030, Lighthouse VRN quiere ser un territorio que se regenera desde el agua, en el Alto Valle de Río Negro, cerca de Vaca Muerta: con trabajo en industrias regenerativas y una comunidad que lo vive y lo cuida. Es nuestra meta, no una garantía.",
   verLotes: "Ver los lotes",
   sumarte: "Elegí cómo sumarte",
   promesa: {
@@ -30,9 +30,9 @@ const es = {
     titulo: "Argentina, un lugar seguro y abierto",
     /** Va seguido del ⚖ de `ribera`. */
     texto:
-      "Un país que recibe a quienes vienen de afuera, lejos de los grandes conflictos. Si venís de otro país, hay reglas para comprar tierra rural: leelas acá",
+      "Un país que recibe a quienes vienen de afuera. Si venís de otro país, hay reglas para comprar tierra rural: leelas acá",
   },
-  capitales: { titulo: "Los cinco capitales de la regeneración" },
+  capitales: { titulo: "Los cinco capitales de la regeneración", fuente: "Fuente" },
   cifras: { titulo: "Cifras del sitio", fuente: "Fuente" },
   porDondeEmpezar: "Por dónde empezar",
   notaImagen: "Imagen ilustrativa de la Zona A (memoria técnica de Martín): no es una fotografía ni un plano.",
@@ -67,7 +67,7 @@ const en: Textos<typeof es> = {
   tituloInicio: "Regenerating from the water.",
   tituloFin: "A promise for 2030.",
   bajada:
-    "By 2030, Lighthouse VRN aims to be a territory regenerating from the water, in the heart of Vaca Muerta: with work in regenerative industries and a community that lives in it and cares for it. It is our goal, not a guarantee.",
+    "By 2030, Lighthouse VRN aims to be a territory regenerating from the water, in the Alto Valle of Río Negro, near Vaca Muerta: with work in regenerative industries and a community that lives in it and cares for it. It is our goal, not a guarantee.",
   verLotes: "See the lots",
   sumarte: "Choose how to join",
   promesa: {
@@ -88,9 +88,9 @@ const en: Textos<typeof es> = {
   argentina: {
     titulo: "Argentina, a safe and open place",
     texto:
-      "A country that welcomes people from abroad, far from the major conflicts. If you come from another country, there are rules for buying rural land: read them here",
+      "A country that welcomes people from abroad. If you come from another country, there are rules for buying rural land: read them here",
   },
-  capitales: { titulo: "The five capitals of regeneration" },
+  capitales: { titulo: "The five capitals of regeneration", fuente: "Source" },
   cifras: { titulo: "Figures from the site", fuente: "Source" },
   porDondeEmpezar: "Where to start",
   notaImagen: "Illustrative image of Zone A (Martín's technical report): it is neither a photograph nor a plan.",

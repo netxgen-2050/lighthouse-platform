@@ -32,7 +32,7 @@ Son borrador de agente, para que Gus los ajuste.
 
 | Clave | es | en |
 |---|---|---|
-| `sobretitulo` | Lighthouse VRN · Río Negro, Argentina | Lighthouse VRN · Río Negro, Argentina |
+| `sobretitulo` | Lighthouse VRN · Río Negro, Argentina | Lighthouse VRN · Río Negro province, Argentina (decisión de Gus, 23-nov: el test de diccionarios no acepta un texto idéntico al español) |
 | `tituloInicio` | Regenerar desde el agua. | Regenerating from the water. |
 | `tituloFin` | Una promesa a 2030. | A promise for 2030. |
 | `bajada` | Para 2030, Lighthouse VRN quiere ser un territorio que se regenera desde el agua, en el corazón de Vaca Muerta: con trabajo en industrias regenerativas y una comunidad que lo vive y lo cuida. Es nuestra meta, no una garantía. | By 2030, Lighthouse VRN aims to be a territory regenerating from the water, in the heart of Vaca Muerta: with work in regenerative industries and a community that lives in it and cares for it. It is our goal, not a guarantee. |
@@ -84,9 +84,9 @@ El tipo obliga a tener `fuente` y `consultado`, y un test rechaza una cadena vac
 |---|---|---|---|---|
 | `lotes` | Comprar | Ver los lotes | `/lotes` | Del loteo provisorio del sector norte. Es una simulación. |
 | `territorio` | Descubrir | Explorar el territorio | `/territorios/lighthouse` | Los lotes, lo común y lo que se está trabajando. |
-| `tribus` | Lo que viene | Ver las tribus | `/tribus` | Sale de `descripcionBarrios`, con la cantidad desde los datos. |
+| `tribus` | Lo que viene | Ver las comunidades | `/tribus` | Sale de `descripcionBarrios`, con la cantidad desde los datos. |
 
-En inglés: Buy / See the lots; Discover / Explore the territory; Coming next / See the tribes. El cambio de `CaminoId` también alcanza a `lh-origen`: `caminoValido` ya descarta lo desconocido, así que un origen viejo sigue valiendo, sin camino.
+En inglés: Buy / See the lots; Discover / Explore the territory; Coming next / See the communities. El cambio de `CaminoId` también alcanza a `lh-origen`: `caminoValido` ya descarta lo desconocido, así que un origen viejo sigue valiendo, sin camino.
 
 `app/page.tsx` deja de usar la clave `explorar` y el botón principal apunta a `/lotes`. Si `/lotes` no existe, usa el mismo control que `haySumarte`, con `DESTINOS`, y muestra "Explorar el territorio".
 
