@@ -1,43 +1,28 @@
-import { PrivyClient } from "@privy-io/server-auth";
 import { db, ErrorDeConfiguracionDeBase } from "@/lib/db/cliente";
 import { cargaInicial, personaDeLaSesion } from "./base";
 import { entornoDeSesion } from "./entorno";
 import { parsearPersonas, type Persona } from "./personas";
-import { resolverSesion } from "./verificar";
+import { proveedoresDelEntorno, type ClienteIdentidad } from "./proveedores";
+import { pedidoDeCabeceras, resolverIdentidad } from "./verificar";
 
 /** Personas de `LH_PERSONAS`: solo la carga inicial de la tabla; las entradas mal formadas se avisan en el log del servidor. */
 export function personasDelEntorno() {
   return parsearPersonas(process.env.LH_PERSONAS, (m) => console.warn(`[sesion] ${m}`));
 }
 
-function crearClientePrivy() {
-  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
-  const secreto = process.env.PRIVY_APP_SECRET;
-  return appId && secreto ? new PrivyClient(appId, secreto) : null;
-}
-
 export type ResultadoSesion =
-  | { estado: 200; persona: Persona; idPersona: string; personaId: string | null }
+  | { estado: 200; persona: Persona; idPersona: string; personaId: string | null; clavesAnteriores: string[]; nombre?: string | null }
   | { estado: 401 | 403 | 503 };
 
 /**
- * Quién hace el pedido: token de Privy (o el modo de prueba fuera de producción, solo con emails `.test`) y la persona en la
- * base. Sin base configurada en producción, o si la base falla, responde 503 y lo deja en el log (sin datos de la persona).
+ * Quién hace el pedido, en este orden (login-neon-auth, design §1): la cabecera del modo de prueba (fuera de producción, solo
+ * emails `.test`), el token de Privy, la cookie de Neon Auth; si no hay nada, 401. Después busca a la persona en la base
+ * (`personaDeLaSesion`). Sin base configurada en producción, o si la base falla, responde 503 y lo deja en el log (sin datos
+ * de la persona). Nadie fuera de este archivo importa un adaptador de `lib/sesion/proveedores/`.
  */
-export async function sesionDelPedido(req: Request): Promise<ResultadoSesion> {
-  return sesionDeCabeceras({ authorization: req.headers.get("authorization"), prueba: req.headers.get("x-lh-prueba") });
-}
-
-/**
- * Lo mismo que `sesionDelPedido`, desde los dos datos que acreditan la sesión. Lo usan los pedidos a `/api/*` (cabeceras) y
- * las páginas protegidas en el servidor (`lib/sesion/pagina.ts`, que los saca de cookies).
- */
-export async function sesionDeCabeceras(cabeceras: {
-  authorization: string | null;
-  prueba: string | null;
-}): Promise<ResultadoSesion> {
+export async function sesionDelPedido(req: Request, proveedores: ClienteIdentidad[] = proveedoresDelEntorno()): Promise<ResultadoSesion> {
   const entorno = entornoDeSesion();
-  const verificada = await resolverSesion(cabeceras, entorno, crearClientePrivy);
+  const verificada = await resolverIdentidad(req, entorno, proveedores);
   if (verificada.estado !== 200) return { estado: verificada.estado };
   try {
     const base = await db();
@@ -49,4 +34,17 @@ export async function sesionDeCabeceras(cabeceras: {
     );
     return { estado: 503 };
   }
+}
+
+/**
+ * Lo mismo que `sesionDelPedido`, desde los datos que acreditan la sesión. Lo usan las páginas protegidas en el servidor
+ * (`lib/sesion/pagina.ts`, que los saca de cookies).
+ */
+export async function sesionDeCabeceras(cabeceras: {
+  authorization: string | null;
+  prueba: string | null;
+  cookie?: string | null;
+  origen?: string | null;
+}): Promise<ResultadoSesion> {
+  return sesionDelPedido(pedidoDeCabeceras(cabeceras));
 }

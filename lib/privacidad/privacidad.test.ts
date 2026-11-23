@@ -17,7 +17,7 @@ import {
 } from "./consentimiento";
 import { exportarMisDatos, nombreArchivoDatos } from "./exportar";
 import { darNovedades, leerNovedades, registrarEleccionNovedades, retirarNovedades } from "./novedades";
-import { DATOS_POR_PANTALLA, FINALIDADES, RESUMEN, VERSIONES_POLITICA } from "./politica";
+import { DATOS_POR_PANTALLA, ENCARGADOS, FINALIDADES, RESUMEN, VERSIONES_POLITICA } from "./politica";
 
 function almacen(inicial: Record<string, string> = {}): Almacen & { datos: Map<string, string> } {
   const datos = new Map(Object.entries(inicial));
@@ -262,8 +262,21 @@ describe("versiones de la política", () => {
     for (const v of VERSIONES_POLITICA.slice(1)) expect(v.cambios.length).toBeGreaterThan(0);
   });
 
-  it("la vigente informa tres cambios", () => {
-    expect(VERSIONES_POLITICA[VERSIONES_POLITICA.length - 1]!.cambios).toHaveLength(3);
+  it("la vigente (login-neon-auth) informa su cambio: el login pasa a Neon Auth y Privy se retira", () => {
+    const vigente = VERSIONES_POLITICA[VERSIONES_POLITICA.length - 1]!;
+    expect(vigente.version).toBe(VERSION_POLITICA);
+    expect(vigente.cambios).toEqual(["El login pasa a hacerse con Neon (Neon Auth); Privy se va a retirar."]);
+  });
+
+  it("la versión del alta (tres cambios) sigue en el historial", () => {
+    expect(VERSIONES_POLITICA.find((v) => v.version === "2026-11-23-borrador")!.cambios).toHaveLength(3);
+  });
+
+  it("Neon figura como encargado del login, en uso, y Privy hasta que se retire; la fila del login nombra a los dos", () => {
+    const neon = ENCARGADOS.find((e) => e.nombre === "Neon");
+    expect(neon).toMatchObject({ para: "Base de datos y login (Neon Auth)", estado: "En uso" });
+    expect(ENCARGADOS.find((e) => e.nombre === "Privy")?.para).toBe("Login y billetera, hasta que se retire");
+    expect(DATOS_POR_PANTALLA.find((d) => d.pantalla === "Entrar (login)")?.donde).toContain("Privy o Neon (Neon Auth), según cómo entraste");
   });
 
   it("la tabla tiene la cookie de idioma", () => {
@@ -354,9 +367,9 @@ describe("la política sin Compromisos", () => {
     expect(textos.filter((t) => /compromiso/i.test(t))).toEqual([]);
   });
 
-  it("la versión de los lotes simulados (ADR-017) sigue en el historial y la vigente es la del alta", () => {
+  it("la versión de los lotes simulados (ADR-017) sigue en el historial y la vigente es la del login con Neon Auth", () => {
     expect(VERSIONES_POLITICA.map((v) => v.version)).toContain("2026-11-03-borrador");
-    expect(VERSION_POLITICA).toBe("2026-11-23-borrador");
+    expect(VERSION_POLITICA).toBe("2026-11-24-borrador");
   });
 });
 

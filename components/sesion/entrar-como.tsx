@@ -9,7 +9,7 @@ import { useSesion } from "./contexto";
  * Sin Privy ni modo de prueba avisa que el registro no está configurado en este entorno. Con sesión no muestra nada.
  */
 export function EntrarComo() {
-  const { estado, privyDisponible, entrarComo } = useSesion();
+  const { estado, loginDisponible, entrarComo } = useSesion();
   const t = useTextos("sumarte").entrarComo;
   const [emails, setEmails] = useState<string[] | null>(null);
 
@@ -30,7 +30,7 @@ export function EntrarComo() {
   }, [estado]);
 
   if (estado !== "sin-sesion" || emails === null) return null;
-  if (emails.length === 0 && privyDisponible) return null;
+  if (emails.length === 0 && loginDisponible) return null;
 
   return (
     <section

@@ -21,8 +21,15 @@ import { cookieAdminBorrada, cookieAdminSegunSesion, debeEscribirCookieAdmin } f
 import { COOKIE_PRUEBA } from "@/lib/sesion/cookies";
 import { calcularNivel, EVENTO_NIVEL, leerEstadoGuardado } from "@/lib/sesion/nivel";
 import { INICIAL, type EstadoSumarte } from "@/lib/sumarte/estado";
-import { ContextoSesion, type EstadoSesion, type PrivyMinimo, type SesionCliente, type ValorSesion } from "./contexto";
+import { copiarClavesAnteriores } from "@/lib/demo/importar";
+import { decidirConsulta, loginAAbrir } from "@/lib/sesion/consulta";
+import { loginElegido } from "@/lib/sesion/errores-login";
+import { ContextoSesion, type EstadoSesion, type IdentidadMinima, type SesionCliente, type ValorSesion } from "./contexto";
 import { PasoAlta } from "./paso-alta";
+
+// El SDK de Neon Auth del navegador se carga solo cuando hace falta (al abrir el formulario o al salir): al importarse toca el
+// almacenamiento del navegador, y con el almacenamiento bloqueado rompería toda la app, también con Privy.
+const FormularioLogin = lazy(() => import("./formulario-login").then((m) => ({ default: m.FormularioLogin })));
 
 /**
  * Con el modo de prueba, el email elegido en "Entrar como…" queda en esta cookie de sesión (no en localStorage:
@@ -47,10 +54,16 @@ function leerPrueba(): string | null {
   return null;
 }
 
-function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: ReactNode }) {
+function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: ReactNode }) {
+  // Qué login abre el paso en este entorno (login-neon-auth): con `neon-auth` la sesión también puede venir de una cookie.
+  const conNeonAuth = loginElegido() === "neon-auth";
   // undefined = todavía no se leyó el almacenamiento del navegador.
   const [prueba, setPrueba] = useState<string | null | undefined>(undefined);
   const [resultado, setResultado] = useState<Resultado>({ estado: "cargando", sesion: null });
+  // Sube cuando se abre una sesión de Neon Auth (código aceptado): hay que volver a preguntar al servidor.
+  const [versionSesion, setVersionSesion] = useState(0);
+  // De qué proveedor es la sesión en uso (para que "Salir" cierre la correcta).
+  const sesionPorCookie = useRef(false);
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor).
@@ -77,23 +90,22 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
     };
 
     async function resolver() {
-      const cabeceras: Record<string, string> = {};
-      if (prueba) {
-        cabeceras["x-lh-prueba"] = prueba;
-      } else {
-        if (!privyListoEfectivo) return;
-        const pedirToken = obtenerToken.current;
-        if (!privyAutenticadoEfectivo || !pedirToken) return poner({ estado: "sin-sesion", sesion: null });
-        const token = await pedirToken();
-        if (!token) return poner({ estado: "sin-sesion", sesion: null });
-        cabeceras.Authorization = `Bearer ${token}`;
-      }
+      const pedirToken = obtenerToken.current;
+      const tokenPrivy = !prueba && privyListoEfectivo && privyAutenticadoEfectivo && pedirToken ? await pedirToken() : null;
+      // Sin sesión de Privy, en un entorno con Neon Auth se pregunta con la cookie (no se puede leer desde acá).
+      const consulta = decidirConsulta({ prueba: prueba ?? null, privyListo: privyListoEfectivo, tokenPrivy, conNeonAuth });
+      if (consulta.tipo === "esperar") return;
+      if (consulta.tipo === "sin-sesion") return poner({ estado: "sin-sesion", sesion: null });
+      const { cabeceras, porCookie } = consulta;
       try {
-        const res = await fetch("/api/sesion", { headers: cabeceras, cache: "no-store" });
+        const res = await fetch("/api/sesion", { headers: cabeceras, cache: "no-store", credentials: "same-origin" });
         if (res.status === 200) {
           const datos = (await res.json()) as SesionCliente;
+          sesionPorCookie.current = porCookie;
           return poner({ estado: "ok", sesion: datos });
         }
+        // Por cookie, 401 es "no hay sesión" (lo normal para quien no entró) y 503 es "Neon Auth sin configurar": las páginas públicas siguen.
+        if (porCookie && (res.status === 401 || res.status === 503)) return poner({ estado: "sin-sesion", sesion: null });
         if (res.status === 403) return poner({ estado: "sin-acceso", sesion: null });
         if (res.status === 401 && prueba) {
           // El servidor ya no acepta el modo de prueba: se borra la cookie y se vuelve a resolver (con Privy si hay).
@@ -114,10 +126,22 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
     return () => {
       vigente = false;
     };
-  }, [prueba, privyListoEfectivo, privyAutenticadoEfectivo]);
+  }, [prueba, privyListoEfectivo, privyAutenticadoEfectivo, conNeonAuth, versionSesion]);
 
   // Quién es según la sesión. Mientras no tenga consentimiento vigente es una persona anónima para todo lo que se guarda.
   const idSesion = resultado.estado === "ok" ? (resultado.sesion?.idPersona ?? null) : null;
+  // Cambio de proveedor (design §4): lo guardado con las claves anteriores se copia una vez a la nueva, antes de leer nada de la persona.
+  const copiadoPara = useRef<string | null>(null);
+  if (idSesion === null) {
+    copiadoPara.current = null;
+  } else if (copiadoPara.current !== idSesion && resultado.sesion?.clavesAnteriores) {
+    copiadoPara.current = idSesion;
+    try {
+      copiarClavesAnteriores(window.localStorage, idSesion, resultado.sesion.clavesAnteriores);
+    } catch {
+      // Sin almacenamiento no hay nada que copiar.
+    }
+  }
   const { estado: consentimiento } = useConsentimiento(idSesion);
   // Se fija antes de dibujar la app: todas las claves del navegador salen con el prefijo de esta persona, pero solo con
   // consentimiento vigente (si no, quedan sin prefijo, como sin sesión: nada se guarda a su nombre).
@@ -211,10 +235,14 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
     setPrueba(email);
   }, []);
 
+  // Con Neon Auth, el formulario propio se muestra dentro del diálogo del paso, después de aceptar.
+  const [formularioAbierto, setFormularioAbierto] = useState(false);
+
   const login = privy?.login;
   /**
-   * ÚNICA llamada al login (Privy o, sin Privy, "Entrar como…" de Sumarte). Es privada: solo la usa el paso al aceptar, y solo
-   * abre con una aceptación previa vigente (design §1). Nada fuera de este archivo llama a `login` de Privy.
+   * ÚNICA llamada al login (el formulario propio con Neon Auth; Privy; o, sin Privy, "Entrar como…" de Sumarte). Es privada:
+   * solo la usa el paso al aceptar, y solo abre con una aceptación previa vigente (design §1). Nada fuera de este archivo
+   * llama a `login` de Privy ni monta el formulario.
    */
   const abrirLogin = useCallback(() => {
     let almacen: Storage | null = null;
@@ -224,7 +252,9 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       almacen = null;
     }
     intentarLogin(almacen, new Date(), () => {
-      if (login) return login();
+      const cual = loginAAbrir({ conNeonAuth, hayPrivy: Boolean(login) });
+      if (cual === "formulario") return setFormularioAbierto(true);
+      if (cual === "privy") return login?.();
       // Sin Privy no hay ventana de login: se lleva a Sumarte, que ofrece "Entrar como…" (modo de prueba). Desde Sumarte no
       // navega: avisa y se queda (el panel ya está en la página).
       if (ruta === "/sumarte") {
@@ -234,7 +264,7 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       }
       router.push(`/sumarte?volver=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}#entrar-como`);
     });
-  }, [login, ruta, router]);
+  }, [conNeonAuth, login, ruta, router]);
 
   const entrar = useCallback((opciones?: { modo?: ModoAlta; alAceptar?: () => void }) => {
     focoAlAbrir.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -259,6 +289,7 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
 
   const cancelarPaso = useCallback(() => {
     setPaso(null);
+    setFormularioAbierto(false);
     const volver = focoAlAbrir.current;
     setTimeout(() => volver?.focus(), 0);
   }, []);
@@ -274,12 +305,21 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       }
       if (!guardado) return false;
       paso.alAceptar?.();
-      setPaso(null);
+      // Con el formulario propio el diálogo sigue abierto: las casillas dejan lugar al formulario.
+      if (!(conNeonAuth && !paso.continuar)) setPaso(null);
       (paso.continuar ?? abrirLogin)();
       return true;
     },
-    [paso, abrirLogin],
+    [paso, abrirLogin, conNeonAuth],
   );
+
+  // Código aceptado: la cookie de sesión ya está puesta; se cierra el paso y se vuelve a preguntar quién es.
+  const alEntrarConNeon = useCallback(() => {
+    sesionPorCookie.current = true;
+    setFormularioAbierto(false);
+    setPaso(null);
+    setVersionSesion((v) => v + 1);
+  }, []);
 
   // Cookie de /admin (ADR-016): solo la sesión de Privy de un super admin verificado; se renueva en cada cambio de ruta y se
   // borra al salir, al cambiar de persona o si el rol deja de ser super admin.
@@ -325,10 +365,14 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
     } catch {
       // Sin almacenamiento no hay nada que olvidar.
     }
+    // Se cierra la sesión del proveedor en uso (si quedara la otra, la persona sigue con esa: solo pasa durante la convivencia).
+    const eraPorCookie = sesionPorCookie.current;
+    sesionPorCookie.current = false;
     try {
-      await logout?.();
+      if (eraPorCookie) await (await import("./neon-auth-cliente")).clienteNeonAuth().signOut();
+      else await logout?.();
     } catch {
-      // Si Privy falla al salir, la sesión de la app igual quedó cerrada.
+      // Si el proveedor falla al salir, la sesión de la app igual quedó cerrada.
     }
   }, [logout]);
 
@@ -344,9 +388,9 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       estado: resultado.estado,
       sesion: resultado.sesion,
       emailIntento: prueba ?? privy?.email ?? null,
-      nombre: privy?.nombre ?? null,
+      nombre: privy?.nombre ?? resultado.sesion?.nombre ?? null,
       billetera: privy?.billetera ?? null,
-      privyDisponible: privy !== null,
+      loginDisponible: privy !== null || conNeonAuth,
       entrar,
       entrarComo: entrarComoConPaso,
       nivel,
@@ -356,13 +400,25 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       salir,
       cabeceras,
     }),
-    [resultado, prueba, privy, entrar, entrarComoConPaso, nivel, nivelListo, consentimiento, tribuLider, salir, cabeceras],
+    [resultado, prueba, privy, conNeonAuth, entrar, entrarComoConPaso, nivel, nivelListo, consentimiento, tribuLider, salir, cabeceras],
   );
 
   return (
     <ContextoSesion.Provider value={valor}>
       {children}
-      <PasoAlta abierto={paso !== null} modo={paso?.modo ?? "entrar"} alAceptar={aceptarPaso} alCancelar={cancelarPaso} />
+      <PasoAlta
+        abierto={paso !== null}
+        modo={paso?.modo ?? "entrar"}
+        alAceptar={aceptarPaso}
+        alCancelar={cancelarPaso}
+        formulario={
+          formularioAbierto ? (
+            <Suspense fallback={null}>
+              <FormularioLogin alEntrar={alEntrarConNeon} alCancelar={cancelarPaso} />
+            </Suspense>
+          ) : undefined
+        }
+      />
     </ContextoSesion.Provider>
   );
 }

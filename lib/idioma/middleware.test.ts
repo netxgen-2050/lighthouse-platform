@@ -113,7 +113,7 @@ describe("middleware", () => {
       },
     }));
     const { middleware } = await import("../../middleware");
-    const respuesta = middleware(new NextRequest("https://lh.test/congreso?lang=en"));
+    const respuesta = await middleware(new NextRequest("https://lh.test/congreso?lang=en"));
     expect(respuesta.headers.get("x-middleware-next")).toBe("1");
     expect(respuesta.status).toBe(200);
     vi.doUnmock("@/lib/idioma/middleware");
@@ -122,7 +122,7 @@ describe("middleware", () => {
   test("una redirección escribe la cookie y la deja sin caché", async () => {
     vi.resetModules();
     const { middleware } = await import("../../middleware");
-    const respuesta = middleware(new NextRequest("https://lh.test/sumarte?lang=en&utm_source=m"));
+    const respuesta = await middleware(new NextRequest("https://lh.test/sumarte?lang=en&utm_source=m"));
     expect(respuesta.status).toBe(307);
     expect(respuesta.headers.get("location")).toBe("https://lh.test/sumarte?utm_source=m");
     expect(respuesta.headers.get("cache-control")).toBe("private, no-store");

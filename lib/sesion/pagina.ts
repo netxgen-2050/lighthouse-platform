@@ -1,8 +1,9 @@
 import "server-only";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { forbidden } from "next/navigation";
 import { COOKIE_PRUEBA, COOKIE_SESION_ADMIN } from "./cookies";
 import { sesionDeCabeceras, type ResultadoSesion } from "./servidor";
+import { origenDeCabeceras } from "./verificar";
 
 /**
  * Quién pide esta página (servidor). El navegador no manda cabeceras de sesión al pedir una página: se leen dos cookies.
@@ -11,11 +12,17 @@ import { sesionDeCabeceras, type ResultadoSesion } from "./servidor";
  */
 export async function sesionDeLaPagina(): Promise<ResultadoSesion> {
   const jar = await cookies();
+  const cab = await headers();
   const token = jar.get(COOKIE_SESION_ADMIN)?.value;
   const prueba = jar.get(COOKIE_PRUEBA)?.value;
   return sesionDeCabeceras({
     authorization: token ? `Bearer ${token}` : null,
     prueba: prueba ? decodificar(prueba) : null,
+    // La sesión de Neon Auth viaja en su propia cookie: se la pasa tal cual al adaptador.
+    cookie: jar.toString(),
+    // El origen real de la página: Neon Auth lo controla contra los dominios permitidos. En una página no se puede poner
+    // cookies, así que la renovación de la caché de sesión (`Set-Cookie`) no se aplica acá: la sigue haciendo /api/sesion.
+    origen: origenDeCabeceras(cab.get("x-forwarded-host") ?? cab.get("host"), cab.get("x-forwarded-proto")),
   });
 }
 

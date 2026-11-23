@@ -317,16 +317,15 @@ test.describe("red de seguridad: sesión sin consentimiento vigente", () => {
 test.describe("re-consentimiento con lo que cambió", () => {
   test.use({ rol: "persona", consentimiento: "ninguno" });
 
-  test("la pantalla dice qué versión aceptó, cuándo y los tres cambios; el registro nuevo es nueva-version", async ({ page }) => {
+  test("la pantalla dice qué versión aceptó, cuándo y el cambio de la versión vigente; el registro nuevo es nueva-version", async ({ page }) => {
     await sembrarAnterior(page);
     await page.goto("/pactos");
     await expect(titulo(page)).toBeVisible();
     await expect(page.getByText(`Aceptaste la versión ${VERSION_ANTERIOR} el`)).toBeVisible();
     const cambios = page.getByRole("group").or(page.locator("details")).filter({ hasText: "Qué cambió" }).first();
-    await expect(cambios.getByRole("listitem")).toHaveCount(3);
-    await expect(cambios).toContainText("antes de entrar o de crear tu cuenta");
-    await expect(cambios).toContainText("idioma");
-    await expect(cambios).toContainText("novedades por email");
+    // login-neon-auth sube la versión con un cambio: el login pasa a Neon Auth.
+    await expect(cambios.getByRole("listitem")).toHaveCount(1);
+    await expect(cambios).toContainText("El login pasa a hacerse con Neon (Neon Auth); Privy se va a retirar.");
     await expect(casillaPolitica(page)).not.toBeChecked();
     await expect(casillaTerminos(page)).not.toBeChecked();
     await casillaPolitica(page).check();
@@ -360,7 +359,7 @@ test.describe("re-consentimiento desde Entrar", () => {
     const dialogo = paso(page, "Entrar");
     await expect(dialogo.getByText(`Versión de la política: ${VERSION_PRUEBA}`)).toBeVisible();
     await expect(dialogo.getByText("Qué cambió")).toBeVisible();
-    await expect(dialogo.getByRole("listitem").filter({ hasText: "novedades por email" }).first()).toBeVisible();
+    await expect(dialogo.getByRole("listitem").filter({ hasText: "Neon (Neon Auth)" }).first()).toBeVisible();
     await aceptarPaso(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(menuAvatar(page)).toBeVisible();
