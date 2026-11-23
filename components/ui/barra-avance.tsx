@@ -4,10 +4,13 @@ import { useTextos } from "@/lib/idioma/cliente";
 
 export type TonoDeAvance = 1 | 2 | 3 | 4 | 5;
 
-/** Tono de la escala de regeneración por quinto: menos de 20 % es 1 (terracota), 80 % o más es 5 (verde). Fuera de rango o sin dato, null. */
+/**
+ * Tono de la escala de regeneración por quinto del porcentaje que se ve (redondeado): menos de 20 % es 1 (terracota),
+ * 80 % o más es 5 (verde). Así el color nunca contradice el número escrito. Fuera de rango o sin dato, null.
+ */
 export function tonoDeAvance(fraccion: number | null): TonoDeAvance | null {
   if (fraccion === null || !Number.isFinite(fraccion) || fraccion < 0 || fraccion > 1) return null;
-  return Math.min(5, Math.floor(fraccion * 5) + 1) as TonoDeAvance;
+  return Math.min(5, Math.floor(Math.round(fraccion * 100) / 20) + 1) as TonoDeAvance;
 }
 
 // Clases completas para que Tailwind las vea.
@@ -28,7 +31,8 @@ export function BarraAvance({ etiqueta, fraccion }: { etiqueta: string; fraccion
   const texto = pct === null ? comunes.sinDato : t.avance(String(pct));
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex items-baseline justify-between gap-3 text-sm">
+      {/* Con barra, el lector ya oye etiqueta y valor por el meter: la fila visible se oculta para no repetirlos. */}
+      <div aria-hidden={pct === null ? undefined : true} className="flex items-baseline justify-between gap-3 text-sm">
         <span className="text-ink">{etiqueta}</span>
         <span className="font-mono text-muted">{texto}</span>
       </div>

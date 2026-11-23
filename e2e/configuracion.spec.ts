@@ -49,6 +49,8 @@ test("borrar todo borra la preferencia de idioma de la persona pero la pantalla 
 
 test("primera visita: el tema es el oscuro aunque el sistema sea claro; elegir Claro se mantiene al recargar y en otras páginas", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/");
+  await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
   await page.goto("/configuracion");
   await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
   await expect(page.getByRole("radio", { name: "Oscuro" })).toBeChecked();

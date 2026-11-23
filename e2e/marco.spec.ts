@@ -237,11 +237,28 @@ for (const ruta of ["/", "/tribus", "/tribus/valle"]) {
 }
 
 test("las fuentes del mock-up se aplican (texto y títulos)", async ({ page }) => {
-  await page.goto("/tribus");
+  await page.goto("/lotes");
   const familia = (selector: string) =>
     page.locator(selector).first().evaluate((el) => getComputedStyle(el).fontFamily);
-  expect(await familia("body")).toContain("Inter Tight");
   expect(await familia("h1")).toContain("Fraunces");
+  expect(await familia("main p")).toContain("Inter Tight");
+});
+
+test("la tabla tipo libro no genera scroll horizontal de la página a 390 x 844", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/lotes");
+  // El componente aún no está en ninguna página: se inyecta con su mismo marcado y clases (components/ui/tabla-libro.tsx).
+  await page.evaluate(() => {
+    const celda = "px-3 py-2";
+    const filas = Array.from({ length: 3 }, (_, i) =>
+      `<tr class="border-t border-line align-top"><td class="whitespace-nowrap ${celda} font-mono text-muted">2026-11-0${i + 1}</td><td class="${celda} text-ink">Cuota de ejemplo con un motivo bastante largo para que se tenga que partir en líneas</td><td class="whitespace-nowrap ${celda} text-right font-mono text-ink">USD 1.500.000</td></tr>`,
+    ).join("");
+    document.querySelector("main")!.insertAdjacentHTML(
+      "beforeend",
+      `<div class="max-w-full overflow-x-auto rounded-lg border border-line"><table class="w-full border-collapse text-sm"><caption>Movimientos</caption><thead><tr><th scope="col">Fecha</th><th scope="col">Motivo</th><th scope="col">Monto</th></tr></thead><tbody>${filas}</tbody></table></div>`,
+    );
+  });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
 });
 
 for (const ruta of ["/", "/tribus", "/tribus/grano"]) {

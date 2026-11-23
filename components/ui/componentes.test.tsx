@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { ReactNode } from "react";
 import { describe, expect, test } from "vitest";
@@ -34,6 +36,18 @@ describe("tonoDeAvance", () => {
   test("quintos", () => {
     expect([0, 0.19, 0.2, 0.39, 0.4, 0.45, 0.6, 0.79, 0.8, 1].map(tonoDeAvance)).toEqual([1, 1, 2, 2, 3, 3, 4, 4, 5, 5]);
   });
+  test("el tono sigue al porcentaje redondeado que se ve, también cerca de 20, 40, 60 y 80", () => {
+    expect([0.199, 0.195, 0.194].map(tonoDeAvance)).toEqual([2, 2, 1]);
+    expect([0.399, 0.394].map(tonoDeAvance)).toEqual([3, 2]);
+    expect([0.599, 0.594].map(tonoDeAvance)).toEqual([4, 3]);
+    expect([0.799, 0.794].map(tonoDeAvance)).toEqual([5, 4]);
+  });
+  test("con 0,199 se ve '20 %' y el tono de 20 % (no terracota)", () => {
+    const h = html(<BarraAvance etiqueta="Obra" fraccion={0.199} />);
+    expect(h).toContain(">20 %<");
+    expect(h).toContain("bg-regen-2");
+    expect(h).not.toContain("bg-regen-1");
+  });
   test("sin dato o fuera de rango no tiene tono", () => {
     for (const f of [null, -0.1, 1.3, NaN, Infinity]) expect(tonoDeAvance(f)).toBeNull();
   });
@@ -50,6 +64,15 @@ describe("BarraAvance", () => {
     expect(h).toContain('aria-valuetext="45 %"');
     expect(h).toContain("bg-regen-3");
     expect(h).toContain(">45 %<");
+  });
+  test("el lector no oye dos veces etiqueta y porcentaje: la fila visible va aria-hidden y el meter los trae", () => {
+    const h = html(<BarraAvance etiqueta="Obra" fraccion={0.5} />);
+    expect(h).toMatch(/<div aria-hidden="true" class="flex items-baseline/);
+    expect(h).toContain('aria-label="Obra"');
+    expect(h).toContain('aria-valuetext="50 %"');
+  });
+  test("sin dato la fila visible sí se lee", () => {
+    expect(html(<BarraAvance etiqueta="Obra" fraccion={null} />)).not.toMatch(/<div aria-hidden="true" class="flex items-baseline/);
   });
   test("0 es un avance real: relleno vacío pero con 0 % y tono terracota", () => {
     const h = html(<BarraAvance etiqueta="Obra" fraccion={0} />);
@@ -71,6 +94,17 @@ describe("PanelVidrio", () => {
     const h = html(<PanelVidrio>Hola</PanelVidrio>);
     expect(h).toContain("panel-vidrio");
     expect(h).toContain("Hola");
+  });
+  test("con transparencia reducida (o sin desenfoque) el fondo es el sólido de la superficie", () => {
+    const css = readFileSync(path.resolve(__dirname, "..", "..", "app", "globals.css"), "utf8");
+    // Base sin @supports: fondo sólido.
+    expect(css).toMatch(/\.panel-vidrio \{\s*background: var\(--color-surface\);/);
+    // El vidrio solo se aplica dentro de @supports de backdrop-filter...
+    expect(css).toMatch(/@supports \(backdrop-filter: blur\(1px\)\)[^{]*\{\s*\.panel-vidrio \{\s*background: var\(--color-vidrio\);/);
+    // ...y prefers-reduced-transparency lo vuelve a la superficie sólida y quita el desenfoque.
+    expect(css).toMatch(
+      /@media \(prefers-reduced-transparency: reduce\) \{\s*\.panel-vidrio \{\s*background: var\(--color-surface\);\s*-webkit-backdrop-filter: none;\s*backdrop-filter: none;/,
+    );
   });
 });
 
@@ -95,10 +129,11 @@ describe("TablaLibro", () => {
     expect(h).toContain("sin dato");
     expect(h.match(/<tbody>.*<\/tbody>/)![0].match(/<tr/g)).toHaveLength(2);
   });
-  test("el contenedor se desplaza solo, con nombre accesible", () => {
+  test("el contenedor se desplaza solo y no es parada de Tab mientras no desborda", () => {
     const h = html(<TablaLibro titulo="Movimientos" filas={[]} />);
     expect(h).toContain("overflow-x-auto");
-    expect(h).toContain('aria-label="Movimientos"');
+    expect(h).not.toContain("tabindex");
+    expect(h).toContain('data-desborda="false"');
   });
 });
 
