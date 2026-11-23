@@ -45,9 +45,13 @@ export function SeccionTokenInversor() {
           el armado legal).
         </p>
         <p className="max-w-3xl">
-          <strong>Cómo cobra:</strong> a medida que entran las cuotas de los lotes, con una prima objetivo de{" "}
-          {pctEntero(e.prima)} anual simple (de ejemplo). En el caso base terminaría de cobrar
-          {cobrando.ok && cobrando.mes !== null ? ` en el mes ${numero(cobrando.mes)}` : ` en una fecha que hoy figura como ${SIN_DATO}`}
+          <strong>Cómo cobra:</strong> a medida que entran las cuotas de los lotes, con una prima objetivo{" "}
+          <TerminoLegal clave="primaobjetivo" /> de {pctEntero(e.prima)} anual simple (de ejemplo). En el caso base{" "}
+          {!cobrando.ok
+            ? `terminaría de cobrar en una fecha que hoy figura como ${SIN_DATO}`
+            : cobrando.mes === null
+              ? "no terminaría de cobrar dentro del horizonte del modelo"
+              : `terminaría de cobrar en el mes ${numero(cobrando.mes)}`}
           . Plazo máximo: {SIN_DATO}.
         </p>
         <div className="max-w-3xl">
@@ -62,7 +66,7 @@ export function SeccionTokenInversor() {
         </div>
         <p className="max-w-3xl">
           <strong>Quién entraría primero:</strong> pocos inversores conocidos. Un ticket chico para el público necesita una
-          vía de oferta pública, a verificar con abogado. El Token Equity (la parte de la empresa) queda fuera de este
+          vía de oferta pública <TerminoLegal clave="noesoferta" />, a verificar con abogado. El Token Equity (la parte de la empresa) queda fuera de este
           acuerdo.
         </p>
         <p className="text-sm">

@@ -12,7 +12,7 @@ const RAIZ = path.resolve(__dirname, "..", "..");
 export const CLAVE_QUE_CAMBIO = "cambios";
 
 // Palabra entera y sin distinguir mayúsculas: "mostramos" no cuenta.
-const PROHIBIDAS = /\b(?:tramos?|tranches?|staking)\b|precio de FARO|FARO price/i;
+const PROHIBIDAS = /\b(?:tramos?|tranches?|staking)\b|precio de FARO|FARO price|rendimiento de FARO|FARO (?:yield|return)|vender FARO|venta de FARO|sell(?:ing)? FARO/i;
 
 function archivos(dir: string): string[] {
   if (!existsSync(dir)) return [];
