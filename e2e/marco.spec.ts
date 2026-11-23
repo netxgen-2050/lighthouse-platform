@@ -240,8 +240,8 @@ test("las fuentes del mock-up se aplican (texto y títulos)", async ({ page }) =
   await page.goto("/tribus");
   const familia = (selector: string) =>
     page.locator(selector).first().evaluate((el) => getComputedStyle(el).fontFamily);
-  expect(await familia("body")).toContain("Figtree");
-  expect(await familia("h1")).toContain("Anek Latin");
+  expect(await familia("body")).toContain("Inter Tight");
+  expect(await familia("h1")).toContain("Fraunces");
 });
 
 for (const ruta of ["/", "/tribus", "/tribus/grano"]) {

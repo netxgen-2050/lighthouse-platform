@@ -10,6 +10,26 @@ const es = {
   saltar: "Saltar al contenido",
   descripcionSitio: "Plataforma del Lighthouse: territorio y tribus.",
   aviso: "Prototipo interno · datos de ejemplo",
+  // Sello de prototipo en su variante de venta (ADR-030): la aprobación municipal nunca se muestra como otorgada.
+  avisoVenta: "venta simulada · aprobación municipal pendiente",
+  // Chip de estado (components/ui/chip-estado.tsx): lista cerrada.
+  estados: {
+    abierta: "Abierta",
+    enDiscusion: "En discusión",
+    decidida: "Decidida",
+    disponible: "Disponible",
+    reservado: "Reservado",
+    enCuotas: "En cuotas",
+    vendido: "Vendido",
+    enFinanciamiento: "En financiamiento",
+  },
+  // Tabla tipo libro y barra de avance.
+  ui: {
+    fecha: "Fecha",
+    motivo: "Motivo",
+    monto: "Monto",
+    avance: (pct: string) => `${pct} %`,
+  },
   rail: {
     navegacion: "Principal",
     ayudaExplorador: "Sumate gratis para usar esto",
@@ -86,6 +106,23 @@ const en: Textos<typeof es> = {
   saltar: "Skip to content",
   descripcionSitio: "Lighthouse platform: territory and tribes.",
   aviso: "Internal prototype · sample data",
+  avisoVenta: "simulated sale · municipal approval pending",
+  estados: {
+    abierta: "Open",
+    enDiscusion: "Under discussion",
+    decidida: "Decided",
+    disponible: "Available",
+    reservado: "Reserved",
+    enCuotas: "In instalments",
+    vendido: "Sold",
+    enFinanciamiento: "Being financed",
+  },
+  ui: {
+    fecha: "Date",
+    motivo: "Reason",
+    monto: "Amount",
+    avance: (pct: string) => `${pct}%`,
+  },
   rail: {
     navegacion: "Main",
     ayudaExplorador: "Join for free to use this",

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Anek_Latin, Figtree, JetBrains_Mono } from "next/font/google";
+import { Fraunces, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import { AplicarPreferencias } from "@/components/aplicar-preferencias";
 import { BarraSuperior } from "@/components/barra-superior";
 import { Rail } from "@/components/rail";
@@ -15,8 +15,9 @@ import { textos } from "@/lib/idioma/textos";
 import { versionDesplegada } from "@/lib/reportes/reporte";
 import "./globals.css";
 
-const anek = Anek_Latin({ variable: "--font-anek", subsets: ["latin"] });
-const figtree = Figtree({ variable: "--font-figtree", subsets: ["latin"] });
+// Tipografía de la slide de Lighthouse: Fraunces (títulos, puntas suaves por el eje SOFT), Inter Tight (texto), JetBrains Mono (números).
+const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin"], axes: ["SOFT", "opsz"] });
+const interTight = Inter_Tight({ variable: "--font-inter-tight", subsets: ["latin"] });
 const jetbrains = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin"] });
 
 // El título y la descripción dependen del idioma del pedido (cookie o navegador).
@@ -46,7 +47,7 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_APARIENCIA }} />
       </head>
       <body
-        className={`${anek.variable} ${figtree.variable} ${jetbrains.variable} flex min-h-screen antialiased`}
+        className={`${fraunces.variable} ${interTight.variable} ${jetbrains.variable} flex min-h-screen antialiased`}
       >
         <a
           href="#contenido"
