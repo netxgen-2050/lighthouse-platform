@@ -1,59 +1,108 @@
-// Tokens del bien común de Lighthouse VRN: valores de EJEMPLO para conversar en el equipo (spec bien-comun-tokens).
-// Puro: sin React ni Next. Nada se emite, nada se cobra y nada está decidido. Todos los números salen de acá: las pantallas
-// los leen (lo vigila `lib/lotes/sin-numeros-escritos.test.ts`).
+// La propuesta v0.1 del bien común y los tokens (spec bien-comun-propuesta, `NS_Tokenomics` doc 34). Es una PROPUESTA EN
+// DISCUSIÓN: nada está acordado, todos los números son de ejemplo y lo legal está a verificar con abogado.
+// Puro: sin React ni Next, y sin textos (los textos viven en `lib/idioma/textos/bien-comun.ts`, con las mismas claves).
+// Todo valor de la propuesta sale de acá, con su fuente, o de `lib/lotes/modelo.ts` cuando ya vive ahí. Las pantallas y el
+// diccionario no escriben números (lo vigila `lib/lotes/sin-numeros-escritos.test.ts`).
+// ADR-031: nada de acá devuelve membresía, voto, nivel ni rol. Los helpers son números para mostrar.
+import { MODELO_LOTES } from "@/lib/lotes/modelo";
 
-export const VERSION_BIEN_COMUN = {
+export const VERSION_PROPUESTA = {
   version: "v0.1",
-  fecha: "2026-11-08",
-  fuente: "Exploración de Gus y Claude, 8-nov-2026 [criterio]",
+  fecha: "2026-11-19",
+  fuente: "NS_Tokenomics doc 34",
 } as const;
 
-/** Nombre provisorio del token del bien común (Lighthouse es un faro). */
+/** Nombre provisorio del token del bien común (Lighthouse es un faro). Decisión 6 abierta. */
 export const NOMBRE_TOKEN = "FARO";
 
-/** Cantidad total de tokens, de ejemplo. */
-export const SUMINISTRO = 10_000_000;
+/** FARO que se acreditan por m² de lote, de ejemplo. */
+export const FARO_POR_M2 = {
+  valor: 10,
+  fuente: "Slides del 9-nov, láminas 8 a 14 (doc 34 §3)",
+} as const;
 
-export type IdGrupoReparto = "lotes" | "venta" | "tesoro" | "netxgen";
+// ---- Los dos carriles ----
+export const CARRILES = {
+  /** Capital con retorno (lidera Juanpi): quién pone plata y qué recibe. */
+  a: ["tokenTierra", "tokenInversor", "fideicomiso"],
+  /** Bien común (lidera Gus): qué es de todos y cómo se alimenta. */
+  b: ["tesoro", "faro"],
+} as const;
 
-/** Reparto del suministro, en partes por cien. Suma 100. */
-export const REPARTO: readonly { id: IdGrupoReparto; pct: number }[] = [
-  { id: "lotes", pct: 35 },
-  { id: "venta", pct: 30 },
-  { id: "tesoro", pct: 20 },
-  { id: "netxgen", pct: 15 },
+export type IdPuente = "parteDeCadaPago" | "faroPorCuota" | "reventa";
+
+/** Los tres puentes entre los carriles. `valor` solo existe donde el puente usa un número. */
+export const PUENTES: readonly {
+  id: IdPuente;
+  desde: string;
+  hacia: string;
+  valor: { fraccion: number; fuente: string } | null;
+}[] = [
+  {
+    id: "parteDeCadaPago",
+    desde: "fideicomiso",
+    hacia: "tesoro",
+    // No se copia: vive en el módulo de lotes.
+    valor: { fraccion: MODELO_LOTES.aporteUnico, fuente: "lib/lotes/modelo.ts (aporte único) · doc 34 §3, sim/lot_sale_sim.py" },
+  },
+  { id: "faroPorCuota", desde: "tokenTierra", hacia: "faro", valor: null },
+  { id: "reventa", desde: "reventa", hacia: "tesoro", valor: null },
 ];
 
-/** Tokens que trae cada m² de lote privado. */
-export const FARO_POR_M2 = 10;
+// ---- Las tres puertas para tener FARO (ninguna es una inversión) ----
+export const PUERTAS = ["conElLote", "aportando", "prepagando"] as const;
+export type IdPuerta = (typeof PUERTAS)[number];
 
-/** Aporte de entrada: parte de cada compra que va al tesoro del bien común (fracción). */
-export const APORTE_DE_ENTRADA = 0.1;
+export const QUE_DA = ["voz", "noches", "huertaYCocina", "talleres", "expensas"] as const;
+export const QUE_NO_TIENE = ["exchange", "liquidez", "recompra", "respaldoTierra", "premioPorBloquear"] as const;
 
-/** Monto mínimo de la calculadora, en USD. */
-export const MONTO_MINIMO_USD = 10;
+// ---- Política de FARO (doc 34 §3, columna "De dónde viene") ----
+export const POLITICA = {
+  emision: { fuente: "Doc 11 (oferta atada a capacidad)" },
+  quema: { fuente: "Juanpi 2025 (quema por tarifas) y Gus en la call del 16-nov" },
+  bloqueo: { fuente: "Juanpi 2025 (veNETX), suavizado; slides, opción A" },
+  /** En la versión 1 solo viaja con el lote; se revisa a los 12 meses con datos de uso. */
+  transferencia: { revisionMeses: 12, fuente: "Objeción de Juanpi: sin circulación no hay precio que defender" },
+  reserva: { fuente: "Slides, lámina 8" },
+  voz: { fuente: "Regla 6; slides, lámina 6" },
+} as const;
 
-/** Tramos de la venta temprana: cantidad y precio en USD por token. */
-export const TRAMOS: readonly { cantidad: number; precio: number }[] = [
-  { cantidad: 750_000, precio: 0.05 },
-  { cantidad: 750_000, precio: 0.08 },
-  { cantidad: 750_000, precio: 0.12 },
-  { cantidad: 750_000, precio: 0.18 },
+export type IdPolitica = keyof typeof POLITICA;
+
+// ---- Decisiones abiertas (doc 34 §7) ----
+export type EstadoDecision =
+  | { estado: "abierta" }
+  | { estado: "decidida"; decidida: { fecha: string; quien: string } };
+
+export type IdDecision = "d1" | "d2" | "d3" | "d4" | "d5" | "d6" | "d7" | "d8";
+
+/**
+ * Un solo dato por decisión. Cuando Juanpi y Franz decidan, se cambia solo ese objeto (y el texto de la decisión tomada en el
+ * diccionario), en un cambio OpenSpec aprobado por Gus (ADR-031, regla 2). Hoy las 8 están abiertas.
+ */
+export const DECISIONES: readonly ({ id: IdDecision } & EstadoDecision)[] = [
+  { id: "d1", estado: "abierta" },
+  { id: "d2", estado: "abierta" },
+  { id: "d3", estado: "abierta" },
+  { id: "d4", estado: "abierta" },
+  { id: "d5", estado: "abierta" },
+  { id: "d6", estado: "abierta" },
+  { id: "d7", estado: "abierta" },
+  { id: "d8", estado: "abierta" },
 ];
 
-/** Avance de ejemplo: parte (fracción) del tramo 1 que ya estaría vendida. */
-export const AVANCE_DE_EJEMPLO = { tramo: 0, fraccion: 0.4 } as const;
+// ---- Lo que cambió respecto del modelo del 8-nov ----
+export const CAMBIOS_DESDE_V_ANTERIOR = {
+  fechaModeloAnterior: "2026-11-08",
+  ids: ["tramos", "staking", "reservaTierra", "repartoFijo"],
+} as const;
 
-/** NetXGen: se libera en años, con un año de espera. */
-export const LIBERACION_NETXGEN = { anios: 4, esperaAnios: 1 } as const;
-
-/** Staking A: bloquear suma voz, sin tokens nuevos. Staking B: bloquear da tokens nuevos por año (fracción). */
-export const STAKING = { mesesA: 12, anualB: 0.05 } as const;
+// ---- Helpers que usan otras pantallas (misma firma que antes): números para mostrar ----
 
 /** Tokens que traería un lote de `m2` metros cuadrados. Sin superficie, null (nunca 0). */
 export function faroDeLote(m2: number | null | undefined): number | null {
   if (typeof m2 !== "number" || !Number.isFinite(m2) || m2 <= 0) return null;
-  return Math.round(m2 * FARO_POR_M2);
+  return Math.round(m2 * FARO_POR_M2.valor);
 }
 
 /**
@@ -64,68 +113,12 @@ export const loteTraeFaro = (grupo: "primeros" | "norte"): boolean => grupo !== 
 
 /** Centro de un contorno [longitud, latitud]: el promedio de sus vértices (sin contar el que cierra el anillo). Sin vértices, null. */
 export function centroDeAnillo(anillo: readonly (readonly [number, number])[]): { lat: number; lng: number } | null {
-  const abierto = anillo.length > 1 && anillo[0][0] === anillo[anillo.length - 1][0] && anillo[0][1] === anillo[anillo.length - 1][1]
-    ? anillo.slice(0, -1)
-    : anillo;
+  const abierto =
+    anillo.length > 1 && anillo[0][0] === anillo[anillo.length - 1][0] && anillo[0][1] === anillo[anillo.length - 1][1]
+      ? anillo.slice(0, -1)
+      : anillo;
   if (abierto.length === 0) return null;
   const lng = abierto.reduce((s, p) => s + p[0], 0) / abierto.length;
   const lat = abierto.reduce((s, p) => s + p[1], 0) / abierto.length;
   return { lat, lng };
-}
-
-/** Cantidad de tokens de un grupo del reparto. */
-export const faroDeGrupo = (id: IdGrupoReparto): number =>
-  Math.round((SUMINISTRO * (REPARTO.find((g) => g.id === id)?.pct ?? 0)) / 100);
-
-/** El reparto con sus tokens; los porcentajes suman 100. */
-export const reparto = () => REPARTO.map((g) => ({ ...g, faro: faroDeGrupo(g.id) }));
-
-/** Total en USD de un tramo, a su precio. */
-export const totalPorTramo = () => TRAMOS.map((t) => ({ ...t, totalUsd: t.cantidad * t.precio }));
-
-/** Lo que queda por vender de cada tramo, desde el avance de ejemplo. */
-export function disponiblePorTramo(): number[] {
-  return TRAMOS.map((t, i) =>
-    i < AVANCE_DE_EJEMPLO.tramo ? 0 : i === AVANCE_DE_EJEMPLO.tramo ? Math.round(t.cantidad * (1 - AVANCE_DE_EJEMPLO.fraccion)) : t.cantidad,
-  );
-}
-
-export type Cotizacion =
-  | { ok: false; motivo: "monto-minimo" | "invalido" }
-  | {
-      ok: true;
-      faro: number;
-      precioPromedio: number;
-      /** Índices (desde 0) de los tramos que toca. */
-      tramos: number[];
-      aporteAlTesoro: number;
-      /** Dólares que no alcanzaron a usarse porque los tramos se agotan; 0 si todo entró. */
-      sobrante: number;
-    };
-
-/** Cuántos tokens recibiría quien pusiera `usd`, recorriendo los tramos desde el avance de ejemplo. Es una simulación. */
-export function cotizar(usd: number): Cotizacion {
-  if (!Number.isFinite(usd) || usd < 0) return { ok: false, motivo: "invalido" };
-  if (usd < MONTO_MINIMO_USD) return { ok: false, motivo: "monto-minimo" };
-  const disponible = disponiblePorTramo();
-  let resto = usd;
-  let faro = 0;
-  const tramos: number[] = [];
-  for (let i = 0; i < TRAMOS.length && resto > 1e-9; i++) {
-    if (disponible[i] <= 0) continue;
-    const alcanza = resto / TRAMOS[i].precio;
-    const tomo = Math.min(alcanza, disponible[i]);
-    faro += tomo;
-    resto -= tomo * TRAMOS[i].precio;
-    tramos.push(i);
-  }
-  const usado = usd - resto;
-  return {
-    ok: true,
-    faro: Math.floor(faro),
-    precioPromedio: faro > 0 ? usado / faro : 0,
-    tramos,
-    aporteAlTesoro: usado * APORTE_DE_ENTRADA,
-    sobrante: resto < 1e-6 ? 0 : resto,
-  };
 }
