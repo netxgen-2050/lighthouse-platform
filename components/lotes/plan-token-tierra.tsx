@@ -31,7 +31,8 @@ type Props = {
   nombre: string;
   textos: TextosPlan;
   opciones: readonly number[];
-  elegida: number;
+  /** Las cuotas elegidas, o null si la compra guardada no tiene plan (se muestra "sin dato", sin elección). */
+  elegida: number | null;
   alElegir: (cuotas: number) => void;
   /** Con una compra simulada hecha, el plan queda fijo, igual que la casa. */
   deshabilitado: boolean;
@@ -76,24 +77,28 @@ export function PlanTokenTierra({
         {t.titulo}
         {terminoTierra}
       </h2>
-      <fieldset className="grid gap-2" disabled={deshabilitado}>
-        <legend className="font-medium">{t.leyenda}</legend>
-        {opciones.map((n) => (
-          <label key={n} className="flex items-center gap-2">
-            <input
-              type="radio"
-              name={`${nombre}-plan`}
-              value={n}
-              checked={elegida === n}
-              onChange={() => alElegir(n)}
-              className="size-4 accent-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
-            />
-            <span>{n === 0 ? t.contado : t.cuotas(n)}</span>
-          </label>
-        ))}
-      </fieldset>
+      {elegida !== null && (
+        <fieldset className="grid gap-2" disabled={deshabilitado}>
+          <legend className="font-medium">{t.leyenda}</legend>
+          {opciones.map((n) => (
+            <label key={n} className="flex items-center gap-2">
+              <input
+                type="radio"
+                name={`${nombre}-plan`}
+                value={n}
+                checked={elegida === n}
+                onChange={() => alElegir(n)}
+                className="size-4 accent-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+              />
+              <span>{n === 0 ? t.contado : t.cuotas(n)}</span>
+            </label>
+          ))}
+        </fieldset>
+      )}
       <p className="text-sm">{conCasa ? t.casaAparte : t.soloLote}</p>
-      {plan === null ? (
+      {elegida === null ? (
+        <p className="text-sm font-medium">{sinDato}</p>
+      ) : plan === null ? (
         <p className="text-sm font-medium">{t.sinPrecio}</p>
       ) : (
         <dl className="grid gap-1 text-sm sm:grid-cols-[auto_1fr] sm:gap-x-4">
@@ -123,10 +128,14 @@ export function PlanTokenTierra({
           {hayFaroUltima && faro?.ultimaCuota != null && t.faroUltima(faroTexto(faro.ultimaCuota))}
         </p>
       )}
-      {!contado && <p className="text-sm">{t.abandono}</p>}
-      <p className="text-sm">
-        {t.interes} {sinDato}.
-      </p>
+      {elegida !== null && !contado && (
+        <>
+          <p className="text-sm">{t.abandono}</p>
+          <p className="text-sm">
+            {t.interes} {sinDato}.
+          </p>
+        </>
+      )}
       <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
         {t.aviso}
         {terminoOrdenanza}

@@ -247,13 +247,6 @@ export function FichaCliente({ id }: { id: string }) {
 
       {!traeFaro ? (
         <p className="text-sm">{t.plan.primeros}</p>
-      ) : cuotas === null ? (
-        <section aria-labelledby="ficha-plan" className={TARJETA}>
-          <h2 id="ficha-plan" className="text-lg font-semibold">
-            {t.plan.titulo}
-          </h2>
-          <p className="text-sm">{sd}</p>
-        </section>
       ) : (
         <PlanTokenTierra
           nombre={grupo}

@@ -202,6 +202,7 @@ export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM
           {planCompra && (
             <p className="text-sm">{t.compra.planElegido(textoPlan(planCompra.cuotas), usdEn(planCompra.anticipo, idioma))}</p>
           )}
+          {planCompra && compra?.opcion !== "solo-lote" && <p className="text-sm">{t.plan.casaAparte}</p>}
           <p className="text-sm">
             {t.compra.aporteAparte(usdEn(compra?.vio.aporte, idioma))}
             <TerminoLegal clave="aporteunico" idioma={idioma} />
@@ -284,6 +285,7 @@ export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM
                 <li>
                   <strong>{t.boleto.plan}</strong> {planCompra ? textoPlan(planCompra.cuotas) : sinDato(idioma)}
                 </li>
+                {planCompra && compra.opcion !== "solo-lote" && <li>{t.plan.casaAparte}</li>}
                 {planCompra ? (
                   <>
                     <li>

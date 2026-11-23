@@ -188,6 +188,7 @@ test.describe("plan en cuotas · Token Tierra (simulado)", () => {
     await expect(plan).toContainText(usd(precioDelLote));
     await expect(plan).not.toContainText("Cada cuota");
     await expect(plan).not.toContainText("no se emite");
+    await expect(plan).not.toContainText("Interés y actualización");
     await expect(plan).toContainText(faroEn(faroDeLote(lote.superficieM2), "es"));
   });
 
@@ -241,7 +242,17 @@ test.describe("plan en cuotas · Token Tierra (simulado)", () => {
     await page.goto(`/lotes/${lote.id}`);
     const boleto = page.getByRole("region", { name: /Boleto de ejemplo/ });
     await expect(boleto).toContainText("Plan de pago: sin dato");
-    await expect(page.getByRole("region", { name: /Plan en cuotas · Token Tierra/ })).toContainText("sin dato");
+    const tarjeta = page.getByRole("region", { name: /Plan en cuotas · Token Tierra/ });
+    await expect(tarjeta).toContainText("sin dato");
+    // Sin plan guardado igual lleva los avisos, los ⚖ y el enlace, y no ofrece elegir.
+    await expect(tarjeta).toContainText("Ordenanza 173");
+    await expect(tarjeta).toContainText("no está otorgada");
+    await expect(tarjeta).toContainText("no es una oferta");
+    await expect(tarjeta).toContainText("a verificar con abogado");
+    await expect(tarjeta.getByRole("button", { name: /Qué significa legalmente: Token Tierra/ })).toBeVisible();
+    await expect(tarjeta.getByRole("button", { name: /Qué significa legalmente: Ordenanza 173/ })).toBeVisible();
+    await expect(tarjeta.getByRole("link", { name: "Ver la propuesta del bien común" })).toHaveAttribute("href", "/bien-comun");
+    await expect(tarjeta.getByRole("radio")).toHaveCount(0);
   });
 });
 
@@ -329,8 +340,12 @@ test("con Casa familiar el boleto dice la opción, el precio de la casa y el tot
   await marcarLeido(page);
   await page.getByRole("button", { name: "Reservar (simulado)" }).click();
   await page.getByRole("button", { name: "Simular el primer pago (anticipo)" }).click();
+  // El anticipo es solo del lote: el paso de pago y el boleto dicen que la casa se paga aparte.
+  await expect(page.getByText("la casa se paga aparte").last()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Primer pago simulado (anticipo)" }).locator("..")).toContainText("la casa se paga aparte");
   await page.getByRole("button", { name: "Confirmar el primer pago simulado" }).click();
   const boleto = page.getByRole("region", { name: /Boleto de ejemplo/ });
+  await expect(boleto).toContainText("la casa se paga aparte");
   await expect(boleto).toContainText("Casa familiar");
   await expect(boleto).toContainText(usd(precioCasa("familiar")));
   await expect(boleto).toContainText(usd(precioPaquete(lote.superficieM2, "familiar")));
