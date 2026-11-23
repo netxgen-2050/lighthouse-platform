@@ -51,3 +51,4 @@ next-env.d.ts
 
 # Bóveda de Obsidian abierta sobre el repo (configuración local)
 docs/.obsidian/
+.neon
