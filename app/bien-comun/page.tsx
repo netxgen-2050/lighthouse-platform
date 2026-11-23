@@ -5,10 +5,11 @@ import { DiagramaCarriles } from "@/components/bien-comun/diagrama-carriles";
 import { ListaCambios } from "@/components/bien-comun/lista-cambios";
 import { ListaPuertas } from "@/components/bien-comun/lista-puertas";
 import { SelloPropuesta } from "@/components/bien-comun/sello-propuesta";
-import { SUBTARJETA, TARJETA, TD, TH, REGION } from "@/components/bien-comun/estilos";
+import { TARJETA, TD, TH, REGION } from "@/components/bien-comun/estilos";
 import { TablaDecisiones } from "@/components/bien-comun/tabla-decisiones";
 import { TarjetasPolitica } from "@/components/bien-comun/tarjetas-politica";
 import { TerminoLegal } from "@/components/termino-legal";
+import { textoDeEstado } from "@/lib/bien-comun/estado-decision";
 import { enteroEn, faroEn } from "@/lib/bien-comun/formato";
 import {
   CAMBIOS_DESDE_V_ANTERIOR,
@@ -43,6 +44,9 @@ export default async function BienComunPage() {
   const parte = parteDelSectorPrivada();
   const usos = parcelasPorUso(idioma);
   const meses = enteroEn(POLITICA.transferencia.revisionMeses, idioma);
+  // Las cantidades salen del módulo, nunca del diccionario.
+  const cantidadDecisiones = enteroEn(DECISIONES.length, idioma);
+  const cantidadReglas = enteroEn(Object.keys(POLITICA).length, idioma);
 
   const nodoA = {
     tokenTierra: "tokenTierra",
@@ -81,7 +85,8 @@ export default async function BienComunPage() {
     id,
     titulo: t.politica[id].titulo,
     regla: id === "transferencia" ? t.politica.transferencia.regla(meses) : (t.politica[id].regla as string),
-    fuente: t.politica.fuentes[id],
+    // La fuente es una cita del documento de origen: sale del módulo, igual en los dos idiomas.
+    fuente: POLITICA[id].fuente,
   }));
 
   const filas = DECISIONES.map((d) => {
@@ -91,10 +96,8 @@ export default async function BienComunPage() {
       pregunta: txt.pregunta,
       recomendacion:
         d.id === "d3" ? t.decisiones.d3.recomendacion(meses) : (t.decisiones[d.id].recomendacion as string),
-      estado:
-        d.estado === "abierta"
-          ? t.decisiones.abierta
-          : t.decisiones.decidida(formatearFecha(d.decidida.fecha, idioma, "largo"), d.decidida.quien),
+      termino: d.id === "d2" ? <TerminoLegal clave="primaobjetivo" idioma={idioma} /> : undefined,
+      estado: textoDeEstado(d, t.decisiones, idioma),
     };
   });
 
@@ -110,6 +113,7 @@ export default async function BienComunPage() {
           texto={t.sello.texto(VERSION_PROPUESTA.version)}
           fecha={t.sello.fecha(formatearFecha(VERSION_PROPUESTA.fecha, idioma, "largo"), VERSION_PROPUESTA.fuente)}
           simulacion={t.sello.simulacion}
+          terminoSimulacion={<TerminoLegal clave="noesoferta" idioma={idioma} />}
         />
         <AvisoEjemplo />
         <p className="w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
@@ -164,7 +168,10 @@ export default async function BienComunPage() {
             </h2>
             <ul className="grid list-disc gap-1 pl-5 text-sm">
               {QUE_DA.map((id) => (
-                <li key={id}>{t.queDa[id]}</li>
+                <li key={id}>
+                  {t.queDa[id]}
+                  {id === "expensas" ? <TerminoLegal clave="expensas" idioma={idioma} /> : null}
+                </li>
               ))}
             </ul>
             <p className="text-sm text-muted">{t.queDa.nota}</p>
@@ -181,12 +188,12 @@ export default async function BienComunPage() {
           </section>
         </div>
 
-        <TarjetasPolitica titulo={t.politica.titulo} intro={t.politica.intro} deDondeEtiqueta={t.politica.deDonde} tarjetas={tarjetas} />
+        <TarjetasPolitica titulo={t.politica.titulo} intro={t.politica.intro(cantidadReglas)}deDondeEtiqueta={t.politica.deDonde} tarjetas={tarjetas} />
 
         <TablaDecisiones
           titulo={t.decisiones.titulo}
-          intro={t.decisiones.intro}
-          caption={t.decisiones.caption}
+          intro={t.decisiones.intro(cantidadDecisiones)}
+          caption={t.decisiones.caption(cantidadDecisiones)}
           columnas={{ pregunta: t.decisiones.pregunta, recomendacion: t.decisiones.recomendacionTitulo, estado: t.decisiones.estado }}
           filas={filas}
         />
@@ -256,13 +263,14 @@ export default async function BienComunPage() {
               <li key={i}>{i}</li>
             ))}
           </ul>
-          <article className={SUBTARJETA}>
-            <h3 className="font-semibold">
-              {t.tokens.nft.titulo}
-              <TerminoLegal clave="nftlote" idioma={idioma} />
-            </h3>
-            <p>{t.tokens.nft.texto}</p>
-          </article>
+        </section>
+
+        <section aria-labelledby="h-nft" className={TARJETA}>
+          <h2 id="h-nft" className="text-xl font-semibold">
+            {t.tokens.nft.titulo}
+            <TerminoLegal clave="nftlote" idioma={idioma} />
+          </h2>
+          <p className="max-w-3xl text-sm">{t.tokens.nft.texto}</p>
         </section>
 
         <section aria-labelledby="h-abogado" className={TARJETA}>
@@ -271,8 +279,12 @@ export default async function BienComunPage() {
           </h2>
           <p className="max-w-3xl text-sm">{t.abogado.intro}</p>
           <ol className="grid list-decimal gap-1 pl-5 text-sm">
-            {t.abogado.items.map((i) => (
-              <li key={i}>{i}</li>
+            {t.abogado.items.map((i, n) => (
+              <li key={i}>
+                {i}
+                {n === 0 ? <TerminoLegal clave="boletocompraventa" idioma={idioma} /> : null}
+                {n === 1 ? <TerminoLegal clave="valornegociable" idioma={idioma} /> : null}
+              </li>
             ))}
           </ol>
         </section>

@@ -12,6 +12,12 @@ test.beforeEach(async ({ page }) => {
 });
 
 const main = (page: Page) => page.locator("main");
+const textoFueraDeCambios = (page: Page) =>
+  main(page).evaluate((el) => {
+    const copia = el.cloneNode(true) as HTMLElement;
+    copia.querySelector('[aria-labelledby="h-cambios"]')?.remove();
+    return copia.textContent ?? "";
+  });
 const plano = async (page: Page) => (await main(page).innerText()).replace(/\s+/g, " ");
 
 test.describe("sin sesión", () => {
@@ -83,9 +89,9 @@ test.describe("sin sesión", () => {
 
   test("ocho decisiones, cada una con la recomendación de Gus y el estado abierta", async ({ page }) => {
     await page.goto(RUTA);
-    const tabla = page.getByRole("table", { name: /ocho decisiones/ });
+    const tabla = page.getByRole("table", { name: new RegExp(`${DECISIONES.length} decisiones`) });
     await expect(tabla.getByRole("row")).toHaveCount(DECISIONES.length + 1);
-    await expect(tabla.getByText("abierta", { exact: true })).toHaveCount(8);
+    await expect(tabla.getByText("abierta", { exact: true })).toHaveCount(DECISIONES.length);
     await expect(tabla.getByRole("columnheader", { name: "Recomendación de Gus" })).toBeVisible();
   });
 
@@ -96,12 +102,16 @@ test.describe("sin sesión", () => {
     await expect(cambios.getByRole("listitem")).toHaveCount(4);
     await expect(cambios).toContainText("tramos");
     await expect(cambios).toContainText("staking");
-    const fuera = await main(page).evaluate((el) => {
-      const copia = el.cloneNode(true) as HTMLElement;
-      copia.querySelector('[aria-labelledby="h-cambios"]')?.remove();
-      return copia.textContent ?? "";
-    });
-    expect(fuera).not.toMatch(/tramo|staking|precio de FARO/i);
+    expect(await textoFueraDeCambios(page)).not.toMatch(/tramo|staking|precio de FARO/i);
+  });
+
+  test("en inglés, tranche y staking tampoco aparecen fuera de 'What changed'", async ({ page }) => {
+    await page.goto(`${RUTA}?lang=en`);
+    const cambios = page.getByRole("region", { name: "What changed" });
+    await expect(cambios.getByRole("listitem")).toHaveCount(CAMBIOS_DESDE_V_ANTERIOR.ids.length);
+    await expect(cambios).toContainText("tranches");
+    await expect(cambios).toContainText("Staking");
+    expect(await textoFueraDeCambios(page)).not.toMatch(/tranche|staking|price of FARO|FARO price/i);
   });
 
   test("las parcelas comunes se leen del plano, no son tokens y no se venden; Ostrom marca cada principio como idea", async ({ page }) => {
@@ -121,6 +131,19 @@ test.describe("sin sesión", () => {
     for (const nombre of ["Token Tierra", "Token Inversor", "Fideicomiso del barrio", "Tesoro del común"]) {
       await expect(page.getByRole("button", { name: `Qué significa legalmente: ${nombre}` })).toBeVisible();
     }
+    for (const nombre of ["Esto no es una oferta", "Expensas", "Prima objetivo", "Boleto de compraventa", "Valor negociable"]) {
+      await expect(main(page).getByRole("button", { name: `Qué significa legalmente: ${nombre}` }).first()).toBeVisible();
+    }
+  });
+
+  test("el NFT del lote tiene su propia sección, fuera de las parcelas comunes, y nombra la metadata", async ({ page }) => {
+    await page.goto(RUTA);
+    const parcelas = page.getByRole("region", { name: "Las parcelas comunes" });
+    await expect(parcelas).not.toContainText("NFT");
+    const nft = page.getByRole("region", { name: /NFT del lote/ });
+    await expect(nft).toContainText("metadata");
+    await expect(nft).toContainText("No reemplaza la escritura");
+    await expect(nft.getByRole("button", { name: "Qué significa legalmente: NFT del lote" })).toBeVisible();
   });
 
   test("no promete nada ni usa palabras viejas: sin procomún, tribu ni Hadron", async ({ page }) => {
@@ -162,7 +185,9 @@ test.describe("sin sesión", () => {
     for (const suelto of [/Propuesta/, /bien común/i, /sin dato/i, /A verificar/, /abierta/, /¿|¡/]) {
       expect(texto, String(suelto)).not.toMatch(suelto);
     }
-    await expect(page.getByRole("table", { name: /eight decisions/ }).getByText("open", { exact: true })).toHaveCount(8);
+    await expect(page.getByRole("table", { name: new RegExp(`${DECISIONES.length} decisions`) }).getByText("open", { exact: true })).toHaveCount(
+      DECISIONES.length,
+    );
     expect(texto).not.toMatch(/procom[uú]n|\btribe|\btribu|Hadron/i);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
   });

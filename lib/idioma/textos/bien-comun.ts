@@ -111,17 +111,8 @@ const es = {
   },
   politica: {
     titulo: "La política de FARO",
-    intro: "Seis reglas propuestas, para discutir con Juanpi. Cada una dice de dónde viene.",
+    intro: (n: string) => `${n} reglas propuestas, para discutir con Juanpi. Cada una dice de dónde viene.`,
     deDonde: "De dónde viene",
-    // Mismo texto que `fuente` de cada palanca en el módulo (lo vigila `bien-comun.test.ts`); el inglés es su traducción.
-    fuentes: {
-      emision: "Doc 11 (oferta atada a capacidad)",
-      quema: "Juanpi 2025 (quema por tarifas) y Gus en la call del 16-nov",
-      bloqueo: "Juanpi 2025 (veNETX), suavizado; slides, opción A",
-      transferencia: "Objeción de Juanpi: sin circulación no hay precio que defender",
-      reserva: "Slides, lámina 8",
-      voz: "Regla 6; slides, lámina 6",
-    },
     emision: {
       titulo: "Emisión",
       regla: "Solo por las tres puertas, y la tercera con tope anual según capacidad.",
@@ -141,8 +132,8 @@ const es = {
   },
   decisiones: {
     titulo: "Lo que hay que decidir",
-    intro: "Las ocho decisiones del documento 34, con la recomendación de Gus. Ninguna está cerrada.",
-    caption: "Las ocho decisiones: pregunta, recomendación de Gus y estado",
+    intro: (n: string) => `Las ${n} decisiones del documento 34, con la recomendación de Gus. Ninguna está cerrada.`,
+    caption: (n: string) => `Las ${n} decisiones: pregunta, recomendación de Gus y estado`,
     pregunta: "Decisión",
     recomendacionTitulo: "Recomendación de Gus",
     estado: "Estado",
@@ -217,7 +208,7 @@ const es = {
     nft: {
       titulo: "NFT del lote",
       texto:
-        "Uno por lote privado: la ficha del lote, con su superficie, su estado y sus deberes. No reemplaza la escritura: el dominio se registra donde corresponde.",
+        "Uno por lote privado: la ficha del lote, con su metadata (superficie, contorno, estado administrativo y deberes hacia el bien común). No reemplaza la escritura: el dominio se registra donde corresponde. Es una simulación: no se emite nada.",
     },
   },
   parcelas: {
@@ -366,16 +357,8 @@ const en: Textos<typeof es> = {
   },
   politica: {
     titulo: "The FARO policy",
-    intro: "Six proposed rules, to discuss with Juanpi. Each one says where it comes from.",
+    intro: (n: string) => `${n} proposed rules, to discuss with Juanpi. Each one says where it comes from.`,
     deDonde: "Where it comes from",
-    fuentes: {
-      emision: "Doc 11 (supply tied to capacity)",
-      quema: "Juanpi 2025 (burning through fees) and Gus on the 16-Nov call",
-      bloqueo: "Juanpi 2025 (veNETX), softened; slides, option A",
-      transferencia: "Juanpi's objection: with no circulation there is no price to defend",
-      reserva: "Slides, slide 8",
-      voz: "Rule 6; slides, slide 6",
-    },
     emision: {
       titulo: "Issuance",
       regla: "Only through the three doors, and the third with a yearly cap according to capacity.",
@@ -395,8 +378,8 @@ const en: Textos<typeof es> = {
   },
   decisiones: {
     titulo: "What has to be decided",
-    intro: "The eight decisions of document 34, with Gus's recommendation. None of them is closed.",
-    caption: "The eight decisions: question, Gus's recommendation and status",
+    intro: (n: string) => `The ${n} decisions of document 34, with Gus's recommendation. None of them is closed.`,
+    caption: (n: string) => `The ${n} decisions: question, Gus's recommendation and status`,
     pregunta: "Decision",
     recomendacionTitulo: "Gus's recommendation",
     estado: "Status",
@@ -471,7 +454,7 @@ const en: Textos<typeof es> = {
     nft: {
       titulo: "Lot NFT",
       texto:
-        "One per private lot: the lot's file card, with its area, status and duties. It does not replace the deed: ownership is registered where it belongs.",
+        "One per private lot: the lot's file card, with its metadata (area, outline, administrative status and duties toward the commons). It does not replace the deed: ownership is registered where it belongs. This is a simulation: nothing is issued.",
     },
   },
   parcelas: {

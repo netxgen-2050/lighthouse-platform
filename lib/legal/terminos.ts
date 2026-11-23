@@ -397,6 +397,40 @@ export const TERMINOS = {
         "The commons' cash box, run by the Foundation (to be created). It would receive a share of each lot payment, the common charges and what the commons produces, and it backs the services paid in FARO. It does not back any neighborhood's debt. It is a proposal under discussion and a simulation. To be verified with a lawyer.",
     },
   },
+  // Textos nuevos (bien-comun-propuesta, vuelta de corrección): borrador a revisar antes de cualquier uso real.
+  primaobjetivo: {
+    titulo: "Prima objetivo",
+    texto:
+      "Un extra que el Token Inversor aspiraría a cobrar por encima de lo que puso, a medida que entran las cuotas. Es un objetivo, no una promesa: puede no alcanzarse y no está garantizado. Es una propuesta en discusión y una simulación: no se ofrece ni se paga nada. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Target premium",
+      texto:
+        "An extra that the Investor Token would aim to receive on top of what was put in, as the installments come in. It is a target, not a promise: it may not be reached and it is not guaranteed. It is a proposal under discussion and a simulation: nothing is offered or paid. To be verified with a lawyer.",
+    },
+  },
+  boletocompraventa: {
+    titulo: "Boleto de compraventa",
+    texto:
+      "Un contrato privado en el que quien vende se compromete a vender un inmueble y quien compra, a pagarlo, antes de la escritura. Si un plan de cuotas tokenizado cuenta como boleto es una pregunta abierta, y de eso depende desde cuándo puede firmarse y cobrarse. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Sales contract (boleto de compraventa)",
+      texto:
+        "A private contract in which the seller agrees to sell a property and the buyer agrees to pay for it, before the deed. Whether a tokenized installment plan counts as one is an open question, and it decides from when it can be signed and collected. To be verified with a lawyer.",
+    },
+  },
+  valornegociable: {
+    titulo: "Valor negociable",
+    texto:
+      "Un título que puede comprarse y venderse y que, en Argentina, suele quedar bajo el control de la CNV. Si el Token Inversor es un valor negociable es una pregunta abierta: de eso depende quién tiene que estar registrado y cómo se lo puede ofrecer. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Tradable security",
+      texto:
+        "A title that can be bought and sold and that, in Argentina, usually falls under the CNV's oversight. Whether the Investor Token is one is an open question: it decides who has to be registered and how it can be offered. To be verified with a lawyer.",
+    },
+  },
   // Texto nuevo (R40): borrador a revisar antes de cualquier uso real.
   primeroslotes: {
     titulo: "Primeros 4 lotes",

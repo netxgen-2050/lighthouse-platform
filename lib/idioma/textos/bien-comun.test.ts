@@ -29,10 +29,13 @@ describe("diccionario del bien común", () => {
     expect(biencomun.en.enlace.trim()).not.toBe("");
   });
 
-  it("las fuentes de la política en español son las del módulo", () => {
-    for (const [id, p] of Object.entries(POLITICA)) {
-      expect(biencomun.es.politica.fuentes[id as keyof typeof POLITICA], id).toBe(p.fuente);
-    }
+  it("las fuentes de la política salen del módulo, no del diccionario, y las cantidades se reciben por parámetro", () => {
+    expect(biencomun.es.politica).not.toHaveProperty("fuentes");
+    expect(biencomun.en.politica).not.toHaveProperty("fuentes");
+    for (const p of Object.values(POLITICA)) expect(p.fuente.trim()).not.toBe("");
+    expect(biencomun.es.decisiones.intro("8")).toContain("8");
+    expect(biencomun.en.decisiones.caption("8")).toContain("8");
+    expect(biencomun.es.politica.intro("6")).toContain("6");
   });
 
   it("la decisión abierta se dice con palabras", () => {

@@ -1,7 +1,15 @@
+import type { ReactNode } from "react";
 import { REGION, TARJETA, TD, TH } from "./estilos";
 
 // Las decisiones del doc 34 §7: pregunta, recomendación de Gus y estado, dicho en texto (no solo con color).
-export type FilaDecision = { id: string; pregunta: string; recomendacion: string; estado: string };
+export type FilaDecision = {
+  id: string;
+  pregunta: string;
+  recomendacion: string;
+  estado: string;
+  /** ⚖ de la palabra legal que usa la recomendación, si la hay. */
+  termino?: ReactNode;
+};
 
 export type PropsDecisiones = {
   titulo: string;
@@ -40,7 +48,10 @@ export function TablaDecisiones(p: PropsDecisiones) {
                 <th scope="row" className={`${TD} text-left font-medium`}>
                   {f.pregunta}
                 </th>
-                <td className={TD}>{f.recomendacion}</td>
+                <td className={TD}>
+                  {f.recomendacion}
+                  {f.termino}
+                </td>
                 <td className={TD}>
                   <span className="w-fit rounded-full border border-dashed border-muted px-2 py-0.5 text-xs font-medium">
                     {f.estado}
