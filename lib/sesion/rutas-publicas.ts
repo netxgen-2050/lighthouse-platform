@@ -13,6 +13,8 @@ export const RUTAS_PUBLICAS: readonly RegExp[] = [
   /^\/lotes\/[^/]+$/,
   // Barrio Norte: lotes por estado y bien común se ven sin sesión; el panel de la obra pide entrar (rediseno-explorar-valle).
   /^\/barrios\/norte$/,
+  // Mi tierra: sin sesión muestra solo un aviso para entrar y ningún dato (rediseno-mi-tierra).
+  /^\/mi-tierra$/,
   // El bien común con tokens: simulación para el equipo, se lee sin sesión (bien-comun-tokens).
   /^\/bien-comun$/,
   // La vitrina del Congreso se ve sin cuenta; vincular el ticket pide cuenta (decisión de Gus, 14-oct-2026).
