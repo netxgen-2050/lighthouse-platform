@@ -30,7 +30,10 @@ export async function middleware(request: NextRequest) {
       respuesta.cookies.set(COOKIE_IDIOMA, r.cookie, { path: "/", sameSite: "lax", maxAge: VIGENCIA_COOKIE });
     }
     return respuesta;
-  } catch {
+  } catch (e) {
+    if (request.nextUrl.searchParams.has(PARAMETRO_VERIFICADOR)) {
+      console.error(`[sesion] falló la vuelta de Google en el middleware (${e instanceof Error ? e.name : "error"})`);
+    }
     return NextResponse.next();
   }
 }

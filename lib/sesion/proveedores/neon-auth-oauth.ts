@@ -27,7 +27,10 @@ export async function intercambiarVerificador(req: Request, env: Record<string, 
       cookieSecret: config.secreto,
     });
     return r.action === "redirect_oauth" ? { redirigir: r.redirectUrl, cookies: r.cookies } : null;
-  } catch {
+  } catch (e) {
+    // Solo el tipo del error: el mensaje podría traer la dirección con el verificador o datos de la persona. La persona sigue
+    // sin sesión y ve la página como siempre (la spec no pide un aviso aparte: puede volver a apretar "Entrar").
+    console.error(`[sesion] no se pudo cambiar el verificador de Google por la sesión (${e instanceof Error ? e.name : "error"})`);
     return null;
   }
 }

@@ -22,6 +22,7 @@ import { COOKIE_PRUEBA } from "@/lib/sesion/cookies";
 import { calcularNivel, EVENTO_NIVEL, leerEstadoGuardado } from "@/lib/sesion/nivel";
 import { INICIAL, type EstadoSumarte } from "@/lib/sumarte/estado";
 import { copiarClavesAnteriores } from "@/lib/demo/importar";
+import { decidirConsulta, loginAAbrir } from "@/lib/sesion/consulta";
 import { loginElegido } from "@/lib/sesion/errores-login";
 import { ContextoSesion, type EstadoSesion, type IdentidadMinima, type SesionCliente, type ValorSesion } from "./contexto";
 import { PasoAlta } from "./paso-alta";
@@ -89,23 +90,13 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
     };
 
     async function resolver() {
-      const cabeceras: Record<string, string> = {};
-      let porCookie = false;
-      if (prueba) {
-        cabeceras["x-lh-prueba"] = prueba;
-      } else {
-        if (!privyListoEfectivo) return;
-        const pedirToken = obtenerToken.current;
-        const token = privyAutenticadoEfectivo && pedirToken ? await pedirToken() : null;
-        if (token) {
-          cabeceras.Authorization = `Bearer ${token}`;
-        } else if (conNeonAuth) {
-          // Sin sesión de Privy, en un entorno con Neon Auth se pregunta con la cookie (no se puede leer desde acá).
-          porCookie = true;
-        } else {
-          return poner({ estado: "sin-sesion", sesion: null });
-        }
-      }
+      const pedirToken = obtenerToken.current;
+      const tokenPrivy = !prueba && privyListoEfectivo && privyAutenticadoEfectivo && pedirToken ? await pedirToken() : null;
+      // Sin sesión de Privy, en un entorno con Neon Auth se pregunta con la cookie (no se puede leer desde acá).
+      const consulta = decidirConsulta({ prueba: prueba ?? null, privyListo: privyListoEfectivo, tokenPrivy, conNeonAuth });
+      if (consulta.tipo === "esperar") return;
+      if (consulta.tipo === "sin-sesion") return poner({ estado: "sin-sesion", sesion: null });
+      const { cabeceras, porCookie } = consulta;
       try {
         const res = await fetch("/api/sesion", { headers: cabeceras, cache: "no-store", credentials: "same-origin" });
         if (res.status === 200) {
@@ -261,8 +252,9 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
       almacen = null;
     }
     intentarLogin(almacen, new Date(), () => {
-      if (conNeonAuth) return setFormularioAbierto(true);
-      if (login) return login();
+      const cual = loginAAbrir({ conNeonAuth, hayPrivy: Boolean(login) });
+      if (cual === "formulario") return setFormularioAbierto(true);
+      if (cual === "privy") return login?.();
       // Sin Privy no hay ventana de login: se lleva a Sumarte, que ofrece "Entrar como…" (modo de prueba). Desde Sumarte no
       // navega: avisa y se queda (el panel ya está en la página).
       if (ruta === "/sumarte") {

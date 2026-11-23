@@ -97,6 +97,57 @@ test.describe("el formulario", () => {
     await expect(campoEmail(page)).toBeFocused();
   });
 
+  test("código aceptado: se cierra el paso, la persona entra y no ve la pantalla de consentimiento", async ({ page }) => {
+    let entro = false;
+    await page.route("**/api/sesion", async (ruta) => {
+      if (!entro) return ruta.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ ok: false }) });
+      await ruta.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          ok: true,
+          idPersona: "persona-neon-1",
+          clavesAnteriores: [],
+          personaId: null,
+          nombre: "Ana",
+          email: "ana@ejemplo.test",
+          rol: "persona",
+          perfil: "usuario",
+          tribuAdmin: null,
+        }),
+      });
+    });
+    await page.route("**/api/auth/**", async (ruta: Route) => {
+      const { pathname } = new URL(ruta.request().url());
+      if (pathname.includes("sign-in/email-otp")) entro = true;
+      await ruta.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ success: true }) });
+    });
+    await abrirFormulario(page);
+    await campoEmail(page).fill("ana@ejemplo.test");
+    await page.getByRole("button", { name: "Mandame el código" }).click();
+    await campoCodigo(page).fill("123456");
+    await page.getByRole("dialog").getByRole("button", { name: "Entrar", exact: true }).click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Menú de la persona" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Antes de seguir: tu privacidad" })).toHaveCount(0);
+  });
+
+  test("'Mandar otro código' con doble clic avisa una sola vez y solo si salió el pedido", async ({ page }) => {
+    let pedidos = 0;
+    await page.route("**/api/auth/**", async (ruta: Route) => {
+      if (new URL(ruta.request().url()).pathname.includes("send-verification-otp")) pedidos += 1;
+      await ruta.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ success: true }) });
+    });
+    await abrirFormulario(page);
+    await campoEmail(page).fill("ana@ejemplo.test");
+    await page.getByRole("button", { name: "Mandame el código" }).click();
+    await expect(campoCodigo(page)).toBeVisible();
+    expect(pedidos).toBe(1);
+    await page.getByRole("button", { name: "Mandar otro código" }).dblclick();
+    await expect(page.getByRole("status").filter({ hasText: "Te mandamos otro código." })).toHaveCount(1);
+    expect(pedidos).toBe(2);
+  });
+
   test("un código equivocado muestra su error con role=alert y sigue sin sesión", async ({ page }) => {
     await simularNeonAuth(page, {
       pedirCodigo: { status: 200, cuerpo: { success: true } },

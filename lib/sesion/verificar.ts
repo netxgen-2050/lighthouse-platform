@@ -46,12 +46,35 @@ export async function resolverIdentidad(req: Request, entorno: Entorno, proveedo
 }
 
 /** Pedido mínimo con las cabeceras que acreditan la sesión (las páginas del servidor no tienen el `Request`). */
-export function pedidoDeCabeceras(cabeceras: { authorization?: string | null; prueba?: string | null; cookie?: string | null }): Request {
+export function pedidoDeCabeceras(cabeceras: {
+  authorization?: string | null;
+  prueba?: string | null;
+  cookie?: string | null;
+  /** Origen real de la página (`https://host`): Neon Auth lo controla contra los dominios permitidos. */
+  origen?: string | null;
+}): Request {
   const h = new Headers();
   if (cabeceras.authorization) h.set("authorization", cabeceras.authorization);
   if (cabeceras.prueba) h.set("x-lh-prueba", cabeceras.prueba);
   if (cabeceras.cookie) h.set("cookie", cabeceras.cookie);
-  return new Request("http://interno.invalid/", { headers: h });
+  let base = "http://interno.invalid/";
+  if (cabeceras.origen) {
+    try {
+      base = new URL("/", cabeceras.origen).href;
+    } catch {
+      // Un origen ilegible vuelve al valor interno: la sesión de Neon Auth queda sin verificar, nunca se inventa una.
+    }
+  }
+  return new Request(base, { headers: h });
+}
+
+/** Origen (`protocolo://host`) de un pedido de página, desde las cabeceras que pone el proxy; `null` si no hay host. */
+export function origenDeCabeceras(host: string | null | undefined, protocolo: string | null | undefined): string | null {
+  const h = host?.split(",")[0]?.trim();
+  if (!h || !/^[a-z0-9.-]+(:\d+)?$/i.test(h)) return null;
+  const p = protocolo?.split(",")[0]?.trim().toLowerCase();
+  const esquema = p === "http" || p === "https" ? p : /^(localhost|127\.0\.0\.1)(:|$)/.test(h) ? "http" : "https";
+  return `${esquema}://${h}`;
 }
 
 /** Solo Privy (el camino de antes de Neon Auth): lo conservan los tests de Privy y de la cabecera de prueba. */

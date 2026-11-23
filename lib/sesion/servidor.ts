@@ -44,6 +44,7 @@ export async function sesionDeCabeceras(cabeceras: {
   authorization: string | null;
   prueba: string | null;
   cookie?: string | null;
+  origen?: string | null;
 }): Promise<ResultadoSesion> {
   return sesionDelPedido(pedidoDeCabeceras(cabeceras));
 }

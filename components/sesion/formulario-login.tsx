@@ -50,13 +50,14 @@ export function FormularioLogin({ alEntrar, alCancelar }: Props) {
     if (error) (paso === "email" ? refEmail : refCodigo).current?.focus();
   }, [error, paso]);
 
-  async function pedirCodigo(ev?: FormEvent) {
+  /** Devuelve `true` solo si el código se pidió y Neon Auth lo aceptó. */
+  async function pedirCodigo(ev?: FormEvent): Promise<boolean> {
     ev?.preventDefault();
-    if (ocupado) return;
+    if (ocupado) return false;
     const limpio = email.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(limpio)) {
       setError("Escribí un email válido, por ejemplo nombre@ejemplo.com.");
-      return;
+      return false;
     }
     setOcupado(true);
     setError(null);
@@ -66,13 +67,15 @@ export function FormularioLogin({ alEntrar, alCancelar }: Props) {
       const estado = estadoDe(r);
       if (estado !== null) {
         setError(mensajeDeError(estado, "pedir"));
-        return;
+        return false;
       }
       setEmail(limpio);
       setCodigo("");
       setPaso("codigo");
+      return true;
     } catch (e) {
       setError(mensajeDeError(estadoDeExcepcion(e), "pedir"));
+      return false;
     } finally {
       setOcupado(false);
     }
@@ -104,9 +107,9 @@ export function FormularioLogin({ alEntrar, alCancelar }: Props) {
   }
 
   async function mandarOtro() {
-    setAviso(null);
-    await pedirCodigo();
-    setAviso((previo) => previo ?? "Te mandamos otro código.");
+    if (ocupado) return;
+    // Solo se avisa si el pedido salió y Neon Auth lo aceptó.
+    if (await pedirCodigo()) setAviso("Te mandamos otro código.");
   }
 
   async function conGoogle() {
