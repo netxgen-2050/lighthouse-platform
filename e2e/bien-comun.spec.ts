@@ -14,7 +14,7 @@ import { CAMBIOS_DESDE_V_ANTERIOR, DECISIONES, FARO_POR_M2, POLITICA, PUENTES, P
 // La propuesta v0.1 del bien común (bien-comun-propuesta): propuesta en discusión. Los valores que se esperan salen del
 // módulo, nunca escritos a mano.
 const RUTA = "/bien-comun";
-const ENLACE = "El token del bien común: ver la propuesta en discusión";
+const ENLACE = "El bien común y los tokens: ver la propuesta en discusión";
 
 test.beforeEach(async ({ page }) => {
   await page.route("**://server.arcgisonline.com/**", (r) => r.abort());

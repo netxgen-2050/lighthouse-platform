@@ -117,7 +117,11 @@ test.describe("sin sesión", () => {
         `${usdEn(c.despues, "es")} por año, el ${porcentajeEn(c.fraccionDespues, "es")} de este costo`,
       );
     }
-    await expect(s.getByText(/El resto saldría de: token del bien común, ingresos del bien común/).first()).toBeVisible();
+    await expect(s.getByText(/FARO no levanta capital\. El resto saldría de lo que el común produce/).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "El bien común y los tokens: ver la propuesta en discusión" })).toHaveAttribute(
+      "href",
+      "/bien-comun",
+    );
     const texto = await main(page).innerText();
     expect(texto).not.toMatch(/USD 42\.000|USD 46\.800/);
   });

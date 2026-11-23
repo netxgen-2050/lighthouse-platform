@@ -1,3 +1,5 @@
+import { ENTRADAS_DE_PARTIDA, coberturaAFechaFija, montoALevantar } from "../lib/bien-comun/barrio";
+import { usd } from "../lib/series/formato";
 import { leccionAporte, leccionExpensas } from "../lib/lotes/modelo";
 import { lotesDelGrupo } from "../lib/territorios/loteo";
 import { expect, test, type Page } from "./fixtura";
@@ -9,6 +11,7 @@ const H2 = [
   "Quién es quién con la plata",
   "Cómo paga una serie",
   "Dinero temprano",
+  "Token Inversor (propuesta v0.1, en discusión)",
   "Recorridos de inversores",
   "¿Y si sale mal?",
   "El modelo híbrido",
@@ -39,7 +42,7 @@ test.describe("estructura", () => {
     expect(aviso).toBeLessThan(texto.indexOf("USD"));
   });
 
-  test("ocho h2 en orden y el índice lleva a cada uno", async ({ page }) => {
+  test("nueve h2 en orden y el índice lleva a cada uno", async ({ page }) => {
     await page.goto(RUTA);
     await expect(main(page).getByRole("heading", { level: 2 })).toHaveText(H2);
     const indice = page.getByRole("navigation", { name: "Índice de la página" });
@@ -178,6 +181,38 @@ test.describe("contenido", () => {
     await page.goto(RUTA);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  });
+});
+
+test.describe("Token Inversor (propuesta v0.1)", () => {
+  test("monto, cobertura a 12 y 24 meses del módulo, plazo sin dato y enlace a /bien-comun", async ({ page }) => {
+    await page.goto(`${RUTA}#m-token-inversor`);
+    const s = seccion(page, "Token Inversor (propuesta v0.1, en discusión)");
+    await expect(s).toBeVisible();
+    const m = montoALevantar(ENTRADAS_DE_PARTIDA);
+    const c12 = coberturaAFechaFija(ENTRADAS_DE_PARTIDA, 12);
+    const c24 = coberturaAFechaFija(ENTRADAS_DE_PARTIDA, 24);
+    if (!m.ok || !c12.ok || !c24.ok) throw new Error("el módulo del barrio no calcula el caso base");
+    await expect(s).toContainText(usd(m.valor));
+    await expect(s).toContainText(`A los 12 meses tendría ${Math.round(c12.valor * 100)} % de lo que debe`);
+    await expect(s).toContainText(`A los 24 meses tendría ${Math.round(c24.valor * 100)} % de lo que debe`);
+    await expect(s).toContainText("Plazo máximo: sin dato");
+    await expect(s).toContainText("pocos inversores conocidos");
+    await expect(s).toContainText("Token Equity");
+    await expect(s).toContainText("Propuesta v0.1 · en discusión");
+    await expect(s).toContainText("valores de partida, no son una oferta");
+    await expect(s.getByRole("button", { name: /Token Inversor/ })).toBeVisible();
+    await expect(s.getByRole("button", { name: /fideicomiso/i })).toBeVisible();
+    await expect(s.getByRole("link", { name: "Ver la propuesta en discusión" })).toHaveAttribute("href", "/bien-comun");
+  });
+
+  test("series y dinero temprano suman la línea de contexto, sin borrar el diseño B", async ({ page }) => {
+    await page.goto(RUTA);
+    const linea = "La propuesta v0.1 (doc 34) ubica el fideicomiso de cada barrio como una serie y suma el Token Inversor: en discusión";
+    for (const nombre of ["Cómo paga una serie", "Dinero temprano"]) {
+      await expect(seccion(page, nombre)).toContainText(linea);
+    }
+    await expect(seccion(page, "Dinero temprano")).toContainText("SAFU");
   });
 });
 

@@ -13,7 +13,7 @@ const es = {
     "Lo privado es poco y lo común es casi todo: qué parte de la tierra son los lotes, sin dato. Esta página muestra una propuesta, todavía en discusión, de cómo organizar y cuidar lo común.",
   volver: "Ver qué es tuyo y qué es de todos",
   // Enlace que usan la lista de lotes, /lotes/hibrido y la sección Invertir de Sumarte.
-  enlace: "El token del bien común: ver la propuesta en discusión",
+  enlace: "El bien común y los tokens: ver la propuesta en discusión",
   sello: {
     etiqueta: "Estado de esta página",
     texto: (version: string) =>
@@ -321,7 +321,7 @@ const en: Textos<typeof es> = {
   bajadaSinDato:
     "What is private is small and what is shared is almost everything: what share of the land the lots are, no data. This page shows a proposal, still under discussion, for how to organize and look after the commons.",
   volver: "See what is yours and what belongs to everyone",
-  enlace: "The commons token: see the proposal under discussion",
+  enlace: "The commons and the tokens: see the proposal under discussion",
   sello: {
     etiqueta: "Status of this page",
     texto: (version: string) =>

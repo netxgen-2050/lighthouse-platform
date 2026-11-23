@@ -15,6 +15,7 @@ const rutas = [
   "/fogon",
   "/fogon/propuestas/siembra?desde=lighthouse",
   "/netx",
+  "/netx/financiamiento",
   "/netx/comunidad",
   "/pasaporte",
   "/bandeja",
@@ -49,8 +50,8 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 45 rutas auditadas", () => {
-  expect(rutas).toHaveLength(45);
+test("hay 46 rutas auditadas", () => {
+  expect(rutas).toHaveLength(46);
 });
 
 async function graves(page: Page) {
