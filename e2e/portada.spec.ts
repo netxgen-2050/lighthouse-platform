@@ -106,6 +106,9 @@ test("cada cifra muestra su fuente", async ({ page }) => {
 for (const idioma of ["es", "en"]) {
   test(`no aparece nada fuera del alcance de Lighthouse VRN (${idioma})`, async ({ page }) => {
     await page.goto(idioma === "es" ? "/" : "/?lang=en");
+    // Primero se comprueba que es la portada (y no, por ejemplo, un login), recién después las ausencias.
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Los cinco capitales de la regeneración" })).toBeVisible();
     const texto = (await page.locator("main").innerText()) ?? "";
     for (const t of [/Congreso/i, /Congress/i, /\bSMA\b/, /San Martín de los Andes/, /Atlántico Sur/, /South Atlantic/i, /111/, /\bTIR\b/, /\bIRR\b/, /recupero/i, /payback/i]) {
       expect(texto, String(t)).not.toMatch(t);
