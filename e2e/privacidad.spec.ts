@@ -379,6 +379,21 @@ test.describe("retirar el consentimiento", () => {
     expect((await page.context().cookies()).find((c) => c.name === "lh-auth-prueba")).toBeUndefined();
   });
 
+  test("si el servidor no registra el retiro avisa con su propio mensaje y no borra nada", async ({ page, request, emailActual }) => {
+    await registrarConsentimientoDe(request, emailActual);
+    await page.goto("/mis-datos");
+    await page.route("**/api/consentimientos", (ruta) =>
+      ruta.request().method() === "POST" ? ruta.fulfill({ status: 503, contentType: "application/json", body: "{}" }) : ruta.continue(),
+    );
+    await page.getByRole("button", { name: "Retirar mi consentimiento" }).click();
+    await page.getByRole("button", { name: "Sí, retirar y borrar mis datos" }).click();
+    const alerta = page.getByRole("alert").filter({ hasText: "no pudimos registrar tu retiro" });
+    await expect(alerta).toBeVisible();
+    await expect(page.getByRole("alert").filter({ hasText: "no se pudo borrar todo" })).toHaveCount(0);
+    await expect(page.getByRole("banner").getByRole("button", { name: "Menú de la persona" })).toBeVisible();
+    expect((await consentimientoDe(request, emailActual)).estado.general).toBe("vigente");
+  });
+
   test("saca del registro compartido las constancias de pactos de la persona y deja las de otra", async ({ page, request, emailActual }) => {
     await registrarConsentimientoDe(request, emailActual);
     const clave = "compartido:pactos-constancias";

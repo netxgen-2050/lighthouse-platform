@@ -51,6 +51,8 @@ export function MisDatosCliente() {
   const [descarga, setDescarga] = useState<{ n: number; texto: string; error: boolean }>({ n: 0, texto: "", error: false });
   const [confirmando, setConfirmando] = useState(false);
   const [falloRetiro, setFalloRetiro] = useState(false);
+  // El servidor no registró el retiro (red caída, 503): no se borró nada y es otro mensaje que el del borrado local.
+  const [falloRetiroServidor, setFalloRetiroServidor] = useState(false);
   const [pedido, setPedido] = useState<EstadoPedido>({ fase: "inicial" });
   const botonRetirar = useRef<HTMLButtonElement>(null);
   const botonConfirmar = useRef<HTMLButtonElement>(null);
@@ -108,9 +110,10 @@ export function MisDatosCliente() {
     // en ese orden) y no borra ninguna. Si no responde no se toca nada del navegador y la sesión sigue abierta.
     const retirado = await retirarEnServidor(cabeceras, sesion.idPersona);
     if (!retirado) {
-      setFalloRetiro(true);
+      setFalloRetiroServidor(true);
       return;
     }
+    setFalloRetiroServidor(false);
     // Después se borra (con la persona todavía en sesión: las claves llevan su prefijo) y recién después se sale.
     const fallidas = borrarDemo((c) => window.localStorage.removeItem(c));
     // Sus constancias de pactos también salen del registro compartido (las de otras personas quedan).
@@ -230,6 +233,7 @@ export function MisDatosCliente() {
                 onClick={() => {
                   setConfirmando(false);
                   setFalloRetiro(false);
+                  setFalloRetiroServidor(false);
                   // El botón que abrió la pregunta vuelve a existir en el próximo ciclo.
                   setTimeout(() => botonRetirar.current?.focus(), 0);
                 }}
@@ -251,6 +255,11 @@ export function MisDatosCliente() {
           >
             Retirar mi consentimiento
           </button>
+        )}
+        {falloRetiroServidor && (
+          <p role="alert" className="text-sm font-medium text-danger">
+            Error: no pudimos registrar tu retiro. No se borró nada y tu sesión sigue abierta. Probá de nuevo.
+          </p>
         )}
         {falloRetiro && (
           <p role="alert" className="text-sm font-medium text-danger">

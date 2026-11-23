@@ -7,7 +7,9 @@ import { sesionDelPedido } from "@/lib/sesion/servidor";
 
 export const dynamic = "force-dynamic";
 
-const SIN_CACHE = { "Cache-Control": "no-store" };
+// Un pedido real pesa unos cientos de bytes: 2 KB sobran y cortan los cuerpos abusivos.
+const MAX_BYTES = 2 * 1024;
+const SIN_CACHE ={ "Cache-Control": "no-store" };
 
 /**
  * El consentimiento de la persona en sesión, guardado en el libro `consentimientos` (consentimiento-en-la-base). `GET` devuelve
@@ -36,9 +38,18 @@ export async function POST(req: Request) {
   if (molde) return molde;
   const s = await sesionDelPedido(req);
   if (s.estado !== 200) return NextResponse.json({ ok: false }, { status: s.estado, headers: SIN_CACHE });
+  // Tamaño: primero lo declarado y después los bytes realmente leídos (el encabezado puede faltar o mentir).
+  const declarado = Number(req.headers.get("content-length"));
+  if (Number.isFinite(declarado) && declarado > MAX_BYTES) {
+    return NextResponse.json({ ok: false, error: "Pedido demasiado grande." }, { status: 413, headers: SIN_CACHE });
+  }
   let cuerpo: unknown;
   try {
-    cuerpo = JSON.parse(await req.text());
+    const crudo = await req.text();
+    if (new TextEncoder().encode(crudo).length > MAX_BYTES) {
+      return NextResponse.json({ ok: false, error: "Pedido demasiado grande." }, { status: 413, headers: SIN_CACHE });
+    }
+    cuerpo = JSON.parse(crudo);
   } catch {
     return NextResponse.json({ ok: false, error: "Cuerpo inválido." }, { status: 422, headers: SIN_CACHE });
   }

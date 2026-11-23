@@ -78,6 +78,20 @@ describe("POST /api/consentimientos", () => {
     expect((await POST(req)).status).toBe(422);
   });
 
+  it("un cuerpo de más de 2 KB es 413, declarado o leído, y no escribe", async () => {
+    const grande = JSON.stringify(aceptar({ relleno: "x".repeat(3000) }));
+    const headers = { "x-lh-prueba": EMAIL, "content-type": "application/json", host: "localhost:3000" };
+    const real = new Request("http://localhost:3000/api/consentimientos", { method: "POST", headers, body: grande });
+    expect((await POST(real)).status).toBe(413);
+    const declarado = new Request("http://localhost:3000/api/consentimientos", {
+      method: "POST",
+      headers: { ...headers, "content-length": "999999" },
+      body: JSON.stringify(aceptar()),
+    });
+    expect((await POST(declarado)).status).toBe(413);
+    expect((await (await GET(pedir("GET"))).json()).estado.general).toBe("pendiente");
+  });
+
   it("si la base falla responde 503 sin guardar nada", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(base, "transaction").mockRejectedValue(new Error("la base se cayó"));
