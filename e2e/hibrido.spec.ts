@@ -309,8 +309,8 @@ test.describe("resumen en la ficha y aceptación al reservar", () => {
     await expect(reservar).toBeEnabled();
     await reservar.focus();
     await page.keyboard.press("Enter");
-    await page.getByRole("button", { name: "Simular el pago" }).click();
-    await page.getByRole("button", { name: "Confirmar el pago simulado" }).click();
+    await page.getByRole("button", { name: "Simular el primer pago (anticipo)" }).click();
+    await page.getByRole("button", { name: "Confirmar el primer pago simulado" }).click();
     const boleto = page.getByRole("region", { name: /Boleto de ejemplo/ });
     await expect(boleto).toContainText("Texto de lo que se comparte y se paga que aceptaste: hibrido-v");
   });

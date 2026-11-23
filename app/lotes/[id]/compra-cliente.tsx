@@ -44,7 +44,6 @@ export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM
   const idioma = useIdioma();
   const t = useTextos("lotes");
   const tl = useTextos("territorio").loteo;
-  const tb = useTextos("biencomun");
   const { estado: estadoSesion } = useSesion();
   const [pagando, setPagando] = useState(false);
   const [anuncio, setAnuncio] = useState("");
@@ -59,6 +58,11 @@ export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM
     pago: useRef<HTMLHeadingElement>(null),
     boleto: useRef<HTMLHeadingElement>(null),
   };
+
+  // El plan que la persona vio al reservar (las compras guardadas antes no lo tienen: sin dato, nunca contado).
+  const planCompra = compra?.vio.plan;
+  const enCuotas = !!planCompra && planCompra.cuotas > 0;
+  const textoPlan = (cuotas: number) => (cuotas === 0 ? t.boleto.planContado : t.plan.cuotas(cuotas));
 
   const fase: Fase = compra?.paso === "pagado" ? "boleto" : compra ? (pagando ? "pago" : "reservado") : "inicio";
 
@@ -102,7 +106,8 @@ export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM
     const r = pagar(compras, loteId, new Date());
     if (!r.ok) return;
     setPagando(false);
-    aplicar(r.compras, t.compra.anuncioPagado(numero));
+    // Con cuotas no se dice que el lote está pagado: es el primer pago.
+    aplicar(r.compras, enCuotas ? t.compra.anuncioPrimerPago(numero) : t.compra.anuncioPagado(numero));
   }
 
   function alDeshacer() {
@@ -177,7 +182,7 @@ export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM
           {fase === "reservado" && (
             <div className="flex flex-wrap gap-2">
               <button type="button" onClick={alSimularPago} className={PRINCIPAL}>
-                {t.compra.simularPago}
+                {enCuotas ? t.compra.simularPrimerPago : t.compra.simularPago}
               </button>
               <button type="button" onClick={alDeshacer} className={SECUNDARIO}>
                 {t.compra.deshacer}
@@ -190,17 +195,21 @@ export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM
       {fase === "pago" && (
         <div className="grid gap-2 rounded-xl border border-faint bg-surface p-4">
           <h3 ref={titulos.pago} tabIndex={-1} className={TITULO}>
-            {t.compra.pagoTitulo}
+            {enCuotas ? t.compra.pagoTituloCuotas : t.compra.pagoTitulo}
           </h3>
           <p className="text-sm font-medium">{t.compra.pagoAviso}</p>
           <p className="text-sm">{t.compra.precioElegido(usdEn(compra?.vio.precio, idioma))}</p>
+          {planCompra && (
+            <p className="text-sm">{t.compra.planElegido(textoPlan(planCompra.cuotas), usdEn(planCompra.anticipo, idioma))}</p>
+          )}
+          {planCompra && compra?.opcion !== "solo-lote" && <p className="text-sm">{t.plan.casaAparte}</p>}
           <p className="text-sm">
             {t.compra.aporteAparte(usdEn(compra?.vio.aporte, idioma))}
             <TerminoLegal clave="aporteunico" idioma={idioma} />
           </p>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={alConfirmar} className={PRINCIPAL}>
-              {t.compra.confirmar}
+              {enCuotas ? t.compra.confirmarCuotas : t.compra.confirmar}
             </button>
             <button type="button" onClick={alVolver} className={SECUNDARIO}>
               {t.compra.cancelar}
@@ -264,14 +273,49 @@ export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM
               {compra.pagadoEl && (
                 <>
                   {" · "}
-                  {t.boleto.pagado} {formatearFecha(compra.pagadoEl, idioma, "corto")}
+                  {enCuotas ? t.boleto.primerPago : t.boleto.pagado} {formatearFecha(compra.pagadoEl, idioma, "corto")}
                 </>
               )}
             </li>
             <li>
               {t.boleto.hibrido} {compra.vio.hibridoAceptado ?? sinDato(idioma)}
             </li>
-            {traeFaro && <li>{tb.boleto(String(numero), faroEn(compra.vio.faro, idioma))}</li>}
+            {traeFaro && (
+              <>
+                <li>
+                  <strong>{t.boleto.plan}</strong> {planCompra ? textoPlan(planCompra.cuotas) : sinDato(idioma)}
+                </li>
+                {planCompra && compra.opcion !== "solo-lote" && <li>{t.plan.casaAparte}</li>}
+                {planCompra ? (
+                  <>
+                    <li>
+                      <strong>{enCuotas ? t.boleto.anticipo : t.boleto.pagoUnico}</strong> {usdEn(planCompra.anticipo, idioma)}
+                    </li>
+                    {enCuotas && (
+                      <li>
+                        <strong>{t.boleto.cuota}</strong> {usdEn(planCompra.cuota, idioma)}
+                        {planCompra.ultimaCuota != null && planCompra.ultimaCuota !== planCompra.cuota && (
+                          <> · {t.plan.ultimaCuota(usdEn(planCompra.ultimaCuota, idioma))}</>
+                        )}
+                      </li>
+                    )}
+                    <li>
+                      <strong>{t.boleto.faroPrimerPago}</strong> {faroEn(planCompra.faroAnticipo, idioma)} ({t.boleto.simulado})
+                    </li>
+                    {enCuotas && (
+                      <li>
+                        <strong>{t.boleto.faroCadaCuota}</strong> {faroEn(planCompra.faroPorCuota, idioma)} ({t.boleto.simulado})
+                        {planCompra.faroUltimaCuota != null && planCompra.faroUltimaCuota !== planCompra.faroPorCuota && (
+                          <> · {t.plan.faroUltima(faroEn(planCompra.faroUltimaCuota, idioma))}</>
+                        )}
+                      </li>
+                    )}
+                  </>
+                ) : (
+                  <li>{t.boleto.faroViejo(String(numero), faroEn(compra.vio.faro, idioma))}</li>
+                )}
+              </>
+            )}
             <li className="text-muted">
               {t.boleto.modelo}: {compra.vio.fuente ?? sinDato(idioma)} · {compra.vio.version}
             </li>

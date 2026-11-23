@@ -567,12 +567,12 @@ for (const [ruta, campo] of [
 
 test("axe sin violaciones serias o críticas: la ficha de un lote en la reserva, el pago simulado y el boleto, en español y en inglés", async ({ page }) => {
   for (const [ruta, reservar, pagar, confirmar, leido] of [
-    ["/lotes/lote-1", "Reservar (simulado)", "Simular el pago", "Confirmar el pago simulado", "Leí lo que comparto y lo que me comprometo a pagar"],
+    ["/lotes/lote-1", "Reservar (simulado)", "Simular el primer pago (anticipo)", "Confirmar el primer pago simulado", "Leí lo que comparto y lo que me comprometo a pagar"],
     [
       "/lotes/lote-1?lang=en",
       "Reserve (simulated)",
-      "Simulate the payment",
-      "Confirm the simulated payment",
+      "Simulate the first payment (down payment)",
+      "Confirm the simulated first payment",
       "I read what I share and what I commit to pay",
     ],
   ] as const) {

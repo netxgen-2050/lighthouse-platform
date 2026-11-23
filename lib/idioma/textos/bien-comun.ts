@@ -298,21 +298,20 @@ const es = {
     `Fuente de los valores: ${fuente} · versión ${version} · ${fecha}. Todos son de ejemplo.`,
   // Tarjeta de la ficha de lote y línea del boleto.
   ficha: {
-    titulo: "NFT del lote (simulado)",
+    titulo: "Ficha del lote (NFT, simulado)",
     token: "Número de token",
     superficie: "Superficie",
     centro: "Centro del contorno",
     estado: "Estado administrativo",
     deberes: "Deberes",
     deberesValor: "reglamento, aporte único, expensas",
-    faro: "FARO que trae",
-    faroPanel: "FARO que trae (simulado)",
+    faroPanel: "FARO del lote, se acreditan a medida que se paga (simulado)",
     red: "Red",
     redValor: "sin definir",
     ver: "Ver el bien común",
+    noInversion: "No es un instrumento de inversión: describe el lote y sus deberes. No reemplaza la escritura.",
     nota: "Es una simulación: no se emite ningún NFT.",
   },
-  boleto: (n: string, faro: string) => `Se acuñaría el NFT del lote ${n} y se asignarían ${faro} (simulado).`,
 } as const;
 
 const en: Textos<typeof es> = {
@@ -605,21 +604,20 @@ const en: Textos<typeof es> = {
   version: (fuente: string, version: string, fecha: string) =>
     `Source of the values: ${fuente} · version ${version} · ${fecha}. All of them are samples.`,
   ficha: {
-    titulo: "Lot NFT (simulated)",
+    titulo: "Lot record (NFT, simulated)",
     token: "Token number",
     superficie: "Area",
     centro: "Outline center",
     estado: "Administrative status",
     deberes: "Duties",
     deberesValor: "regulation, one-off contribution, common charges",
-    faro: "FARO it brings",
-    faroPanel: "FARO it brings (simulated)",
+    faroPanel: "FARO of the lot, credited as it is paid (simulated)",
     red: "Network",
     redValor: "not defined",
     ver: "See the commons",
+    noInversion: "It is not an investment instrument: it describes the lot and its duties. It does not replace the deed.",
     nota: "This is a simulation: no NFT is issued.",
   },
-  boleto: (n: string, faro: string) => `The NFT of lot ${n} would be minted and ${faro} would be assigned (simulated).`,
 };
 
 export const biencomun = conVocabulario({ es, en });

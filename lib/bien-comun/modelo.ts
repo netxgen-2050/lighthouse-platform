@@ -168,6 +168,58 @@ export function faroDeLote(m2: number | null | undefined): number | null {
   return Math.round(m2 * FARO_POR_M2.valor);
 }
 
+// ---- Plan en cuotas: Token Tierra (spec lote-token-tierra; doc 34 §3, sim/barrio_stack_sim.py PLANS y DOWN_PAYMENT) ----
+/** Opciones del plan: 0 es contado. De partida, las cuotas del caso base; el anticipo es el del simulador. Todo de ejemplo. */
+export const PLAN_CUOTAS = {
+  opciones: [0, 12, 24, 36] as readonly number[],
+  dePartida: BARRIO.cuotas.valor,
+  anticipo: BARRIO.anticipo.valor,
+  fuente: `${SIM} v0.1 (PLANS, DOWN_PAYMENT) · doc 34 §3`,
+} as const;
+
+export type PlanDeLote = {
+  anticipo: number;
+  /** Valor de cada cuota menos la última (null si es contado). */
+  cuota: number | null;
+  /** Valor de la última cuota: absorbe el redondeo para que la suma dé el precio (null si es contado). */
+  ultimaCuota: number | null;
+  cuotas: number;
+};
+
+const esOpcionDePlan = (cuotas: number): boolean => PLAN_CUOTAS.opciones.includes(cuotas);
+
+/** Plan en dólares del precio del lote (sin casa). Contado: un solo pago. Sin precio, o cuotas fuera de las opciones: null. */
+export function planDeLote(precio: number | null | undefined, cuotas: number): PlanDeLote | null {
+  if (typeof precio !== "number" || !Number.isFinite(precio) || precio <= 0 || !esOpcionDePlan(cuotas)) return null;
+  if (cuotas === 0) return { anticipo: precio, cuota: null, ultimaCuota: null, cuotas: 0 };
+  const anticipo = Math.round(precio * PLAN_CUOTAS.anticipo);
+  const cuota = Math.round((precio - anticipo) / cuotas);
+  return { anticipo, cuota, ultimaCuota: precio - anticipo - (cuotas - 1) * cuota, cuotas };
+}
+
+/** FARO acreditados al pagar una fracción del lote (0 a 1). Sin superficie, null. */
+export function faroAcreditado(m2: number | null | undefined, fraccionPagada: number): number | null {
+  const total = faroDeLote(m2);
+  if (total === null || !Number.isFinite(fraccionPagada) || fraccionPagada < 0 || fraccionPagada > 1) return null;
+  return Math.round(total * fraccionPagada);
+}
+
+export type FaroDelPlan = { anticipo: number; porCuota: number | null; ultimaCuota: number | null; total: number };
+
+/**
+ * FARO que se acreditan con el primer pago y con cada cuota. Redondeo: `anticipo = round(total × anticipo)`,
+ * `porCuota = round((total − anticipo) / cuotas)` y la última cuota absorbe la diferencia, así la suma da `total`.
+ * Contado: todo con el primer pago. Sin superficie, o cuotas fuera de las opciones: null.
+ */
+export function faroDelPlan(m2: number | null | undefined, cuotas: number): FaroDelPlan | null {
+  const total = faroDeLote(m2);
+  if (total === null || !esOpcionDePlan(cuotas)) return null;
+  if (cuotas === 0) return { anticipo: total, porCuota: null, ultimaCuota: null, total };
+  const anticipo = faroAcreditado(m2, PLAN_CUOTAS.anticipo) ?? 0;
+  const porCuota = Math.round((total - anticipo) / cuotas);
+  return { anticipo, porCuota, ultimaCuota: total - anticipo - (cuotas - 1) * porCuota, total };
+}
+
 /**
  * Si un lote trae NFT y FARO. Los primeros 4 (fincas 535 a 538, fuera del 7A) no: si aportan al bien común de Lighthouse es
  * "sin dato" (R40), así que ni la ficha, ni el boleto, ni el panel del mapa les asignan FARO (decisión D de Gus, 19-nov).

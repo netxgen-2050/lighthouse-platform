@@ -1,3 +1,4 @@
+import { PLAN_CUOTAS } from "@/lib/bien-comun/modelo";
 import { listarLotes } from "@/lib/territorios/loteo";
 import { estadoDeLote, type EstadoLote } from "@/lib/territorios/loteo-estados";
 import { OPCIONES_COMPRA, type OpcionCompra } from "./modelo";
@@ -21,6 +22,20 @@ export type LoVisto = {
   hibridoAceptado?: string;
   /** Tokens del bien común que traería el lote (simulado; opcional: lo guardado antes no lo tiene, sin dato). */
   faro?: number | null;
+  /** Plan en cuotas que vio la persona (Token Tierra simulado; opcional: lo guardado antes no lo tiene, sin dato). Nunca se presume contado. */
+  plan?: PlanVisto;
+};
+
+/** El plan que la persona vio al reservar. `cuotas` 0 es contado. Los FARO son null si el lote no tiene superficie (sin dato). */
+export type PlanVisto = {
+  cuotas: number;
+  anticipo: number;
+  cuota: number | null;
+  faroAnticipo: number | null;
+  faroPorCuota: number | null;
+  /** La última cuota absorbe el redondeo (opcional). */
+  ultimaCuota?: number | null;
+  faroUltimaCuota?: number | null;
 };
 
 export type CompraLote = {
@@ -33,11 +48,29 @@ export type CompraLote = {
 };
 
 /** Estado de un lote para la persona: los de ejemplo, más lo que ella reservó o "pagó" en la simulación. */
-export type EstadoMostrado = EstadoLote | "reservado-por-vos" | "vendido-a-vos";
+export type EstadoMostrado = EstadoLote | "reservado-por-vos" | "vendido-a-vos" | "en-cuotas-tuyo";
 
 export type ResultadoCompra = { ok: true; compras: CompraLote[] } | { ok: false; motivo: "no-disponible" | "ya-reservado" | "no-reservado" | "desconocido" };
 
 const esNumeroONull = (x: unknown): x is number | null => x === null || (typeof x === "number" && Number.isFinite(x));
+
+const opcionalONull = (x: unknown): boolean => x === undefined || esNumeroONull(x);
+
+function esPlan(x: unknown): x is PlanVisto {
+  if (typeof x !== "object" || x === null) return false;
+  const p = x as Record<string, unknown>;
+  return (
+    typeof p.cuotas === "number" &&
+    PLAN_CUOTAS.opciones.includes(p.cuotas) &&
+    typeof p.anticipo === "number" &&
+    Number.isFinite(p.anticipo) &&
+    esNumeroONull(p.cuota) &&
+    esNumeroONull(p.faroAnticipo) &&
+    esNumeroONull(p.faroPorCuota) &&
+    opcionalONull(p.ultimaCuota) &&
+    opcionalONull(p.faroUltimaCuota)
+  );
+}
 
 function esCompra(x: unknown): x is CompraLote {
   if (typeof x !== "object" || x === null) return false;
@@ -62,6 +95,16 @@ function esCompra(x: unknown): x is CompraLote {
     (v.faro === undefined || esNumeroONull(v.faro))
   );
 }
+
+const copiarPlan = (p: PlanVisto): PlanVisto => ({
+  cuotas: p.cuotas,
+  anticipo: p.anticipo,
+  cuota: p.cuota,
+  faroAnticipo: p.faroAnticipo,
+  faroPorCuota: p.faroPorCuota,
+  ...(p.ultimaCuota !== undefined ? { ultimaCuota: p.ultimaCuota } : {}),
+  ...(p.faroUltimaCuota !== undefined ? { faroUltimaCuota: p.faroUltimaCuota } : {}),
+});
 
 /** Lee lo guardado. Un JSON inválido, o algo que no es una lista, da una lista vacía. Solo se copian los campos conocidos. */
 export function leerCompras(texto: string | null): CompraLote[] {
@@ -90,6 +133,8 @@ export function leerCompras(texto: string | null): CompraLote[] {
             ...(vio.fuente !== undefined ? { fuente: vio.fuente } : {}),
             ...(vio.hibridoAceptado !== undefined ? { hibridoAceptado: vio.hibridoAceptado } : {}),
             ...(vio.faro !== undefined ? { faro: vio.faro } : {}),
+            // Un plan mal formado no borra la compra: se descarta solo el plan y la pantalla dice "sin dato".
+            ...(esPlan(vio.plan) ? { plan: copiarPlan(vio.plan) } : {}),
           },
         },
       ];
@@ -140,5 +185,7 @@ export function estadoConCompras(loteId: string, compras: CompraLote[]): EstadoM
   if (!existe(loteId)) return base;
   const c = compraDe(compras, loteId);
   if (!c || base !== "disponible") return base;
-  return c.paso === "pagado" ? "vendido-a-vos" : "reservado-por-vos";
+  if (c.paso !== "pagado") return "reservado-por-vos";
+  // Con cuotas, el primer pago no deja el lote vendido: queda "en cuotas" (decisión de Gus, 23-nov). Sin plan, como antes.
+  return c.vio.plan && c.vio.plan.cuotas > 0 ? "en-cuotas-tuyo" : "vendido-a-vos";
 }
