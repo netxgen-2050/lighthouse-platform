@@ -229,6 +229,37 @@ test("foto del valle a sangre con la leyenda, cifras con fuente en paneles de vi
   expect(sobra).toBeLessThanOrEqual(0);
 });
 
+test("a 1280 px la foto ocupa el ancho del contenido, con el título y el botón encima y la leyenda", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/");
+  const imagen = page.locator('img[src*="lighthouse-valle"]');
+  await expect(imagen).toHaveAttribute("alt", "");
+  const foto = await imagen.boundingBox();
+  const main = await page.locator("main").boundingBox();
+  expect(foto && main && Math.abs(foto.width - main.width) <= 1).toBe(true);
+  const titulo = await page.getByRole("heading", { level: 1 }).boundingBox();
+  const boton = await page.getByRole("link", { name: "Ver los lotes", exact: true }).first().boundingBox();
+  for (const caja of [titulo, boton]) {
+    expect(caja && foto && caja.y >= foto.y && caja.y + caja.height <= foto.y + foto.height).toBe(true);
+  }
+  await expect(page.getByText("Imagen ilustrativa", { exact: true })).toBeVisible();
+  const sobra = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(sobra).toBeLessThanOrEqual(0);
+});
+
+test("con Tab el foco llega a Ver los lotes y a Elegí cómo sumarte, con anillo visible", async ({ page }) => {
+  await page.goto("/");
+  for (const nombre of ["Ver los lotes", "Elegí cómo sumarte"]) {
+    const enlace = page.getByRole("main").getByRole("link", { name: nombre, exact: true }).first();
+    for (let i = 0; i < 40; i++) {
+      await page.keyboard.press("Tab");
+      if (await enlace.evaluate((el) => el === document.activeElement)) break;
+    }
+    await expect(enlace).toBeFocused();
+    await expect(enlace).toHaveCSS("outline-style", "solid");
+  }
+});
+
 test("la imagen de fondo es decorativa y se aclara que es ilustrativa", async ({ page }) => {
   await page.goto("/");
   const imagen = page.locator('img[src*="lighthouse-valle"]');

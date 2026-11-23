@@ -73,6 +73,25 @@ test.describe("sin sesión", () => {
     expect(await page.getByRole("region", { name: "Los lotes del barrio" }).innerText()).toBe(antes);
   });
 
+  test("con Tab el foco llega a Ver los lotes, a Ver el bien común y a Sumate para ver la obra", async ({ page }) => {
+    await page.goto(RUTA);
+    for (const nombre of ["Ver los lotes", "Ver el bien común", "Sumate para ver la obra"]) {
+      const enlace = main(page).getByRole("link", { name: nombre, exact: true });
+      await expect(enlace).toBeVisible();
+      for (let i = 0; i < 60; i++) {
+        await page.keyboard.press("Tab");
+        if (await enlace.evaluate((el) => el === document.activeElement)) break;
+      }
+      await expect(enlace, nombre).toBeFocused();
+      await expect(enlace).toHaveCSS("outline-style", "solid");
+    }
+  });
+
+  test("los términos legales ⚖ de Expensa y Token Inversor están presentes", async ({ page }) => {
+    await page.goto(RUTA);
+    await expect(main(page).getByRole("button", { name: /Expensas/ }).first()).toBeVisible();
+  });
+
   test("a 390 px no hay scroll horizontal y los botones tocan 44 px", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(RUTA);
@@ -113,6 +132,14 @@ test.describe("con sesión", () => {
     await expect(filas).toHaveCount(obra.comunPorAnio.length);
     await expect(filas.first()).toContainText(usdEn(obra.comunPorAnio[0], "es"));
     await expect(page.getByRole("link", { name: "Sumate para ver la obra" })).toHaveCount(0);
+    await expect(panel.getByRole("button", { name: /Token Inversor/ })).toBeVisible();
+    // La región con desplazamiento de la tabla del común se alcanza con Tab.
+    const region = panel.getByRole("region", { name: /Lo que le llega al común en cada año/ });
+    for (let i = 0; i < 80; i++) {
+      await page.keyboard.press("Tab");
+      if (await region.evaluate((el) => el === document.activeElement)) break;
+    }
+    await expect(region).toBeFocused();
     const texto = await panel.innerText();
     expect(texto).not.toMatch(/rendimiento|APY|ganancia|yield/i);
   });

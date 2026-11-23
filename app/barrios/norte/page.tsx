@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { TerminoLegal } from "@/components/termino-legal";
 import { HeroeValle } from "@/components/explorar/heroe-valle";
 import { PanelObraBarrio } from "@/components/explorar/panel-obra-barrio";
 import { ChipEstado } from "@/components/ui/chip-estado";
@@ -63,7 +64,10 @@ export default async function BarrioNortePage() {
           <p className="max-w-3xl text-sm">{t.comun.intro}</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <Indicador etiqueta={t.comun.parte} valor={porcentajeEn(vista.parteParaElComun, idioma)} mono />
-            <Indicador etiqueta={t.comun.expensa} valor={usdEn(vista.expensa, idioma)} mono />
+            <div className="flex items-start gap-1">
+              <Indicador etiqueta={t.comun.expensa} valor={usdEn(vista.expensa, idioma)} mono />
+              <TerminoLegal clave="expensas" idioma={idioma} />
+            </div>
           </div>
           <p className="text-sm text-muted">{t.comun.version(vista.versionModelo)}</p>
           <Link href="/bien-comun" className={ENLACE}>

@@ -1,5 +1,6 @@
 "use client";
 
+import { TerminoLegal } from "@/components/termino-legal";
 import { EntrarPara } from "@/components/sesion/entrar-para";
 import { useSesion } from "@/components/sesion/contexto";
 import { BarraAvance } from "@/components/ui/barra-avance";
@@ -41,7 +42,9 @@ export function PanelObraBarrio({ lotesDelPlano }: { lotesDelPlano: number }) {
   return (
     <PanelVidrio como="section" className="grid content-start gap-4">
       <h2 className="text-xl font-semibold">{t.obra.titulo}</h2>
-      <p className="max-w-3xl text-sm">{t.obra.intro}</p>
+      <p className="max-w-3xl text-sm">
+        {t.obra.intro} <TerminoLegal clave="tokeninversor" idioma={idioma} />
+      </p>
       <div className="grid gap-4 sm:grid-cols-2">
         <Indicador etiqueta={t.obra.infraestructura} valor={obra.infraestructura === null ? null : usdEn(obra.infraestructura, idioma)} mono />
         <BarraAvance
