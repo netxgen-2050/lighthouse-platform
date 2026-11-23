@@ -321,24 +321,24 @@ export const TERMINOS = {
   retribucionraiz: {
     titulo: "Retribución en tokens del bien común: medida provisoria",
     texto:
-      "Es una idea a conversar con el equipo, no una decisión. El token del bien común daría voz sobre lo común; su nombre provisorio es FARO y el nombre está en discusión. Todavía no existe. No hay cantidad, ni fecha, ni valor prometido. Prometer tokens futuros a cambio de plata puede ser un contrato de inversión: hay que revisarlo con un abogado antes de decirlo fuera del equipo.",
+      "Es una idea a conversar con el equipo, no una decisión. El token del bien común daría voz sobre lo común; su nombre provisorio es FARO y el nombre está en discusión. Se acreditaría con cada cuota pagada, no de una vez, y si se deja de pagar el de las cuotas no pagadas no se emite. Todavía no existe. No hay cantidad, ni fecha, ni valor prometido. Prometer tokens futuros a cambio de plata puede ser un contrato de inversión: hay que revisarlo con un abogado antes de decirlo fuera del equipo.",
     borrador: true,
     en: {
       titulo: "Compensation in commons tokens: provisional measure",
       texto:
-        "This is an idea to discuss with the team, not a decision. The commons token would give a voice over what is shared; its provisional name is FARO and the name is under discussion. It does not exist yet. There is no amount, date or promised value. Promising future tokens in exchange for money can be an investment contract: a lawyer has to review it before it is said outside the team.",
+        "This is an idea to discuss with the team, not a decision. The commons token would give a voice over what is shared; its provisional name is FARO and the name is under discussion. It would be credited with each installment paid, not all at once, and if payments stop the token of the unpaid installments is not issued. It does not exist yet. There is no amount, date or promised value. Promising future tokens in exchange for money can be an investment contract: a lawyer has to review it before it is said outside the team.",
     },
   },
   // Textos nuevos (Gus, 8-nov-2026, bien-comun-tokens): borrador a revisar antes de cualquier uso real. Todo es simulación.
   nftlote: {
-    titulo: "NFT del lote",
+    titulo: "NFT del lote (la ficha del lote)",
     texto:
-      "Un certificado digital, uno por lote privado, que diría su superficie, su contorno, su estado administrativo y sus deberes hacia el bien común. No reemplaza la escritura: el dominio se registra donde corresponde. En este prototipo es una simulación: no se emite nada. A verificar con abogado.",
+      "La ficha digital de un lote privado: diría su superficie, su contorno, su estado administrativo y sus deberes hacia el bien común. No es un instrumento de inversión y no trae FARO: los FARO se acreditan con lo que se paga, según el plan de cuotas. No reemplaza la escritura: el dominio se registra donde corresponde. En este prototipo es una simulación: no se emite nada. A verificar con abogado.",
     borrador: true,
     en: {
-      titulo: "Lot NFT",
+      titulo: "Lot NFT (the lot's record)",
       texto:
-        "A digital certificate, one per private lot, that would state its area, outline, administrative status and duties toward the commons. It does not replace the deed: ownership is registered where it belongs. In this prototype it is a simulation: nothing is issued. To be verified with a lawyer.",
+        "The digital record of a private lot: it would state its area, outline, administrative status and duties toward the commons. It is not an investment instrument and it does not bring FARO: FARO is credited with what is paid, under the installment plan. It does not replace the deed: ownership is registered where it belongs. In this prototype it is a simulation: nothing is issued. To be verified with a lawyer.",
     },
   },
   tokenbiencomun: {

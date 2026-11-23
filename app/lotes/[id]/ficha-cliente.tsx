@@ -10,7 +10,7 @@ import { TerminoLegal } from "@/components/termino-legal";
 import { TextoEstado } from "@/components/lotes/estado-del-lote";
 import { useCompras } from "@/components/lotes/usar-compras";
 import { faroEn } from "@/lib/bien-comun/formato";
-import { centroDeAnillo, faroDeLote, loteTraeFaro } from "@/lib/bien-comun/modelo";
+import { PLAN_CUOTAS, centroDeAnillo, faroDeLote, faroDelPlan, loteTraeFaro, planDeLote } from "@/lib/bien-comun/modelo";
 import { guardarPedido } from "@/lib/contactos/almacen";
 import type { Pedido } from "@/lib/contactos/tipos";
 import { sinDato as textoSinDato } from "@/lib/idioma/formatos";
@@ -34,6 +34,7 @@ import { usdEn } from "@/lib/lotes/formato";
 import { textoSuperficieM2 } from "@/lib/territorios/biopueblo";
 import { listarLotes } from "@/lib/territorios/loteo";
 import { ImagenLote } from "@/components/lotes/imagen-lote";
+import { PlanTokenTierra } from "@/components/lotes/plan-token-tierra";
 import { CompraSimulada } from "./compra-cliente";
 
 const TARJETA = "grid content-start gap-3 rounded-xl border border-faint bg-surface p-4";
@@ -93,15 +94,19 @@ export function FichaCliente({ id }: { id: string }) {
   const tb = useTextos("biencomun");
   const { compras, guardar } = useCompras();
   const [elegida, setElegida] = useState<OpcionCompra>("solo-lote");
+  const [cuotasElegidas, setCuotasElegidas] = useState<number>(PLAN_CUOTAS.dePartida);
   const grupo = useId();
   const lote = listarLotes().find((l) => l.id === id);
   if (!lote) return null;
 
   const proyecto = proyectoDeGrupo(lote.grupo);
   const estado = estadoConCompras(id, compras);
-  // La reserva o el pago simulados fijan la opción: el boleto muestra lo que se vio.
-  const compra = estado === "reservado-por-vos" || estado === "vendido-a-vos" ? compraDe(compras, id) : undefined;
+  // La reserva o el pago simulados fijan la opción y el plan: el boleto muestra lo que se vio.
+  const compra =
+    estado === "reservado-por-vos" || estado === "vendido-a-vos" || estado === "en-cuotas-tuyo" ? compraDe(compras, id) : undefined;
   const opcion = compra?.opcion ?? elegida;
+  // Una compra guardada sin plan (o con un plan mal formado) no presume contado: el plan se muestra "sin dato".
+  const cuotas = compra ? (compra.vio.plan?.cuotas ?? null) : cuotasElegidas;
 
   const precioDelLote = precioLote(lote.superficieM2);
   const precio = precioPaquete(lote.superficieM2, opcion);
@@ -111,6 +116,20 @@ export function FichaCliente({ id }: { id: string }) {
   // Los primeros 4 lotes no traen NFT ni FARO (loteTraeFaro): no se muestra la tarjeta ni se guarda en la reserva.
   const traeFaro = loteTraeFaro(lote.grupo);
   const faro = traeFaro ? faroDeLote(lote.superficieM2) : null;
+  // Token Tierra: plan solo sobre el precio del lote. Los primeros 4 no lo muestran ni lo guardan.
+  const plan = traeFaro && cuotas !== null ? planDeLote(precioDelLote, cuotas) : null;
+  const faroPlan = traeFaro && cuotas !== null ? faroDelPlan(lote.superficieM2, cuotas) : null;
+  const planVisto = plan
+    ? {
+        cuotas: plan.cuotas,
+        anticipo: plan.anticipo,
+        cuota: plan.cuota,
+        ultimaCuota: plan.ultimaCuota,
+        faroAnticipo: faroPlan?.anticipo ?? null,
+        faroPorCuota: faroPlan?.porCuota ?? null,
+        faroUltimaCuota: faroPlan?.ultimaCuota ?? null,
+      }
+    : undefined;
   const centro = centroDeAnillo(lote.anillo);
   const estadoLegal = ESTADOS_ADMINISTRATIVOS[proyecto];
   const estadoLegalTexto = idioma === "en" && estadoLegal.en?.estado ? estadoLegal.en.estado : estadoLegal.estado;
@@ -126,6 +145,7 @@ export function FichaCliente({ id }: { id: string }) {
     hibridoAceptado: VERSION_HIBRIDO,
     // Los FARO que traería el lote, simulados (bien-comun-tokens): se guardan para que el boleto no cambie con el modelo.
     ...(traeFaro ? { faro } : {}),
+    ...(planVisto ? { plan: planVisto } : {}),
     ...(opcion === "solo-lote" ? {} : { precioCasa: precioCasa(opcion) }),
   };
 
@@ -161,11 +181,10 @@ export function FichaCliente({ id }: { id: string }) {
           <dd>{estadoLegalTexto}</dd>
           <dt className="font-semibold">{nft.deberes}</dt>
           <dd>{nft.deberesValor}</dd>
-          <dt className="font-semibold">{nft.faro}</dt>
-          <dd>{faroEn(faro, idioma)}</dd>
           <dt className="font-semibold">{nft.red}</dt>
           <dd>{nft.redValor}</dd>
         </dl>
+        <p className="text-sm font-medium">{nft.noInversion}</p>
         <p className="text-sm text-muted">{nft.nota}</p>
         <p className="text-sm">
           <Link className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/bien-comun">
@@ -225,6 +244,39 @@ export function FichaCliente({ id }: { id: string }) {
           </p>
         )}
       </section>
+
+      {!traeFaro ? (
+        <p className="text-sm">{t.plan.primeros}</p>
+      ) : cuotas === null ? (
+        <section aria-labelledby="ficha-plan" className={TARJETA}>
+          <h2 id="ficha-plan" className="text-lg font-semibold">
+            {t.plan.titulo}
+          </h2>
+          <p className="text-sm">{sd}</p>
+        </section>
+      ) : (
+        <PlanTokenTierra
+          nombre={grupo}
+          textos={t.plan}
+          opciones={PLAN_CUOTAS.opciones}
+          elegida={cuotas}
+          alElegir={setCuotasElegidas}
+          deshabilitado={!!compra}
+          plan={plan}
+          faro={faroPlan}
+          usd={(n) => usdEn(n, idioma)}
+          faroTexto={(n) => faroEn(n, idioma)}
+          sinDato={sd}
+          conCasa={opcion !== "solo-lote"}
+          terminoTierra={<TerminoLegal clave="tokentierra" idioma={idioma} />}
+          terminoOrdenanza={<TerminoLegal clave="ordenanza173" idioma={idioma} />}
+          enlace={
+            <Link className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/bien-comun">
+              {t.plan.ver}
+            </Link>
+          }
+        />
+      )}
 
       <section aria-labelledby="ficha-costos" className={TARJETA}>
         <h2 id="ficha-costos" className="text-lg font-semibold">

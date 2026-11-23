@@ -34,7 +34,7 @@ Fuentes pendientes: 46
 | `lib/tribus/datos.ts` | Datos de ejemplo de las 12 tribus con su inglés (foco, qué tiene, qué busca, ritual, forma jurídica…) y la declaración de cada tribu, traducida del español | — |
 | `lib/tribus/necesidades.ts` | Necesidades de ejemplo de las tribus como tareas (título, qué es y habilidad extra) con su inglés | — |
 | `textos/bandeja` | Bandeja y notificaciones: textos de cada evento de la actividad, que se arman al mostrarlos en el idioma actual | 37 |
-| `textos/biencomun` | El bien común de Lighthouse VRN: propuesta v0.1 en discusión: sello, dos carriles y tres puentes, puertas de FARO, política, decisiones abiertas, qué cambió, preguntas para el abogado, principios de Ostrom, parcelas comunes, tarjeta de la ficha y línea del boleto | 199 |
+| `textos/biencomun` | El bien común de Lighthouse VRN: propuesta v0.1 en discusión: sello, dos carriles y tres puentes, puertas de FARO, política, decisiones abiertas, qué cambió, preguntas para el abogado, principios de Ostrom, parcelas comunes, tarjeta de la ficha y línea del boleto | 198 |
 | `textos/canales` | Canales: por qué se abre cada puerta, qué la abre, refuerzo por presencia y nombres de planes y niveles del pase | 31 |
 | `textos/compromisos` | Compromisos y Mercado: formulario, validaciones, tipos y medios de intercambio, filtros y avisos | 58 |
 | `textos/comunes` | Textos que se repiten en todas las zonas (cargando, cancelar, sin dato, notas de traducción…) | 16 |
@@ -44,7 +44,7 @@ Fuentes pendientes: 46
 | `textos/fogonPropuestas` | Propuestas del Fogón: fases, discusión, concerns y grupos, acuse y quórum, ámbito del consejo, niveles, acciones, condiciones de la matriz, mecanismos y vista sin cuenta | 256 |
 | `textos/gobernanza` | Gobernanza fractal: página Cómo decidimos (estructura, círculos, consejo), marca de validación de la ficha de tribu y Quiénes te validaron en Mi recorrido | 120 |
 | `textos/hibrido` | Qué es tuyo y qué es de todos: tabla de lo privado y lo común, aporte de cada lote, tres escenarios de costo del bien común, calculadora, preguntas para Vagner y resguardos | 62 |
-| `textos/lotes` | Lotes de Lighthouse VRN: lista, ficha, precio de ejemplo, con casa, costos, derechos y deberes, reserva y pago simulados y boleto de ejemplo | 99 |
+| `textos/lotes` | Lotes de Lighthouse VRN: lista, ficha, precio de ejemplo, con casa, costos, derechos y deberes, reserva y pago simulados y boleto de ejemplo | 136 |
 | `textos/manifiestoVrn` | Manifiesto de Lighthouse VRN: ficha del común, tarjeta de Tribus, lectura completa, principios propios de las tribus, aviso de adhesión y bloque de la Vista NetX | 49 |
 | `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 59 |
 | `textos/pactos` | Pactos: pactos de tiempo y de plata, cambios, historial, avisos y anuncios | 286 |

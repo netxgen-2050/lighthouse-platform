@@ -13,9 +13,13 @@ import {
   BARRIO,
   VERSION_PROPUESTA,
   VERSION_SIM_BARRIO,
+  PLAN_CUOTAS,
   centroDeAnillo,
+  faroAcreditado,
+  faroDelPlan,
   faroDeLote,
   loteTraeFaro,
+  planDeLote,
 } from "./modelo";
 
 describe("propuesta v0.1 del bien común", () => {
@@ -113,5 +117,69 @@ describe("parámetros del barrio", () => {
     expect(BARRIO.parteComun.valor).toBe(MODELO_LOTES.aporteUnico);
     expect(BARRIO.expensa.valor).toBe(MODELO_LOTES.expensaAnual);
     expect(BARRIO.presupuestoComun.valor).toBe(MODELO_LOTES.presupuestoComunAnual);
+  });
+});
+
+describe("plan en cuotas (Token Tierra)", () => {
+  const precio = 27_500;
+  const m2 = 1_000;
+
+  it("de partida son las cuotas del barrio, y el contado es una opción", () => {
+    expect(PLAN_CUOTAS.dePartida).toBe(BARRIO.cuotas.valor);
+    expect(PLAN_CUOTAS.anticipo).toBe(BARRIO.anticipo.valor);
+    expect(PLAN_CUOTAS.opciones).toContain(0);
+    expect(PLAN_CUOTAS.opciones).toContain(PLAN_CUOTAS.dePartida);
+    expect(PLAN_CUOTAS.fuente.trim()).not.toBe("");
+  });
+
+  it("contado: un solo pago igual al precio, sin cuotas", () => {
+    expect(planDeLote(precio, 0)).toEqual({ anticipo: precio, cuota: null, ultimaCuota: null, cuotas: 0 });
+  });
+
+  it("24 cuotas: anticipo del simulador y anticipo + cuotas = precio, para todas las opciones", () => {
+    const p = planDeLote(precio, 24);
+    expect(p?.anticipo).toBe(Math.round(precio * PLAN_CUOTAS.anticipo));
+    for (const n of PLAN_CUOTAS.opciones.filter((o) => o > 0)) {
+      for (const pr of [precio, 15_000, 40_001, 33_333]) {
+        const q = planDeLote(pr, n)!;
+        expect(q.anticipo + (n - 1) * q.cuota! + q.ultimaCuota!).toBe(pr);
+      }
+    }
+  });
+
+  it("sin precio o con cuotas que no son una opción: null", () => {
+    expect(planDeLote(null, 24)).toBeNull();
+    expect(planDeLote(undefined, 24)).toBeNull();
+    expect(planDeLote(0, 24)).toBeNull();
+    expect(planDeLote(precio, 7)).toBeNull();
+  });
+
+  it("FARO: el anticipo y todas las cuotas suman los FARO del lote, con la última según el redondeo", () => {
+    for (const n of PLAN_CUOTAS.opciones.filter((o) => o > 0)) {
+      for (const sup of [1_000, 777, 1_234, 3_333]) {
+        const f = faroDelPlan(sup, n)!;
+        expect(f.total).toBe(faroDeLote(sup));
+        expect(f.anticipo + (n - 1) * f.porCuota! + f.ultimaCuota!).toBe(faroDeLote(sup));
+      }
+    }
+    const f = faroDelPlan(m2, 24)!;
+    expect(f.anticipo).toBe(faroAcreditado(m2, PLAN_CUOTAS.anticipo));
+  });
+
+  it("FARO contado: todo con el primer pago", () => {
+    expect(faroDelPlan(m2, 0)).toEqual({ anticipo: faroDeLote(m2), porCuota: null, ultimaCuota: null, total: faroDeLote(m2) });
+  });
+
+  it("sin superficie no hay FARO (nunca 0)", () => {
+    expect(faroDelPlan(null, 24)).toBeNull();
+    expect(faroDelPlan(undefined, 0)).toBeNull();
+    expect(faroAcreditado(null, 0.5)).toBeNull();
+    expect(faroAcreditado(m2, 1.5)).toBeNull();
+    expect(faroDelPlan(m2, 7)).toBeNull();
+  });
+
+  it("faroAcreditado es proporcional a lo pagado", () => {
+    expect(faroAcreditado(m2, 0.5)).toBe(Math.round(faroDeLote(m2)! / 2));
+    expect(faroAcreditado(m2, 1)).toBe(faroDeLote(m2));
   });
 });

@@ -10,6 +10,7 @@ const GLIFO: Record<EstadoMostrado, string> = {
   vendido: "✕",
   "reservado-por-vos": "◐",
   "vendido-a-vos": "✕",
+  "en-cuotas-tuyo": "◑",
 };
 
 /** El estado se dice con palabras; el símbolo es decorativo (nunca solo color ni solo forma). */
@@ -21,6 +22,7 @@ export function TextoEstado({ estado }: { estado: EstadoMostrado }) {
     vendido: t.vendido,
     "reservado-por-vos": t.reservadoPorVos,
     "vendido-a-vos": t.vendidoAVos,
+    "en-cuotas-tuyo": t.enCuotasTuyo,
   }[estado];
   return (
     <>
