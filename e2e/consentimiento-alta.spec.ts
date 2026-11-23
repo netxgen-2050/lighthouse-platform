@@ -84,6 +84,17 @@ test.describe("crear la cuenta en Sumarte", () => {
     expect(await page.evaluate(() => window.sessionStorage.getItem("lh-consentimiento-previo"))).toBeNull();
     // El alta no pide datos sensibles: eso se pide recién al verificar la identidad.
     expect(registro).toMatchObject({ sensibles: null });
+
+    // Recién al apretar "Completar mi verificación (KYC)" se piden, y quedan registrados al aceptar.
+    await page.goto("/pasaporte");
+    await page.getByRole("button", { name: "Completar mi verificación (KYC)" }).click();
+    const kyc = page.getByRole("dialog", { name: /Verificar mi identidad/ });
+    await expect(kyc.getByRole("heading", { name: /Antes de empezar: tus datos sensibles/ })).toBeVisible();
+    expect(await leer(page, CLAVE_CONSENTIMIENTO)).toMatchObject({ sensibles: null });
+    await kyc.getByRole("checkbox", { name: /Acepto que NetXGen trate mis datos de identidad/ }).check();
+    await kyc.getByRole("button", { name: "Aceptar y empezar" }).click();
+    await expect(kyc.getByRole("heading", { name: /Paso 1 de 5/ })).toBeVisible();
+    expect(await leer(page, CLAVE_CONSENTIMIENTO)).toMatchObject({ sensibles: { version: VERSION_PRUEBA } });
   });
 
   test("la aceptación del paso no vale en otra pestaña: ahí aparece la pantalla de consentimiento", async ({ page, context, baseURL }) => {
@@ -278,6 +289,10 @@ test.describe("red de seguridad: sesión sin consentimiento vigente", () => {
     expect(claves.filter((c) => c.startsWith("u:"))).toEqual([]);
     expect(claves.filter((c) => c.includes("persona@prueba.test"))).toEqual([]);
     expect(claves).not.toContain("lh-ultima-persona");
+    // Se abre un ⚖ de la pantalla (lo que antes anotaba en la bitácora): sin consentimiento no se anota nada.
+    const boton = page.getByRole("button", { name: "Qué significa legalmente: Transferencia internacional de datos" });
+    await boton.focus();
+    await expect(page.getByRole("tooltip")).toBeVisible();
     // La bitácora queda vacía: ninguna clave de bitácora tiene entradas.
     const bitacoras = await page.evaluate(() =>
       Object.keys(window.localStorage)
@@ -353,9 +368,34 @@ test.describe("re-consentimiento desde Entrar", () => {
     expect(await leer(page, CLAVE_CONSENTIMIENTO)).toMatchObject({ canal: "nueva-version", version: VERSION_PRUEBA });
   });
 
-  test("una elección de novedades anterior no se pisa si el paso se acepta sin marcar la casilla", async ({ page }) => {
+  test("g2: una elección de novedades anterior no se pisa al pasar por Crear tu cuenta sin marcar la casilla", async ({ page }) => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     await sembrarAnterior(page, { novedades: "acepta" });
+    await page.goto("/sumarte");
+    await page.getByRole("button", { name: "Sumarme gratis" }).click();
+    await aceptarPaso(page);
+    await page.getByRole("button", { name: EMAILS.persona }).click();
+    await expect(menuAvatar(page)).toBeVisible();
+    expect(await leer(page, CLAVE_NOVEDADES)).toMatchObject({ evento: "acepta", canal: "alta", version: VERSION_ANTERIOR });
+  });
+
+  test("g2: lo mismo por Entrar con el consentimiento vigente", async ({ page }) => {
+    test.skip(CON_PRIVY, SIN_PRIVY);
+    await page.addInitScript(
+      ([consentimiento, novedades, version, anterior]) => {
+        if (window.sessionStorage.getItem("sembrado-alta")) return;
+        window.sessionStorage.setItem("sembrado-alta", "1");
+        window.localStorage.setItem(
+          consentimiento,
+          JSON.stringify({ version, aceptadoEn: "2026-11-20T12:00:00.000Z", aceptado: { politica: true, terminos: true }, canal: "alta", sensibles: null }),
+        );
+        window.localStorage.setItem(
+          novedades,
+          JSON.stringify({ evento: "acepta", version: anterior, registradoEn: "2026-10-14T12:00:00.000Z", canal: "alta" }),
+        );
+      },
+      [CLAVE_CONSENTIMIENTO, CLAVE_NOVEDADES, VERSION_PRUEBA, VERSION_ANTERIOR] as const,
+    );
     await page.goto("/tribus");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
     await aceptarPaso(page);
