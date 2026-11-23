@@ -42,8 +42,8 @@ test("(a) la lista muestra U1 a U4 con modo, ámbito, voto, cierre y estado, y /
   await expect(u3).toContainText("Voto secreto");
   const u4 = page.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Primer presupuesto de regeneración" }) });
   await expect(u4).toContainText("Presupuesto");
-  // El rail marca "Fogón" también en las consultas.
-  await expect(page.getByRole("link", { name: "Fogón" }).first()).toHaveAttribute("aria-current", "page");
+  // El Fogón está fuera del menú: ningún destino principal queda marcado.
+  await expect(page.getByRole("navigation", { name: "Principal" }).locator('[aria-current="page"]')).toHaveCount(0);
 });
 
 test("(b) tres votos suman 9 créditos y quedan 91; el donut propio lista Sin usar", async ({ page }) => {

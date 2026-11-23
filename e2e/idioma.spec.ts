@@ -18,7 +18,8 @@ test.describe("sin cuenta", () => {
     await selector(page).getByRole("link", { name: "EN · English" }).click();
     await expect(page).toHaveURL(/\/tribus$/);
     await expect(html(page)).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Communities" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Explore" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Explore" }).getByRole("link", { name: "Communities" })).toBeVisible();
     await expect(barra(page).getByRole("button", { name: "Sign in" })).toBeVisible();
     await expect(page.getByRole("contentinfo")).toContainText("Prototype under development. Sample data.");
     await expect(page.getByRole("link", { name: "Skip to content" })).toBeAttached();
@@ -163,7 +164,7 @@ test.describe("el Congreso", () => {
     await expect(page).toHaveURL(/\/congreso\/en$/);
     await expect(html(page)).toHaveAttribute("lang", "en");
     await page.goto("/tribus");
-    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Communities" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Explore" }).getByRole("link", { name: "Communities" })).toBeVisible();
   });
 
   test("(c) el selector de la barra en el Congreso lleva a la dirección del idioma", async ({ page }) => {
@@ -300,13 +301,15 @@ test.describe("navegador en inglés con español elegido", () => {
 
 // ===== (j) Glosario =====
 
-test("(j) con la plataforma en inglés, el rail dice Semillas y no Seeds", async ({ page }) => {
+test("(j) con la plataforma en inglés, el rail dice Explore, Commons y Join, sin Semillas ni títulos de grupo", async ({ page }) => {
   await page.goto("/?lang=en");
   const rail = page.getByRole("navigation", { name: "Main" });
-  await expect(rail.getByRole("link", { name: "Semillas" })).toBeVisible();
-  await expect(rail.getByRole("link", { name: "Semillas" }).locator("span[translate='no']")).toHaveCount(1);
-  await expect(rail.getByText("Seeds")).toHaveCount(0);
-  await expect(rail.getByRole("link", { name: "Fireside" })).toBeVisible();
+  await expect(rail.getByRole("link", { name: "Explore" })).toBeVisible();
+  await expect(rail.getByRole("link", { name: "Commons" })).toBeVisible();
   await expect(rail.getByRole("link", { name: "Join" })).toBeVisible();
-  await expect(rail.getByText("Discover", { exact: true })).toBeVisible();
+  // Semillas y el Fogón salieron del menú (23-nov-2026); "Semillas" sigue sin traducirse dentro de su página.
+  await expect(rail.getByText("Seeds")).toHaveCount(0);
+  await expect(rail.getByText("Semillas")).toHaveCount(0);
+  await expect(rail.getByText("Fireside")).toHaveCount(0);
+  await expect(rail.getByText("Discover", { exact: true })).toHaveCount(0);
 });

@@ -56,11 +56,14 @@ test("aviso de ejemplo y un solo main", async ({ page }) => {
   await expect(page.locator("main")).toHaveCount(1);
 });
 
-test("navegación: Territorio desde la portada", async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Territorio" }).click();
+test("navegación: Territorio desde la subnavegación de Explorar", async ({ page }) => {
+  await page.goto("/lotes");
+  await page.getByRole("navigation", { name: "Explorar" }).getByRole("link", { name: "Territorio" }).click();
   await expect(page).toHaveURL(/\/territorios\/lighthouse$/);
   await expect(
-    page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Territorio" }),
+    page.getByRole("navigation", { name: "Explorar" }).getByRole("link", { name: "Territorio" }),
+  ).toHaveAttribute("aria-current", "page");
+  await expect(
+    page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Explorar" }),
   ).toHaveAttribute("aria-current", "page");
 });

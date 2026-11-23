@@ -79,25 +79,20 @@ test.describe("páginas públicas sin sesión", () => {
 });
 
 test.describe("navegación sin sesión", () => {
-  test("el rail muestra Descubrir y Sumarte completos y el resto deshabilitado con 'Sumate…'", async ({ page }) => {
+  test("el rail muestra los destinos que existen, ninguno deshabilitado, y los módulos en pausa no están", async ({ page }) => {
     await page.goto("/");
-    for (const nombre of ["Inicio", "Territorio", "Comunidades", "Sumarte"]) {
-      await expect(rail(page).getByRole("link", { name: nombre, exact: true })).toBeVisible();
+    for (const nombre of ["Explorar", "Bien común", "Sumarte"]) {
+      const destino = rail(page).getByRole("link", { name: nombre, exact: true });
+      await expect(destino).toBeVisible();
+      await expect(destino).not.toHaveAttribute("aria-disabled", "true");
     }
-    await expect(rail(page).getByRole("link", { name: "Compromisos", exact: true })).toHaveCount(0);
-    await expect(rail(page).getByRole("link", { name: "Sumate para participar: Compromisos" })).toHaveCount(0);
-    for (const nombre of ["Pactos", "Semillas", "Fogón"]) {
-      const bloqueado = rail(page).getByRole("link", { name: nombre, exact: true });
-      await expect(bloqueado).toHaveAttribute("aria-disabled", "true");
-      await expect(bloqueado).not.toHaveAttribute("href", /.*/);
-      await expect(rail(page).getByRole("link", { name: `Sumate para participar: ${nombre}` })).toBeVisible();
+    await expect(rail(page).locator('[aria-disabled="true"]')).toHaveCount(0);
+    // Pactos, Semillas, Fogón, Compromisos y Congreso salen del menú (23-nov-2026); /congreso sigue abierto sin cuenta.
+    for (const nombre of ["Pactos", "Semillas", "Fogón", "Compromisos", "Congreso"]) {
+      await expect(rail(page).getByRole("link", { name: nombre, exact: true })).toHaveCount(0);
     }
-    // Congreso sale del menú de fase 1 (2-nov-2026): no está en el rail, pero /congreso sigue abierto sin cuenta.
-    await expect(rail(page).getByRole("link", { name: "Congreso", exact: true })).toHaveCount(0);
-    await expect(rail(page).getByRole("link", { name: "Sumate gratis para usar esto: Congreso" })).toHaveCount(0);
-    await expect(rail(page).getByRole("link", { name: "Inicio", exact: true })).not.toHaveAttribute("aria-disabled", "true");
-    // Un destino deshabilitado no navega: el enlace de ayuda lleva a Sumarte y vuelve a ese destino al sumarse.
-    await rail(page).getByRole("link", { name: "Sumate para participar: Pactos" }).click();
+    // Una página de Participar sigue pidiendo el plan Miembro por su dirección: lleva a Sumarte y vuelve al sumarse.
+    await page.goto("/pactos");
     await expect(page).toHaveURL(/\/sumarte\?volver=%2Fpactos$/);
     await expect(page.getByText("Pactos se habilita con el plan Miembro.")).toBeVisible();
   });
