@@ -24,9 +24,11 @@ import { INICIAL, type EstadoSumarte } from "@/lib/sumarte/estado";
 import { copiarClavesAnteriores } from "@/lib/demo/importar";
 import { loginElegido } from "@/lib/sesion/errores-login";
 import { ContextoSesion, type EstadoSesion, type IdentidadMinima, type SesionCliente, type ValorSesion } from "./contexto";
-import { FormularioLogin } from "./formulario-login";
-import { clienteNeonAuth } from "./neon-auth-cliente";
 import { PasoAlta } from "./paso-alta";
+
+// El SDK de Neon Auth del navegador se carga solo cuando hace falta (al abrir el formulario o al salir): al importarse toca el
+// almacenamiento del navegador, y con el almacenamiento bloqueado rompería toda la app, también con Privy.
+const FormularioLogin = lazy(() => import("./formulario-login").then((m) => ({ default: m.FormularioLogin })));
 
 /**
  * Con el modo de prueba, el email elegido en "Entrar como…" queda en esta cookie de sesión (no en localStorage:
@@ -375,7 +377,7 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
     const eraPorCookie = sesionPorCookie.current;
     sesionPorCookie.current = false;
     try {
-      if (eraPorCookie) await clienteNeonAuth().signOut();
+      if (eraPorCookie) await (await import("./neon-auth-cliente")).clienteNeonAuth().signOut();
       else await logout?.();
     } catch {
       // Si el proveedor falla al salir, la sesión de la app igual quedó cerrada.
@@ -417,7 +419,13 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
         modo={paso?.modo ?? "entrar"}
         alAceptar={aceptarPaso}
         alCancelar={cancelarPaso}
-        formulario={formularioAbierto ? <FormularioLogin alEntrar={alEntrarConNeon} alCancelar={cancelarPaso} /> : undefined}
+        formulario={
+          formularioAbierto ? (
+            <Suspense fallback={null}>
+              <FormularioLogin alEntrar={alEntrarConNeon} alCancelar={cancelarPaso} />
+            </Suspense>
+          ) : undefined
+        }
       />
     </ContextoSesion.Provider>
   );

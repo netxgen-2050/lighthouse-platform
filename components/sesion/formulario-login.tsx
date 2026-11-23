@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
-import { ERROR_GENERAL, mensajeDeError } from "@/lib/sesion/errores-login";
+import { estadoDeExcepcion, mensajeDeError } from "@/lib/sesion/errores-login";
 import { clienteNeonAuth } from "./neon-auth-cliente";
 
 const CAMPO =
@@ -71,8 +71,8 @@ export function FormularioLogin({ alEntrar, alCancelar }: Props) {
       setEmail(limpio);
       setCodigo("");
       setPaso("codigo");
-    } catch {
-      setError(ERROR_GENERAL);
+    } catch (e) {
+      setError(mensajeDeError(estadoDeExcepcion(e), "pedir"));
     } finally {
       setOcupado(false);
     }
@@ -96,8 +96,8 @@ export function FormularioLogin({ alEntrar, alCancelar }: Props) {
         return;
       }
       alEntrar();
-    } catch {
-      setError(ERROR_GENERAL);
+    } catch (e) {
+      setError(mensajeDeError(estadoDeExcepcion(e), "entrar"));
     } finally {
       setOcupado(false);
     }
@@ -121,8 +121,8 @@ export function FormularioLogin({ alEntrar, alCancelar }: Props) {
       })) as Resultado;
       const estado = estadoDe(r);
       if (estado !== null) setError(mensajeDeError(estado, "pedir"));
-    } catch {
-      setError(ERROR_GENERAL);
+    } catch (e) {
+      setError(mensajeDeError(estadoDeExcepcion(e), "pedir"));
     } finally {
       setOcupado(false);
     }

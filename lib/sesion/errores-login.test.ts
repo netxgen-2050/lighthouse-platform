@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ERROR_CODIGO, ERROR_GENERAL, ERROR_NO_DISPONIBLE, loginElegido, mensajeDeError } from "./errores-login";
+import { ERROR_CODIGO, ERROR_GENERAL, ERROR_NO_DISPONIBLE, estadoDeExcepcion, loginElegido, mensajeDeError } from "./errores-login";
 
 describe("loginElegido", () => {
   it("neon-auth solo con ese valor; si no, privy", () => {
@@ -9,6 +9,16 @@ describe("loginElegido", () => {
     expect(loginElegido("")).toBe("privy");
     expect(loginElegido("otra")).toBe("privy");
     expect(loginElegido("privy")).toBe("privy");
+  });
+});
+
+describe("estadoDeExcepcion", () => {
+  it("toma el estado de `status` o del mensaje HTTP; sin ninguno, 0", () => {
+    expect(estadoDeExcepcion({ status: 401, message: "x" })).toBe(401);
+    expect(estadoDeExcepcion(new Error("HTTP 503 Service Unavailable"))).toBe(503);
+    expect(estadoDeExcepcion(new Error("Failed to fetch"))).toBe(0);
+    expect(estadoDeExcepcion(null)).toBe(0);
+    expect(estadoDeExcepcion("boom")).toBe(0);
   });
 });
 

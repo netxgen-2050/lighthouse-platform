@@ -12,7 +12,7 @@ async function baseMigrada() {
 }
 
 describe("scripts/datos-previews.sql", () => {
-  it("corrido dos veces deja las seis personas de prueba, una vez cada una", async () => {
+  it("corrido dos veces deja las siete personas de prueba, una vez cada una", async () => {
     const pg = await baseMigrada();
     await pg.exec(SQL);
     await pg.exec(SQL);
@@ -24,9 +24,11 @@ describe("scripts/datos-previews.sql", () => {
       "admin@prueba.test",
       "b@prueba.test",
       "c@prueba.test",
+      "login@prueba.test",
       "persona@prueba.test",
       "super@prueba.test",
     ]);
+    expect(r.rows.find((f) => f.email === "login@prueba.test")).toMatchObject({ rol: "persona", tribu_admin: null });
     expect(r.rows.find((f) => f.email === "admin@prueba.test")).toMatchObject({ rol: "admin-tribu", tribu_admin: "valle" });
     expect(r.rows.find((f) => f.email === "persona@prueba.test")?.perfil).toBe("inversor");
   });

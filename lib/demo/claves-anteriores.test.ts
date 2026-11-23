@@ -45,10 +45,17 @@ describe("copia única de las claves del navegador", () => {
     expect(a.datos.get("u:did:privy:ana:lh-perfil")).toBe("P");
   });
 
-  it("sin claves anteriores solo deja la marca; y la clave igual a la nueva se ignora", () => {
+  it("sin claves anteriores (o solo la nueva) no escribe nada, ni la marca", () => {
     const a = almacen({ [`u:${NUEVA}:lh-perfil`]: "P" });
     expect(copiarClavesAnteriores(a, NUEVA, [NUEVA])).toBe(0);
-    expect(a.datos.get(`u:${NUEVA}:lh-perfil`)).toBe("P");
+    expect(copiarClavesAnteriores(a, NUEVA, [])).toBe(0);
+    expect([...a.datos.keys()]).toEqual([`u:${NUEVA}:lh-perfil`]);
+  });
+
+  it("si no había nada que copiar tampoco deja la marca", () => {
+    const a = almacen({ "u:otra:lh-perfil": "X" });
+    expect(copiarClavesAnteriores(a, NUEVA, ["did:privy:ana"])).toBe(0);
+    expect(a.datos.has(`u:${NUEVA}:lh-claves-copiadas`)).toBe(false);
   });
 
   it("no copia la marca de la clave anterior", () => {

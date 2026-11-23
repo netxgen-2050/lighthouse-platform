@@ -55,9 +55,11 @@ export function copiarClavesAnteriores(
   idPersona: string,
   clavesAnteriores: readonly string[],
 ): number {
+  const origenes = [...new Set(clavesAnteriores)].filter((a) => a !== "" && a !== idPersona);
+  // Sin claves anteriores no se toca el almacenamiento: antes de aceptar nada se guarda a nombre de la persona.
+  if (origenes.length === 0) return 0;
   const marca = prefijo(idPersona) + NOMBRE_CLAVES_COPIADAS;
   if (almacen.getItem(marca) !== null) return 0;
-  const origenes = [...new Set(clavesAnteriores)].filter((a) => a !== "" && a !== idPersona);
   const claves: string[] = [];
   for (let i = 0; i < almacen.length; i += 1) {
     const k = almacen.key(i);
@@ -78,7 +80,8 @@ export function copiarClavesAnteriores(
       copiadas += 1;
     }
   }
-  almacen.setItem(marca, "1");
+  // La marca solo se escribe si hubo algo que copiar (si no, no se guarda nada nuevo a nombre de la persona).
+  if (copiadas > 0) almacen.setItem(marca, "1");
   return copiadas;
 }
 

@@ -3,6 +3,8 @@ import { defineConfig, devices } from "@playwright/test";
 // BASE_URL apunta al preview de Vercel; sin BASE_URL se prueba contra un build local.
 const puerto = process.env.PORT ?? "3000";
 const baseURL = process.env.BASE_URL ?? `http://localhost:${puerto}`;
+const puertoNeon = String(Number(puerto) + 1);
+const baseURLNeon = `http://localhost:${puertoNeon}`;
 const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 const LISTA_DE_PRUEBA =
   "super@prueba.test=superadmin:usuario;admin@prueba.test=admin-tribu:usuario;persona@prueba.test=persona:inversor";
@@ -26,22 +28,49 @@ export default defineConfig({
         }
       : undefined,
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    { name: "chromium", testIgnore: /login-neon-auth\.spec\.ts$/, use: { ...devices["Desktop Chrome"] } },
+    // login-neon-auth: la variable pública NEXT_PUBLIC_LH_LOGIN se fija al compilar, así que este archivo corre contra un
+    // segundo build (otra carpeta, otro puerto) con `neon-auth`. Contra un preview (BASE_URL) no corre: ahí manda lo que Gus configuró.
+    ...(process.env.BASE_URL
+      ? []
+      : [{ name: "neon-auth", testMatch: /login-neon-auth\.spec\.ts$/, use: { ...devices["Desktop Chrome"], baseURL: baseURLNeon } }]),
+  ],
   webServer: process.env.BASE_URL
     ? undefined
-    : {
-        command: `pnpm build && pnpm start -p ${puerto}`,
-        url: baseURL,
-        reuseExistingServer: true,
-        timeout: 180_000,
-        // El e2e local no depende de Vercel ni de Privy: entra con el modo de prueba y una lista de emails inventados
-        // (los emails reales del equipo nunca van al repo). Sin app id de Privy, la app solo ofrece el modo de prueba.
-        env: {
-          LH_AUTH_PRUEBA: "1",
-          LH_PERSONAS: LISTA_DE_PRUEBA,
-          NEXT_PUBLIC_PRIVY_APP_ID: "",
-          PRIVY_APP_SECRET: "",
-          VERCEL_ENV: "",
+    : [
+        {
+          command: `pnpm build && pnpm start -p ${puerto}`,
+          url: baseURL,
+          reuseExistingServer: true,
+          timeout: 180_000,
+          // El e2e local no depende de Vercel ni de Privy: entra con el modo de prueba y una lista de emails inventados
+          // (los emails reales del equipo nunca van al repo). Sin app id de Privy, la app solo ofrece el modo de prueba.
+          env: {
+            LH_AUTH_PRUEBA: "1",
+            LH_PERSONAS: LISTA_DE_PRUEBA,
+            NEXT_PUBLIC_PRIVY_APP_ID: "",
+            PRIVY_APP_SECRET: "",
+            VERCEL_ENV: "",
+          },
         },
-      },
+        {
+          command: `pnpm build && pnpm start -p ${puertoNeon}`,
+          url: baseURLNeon,
+          reuseExistingServer: true,
+          timeout: 300_000,
+          // Sin Neon Auth configurado a propósito (sin NEON_AUTH_*): el e2e intercepta `/api/auth/**` desde el navegador.
+          env: {
+            NEXT_DIST_DIR: ".next-neon",
+            NEXT_PUBLIC_LH_LOGIN: "neon-auth",
+            LH_AUTH_PRUEBA: "1",
+            LH_PERSONAS: LISTA_DE_PRUEBA,
+            NEXT_PUBLIC_PRIVY_APP_ID: "",
+            PRIVY_APP_SECRET: "",
+            NEON_AUTH_BASE_URL: "",
+            NEON_AUTH_COOKIE_SECRET: "",
+            VERCEL_ENV: "",
+          },
+        },
+      ],
 });
