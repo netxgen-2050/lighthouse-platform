@@ -19,7 +19,7 @@ Rama `agente/login-neon-auth` desde `dev`, **después** de que `base-neon` y `co
 
 ## 4. Textos
 
-- [ ] 4.1 `lib/privacidad/politica.ts` y revisión de `lib/legal/terminos.ts` (design §5): Neon como encargado del login, Privy "hasta que se retire", fila del login, textos nuevos con `borrador: true`, y la versión nueva de la política con su cambio listado (salvo que Gus haya dicho que no; anotarlo en el PR). Tests de `politica` (la vigente es la última y lista su cambio). Verificar con `pnpm test lib/privacidad`.
+- [x] 4.1 `lib/privacidad/politica.ts` y revisión de `lib/legal/terminos.ts` (design §5): Neon como encargado del login, Privy "hasta que se retire", fila del login, textos nuevos con `borrador: true`, y la versión nueva de la política con su cambio listado (salvo que Gus haya dicho que no; anotarlo en el PR). Tests de `politica` (la vigente es la última y lista su cambio). Verificar con `pnpm test lib/privacidad`.
 
 ## 5. Pruebas de punta a punta
 

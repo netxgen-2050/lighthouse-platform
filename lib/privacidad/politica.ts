@@ -34,6 +34,13 @@ export const VERSIONES_POLITICA: readonly VersionPolitica[] = [
       "Podés pedir que te mandemos novedades por email. Es opcional y lo podés retirar cuando quieras desde Mis datos.",
     ],
   },
+  {
+    // BORRADOR (cambio `login-neon-auth`): versión nueva porque cambia quién trata tu email al entrar. Si Gus prefiere que el
+    // equipo no vuelva a aceptar ahora, se quita esta versión y se vuelve a la anterior (pregunta abierta, design §5).
+    version: "2026-11-24-borrador",
+    fecha: "2026-11-24",
+    cambios: ["El login pasa a hacerse con Neon (Neon Auth); Privy se va a retirar."],
+  },
 ];
 
 export const RESPONSABLE = {
@@ -61,7 +68,7 @@ export const DATOS_POR_PANTALLA: readonly DatosDePantalla[] = [
   {
     pantalla: "Entrar (login)",
     datos: "Tu email, la dirección de tu billetera y, si entrás con Google, tu nombre.",
-    donde: "Privy. En la plataforma solo se usa para reconocerte.",
+    donde: "Privy o Neon (Neon Auth), según cómo entraste. En la plataforma solo se usa para reconocerte.",
   },
   {
     pantalla: "Perfil",
@@ -148,9 +155,9 @@ export type Encargado = { nombre: string; para: string; donde: string; estado: s
 
 /** Quiénes tratan datos por cuenta de NetXGen (encargados) y dónde. */
 export const ENCARGADOS: readonly Encargado[] = [
-  { nombre: "Privy", para: "Login y billetera", donde: UBICACION_DATOS, estado: "En uso" },
+  { nombre: "Privy", para: "Login y billetera, hasta que se retire", donde: UBICACION_DATOS, estado: "En uso" },
   { nombre: "Vercel", para: "Hosting de la plataforma", donde: UBICACION_DATOS, estado: "En uso" },
-  { nombre: "Neon", para: "Base de datos", donde: UBICACION_DATOS, estado: "Todavía no: se suma con la base de datos" },
+  { nombre: "Neon", para: "Base de datos y login (Neon Auth)", donde: UBICACION_DATOS, estado: "En uso" },
   { nombre: "GitHub", para: "Reportes y pedidos al equipo", donde: UBICACION_DATOS, estado: "En uso" },
 ];
 
