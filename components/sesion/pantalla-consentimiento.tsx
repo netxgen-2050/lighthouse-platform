@@ -2,10 +2,8 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { canalAlEntrar, registrarConsentimiento } from "@/lib/privacidad/consentimiento";
+import { aceptarEnServidor, canalAlEntrar, TEXTO_FALLO_GUARDAR } from "@/lib/privacidad/consentimiento";
 import { fechaYHora } from "@/lib/privacidad/fecha";
-import { leerNovedades, registrarEleccionNovedades } from "@/lib/privacidad/novedades";
-import { useConsentimiento } from "@/lib/privacidad/usar-consentimiento";
 import { CLAVE_PENDIENTE_HORA, leerPendiente, renovarPendiente } from "@/lib/sesion/nivel";
 import {
   BloqueConsentimiento,
@@ -28,21 +26,17 @@ const BOTON_SECUNDARIO = `${BOTON} border border-faint hover:bg-surface-2`;
  * página menos `/privacidad`. Sin aceptar las dos casillas la persona sigue anónima.
  */
 export function PantallaConsentimiento() {
-  const { sesion, salir } = useSesion();
+  const { sesion, salir, cabeceras, detalleConsentimiento, falloAceptacionPrevia } = useSesion();
   const idPersona = sesion?.idPersona ?? "";
-  const { registro } = useConsentimiento(sesion?.idPersona ?? null);
+  const { registro } = detalleConsentimiento;
   const [valor, setValor] = useState<ValorConsentimiento>(SIN_MARCAR);
   const [error, setError] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
   const refPolitica = useRef<HTMLInputElement>(null);
   const refTerminos = useRef<HTMLInputElement>(null);
-  // La casilla de novedades solo se ofrece si la persona todavía no decidió (se mira una sola vez, al montar).
-  const [ofrecerNovedades] = useState(() => {
-    try {
-      return leerNovedades(window.localStorage, idPersona) === null;
-    } catch {
-      return true;
-    }
-  });
+  // La casilla de novedades solo se ofrece si la persona todavía no decidió (se mira una sola vez, al montar; el estado ya
+  // viene del servidor porque esta pantalla no se dibuja mientras se lee).
+  const [ofrecerNovedades] = useState(() => detalleConsentimiento.novedades === null);
   // ¿Había un plan elegido en Sumarte todavía vigente cuando apareció esta pantalla? (se mira una sola vez, al montar)
   const [pedidoVigenteAlLlegar] = useState(() => {
     try {
@@ -52,7 +46,8 @@ export function PantallaConsentimiento() {
     }
   });
 
-  function aceptar() {
+  async function aceptar() {
+    if (enviando) return;
     if (!valor.politica || !valor.terminos) {
       setError(TEXTO_ERROR_CASILLAS);
       enfocarPrimeraSinMarcar(valor, refPolitica, refTerminos);
@@ -72,14 +67,13 @@ export function PantallaConsentimiento() {
       }
     }
     const canal = canalAlEntrar(registro);
-    let guardado = false;
-    try {
-      guardado = registrarConsentimiento(window.localStorage, idPersona, valor, { canal });
-    } catch {
-      guardado = false;
-    }
-    if (!guardado) {
-      // No se registró nada: el pedido queda como estaba.
+    setEnviando(true);
+    // Una sola llamada: el servidor registra el general y, con la casilla a la vista, la elección de novedades (sin marcar
+    // también es una decisión, design §9). La persona pasa a activa recién con su confirmación.
+    const estado = await aceptarEnServidor(cabeceras, idPersona, { canal, novedades: ofrecerNovedades ? valor.novedades : undefined });
+    setEnviando(false);
+    if (estado === null) {
+      // No se registró nada: la persona sigue anónima, las casillas siguen marcadas y el pedido queda como estaba.
       if (renovado) {
         try {
           if (horaPrevia === null) window.sessionStorage.removeItem(CLAVE_PENDIENTE_HORA);
@@ -88,16 +82,8 @@ export function PantallaConsentimiento() {
           // Sin almacenamiento de la pestaña no hay nada que restaurar.
         }
       }
-      setError("Error: tu navegador no permite guardar datos en este sitio, así que no podemos registrar tu consentimiento. Revisá la configuración de privacidad o probá en otro navegador.");
+      setError(TEXTO_FALLO_GUARDAR);
       return;
-    }
-    // Sin marcar también es una decisión: queda registrada para no volver a ofrecer la casilla (design §9).
-    if (ofrecerNovedades) {
-      try {
-        registrarEleccionNovedades(window.localStorage, idPersona, valor.novedades, { canal });
-      } catch {
-        // Sin almacenamiento no queda registro de la elección: se vuelve a ofrecer.
-      }
     }
     setError(null);
   }
@@ -136,19 +122,19 @@ export function PantallaConsentimiento() {
         noValidate
         onSubmit={(ev) => {
           ev.preventDefault();
-          aceptar();
+          void aceptar();
         }}
       >
         <BloqueConsentimiento
           valor={valor}
           alCambiar={setValor}
-          error={error}
+          error={error ?? (falloAceptacionPrevia ? TEXTO_FALLO_GUARDAR : null)}
           refPolitica={refPolitica}
           refTerminos={refTerminos}
           mostrarNovedades={ofrecerNovedades}
         />
         <div className="mt-3 flex flex-wrap gap-3">
-          <button type="submit" className={BOTON_PRIMARIO}>
+          <button type="submit" disabled={enviando} className={`${BOTON_PRIMARIO} disabled:opacity-70`}>
             Aceptar y continuar
           </button>
           <button type="button" className={BOTON_SECUNDARIO} onClick={() => void salir()}>

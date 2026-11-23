@@ -4,18 +4,16 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type
 import { usePathname, useRouter } from "next/navigation";
 import { CLAVE_ULTIMA_PERSONA, establecerPersona } from "@/lib/demo/claves";
 import {
+  aceptarEnServidor,
   canalAlEntrar,
   descartarAceptacionPrevia,
   guardarAceptacionPrevia,
-  leerConsentimiento,
   intentarLogin,
   puedeAbrirLogin,
-  registrarConsentimiento,
   tomarAceptacionPrevia,
   type CanalConsentimiento,
   type ModoAlta,
 } from "@/lib/privacidad/consentimiento";
-import { registrarEleccionNovedades } from "@/lib/privacidad/novedades";
 import { useConsentimiento } from "@/lib/privacidad/usar-consentimiento";
 import { cookieAdminBorrada, cookieAdminSegunSesion, debeEscribirCookieAdmin } from "@/lib/sesion/cookie-admin";
 import { COOKIE_PRUEBA } from "@/lib/sesion/cookies";
@@ -77,6 +75,14 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
   useEffect(() => {
     obtenerToken.current = privy?.getAccessToken;
   });
+
+  // Cabeceras que acreditan la sesión (token de Privy o modo de prueba) para pedir a las rutas `/api`.
+  const cabeceras = useCallback(async (): Promise<Record<string, string>> => {
+    if (prueba) return { "x-lh-prueba": prueba };
+    const pedirToken = obtenerToken.current;
+    const token = pedirToken ? await pedirToken() : null;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }, [prueba]);
 
   // En modo de prueba la sesión no depende de Privy: que Privy termine de inicializarse no tiene que volver a verificar.
   const privyListoEfectivo = prueba ? true : privyListo;
@@ -142,7 +148,10 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
       // Sin almacenamiento no hay nada que copiar.
     }
   }
-  const { estado: consentimiento } = useConsentimiento(idSesion);
+  // El consentimiento sale del servidor (`consentimiento-en-la-base`): sin su confirmación la persona sigue anónima.
+  const { estado: consentimiento, registro, novedades, sensibles } = useConsentimiento(idSesion, cabeceras);
+  const detalleConsentimiento = useMemo(() => ({ registro, novedades, sensibles }), [registro, novedades, sensibles]);
+  const [falloAceptacionPrevia, setFalloAceptacionPrevia] = useState(false);
   // Se fija antes de dibujar la app: todas las claves del navegador salen con el prefijo de esta persona, pero solo con
   // consentimiento vigente (si no, quedan sin prefijo, como sin sesión: nada se guarda a su nombre).
   const idPersona = consentimiento === "vigente" ? idSesion : null;
@@ -209,23 +218,15 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
       previa = null;
     }
     if (!previa) return;
-    try {
-      const almacen = window.localStorage;
-      let canal: CanalConsentimiento = previa.modo === "alta" ? "alta" : "al-entrar";
-      if (consentimiento === "pendiente") {
-        canal = previa.modo === "alta" ? "alta" : canalAlEntrar(leerConsentimiento(almacen, idSesion));
-        const registrado = registrarConsentimiento(almacen, idSesion, { politica: true, terminos: true }, {
-          canal,
-          aceptadoEn: new Date(previa.aceptadoEn),
-        });
-        // Las novedades solo se escriben con el consentimiento general vigente.
-        if (!registrado) return;
-      }
-      registrarEleccionNovedades(almacen, idSesion, previa.novedades, { canal });
-    } catch {
-      // Sin almacenamiento no queda registro: la persona verá la pantalla de consentimiento.
-    }
-  }, [idSesion, consentimiento]);
+    let canal: CanalConsentimiento = previa.modo === "alta" ? "alta" : "al-entrar";
+    if (consentimiento === "pendiente" && previa.modo !== "alta") canal = canalAlEntrar(registro);
+    // Una sola llamada al servidor: registra el general (si hace falta) y la elección de novedades, que él mismo no deja pisar
+    // una anterior. La persona pasa a activa recién con su 200; si falla, sigue anónima y la pantalla avisa.
+    setFalloAceptacionPrevia(false);
+    void aceptarEnServidor(cabeceras, idSesion, { canal, novedades: previa.novedades, aceptadoEn: new Date(previa.aceptadoEn) }).then((estado) => {
+      if (estado === null) setFalloAceptacionPrevia(true);
+    });
+  }, [idSesion, consentimiento, registro, cabeceras]);
 
   const [paso, setPaso] = useState<{ modo: ModoAlta; alAceptar?: () => void; continuar?: () => void } | null>(null);
   const focoAlAbrir = useRef<HTMLElement | null>(null);
@@ -376,13 +377,6 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
     }
   }, [logout]);
 
-  const cabeceras = useCallback(async (): Promise<Record<string, string>> => {
-    if (prueba) return { "x-lh-prueba": prueba };
-    const pedirToken = obtenerToken.current;
-    const token = pedirToken ? await pedirToken() : null;
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }, [prueba]);
-
   const valor = useMemo<ValorSesion>(
     () => ({
       estado: resultado.estado,
@@ -396,11 +390,28 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
       nivel,
       nivelListo,
       consentimiento,
+      detalleConsentimiento,
+      falloAceptacionPrevia,
       tribuLider,
       salir,
       cabeceras,
     }),
-    [resultado, prueba, privy, conNeonAuth, entrar, entrarComoConPaso, nivel, nivelListo, consentimiento, tribuLider, salir, cabeceras],
+    [
+      resultado,
+      prueba,
+      privy,
+      conNeonAuth,
+      entrar,
+      entrarComoConPaso,
+      nivel,
+      nivelListo,
+      consentimiento,
+      detalleConsentimiento,
+      falloAceptacionPrevia,
+      tribuLider,
+      salir,
+      cabeceras,
+    ],
   );
 
   return (

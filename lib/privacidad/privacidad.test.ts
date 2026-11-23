@@ -1,22 +1,29 @@
-import { describe, expect, it } from "vitest";
-import { establecerPersona, NOMBRES_BASE } from "@/lib/demo/claves";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { NOMBRES_BASE } from "@/lib/demo/claves";
 import {
+  aceptarEnServidor,
+  borrarSensibles,
+  cambiarNovedadesEnServidor,
+  canalAlEntrar,
   consentimientoVigente,
+  EVENTO_CONSENTIMIENTO,
   guardarAceptacionPrevia,
   intentarLogin,
-  leerConsentimiento,
+  leerSensibles,
+  limpiarRegistroAnterior,
+  pedirConsentimiento,
   puedeAbrirLogin,
-  registrarConsentimiento,
   registrarConsentimientoSensible,
-  retirarConsentimiento,
+  registroDeEstado,
+  retirarEnServidor,
   rutaPideConsentimiento,
   sensiblesVigente,
   tomarAceptacionPrevia,
   VERSION_POLITICA,
   type Almacen,
 } from "./consentimiento";
+import type { EstadoServidor } from "./estado";
 import { exportarMisDatos, nombreArchivoDatos } from "./exportar";
-import { darNovedades, leerNovedades, registrarEleccionNovedades, retirarNovedades } from "./novedades";
 import { DATOS_POR_PANTALLA, ENCARGADOS, FINALIDADES, RESUMEN, VERSIONES_POLITICA } from "./politica";
 
 function almacen(inicial: Record<string, string> = {}): Almacen & { datos: Map<string, string> } {
@@ -30,128 +37,204 @@ function almacen(inicial: Record<string, string> = {}): Almacen & { datos: Map<s
 }
 
 const AHORA = new Date("2026-10-14T15:30:00.000Z");
-const TODO = { politica: true, terminos: true };
+const CABECERAS = async () => ({ "x-lh-prueba": "ana@prueba.test" });
 
-describe("registro del consentimiento", () => {
-  it("sin registro no hay consentimiento vigente", () => {
-    expect(consentimientoVigente(leerConsentimiento(almacen(), "A"))).toBe(false);
+const VIGENTE: EstadoServidor = {
+  general: "vigente",
+  version: VERSION_POLITICA,
+  registradoAt: "2026-11-23T10:00:00.000Z",
+  canal: "alta",
+  novedades: false,
+  novedadesRegistro: null,
+};
+
+afterEach(() => vi.unstubAllGlobals());
+
+/** Un `fetch` falso que guarda lo que le pidieron y responde con lo que se le diga. */
+function fetchFalso(respuesta: () => Response | Promise<Response>) {
+  const llamadas: { url: string; init: RequestInit | undefined }[] = [];
+  const f = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
+    llamadas.push({ url: String(url), init });
+    return respuesta();
   });
+  return { f: f as unknown as typeof fetch, llamadas };
+}
+const ok = (estado: EstadoServidor) => () => new Response(JSON.stringify({ ok: true, estado }), { status: 200 });
 
-  it("registra la versión, la fecha y qué se aceptó, con el id explícito de la persona", () => {
-    const a = almacen();
-    expect(registrarConsentimiento(a, "A", TODO, { aceptadoEn: AHORA })).toBe(true);
-    expect(a.datos.has("u:A:lh-consentimiento")).toBe(true);
-    const c = leerConsentimiento(a, "A");
-    expect(c).toMatchObject({
+describe("el consentimiento según el servidor", () => {
+  it("sin estado, o retirado, no hay registro; vigente o con otra versión, sí", () => {
+    expect(registroDeEstado(null, null)).toBeNull();
+    expect(registroDeEstado({ ...VIGENTE, general: "retirado" }, null)).toBeNull();
+    expect(registroDeEstado({ ...VIGENTE, general: "pendiente", version: null, registradoAt: null }, null)).toBeNull();
+    const c = registroDeEstado(VIGENTE, null);
+    expect(c).toEqual({
       version: VERSION_POLITICA,
-      aceptadoEn: "2026-10-14T15:30:00.000Z",
+      aceptadoEn: "2026-11-23T10:00:00.000Z",
       aceptado: { politica: true, terminos: true },
+      canal: "alta",
       sensibles: null,
     });
     expect(consentimientoVigente(c)).toBe(true);
+    const vieja = registroDeEstado({ ...VIGENTE, general: "pendiente", version: "2025-vieja" }, null);
+    expect(vieja?.version).toBe("2025-vieja");
+    expect(consentimientoVigente(vieja)).toBe(false);
+    expect(consentimientoVigente(null)).toBe(false);
   });
 
-  it("la clave no depende de la persona activa", () => {
-    establecerPersona("B");
-    const a = almacen();
-    registrarConsentimiento(a, "A", TODO);
-    establecerPersona(null);
-    expect([...a.datos.keys()]).toEqual(["u:A:lh-consentimiento"]);
-    expect(leerConsentimiento(a, "B")).toBeNull();
+  it("canalAlEntrar: nueva-version si había una versión vieja, al-entrar si no había nada", () => {
+    expect(canalAlEntrar(null)).toBe("al-entrar");
+    expect(canalAlEntrar({ version: "2025-vieja" })).toBe("nueva-version");
+    expect(canalAlEntrar({ version: VERSION_POLITICA })).toBe("al-entrar");
   });
 
-  it.each(["alta", "al-entrar", "nueva-version"] as const)("guarda el camino %s", (canal) => {
-    const a = almacen();
-    registrarConsentimiento(a, "A", TODO, { canal });
-    expect(leerConsentimiento(a, "A")?.canal).toBe(canal);
+  it("pedirConsentimiento pide el estado (con las filas si se piden) y manda las cabeceras de la sesión", async () => {
+    const { f, llamadas } = fetchFalso(() => new Response(JSON.stringify({ ok: true, estado: VIGENTE, filas: [] }), { status: 200 }));
+    expect(await pedirConsentimiento(CABECERAS, {}, f)).toMatchObject({ estado: VIGENTE });
+    await pedirConsentimiento(CABECERAS, { filas: true }, f);
+    expect(llamadas.map((l) => l.url)).toEqual(["/api/consentimientos", "/api/consentimientos?filas=1"]);
+    expect(llamadas[0]!.init?.headers).toEqual({ "x-lh-prueba": "ana@prueba.test" });
   });
 
-  it("un registro viejo sin camino sigue valiendo", () => {
-    const a = almacen({
-      "u:A:lh-consentimiento": JSON.stringify({ version: VERSION_POLITICA, aceptadoEn: "2026-10-01T00:00:00.000Z", aceptado: TODO, sensibles: null }),
-    });
-    const c = leerConsentimiento(a, "A");
-    expect(consentimientoVigente(c)).toBe(true);
-    expect(c?.canal).toBeUndefined();
-  });
-
-  it("un camino desconocido (como otro) descarta el registro", () => {
-    const a = almacen({
-      "u:A:lh-consentimiento": JSON.stringify({ version: VERSION_POLITICA, aceptadoEn: "x", aceptado: TODO, canal: "otro", sensibles: null }),
-    });
-    expect(leerConsentimiento(a, "A")).toBeNull();
-  });
-
-  it("las dos casillas son obligatorias: con una sola no se registra nada", () => {
-    const a = almacen();
-    expect(registrarConsentimiento(a, "A", { politica: true, terminos: false })).toBe(false);
-    expect(registrarConsentimiento(a, "A", { politica: false, terminos: true })).toBe(false);
-    expect(a.datos.size).toBe(0);
-  });
-
-  it("con otra versión de la política hay que volver a aceptar", () => {
-    const a = almacen({
-      "u:A:lh-consentimiento": JSON.stringify({
-        version: "2025-vieja",
-        aceptadoEn: "2025-01-01T00:00:00.000Z",
-        aceptado: { politica: true, terminos: true },
-        sensibles: null,
-      }),
-    });
-    const c = leerConsentimiento(a, "A");
-    expect(c).not.toBeNull();
-    expect(consentimientoVigente(c)).toBe(false);
-  });
-
-  it("un registro dañado o incompleto cuenta como sin consentimiento", () => {
-    expect(leerConsentimiento(almacen({ "u:A:lh-consentimiento": "no es json" }), "A")).toBeNull();
-    expect(leerConsentimiento(almacen({ "u:A:lh-consentimiento": JSON.stringify({ version: VERSION_POLITICA }) }), "A")).toBeNull();
-    expect(
-      leerConsentimiento(
-        almacen({
-          "u:A:lh-consentimiento": JSON.stringify({ version: VERSION_POLITICA, aceptadoEn: "x", aceptado: { politica: true, terminos: false } }),
-        }),
-        "A",
-      ),
-    ).toBeNull();
-  });
-
-  it("si el navegador no deja guardar, devuelve false", () => {
-    const roto = { getItem: () => null, setItem: () => { throw new Error("lleno"); } };
-    expect(registrarConsentimiento(roto, "A", TODO)).toBe(false);
-  });
-
-  it("retirar borra el registro", () => {
-    const a = almacen();
-    registrarConsentimiento(a, "A", TODO);
-    expect(retirarConsentimiento(a, "A")).toBe(true);
-    expect(leerConsentimiento(a, "A")).toBeNull();
+  it("si el servidor no responde o responde mal, devuelve null (la persona sigue anónima)", async () => {
+    expect(await pedirConsentimiento(CABECERAS, {}, fetchFalso(() => new Response("{}", { status: 503 })).f)).toBeNull();
+    expect(await pedirConsentimiento(CABECERAS, {}, fetchFalso(() => new Response("{}", { status: 200 })).f)).toBeNull();
+    expect(await pedirConsentimiento(CABECERAS, {}, fetchFalso(() => Promise.reject(new Error("sin red"))).f)).toBeNull();
   });
 });
 
-describe("consentimiento para datos sensibles", () => {
-  it("pide haber aceptado antes la política", () => {
-    const a = almacen();
-    expect(registrarConsentimientoSensible(a, "A", AHORA)).toBe(false);
-    expect(sensiblesVigente(leerConsentimiento(a, "A"))).toBe(false);
+describe("aceptar, retirar y novedades contra el servidor", () => {
+  it("aceptarEnServidor manda el camino, la versión, las dos horas del navegador y la casilla de novedades", async () => {
+    const { f, llamadas } = fetchFalso(ok(VIGENTE));
+    const cuando = new Date("2026-11-23T10:00:00.000Z");
+    const ahora = new Date("2026-11-23T10:01:00.000Z");
+    const r = await aceptarEnServidor(CABECERAS, "A", { canal: "alta", novedades: true, aceptadoEn: cuando, ahora }, f);
+    expect(r).toEqual(VIGENTE);
+    expect(llamadas[0]!.init?.method).toBe("POST");
+    expect(llamadas[0]!.init?.headers).toMatchObject({ "Content-Type": "application/json", "x-lh-prueba": "ana@prueba.test" });
+    expect(JSON.parse(String(llamadas[0]!.init?.body))).toEqual({
+      accion: "acepta",
+      canal: "alta",
+      version: VERSION_POLITICA,
+      aceptadoEnCliente: "2026-11-23T10:00:00.000Z",
+      enviadoEnCliente: "2026-11-23T10:01:00.000Z",
+      novedades: "acepta",
+    });
   });
 
-  it("queda registrado aparte, con su fecha", () => {
+  it("la casilla sin marcar manda retira, y sin casilla a la vista manda sin-cambio", async () => {
+    const { f, llamadas } = fetchFalso(ok(VIGENTE));
+    await aceptarEnServidor(CABECERAS, "A", { canal: "al-entrar", novedades: false }, f);
+    await aceptarEnServidor(CABECERAS, "A", { canal: "al-entrar" }, f);
+    const cuerpos = llamadas.map((l) => JSON.parse(String(l.init?.body)) as { novedades: string });
+    expect(cuerpos.map((c) => c.novedades)).toEqual(["retira", "sin-cambio"]);
+  });
+
+  it("si el servidor falla (500) o no responde, devuelve null y no avisa a la app", async () => {
+    const escucha = vi.fn();
+    const ventana = new EventTarget();
+    ventana.addEventListener(EVENTO_CONSENTIMIENTO, escucha);
+    vi.stubGlobal("window", ventana);
+    expect(await aceptarEnServidor(CABECERAS, "A", { canal: "alta" }, fetchFalso(() => new Response("{}", { status: 500 })).f)).toBeNull();
+    expect(await aceptarEnServidor(CABECERAS, "A", { canal: "alta" }, fetchFalso(() => Promise.reject(new Error("sin red"))).f)).toBeNull();
+    expect(escucha).not.toHaveBeenCalled();
+  });
+
+  it("al confirmar el servidor avisa a la app con el estado nuevo", async () => {
+    const escucha = vi.fn();
+    const ventana = new EventTarget();
+    ventana.addEventListener(EVENTO_CONSENTIMIENTO, (e) => escucha((e as CustomEvent).detail));
+    vi.stubGlobal("window", ventana);
+    await aceptarEnServidor(CABECERAS, "A", { canal: "alta" }, fetchFalso(ok(VIGENTE)).f);
+    expect(escucha).toHaveBeenCalledWith({ id: "A", estado: VIGENTE });
+  });
+
+  it("retirarEnServidor pide el retiro desde Mis datos y no avisa a la app (quien retira borra y sale)", async () => {
+    const escucha = vi.fn();
+    const ventana = new EventTarget();
+    ventana.addEventListener(EVENTO_CONSENTIMIENTO, escucha);
+    vi.stubGlobal("window", ventana);
+    const { f, llamadas } = fetchFalso(ok({ ...VIGENTE, general: "retirado" }));
+    expect(await retirarEnServidor(CABECERAS, "A", f)).toMatchObject({ general: "retirado" });
+    expect(JSON.parse(String(llamadas[0]!.init?.body))).toEqual({ accion: "retira", canal: "mis-datos", version: VERSION_POLITICA });
+    expect(escucha).not.toHaveBeenCalled();
+  });
+
+  it("cambiarNovedadesEnServidor da o retira desde Mis datos", async () => {
+    const { f, llamadas } = fetchFalso(ok(VIGENTE));
+    await cambiarNovedadesEnServidor(CABECERAS, "A", true, f);
+    await cambiarNovedadesEnServidor(CABECERAS, "A", false, f);
+    const cuerpos = llamadas.map((l) => JSON.parse(String(l.init?.body)) as Record<string, unknown>);
+    expect(cuerpos).toEqual([
+      { accion: "acepta", canal: "mis-datos", version: VERSION_POLITICA, novedades: "acepta" },
+      { accion: "acepta", canal: "mis-datos", version: VERSION_POLITICA, novedades: "retira" },
+    ]);
+  });
+});
+
+describe("lo que el navegador guardaba antes", () => {
+  it("se ignora y se borra; el consentimiento de sensibles pasa a su propia clave", () => {
+    const a = almacen({
+      "u:A:lh-consentimiento": JSON.stringify({
+        version: VERSION_POLITICA,
+        aceptadoEn: "2026-10-01T00:00:00.000Z",
+        aceptado: { politica: true, terminos: true },
+        sensibles: { version: VERSION_POLITICA, aceptadoEn: "2026-10-02T00:00:00.000Z" },
+      }),
+      "u:A:lh-novedades": JSON.stringify({ evento: "acepta" }),
+      "u:B:lh-consentimiento": "de otra persona",
+    });
+    limpiarRegistroAnterior(a, "A");
+    expect([...a.datos.keys()].sort()).toEqual(["u:A:lh-consentimiento-sensibles", "u:B:lh-consentimiento"]);
+    expect(sensiblesVigente(leerSensibles(a, "A"))).toBe(true);
+    expect(leerSensibles(a, "A")?.aceptadoEn).toBe("2026-10-02T00:00:00.000Z");
+  });
+
+  it("no pisa un consentimiento de sensibles ya guardado aparte y tolera un registro dañado", () => {
+    const a = almacen({
+      "u:A:lh-consentimiento": "no es json",
+      "u:A:lh-consentimiento-sensibles": JSON.stringify({ version: VERSION_POLITICA, aceptadoEn: "2026-10-05T00:00:00.000Z" }),
+    });
+    limpiarRegistroAnterior(a, "A");
+    expect(a.datos.has("u:A:lh-consentimiento")).toBe(false);
+    expect(leerSensibles(a, "A")?.aceptadoEn).toBe("2026-10-05T00:00:00.000Z");
+  });
+
+  it("sin almacenamiento no rompe", () => {
+    const roto = {
+      getItem: () => {
+        throw new Error("bloqueado");
+      },
+      setItem: () => {},
+      removeItem: () => {},
+    };
+    expect(() => limpiarRegistroAnterior(roto, "A")).not.toThrow();
+  });
+});
+
+describe("consentimiento para datos sensibles (sigue en el navegador)", () => {
+  it("queda registrado aparte, con su fecha, y vale solo para la versión vigente", () => {
     const a = almacen();
-    registrarConsentimiento(a, "A", TODO);
-    expect(sensiblesVigente(leerConsentimiento(a, "A"))).toBe(false);
+    expect(sensiblesVigente(leerSensibles(a, "A"))).toBe(false);
     expect(registrarConsentimientoSensible(a, "A", new Date("2026-10-15T10:00:00.000Z"))).toBe(true);
-    const c = leerConsentimiento(a, "A");
-    expect(sensiblesVigente(c)).toBe(true);
-    expect(c?.sensibles?.aceptadoEn).toBe("2026-10-15T10:00:00.000Z");
+    expect(a.datos.has("u:A:lh-consentimiento-sensibles")).toBe(true);
+    const s = leerSensibles(a, "A");
+    expect(sensiblesVigente(s)).toBe(true);
+    expect(s?.aceptadoEn).toBe("2026-10-15T10:00:00.000Z");
+    expect(sensiblesVigente({ version: "2025-vieja", aceptadoEn: "x" })).toBe(false);
   });
 
-  it("aceptar de nuevo la misma versión no pierde el consentimiento sensible", () => {
+  it("no depende de la persona activa ni se mezcla con otra, y se puede borrar", () => {
     const a = almacen();
-    registrarConsentimiento(a, "A", TODO);
     registrarConsentimientoSensible(a, "A", AHORA);
-    registrarConsentimiento(a, "A", TODO);
-    expect(sensiblesVigente(leerConsentimiento(a, "A"))).toBe(true);
+    expect(leerSensibles(a, "B")).toBeNull();
+    expect(borrarSensibles(a, "A")).toBe(true);
+    expect(leerSensibles(a, "A")).toBeNull();
+  });
+
+  it("si el navegador no deja guardar, devuelve false; un registro dañado se lee como sin dato", () => {
+    const roto = { setItem: () => { throw new Error("lleno"); } };
+    expect(registrarConsentimientoSensible(roto, "A")).toBe(false);
+    expect(leerSensibles(almacen({ "u:A:lh-consentimiento-sensibles": "no es json" }), "A")).toBeNull();
   });
 });
 
@@ -220,37 +303,14 @@ describe("aceptación previa al login", () => {
 });
 
 describe("novedades por email", () => {
-  it("dar y retirar guardan versión, fecha y camino", () => {
-    const a = almacen();
-    expect(darNovedades(a, "A", { canal: "alta", ahora: AHORA })).toBe(true);
-    expect(leerNovedades(a, "A")).toEqual({ evento: "acepta", version: VERSION_POLITICA, registradoEn: AHORA.toISOString(), canal: "alta" });
-    retirarNovedades(a, "A", { canal: "mis-datos", ahora: AHORA });
-    expect(leerNovedades(a, "A")).toMatchObject({ evento: "retira", canal: "mis-datos" });
-  });
-
-  it("sin registro o con un camino desconocido se lee como que no las recibe", () => {
-    expect(leerNovedades(almacen(), "A")).toBeNull();
-    const a = almacen({
-      "u:A:lh-novedades": JSON.stringify({ evento: "acepta", version: VERSION_POLITICA, registradoEn: AHORA.toISOString(), canal: "otro" }),
-    });
-    expect(leerNovedades(a, "A")).toBeNull();
-  });
-
-  it("la casilla sin marcar escribe retira si no había elección, y no pisa una anterior", () => {
-    const a = almacen();
-    registrarEleccionNovedades(a, "A", false, { canal: "alta" });
-    expect(leerNovedades(a, "A")?.evento).toBe("retira");
-    registrarEleccionNovedades(a, "A", true, { canal: "al-entrar" });
-    expect(leerNovedades(a, "A")).toMatchObject({ evento: "acepta", canal: "al-entrar" });
-    registrarEleccionNovedades(a, "A", false, { canal: "nueva-version" });
-    expect(leerNovedades(a, "A")).toMatchObject({ evento: "acepta", canal: "al-entrar" });
-  });
-
-  it("la exportación lo incluye y no entra en NOMBRES_BASE", () => {
-    const a = almacen();
-    darNovedades(a, "A", { canal: "alta", ahora: AHORA });
-    const datos = exportarMisDatos({ almacen: a, idPersona: "A", email: null, billetera: null }).datos as Record<string, unknown>;
-    expect(datos.novedades).toMatchObject({ evento: "acepta" });
+  it("la descarga las trae de las filas del servidor y no entran en NOMBRES_BASE", () => {
+    const filas = [
+      { tipo: "politica", evento: "acepta", version: VERSION_POLITICA, canal: "alta", idioma: null, registradoAt: "2026-11-23T10:00:00.000Z", aceptadoEnCliente: null },
+      { tipo: "novedades", evento: "acepta", version: VERSION_POLITICA, canal: "alta", idioma: null, registradoAt: "2026-11-23T10:00:00.000Z", aceptadoEnCliente: null },
+    ];
+    const datos = exportarMisDatos({ almacen: almacen(), idPersona: "A", email: null, billetera: null, filas }).datos as Record<string, unknown>;
+    expect(datos.novedades).toEqual([filas[1]]);
+    expect(datos.consentimiento).toEqual([filas[0]]);
     expect(Object.values(NOMBRES_BASE)).not.toContain("lh-novedades");
     expect(Object.keys(NOMBRES_BASE)).not.toContain("novedades");
   });
@@ -307,18 +367,27 @@ describe("exportar mis datos", () => {
     const a = almacen({
       "u:A:lh-perfil": JSON.stringify({ nombre: "Ana" }),
       "u:A:lh-pactos": JSON.stringify({ comunidades: {} }),
-      "u:A:lh-consentimiento": JSON.stringify({ version: VERSION_POLITICA }),
+      "u:A:lh-consentimiento-sensibles": JSON.stringify({ version: VERSION_POLITICA, aceptadoEn: "2026-10-02T00:00:00.000Z" }),
     });
-    const r = exportarMisDatos({ almacen: a, idPersona: "A", email: "ana@prueba.test", billetera: null, ahora: AHORA });
+    const fila = { tipo: "politica", evento: "acepta", version: VERSION_POLITICA, canal: "alta", idioma: null, registradoAt: "2026-10-01T00:00:00.000Z", aceptadoEnCliente: null };
+    const r = exportarMisDatos({ almacen: a, idPersona: "A", email: "ana@prueba.test", billetera: null, filas: [fila], ahora: AHORA });
     expect(r.exportadoEn).toBe("2026-10-14T15:30:00.000Z");
     expect(r.persona).toEqual({ email: "ana@prueba.test", billetera: null });
     const datos = r.datos as Record<string, unknown>;
     expect(datos.perfilDatos).toEqual({ nombre: "Ana" });
     expect(datos.pactos).toEqual({ comunidades: {} });
-    expect(datos.consentimiento).toEqual({ version: VERSION_POLITICA });
+    expect(datos.consentimiento).toEqual([fila]);
+    expect(datos.novedades).toEqual([]);
+    expect(datos.consentimientoSensibles).toEqual({ version: VERSION_POLITICA, aceptadoEn: "2026-10-02T00:00:00.000Z" });
     // El dato que falta no es cero ni vacío.
     expect(datos.kyc).toBeNull();
     expect(datos.semillasRonda).toBeNull();
+  });
+
+  it("si el servidor no respondió, el consentimiento sale como null (sin dato), no como lista vacía", () => {
+    const datos = exportarMisDatos({ almacen: almacen(), idPersona: "A", email: null, billetera: null }).datos as Record<string, unknown>;
+    expect(datos.consentimiento).toBeNull();
+    expect(datos.novedades).toBeNull();
   });
 
   it("no incluye nada de otra persona ni de antes del login", () => {

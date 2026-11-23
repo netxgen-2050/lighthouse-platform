@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useSesion } from "@/components/sesion/contexto";
 import { borrarDemo } from "@/lib/demo/borrar";
 import { CLAVES_COMPARTIDAS } from "@/lib/demo/claves";
 import { quitarConstanciasDe } from "@/lib/pactos/registro-compartido";
-import { retirarConsentimiento, type CanalConsentimiento } from "@/lib/privacidad/consentimiento";
+import { borrarSensibles, cambiarNovedadesEnServidor, pedirConsentimiento, publicarEstado, retirarEnServidor } from "@/lib/privacidad/consentimiento";
+import type { CanalRegistrado } from "@/lib/privacidad/estado";
 import { exportarMisDatos, nombreArchivoDatos } from "@/lib/privacidad/exportar";
 import { fechaYHora } from "@/lib/privacidad/fecha";
-import { darNovedades, leerNovedades, retirarNovedades, type CanalNovedades, type Novedades } from "@/lib/privacidad/novedades";
-import { useConsentimiento } from "@/lib/privacidad/usar-consentimiento";
 import { RESPONSABLE } from "@/lib/privacidad/politica";
 import { armarContexto } from "@/lib/reportes/reporte";
 
@@ -37,32 +36,18 @@ function Seccion({ id, titulo, children }: { id: string; titulo: string; childre
 }
 
 /** El camino por el que aceptó, en palabras; sin camino (registro anterior a `consentimiento-alta`) es "sin dato". */
-const CAMINO_CONSENTIMIENTO: Record<CanalConsentimiento, string> = {
+const CAMINO: Record<CanalRegistrado, string> = {
   alta: "al crear tu cuenta",
   "al-entrar": "al entrar",
   "nueva-version": "cuando cambió la política",
-};
-
-const CAMINO_NOVEDADES: Record<CanalNovedades, string> = {
-  ...CAMINO_CONSENTIMIENTO,
   "mis-datos": "desde Mis datos",
 };
 
 export function MisDatosCliente() {
-  const { sesion, estado, billetera, salir, cabeceras } = useSesion();
-  const { registro } = useConsentimiento(sesion?.idPersona ?? null);
-  const idPersona = sesion?.idPersona ?? null;
-  const [novedades, setNovedades] = useState<Novedades | null>(null);
+  const { sesion, estado, billetera, salir, cabeceras, detalleConsentimiento } = useSesion();
+  // La constancia y las novedades salen del servidor (`consentimiento-en-la-base`).
+  const { registro, novedades } = detalleConsentimiento;
   const [anuncioNovedades, setAnuncioNovedades] = useState({ n: 0, texto: "" });
-  useEffect(() => {
-    if (!idPersona) return;
-    try {
-      // Lectura del almacenamiento del navegador tras hidratar.
-      setNovedades(leerNovedades(window.localStorage, idPersona));
-    } catch {
-      setNovedades(null);
-    }
-  }, [idPersona]);
   const [descarga, setDescarga] = useState<{ n: number; texto: string; error: boolean }>({ n: 0, texto: "", error: false });
   const [confirmando, setConfirmando] = useState(false);
   const [falloRetiro, setFalloRetiro] = useState(false);
@@ -72,14 +57,17 @@ export function MisDatosCliente() {
 
   if (estado !== "ok" || !sesion) return null;
 
-  function descargar() {
+  async function descargar() {
     if (!sesion) return;
     try {
+      // Las filas del libro de consentimientos vienen del servidor; si no responde, esa parte sale como null (sin dato).
+      const delServidor = await pedirConsentimiento(cabeceras, { filas: true });
       const datos = exportarMisDatos({
         almacen: window.localStorage,
         idPersona: sesion.idPersona,
         email: sesion.email,
         billetera,
+        filas: delServidor?.filas ?? null,
       });
       const nombre = nombreArchivoDatos();
       const url = URL.createObjectURL(new Blob([JSON.stringify(datos, null, 2)], { type: "application/json" }));
@@ -101,15 +89,13 @@ export function MisDatosCliente() {
     }
   }
 
-  function cambiarNovedades(dar: boolean) {
+  async function cambiarNovedades(dar: boolean) {
     if (!sesion) return;
-    const canal = { canal: "mis-datos" as const };
-    const guardado = dar ? darNovedades(window.localStorage, sesion.idPersona, canal) : retirarNovedades(window.localStorage, sesion.idPersona, canal);
-    if (!guardado) {
-      setAnuncioNovedades((a) => ({ n: a.n + 1, texto: "Error: tu navegador no deja guardar este cambio." }));
+    const nuevo = await cambiarNovedadesEnServidor(cabeceras, sesion.idPersona, dar);
+    if (!nuevo) {
+      setAnuncioNovedades((a) => ({ n: a.n + 1, texto: "Error: no pudimos guardar este cambio. Probá de nuevo." }));
       return;
     }
-    setNovedades(leerNovedades(window.localStorage, sesion.idPersona));
     setAnuncioNovedades((a) => ({
       n: a.n + 1,
       texto: dar ? "Listo: pediste recibir novedades por email." : "Listo: dejaste de recibir novedades por email.",
@@ -117,17 +103,22 @@ export function MisDatosCliente() {
   }
 
   async function retirar() {
-    // Retirar el consentimiento general también retira las novedades. Primero ellas y después el general: si algo falla,
-    // nunca queda el general retirado con las novedades vigentes.
-    if (sesion && leerNovedades(window.localStorage, sesion.idPersona)?.evento === "acepta") {
-      retirarNovedades(window.localStorage, sesion.idPersona, { canal: "mis-datos" });
+    if (!sesion) return;
+    // Primero el servidor: una sola transacción agrega las filas `retira` (novedades si estaban aceptadas, política y términos,
+    // en ese orden) y no borra ninguna. Si no responde no se toca nada del navegador y la sesión sigue abierta.
+    const retirado = await retirarEnServidor(cabeceras, sesion.idPersona);
+    if (!retirado) {
+      setFalloRetiro(true);
+      return;
     }
-    // Primero se borra (con la persona todavía en sesión: las claves llevan su prefijo) y recién después se sale.
+    // Después se borra (con la persona todavía en sesión: las claves llevan su prefijo) y recién después se sale.
     const fallidas = borrarDemo((c) => window.localStorage.removeItem(c));
     // Sus constancias de pactos también salen del registro compartido (las de otras personas quedan).
-    if (sesion && !quitarConstanciasDe(sesion.idPersona)) fallidas.push(CLAVES_COMPARTIDAS.pactosConstancias);
-    const consentimientoQuitado = sesion ? retirarConsentimiento(window.localStorage, sesion.idPersona) : false;
-    if (fallidas.length > 0 || !consentimientoQuitado) {
+    if (!quitarConstanciasDe(sesion.idPersona)) fallidas.push(CLAVES_COMPARTIDAS.pactosConstancias);
+    const sensiblesQuitados = borrarSensibles(window.localStorage, sesion.idPersona);
+    if (fallidas.length > 0 || !sensiblesQuitados) {
+      // El servidor ya registró el retiro: la app lo sabe aunque no se haya podido borrar todo del navegador.
+      publicarEstado(sesion.idPersona, retirado);
       setFalloRetiro(true);
       return;
     }
@@ -181,7 +172,7 @@ export function MisDatosCliente() {
           Un archivo JSON con todo lo que el prototipo guarda de vos ({sesion.email}): tu perfil, tus pactos, tus Semillas, tus
           contactos y lo demás. No incluye nada de otras personas. Lo que no cargaste figura como “null” (sin dato).
         </p>
-        <button type="button" onClick={descargar} className={BOTON_PRIMARIO}>
+        <button type="button" onClick={() => void descargar()}className={BOTON_PRIMARIO}>
           Descargar mis datos
         </button>
         <p role="status" className={`text-sm font-medium ${descarga.error ? "text-danger" : ""}`}>
@@ -193,7 +184,7 @@ export function MisDatosCliente() {
         {registro ? (
           <p className="text-sm">
             Aceptaste la versión {registro.version} el {fechaYHora(registro.aceptadoEn)}
-            {registro.canal ? `, ${CAMINO_CONSENTIMIENTO[registro.canal]}.` : ". Camino: sin dato."}
+            {registro.canal ? `, ${CAMINO[registro.canal]}.` : ". Camino: sin dato."}
           </p>
         ) : (
           <p className="text-sm">Sin dato: no hay un consentimiento registrado.</p>
@@ -208,11 +199,11 @@ export function MisDatosCliente() {
       <Seccion id="novedades" titulo="Novedades por email">
         <p className="text-sm">
           {novedades?.evento === "acepta"
-            ? `Pediste recibir novedades por email el ${fechaYHora(novedades.registradoEn)}, ${CAMINO_NOVEDADES[novedades.canal]}.`
+            ? `Pediste recibir novedades por email el ${fechaYHora(novedades.registradoAt)}, ${novedades.canal ? CAMINO[novedades.canal] : "camino: sin dato"}.`
             : "No recibís novedades por email."}
         </p>
         <p className="text-sm text-muted">Es opcional y no cambia tu consentimiento de la política. Prototipo: todavía no mandamos emails.</p>
-        <button type="button" onClick={() => cambiarNovedades(novedades?.evento !== "acepta")} className={BOTON_SECUNDARIO}>
+        <button type="button" onClick={() => void cambiarNovedades(novedades?.evento !== "acepta")} className={BOTON_SECUNDARIO}>
           {novedades?.evento === "acepta" ? "Dejar de recibir novedades" : "Quiero recibir novedades"}
         </button>
         <p role="status" className="text-sm font-medium">

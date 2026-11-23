@@ -2,6 +2,8 @@
 
 import { createContext, useContext } from "react";
 import type { Nivel } from "@/lib/permisos/niveles";
+import type { Consentimiento } from "@/lib/privacidad/consentimiento";
+import type { RegistroNovedades } from "@/lib/privacidad/estado";
 import type { EstadoConsentimiento } from "@/lib/privacidad/usar-consentimiento";
 import type { Persona } from "@/lib/sesion/personas";
 
@@ -56,6 +58,17 @@ export type ValorSesion = {
    * "pendiente" si nunca aceptó o la política cambió. Ver `lib/privacidad/consentimiento.ts`.
    */
   consentimiento: EstadoConsentimiento;
+  /**
+   * Lo que el servidor guardó del consentimiento de la persona (constancia, novedades) y si dio el de datos sensibles (KYC).
+   * Se carga una vez con la sesión; `aceptarEnServidor` y compañía lo actualizan (`lib/privacidad/consentimiento.ts`).
+   */
+  detalleConsentimiento: {
+    registro: Consentimiento | null;
+    novedades: RegistroNovedades | null;
+    sensibles: boolean;
+  };
+  /** ¿Falló guardar la aceptación que la persona dio en el paso, al entrar? La pantalla de consentimiento lo avisa. */
+  falloAceptacionPrevia: boolean;
   /** Tribu que lidera (Plan Tribu), o null. */
   tribuLider: string | null;
   salir: () => Promise<void>;
