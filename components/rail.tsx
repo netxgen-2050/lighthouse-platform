@@ -1,4 +1,4 @@
-import { destinosDeGrupo, etiquetaDeDestino, tituloGrupoInterno } from "@/lib/navegacion";
+import { destinosDeGrupo, destinosDelMenu, etiquetaDeDestino, tituloGrupoInterno } from "@/lib/navegacion";
 import { idiomaDelPedido } from "@/lib/idioma/servidor";
 import { textos } from "@/lib/idioma/textos";
 import { RailAdmin } from "./rail-admin";
@@ -10,7 +10,7 @@ import { RailEnlaces } from "./rail-enlaces";
 export async function Rail() {
   const idioma = await idiomaDelPedido();
   const t = textos("marco", idioma);
-  const items = destinosDeGrupo("principal").map((d) => ({
+  const items = destinosDelMenu().map((d) => ({
     href: d.href,
     etiqueta: etiquetaDeDestino(d, idioma),
     icono: <d.icono aria-hidden="true" size={20} />,

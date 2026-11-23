@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { esActivoEnSecciones } from "@/lib/ruta-activa";
+import { itemActivo } from "@/lib/ruta-activa";
 import type { ItemRail } from "./rail-enlaces";
 import { useSesion } from "./sesion/contexto";
 
@@ -45,6 +45,7 @@ export function MenuCelular({
   }, [abierto]);
 
   const todos = verAdmin ? [...items, admin] : items;
+  const marcado = itemActivo(todos, ruta);
   return (
     <div className="mr-auto md:hidden">
       <button
@@ -66,12 +67,13 @@ export function MenuCelular({
         >
           <ul className="flex flex-col">
             {todos.map((e) => {
-              const activo = esActivoEnSecciones(e.href, e.secciones, ruta);
+              const activo = marcado === e;
               return (
                 <li key={e.href}>
                   <Link
                     href={e.href}
                     aria-current={activo ? "page" : undefined}
+                    onClick={() => setAbierto(false)}
                     className={`flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-ink hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep ${activo ? "bg-surface-2 font-bold underline underline-offset-4" : ""}`}
                   >
                     {e.icono}

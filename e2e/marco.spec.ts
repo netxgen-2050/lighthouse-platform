@@ -156,6 +156,39 @@ test("celular 390 x 844: el rail se oculta y el botón Menú abre los destinos; 
   await expect(boton).toHaveAttribute("aria-expanded", "false");
 });
 
+test("celular: elegir el destino donde ya estás también cierra el panel", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const boton = page.getByRole("button", { name: "Menú", exact: true });
+  for (const [ruta, destino] of [["/", "Explorar"], ["/sumarte", "Sumarte"]]) {
+    await page.goto(ruta);
+    await boton.click();
+    await expect(boton).toHaveAttribute("aria-expanded", "true");
+    await page.locator("#menu-celular").getByRole("link", { name: destino }).click();
+    await expect(page.locator("#menu-celular")).toHaveCount(0);
+    await expect(boton).toHaveAttribute("aria-expanded", "false");
+  }
+});
+
+test.describe("sin sesión", () => {
+  test.use({ rol: "ninguno" });
+
+  test("celular 390 px: la barra muestra Menú, el selector de idioma, Sumarte y Entrar sin desbordar", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    const barra = page.getByRole("banner");
+    await expect(barra.getByRole("button", { name: "Menú", exact: true })).toBeVisible();
+    await expect(barra.getByRole("group", { name: "Idioma · Language" })).toBeVisible();
+    await expect(barra.getByRole("link", { name: "Sumarte" })).toBeVisible();
+    await expect(barra.getByRole("button", { name: "Entrar" })).toBeVisible();
+    const caja = (await barra.boundingBox())!;
+    expect(caja.x + caja.width).toBeLessThanOrEqual(390);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+    // Los destinos del panel están habilitados sin sesión.
+    await barra.getByRole("button", { name: "Menú", exact: true }).click();
+    await expect(page.locator("#menu-celular").getByRole("link")).toHaveText(["Explorar", "Bien común", "Sumarte"]);
+  });
+});
+
 test("celular: Escape cierra el menú y el foco vuelve al botón; tocar el botón otra vez también lo cierra", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");

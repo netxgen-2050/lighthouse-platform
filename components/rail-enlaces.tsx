@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { esActivoEnSecciones } from "@/lib/ruta-activa";
+import { itemActivo } from "@/lib/ruta-activa";
 
 export type ItemRail = {
   href: string;
@@ -22,10 +22,11 @@ export const CLASE_PASTILLA =
 /** Los destinos principales del rail, sin títulos de grupo. Con la sesión o sin ella se ven todos habilitados. */
 export function RailEnlaces({ items }: { items: ItemRail[] }) {
   const ruta = usePathname();
+  const marcado = itemActivo(items, ruta);
   return (
     <ul className="flex flex-col items-stretch gap-1">
       {items.map((e) => {
-        const activo = esActivoEnSecciones(e.href, e.secciones, ruta);
+        const activo = marcado === e;
         return (
           <li key={e.href}>
             <Link href={e.href} aria-current={activo ? "page" : undefined} className={CLASE_ITEM}>

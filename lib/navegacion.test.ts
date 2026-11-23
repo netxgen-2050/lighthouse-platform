@@ -1,7 +1,7 @@
 import { readdirSync } from "node:fs";
 import path from "node:path";
 import { expect, test } from "vitest";
-import { DESTINOS, destinoActivo, destinosDeGrupo, destinosDisponibles, etiquetaDeDestino } from "./navegacion";
+import { DESTINOS, destinoActivo, destinosDeGrupo, destinosDelMenu, destinosDisponibles, etiquetaDeDestino } from "./navegacion";
 import { esActivo } from "./ruta-activa";
 
 const APP = path.resolve(__dirname, "..", "app");
@@ -96,6 +96,20 @@ test("destinoActivo: Explorar abarca sus cuatro secciones y las páginas en paus
   expect(clave("/pactos/x")).toBeUndefined();
   expect(clave("/congreso/en")).toBeUndefined();
   expect(clave("/perfil")).toBeUndefined();
+});
+
+test("con `oculto` puesto el menú trae solo los principales; quitándolo, Compromisos vuelve después de los cinco", () => {
+  const etiquetas = () => destinosDelMenu().map((d) => etiquetaDeDestino(d, "es"));
+  expect(etiquetas()).toEqual(["Explorar", "Bien común", "Sumarte"]);
+  const compromisos = DESTINOS.find((d) => d.href === "/compromisos") as { oculto?: true };
+  compromisos.oculto = undefined;
+  try {
+    expect(etiquetas()).toEqual(["Explorar", "Bien común", "Sumarte", "Compromisos"]);
+    expect(destinoActivo("/compromisos")?.clave).toBe("compromisos");
+  } finally {
+    compromisos.oculto = true;
+  }
+  expect(etiquetas()).toEqual(["Explorar", "Bien común", "Sumarte"]);
 });
 
 test("Lotes existe y aparece en la subnavegación de Explorar", () => {

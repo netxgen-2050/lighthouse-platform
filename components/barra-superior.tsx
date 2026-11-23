@@ -1,4 +1,4 @@
-import { destinosDeGrupo, etiquetaDeDestino } from "@/lib/navegacion";
+import { destinosDeGrupo, destinosDelMenu, etiquetaDeDestino } from "@/lib/navegacion";
 import { idiomaDelPedido } from "@/lib/idioma/servidor";
 import { textos } from "@/lib/idioma/textos";
 import { Campanita } from "./campanita";
@@ -23,7 +23,7 @@ export async function BarraSuperior() {
     icono: <d.icono aria-hidden="true" size={16} />,
   }));
   const t = textos("marco", idioma);
-  const principales = destinosDeGrupo("principal").map((d) => ({
+  const principales = destinosDelMenu().map((d) => ({
     href: d.href,
     etiqueta: etiquetaDeDestino(d, idioma),
     icono: <d.icono aria-hidden="true" size={20} />,

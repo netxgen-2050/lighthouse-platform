@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { marco } from "@/lib/idioma/textos/marco";
 import type { Idioma } from "@/lib/idioma/tipos";
-import { esActivoEnSecciones } from "@/lib/ruta-activa";
+import { itemActivo } from "@/lib/ruta-activa";
 
 /**
  * "principal": los cinco destinos del menú. "explorar": la subnavegación de Explorar. "persona": menú del avatar.
@@ -108,7 +108,15 @@ export function destinosDeGrupo(grupo: IdGrupo) {
   return destinosDisponibles().filter((d) => d.grupo === grupo && !d.oculto);
 }
 
-/** El destino principal marcado como actual en una ruta, o ninguno (en las páginas en pausa no hay ninguno). */
+/**
+ * Los destinos que dibujan el rail y el menú del celular: los cinco principales y, después, cualquier destino en pausa
+ * al que se le quite la marca `oculto` (así vuelve al menú sin tocar nada más). Con `oculto` puesto no se ve ninguno.
+ */
+export function destinosDelMenu() {
+  return [...destinosDeGrupo("principal"), ...destinosDeGrupo("pausa")];
+}
+
+/** El destino del menú marcado como actual en una ruta, o ninguno (en las páginas en pausa ocultas no hay ninguno). */
 export function destinoActivo(ruta: string): Destino | undefined {
-  return DESTINOS.filter((d) => d.grupo === "principal").find((d) => esActivoEnSecciones(d.href, d.secciones, ruta));
+  return itemActivo(destinosDelMenu(), ruta);
 }
