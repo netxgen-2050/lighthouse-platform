@@ -5,8 +5,18 @@ import { normalizarEmail, type Persona } from "./personas";
 import type { Verificada } from "./verificar";
 
 export type PersonaDeLaSesion =
-  | { estado: 200; persona: Persona; personaId: string | null; idPersona: string }
+  | { estado: 200; persona: Persona; personaId: string | null; idPersona: string; clavesAnteriores: string[] }
   | { estado: 403 };
+
+type ResultadoBusqueda = { estado: 200; persona: Persona; personaId: string | null; idPersona: string } | { estado: 403 };
+
+/**
+ * El valor exacto que `idPersona` tuvo para una cuenta antes de ser `personas.id` (login-neon-auth, design §4): Privy, su
+ * id tal cual (`did:privy:…`); Neon Auth, `neon-auth:<id>`. Es también el `idPersona` de una persona nueva todavía sin fila.
+ */
+export function claveAnterior(proveedor: "privy" | "neon-auth", idExterno: string): string {
+  return proveedor === "privy" ? idExterno : `neon-auth:${idExterno}`;
+}
 
 const EMAIL_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -53,10 +63,28 @@ export async function personaDeLaSesion(
   entorno: { LH_ACCESO?: string },
   log: (mensaje: string) => void = (m) => console.warn(`[sesion] ${m}`),
 ): Promise<PersonaDeLaSesion> {
+  const r = await buscarPersona(db, verificada, entorno, log);
+  if (r.estado !== 200) return r;
+  // Claves del navegador (design §4): todas las que `idPersona` tuvo para esta persona, también la de la cuenta actual.
+  let clavesAnteriores: string[] = [];
+  if (r.personaId && !verificada.prueba) {
+    const filas = await db.select({ proveedor: cuentas.proveedor, idExterno: cuentas.idExterno }).from(cuentas).where(eq(cuentas.personaId, r.personaId));
+    clavesAnteriores = [...new Set(filas.map((c) => claveAnterior(c.proveedor, c.idExterno)))];
+  }
+  return { ...r, clavesAnteriores };
+}
+
+async function buscarPersona(
+  db: Db,
+  verificada: Verificada,
+  entorno: { LH_ACCESO?: string },
+  log: (mensaje: string) => void,
+): Promise<ResultadoBusqueda> {
   const { identidad, prueba } = verificada;
-  const idPersona = identidad.idExterno;
-  const ok = (f: FilaPersona): PersonaDeLaSesion =>
-    f.acceso ? { estado: 200, persona: aPersona(f), personaId: f.id, idPersona } : { estado: 403 };
+  // En el modo de prueba sigue `prueba:<email>`; si no, la clave es `personas.id`, y sin fila todavía, la clave de la cuenta.
+  const idPersona = claveAnterior(identidad.proveedor, identidad.idExterno);
+  const ok = (f: FilaPersona): ResultadoBusqueda =>
+    f.acceso ? { estado: 200, persona: aPersona(f), personaId: f.id, idPersona: prueba ? identidad.idExterno : f.id } : { estado: 403 };
 
   // 1. Por cuenta (el modo de prueba no tiene cuentas).
   if (!prueba) {
@@ -94,10 +122,10 @@ async function vincular(
   db: Db,
   existente: FilaPersona,
   identidad: Verificada["identidad"],
-  ok: (f: FilaPersona) => PersonaDeLaSesion,
+  ok: (f: FilaPersona) => ResultadoBusqueda,
   log: (mensaje: string) => void,
-): Promise<PersonaDeLaSesion> {
-  const rechazo = (): PersonaDeLaSesion => {
+): Promise<ResultadoBusqueda> {
+  const rechazo = (): ResultadoBusqueda => {
     log("otra cuenta del mismo proveedor con el email de una persona ya vinculada: no se vincula");
     return { estado: 403 };
   };

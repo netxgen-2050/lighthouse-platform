@@ -16,6 +16,8 @@ export async function sesionDeLaPagina(): Promise<ResultadoSesion> {
   return sesionDeCabeceras({
     authorization: token ? `Bearer ${token}` : null,
     prueba: prueba ? decodificar(prueba) : null,
+    // La sesión de Neon Auth viaja en su propia cookie: se la pasa tal cual al adaptador.
+    cookie: jar.toString(),
   });
 }
 

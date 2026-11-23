@@ -1,15 +1,9 @@
 import type { IdentidadExterna } from "./identidad";
 import { modoPruebaActivo, normalizarEmail } from "./personas";
+import { adaptadorPrivy, type ClientePrivy } from "./proveedores/privy";
+import type { ClienteIdentidad } from "./proveedores/puerto";
 
-/** Lo mínimo que usamos del cliente de Privy en el servidor (se simula en los tests). */
-export type ClientePrivy = {
-  verifyAuthToken(token: string): Promise<{ userId: string }>;
-  getUser(userId: string): Promise<{
-    id: string;
-    email?: { address: string } | null;
-    google?: { email: string } | null;
-  }>;
-};
+export type { ClientePrivy };
 
 export type Entorno = { LH_AUTH_PRUEBA?: string; VERCEL_ENV?: string; LH_ACCESO?: string };
 
@@ -25,44 +19,47 @@ export function esEmailDePrueba(email: string): boolean {
 
 /**
  * Verifica quién pide y devuelve su identidad en nuestro vocabulario; no busca a la persona (eso es `personaDeLaSesion`).
- * 401 sin sesión o con token inválido, 503 si el servidor no tiene Privy configurado. La cabecera de prueba solo vale con
- * `modoPruebaActivo` y con un email `.test` (si no, 403, también en local).
+ * Orden (login-neon-auth, design §1): (1) cabecera del modo de prueba, solo con `modoPruebaActivo` y un email `.test` (si no,
+ * 403, también en local); (2) los proveedores en su orden (Privy y después Neon Auth); (3) nada, 401. Algo que no se puede
+ * verificar es 401; una sesión de Neon Auth con el email sin verificar es 403. Con un token pero ningún proveedor
+ * configurado, 503.
  */
-export async function resolverSesion(
-  cabeceras: { authorization: string | null; prueba: string | null },
-  entorno: Entorno,
-  crearCliente: () => ClientePrivy | null,
-): Promise<Resultado> {
-  if (cabeceras.prueba && modoPruebaActivo(entorno)) {
-    const email = normalizarEmail(cabeceras.prueba);
+export async function resolverIdentidad(req: Request, entorno: Entorno, proveedores: ClienteIdentidad[]): Promise<Resultado> {
+  const prueba = req.headers.get("x-lh-prueba");
+  if (prueba && modoPruebaActivo(entorno)) {
+    const email = normalizarEmail(prueba);
     if (!esEmailDePrueba(email)) return { estado: 403 };
     // En el modo de prueba el "id de Privy" es el email, para que los datos queden separados por persona.
     return { estado: 200, prueba: true, identidad: { proveedor: "privy", idExterno: `prueba:${email}`, email, emailVerificado: true } };
   }
 
-  const token = /^Bearer\s+(.+)$/i.exec(cabeceras.authorization ?? "")?.[1]?.trim();
-  if (!token) return { estado: 401 };
+  if (proveedores.length === 0) return /^Bearer\s+\S/i.test(req.headers.get("authorization") ?? "") ? { estado: 503 } : { estado: 401 };
 
-  const cliente = crearCliente();
-  if (!cliente) return { estado: 503 };
-
-  let usuario: Awaited<ReturnType<ClientePrivy["getUser"]>>;
-  try {
-    const claims = await cliente.verifyAuthToken(token);
-    usuario = await cliente.getUser(claims.userId);
-  } catch {
-    return { estado: 401 };
+  for (const proveedor of proveedores) {
+    const r = await proveedor.identidad(req);
+    if (r === null) continue;
+    if (r === "invalida") return { estado: 401 };
+    if (r.proveedor === "neon-auth" && !r.emailVerificado) return { estado: 403 };
+    return { estado: 200, prueba: false, identidad: r };
   }
-  // Privy verifica el email con un código o con Google: los dos caminos cuentan como verificados.
-  const email = usuario.email?.address ?? usuario.google?.email ?? null;
-  return {
-    estado: 200,
-    prueba: false,
-    identidad: {
-      proveedor: "privy",
-      idExterno: usuario.id,
-      email: email ? normalizarEmail(email) : null,
-      emailVerificado: email !== null,
-    },
-  };
+  return { estado: 401 };
+}
+
+/** Pedido mínimo con las cabeceras que acreditan la sesión (las páginas del servidor no tienen el `Request`). */
+export function pedidoDeCabeceras(cabeceras: { authorization?: string | null; prueba?: string | null; cookie?: string | null }): Request {
+  const h = new Headers();
+  if (cabeceras.authorization) h.set("authorization", cabeceras.authorization);
+  if (cabeceras.prueba) h.set("x-lh-prueba", cabeceras.prueba);
+  if (cabeceras.cookie) h.set("cookie", cabeceras.cookie);
+  return new Request("http://interno.invalid/", { headers: h });
+}
+
+/** Solo Privy (el camino de antes de Neon Auth): lo conservan los tests de Privy y de la cabecera de prueba. */
+export async function resolverSesion(
+  cabeceras: { authorization: string | null; prueba: string | null },
+  entorno: Entorno,
+  crearCliente: () => ClientePrivy | null,
+): Promise<Resultado> {
+  const proveedores = crearCliente() ? [adaptadorPrivy(crearCliente)] : [];
+  return resolverIdentidad(pedidoDeCabeceras(cabeceras), entorno, proveedores);
 }

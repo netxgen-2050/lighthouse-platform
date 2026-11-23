@@ -50,8 +50,11 @@ describe("personaDeLaSesion", () => {
 
   it("primer login: vincula la cuenta y trae el rol; el segundo no agrega filas", async () => {
     const r = await personaDeLaSesion(db, privy("did:privy:ana", "Ana@Prueba.test"), {});
-    expect(r).toMatchObject({ estado: 200, idPersona: "did:privy:ana", persona: { rol: "admin-tribu", perfil: "inversor", tribuAdmin: "valle" } });
+    expect(r).toMatchObject({ estado: 200, persona: { rol: "admin-tribu", perfil: "inversor", tribuAdmin: "valle" } });
     expect(r.estado === 200 && r.personaId).toBeTruthy();
+    // La clave del navegador es `personas.id`; la anterior (el id de Privy) queda en `clavesAnteriores`.
+    expect(r.estado === 200 && r.idPersona).toBe(r.estado === 200 ? r.personaId : "");
+    expect(r.estado === 200 && r.clavesAnteriores).toEqual(["did:privy:ana"]);
     const [cuenta] = await db.select().from(cuentas);
     expect(cuenta).toMatchObject({ proveedor: "privy", idExterno: "did:privy:ana", emailVerificado: "ana@prueba.test" });
     await personaDeLaSesion(db, privy("did:privy:ana", "ana@prueba.test"), {});

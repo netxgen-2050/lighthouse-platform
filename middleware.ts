@@ -1,14 +1,23 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { COOKIE_IDIOMA, VIGENCIA_COOKIE } from "@/lib/idioma/cookie";
 import { resolverIdioma } from "@/lib/idioma/middleware";
+import { intercambiarVerificador, PARAMETRO_VERIFICADOR } from "@/lib/sesion/proveedores/neon-auth-oauth";
 
 /**
- * Solo idioma (ADR-004): `?lang=` fija la cookie y se quita de la dirección, y `/congreso` pasa a `/congreso/en` cuando el
- * idioma del pedido es inglés. No mira sesión ni permisos. Si algo falla, deja pasar el pedido: nunca una página de error
- * por el idioma.
+ * Idioma (ADR-004): `?lang=` fija la cookie y se quita de la dirección, y `/congreso` pasa a `/congreso/en` cuando el
+ * idioma del pedido es inglés. Y la vuelta de Google con Neon Auth: cambia el verificador por la sesión (login-neon-auth).
+ * No mira permisos. Si algo falla, deja pasar el pedido: nunca una página de error por el idioma ni por el login.
  */
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   try {
+    if (request.nextUrl.searchParams.has(PARAMETRO_VERIFICADOR)) {
+      const vuelta = await intercambiarVerificador(request);
+      if (vuelta) {
+        const cabeceras = new Headers();
+        for (const cookie of vuelta.cookies) cabeceras.append("Set-Cookie", cookie);
+        return NextResponse.redirect(vuelta.redirigir, { headers: cabeceras });
+      }
+    }
     const r = resolverIdioma(
       request.nextUrl,
       request.cookies.get(COOKIE_IDIOMA)?.value,
