@@ -8,10 +8,18 @@ import type { Persona } from "@/lib/sesion/personas";
 export type EstadoSesion = "cargando" | "sin-sesion" | "sin-acceso" | "error" | "ok";
 
 /** Lo que devuelve `/api/sesion`. */
-export type SesionCliente = Persona & { idPersona: string; personaId?: string | null };
+export type SesionCliente = Persona & {
+  idPersona: string;
+  personaId?: string | null;
+  /** Claves que `idPersona` tuvo antes para esta persona (login-neon-auth, design §4); se copian una vez a la nueva. */
+  clavesAnteriores?: string[];
+  /** Nombre que trae el proveedor (por ejemplo de Google), si lo trae. */
+  nombre?: string | null;
+};
 
-/** Lo que usamos de Privy (el SDK solo se importa en `privy-puente.tsx`). */
-export type PrivyMinimo = {
+/** Lo que usamos de la identidad del proveedor de login (el SDK de Privy solo se importa en `privy-puente.tsx`). */
+export type IdentidadMinima = {
+  proveedor: "privy";
   ready: boolean;
   authenticated: boolean;
   email: string | null;
@@ -31,8 +39,8 @@ export type ValorSesion = {
   nombre: string | null;
   /** Dirección abreviable de la billetera embebida de Privy, si existe. */
   billetera: string | null;
-  /** ¿Está configurado Privy en este despliegue? */
-  privyDisponible: boolean;
+  /** ¿Hay un login disponible en este despliegue (Privy configurado, o `NEXT_PUBLIC_LH_LOGIN=neon-auth`)? */
+  loginDisponible: boolean;
   /**
    * Abre el paso con las casillas de consentimiento ("Crear tu cuenta" o "Entrar"). El login (Privy, o "Entrar como…" en el
    * modo de prueba) solo se abre desde ese paso, al aceptar. `alAceptar` corre antes de abrir el login; al cancelar no corre nada.

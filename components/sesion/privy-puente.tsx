@@ -2,13 +2,14 @@
 
 import { PrivyProvider, usePrivy } from "@privy-io/react-auth";
 import { useMemo, type ReactNode } from "react";
-import type { PrivyMinimo } from "./contexto";
+import type { IdentidadMinima } from "./contexto";
 
-function Puente({ hijo }: { hijo: (privy: PrivyMinimo) => ReactNode }) {
+function Puente({ hijo }: { hijo: (privy: IdentidadMinima) => ReactNode }) {
   const { ready, authenticated, user, login, logout, getAccessToken } = usePrivy();
-  const privy = useMemo<PrivyMinimo>(() => {
+  const privy = useMemo<IdentidadMinima>(() => {
     const cuentaBilletera = user?.linkedAccounts.find((c) => c.type === "wallet" && c.walletClientType === "privy");
     return {
+      proveedor: "privy",
       ready,
       authenticated,
       email: user?.email?.address ?? user?.google?.email ?? null,
@@ -26,7 +27,7 @@ function Puente({ hijo }: { hijo: (privy: PrivyMinimo) => ReactNode }) {
  * Único lugar que importa el SDK de Privy. Se carga solo si hay `NEXT_PUBLIC_PRIVY_APP_ID` (ver `ProveedorSesion`):
  * sin Privy (por ejemplo en los e2e) el SDK ni se evalúa.
  */
-export default function PuentePrivy({ appId, hijo }: { appId: string; hijo: (privy: PrivyMinimo) => ReactNode }) {
+export default function PuentePrivy({ appId, hijo }: { appId: string; hijo: (privy: IdentidadMinima) => ReactNode }) {
   const origen = typeof window === "undefined" ? "" : window.location.origin;
   return (
     <PrivyProvider

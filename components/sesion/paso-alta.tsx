@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { VERSION_POLITICA, type ModoAlta } from "@/lib/privacidad/consentimiento";
 import {
   BloqueConsentimiento,
@@ -25,6 +25,8 @@ type Props = {
   alAceptar: (datos: { novedades: boolean }) => boolean;
   /** Cancelar o Escape: no se guarda nada y no se abre el login. */
   alCancelar: () => void;
+  /** Con Neon Auth, el formulario propio de login (login-neon-auth): reemplaza a las casillas, en el mismo diálogo, una vez aceptado. */
+  formulario?: ReactNode;
 };
 
 /**
@@ -32,7 +34,7 @@ type Props = {
  * (lo decide el proveedor de sesión). Dos modos con el mismo bloque y los mismos textos: "Crear tu cuenta" (Sumarte) y "Entrar"
  * (la barra superior y cualquier otro `entrar()`). Diálogo modal nativo: Escape cierra y el foco vuelve a quien lo abrió.
  */
-export function PasoAlta({ abierto, modo, alAceptar, alCancelar }: Props) {
+export function PasoAlta({ abierto, modo, alAceptar, alCancelar, formulario }: Props) {
   const idBase = useId();
   const dialogo = useRef<HTMLDialogElement | null>(null);
   const titulo = useRef<HTMLHeadingElement | null>(null);
@@ -82,7 +84,19 @@ export function PasoAlta({ abierto, modo, alAceptar, alCancelar }: Props) {
       }}
       className="m-auto max-h-[90dvh] w-[min(40rem,calc(100vw-1rem))] overflow-y-auto rounded-xl border border-line bg-surface p-5 text-ink backdrop:bg-ink/50 sm:p-8"
     >
-      {abierto && (
+      {abierto && formulario && (
+        <div>
+          <p className="mb-4 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+            Prototipo interno · datos de ejemplo
+          </p>
+          <h2 id={`${idBase}-titulo`} ref={titulo} tabIndex={-1} className="text-2xl font-semibold focus:outline-none">
+            {titulo_}
+          </h2>
+          <p className="mt-3 mb-4 text-muted">Aceptaste la política y los términos. Ahora elegí cómo entrar.</p>
+          {formulario}
+        </div>
+      )}
+      {abierto && !formulario && (
         <form
           noValidate
           onSubmit={(ev) => {

@@ -5,7 +5,7 @@ import { normalizarEmail, type Persona } from "./personas";
 import type { Verificada } from "./verificar";
 
 export type PersonaDeLaSesion =
-  | { estado: 200; persona: Persona; personaId: string | null; idPersona: string; clavesAnteriores: string[] }
+  | { estado: 200; persona: Persona; personaId: string | null; idPersona: string; clavesAnteriores: string[]; nombre?: string | null }
   | { estado: 403 };
 
 type ResultadoBusqueda = { estado: 200; persona: Persona; personaId: string | null; idPersona: string } | { estado: 403 };
@@ -71,7 +71,7 @@ export async function personaDeLaSesion(
     const filas = await db.select({ proveedor: cuentas.proveedor, idExterno: cuentas.idExterno }).from(cuentas).where(eq(cuentas.personaId, r.personaId));
     clavesAnteriores = [...new Set(filas.map((c) => claveAnterior(c.proveedor, c.idExterno)))];
   }
-  return { ...r, clavesAnteriores };
+  return { ...r, clavesAnteriores, nombre: verificada.identidad.nombre ?? null };
 }
 
 async function buscarPersona(

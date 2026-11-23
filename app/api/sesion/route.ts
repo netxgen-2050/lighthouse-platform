@@ -15,13 +15,14 @@ export async function GET(req: Request) {
   if (r.estado !== 200) {
     return NextResponse.json({ ok: false }, { status: r.estado, headers: { "Cache-Control": "no-store" } });
   }
-  const { persona, idPersona, personaId, clavesAnteriores } = r;
+  const { persona, idPersona, personaId, clavesAnteriores, nombre } = r;
   return NextResponse.json(
     {
       ok: true,
       idPersona,
       clavesAnteriores,
       personaId,
+      nombre: nombre ?? null,
       email: persona.email,
       rol: persona.rol,
       perfil: persona.perfil,

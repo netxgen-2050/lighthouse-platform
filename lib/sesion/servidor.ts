@@ -11,7 +11,7 @@ export function personasDelEntorno() {
 }
 
 export type ResultadoSesion =
-  | { estado: 200; persona: Persona; idPersona: string; personaId: string | null; clavesAnteriores: string[] }
+  | { estado: 200; persona: Persona; idPersona: string; personaId: string | null; clavesAnteriores: string[]; nombre?: string | null }
   | { estado: 401 | 403 | 503 };
 
 /**
