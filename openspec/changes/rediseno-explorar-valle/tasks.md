@@ -1,0 +1,28 @@
+# Tasks
+
+Tercero de los cinco cambios del rediseño. **Orden:** requiere en `dev` `rediseno-sistema-visual`, `rediseno-menu-cinco` y `portada-vrn` (grupo 1). El grupo 2 (Barrio Norte) requiere además `bien-comun-propuesta`, `bien-comun-numeros-barrio` y `lote-token-tierra`; si todavía no están, se construye solo el grupo 1 y el PR lo dice.
+
+## 0. Antes de empezar
+
+- [ ] 0.1 Pedir a Gus la portada de la Memoria Técnica exportada (o su visto bueno para usar `lighthouse-valle.webp`). **Verifica:** el archivo existe en `public/imagenes/` o el PR anota que se usó el de reemplazo.
+
+## 1. Inicio
+
+- [ ] 1.1 Repintar `app/page.tsx`: foto a sangre dentro del contenido con leyenda, título y "Ver los lotes" encima, cifras de `lib/portada-vrn.ts` en `PanelVidrio`, sello general. Leyenda en `lib/idioma/textos/portada.ts` (es/en). **Verifica:** `pnpm build` en verde; `e2e/portada.spec.ts` sigue en verde sin cambiar sus textos esperados.
+- [ ] 1.2 E2E en `e2e/portada.spec.ts`: leyenda "Imagen ilustrativa", cifras con fuente dentro de los paneles, botón de 44 px a 390 px, sin scroll horizontal. **Verifica:** `pnpm test:e2e e2e/portada.spec.ts` en verde.
+
+## 2. Barrio Norte
+
+- [ ] 2.1 `lib/barrios/norte.ts` con test: totales por estado del loteo, "sin dato" para "en cuotas" si el loteo no lo tiene, parte para el común y expensa de `lib/lotes/modelo.ts`, obra de `lib/bien-comun/barrio.ts`, diferencia entre lotes del modelo y del plano. **Verifica:** `pnpm test lib/barrios` en verde; los esperados salen de los módulos, no escritos en el test.
+- [ ] 2.2 `app/barrios/norte/page.tsx` (pública) y `lib/idioma/textos/barrios.ts` (es/en): héroe con foto y sello de venta, lotes por estado con indicadores y chips, bien común en vidrio, enlaces a `/lotes` y `/bien-comun`. Sumar la ruta a `lib/sesion/rutas-publicas.ts`. **Verifica:** `pnpm test lib/sesion lib/idioma` en verde.
+- [ ] 2.3 Panel de la obra (cliente): con sesión, indicadores, `BarraAvance` de lo juntado ("sin dato"), mes de devolución y tabla de lo que llega al común; sin sesión, `EntrarPara`. **Verifica:** e2e de la tarea 2.5; el HTML de `/barrios/norte` sin sesión no contiene el monto de la infraestructura (`curl` al servidor local y `grep`).
+- [ ] 2.4 `/barrios/norte` pasa a `existe: true` en `lib/navegacion.ts`; la subnavegación de Explorar muestra "Barrios". Sumar `app/barrios/` a `lib/lotes/sin-numeros-escritos.test.ts`. **Verifica:** `pnpm test lib/navegacion lib/lotes` en verde.
+- [ ] 2.5 `e2e/barrio-norte.spec.ts`: sin sesión (título, sello de venta, totales por estado con texto, aviso para entrar, sin monto de la obra); con sesión (monto, "sin dato" en lo juntado, mes calculado con `lib/bien-comun/barrio.ts`, sin "rendimiento" ni "APY"); en inglés; 390 px. **Verifica:** `pnpm test:e2e e2e/barrio-norte.spec.ts` en verde.
+
+## 3. Calidad
+
+- [ ] 3.1 Sumar `/barrios/norte` a `e2e/accesibilidad.spec.ts` y a `e2e/descubrir-publico.spec.ts`, en los dos idiomas y los dos temas. **Verifica:** `pnpm test:e2e e2e/accesibilidad.spec.ts e2e/descubrir-publico.spec.ts` en verde.
+
+## 4. Cierre
+
+- [ ] 4.1 **Verifica:** `pnpm verificar` y `pnpm build` en verde; `pnpm exec openspec validate rediseno-explorar-valle --strict` pasa.
