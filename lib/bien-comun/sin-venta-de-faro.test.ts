@@ -66,6 +66,13 @@ test("el detector atrapa 'staking' y no 'mostramos'", () => {
   expect(PROHIBIDAS.test("el Staking de FARO")).toBe(true);
   expect(PROHIBIDAS.test("el precio de FARO")).toBe(true);
   expect(PROHIBIDAS.test("Selling in tranches")).toBe(true);
+  expect(PROHIBIDAS.test("el rendimiento de FARO")).toBe(true);
+  expect(PROHIBIDAS.test("FARO yield")).toBe(true);
+  expect(PROHIBIDAS.test("FARO return")).toBe(true);
+  expect(PROHIBIDAS.test("podés vender FARO")).toBe(true);
+  expect(PROHIBIDAS.test("la venta de FARO")).toBe(true);
+  expect(PROHIBIDAS.test("selling FARO")).toBe(true);
+  expect(PROHIBIDAS.test("sell FARO")).toBe(true);
   expect(PROHIBIDAS.test("mostramos los lotes")).toBe(false);
 });
 
