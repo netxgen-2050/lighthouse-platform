@@ -1,8 +1,9 @@
 import { expect, test, type Page } from "./fixtura";
-import { conAdhesionAlManifiesto, ignorarEnSinRed } from "./ayudas";
+import { conAdhesionAlManifiesto, ignorarEnSinRed, relojDeLasConsultas } from "./ayudas";
 
 // Repartir créditos es participar en la gobernanza: pide haber adherido al manifiesto de Lighthouse VRN.
 test.beforeEach(async ({ page }) => {
+  await relojDeLasConsultas(page);
   await conAdhesionAlManifiesto(page);
 });
 

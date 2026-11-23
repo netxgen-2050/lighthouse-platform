@@ -6,7 +6,6 @@ import { useSesion } from "@/components/sesion/contexto";
 import { TerminoLegal } from "@/components/termino-legal";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { registrarConsentimientoSensible } from "@/lib/privacidad/consentimiento";
-import { useConsentimiento } from "@/lib/privacidad/usar-consentimiento";
 import {
   BORRADOR_VACIO,
   fechaLarga,
@@ -56,8 +55,8 @@ export function KycDialogo({ abierto, kyc, alCerrar, alEnviar, alAprobar, motivo
   const [fallo, setFallo] = useState(false);
   const moverFoco = useRef(false);
   // Los datos de identidad, residencia fiscal y origen de fondos son sensibles: antes del primer paso se pide un consentimiento aparte.
-  const { sesion } = useSesion();
-  const { sensibles } = useConsentimiento(sesion?.idPersona ?? null);
+  const { sesion, detalleConsentimiento } = useSesion();
+  const { sensibles } = detalleConsentimiento;
   const [acepta, setAcepta] = useState(false);
   const [errorConsentimiento, setErrorConsentimiento] = useState<string | null>(null);
 
@@ -86,7 +85,7 @@ export function KycDialogo({ abierto, kyc, alCerrar, alEnviar, alAprobar, motivo
     }
     let guardado = false;
     try {
-      guardado = registrarConsentimientoSensible(window.localStorage);
+      guardado = sesion ? registrarConsentimientoSensible(window.localStorage, sesion.idPersona) : false;
     } catch {
       guardado = false;
     }

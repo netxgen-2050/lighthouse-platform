@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
 import { listarTribus } from "@/lib/tribus/datos";
-import { conAdhesionAlManifiesto, conIdentidadVerificada } from "./ayudas";
+import { conAdhesionAlManifiesto, conIdentidadVerificada, relojDeLasConsultas } from "./ayudas";
 
 const rutas = [
   "/",
@@ -15,6 +15,7 @@ const rutas = [
   "/fogon",
   "/fogon/propuestas/siembra?desde=lighthouse",
   "/netx",
+  "/netx/financiamiento",
   "/netx/comunidad",
   "/pasaporte",
   "/bandeja",
@@ -49,8 +50,8 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 45 rutas auditadas", () => {
-  expect(rutas).toHaveLength(45);
+test("hay 46 rutas auditadas", () => {
+  expect(rutas).toHaveLength(46);
 });
 
 async function graves(page: Page) {
@@ -279,8 +280,8 @@ test("axe sin violaciones serias o críticas: /netx con la tabla del gráfico ab
   expect(await graves(page)).toEqual([]);
 });
 
-test("axe sin violaciones serias o críticas: /?camino=congreso con la tarjeta recomendada", async ({ page }) => {
-  await page.goto("/?camino=congreso&utm_source=newsletter");
+test("axe sin violaciones serias o críticas: /?camino=lotes con la tarjeta recomendada", async ({ page }) => {
+  await page.goto("/?camino=lotes&utm_source=newsletter");
   await expect(page.getByText("Recomendado para vos")).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
@@ -434,12 +435,14 @@ test.describe("/congreso sin sesión", () => {
 });
 
 test("axe sin violaciones serias o críticas: /fogon/consultas", async ({ page }) => {
+  await relojDeLasConsultas(page);
   await page.goto("/fogon/consultas");
   await expect(page.getByRole("heading", { level: 2 })).toHaveCount(4);
   expect(await graves(page)).toEqual([]);
 });
 
 test("axe sin violaciones serias o críticas: /fogon/consultas/u1 abierta, con el reparto a medias y el bloqueo a la vista", async ({ page }) => {
+  await relojDeLasConsultas(page);
   await conAdhesionAlManifiesto(page);
   await page.goto("/fogon/consultas/u1");
   await expect(page.getByRole("region", { name: "Mi reparto" })).toBeVisible();
@@ -451,6 +454,7 @@ test("axe sin violaciones serias o críticas: /fogon/consultas/u1 abierta, con e
 });
 
 test("axe sin violaciones serias o críticas: /fogon/consultas/u4 cerrada, con resultado, tabla de repartos y acta", async ({ page }) => {
+  await relojDeLasConsultas(page);
   await conAdhesionAlManifiesto(page);
   await page.goto("/fogon/consultas/u4");
   await page.getByRole("button", { name: "Sumar un voto a Vivero de nativas" }).click();
@@ -513,6 +517,9 @@ test("axe sin violaciones serias o críticas: /fogon con Ana seleccionada y la l
 for (const ruta of rutas) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);
+    if (ruta === "/bien-comun") {
+      await expect(page.getByLabel("Precio del lote (USD)")).toBeVisible();
+    }
     if (ruta === "/territorios/lighthouse" || ruta === "/territorios/lighthouse?vista=lotes") {
       // El mapa se arma en el navegador: auditar con el sello del común ya puesto.
       await expect(page.locator('[aria-label="Terreno común del Lighthouse"][role="button"]')).toHaveCount(1);
@@ -538,7 +545,7 @@ for (const ruta of rutas) {
 }
 
 // Lotes: la lista y una ficha en inglés, y la ficha con la compra simulada en cada paso (lote-ficha-y-compra).
-for (const ruta of ["/lotes?lang=en", "/lotes/lote-1?lang=en", "/lotes/hibrido?lang=en", "/bien-comun?lang=en"]) {
+for (const ruta of ["/lotes?lang=en", "/lotes/lote-1?lang=en", "/lotes/hibrido?lang=en"]) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -546,14 +553,27 @@ for (const ruta of ["/lotes?lang=en", "/lotes/lote-1?lang=en", "/lotes/hibrido?l
   });
 }
 
+// /bien-comun con sesión: la calculadora aparece cuando se verifica la sesión; se audita ya con el campo puesto.
+for (const [ruta, campo] of [
+  ["/bien-comun", "Precio del lote (USD)"],
+  ["/bien-comun?lang=en", "Lot price (USD)"],
+] as const) {
+  test(`axe sin violaciones serias o críticas: ${ruta} con la calculadora`, async ({ page }) => {
+    await page.goto(ruta);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByLabel(campo)).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+}
+
 test("axe sin violaciones serias o críticas: la ficha de un lote en la reserva, el pago simulado y el boleto, en español y en inglés", async ({ page }) => {
   for (const [ruta, reservar, pagar, confirmar, leido] of [
-    ["/lotes/lote-1", "Reservar (simulado)", "Simular el pago", "Confirmar el pago simulado", "Leí lo que comparto y lo que me comprometo a pagar"],
+    ["/lotes/lote-1", "Reservar (simulado)", "Simular el primer pago (anticipo)", "Confirmar el primer pago simulado", "Leí lo que comparto y lo que me comprometo a pagar"],
     [
       "/lotes/lote-1?lang=en",
       "Reserve (simulated)",
-      "Simulate the payment",
-      "Confirm the simulated payment",
+      "Simulate the first payment (down payment)",
+      "Confirm the simulated first payment",
       "I read what I share and what I commit to pay",
     ],
   ] as const) {
@@ -568,4 +588,42 @@ test("axe sin violaciones serias o críticas: la ficha de un lote en la reserva,
     expect(await graves(page)).toEqual([]);
     await page.evaluate(() => window.localStorage.removeItem("lh-lotes"));
   }
+});
+
+test.describe("pasos previos al login (consentimiento-alta)", () => {
+  test.use({ rol: "ninguno", consentimiento: "ninguno" });
+
+  test("axe sin violaciones serias o críticas: Crear tu cuenta y Entrar, abiertos y con el error a la vista", async ({ page }) => {
+    await page.goto("/sumarte");
+    await page.getByRole("button", { name: "Sumarme gratis" }).click();
+    const alta = page.getByRole("dialog", { name: "Crear tu cuenta" });
+    await expect(alta).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+    await alta.getByRole("button", { name: "Aceptar y crear mi cuenta" }).click();
+    await expect(alta.getByRole("alert")).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+    await alta.getByRole("button", { name: "Cancelar" }).click();
+
+    await page.getByRole("banner").getByRole("button", { name: "Entrar" }).click();
+    const entrar = page.getByRole("dialog", { name: "Entrar" });
+    await expect(entrar).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+    await entrar.getByRole("button", { name: "Aceptar y entrar" }).click();
+    await expect(entrar.getByRole("alert")).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+});
+
+test.describe("Mis datos: novedades por email", () => {
+  // Cambia las novedades de la persona en el servidor, que comparten todos los tests: entra con un email propio.
+  test.use({ rol: "persona", identidad: "propia" });
+
+  test("axe sin violaciones serias o críticas con el bloque de novedades", async ({ page }) => {
+    await page.goto("/mis-datos");
+    await expect(page.getByRole("heading", { name: "Novedades por email" })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+    await page.getByRole("button", { name: "Quiero recibir novedades" }).click();
+    await expect(page.getByRole("button", { name: "Dejar de recibir novedades" })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
 });

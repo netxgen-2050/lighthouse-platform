@@ -29,7 +29,7 @@ describe("cookie de /admin", () => {
   });
   it("salir() (components/sesion/proveedor-sesion.tsx) escribe la cookie borrada de /admin", () => {
     const src = readFileSync(join(__dirname, "../../components/sesion/proveedor-sesion.tsx"), "utf8");
-    const salir = src.slice(src.indexOf("const salir = useCallback"), src.indexOf("const cabeceras = useCallback"));
+    const salir = src.slice(src.indexOf("const salir = useCallback"), src.indexOf("const valor = useMemo"));
     expect(salir).toContain('document.cookie = cookieAdminBorrada(window.location.protocol === "https:")');
   });
   it("al cambiar de rol: se escribe, se renueva con el token nuevo y se borra", () => {

@@ -92,9 +92,13 @@ describe("catálogo legal", () => {
         "retribucionraiz",
         "nftlote",
         "tokenbiencomun",
-        "ventatramos",
-        "stakingbiencomun",
-        "partenetxgen",
+        "fideicomisobarrio",
+        "tokentierra",
+        "tokeninversor",
+        "tesorocomun",
+        "primaobjetivo",
+        "boletocompraventa",
+        "valornegociable",
         "presencia",
         "primeraperdida",
         "remoto",
@@ -115,15 +119,40 @@ describe("catálogo legal", () => {
     );
   });
   it("los ⚖ de los tokens del bien común son borrador, con inglés, y dicen que es una simulación a verificar", () => {
-    for (const clave of ["nftlote", "tokenbiencomun", "ventatramos", "stakingbiencomun", "partenetxgen", "retribucionraiz"] as const) {
+    for (const clave of ["nftlote", "tokenbiencomun", "tesorocomun", "retribucionraiz"] as const) {
       expect(esBorrador(clave), clave).toBe(true);
       expect(terminoEn(clave)?.texto.trim(), clave).toBeTruthy();
       expect(TERMINOS[clave].texto, clave).not.toMatch(/RAIZ|ganancia|retorno|valorizaci/i);
       expect(terminoEn(clave)?.texto, clave).not.toMatch(/RAIZ|profit|return/i);
     }
-    for (const clave of ["nftlote", "tokenbiencomun", "ventatramos", "stakingbiencomun", "partenetxgen"] as const) {
+    for (const clave of ["nftlote", "tokenbiencomun", "fideicomisobarrio", "tokentierra", "tokeninversor", "tesorocomun"] as const) {
       expect(TERMINOS[clave].texto, clave).toContain("A verificar con abogado");
       expect(terminoEn(clave)?.texto, clave).toContain("To be verified with a lawyer");
+    }
+  });
+  it("los ⚖ de la propuesta v0.1 son borrador, con inglés, y dicen que es una propuesta en discusión y una simulación", () => {
+    for (const clave of ["fideicomisobarrio", "tokentierra", "tokeninversor", "tesorocomun"] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+      expect(TERMINOS[clave].texto, clave).toContain("propuesta en discusión");
+      expect(TERMINOS[clave].texto, clave).toContain("simulación");
+      expect(terminoEn(clave)?.texto, clave).toContain("under discussion");
+      expect(terminoEn(clave)?.texto, clave).toContain("simulation");
+    }
+  });
+  it("Token Tierra no arranca antes de la aprobación municipal; Token Inversor no tiene fecha fija", () => {
+    expect(TERMINOS.tokentierra.texto).toContain("Ordenanza 173/2026");
+    expect(TERMINOS.tokentierra.texto).toContain("no está otorgada");
+    expect(terminoEn("tokentierra")?.texto).toContain("Ordinance 173/2026");
+    expect(TERMINOS.tokeninversor.texto).toContain("No hay fecha fija");
+    expect(terminoEn("tokeninversor")?.texto).toContain("no fixed repayment date");
+  });
+  it("tokenbiencomun dice que hoy ser parte del común sale del manifiesto (ADR-031)", () => {
+    expect(TERMINOS.tokenbiencomun.texto).toContain("manifiesto");
+    expect(terminoEn("tokenbiencomun")?.texto).toContain("manifesto");
+  });
+  it("los ⚖ del modelo anterior ya no existen", () => {
+    for (const vieja of ["ventatramos", "stakingbiencomun", "partenetxgen"]) {
+      expect(Object.keys(TERMINOS)).not.toContain(vieja);
     }
   });
   it("los términos del simulador de series son borrador", () => {
@@ -210,6 +239,15 @@ describe("catálogo legal", () => {
       expect(TERMINOS[clave].titulo).toBe(m![1]);
       expect(TERMINOS[clave].texto).toBe(m![2]);
     }
+  });
+
+  it("ribera tiene inglés (traducción en borrador) y su español sigue igual al mock-up", () => {
+    expect(terminoEn("ribera")?.titulo.trim()).toBeTruthy();
+    expect(terminoEn("ribera")?.texto.trim()).toBeTruthy();
+    const m = mock.match(/^\s*ribera:\["([^"]+)","([^"]+)"\]/m);
+    expect(m).not.toBeNull();
+    expect(TERMINOS.ribera.titulo).toBe(m![1]);
+    expect(TERMINOS.ribera.texto).toBe(m![2]);
   });
 
   it("destinoconsejofundacion es borrador, con inglés, y dice que la recomendación no obliga", () => {

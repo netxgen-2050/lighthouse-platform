@@ -1,61 +1,123 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
+import { SeccionBarrio } from "@/components/bien-comun/calculadora-barrio";
+import { DiagramaCarriles } from "@/components/bien-comun/diagrama-carriles";
+import { ListaCambios } from "@/components/bien-comun/lista-cambios";
+import { ListaPuertas } from "@/components/bien-comun/lista-puertas";
+import { SelloPropuesta } from "@/components/bien-comun/sello-propuesta";
+import { TARJETA, TD, TH, REGION } from "@/components/bien-comun/estilos";
+import { TablaDecisiones } from "@/components/bien-comun/tabla-decisiones";
+import { TarjetasPolitica } from "@/components/bien-comun/tarjetas-politica";
 import { TerminoLegal } from "@/components/termino-legal";
-import { enteroEn, faroEn, porcentajeEntero, usdConDecimales } from "@/lib/bien-comun/formato";
+import { ENTRADAS_DE_PARTIDA } from "@/lib/bien-comun/barrio";
+import { textoDeEstado } from "@/lib/bien-comun/estado-decision";
+import { enteroEn, faroEn } from "@/lib/bien-comun/formato";
 import {
-  APORTE_DE_ENTRADA,
-  AVANCE_DE_EJEMPLO,
+  CAMBIOS_DESDE_V_ANTERIOR,
+  CARRILES,
+  DECISIONES,
   FARO_POR_M2,
-  LIBERACION_NETXGEN,
-  STAKING,
-  SUMINISTRO,
-  VERSION_BIEN_COMUN,
-  reparto,
-  totalPorTramo,
+  POLITICA,
+  PREGUNTAS_ABOGADO,
+  PUENTES,
+  PUERTAS,
+  QUE_DA,
+  QUE_NO_TIENE,
+  VERSION_PROPUESTA,
+  type IdDecision,
+  type IdPolitica,
 } from "@/lib/bien-comun/modelo";
+import { formatearFecha, sinDato } from "@/lib/idioma/formatos";
 import { idiomaDelPedido } from "@/lib/idioma/servidor";
 import { textos } from "@/lib/idioma/textos";
-import { porcentajeEn } from "@/lib/lotes/formato";
 import { parteDelSectorPrivada } from "@/lib/lotes/escenarios";
+import { porcentajeEn } from "@/lib/lotes/formato";
 import { parcelasPorUso } from "@/lib/territorios/loteo-textos";
-import { Calculadora } from "./calculadora";
 
-// El bien común con tokens, como simulación para el equipo (spec bien-comun-tokens). Se ve sin sesión. Ningún número se
-// escribe acá: salen de `lib/bien-comun/modelo.ts`. No se emite, no se cobra y no está decidido.
+// La propuesta v0.1 del bien común y los tokens, como PROPUESTA EN DISCUSIÓN (spec bien-comun-propuesta). Se ve sin sesión.
+// Ningún número se escribe acá: salen de `lib/bien-comun/modelo.ts` (o de `lib/lotes/modelo.ts`). No se emite ni se cobra nada.
 export async function generateMetadata(): Promise<Metadata> {
   return { title: textos("biencomun", await idiomaDelPedido()).titulo };
 }
-
-const TARJETA = "grid content-start gap-3 rounded-xl border border-faint bg-surface p-4";
-const TH = "px-2 py-1.5 text-left font-semibold";
-const TD = "px-2 py-1.5 align-top";
-const MARCA = "w-fit rounded-full border border-dashed border-muted px-2 py-0.5 text-xs font-medium";
-const REGION =
-  "overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
 export default async function BienComunPage() {
   const idioma = await idiomaDelPedido();
   const t = textos("biencomun", idioma);
   const parte = parteDelSectorPrivada();
-  const grupos = reparto();
-  const tramos = totalPorTramo();
   const usos = parcelasPorUso(idioma);
-  const anios = enteroEn(LIBERACION_NETXGEN.anios, idioma);
-  const espera = t.esperaAnios(LIBERACION_NETXGEN.esperaAnios);
+  const meses = enteroEn(POLITICA.transferencia.revisionMeses, idioma);
+  // Las cantidades salen del módulo, nunca del diccionario.
+  const cantidadDecisiones = enteroEn(DECISIONES.length, idioma);
+  const cantidadReglas = enteroEn(Object.keys(POLITICA).length, idioma);
+
+  const nodoA = {
+    tokenTierra: "tokenTierra",
+    tokenInversor: "tokenInversor",
+    fideicomiso: "fideicomiso",
+  } as const;
+  const nombreNodo = (id: string) => t.nodos[id as keyof typeof t.nodos] ?? sinDato(idioma);
+
+  const carrilA = {
+    titulo: t.carriles.a.titulo,
+    bajada: t.carriles.a.bajada,
+    nodos: CARRILES.a.map((id) => ({ id, nombre: t.nodos[id], texto: t.carriles.a[nodoA[id]] })),
+  };
+  const carrilB = {
+    titulo: t.carriles.b.titulo,
+    bajada: t.carriles.b.bajada,
+    nodos: CARRILES.b.map((id) => ({ id, nombre: t.nodos[id], texto: t.carriles.b[id] })),
+  };
+
+  const puentes = PUENTES.map((p) => {
+    const d = t.puentes[p.id];
+    const texto =
+      p.id === "parteDeCadaPago"
+        ? t.puentes.parteDeCadaPago.texto(porcentajeEn(p.valor?.fraccion, idioma))
+        : (d.texto as string);
+    return { id: p.id, nombre: d.nombre, texto, desde: nombreNodo(p.desde), hacia: nombreNodo(p.hacia) };
+  });
+
+  const puertas = PUERTAS.map((id) => ({
+    id,
+    nombre: t.puertas[id].nombre,
+    texto: id === "conElLote" ? t.puertas.conElLote.texto(faroEn(FARO_POR_M2.valor, idioma)) : (t.puertas[id].texto as string),
+  }));
+
+  const tarjetas = (Object.keys(POLITICA) as IdPolitica[]).map((id) => ({
+    id,
+    titulo: t.politica[id].titulo,
+    regla: id === "transferencia" ? t.politica.transferencia.regla(meses) : (t.politica[id].regla as string),
+    // La fuente es una cita del documento de origen: sale del módulo, en el idioma de la persona.
+    fuente: POLITICA[id].fuente[idioma],
+  }));
+
+  const filas = DECISIONES.map((d) => {
+    const txt = t.decisiones[d.id as IdDecision];
+    return {
+      id: d.id,
+      pregunta: txt.pregunta,
+      recomendacion:
+        d.id === "d3" ? t.decisiones.d3.recomendacion(meses) : (t.decisiones[d.id].recomendacion as string),
+      termino: d.id === "d2" ? <TerminoLegal clave="primaobjetivo" idioma={idioma} /> : undefined,
+      estado: textoDeEstado(d, t.decisiones, idioma),
+    };
+  });
+
+  const cambios = CAMBIOS_DESDE_V_ANTERIOR.ids.map((id) => ({ id, texto: t.cambios[id] }));
 
   return (
     <div className="mx-auto max-w-4xl p-6 sm:p-10">
       <h1 className="text-3xl font-semibold">{t.titulo}</h1>
-      {/* El aviso de simulación va antes de cualquier número, también del de la bajada. */}
+      {/* El sello va primero, antes de cualquier número. No es fijo: no tapa el foco del teclado. */}
       <div className="mt-3 grid gap-2">
-        <p className="w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm font-medium text-warn-ink">
-          {t.aviso}
-          <TerminoLegal clave="tokenbiencomun" idioma={idioma} />
-        </p>
-        <p className="max-w-3xl text-muted">
-          {parte === null ? t.bajadaSinDato : t.bajada(porcentajeEn(parte, idioma, 1))}
-        </p>
+        <SelloPropuesta
+          etiqueta={t.sello.etiqueta}
+          texto={t.sello.texto(VERSION_PROPUESTA.version)}
+          fecha={t.sello.fecha(formatearFecha(VERSION_PROPUESTA.fecha, idioma, "largo"), VERSION_PROPUESTA.fuente)}
+          simulacion={t.sello.simulacion}
+          terminoSimulacion={<TerminoLegal clave="noesoferta" idioma={idioma} />}
+        />
         <AvisoEjemplo />
         <p className="w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
           {textos("marco", idioma).aviso}
@@ -63,6 +125,91 @@ export default async function BienComunPage() {
       </div>
 
       <div className="mt-6 grid gap-6">
+        <section aria-labelledby="h-frase" className={TARJETA}>
+          <h2 id="h-frase" className="text-xl font-semibold">
+            {t.frase.titulo}
+            <TerminoLegal clave="tokenbiencomun" idioma={idioma} />
+          </h2>
+          <p className="max-w-3xl">{t.frase.texto}</p>
+          <p className="max-w-3xl font-medium">{t.frase.nadaAcordado}</p>
+          <p className="max-w-3xl text-sm text-muted">
+            {parte === null ? t.bajadaSinDato : t.bajada(porcentajeEn(parte, idioma, 1))}
+          </p>
+          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+            {(["fideicomisobarrio", "tokentierra", "tokeninversor", "tesorocomun"] as const).map((c) => (
+              <li key={c}>
+                {c === "fideicomisobarrio"
+                  ? t.nodos.fideicomiso
+                  : c === "tokentierra"
+                    ? t.nodos.tokenTierra
+                    : c === "tokeninversor"
+                      ? t.nodos.tokenInversor
+                      : t.nodos.tesoro}
+                <TerminoLegal clave={c} idioma={idioma} />
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <DiagramaCarriles
+          titulo={t.carriles.titulo}
+          intro={t.carriles.intro}
+          carrilA={carrilA}
+          carrilB={carrilB}
+          puentesTitulo={t.puentes.titulo}
+          deEtiqueta={t.puentes.de}
+          aEtiqueta={t.puentes.a}
+          puentes={puentes}
+        />
+
+        <ListaPuertas titulo={t.puertas.titulo} intro={t.puertas.intro} puertas={puertas} />
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <section aria-labelledby="h-que-da" className={TARJETA}>
+            <h2 id="h-que-da" className="text-xl font-semibold">
+              {t.queDa.titulo}
+            </h2>
+            <ul className="grid list-disc gap-1 pl-5 text-sm">
+              {QUE_DA.map((id) => (
+                <li key={id}>
+                  {t.queDa[id]}
+                  {id === "expensas" ? <TerminoLegal clave="expensas" idioma={idioma} /> : null}
+                </li>
+              ))}
+            </ul>
+            <p className="text-sm text-muted">{t.queDa.nota}</p>
+          </section>
+          <section aria-labelledby="h-que-no" className={TARJETA}>
+            <h2 id="h-que-no" className="text-xl font-semibold">
+              {t.queNoTiene.titulo}
+            </h2>
+            <ul className="grid list-disc gap-1 pl-5 text-sm">
+              {QUE_NO_TIENE.map((id) => (
+                <li key={id}>{t.queNoTiene[id]}</li>
+              ))}
+            </ul>
+          </section>
+        </div>
+
+        <TarjetasPolitica titulo={t.politica.titulo} intro={t.politica.intro(cantidadReglas)}deDondeEtiqueta={t.politica.deDonde} tarjetas={tarjetas} />
+
+        {/* Solo con sesión, hasta la revisión R14: sin sesión el componente muestra un aviso y ningún número del barrio. */}
+        <SeccionBarrio partida={ENTRADAS_DE_PARTIDA} />
+
+        <TablaDecisiones
+          titulo={t.decisiones.titulo}
+          intro={t.decisiones.intro(cantidadDecisiones)}
+          caption={t.decisiones.caption(cantidadDecisiones)}
+          columnas={{ pregunta: t.decisiones.pregunta, recomendacion: t.decisiones.recomendacionTitulo, estado: t.decisiones.estado }}
+          filas={filas}
+        />
+
+        <ListaCambios
+          titulo={t.cambios.titulo}
+          intro={t.cambios.intro(formatearFecha(CAMBIOS_DESDE_V_ANTERIOR.fechaModeloAnterior, idioma, "largo"))}
+          items={cambios}
+        />
+
         <section aria-labelledby="h-ostrom" className={TARJETA}>
           <h2 id="h-ostrom" className="text-xl font-semibold">
             {t.ostrom.titulo}
@@ -92,37 +239,14 @@ export default async function BienComunPage() {
                     </th>
                     <td className={TD}>{f.como}</td>
                     <td className={TD}>
-                      <span className={MARCA}>{t.ostrom.idea}</span>
+                      <span className="w-fit rounded-full border border-dashed border-muted px-2 py-0.5 text-xs font-medium">
+                        {t.ostrom.idea}
+                      </span>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        </section>
-
-        <section aria-labelledby="h-tokens" className={TARJETA}>
-          <h2 id="h-tokens" className="text-xl font-semibold">
-            {t.tokens.titulo}
-          </h2>
-          <div className="grid gap-3 md:grid-cols-2">
-            <article className="grid content-start gap-2 rounded-lg border border-faint p-3 text-sm">
-              <h3 className="font-semibold">
-                {t.tokens.nft.titulo}
-                <TerminoLegal clave="nftlote" idioma={idioma} />
-              </h3>
-              <p>{t.tokens.nft.texto}</p>
-              <p className="text-muted">{t.tokens.nft.porM2(faroEn(FARO_POR_M2, idioma))}</p>
-            </article>
-            <article className="grid content-start gap-2 rounded-lg border border-faint p-3 text-sm">
-              <h3 className="font-semibold">
-                {t.tokens.faro.titulo}
-                <TerminoLegal clave="tokenbiencomun" idioma={idioma} />
-              </h3>
-              <p>{t.tokens.faro.texto}</p>
-              <p>{t.tokens.faro.usos}</p>
-              <p className="text-sm text-muted">{t.tokens.faro.conElLote}</p>
-            </article>
           </div>
         </section>
 
@@ -147,190 +271,31 @@ export default async function BienComunPage() {
           </ul>
         </section>
 
-        <section aria-labelledby="h-reparto" className={TARJETA}>
-          <h2 id="h-reparto" className="text-xl font-semibold">
-            {t.reparto.titulo}
+        <section aria-labelledby="h-nft" className={TARJETA}>
+          <h2 id="h-nft" className="text-xl font-semibold">
+            {t.tokens.nft.titulo}
+            <TerminoLegal clave="nftlote" idioma={idioma} />
           </h2>
-          <p className="max-w-3xl text-sm">{t.reparto.intro(faroEn(SUMINISTRO, idioma))}</p>
-          <div role="region" tabIndex={0} aria-label={t.reparto.caption} className={REGION}>
-            <table className="w-full min-w-[34rem] text-sm">
-              <caption className="sr-only">{t.reparto.caption}</caption>
-              <thead>
-                <tr className="border-b border-line">
-                  <th scope="col" className={TH}>
-                    {t.reparto.grupo}
-                  </th>
-                  <th scope="col" className={TH}>
-                    {t.reparto.porcentaje}
-                  </th>
-                  <th scope="col" className={TH}>
-                    {t.reparto.cantidad}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {grupos.map((g) => {
-                  const d = t.reparto.grupos[g.id];
-                  return (
-                    <tr key={g.id} className="border-t border-line">
-                      <th scope="row" className={`${TD} text-left font-medium`}>
-                        {d.nombre}
-                        {g.id === "netxgen" && <TerminoLegal clave="partenetxgen" idioma={idioma} />}
-                        <span className="block font-normal text-muted">
-                          {typeof d.linea === "function" ? d.linea(anios, espera) : d.linea}
-                        </span>
-                      </th>
-                      <td className={TD}>
-                        {porcentajeEntero(g.pct, idioma)}
-                        {/* La barra es decorativa: el dato está en el texto de la celda. */}
-                        <svg viewBox="0 0 100 4" preserveAspectRatio="none" aria-hidden="true" focusable="false" className="mt-1 h-2 w-full">
-                          <rect x={0} y={0} width={100} height={4} className="fill-surface-2" />
-                          <rect x={0} y={0} width={g.pct} height={4} className="fill-deep" />
-                        </svg>
-                      </td>
-                      <td className={TD}>{faroEn(g.faro, idioma)}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <p className="max-w-3xl text-sm">{t.tokens.nft.texto}</p>
         </section>
 
-        <section aria-labelledby="h-tramos" className={TARJETA}>
-          <h2 id="h-tramos" className="text-xl font-semibold">
-            {t.tramos.titulo}
-            <TerminoLegal clave="ventatramos" idioma={idioma} />
+        <section aria-labelledby="h-abogado" className={TARJETA}>
+          <h2 id="h-abogado" className="text-xl font-semibold">
+            {t.abogado.titulo}
           </h2>
-          <p className="max-w-3xl text-sm">{t.tramos.intro}</p>
-          <div role="region" tabIndex={0} aria-label={t.tramos.caption} className={REGION}>
-            <table className="w-full min-w-[34rem] text-sm">
-              <caption className="sr-only">{t.tramos.caption}</caption>
-              <thead>
-                <tr className="border-b border-line">
-                  <th scope="col" className={TH}>
-                    {t.tramos.tramo}
-                  </th>
-                  <th scope="col" className={TH}>
-                    {t.tramos.cantidad}
-                  </th>
-                  <th scope="col" className={TH}>
-                    {t.tramos.precio}
-                  </th>
-                  <th scope="col" className={TH}>
-                    {t.tramos.total}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {tramos.map((tr, i) => (
-                  <tr key={i} className="border-t border-line">
-                    <th scope="row" className={`${TD} text-left font-medium`}>
-                      {enteroEn(i + 1, idioma)}
-                    </th>
-                    <td className={TD}>{faroEn(tr.cantidad, idioma)}</td>
-                    <td className={TD}>{usdConDecimales(tr.precio, idioma, 2)}</td>
-                    <td className={TD}>{usdConDecimales(tr.totalUsd, idioma, 0)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className="text-sm font-medium">
-            {t.tramos.avance(
-              porcentajeEn(AVANCE_DE_EJEMPLO.fraccion, idioma),
-              enteroEn(AVANCE_DE_EJEMPLO.tramo + 1, idioma),
-            )}
-          </p>
-          <h3 className="font-semibold">{t.tramos.calculadora.titulo}</h3>
-          <Calculadora />
-        </section>
-
-        <section aria-labelledby="h-staking" className={TARJETA}>
-          <h2 id="h-staking" className="text-xl font-semibold">
-            {t.staking.titulo}
-            <TerminoLegal clave="stakingbiencomun" idioma={idioma} />
-          </h2>
-          <div role="region" tabIndex={0} aria-label={t.staking.caption} className={REGION}>
-            <table className="w-full min-w-[34rem] text-sm">
-              <caption className="sr-only">{t.staking.caption}</caption>
-              <thead>
-                <tr className="border-b border-line">
-                  <th scope="col" className={TH}>
-                    {t.staking.opcion}
-                  </th>
-                  <th scope="col" className={TH}>
-                    {t.staking.que}
-                  </th>
-                  <th scope="col" className={TH}>
-                    {t.staking.favorece}
-                  </th>
-                  <th scope="col" className={TH}>
-                    {t.staking.riesgo}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-t border-line">
-                  <th scope="row" className={`${TD} text-left font-medium`}>
-                    {t.staking.a.nombre}
-                  </th>
-                  <td className={TD}>{t.staking.a.que(enteroEn(STAKING.mesesA, idioma))}</td>
-                  <td className={TD}>{t.staking.a.favorece}</td>
-                  <td className={TD}>{t.staking.a.riesgo}</td>
-                </tr>
-                <tr className="border-t border-line">
-                  <th scope="row" className={`${TD} text-left font-medium`}>
-                    {t.staking.b.nombre}
-                  </th>
-                  <td className={TD}>{t.staking.b.que(porcentajeEntero(Math.round(STAKING.anualB * 100), idioma))}</td>
-                  <td className={TD}>{t.staking.b.favorece}</td>
-                  <td className={TD}>{t.staking.b.riesgo}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p className="text-sm font-medium">{t.staking.cierre}</p>
-        </section>
-
-        <section aria-labelledby="h-plata" className={TARJETA}>
-          <h2 id="h-plata" className="text-xl font-semibold">
-            {t.plata.titulo}
-          </h2>
-          <div className="grid gap-3 md:grid-cols-2">
-            <article className="grid content-start gap-2 rounded-lg border border-faint p-3 text-sm">
-              <h3 className="font-semibold">{t.plata.capex.titulo}</h3>
-              <p>{t.plata.capex.texto}</p>
-            </article>
-            <article className="grid content-start gap-2 rounded-lg border border-faint p-3 text-sm">
-              <h3 className="font-semibold">{t.plata.opex.titulo}</h3>
-              <p>{t.plata.opex.texto}</p>
-            </article>
-          </div>
-          <p className="text-sm font-medium">{t.plata.montos}</p>
-          <p className="text-sm">{t.plata.aporteEntrada(porcentajeEn(APORTE_DE_ENTRADA, idioma))}</p>
-          <h3 className="font-semibold">{t.plata.referentesTitulo}</h3>
-          <p className="text-sm text-muted">{t.plata.referentesNota}</p>
-          <ul className="grid list-disc gap-1 pl-5 text-sm">
-            {t.plata.referentes.map((r) => (
-              <li key={r}>{r}</li>
+          <p className="max-w-3xl text-sm">{t.abogado.intro}</p>
+          <ol className="grid list-decimal gap-1 pl-5 text-sm">
+            {PREGUNTAS_ABOGADO.map((q) => (
+              <li key={q.id} data-pregunta={q.id}>
+                {t.abogado.items[q.id]}
+                {q.termino ? <TerminoLegal clave={q.termino} idioma={idioma} /> : null}
+              </li>
             ))}
-          </ul>
-        </section>
-
-        <section aria-labelledby="h-riesgos" className={TARJETA}>
-          <h2 id="h-riesgos" className="text-xl font-semibold">
-            {t.riesgos.titulo}
-          </h2>
-          <ul className="grid list-disc gap-1 pl-5 text-sm">
-            {t.riesgos.items.map((r) => (
-              <li key={r}>{r}</li>
-            ))}
-          </ul>
+          </ol>
         </section>
 
         <p className="text-sm text-muted">
-          {t.version(VERSION_BIEN_COMUN.fuente, VERSION_BIEN_COMUN.version, VERSION_BIEN_COMUN.fecha)}{" "}
+          {t.version(VERSION_PROPUESTA.fuente, VERSION_PROPUESTA.version, formatearFecha(VERSION_PROPUESTA.fecha, idioma, "largo"))}{" "}
           <Link
             className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
             href="/lotes/hibrido"

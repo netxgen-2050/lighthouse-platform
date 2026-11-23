@@ -62,7 +62,7 @@ const es = {
       `Después de la venta quedan solo las expensas, porque el aporte no se repite: ${monto} por año, el ${pct} de este costo.`,
     cubreTodo: "Con estos valores la venta cubre todo el costo de este escenario.",
     resto:
-      "El resto saldría de: token del bien común, ingresos del bien común (huerta, cocina, alojamiento) u otros aportes: sin dato.",
+      "FARO no levanta capital. El resto saldría de lo que el común produce (estadías, cocina, talleres), del prepago de servicios y de los barrios que sigan: sin dato.",
     sinDato: "Con estos valores no hay dato: ingresá números mayores que cero.",
     lotesNota: "Solo se cuentan los lotes del sector norte: los primeros 4 no se suman.",
   },
@@ -153,7 +153,7 @@ const en: Textos<typeof es> = {
       `After the sales only the common charges remain, because the contribution is not repeated: ${monto} per year, ${pct} of this cost.`,
     cubreTodo: "With these values the sales cover the whole cost of this scenario.",
     resto:
-      "The rest would come from: commons token, commons income (garden, kitchen, lodging) or other contributions: no data.",
+      "FARO does not raise capital. The rest would come from what the commons produces (stays, kitchen, workshops), from prepaid services and from the neighborhoods that follow: no data.",
     sinDato: "With these values there is no data: enter numbers greater than zero.",
     lotesNota: "Only the north sector lots are counted: the first 4 are not added.",
   },

@@ -14,19 +14,19 @@ test.describe("portada en inglés", () => {
   test("título, los tres caminos y los enlaces", async ({ page }) => {
     await page.goto("/");
     await expect(html(page)).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("A place to live.");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Regenerating from the water.");
     await expect(page.getByText("Internal prototype · sample data")).toBeVisible();
-    for (const camino of ["See the communities", "Find my community", "Congress · Feb 2027"]) {
+    for (const camino of ["See the lots", "Explore the territory", "See the communities"]) {
       await expect(page.getByRole("heading", { level: 3, name: camino })).toBeVisible();
     }
-    await expect(page.getByRole("link", { name: "Explore the Lighthouse" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "See the lots", exact: true }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Choose how to join" })).toBeVisible();
     await expect(page.getByRole("link", { name: /See the communities/ })).toContainText(/\d+ neighborhoods and the communities forming them\./);
     expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
 
   test("el camino recomendado dice 'Recommended for you'", async ({ page }) => {
-    await page.goto("/?camino=congreso");
+    await page.goto("/?camino=lotes");
     await expect(page.getByText("Recommended for you")).toBeVisible();
   });
 });
@@ -35,7 +35,7 @@ test("?lang=en&utm_source=deck muestra la portada en inglés y guarda el origen"
   await page.goto("/?lang=en&utm_source=deck");
   await expect(page).toHaveURL(/\/\?utm_source=deck$/);
   await expect(html(page)).toHaveAttribute("lang", "en");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("A place to live.");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Regenerating from the water.");
   await expect
     .poll(async () => JSON.parse((await page.evaluate(() => window.localStorage.getItem("lh-origen"))) ?? "{}").fuente)
     .toBe("deck");

@@ -311,11 +311,10 @@ test.describe("celular con sesión: la barra de entradas no tapa a Hifa", () => 
 test.describe("con la política de privacidad pendiente", () => {
   test.use({ rol: "persona", plan: "explorador", consentimiento: "ninguno" });
 
-  test("ve el llamado a aceptar la política y no el formulario del ticket", async ({ page }) => {
+  // Con `consentimiento-alta` la pantalla de consentimiento cubre también las páginas públicas: sin aceptar no se ve la página.
+  test("ve la pantalla de consentimiento y no el formulario del ticket", async ({ page }) => {
     await page.goto("/congreso#ticket");
-    const enlace = page.getByRole("link", { name: "Aceptá la política de privacidad para vincular tu ticket" });
-    await expect(enlace).toBeVisible();
-    await expect(enlace).toHaveAttribute("href", "/sumarte?volver=%2Fcongreso%23ticket&para=explorador");
+    await expect(page.getByRole("heading", { level: 1, name: "Antes de seguir: tu privacidad" })).toBeVisible();
     await expect(page.getByLabel(/Código de tu ticket/)).toHaveCount(0);
   });
 });

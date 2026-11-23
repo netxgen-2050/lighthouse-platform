@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/cliente";
+import { moldeDeEscritura } from "@/lib/sesion/molde-escritura";
 import { agregarPersona, cambiarPersona, ErrorDeGestion, listarPersonas, validarCambios } from "@/lib/sesion/gestion";
 import { sesionDelPedido } from "@/lib/sesion/servidor";
 
@@ -44,6 +45,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const molde = moldeDeEscritura(req);
+  if (molde) return molde;
   const a = await exigirSuperAdmin(req);
   if ("rechazo" in a) return a.rechazo;
   try {
@@ -57,6 +60,8 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
+  const molde = moldeDeEscritura(req);
+  if (molde) return molde;
   const a = await exigirSuperAdmin(req);
   if ("rechazo" in a) return a.rechazo;
   try {

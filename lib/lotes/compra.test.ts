@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { listarLotes } from "@/lib/territorios/loteo";
 import { ESTADOS_EJEMPLO, estadoDeLote } from "@/lib/territorios/loteo-estados";
-import { deshacer, estadoConCompras, leerCompras, pagar, reservar, type CompraLote, type LoVisto } from "./compra";
+import { deshacer, estadoConCompras, leerCompras, pagar, reservar, type CompraLote, type LoVisto, type PlanVisto } from "./compra";
 import { VERSION_HIBRIDO } from "./hibrido";
 import { VERSION_MODELO_LOTES } from "./modelo";
 import { porcentajeEn, usdEn } from "./formato";
@@ -20,6 +20,40 @@ function reservada(id = disponible): CompraLote[] {
   if (!r.ok) throw new Error("no se pudo reservar");
   return r.compras;
 }
+
+const plan: PlanVisto = { cuotas: 24, anticipo: 4_000, cuota: 667, ultimaCuota: 659, faroAnticipo: 100, faroPorCuota: 4, faroUltimaCuota: 8 };
+
+describe("leerCompras con plan en cuotas", () => {
+  const base = (): CompraLote => reservada()[0];
+
+  it("una compra vieja sin plan se lee igual, sin plan", () => {
+    const [leida] = leerCompras(JSON.stringify([base()]));
+    expect(leida).toEqual(base());
+    expect(leida.vio).not.toHaveProperty("plan");
+  });
+
+  it("una compra nueva conserva el plan", () => {
+    const nueva: CompraLote = { ...base(), vio: { ...vio, plan } };
+    const [leida] = leerCompras(JSON.stringify([nueva]));
+    expect(leida.vio.plan).toEqual(plan);
+  });
+
+  it("un plan con FARO null (sin superficie) es válido y se conserva", () => {
+    const sinFaro = { ...plan, faroAnticipo: null, faroPorCuota: null, faroUltimaCuota: null };
+    const [leida] = leerCompras(JSON.stringify([{ ...base(), vio: { ...vio, plan: sinFaro } }]));
+    expect(leida.vio.plan).toEqual(sinFaro);
+  });
+
+  it("un plan mal formado no borra la compra: se lee sin plan", () => {
+    for (const malo of [{ ...plan, cuotas: 7 }, { ...plan, anticipo: "x" }, { ...plan, cuota: undefined }, "contado", null]) {
+      const texto = JSON.stringify([{ ...base(), vio: { ...vio, plan: malo } }]);
+      const leidas = leerCompras(texto);
+      expect(leidas).toHaveLength(1);
+      expect(leidas[0].vio).not.toHaveProperty("plan");
+      expect(leidas[0].loteId).toBe(base().loteId);
+    }
+  });
+});
 
 describe("leerCompras", () => {
   it("un JSON inválido o que no es una lista da lista vacía", () => {
@@ -213,6 +247,24 @@ describe("estadoConCompras", () => {
     const r = pagar(reservada(), disponible, ahora);
     if (!r.ok) throw new Error("no pagó");
     expect(estadoConCompras(disponible, r.compras)).toBe("vendido-a-vos");
+  });
+
+  it("pagado en cuotas es 'en-cuotas-tuyo'; al contado, 'vendido-a-vos'", () => {
+    const conPlan = (cuotas: number): CompraLote[] => {
+      const r = reservar([], disponible, "solo-lote", { ...vio, plan: { ...plan, cuotas } }, ahora);
+      if (!r.ok) throw new Error("no se pudo reservar");
+      const p = pagar(r.compras, disponible, ahora);
+      if (!p.ok) throw new Error("no pagó");
+      return p.compras;
+    };
+    expect(estadoConCompras(disponible, conPlan(24))).toBe("en-cuotas-tuyo");
+    expect(estadoConCompras(disponible, conPlan(0))).toBe("vendido-a-vos");
+  });
+
+  it("reservado con plan en cuotas sigue 'reservado-por-vos' hasta el primer pago", () => {
+    const r = reservar([], disponible, "solo-lote", { ...vio, plan }, ahora);
+    if (!r.ok) throw new Error("no se pudo reservar");
+    expect(estadoConCompras(disponible, r.compras)).toBe("reservado-por-vos");
   });
 
   it("deshacer vuelve a disponible", () => {

@@ -1,38 +1,59 @@
-// Textos de la portada (`/`): título, bajada, los tres caminos y los enlaces.
-import { GLOSARIO } from "../glosario";
+// Textos de la portada (`/`): la promesa a 2030, Argentina, los capitales, los tres caminos y los enlaces.
+// Son borrador de agente (portada-vrn), para que Gus los ajuste. Las cifras no se escriben acá: salen de `lib/portada-vrn.ts`.
 import type { Textos } from "../tipos";
 import { conVocabulario } from "../vocabulario";
 
-const G = GLOSARIO;
-
 const es = {
-  sobretitulo: "Corredor regenerativo patagónico",
-  tituloInicio: "Un lugar para vivir.",
-  tituloFin: "Un bien común para cuidar.",
+  sobretitulo: "Lighthouse VRN · Río Negro, Argentina",
+  tituloInicio: "Regenerar desde el agua.",
+  tituloFin: "Una promesa a 2030.",
   bajada:
-    "Conocé a las personas con quienes vale la pena invertir, trabajar y quizás vivir. Pónganse de acuerdo antes de comprometer capital, y avancen juntos sobre un territorio real. Explorar es gratis.",
-  explorar: "Explorar el Lighthouse",
+    "Para 2030, Lighthouse VRN quiere ser un territorio que se regenera desde el agua, en el Alto Valle de Río Negro, cerca de Vaca Muerta: con trabajo en industrias regenerativas y una comunidad que lo vive y lo cuida. Es nuestra meta, no una garantía.",
+  verLotes: "Ver los lotes",
   sumarte: "Elegí cómo sumarte",
+  promesa: {
+    agua: {
+      titulo: "Agua.",
+      texto: "Todo empieza por el agua: leerla, guardarla y llevarla. Sin eso no hay suelo, ni árboles, ni casa.",
+    },
+    trabajo: {
+      titulo: "Trabajo.",
+      texto:
+        "Queremos que regenerar sea también una forma de vivir: trabajo en industrias regenerativas, cerca de donde se vive.",
+    },
+    comunidad: {
+      titulo: "Comunidad.",
+      texto: "Personas que deciden cómo cuidar lo que es de todos.",
+    },
+  },
+  argentina: {
+    titulo: "Argentina, un lugar seguro y abierto",
+    /** Va seguido del ⚖ de `ribera`. */
+    texto:
+      "Un país que recibe a quienes vienen de afuera. Si venís de otro país, hay reglas para comprar tierra rural: leelas acá",
+  },
+  capitales: { titulo: "Los cinco capitales de la regeneración", fuente: "Fuente" },
+  cifras: { titulo: "Cifras del sitio", fuente: "Fuente" },
   porDondeEmpezar: "Por dónde empezar",
   notaImagen: "Imagen ilustrativa de la Zona A (memoria técnica de Martín): no es una fotografía ni un plano.",
   recomendado: "Recomendado para vos",
   caminos: {
+    lotes: {
+      etiqueta: "Comprar",
+      titulo: "Ver los lotes",
+      descripcion: "Del loteo provisorio del sector norte. Es una simulación.",
+    },
+    territorio: {
+      etiqueta: "Descubrir",
+      titulo: "Explorar el territorio",
+      descripcion: "Los lotes, lo común y lo que se está trabajando.",
+    },
     tribus: {
-      etiqueta: G.descubrir.es,
+      etiqueta: "Lo que viene",
       titulo: "Ver las tribus",
     },
-    perfil: {
-      etiqueta: "Encontrarse",
-      titulo: "Encontrar mi tribu",
-      descripcion: "Armá tu perfil: quién sos, qué sabés hacer y cómo te gusta decidir.",
-    },
-    congreso: {
-      etiqueta: "Encontrarse en persona",
-      titulo: `${G.congreso.es} · Feb 2027`,
-      descripcion: "Visita al Lighthouse, encuentros de tribus y mingas.",
-    },
   },
-  /** Descripción del camino "Explorar": con `cantidad` 0 no hay dato y no se muestra número. */
+  /** Descripción del camino de las tribus: con `cantidad` 0 no hay dato y no se muestra número. */
   barrios: (cantidad: number) =>
     cantidad === 1
       ? "1 barrio y las tribus que lo están formando."
@@ -42,30 +63,52 @@ const es = {
 };
 
 const en: Textos<typeof es> = {
-  sobretitulo: "Patagonian regenerative corridor",
-  tituloInicio: "A place to live.",
-  tituloFin: "A commons to care for.",
+  sobretitulo: "Lighthouse VRN · Río Negro province, Argentina",
+  tituloInicio: "Regenerating from the water.",
+  tituloFin: "A promise for 2030.",
   bajada:
-    "Meet the people you'd want to invest, work and maybe live with. Reach agreement before committing capital, and move forward together on a real territory. Exploring is free.",
-  explorar: "Explore the Lighthouse",
+    "By 2030, Lighthouse VRN aims to be a territory regenerating from the water, in the Alto Valle of Río Negro, near Vaca Muerta: with work in regenerative industries and a community that lives in it and cares for it. It is our goal, not a guarantee.",
+  verLotes: "See the lots",
   sumarte: "Choose how to join",
+  promesa: {
+    agua: {
+      titulo: "Water.",
+      texto: "It all starts with water: reading it, storing it and moving it. Without it there is no soil, no trees and no home.",
+    },
+    trabajo: {
+      titulo: "Work.",
+      texto:
+        "We want regenerating to be a way of making a living too: work in regenerative industries, close to where you live.",
+    },
+    comunidad: {
+      titulo: "Community.",
+      texto: "People who decide how to care for what belongs to everyone.",
+    },
+  },
+  argentina: {
+    titulo: "Argentina, a safe and open place",
+    texto:
+      "A country that welcomes people from abroad. If you come from another country, there are rules for buying rural land: read them here",
+  },
+  capitales: { titulo: "The five capitals of regeneration", fuente: "Source" },
+  cifras: { titulo: "Figures from the site", fuente: "Source" },
   porDondeEmpezar: "Where to start",
   notaImagen: "Illustrative image of Zone A (Martín's technical report): it is neither a photograph nor a plan.",
   recomendado: "Recommended for you",
   caminos: {
+    lotes: {
+      etiqueta: "Buy",
+      titulo: "See the lots",
+      descripcion: "From the provisional layout of the north sector. It is a simulation.",
+    },
+    territorio: {
+      etiqueta: "Discover",
+      titulo: "Explore the territory",
+      descripcion: "The lots, the commons and what is being worked on.",
+    },
     tribus: {
-      etiqueta: G.descubrir.en,
+      etiqueta: "Coming next",
       titulo: "See the tribes",
-    },
-    perfil: {
-      etiqueta: "Meet up",
-      titulo: "Find my tribe",
-      descripcion: "Build your profile: who you are, what you know how to do and how you like to decide.",
-    },
-    congreso: {
-      etiqueta: "Meet in person",
-      titulo: `${G.congreso.en} · Feb 2027`,
-      descripcion: "A visit to the Lighthouse, tribe meetings and community work parties (mingas).",
     },
   },
   barrios: (cantidad: number) =>

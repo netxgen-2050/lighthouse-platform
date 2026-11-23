@@ -22,7 +22,9 @@ from (
     ('persona@prueba.test', 'persona', 'inversor', null),
     ('a@prueba.test', 'persona', 'usuario', null),
     ('b@prueba.test', 'persona', 'usuario', null),
-    ('c@prueba.test', 'persona', 'usuario', null)
+    ('c@prueba.test', 'persona', 'usuario', null),
+    -- La persona de prueba del login con Neon Auth (login-neon-auth, design §6): se crea además en el Auth de esta rama.
+    ('login@prueba.test', 'persona', 'usuario', null)
 ) as v (email, rol, perfil, tribu_admin)
 where not exists (select 1 from personas where lower(email) !~ '^[^@\s]+@[a-z0-9.-]+\.test$')
 on conflict do nothing;

@@ -1,4 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
+import { aceptarPaso } from "./ayudas";
 import { EMAILS, expect, test, type Page } from "./fixtura";
 
 // Sin el fixture de login: la persona no entró.
@@ -26,7 +27,7 @@ test.describe("páginas públicas sin sesión", () => {
 
   test("Inicio y Comunidades se ven sin entrar", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1, name: /Un lugar para vivir/ })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /Regenerar desde el agua/ })).toBeVisible();
     await page.goto("/tribus?ver=tribus");
     await expect(page.getByRole("heading", { level: 1, name: "Comunidades del Lighthouse" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Sumate para proponer una comunidad" }).first()).toBeVisible();
@@ -115,6 +116,7 @@ test.describe("navegación sin sesión", () => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     await page.goto("/tribus/valle");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
+    await aceptarPaso(page);
     await expect(page).toHaveURL(/\/sumarte\?volver=%2Ftribus%2Fvalle/);
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
     await page.getByRole("button", { name: EMAILS.persona }).click();
@@ -133,6 +135,7 @@ test.describe("navegación sin sesión", () => {
     await ficha.getByRole("link", { name: "Sumate para consultar por este lote" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
+    await aceptarPaso(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(page).toHaveURL(/\/territorios\/lighthouse\?.*sel=/);
     await expect(ficha.getByRole("heading", { level: 2, name: titulo })).toBeVisible();
@@ -149,6 +152,7 @@ test.describe("vincular el ticket del Congreso pide cuenta", () => {
     await expect(page).toHaveURL(/\/sumarte\?volver=%2Fcongreso%23ticket&para=explorador$/);
     await expect(page.getByText("Esta acción se habilita al sumarte gratis como Explorador.")).toBeVisible();
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
+    await aceptarPaso(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(page).toHaveURL(/\/congreso#ticket$/);
     await expect(page.getByLabel(/Código de tu ticket/)).toBeVisible();
@@ -159,10 +163,9 @@ test.describe("vincular el ticket con la política pendiente", () => {
   // Una persona Explorador que todavía no aceptó la política de privacidad vigente.
   test.use({ rol: "persona", plan: "explorador", consentimiento: "ninguno" });
 
-  test("acepta la política en Sumarte y vuelve a /congreso#ticket con el formulario", async ({ page }) => {
+  test("acepta la política en la pantalla de consentimiento y sigue en /congreso#ticket con el formulario", async ({ page }) => {
     await page.goto("/congreso#ticket");
     await expect(page.getByLabel(/Código de tu ticket/)).toHaveCount(0);
-    await page.getByRole("link", { name: "Aceptá la política de privacidad para vincular tu ticket" }).click();
     await page.getByRole("checkbox", { name: /Leí y acepto la política de privacidad/ }).check();
     await page.getByRole("checkbox", { name: /Acepto los términos de uso del prototipo/ }).check();
     await page.getByRole("button", { name: "Aceptar y continuar" }).click();

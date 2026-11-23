@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
-import { conAdhesionAlManifiesto } from "./ayudas";
+import { conAdhesionAlManifiesto, relojDeLasConsultas } from "./ayudas";
 import { nombreDelComun } from "../lib/manifiestos/lighthouse-vrn";
 
 const COMUN = nombreDelComun("es");
@@ -187,6 +187,7 @@ test.describe("sin adhesión se mira pero no se participa", () => {
   });
 
   test("en una consulta: se ven opciones y resultados, pero no +/- ni 'Guardar', y sí el aviso", async ({ page }) => {
+    await relojDeLasConsultas(page);
     await page.goto("/fogon/consultas/u1");
     await expect(page.getByRole("region", { name: "Mi reparto" })).toBeVisible();
     await expect(page.getByText("Para participar, adherí al manifiesto de Lighthouse VRN")).toBeVisible();
@@ -204,6 +205,7 @@ test.describe("sin adhesión se mira pero no se participa", () => {
   });
 
   test("axe en /fogon sin adhesión y en una consulta sin adhesión", async ({ page }) => {
+    await relojDeLasConsultas(page);
     for (const ruta of ["/fogon", "/fogon/consultas/u1"]) {
       await page.goto(ruta);
       await expect(page.getByText("Para participar, adherí al manifiesto de Lighthouse VRN").first()).toBeVisible();
@@ -216,6 +218,7 @@ test.describe("sin adhesión se mira pero no se participa", () => {
 
 test.describe("con adhesión se participa", () => {
   test("se puede votar y repartir créditos", async ({ page }) => {
+    await relojDeLasConsultas(page);
     await conAdhesionAlManifiesto(page);
     await page.goto("/fogon");
     await expect(page.getByRole("button", { name: "Votar" }).first()).toBeVisible();

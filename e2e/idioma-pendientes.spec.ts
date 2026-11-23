@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
 import { textosEnEspanol } from "./ayudas-idioma";
-import { conAdhesionAlManifiesto, sembrarRespuestaDeLaTribu } from "./ayudas";
+import { conAdhesionAlManifiesto, relojDeLasConsultas, sembrarRespuestaDeLaTribu } from "./ayudas";
 
 // idioma-pendientes: consultas del Fogón y cambios a un pacto con la plataforma en inglés.
 
@@ -17,6 +17,7 @@ test.describe("Consultas del Fogón en inglés", () => {
   test.use({ locale: "en-US" });
   // Repartir créditos es participar en la gobernanza: pide haber adherido al manifiesto de Lighthouse VRN.
   test.beforeEach(async ({ page }) => {
+    await relojDeLasConsultas(page);
     await conAdhesionAlManifiesto(page);
   });
 
@@ -102,6 +103,7 @@ test.describe("Consultas del Fogón en inglés", () => {
 
 test.describe("Consultas del Fogón en español", () => {
   test.beforeEach(async ({ page }) => {
+    await relojDeLasConsultas(page);
     await conAdhesionAlManifiesto(page);
   });
   test("nada cambia: título, estados y acción", async ({ page }) => {

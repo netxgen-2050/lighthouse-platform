@@ -16,6 +16,18 @@ export async function conAdhesionAlManifiesto(page: Page, version: string = VERS
   }, version);
 }
 
+/**
+ * Acepta el paso previo al login ("Crear tu cuenta" o "Entrar"): marca las dos casillas obligatorias y confirma.
+ * `novedades: true` marca también la casilla opcional. Lo usan los e2e que entran con "Entrar", un plan de Sumarte o "Entrar como…".
+ */
+export async function aceptarPaso(page: Page, opciones: { novedades?: boolean } = {}) {
+  const dialogo = page.getByRole("dialog", { name: /^(Crear tu cuenta|Entrar)$/ });
+  await dialogo.getByRole("checkbox", { name: /Leí y acepto la política de privacidad/ }).check();
+  await dialogo.getByRole("checkbox", { name: /Acepto los términos de uso del prototipo/ }).check();
+  if (opciones.novedades) await dialogo.getByRole("checkbox", { name: "Quiero recibir novedades por email" }).check();
+  await dialogo.getByRole("button", { name: /^Aceptar y (entrar|crear mi cuenta)$/ }).click();
+}
+
 /** Deja el sello de identidad ya obtenido (solo la primera vez, para que recargar no pise lo que la pantalla guardó). */
 export async function conIdentidadVerificada(page: Page) {
   await page.addInitScript(() => {
@@ -92,7 +104,24 @@ export function esInfraDeTerceros(url: string): boolean {
   );
 }
 
-/** Para los tests de "sin pedidos de red": infraestructura de terceros o pedidos HEAD y OPTIONS (no llevan cuerpo ni datos). */
+/**
+ * La lectura del estado del consentimiento (`GET /api/consentimientos`): el proveedor de sesión la hace una vez por persona,
+ * junto con `/api/sesion`, y no lleva datos de la pantalla (`consentimiento-en-la-base`).
+ */
+export function esLecturaDelConsentimiento(r: { url(): string; method(): string }): boolean {
+  return r.method() === "GET" && new URL(r.url()).pathname === "/api/consentimientos";
+}
+
+/** Para los tests de "sin pedidos de red": infraestructura de terceros, HEAD y OPTIONS (no llevan cuerpo ni datos) y la lectura del consentimiento. */
 export function ignorarEnSinRed(r: { url(): string; method(): string }): boolean {
-  return r.method() === "HEAD" || r.method() === "OPTIONS" || esInfraDeTerceros(r.url());
+  return r.method() === "HEAD" || r.method() === "OPTIONS" || esInfraDeTerceros(r.url()) || esLecturaDelConsentimiento(r);
+}
+
+/**
+ * Las consultas de ejemplo del Fogón cierran el 15 y el 30 de noviembre de 2026 y su estado se calcula
+ * en el navegador con el reloj real: sin esto, los tests se rompen cuando pasa la fecha (pasó el 23-nov).
+ * Fija el reloj del navegador al 10-nov-2026, con todas las consultas abiertas salvo las cerradas a mano.
+ */
+export async function relojDeLasConsultas(page: Page) {
+  await page.clock.setFixedTime(new Date("2026-11-10T15:00:00Z"));
 }

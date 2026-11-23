@@ -148,6 +148,14 @@ test.describe("Resumen", () => {
     }
   });
 
+  test("la tarjeta Bien común enlaza la propuesta v0.1 en discusión y /netx no vende FARO", async ({ page }) => {
+    await page.goto("/netx");
+    const main = page.locator("main");
+    await expect(main.getByRole("link", { name: "Propuesta v0.1 del bien común: en discusión" })).toHaveAttribute("href", "/bien-comun");
+    const texto = await textoMain(page);
+    expect(texto).not.toMatch(/\b(?:tramos?|staking)\b|precio de FARO/i);
+  });
+
   test("palabras que no van en /netx ni en /netx/simulador; 'diseño B' solo junto a doc 28", async ({ page }) => {
     for (const ruta of ["/netx", "/netx/simulador"]) {
       await page.goto(ruta);
@@ -232,6 +240,7 @@ test.describe("Resumen", () => {
     await page.goto("/netx");
     await expect(page.getByRole("heading", { level: 1, name: "¿Cómo se financia NetX?" })).toBeVisible();
     await page.waitForLoadState("networkidle");
-    expect(pedidos.filter((p) => p !== "/api/sesion")).toEqual([]);
+    // Los del layout: la sesión y el estado del consentimiento (que el proveedor lee una vez por persona).
+    expect(pedidos.filter((p) => p !== "/api/sesion" && p !== "/api/consentimientos")).toEqual([]);
   });
 });

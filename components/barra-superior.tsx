@@ -4,7 +4,7 @@ import { Campanita } from "./campanita";
 import { MenuPersona } from "./menu-persona";
 import { SelectorIdioma } from "./selector-idioma";
 import { EnlaceNetx } from "./sesion/enlace-netx";
-import { SoloConSesion } from "./sesion/puerta";
+import { SoloConConsentimiento } from "./sesion/puerta";
 
 /**
  * Barra superior fija, arriba a la derecha: NetX (interno, toda persona con sesión), la campanita, el selector de idioma
@@ -30,9 +30,9 @@ export async function BarraSuperior() {
           icono={<d.icono aria-hidden="true" size={18} />}
         />
       ))}
-      <SoloConSesion>
+      <SoloConConsentimiento>
         <Campanita />
-      </SoloConSesion>
+      </SoloConConsentimiento>
       <SelectorIdioma />
       <MenuPersona items={persona} />
     </header>
