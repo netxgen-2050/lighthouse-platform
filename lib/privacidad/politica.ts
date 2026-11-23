@@ -9,6 +9,33 @@
  * `lote-ficha-y-compra`, ADR-017). Cada persona vuelve a aceptar la política una vez.
  */
 
+/**
+ * 23-nov-2026 (cambio `consentimiento-alta`): sube a `2026-11-23-borrador` e informa de una vez tres novedades: aceptar antes
+ * de entrar o de crear la cuenta, la cookie de idioma `lh-idioma` y las novedades por email opcionales. La spec nombraba la
+ * versión `2026-10-15-borrador`, pero `main` ya estaba en `2026-11-03-borrador` (lotes): una versión vieja no puede subir nada.
+ * `idioma-legal` traduce esta misma versión sin volver a subirla.
+ */
+export type VersionPolitica = { version: string; fecha: string; cambios: readonly string[] };
+
+/** Las versiones de la política, en orden. La última es la vigente (`VERSION_POLITICA`). Toda versión después de la primera lista qué cambió. */
+export const VERSIONES_POLITICA: readonly VersionPolitica[] = [
+  { version: "2026-10-14-borrador", fecha: "2026-10-14", cambios: [] },
+  {
+    version: "2026-11-03-borrador",
+    fecha: "2026-11-03",
+    cambios: ["Sumamos los lotes simulados: guardamos en tu navegador qué lote reservaste o “pagaste” en la simulación."],
+  },
+  {
+    version: "2026-11-23-borrador",
+    fecha: "2026-11-23",
+    cambios: [
+      "Ahora aceptás la política y los términos antes de entrar o de crear tu cuenta, cada vez que entrás. Mientras no aceptes, no guardamos nada a tu nombre.",
+      "Si elegís un idioma, lo guardamos en tu navegador para mostrarte la plataforma en ese idioma.",
+      "Podés pedir que te mandemos novedades por email. Es opcional y lo podés retirar cuando quieras desde Mis datos.",
+    ],
+  },
+];
+
 export const RESPONSABLE = {
   nombre: "NetXGen",
   detalle: "entidad registrada en Honduras",
@@ -80,6 +107,16 @@ export const DATOS_POR_PANTALLA: readonly DatosDePantalla[] = [
     donde: "Hoy, solo en tu navegador. Con la base, en Neon.",
   },
   {
+    pantalla: "Configuración y barra superior",
+    datos: "El idioma que elegís, en una cookie del navegador (lh-idioma) y en tus preferencias. No lleva tu identidad.",
+    donde: "Hoy, en tu navegador. Con la base, en Neon.",
+  },
+  {
+    pantalla: "Novedades por email (opcional)",
+    datos: "Si pediste recibirlas o no, con la fecha y el camino por el que lo elegiste. Se usa tu email de la cuenta.",
+    donde: "Hoy, solo en tu navegador, y no mandamos ningún email. Con la base, en Neon.",
+  },
+  {
     pantalla: "Reportar un problema o idea",
     datos:
       "Lo que escribas, el contacto que dejes (sin cuenta, tu email) y datos técnicos de tu pantalla y navegador. Sin cuenta, además, tu IP (convertida en un código y solo en memoria) para limitar los envíos.",
@@ -93,11 +130,12 @@ export const FINALIDADES: readonly string[] = [
   "Mostrarte el territorio, las comunidades y lo que podés hacer según tu plan, y simular la reserva y la compra de un lote.",
   "Registrar tus pactos, Semillas y votos.",
   "Responder a tus pedidos de contacto y a tus reportes.",
+  "Si lo pedís (es opcional): mandarte novedades por email. Base: tu consentimiento opcional, que podés retirar desde Mis datos.",
   "Cuando exista la versión real: verificar tu identidad antes de que aportes, como exige la prevención de lavado de activos.",
 ];
 
 export const BASE_LEGAL =
-  "Tu consentimiento, que das al entrar por primera vez y podés retirar cuando quieras. Para los datos sensibles del Pasaporte te pedimos un consentimiento aparte.";
+  "Tu consentimiento, que das antes de entrar o de crear tu cuenta y podés retirar cuando quieras. Para los datos sensibles del Pasaporte te pedimos un consentimiento aparte, y las novedades por email son otro consentimiento opcional.";
 
 export const CONSERVACION: readonly string[] = [
   "Mientras tengas cuenta. Si retirás tu consentimiento o pedís que borren tu cuenta, se borran.",
@@ -123,6 +161,7 @@ export const DERECHOS: readonly Derecho[] = [
   { nombre: "Rectificación", que: "Corregir lo que esté mal (por ejemplo, desde tu Perfil)." },
   { nombre: "Supresión", que: "Pedir que borremos tus datos y tu cuenta." },
   { nombre: "Retiro del consentimiento", que: "Retirarlo cuando quieras, sin tener que dar explicaciones." },
+  { nombre: "Baja de las novedades", que: "Dejar de recibir las novedades por email cuando quieras, desde Mis datos." },
 ];
 
 export const MARCO_LEGAL =

@@ -33,8 +33,11 @@ export type ValorSesion = {
   billetera: string | null;
   /** ¿Está configurado Privy en este despliegue? */
   privyDisponible: boolean;
-  /** Abre el login de Privy; sin Privy lleva a Sumarte, donde está "Entrar como…" del modo de prueba. */
-  entrar: () => void;
+  /**
+   * Abre el paso con las casillas de consentimiento ("Crear tu cuenta" o "Entrar"). El login (Privy, o "Entrar como…" en el
+   * modo de prueba) solo se abre desde ese paso, al aceptar. `alAceptar` corre antes de abrir el login; al cancelar no corre nada.
+   */
+  entrar: (opciones?: { modo?: "alta" | "entrar"; alAceptar?: () => void }) => void;
   entrarComo: (email: string) => void;
   /** Nivel de la persona según cómo se sumó (sin sesión: "sin-cuenta"). Ver `lib/permisos/niveles.ts`. */
   nivel: Nivel;

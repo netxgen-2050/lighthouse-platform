@@ -26,7 +26,7 @@ export function useConsentimiento(idPersona: string | null) {
     const cargar = () => {
       let registro: Consentimiento | null = null;
       try {
-        registro = leerConsentimiento(window.localStorage);
+        registro = leerConsentimiento(window.localStorage, idPersona);
       } catch {
         // Sin almacenamiento no hay registro: se pide el consentimiento.
       }

@@ -1,4 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
+import { aceptarPaso } from "./ayudas";
 import { COOKIE_PRUEBA, EMAILS, expect, test, type Page } from "./fixtura";
 
 // Con Privy (previews y producción) elegir un plan abre el modal de Privy: los casos que usan "Entrar como…" van en el e2e local.
@@ -36,6 +37,7 @@ test.describe("sumarse desde Sumarte", () => {
     await page.goto("/sumarte");
     await expect(page.getByText("Todavía no te sumaste: elegí un plan.")).toBeVisible();
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
+    await aceptarPaso(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(page.getByText("Tu plan actual:")).toContainText("Explorador");
     await expect(barra(page).getByRole("button", { name: "Menú de la persona" })).toBeVisible();
@@ -51,6 +53,7 @@ test.describe("sumarse desde Sumarte", () => {
     await expect(page).toHaveURL(/\/sumarte\?volver=%2Fpactos$/);
     await expect(page.getByText("Pactos se habilita con el plan Miembro.")).toBeVisible();
     await page.getByRole("button", { name: "Hacerme miembro" }).click();
+    await aceptarPaso(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(page).toHaveURL(/\/pactos$/);
     await expect(page.getByRole("heading", { level: 1, name: "Tus pactos con la comunidad" })).toBeVisible();
@@ -63,6 +66,7 @@ test.describe("sumarse desde Sumarte", () => {
     await page.getByRole("button", { name: "Sumar mi comunidad" }).click();
     await page.getByRole("radio", { name: /Valle Solar/ }).check();
     await page.getByRole("button", { name: "Ser líder de esta comunidad" }).click();
+    await aceptarPaso(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(page.getByText("Sos líder de Valle Solar (simulado)")).toBeVisible();
     await page.goto("/tribus/valle");

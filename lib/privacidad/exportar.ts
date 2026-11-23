@@ -1,6 +1,7 @@
 import { NOMBRES_BASE } from "@/lib/demo/claves";
 import { constanciasDe, leerDelNavegador } from "@/lib/pactos/registro-compartido";
 import { NOMBRE_CLAVE_CONSENTIMIENTO, VERSION_POLITICA } from "./consentimiento";
+import { NOMBRE_CLAVE_NOVEDADES } from "./novedades";
 
 export type AlmacenLectura = Pick<Storage, "getItem">;
 
@@ -36,6 +37,7 @@ export function exportarMisDatos(entrada: {
   const datos: Record<string, unknown> = {};
   for (const [nombre, base] of Object.entries(NOMBRES_BASE)) datos[nombre] = leerValor(almacen, prefijo + base);
   datos.consentimiento = leerValor(almacen, prefijo + NOMBRE_CLAVE_CONSENTIMIENTO);
+  datos.novedades = leerValor(almacen, prefijo + NOMBRE_CLAVE_NOVEDADES);
   // Las constancias viven en un registro compartido: solo se incluyen las de los pactos de esta persona (null = no se pudo leer).
   const registro = leerDelNavegador(almacen);
   datos.pactosConstancias = registro === null ? null : constanciasDe(registro, idPersona);

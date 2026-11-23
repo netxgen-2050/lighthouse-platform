@@ -27,13 +27,19 @@ function Puente({ hijo }: { hijo: (privy: PrivyMinimo) => ReactNode }) {
  * sin Privy (por ejemplo en los e2e) el SDK ni se evalúa.
  */
 export default function PuentePrivy({ appId, hijo }: { appId: string; hijo: (privy: PrivyMinimo) => ReactNode }) {
+  const origen = typeof window === "undefined" ? "" : window.location.origin;
   return (
     <PrivyProvider
       appId={appId}
       config={{
         loginMethods: ["email", "google"],
         embeddedWallets: { ethereum: { createOnLogin: "users-without-wallets" } },
+        // Solo informa: la aceptación es la de las casillas del paso previo (consentimiento-alta).
         appearance: { showWalletLoginFirst: false },
+        legal: {
+          privacyPolicyUrl: `${origen}/privacidad`,
+          termsAndConditionsUrl: `${origen}/privacidad#terminos`,
+        },
       }}
     >
       <Puente hijo={hijo} />

@@ -45,7 +45,7 @@ export function MenuPersona({ items }: { items: ItemMenu[] }) {
       <Link href="/sumarte" className={BOTON_SUMARTE}>
         {t.destinos.sumarte}
       </Link>
-      <button type="button" className={BOTON_ENTRAR} onClick={entrar}>
+      <button type="button" className={BOTON_ENTRAR} onClick={() => entrar()}>
         {t.barra.entrar}
       </button>
     </>
@@ -54,7 +54,9 @@ export function MenuPersona({ items }: { items: ItemMenu[] }) {
 
 /** Avatar de la persona (iniciales del perfil, del nombre de la cuenta o del email) con el menú Perfil / Pasaporte / Mi recorrido / Configuración / Salir. */
 function MenuConSesion({ items }: { items: ItemMenu[] }) {
-  const { sesion, nombre, salir, nivel, tribuLider } = useSesion();
+  const { sesion, nombre, salir, nivel, tribuLider, consentimiento } = useSesion();
+  // Sin consentimiento vigente la persona es anónima: el menú solo ofrece "Salir".
+  const vigente = consentimiento === "vigente";
   const idioma = useIdioma();
   const t = useTextos("marco");
   const ruta = usePathname();
@@ -72,8 +74,8 @@ function MenuConSesion({ items }: { items: ItemMenu[] }) {
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar; se repite al cambiar de página (el perfil pudo cambiar).
-    setSiglas(inicialesGuardadas() || (nombre ? iniciales(nombre) : "") || inicialesDeEmail(sesion?.email));
-  }, [ruta, nombre, sesion?.email]);
+    setSiglas((vigente ? inicialesGuardadas() : "") || (nombre ? iniciales(nombre) : "") || inicialesDeEmail(sesion?.email));
+  }, [ruta, nombre, sesion?.email, vigente]);
 
   useEffect(() => {
     if (!abierto) return;
@@ -128,12 +130,12 @@ function MenuConSesion({ items }: { items: ItemMenu[] }) {
           <ul className="flex flex-col gap-1">
             <li className="px-2 pb-1">
               <p className="break-all text-xs text-muted">{sesion?.email}</p>
-              <p className="mt-1 text-xs text-muted">{t.barra.nivel(etiquetaDeNivel(nivel, idioma))}</p>
-              {tribuLider && buscarTribu(tribuLider) && (
+              {vigente && <p className="mt-1 text-xs text-muted">{t.barra.nivel(etiquetaDeNivel(nivel, idioma))}</p>}
+              {vigente && tribuLider && buscarTribu(tribuLider) && (
                 <p className="mt-1 text-xs font-bold">{t.barra.adminDe(buscarTribu(tribuLider)?.nombre ?? "")}</p>
               )}
             </li>
-            {items.map((i) => {
+            {(vigente ? items : []).map((i) => {
               const activo = esActivo(i.href, ruta);
               return (
                 <li key={i.href}>
