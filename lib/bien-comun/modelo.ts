@@ -57,15 +57,43 @@ export const QUE_DA = ["voz", "noches", "huertaYCocina", "talleres", "expensas"]
 export const QUE_NO_TIENE = ["exchange", "liquidez", "recompra", "respaldoTierra", "premioPorBloquear"] as const;
 
 // ---- Política de FARO (doc 34 §3, columna "De dónde viene") ----
+// La fuente es una cita del documento de origen y va en los dos idiomas.
 export const POLITICA = {
-  emision: { fuente: "Doc 11 (oferta atada a capacidad)" },
-  quema: { fuente: "Juanpi 2025 (quema por tarifas) y Gus en la call del 16-nov" },
-  bloqueo: { fuente: "Juanpi 2025 (veNETX), suavizado; slides, opción A" },
+  emision: { fuente: { es: "Doc 11 (oferta atada a capacidad)", en: "Doc 11 (supply tied to capacity)" } },
+  quema: {
+    fuente: {
+      es: "Juanpi 2025 (quema por tarifas) y Gus en la call del 16-nov",
+      en: "Juanpi 2025 (burning through fees) and Gus on the Nov 16 call",
+    },
+  },
+  bloqueo: {
+    fuente: {
+      es: "Juanpi 2025 (veNETX), suavizado; slides, opción A",
+      en: "Juanpi 2025 (veNETX), softened; slides, option A",
+    },
+  },
   /** En la versión 1 solo viaja con el lote; se revisa a los 12 meses con datos de uso. */
-  transferencia: { revisionMeses: 12, fuente: "Objeción de Juanpi: sin circulación no hay precio que defender" },
-  reserva: { fuente: "Slides, lámina 8" },
-  voz: { fuente: "Regla 6; slides, lámina 6" },
+  transferencia: {
+    revisionMeses: 12,
+    fuente: {
+      es: "Objeción de Juanpi: sin circulación no hay precio que defender",
+      en: "Juanpi's objection: with no circulation there is no price to defend",
+    },
+  },
+  reserva: { fuente: { es: "Slides, lámina 8", en: "Slides, slide 8" } },
+  voz: { fuente: { es: "Regla 6; slides, lámina 6", en: "Rule 6; slides, slide 6" } },
 } as const;
+
+// ---- Preguntas para el abogado: el orden y el ⚖ de cada una viven acá, no en la posición del diccionario ----
+export const PREGUNTAS_ABOGADO = [
+  { id: "boleto", termino: "boletocompraventa" },
+  { id: "valorNegociable", termino: "valornegociable" },
+  { id: "ticketsChicos", termino: null },
+  { id: "faroPrepagado", termino: null },
+  { id: "reventaAporta", termino: null },
+  { id: "faroPorCuota", termino: null },
+] as const;
+export type IdPreguntaAbogado = (typeof PREGUNTAS_ABOGADO)[number]["id"];
 
 export type IdPolitica = keyof typeof POLITICA;
 

@@ -114,6 +114,19 @@ test.describe("sin sesión", () => {
     expect(await textoFueraDeCambios(page)).not.toMatch(/tranche|staking|price of FARO|FARO price/i);
   });
 
+  test("en inglés, las tarjetas de la política (con su fuente) no tienen español suelto", async ({ page }) => {
+    await page.goto(`${RUTA}?lang=en`);
+    const tarjetas = page.locator("[data-politica]");
+    await expect(tarjetas).toHaveCount(Object.keys(POLITICA).length);
+    for (const id of Object.keys(POLITICA) as (keyof typeof POLITICA)[]) {
+      const tarjeta = page.locator(`[data-politica="${id}"]`);
+      await expect(tarjeta).toContainText(POLITICA[id].fuente.en);
+      await expect(tarjeta).not.toContainText(POLITICA[id].fuente.es);
+    }
+    const texto = (await tarjetas.allInnerTexts()).join(" ");
+    expect(texto).not.toMatch(/lámina|opción|Objeción|Regla |quema|suavizado|oferta atada|circulación|precio que defender/i);
+  });
+
   test("las parcelas comunes se leen del plano, no son tokens y no se venden; Ostrom marca cada principio como idea", async ({ page }) => {
     await page.goto(RUTA);
     const s = page.getByRole("region", { name: "Las parcelas comunes" });

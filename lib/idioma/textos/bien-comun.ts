@@ -222,14 +222,18 @@ const es = {
   abogado: {
     titulo: "Preguntas para el abogado",
     intro: "Preguntas nuevas del documento 34. Nada de esto es asesoramiento legal.",
-    items: [
-      "¿Un plan de cuotas tokenizado sobre un lote determinado es un boleto de compraventa? ¿Desde qué momento puede firmarse y cobrarse?",
-      "¿El Token Inversor es un valor negociable aunque el fideicomiso sea privado y la reventa ocurra dentro de la plataforma? ¿Quién tiene que estar registrado?",
-      "¿Qué vía permite tickets chicos al público: fideicomiso financiero con oferta pública, plataforma de financiamiento colectivo, otra?",
-      "¿FARO prepagado a precio fijo y canjeable por servicios es una preventa de servicios? ¿Qué pide defensa del consumidor y qué impuestos trae?",
-      "¿Se puede obligar por reglamento a que cada reventa de un lote aporte al común?",
-      "¿Acreditar FARO con cada cuota convierte a FARO en parte del contrato de inversión?",
-    ],
+    items: {
+      boleto:
+        "¿Un plan de cuotas tokenizado sobre un lote determinado es un boleto de compraventa? ¿Desde qué momento puede firmarse y cobrarse?",
+      valorNegociable:
+        "¿El Token Inversor es un valor negociable aunque el fideicomiso sea privado y la reventa ocurra dentro de la plataforma? ¿Quién tiene que estar registrado?",
+      ticketsChicos:
+        "¿Qué vía permite tickets chicos al público: fideicomiso financiero con oferta pública, plataforma de financiamiento colectivo, otra?",
+      faroPrepagado:
+        "¿FARO prepagado a precio fijo y canjeable por servicios es una preventa de servicios? ¿Qué pide defensa del consumidor y qué impuestos trae?",
+      reventaAporta: "¿Se puede obligar por reglamento a que cada reventa de un lote aporte al común?",
+      faroPorCuota: "¿Acreditar FARO con cada cuota convierte a FARO en parte del contrato de inversión?",
+    },
   },
   version: (fuente: string, version: string, fecha: string) =>
     `Fuente de los valores: ${fuente} · versión ${version} · ${fecha}. Todos son de ejemplo.`,
@@ -468,14 +472,18 @@ const en: Textos<typeof es> = {
   abogado: {
     titulo: "Questions for the lawyer",
     intro: "New questions from document 34. None of this is legal advice.",
-    items: [
-      "Is a tokenized installment plan over a specific lot a sales contract? From what moment can it be signed and collected?",
-      "Is the Investor Token a tradable security even if the trust is private and the resale happens inside the platform? Who has to be registered?",
-      "Which route allows small tickets for the public: a financial trust with a public offering, a crowdfunding platform, something else?",
-      "Is FARO prepaid at a fixed price and redeemable for services a presale of services? What does consumer protection require and what taxes does it bring?",
-      "Can a regulation require that each resale of a lot contributes to the commons?",
-      "Does crediting FARO with each installment make FARO part of the investment contract?",
-    ],
+    items: {
+      boleto:
+        "Is a tokenized installment plan over a specific lot a sales contract? From what moment can it be signed and collected?",
+      valorNegociable:
+        "Is the Investor Token a tradable security even if the trust is private and the resale happens inside the platform? Who has to be registered?",
+      ticketsChicos:
+        "Which route allows small tickets for the public: a financial trust with a public offering, a crowdfunding platform, something else?",
+      faroPrepagado:
+        "Is FARO prepaid at a fixed price and redeemable for services a presale of services? What does consumer protection require and what taxes does it bring?",
+      reventaAporta: "Can a regulation require that each resale of a lot contributes to the commons?",
+      faroPorCuota: "Does crediting FARO with each installment make FARO part of the investment contract?",
+    },
   },
   version: (fuente: string, version: string, fecha: string) =>
     `Source of the values: ${fuente} · version ${version} · ${fecha}. All of them are samples.`,

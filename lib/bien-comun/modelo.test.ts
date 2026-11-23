@@ -55,7 +55,7 @@ describe("propuesta v0.1 del bien común", () => {
 
   it("la política tiene 6 palancas y cada una dice de dónde viene", () => {
     expect(Object.keys(POLITICA)).toEqual(["emision", "quema", "bloqueo", "transferencia", "reserva", "voz"]);
-    for (const [id, p] of Object.entries(POLITICA)) expect(p.fuente.trim(), id).not.toBe("");
+    for (const [id, p] of Object.entries(POLITICA)) expect(p.fuente.es.trim(), id).not.toBe("");
     expect(POLITICA.transferencia.revisionMeses).toBe(12);
   });
 

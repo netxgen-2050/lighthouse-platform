@@ -17,6 +17,7 @@ import {
   DECISIONES,
   FARO_POR_M2,
   POLITICA,
+  PREGUNTAS_ABOGADO,
   PUENTES,
   PUERTAS,
   QUE_DA,
@@ -85,8 +86,8 @@ export default async function BienComunPage() {
     id,
     titulo: t.politica[id].titulo,
     regla: id === "transferencia" ? t.politica.transferencia.regla(meses) : (t.politica[id].regla as string),
-    // La fuente es una cita del documento de origen: sale del módulo, igual en los dos idiomas.
-    fuente: POLITICA[id].fuente,
+    // La fuente es una cita del documento de origen: sale del módulo, en el idioma de la persona.
+    fuente: POLITICA[id].fuente[idioma],
   }));
 
   const filas = DECISIONES.map((d) => {
@@ -279,11 +280,10 @@ export default async function BienComunPage() {
           </h2>
           <p className="max-w-3xl text-sm">{t.abogado.intro}</p>
           <ol className="grid list-decimal gap-1 pl-5 text-sm">
-            {t.abogado.items.map((i, n) => (
-              <li key={i}>
-                {i}
-                {n === 0 ? <TerminoLegal clave="boletocompraventa" idioma={idioma} /> : null}
-                {n === 1 ? <TerminoLegal clave="valornegociable" idioma={idioma} /> : null}
+            {PREGUNTAS_ABOGADO.map((q) => (
+              <li key={q.id} data-pregunta={q.id}>
+                {t.abogado.items[q.id]}
+                {q.termino ? <TerminoLegal clave={q.termino} idioma={idioma} /> : null}
               </li>
             ))}
           </ol>
