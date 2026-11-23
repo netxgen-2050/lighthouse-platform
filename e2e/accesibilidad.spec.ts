@@ -279,8 +279,8 @@ test("axe sin violaciones serias o críticas: /netx con la tabla del gráfico ab
   expect(await graves(page)).toEqual([]);
 });
 
-test("axe sin violaciones serias o críticas: /?camino=congreso con la tarjeta recomendada", async ({ page }) => {
-  await page.goto("/?camino=congreso&utm_source=newsletter");
+test("axe sin violaciones serias o críticas: /?camino=lotes con la tarjeta recomendada", async ({ page }) => {
+  await page.goto("/?camino=lotes&utm_source=newsletter");
   await expect(page.getByText("Recomendado para vos")).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");

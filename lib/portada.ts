@@ -11,36 +11,36 @@ export type Camino = {
   href: string;
 };
 
-/** Descripción del camino "Explorar": la cantidad de barrios sale de los datos; sin datos, sin número (nunca 0). */
+/** Descripción del camino de las tribus: la cantidad de barrios sale de los datos; sin datos, sin número (nunca 0). */
 export function descripcionBarrios(cantidad: number, idioma: Idioma = "es"): string {
   return textos("portada", idioma).barrios(cantidad);
 }
 
-// Origen: V.inicio del mock-up v6 (sección .paths), sin cifras escritas a mano.
+// Los tres caminos de la portada de Lighthouse VRN (portada-vrn), sin cifras escritas a mano.
 export function caminosDePortada(idioma: Idioma = "es"): Camino[] {
   const t = textos("portada", idioma).caminos;
   const barrios = tribusDeTerritorio("lighthouse").length;
   return [
+    {
+      id: "lotes",
+      etiqueta: t.lotes.etiqueta,
+      titulo: t.lotes.titulo,
+      descripcion: t.lotes.descripcion,
+      href: "/lotes",
+    },
+    {
+      id: "territorio",
+      etiqueta: t.territorio.etiqueta,
+      titulo: t.territorio.titulo,
+      descripcion: t.territorio.descripcion,
+      href: "/territorios/lighthouse",
+    },
     {
       id: "tribus",
       etiqueta: t.tribus.etiqueta,
       titulo: t.tribus.titulo,
       descripcion: descripcionBarrios(barrios, idioma),
       href: "/tribus",
-    },
-    {
-      id: "perfil",
-      etiqueta: t.perfil.etiqueta,
-      titulo: t.perfil.titulo,
-      descripcion: t.perfil.descripcion,
-      href: "/perfil",
-    },
-    {
-      id: "congreso",
-      etiqueta: t.congreso.etiqueta,
-      titulo: t.congreso.titulo,
-      descripcion: t.congreso.descripcion,
-      href: "/congreso",
     },
   ];
 }

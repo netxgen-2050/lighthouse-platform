@@ -1,19 +1,21 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { caminosDePortada, descripcionBarrios } from "./portada";
 import { tribusDeTerritorio } from "./territorios/datos";
 
 describe("portada", () => {
-  it("devuelve los tres caminos en orden", () => {
-    expect(caminosDePortada().map((c) => c.href)).toEqual([
-      "/tribus",
-      "/perfil",
-      "/congreso",
+  it("devuelve los tres caminos en orden, con sus destinos", () => {
+    expect(caminosDePortada().map((c) => [c.id, c.href])).toEqual([
+      ["lotes", "/lotes"],
+      ["territorio", "/territorios/lighthouse"],
+      ["tribus", "/tribus"],
     ]);
   });
 
-  it("la cantidad de barrios sale de los datos", () => {
+  it("la cantidad de barrios de la tarjeta de tribus sale de los datos", () => {
     const n = tribusDeTerritorio("lighthouse").length;
-    expect(caminosDePortada()[0].descripcion).toContain(`${n} barrios`);
+    expect(caminosDePortada()[2].descripcion).toContain(`${n} barrios`);
   });
 
   it("con un solo barrio usa el singular", () => {
@@ -30,13 +32,20 @@ describe("portada", () => {
 
   it("los caminos en inglés tienen los mismos destinos y textos en inglés", () => {
     const caminos = caminosDePortada("en");
-    expect(caminos.map((c) => c.href)).toEqual(["/tribus", "/perfil", "/congreso"]);
-    expect(caminos.map((c) => c.titulo)).toEqual(["See the communities", "Find my community", "Congress · Feb 2027"]);
+    expect(caminos.map((c) => c.href)).toEqual(["/lotes", "/territorios/lighthouse", "/tribus"]);
+    expect(caminos.map((c) => c.titulo)).toEqual(["See the lots", "Explore the territory", "See the communities"]);
   });
 
   it("sin datos no muestra número ni 0", () => {
     const texto = descripcionBarrios(0);
     expect(texto).not.toMatch(/\d/);
     expect(texto).toBe("Los barrios y las comunidades que los están formando.");
+  });
+
+  it("la página y sus textos no escriben cifras: salen de lib/portada-vrn.ts", () => {
+    for (const archivo of ["idioma/textos/portada.ts", "../app/page.tsx"]) {
+      const contenido = readFileSync(path.join(__dirname, archivo), "utf8");
+      expect(contenido, archivo).not.toMatch(/[0-9]+ ?(mm|ha|km|%)/);
+    }
   });
 });
