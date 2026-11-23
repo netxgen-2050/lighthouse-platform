@@ -55,3 +55,15 @@ Este es el primero de cuatro cambios en los que se partió el pedido (ver "Cambi
 - **Nuevo:** componentes chicos en `components/bien-comun/` (sello, diagrama, tarjetas).
 - **Se borra:** `app/bien-comun/calculadora.tsx` (`git rm`).
 - **Sin** tablas, migraciones, permisos, integraciones ni dependencias nuevas. Ruta pública ya existente.
+
+## Decisiones de Gus (23-nov-2026, issue #79)
+
+- **Primeros 4 lotes:** no entran a Token Tierra por ahora (no están en el barrio de 21 lotes del doc 34).
+- **Si el plano no tiene 21 lotes:** la calculadora usa 21 y la página muestra la diferencia.
+- **Sello:** primero en la página, no fijo arriba de la pantalla.
+- **Pase Fundador y la sección Invertir de Sumarte:** siguen como están, con la línea de contexto; se revisan cuando Juanpi y Franz decidan.
+- **Plazo máximo del Token Inversor:** "sin dato" hasta que lo diga Juanpi.
+- **`bien-comun-tokens`:** se archiva antes de construir (tarea 0.1).
+- **FARO y la adhesión al manifiesto:** conviven; manda la adhesión (ADR-031, aceptada) hasta que se resuelva la decisión 5 del doc 34.
+- **"Los números del barrio":** solo con sesión hasta la revisión R14 (`bien-comun-numeros-barrio`).
+- **Lote comprado en cuotas:** estado propio "En cuotas (simulado)" (`lote-token-tierra`).

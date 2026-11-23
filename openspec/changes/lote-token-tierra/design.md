@@ -28,7 +28,7 @@ La tarjeta existente cambia el título a "Ficha del lote (NFT, simulado)", saca 
 <!-- arquitecto: lo guardado en el navegador y los rótulos después del primer pago -->
 - **Un `plan` mal formado no borra la compra.** Hoy `esCompra` descarta la compra entera si un campo no valida. Para `plan`: si falta, o si no valida (`cuotas` fuera de `PLAN_CUOTAS.opciones`, números no finitos), `leerCompras` conserva la compra **sin** `plan` y la pantalla muestra el plan como "sin dato". Nunca se presume "contado" para una compra sin plan.
 - **Compra vieja con `faro`:** se muestra el número guardado, con el texto nuevo ("se acreditan a medida que se paga"); no se reescribe lo guardado.
-- **Después del primer pago con cuotas** no se dice que el lote está pagado: el anuncio (`anuncioPagado`) y la línea del boleto (`pagado`) dicen "primer pago simulado (anticipo)". El estado del lote sigue siendo `vendido-a-vos` (el plan en cuotas es una compra en cuotas), con el plan entre paréntesis si lo hay; si Gus prefiere otro estado, es una decisión de producto aparte.
+- **Después del primer pago con cuotas** no se dice que el lote está pagado: el anuncio (`anuncioPagado`) y la línea del boleto (`pagado`) dicen "primer pago simulado (anticipo)". **Decisión de Gus (23-nov):** el lote comprado en cuotas pasa a un estado propio, `en-cuotas-tuyo`, rotulado "En cuotas (simulado)" / "In instalments (simulated)". `vendido-a-vos` queda solo para la compra al contado.
 - La tarjeta del plan se muestra según `ventaSimulada`; nunca lee `aprobacionMunicipal` (ADR-030, ADR-031 regla 5).
 
 ## Primeros 4 y Soluna

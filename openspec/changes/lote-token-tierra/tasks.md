@@ -26,6 +26,10 @@ Requiere `bien-comun-propuesta` implementado (módulo nuevo y ⚖ `tokentierra`)
 
 - [ ] 5.1 En `e2e/lotes.spec.ts`: plan de partida en `/lotes/lote-1`; cambiar a 12 cuotas con teclado; contado; FARO por cuota y total (esperados calculados con el módulo); "Ordenanza 173" y "no está otorgada"; ficha del NFT sin FARO; boleto con 24 cuotas y FARO del anticipo; compra vieja sin plan (sembrada en el almacenamiento del navegador) sin error; `/lotes/lote-535` sin Token Tierra ni FARO; inglés; 390 px. **Verifica:** `pnpm test:e2e e2e/lotes.spec.ts` y `e2e/accesibilidad.spec.ts` en verde.
 
+## 5 bis. Estado en cuotas (decisión de Gus, 23-nov)
+
+- [ ] 5b.1 Sumar el estado `en-cuotas-tuyo` a `EstadoMostrado` (`lib/lotes/compra.ts`) con su rótulo es/en, en la ficha, la lista y el mapa. **Verifica:** test de `estadoConCompras` (cuotas → `en-cuotas-tuyo`, contado → `vendido-a-vos`) y e2e de compra en cuotas.
+
 ## 6. Cierre
 
 - [ ] 6.1 **Verifica:** `pnpm verificar` y `pnpm build` en verde; `pnpm exec openspec validate lote-token-tierra --strict` pasa.

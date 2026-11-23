@@ -1,5 +1,9 @@
 # Tasks
 
+## 0. Antes de empezar (decisión de Gus, 23-nov)
+
+- [ ] 0.1 Archivar `bien-comun-tokens` (`pnpm exec openspec archive bien-comun-tokens`) y sacar de su spec archivada los requisitos que este cambio reemplaza (tramos, staking, reparto fijo, tierra como reserva). **Verifica:** `openspec/changes/bien-comun-tokens` ya no existe y `pnpm exec openspec validate --specs` pasa.
+
 ## 1. Modelo
 
 - [ ] 1.1 Reescribir `lib/bien-comun/modelo.ts` según `design.md` §1: `VERSION_PROPUESTA`, `FARO_POR_M2` con fuente, `CARRILES`, `PUENTES`, `PUERTAS`, `QUE_DA`, `QUE_NO_TIENE`, `POLITICA`, `DECISIONES` (8, todas `"abierta"`), `CAMBIOS_DESDE_V_ANTERIOR`. Mantener `faroDeLote`, `loteTraeFaro` y `centroDeAnillo` con la misma firma. `PUENTES.parteDeCadaPago` lee `MODELO_LOTES.aporteUnico`. **Verifica:** `pnpm exec tsc --noEmit` sin errores; `grep -rn "cotizar\|TRAMOS\|STAKING\|REPARTO\|SUMINISTRO" app lib components e2e` sin resultados.

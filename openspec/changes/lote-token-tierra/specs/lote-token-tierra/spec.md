@@ -66,3 +66,15 @@ La ficha SHALL seguir siendo bilingüe, pasar axe en los dos idiomas, no tener s
 #### Scenario: Inglés
 - **WHEN** una persona abre `/lotes/lote-1?lang=en`
 - **THEN** lee la tarjeta del plan en inglés y axe no reporta violaciones
+
+### Requirement: Estado de un lote en cuotas
+<!-- Decisión de Gus, 23-nov-2026 (issue #79) -->
+Después del primer pago con un plan en cuotas, el lote MUST mostrarse como "En cuotas (simulado)" ("In instalments (simulated)"), y nunca como vendido. "Vendido (simulado, a vos)" SHALL quedar solo para la compra al contado.
+
+#### Scenario: Compra en 24 cuotas
+- **WHEN** una persona paga el anticipo de un plan de 24 cuotas
+- **THEN** la ficha, la lista y el mapa muestran el lote como "En cuotas (simulado)"
+
+#### Scenario: Compra al contado
+- **WHEN** una persona paga al contado
+- **THEN** el lote se muestra como "Vendido (simulado, a vos)"

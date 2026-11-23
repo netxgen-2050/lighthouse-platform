@@ -66,3 +66,15 @@ La calculadora SHALL ser bilingüe, usable solo con teclado, pasar axe en los do
 #### Scenario: Inglés
 - **WHEN** una persona abre `/bien-comun?lang=en` y usa la calculadora con Tab y el teclado
 - **THEN** todo está en inglés y axe no reporta violaciones
+
+### Requirement: Los números del barrio solo con sesión
+<!-- Decisión de Gus, 23-nov-2026 (issue #79) -->
+La página `/bien-comun` SHALL seguir siendo pública, pero la sección "Los números del barrio" (calculadora, monto del Token Inversor, prima, mes en que se devuelve, total que recibe y lo que le llega al común) MUST mostrarse solo a una persona con sesión, hasta la revisión R14. Sin sesión, en su lugar SHALL aparecer un aviso corto con el enlace para entrar (el patrón de `components/sesion/entrar-para.tsx`), sin ningún número del barrio.
+
+#### Scenario: Sin sesión
+- **WHEN** una persona sin sesión abre `/bien-comun`
+- **THEN** ve el sello, los carriles, las puertas y las decisiones, y en el lugar de la calculadora un aviso para entrar, sin ningún número del barrio
+
+#### Scenario: Con sesión
+- **WHEN** una persona con sesión abre `/bien-comun`
+- **THEN** ve la calculadora con los valores de partida

@@ -1,6 +1,6 @@
 # ADR-031 · Una propuesta en discusión se muestra desde un módulo con versión y estado por decisión, y no tiene efectos: FARO no da membresía, voto ni rol en la plataforma mientras sus decisiones estén abiertas
 
-- **Estado:** Propuesta
+- **Estado:** Aceptada (Gus, 23-nov-2026)
 - **Fecha:** 2026-11-23
 - **Cambio OpenSpec relacionado:** `bien-comun-propuesta` (y sus hermanos `bien-comun-numeros-barrio`, `lote-token-tierra`, `token-inversor-y-coherencia`). Se apoya en ADR-010, ADR-023, ADR-025 y ADR-030.
 

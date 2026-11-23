@@ -25,6 +25,10 @@ Requiere `bien-comun-propuesta` implementado (módulo y página nuevos).
 
 - [ ] 5.1 En `e2e/bien-comun.spec.ts`: valores de partida; caso base (317.200, mes 48, 21 %); precio 40000 → mes 29; 1 lote por trimestre → "no en 6 años"; campo vacío → "sin dato"; recargar vuelve a los de partida; tabla del común con 6 filas; en inglés con teclado; sin scroll a 390 px. Los valores esperados se calculan importando `lib/bien-comun/barrio.ts`, no se escriben. **Verifica:** `pnpm test:e2e e2e/bien-comun.spec.ts` y `e2e/accesibilidad.spec.ts` en verde.
 
+## 5 bis. Solo con sesión (decisión de Gus, 23-nov)
+
+- [ ] 5b.1 La sección "Los números del barrio" se muestra solo con sesión; sin sesión, aviso para entrar con el patrón de `components/sesion/entrar-para.tsx`, sin números. **Verifica:** e2e sin sesión no encuentra la calculadora ni el monto del Token Inversor; e2e con sesión de prueba la encuentra.
+
 ## 6. Cierre
 
 - [ ] 6.1 **Verifica:** `pnpm verificar` y `pnpm build` en verde; `pnpm exec openspec validate bien-comun-numeros-barrio --strict` pasa.
