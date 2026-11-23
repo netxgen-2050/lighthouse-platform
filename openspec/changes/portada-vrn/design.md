@@ -35,7 +35,7 @@ Son borrador de agente, para que Gus los ajuste.
 | `sobretitulo` | Lighthouse VRN · Río Negro, Argentina | Lighthouse VRN · Río Negro province, Argentina (decisión de Gus, 23-nov: el test de diccionarios no acepta un texto idéntico al español) |
 | `tituloInicio` | Regenerar desde el agua. | Regenerating from the water. |
 | `tituloFin` | Una promesa a 2030. | A promise for 2030. |
-| `bajada` | Para 2030, Lighthouse VRN quiere ser un territorio que se regenera desde el agua, en el corazón de Vaca Muerta: con trabajo en industrias regenerativas y una comunidad que lo vive y lo cuida. Es nuestra meta, no una garantía. | By 2030, Lighthouse VRN aims to be a territory regenerating from the water, in the heart of Vaca Muerta: with work in regenerative industries and a community that lives in it and cares for it. It is our goal, not a guarantee. |
+| `bajada` | Para 2030, Lighthouse VRN quiere ser un territorio que se regenera desde el agua, en el Alto Valle de Río Negro, cerca de Vaca Muerta: con trabajo en industrias regenerativas y una comunidad que lo vive y lo cuida. Es nuestra meta, no una garantía. | By 2030, Lighthouse VRN aims to be a territory regenerating from the water, in the Alto Valle of Río Negro, near Vaca Muerta: with work in regenerative industries and a community that lives in it and cares for it. It is our goal, not a guarantee. |
 | `verLotes` | Ver los lotes | See the lots |
 | `promesa.agua` | **Agua.** Todo empieza por el agua: leerla, guardarla y llevarla. Sin eso no hay suelo, ni árboles, ni casa. | **Water.** It all starts with water: reading it, storing it and moving it. Without it there is no soil, no trees and no home. |
 | `promesa.trabajo` | **Trabajo.** Queremos que regenerar sea también una forma de vivir: trabajo en industrias regenerativas, cerca de donde se vive. | **Work.** We want regenerating to be a way of making a living too: work in regenerative industries, close to where you live. |
@@ -94,7 +94,7 @@ En inglés: Buy / See the lots; Discover / Explore the territory; Coming next / 
 
 - [El Congreso pierde su última entrada visible] → Es coherente con Congreso oculto del menú, y `/congreso` sigue por su dirección (`docs/notas/congreso-en-pausa.md`).
 - ["Seguro y abierto" es una afirmación sin dato] → Es lo pedido, va sin cifra y con el ⚖ de límites a extranjeros, y es uno de los textos a revisar antes de abrir afuera (R14).
-- ["En el corazón de Vaca Muerta"] → Es la frase del pedido; Mainqué está en el Alto Valle de Río Negro. Pregunta abierta, por si un lector de la zona la cuestiona.
+- ["En el corazón de Vaca Muerta"] → Resuelto el 23-nov: Gus eligió "en el Alto Valle de Río Negro, cerca de Vaca Muerta".
 - [Enlaces viejos con `?camino=congreso` en campañas] → Ninguna tarjeta queda marcada y la página no falla. El origen de la campaña se guarda igual.
 - [Se pisa con `idioma-portada-sumarte` (5/6)] → Cerrar aquel primero; este cambio reescribe textos que aquel ya tradujo.
 

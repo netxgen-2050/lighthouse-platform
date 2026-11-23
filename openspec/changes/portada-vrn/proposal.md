@@ -7,7 +7,7 @@ Quien llega de cero a la portada hoy lee "Encontrá tu tribu" y ve una tarjeta d
 ## What Changes
 
 - **Nueva narrativa en `/`, en español e inglés:**
-  - **La promesa a 2030:** regeneración desde el agua en el corazón de Vaca Muerta, trabajo en industrias regenerativas, y comunidad.
+  - **La promesa a 2030:** regeneración desde el agua en el Alto Valle de Río Negro, cerca de Vaca Muerta, trabajo en industrias regenerativas, y comunidad.
   - **Argentina** como lugar seguro y abierto, con su ⚖ sobre los límites a extranjeros en tierra rural.
   - **Los cinco capitales de la regeneración.**
   - **Llamado principal:** "Ver los lotes", a `/lotes`.
@@ -45,7 +45,7 @@ Quien llega de cero a la portada hoy lee "Encontrá tu tribu" y ve una tarjeta d
 
 ## Decisiones de Gus (23-nov-2026, después de la noche)
 
-- **Los cinco capitales:** confirmados; salen de la presentación de Lighthouse SMA ("The 5 Capitals of Regenerative Development") y la portada muestra la fuente.
+- **Los cinco capitales:** confirmados; salen de la presentación de Lighthouse SMA ("The 5 Capitals of Regenerative Development"); la portada muestra la fuente como "Presentación del equipo de Lighthouse", porque no nombra a SMA.
 - **Vaca Muerta:** "en el Alto Valle de Río Negro, cerca de Vaca Muerta". Sale "lejos de los grandes conflictos".
 - **"Ver las comunidades"** en lugar de "Ver las tribus", por el vocabulario de pantalla.
 - **Sobretítulo en inglés:** "Río Negro province, Argentina".

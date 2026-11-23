@@ -136,7 +136,7 @@ test("la cantidad de barrios sale de los datos", async ({ page }) => {
 
 test("héroe con la propuesta, aviso de prototipo y sin otros nodos", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByText("en el corazón de Vaca Muerta")).toBeVisible();
+  await expect(page.getByText("en el Alto Valle de Río Negro, cerca de Vaca Muerta")).toBeVisible();
   await expect(page.getByText("Prototipo interno · datos de ejemplo")).toBeVisible();
   await expect(page.getByText("San Martín de los Andes")).toHaveCount(0);
   await expect(page.getByText("Atlántico Sur")).toHaveCount(0);

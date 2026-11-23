@@ -7,7 +7,7 @@ Que quien llega de cero a la portada entienda la promesa de Lighthouse VRN a 203
 ## ADDED Requirements
 
 ### Requirement: La promesa a 2030
-La portada SHALL contar, en español e inglés, la promesa de Lighthouse VRN a 2030: regeneración desde el agua en el corazón de Vaca Muerta, trabajo en industrias regenerativas y comunidad. MUST presentarla como una meta, no como una garantía.
+La portada SHALL contar, en español e inglés, la promesa de Lighthouse VRN a 2030: regeneración desde el agua en el Alto Valle de Río Negro, cerca de Vaca Muerta, trabajo en industrias regenerativas y comunidad. MUST presentarla como una meta, no como una garantía.
 
 #### Scenario: Leer la promesa
 - **WHEN** una persona abre `/`

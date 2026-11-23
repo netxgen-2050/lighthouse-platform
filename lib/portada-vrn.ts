@@ -1,5 +1,5 @@
 // Datos de la portada (`/`): los cinco capitales de la regeneración y las cifras con fuente.
-// Los cinco capitales los confirmó Gus el 23-nov-2026: son los de la presentación de Lighthouse SMA ("The 5 Capitals
+// Los cinco capitales los confirmó Gus el 23-nov-2026: son los de una presentación del equipo de Lighthouse (la de SMA, que la portada no nombra) ("The 5 Capitals
 // of Regenerative Development", que cita The Five Capitals Playbook). Textos de cada capital en borrador.
 import { vocabulario } from "./idioma/vocabulario";
 import type { Bilingue, Idioma } from "./idioma/tipos";
@@ -7,7 +7,7 @@ import type { Bilingue, Idioma } from "./idioma/tipos";
 export type Capital = { id: string; nombre: Required<Bilingue>; texto: Required<Bilingue> };
 
 /** De dónde salen los cinco capitales; la portada la muestra debajo de la lista. */
-export const FUENTE_CAPITALES = "Presentación de Lighthouse SMA, \"The 5 Capitals of Regenerative Development\" (cita The Five Capitals Playbook)";
+export const FUENTE_CAPITALES = "Presentación del equipo de Lighthouse, \"The 5 Capitals of Regenerative Development\" (cita The Five Capitals Playbook)";
 
 export const CAPITALES: readonly Capital[] = [
   {
