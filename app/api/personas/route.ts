@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/cliente";
-import { origenPermitido } from "@/lib/reportes/limite";
+import { moldeDeEscritura } from "@/lib/sesion/molde-escritura";
 import { agregarPersona, cambiarPersona, ErrorDeGestion, listarPersonas, validarCambios } from "@/lib/sesion/gestion";
 import { sesionDelPedido } from "@/lib/sesion/servidor";
 
@@ -42,20 +42,6 @@ export async function GET(req: Request) {
   } catch (e) {
     return respuestaDeError(e);
   }
-}
-
-/**
- * Molde de ADR-006 para lo que escribe: tipo de contenido JSON y `Origin` propio. Con la sesión de Neon Auth en una cookie, el
- * navegador la manda solo también desde otro sitio; sin este molde, esa página ajena podría escribir a nombre de la persona.
- */
-function moldeDeEscritura(req: Request): NextResponse | null {
-  if (!(req.headers.get("content-type") ?? "").toLowerCase().startsWith("application/json")) {
-    return NextResponse.json({ ok: false, error: "Tipo de contenido no admitido." }, { status: 415, headers: SIN_CACHE });
-  }
-  if (!origenPermitido(req.headers)) {
-    return NextResponse.json({ ok: false, error: "Origen no permitido." }, { status: 403, headers: SIN_CACHE });
-  }
-  return null;
 }
 
 export async function POST(req: Request) {

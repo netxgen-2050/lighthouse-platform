@@ -1,0 +1,61 @@
+import { NextResponse } from "next/server";
+import { db } from "@/lib/db/cliente";
+import { estadoConsentimiento, filasDePersona, registrar, validarPedido } from "@/lib/privacidad/servidor";
+import { entornoDeSesion } from "@/lib/sesion/entorno";
+import { moldeDeEscritura } from "@/lib/sesion/molde-escritura";
+import { sesionDelPedido } from "@/lib/sesion/servidor";
+
+export const dynamic = "force-dynamic";
+
+const SIN_CACHE = { "Cache-Control": "no-store" };
+
+/**
+ * El consentimiento de la persona en sesión, guardado en el libro `consentimientos` (consentimiento-en-la-base). `GET` devuelve
+ * el estado vigente (con `?filas=1`, también todas las filas de la persona, para la descarga de Mis datos); `POST` registra
+ * `acepta` o `retira`. 401 sin sesión, 403 sin acceso, 422 si el pedido no vale, 503 si la base falla (la persona sigue anónima).
+ * Esta ruta y `/api/sesion` son las únicas que escriben o leen sin exigir un consentimiento vigente.
+ */
+export async function GET(req: Request) {
+  const s = await sesionDelPedido(req);
+  if (s.estado !== 200) return NextResponse.json({ ok: false }, { status: s.estado, headers: SIN_CACHE });
+  try {
+    const base = await db();
+    const estado = await estadoConsentimiento(base, s.personaId);
+    const conFilas = new URL(req.url).searchParams.get("filas") === "1" && s.personaId !== null;
+    return NextResponse.json(
+      { ok: true, estado, ...(conFilas && s.personaId ? { filas: await filasDePersona(base, s.personaId) } : {}) },
+      { headers: SIN_CACHE },
+    );
+  } catch {
+    console.error("[consentimientos] la base no respondió al leer el estado");
+    return NextResponse.json({ ok: false }, { status: 503, headers: SIN_CACHE });
+  }
+}
+
+export async function POST(req: Request) {
+  const molde = moldeDeEscritura(req);
+  if (molde) return molde;
+  const s = await sesionDelPedido(req);
+  if (s.estado !== 200) return NextResponse.json({ ok: false }, { status: s.estado, headers: SIN_CACHE });
+  let cuerpo: unknown;
+  try {
+    cuerpo = JSON.parse(await req.text());
+  } catch {
+    return NextResponse.json({ ok: false, error: "Cuerpo inválido." }, { status: 422, headers: SIN_CACHE });
+  }
+  const v = validarPedido(cuerpo);
+  if (!v.ok) return NextResponse.json({ ok: false, error: v.motivo }, { status: 422, headers: SIN_CACHE });
+  try {
+    const r = await registrar(await db(), s.verificada, entornoDeSesion(), v.pedido);
+    if (!r.ok) {
+      return r.motivo === "sin-acceso"
+        ? NextResponse.json({ ok: false }, { status: 403, headers: SIN_CACHE })
+        : NextResponse.json({ ok: false, consentimiento: false }, { status: 403, headers: SIN_CACHE });
+    }
+    return NextResponse.json({ ok: true, estado: r.estado }, { headers: SIN_CACHE });
+  } catch {
+    // Sin el detalle del error: puede traer datos de la consulta.
+    console.error("[consentimientos] falló el registro en la base");
+    return NextResponse.json({ ok: false }, { status: 503, headers: SIN_CACHE });
+  }
+}

@@ -34,6 +34,7 @@ describe("POST /api/reportes", () => {
       personaId: null,
       clavesAnteriores: [],
       persona: { email: "persona@prueba.test", rol: "persona", perfil: "usuario", tribuAdmin: null } as never,
+      verificada: { prueba: true, identidad: { proveedor: "privy", idExterno: "prueba:persona@prueba.test", email: "persona@prueba.test", emailVerificado: true } },
     });
   });
   afterEach(() => {
