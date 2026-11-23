@@ -47,7 +47,7 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "textos/biencomun": {
     estado: "pendiente",
-    que: "El bien común de Lighthouse VRN: principios de Ostrom, NFT del lote y token del bien común (FARO), reparto, venta por tramos con calculadora, staking, CAPEX y OPEX, riesgos, tarjeta de la ficha y línea del boleto",
+    que: "El bien común de Lighthouse VRN: propuesta v0.1 en discusión: sello, dos carriles y tres puentes, puertas de FARO, política, decisiones abiertas, qué cambió, preguntas para el abogado, principios de Ostrom, parcelas comunes, tarjeta de la ficha y línea del boleto",
   },
   "textos/hibrido": {
     estado: "pendiente",

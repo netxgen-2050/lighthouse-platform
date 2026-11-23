@@ -1,38 +1,76 @@
 import { describe, expect, it } from "vitest";
+import { MODELO_LOTES } from "@/lib/lotes/modelo";
 import {
-  AVANCE_DE_EJEMPLO,
+  CAMBIOS_DESDE_V_ANTERIOR,
+  CARRILES,
+  DECISIONES,
   FARO_POR_M2,
-  MONTO_MINIMO_USD,
-  REPARTO,
-  SUMINISTRO,
-  TRAMOS,
+  POLITICA,
+  PUENTES,
+  PUERTAS,
+  QUE_DA,
+  QUE_NO_TIENE,
+  VERSION_PROPUESTA,
   centroDeAnillo,
-  cotizar,
-  disponiblePorTramo,
-  faroDeGrupo,
   faroDeLote,
   loteTraeFaro,
-  reparto,
-  totalPorTramo,
 } from "./modelo";
 
-describe("modelo del bien común", () => {
-  it("el reparto suma 100 % y sus tokens suman el suministro", () => {
-    expect(REPARTO.reduce((s, g) => s + g.pct, 0)).toBe(100);
-    expect(reparto().reduce((s, g) => s + g.faro, 0)).toBe(SUMINISTRO);
+describe("propuesta v0.1 del bien común", () => {
+  it("tiene versión, fecha y fuente", () => {
+    expect(VERSION_PROPUESTA.version).toBe("v0.1");
+    expect(VERSION_PROPUESTA.fecha).toBe("2026-11-19");
+    expect(VERSION_PROPUESTA.fuente).toContain("doc 34");
   });
 
-  it("los tramos suman lo que el reparto da a la venta temprana", () => {
-    expect(TRAMOS.reduce((s, t) => s + t.cantidad, 0)).toBe(faroDeGrupo("venta"));
-    expect(totalPorTramo()).toHaveLength(TRAMOS.length);
+  it("son 8 decisiones y todas están abiertas", () => {
+    expect(DECISIONES).toHaveLength(8);
+    expect(new Set(DECISIONES.map((d) => d.id)).size).toBe(8);
+    for (const d of DECISIONES) expect(d.estado, d.id).toBe("abierta");
   });
 
-  it("los precios de los tramos suben", () => {
-    for (let i = 1; i < TRAMOS.length; i++) expect(TRAMOS[i].precio).toBeGreaterThan(TRAMOS[i - 1].precio);
+  it("dos carriles: tres nodos en el A y dos en el B", () => {
+    expect(CARRILES.a).toHaveLength(3);
+    expect(CARRILES.b).toHaveLength(2);
+  });
+
+  it("son 3 puentes, cada uno con origen y destino", () => {
+    expect(PUENTES).toHaveLength(3);
+    for (const p of PUENTES) {
+      expect(p.desde, p.id).toBeTruthy();
+      expect(p.hacia, p.id).toBeTruthy();
+    }
+  });
+
+  it("la parte de cada pago es la misma que el aporte único de los lotes (no se copia)", () => {
+    const parte = PUENTES.find((p) => p.id === "parteDeCadaPago");
+    expect(parte?.valor?.fraccion).toBe(MODELO_LOTES.aporteUnico);
+  });
+
+  it("son 3 puertas, 5 cosas que da y 5 que no tiene", () => {
+    expect(PUERTAS).toHaveLength(3);
+    expect(QUE_DA).toHaveLength(5);
+    expect(QUE_NO_TIENE).toHaveLength(5);
+  });
+
+  it("la política tiene 6 palancas y cada una dice de dónde viene", () => {
+    expect(Object.keys(POLITICA)).toEqual(["emision", "quema", "bloqueo", "transferencia", "reserva", "voz"]);
+    for (const [id, p] of Object.entries(POLITICA)) expect(p.fuente.es.trim(), id).not.toBe("");
+    expect(POLITICA.transferencia.revisionMeses).toBe(12);
+  });
+
+  it("FARO por m² dice su fuente", () => {
+    expect(FARO_POR_M2.fuente.trim()).not.toBe("");
+  });
+
+  it("cuatro cosas salieron del modelo del 8-nov", () => {
+    expect(CAMBIOS_DESDE_V_ANTERIOR.ids).toHaveLength(4);
+    expect(CAMBIOS_DESDE_V_ANTERIOR.fechaModeloAnterior).toBe("2026-11-08");
   });
 
   it("faroDeLote usa los tokens por m² y no inventa un valor", () => {
-    expect(faroDeLote(100)).toBe(100 * FARO_POR_M2);
+    expect(faroDeLote(100)).toBe(100 * FARO_POR_M2.valor);
+    expect(faroDeLote(null)).toBeNull();
     expect(faroDeLote(undefined)).toBeNull();
     expect(faroDeLote(0)).toBeNull();
   });
@@ -53,40 +91,5 @@ describe("modelo del bien común", () => {
       ]),
     ).toEqual({ lat: 1, lng: 1 });
     expect(centroDeAnillo([])).toBeNull();
-  });
-
-  it("cotizar parte del avance de ejemplo y se queda en el tramo 1 con un monto chico", () => {
-    const c = cotizar(100);
-    expect(c.ok).toBe(true);
-    if (!c.ok) return;
-    expect(c.tramos).toEqual([AVANCE_DE_EJEMPLO.tramo]);
-    expect(c.faro).toBe(Math.floor(100 / TRAMOS[0].precio));
-    expect(c.precioPromedio).toBeCloseTo(TRAMOS[0].precio, 10);
-    expect(c.aporteAlTesoro).toBeCloseTo(10, 10);
-  });
-
-  it("cotizar cruza de tramo y el precio promedio queda entre los dos", () => {
-    const resto = disponiblePorTramo()[0];
-    const usd = resto * TRAMOS[0].precio + 1000;
-    const c = cotizar(usd);
-    expect(c.ok).toBe(true);
-    if (!c.ok) return;
-    expect(c.tramos).toEqual([0, 1]);
-    expect(c.precioPromedio).toBeGreaterThan(TRAMOS[0].precio);
-    expect(c.precioPromedio).toBeLessThan(TRAMOS[1].precio);
-    expect(c.faro).toBe(Math.floor(resto + 1000 / TRAMOS[1].precio));
-  });
-
-  it("con un monto menor al mínimo dice monto mínimo, sin resultado", () => {
-    expect(cotizar(MONTO_MINIMO_USD - 1)).toEqual({ ok: false, motivo: "monto-minimo" });
-    expect(cotizar(Number.NaN)).toEqual({ ok: false, motivo: "invalido" });
-  });
-
-  it("si el monto supera todos los tramos, avisa el sobrante", () => {
-    const c = cotizar(1e9);
-    expect(c.ok).toBe(true);
-    if (!c.ok) return;
-    expect(c.tramos).toEqual([0, 1, 2, 3]);
-    expect(c.sobrante).toBeGreaterThan(0);
   });
 });

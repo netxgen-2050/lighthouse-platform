@@ -344,45 +344,91 @@ export const TERMINOS = {
   tokenbiencomun: {
     titulo: "Token del bien común",
     texto:
-      "Una unidad que daría voz en las decisiones sobre lo común. No está respaldada por la tierra ni da una parte de ella. Todavía no existe y es una simulación para conversar: no se emite, no se vende y no se promete ningún valor. El nombre FARO es provisorio. A verificar con abogado.",
+      "Es lo que propone la versión v0.1 (en discusión, nada está acordado): una membresía que crece y da voz sobre lo común, noches, huerta y cocina, talleres y parte de las expensas. Se emitiría solo por tres puertas (con el lote, aportando trabajo y cuidado, o prepagando servicios a precio fijo) y se quemaría al usarse. No tiene precio, ni mercado, ni respaldo en la tierra, y en la versión 1 solo viajaría junto con el lote. Hoy, en la plataforma, ser parte del común sale de adherir al manifiesto: FARO no cambia eso. Todavía no existe y es una simulación: no se emite ni se vende. El nombre FARO es provisorio. A verificar con abogado.",
     borrador: true,
     en: {
       titulo: "Commons token",
       texto:
-        "A unit that would give a voice in decisions about what is shared. It is not backed by the land and gives no share of it. It does not exist yet and is a simulation to talk about: it is not issued, not sold and no value is promised. The name FARO is provisional. To be verified with a lawyer.",
+        "This is what version v0.1 proposes (under discussion, nothing is agreed): a membership that grows and gives a voice over what is shared, nights, garden and kitchen, workshops and part of the common charges. It would be issued only through three doors (with the lot, by contributing work and care, or by prepaying services at a fixed price) and would be burned when used. It has no price, no market and no backing in the land, and in version 1 it would only travel together with the lot. Today, on the platform, being part of the commons comes from adhering to the manifesto: FARO does not change that. It does not exist yet and is a simulation: it is not issued or sold. The name FARO is provisional. To be verified with a lawyer.",
     },
   },
-  ventatramos: {
-    titulo: "Venta temprana por tramos",
+  // Textos nuevos (bien-comun-propuesta, 23-nov-2026, doc 34 v0.1): borrador a revisar antes de cualquier uso real.
+  fideicomisobarrio: {
+    titulo: "Fideicomiso del barrio",
     texto:
-      "Un precio por tramos: cada tramo tiene una cantidad y un precio, y el precio sube de un tramo al siguiente. Es una simulación, no es una oferta y no se puede comprar. Un token con precio creciente puede ser un valor negociable ante la CNV. A verificar con abogado.",
+      "Un patrimonio separado por cada barrio, para aislar el riesgo: si un barrio sale mal, lo común no responde. Recibiría la plata de quien compra un lote en cuotas y de quien financia la infraestructura, y escrituraría al comprador cuando termine de pagar. Es una propuesta en discusión y una simulación: no existe ni recibe plata. A verificar con abogado.",
     borrador: true,
     en: {
-      titulo: "Early sale in tranches",
+      titulo: "Neighborhood trust",
       texto:
-        "A tiered price: each tranche has an amount and a price, and the price goes up from one tranche to the next. It is a simulation, not an offer, and it cannot be bought. A token with a rising price can be a tradable security before the CNV. To be verified with a lawyer.",
+        "A separate estate for each neighborhood, to isolate risk: if one neighborhood goes badly, the commons does not answer for it. It would receive the money of whoever buys a lot in installments and of whoever funds the infrastructure, and would deed the lot to the buyer once the payments are complete. It is a proposal under discussion and a simulation: it does not exist and receives no money. To be verified with a lawyer.",
     },
   },
-  stakingbiencomun: {
-    titulo: "Staking del bien común",
+  tokentierra: {
+    titulo: "Token Tierra",
     texto:
-      "Bloquear tokens por un tiempo, ya sea para sumar voz o para recibir tokens nuevos. Está en estudio: ninguna de las dos opciones está decidida y es una simulación. A verificar con abogado.",
+      "Un plan de cuotas para un lote determinado: el token representaría el derecho contractual sobre ese lote, y la escritura sigue su vía legal. No arranca antes de la aprobación municipal (Ordenanza 173/2026), y esa aprobación hoy no está otorgada. Es una propuesta en discusión y una simulación: no se cobra nada. A verificar con abogado.",
     borrador: true,
     en: {
-      titulo: "Commons staking",
+      titulo: "Land Token",
       texto:
-        "Locking tokens for a period, either to add voice or to receive new tokens. It is under study: neither option is decided and it is a simulation. To be verified with a lawyer.",
+        "An installment plan for a specific lot: the token would represent the contractual right over that lot, and the deed follows its legal route. It does not start before municipal approval (Ordinance 173/2026), and that approval is not granted today. It is a proposal under discussion and a simulation: nothing is charged. To be verified with a lawyer.",
     },
   },
-  partenetxgen: {
-    titulo: "Parte de NetXGen",
+  tokeninversor: {
+    titulo: "Token Inversor",
     texto:
-      "La parte de los tokens para la empresa que diseña y opera la plataforma. Se liberaría de a poco, con un tiempo de espera, para alinear incentivos. Es un valor de ejemplo, no está decidido. A verificar con abogado.",
+      "El financiamiento de la infraestructura de un barrio: la plata se devolvería a medida que entran las cuotas del fideicomiso, con una prima objetivo y un plazo máximo. No hay fecha fija de devolución. Es una propuesta en discusión y una simulación: no se ofrece ni se cobra. La vía legal para ofrecerlo al público es una duda abierta. A verificar con abogado.",
     borrador: true,
     en: {
-      titulo: "NetXGen share",
+      titulo: "Investor Token",
       texto:
-        "The share of tokens for the company that designs and runs the platform. It would be released gradually, after a waiting period, to align incentives. It is a sample value and nothing is decided. To be verified with a lawyer.",
+        "Funding for a neighborhood's infrastructure: the money would be paid back as the trust's installments come in, with a target premium and a maximum term. There is no fixed repayment date. It is a proposal under discussion and a simulation: it is not offered or charged. The legal route to offer it to the public is an open question. To be verified with a lawyer.",
+    },
+  },
+  tesorocomun: {
+    titulo: "Tesoro del común",
+    texto:
+      "La caja de lo común, a cargo de la Fundación (a crear). Recibiría una parte de cada pago de lote, las expensas y lo que produzca el común, y respalda los servicios que se pagan en FARO. No respalda deuda de ningún barrio. Es una propuesta en discusión y una simulación. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Commons treasury",
+      texto:
+        "The commons' cash box, run by the Foundation (to be created). It would receive a share of each lot payment, the common charges and what the commons produces, and it backs the services paid in FARO. It does not back any neighborhood's debt. It is a proposal under discussion and a simulation. To be verified with a lawyer.",
+    },
+  },
+  // Textos nuevos (bien-comun-propuesta, vuelta de corrección): borrador a revisar antes de cualquier uso real.
+  primaobjetivo: {
+    titulo: "Prima objetivo",
+    texto:
+      "Un extra que el Token Inversor aspiraría a cobrar por encima de lo que puso, a medida que entran las cuotas. Es un objetivo, no una promesa: puede no alcanzarse y no está garantizado. Es una propuesta en discusión y una simulación: no se ofrece ni se paga nada. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Target premium",
+      texto:
+        "An extra that the Investor Token would aim to receive on top of what was put in, as the installments come in. It is a target, not a promise: it may not be reached and it is not guaranteed. It is a proposal under discussion and a simulation: nothing is offered or paid. To be verified with a lawyer.",
+    },
+  },
+  boletocompraventa: {
+    titulo: "Boleto de compraventa",
+    texto:
+      "Un contrato privado en el que quien vende se compromete a vender un inmueble y quien compra, a pagarlo, antes de la escritura. Si un plan de cuotas tokenizado cuenta como boleto es una pregunta abierta, y de eso depende desde cuándo puede firmarse y cobrarse. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Sales contract (boleto de compraventa)",
+      texto:
+        "A private contract in which the seller agrees to sell a property and the buyer agrees to pay for it, before the deed. Whether a tokenized installment plan counts as one is an open question, and it decides from when it can be signed and collected. To be verified with a lawyer.",
+    },
+  },
+  valornegociable: {
+    titulo: "Valor negociable",
+    texto:
+      "Un título que puede comprarse y venderse y que, en Argentina, suele quedar bajo el control de la CNV. Si el Token Inversor es un valor negociable es una pregunta abierta: de eso depende quién tiene que estar registrado y cómo se lo puede ofrecer. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Tradable security",
+      texto:
+        "A title that can be bought and sold and that, in Argentina, usually falls under the CNV's oversight. Whether the Investor Token is one is an open question: it decides who has to be registered and how it can be offered. To be verified with a lawyer.",
     },
   },
   // Texto nuevo (R40): borrador a revisar antes de cualquier uso real.
