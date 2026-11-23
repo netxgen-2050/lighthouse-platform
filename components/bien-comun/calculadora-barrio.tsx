@@ -108,10 +108,12 @@ export function CalculadoraBarrio({ t, idioma, partida }: PropsCalculadora) {
             const mostrado = campo === "prima" ? `${enteroEn(Number(valorDePartida), idioma)} %` : enteroEn(Number(valorDePartida), idioma);
             return (
               <div key={campo} className="grid content-start gap-1">
-                <label htmlFor={`${id}-${campo}`} className="text-sm font-medium">
-                  {t.campos[campo]}
+                <div className="flex flex-wrap items-center gap-1">
+                  <label htmlFor={`${id}-${campo}`} className="text-sm font-medium">
+                    {t.campos[campo]}
+                  </label>
                   {campo === "prima" ? <TerminoLegal clave="primaobjetivo" idioma={idioma} /> : null}
-                </label>
+                </div>
                 <input
                   id={`${id}-${campo}`}
                   name={campo}
@@ -147,14 +149,7 @@ export function CalculadoraBarrio({ t, idioma, partida }: PropsCalculadora) {
             {t.resultados.titulo}
           </h3>
           <dl aria-live="polite" aria-atomic="true" className="grid gap-2 text-sm sm:grid-cols-2">
-            <Dato
-              etiqueta={
-                <>
-                  {t.resultados.aLevantar}
-                  <TerminoLegal clave="tokeninversor" idioma={idioma} />
-                </>
-              }
-              valor={usdEn(monto.ok ? monto.valor : null, idioma)} id="monto" />
+            <Dato etiqueta={t.resultados.aLevantar} valor={usdEn(monto.ok ? monto.valor : null, idioma)} id="monto" />
             <Dato etiqueta={t.resultados.devuelve} valor={mes} id="mes" />
             <Dato
               etiqueta={t.resultados.totalRecibido}
@@ -162,6 +157,9 @@ export function CalculadoraBarrio({ t, idioma, partida }: PropsCalculadora) {
               id="total"
             />
           </dl>
+          <p className="text-sm">
+            <TerminoLegal clave="tokeninversor" idioma={idioma} />
+          </p>
           <p className="max-w-3xl text-sm" data-dato="fija">
             {fija.ok
               ? t.resultados.fechaFija(enteroEn(BARRIO.fechaFijaMeses.valor, idioma), porcentajeEn(fija.valor, idioma))

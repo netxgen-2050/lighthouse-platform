@@ -296,6 +296,8 @@ test.describe("números del barrio con sesión", () => {
     await expect(r.locator('[data-dato="mes"]')).toContainText("sin dato");
     await expect(r.locator('[data-dato="total"]')).toContainText("sin dato");
     await expect(r.getByRole("table")).toHaveCount(0);
+    await expect(r.locator('[data-dato="fija"]')).toContainText("sin dato");
+    await expect(r.locator('[data-dato="fideicomiso"]')).toContainText("sin dato");
   });
 
   test("recargar vuelve a los valores de partida; el botón también", async ({ page }) => {
