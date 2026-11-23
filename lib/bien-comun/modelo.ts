@@ -156,6 +156,8 @@ export const BARRIO = {
   expensa: { valor: MODELO_LOTES.expensaAnual, fuente: "lib/lotes/modelo.ts" },
   presupuestoComun: { valor: MODELO_LOTES.presupuestoComunAnual, fuente: `lib/lotes/modelo.ts ← sim/RESULTS.md` },
   horizonteMeses: { valor: 72, fuente: SIM },
+  /** Plazo de la recompra a fecha fija que se compara con cobrar con las cuotas. */
+  fechaFijaMeses: { valor: 12, fuente: `${SIM} (MATURITIES; 12 es el ejemplo de Juanpi)` },
 } as const;
 
 // ---- Helpers que usan otras pantallas (misma firma que antes): números para mostrar ----
