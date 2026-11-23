@@ -16,6 +16,18 @@ export async function conAdhesionAlManifiesto(page: Page, version: string = VERS
   }, version);
 }
 
+/**
+ * Acepta el paso previo al login ("Crear tu cuenta" o "Entrar"): marca las dos casillas obligatorias y confirma.
+ * `novedades: true` marca también la casilla opcional. Lo usan los e2e que entran con "Entrar", un plan de Sumarte o "Entrar como…".
+ */
+export async function aceptarPaso(page: Page, opciones: { novedades?: boolean } = {}) {
+  const dialogo = page.getByRole("dialog", { name: /^(Crear tu cuenta|Entrar)$/ });
+  await dialogo.getByRole("checkbox", { name: /Leí y acepto la política de privacidad/ }).check();
+  await dialogo.getByRole("checkbox", { name: /Acepto los términos de uso del prototipo/ }).check();
+  if (opciones.novedades) await dialogo.getByRole("checkbox", { name: "Quiero recibir novedades por email" }).check();
+  await dialogo.getByRole("button", { name: /^Aceptar y (entrar|crear mi cuenta)$/ }).click();
+}
+
 /** Deja el sello de identidad ya obtenido (solo la primera vez, para que recargar no pise lo que la pantalla guardó). */
 export async function conIdentidadVerificada(page: Page) {
   await page.addInitScript(() => {

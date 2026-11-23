@@ -1,4 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
+import { aceptarPaso } from "./ayudas";
 import { COOKIE_PRUEBA, EMAIL_FUERA_DE_LISTA, EMAILS, expect, test, type Page } from "./fixtura";
 
 const LEYO = "Leí el manifiesto con atención y entiendo que sumarme es comprometerme con un grupo de personas";
@@ -62,6 +63,7 @@ test.describe("sin sesión", () => {
   test("entrar como una persona de la lista abre la app y recuerda la sesión al recargar", async ({ page }) => {
     await page.goto("/sumarte");
     await page.getByRole("button", { name: EMAILS.persona }).click();
+    await aceptarPaso(page);
     await expect(menuAvatar(page)).toBeVisible();
     await page.reload();
     await expect(menuAvatar(page)).toBeVisible();
@@ -262,6 +264,7 @@ test.describe("salir y cambiar de cuenta", () => {
     await page.goto("/pactos");
     await salir(page);
     await page.getByRole("button", { name: EMAILS.superadmin }).click();
+    await aceptarPaso(page);
     await expect(menuAvatar(page)).toBeVisible();
     await page.goto("/tribus/valle");
     await expect(page.getByRole("link", { name: "Adherir al manifiesto de la comunidad" })).toBeVisible();
@@ -271,6 +274,7 @@ test.describe("salir y cambiar de cuenta", () => {
     await page.goto("/pactos");
     await salir(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
+    await aceptarPaso(page);
     await expect(menuAvatar(page)).toBeVisible();
     await page.goto("/tribus/valle");
     await expect(page.getByText("Tu pedido llegó a Valle Solar.")).toBeVisible();
@@ -290,6 +294,7 @@ test.describe("datos de antes del login", () => {
     });
     await page.goto("/pactos");
     await page.getByRole("button", { name: EMAILS.persona }).click();
+    await aceptarPaso(page);
     const aviso = page.getByRole("region", { name: "Encontramos datos de antes del login" });
     await expect(aviso).toBeVisible();
     await aviso.getByRole("button", { name: "Importar a mi cuenta" }).click();
@@ -304,6 +309,7 @@ test.describe("datos de antes del login", () => {
     await page.goto("/pactos");
     await salir(page);
     await page.getByRole("button", { name: EMAILS.superadmin }).click();
+    await aceptarPaso(page);
     await expect(menuAvatar(page)).toBeVisible();
     await expect(page.getByRole("region", { name: "Encontramos datos de antes del login" })).toHaveCount(0);
   });

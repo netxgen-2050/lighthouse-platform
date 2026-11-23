@@ -199,11 +199,10 @@ test("código inválido en inglés muestra el error asociado al campo", async ({
 test.describe("con la política de privacidad pendiente", () => {
   test.use({ rol: "persona", plan: "explorador", consentimiento: "ninguno" });
 
-  test("en inglés ve el llamado a aceptar la política (en español) con el mismo destino que en español", async ({ page }) => {
+  // Con `consentimiento-alta` la pantalla de consentimiento (todavía en español) cubre también las páginas públicas.
+  test("en inglés ve la pantalla de consentimiento y no el formulario del ticket", async ({ page }) => {
     await page.goto("/congreso/en#ticket");
-    const enlace = page.getByRole("link", { name: "Accept the privacy policy to link your ticket (in Spanish)" });
-    await expect(enlace).toBeVisible();
-    await expect(enlace).toHaveAttribute("href", "/sumarte?volver=%2Fcongreso%2Fen%23ticket&para=explorador");
+    await expect(page.getByRole("heading", { level: 1, name: "Antes de seguir: tu privacidad" })).toBeVisible();
     await expect(page.getByLabel(/Your ticket code/)).toHaveCount(0);
   });
 });

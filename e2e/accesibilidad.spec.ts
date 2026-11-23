@@ -569,3 +569,40 @@ test("axe sin violaciones serias o críticas: la ficha de un lote en la reserva,
     await page.evaluate(() => window.localStorage.removeItem("lh-lotes"));
   }
 });
+
+test.describe("pasos previos al login (consentimiento-alta)", () => {
+  test.use({ rol: "ninguno", consentimiento: "ninguno" });
+
+  test("axe sin violaciones serias o críticas: Crear tu cuenta y Entrar, abiertos y con el error a la vista", async ({ page }) => {
+    await page.goto("/sumarte");
+    await page.getByRole("button", { name: "Sumarme gratis" }).click();
+    const alta = page.getByRole("dialog", { name: "Crear tu cuenta" });
+    await expect(alta).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+    await alta.getByRole("button", { name: "Aceptar y crear mi cuenta" }).click();
+    await expect(alta.getByRole("alert")).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+    await alta.getByRole("button", { name: "Cancelar" }).click();
+
+    await page.getByRole("banner").getByRole("button", { name: "Entrar" }).click();
+    const entrar = page.getByRole("dialog", { name: "Entrar" });
+    await expect(entrar).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+    await entrar.getByRole("button", { name: "Aceptar y entrar" }).click();
+    await expect(entrar.getByRole("alert")).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+});
+
+test.describe("Mis datos: novedades por email", () => {
+  test.use({ rol: "persona" });
+
+  test("axe sin violaciones serias o críticas con el bloque de novedades", async ({ page }) => {
+    await page.goto("/mis-datos");
+    await expect(page.getByRole("heading", { name: "Novedades por email" })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+    await page.getByRole("button", { name: "Quiero recibir novedades" }).click();
+    await expect(page.getByRole("button", { name: "Dejar de recibir novedades" })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+});
