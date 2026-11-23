@@ -82,6 +82,24 @@ test.describe("crear la cuenta en Sumarte", () => {
     // Sin marcar la casilla de novedades, queda registrado que no las pidió.
     expect(await leer(page, CLAVE_NOVEDADES)).toMatchObject({ evento: "retira", canal: "alta" });
     expect(await page.evaluate(() => window.sessionStorage.getItem("lh-consentimiento-previo"))).toBeNull();
+    // El alta no pide datos sensibles: eso se pide recién al verificar la identidad.
+    expect(registro).toMatchObject({ sensibles: null });
+  });
+
+  test("la aceptación del paso no vale en otra pestaña: ahí aparece la pantalla de consentimiento", async ({ page, context, baseURL }) => {
+    test.skip(CON_PRIVY, SIN_PRIVY);
+    await page.goto("/sumarte");
+    await page.getByRole("button", { name: "Sumarme gratis" }).click();
+    await aceptarPaso(page);
+    expect(await page.evaluate(() => window.sessionStorage.getItem("lh-consentimiento-previo"))).not.toBeNull();
+    // Otra pestaña nueva: la sesión ya existe (cookie), pero la aceptación vive solo en la pestaña de arriba.
+    await context.addCookies([{ name: COOKIE_PRUEBA, value: encodeURIComponent(EMAILS.persona), url: baseURL! }]);
+    const otra = await context.newPage();
+    await otra.goto("/tribus");
+    await expect(titulo(otra)).toBeVisible();
+    await expect(casillaPolitica(otra)).not.toBeChecked();
+    await expect(casillaTerminos(otra)).not.toBeChecked();
+    expect(await leer(otra, CLAVE_CONSENTIMIENTO)).toBeNull();
   });
 
   test("con la casilla de novedades marcada queda registrado que las pidió", async ({ page }) => {
@@ -260,6 +278,13 @@ test.describe("red de seguridad: sesión sin consentimiento vigente", () => {
     expect(claves.filter((c) => c.startsWith("u:"))).toEqual([]);
     expect(claves.filter((c) => c.includes("persona@prueba.test"))).toEqual([]);
     expect(claves).not.toContain("lh-ultima-persona");
+    // La bitácora queda vacía: ninguna clave de bitácora tiene entradas.
+    const bitacoras = await page.evaluate(() =>
+      Object.keys(window.localStorage)
+        .filter((c) => c.includes("lh-bitacora"))
+        .map((c) => JSON.parse(window.localStorage.getItem(c) ?? "[]") as unknown[]),
+    );
+    expect(bitacoras.flat()).toEqual([]);
   });
 
   test("la pantalla suma la casilla de novedades y registra la elección con el camino al-entrar", async ({ page }) => {
@@ -331,8 +356,8 @@ test.describe("re-consentimiento desde Entrar", () => {
   test("una elección de novedades anterior no se pisa si el paso se acepta sin marcar la casilla", async ({ page }) => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     await sembrarAnterior(page, { novedades: "acepta" });
-    await page.goto("/sumarte");
-    await page.getByRole("button", { name: "Sumarme gratis" }).click();
+    await page.goto("/tribus");
+    await barra(page).getByRole("button", { name: "Entrar" }).click();
     await aceptarPaso(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(menuAvatar(page)).toBeVisible();

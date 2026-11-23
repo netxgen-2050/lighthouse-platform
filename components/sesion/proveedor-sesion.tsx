@@ -8,6 +8,7 @@ import {
   descartarAceptacionPrevia,
   guardarAceptacionPrevia,
   leerConsentimiento,
+  intentarLogin,
   puedeAbrirLogin,
   registrarConsentimiento,
   tomarAceptacionPrevia,
@@ -216,22 +217,23 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
    * abre con una aceptación previa vigente (design §1). Nada fuera de este archivo llama a `login` de Privy.
    */
   const abrirLogin = useCallback(() => {
-    let puede = false;
+    let almacen: Storage | null = null;
     try {
-      puede = puedeAbrirLogin(window.sessionStorage, new Date());
+      almacen = window.sessionStorage;
     } catch {
-      puede = false;
+      almacen = null;
     }
-    if (!puede) return;
-    if (login) return login();
-    // Sin Privy no hay ventana de login: se lleva a Sumarte, que ofrece "Entrar como…" (modo de prueba). Desde Sumarte no
-    // navega: avisa y se queda (el panel ya está en la página).
-    if (ruta === "/sumarte") {
-      document.getElementById("entrar-como")?.scrollIntoView?.({ block: "center" });
-      document.getElementById("entrar-como")?.focus();
-      return;
-    }
-    router.push(`/sumarte?volver=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}#entrar-como`);
+    intentarLogin(almacen, new Date(), () => {
+      if (login) return login();
+      // Sin Privy no hay ventana de login: se lleva a Sumarte, que ofrece "Entrar como…" (modo de prueba). Desde Sumarte no
+      // navega: avisa y se queda (el panel ya está en la página).
+      if (ruta === "/sumarte") {
+        document.getElementById("entrar-como")?.scrollIntoView?.({ block: "center" });
+        document.getElementById("entrar-como")?.focus();
+        return;
+      }
+      router.push(`/sumarte?volver=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}#entrar-como`);
+    });
   }, [login, ruta, router]);
 
   const entrar = useCallback((opciones?: { modo?: ModoAlta; alAceptar?: () => void }) => {

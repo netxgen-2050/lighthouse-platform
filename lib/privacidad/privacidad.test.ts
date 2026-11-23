@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { establecerPersona } from "@/lib/demo/claves";
+import { establecerPersona, NOMBRES_BASE } from "@/lib/demo/claves";
 import {
   consentimientoVigente,
   guardarAceptacionPrevia,
+  intentarLogin,
   leerConsentimiento,
   puedeAbrirLogin,
   registrarConsentimiento,
@@ -197,6 +198,25 @@ describe("aceptación previa al login", () => {
     expect(a.datos.size).toBe(1);
     expect(puedeAbrirLogin(a, minutos(6))).toBe(false);
   });
+
+  it("intentarLogin con un login falso: sin aceptación no se llama; vigente, una vez; vencida o de otra versión, no", () => {
+    let llamadas = 0;
+    const login = () => void (llamadas += 1);
+    const a = almacen();
+    expect(intentarLogin(a, T0, login)).toBe(false);
+    expect(llamadas).toBe(0);
+    guardarAceptacionPrevia(a, T0, { modo: "alta", novedades: false });
+    expect(intentarLogin(a, minutos(1), login)).toBe(true);
+    expect(llamadas).toBe(1);
+    expect(intentarLogin(a, minutos(6), login)).toBe(false);
+    expect(llamadas).toBe(1);
+    const otra = almacen({
+      "lh-consentimiento-previo": JSON.stringify({ version: "2025-vieja", aceptadoEn: T0.toISOString(), modo: "alta", novedades: false }),
+    });
+    expect(intentarLogin(otra, T0, login)).toBe(false);
+    expect(intentarLogin(null, T0, login)).toBe(false);
+    expect(llamadas).toBe(1);
+  });
 });
 
 describe("novedades por email", () => {
@@ -231,7 +251,8 @@ describe("novedades por email", () => {
     darNovedades(a, "A", { canal: "alta", ahora: AHORA });
     const datos = exportarMisDatos({ almacen: a, idPersona: "A", email: null, billetera: null }).datos as Record<string, unknown>;
     expect(datos.novedades).toMatchObject({ evento: "acepta" });
-    expect(Object.keys(datos).filter((k) => k === "novedades")).toHaveLength(1);
+    expect(Object.values(NOMBRES_BASE)).not.toContain("lh-novedades");
+    expect(Object.keys(NOMBRES_BASE)).not.toContain("novedades");
   });
 });
 

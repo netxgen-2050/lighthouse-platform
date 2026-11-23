@@ -199,6 +199,16 @@ export function puedeAbrirLogin(almacen: Pick<Storage, "getItem"> | null, ahora:
 }
 
 /**
+ * Llama a `login` solo si `puedeAbrirLogin` (design §1). Devuelve si lo llamó. El proveedor la usa en su única puerta
+ * privada al login; vive acá para poder probarla con un login falso.
+ */
+export function intentarLogin(almacen: Pick<Storage, "getItem"> | null, ahora: Date, login: () => void): boolean {
+  if (!puedeAbrirLogin(almacen, ahora)) return false;
+  login();
+  return true;
+}
+
+/**
  * Lee la aceptación previa y la **borra siempre** (se usa en el primer login de la pestaña, la haya usado o no).
  * Devuelve null si no hay, venció (más de 5 minutos) o es de otra versión.
  */
