@@ -211,6 +211,24 @@ test("un parámetro no permitido se descarta y los valores del origen se guardan
   expect(o.campana).toBe("Promo Feb 2027");
 });
 
+test("foto del valle a sangre con la leyenda, cifras con fuente en paneles de vidrio y botón de 44 px a 390 px", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await expect(page.getByText("Imagen ilustrativa", { exact: true })).toBeVisible();
+  const boton = page.getByRole("link", { name: "Ver los lotes", exact: true }).first();
+  await expect(boton).toBeVisible();
+  expect((await boton.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+  const cifras = page.getByRole("region", { name: "Cifras del sitio" }).locator("li");
+  const n = await cifras.count();
+  expect(n).toBeGreaterThan(0);
+  for (let i = 0; i < n; i++) {
+    await expect(cifras.nth(i)).toHaveClass(/panel-vidrio/);
+    await expect(cifras.nth(i)).toContainText("Fuente:");
+  }
+  const sobra = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(sobra).toBeLessThanOrEqual(0);
+});
+
 test("la imagen de fondo es decorativa y se aclara que es ilustrativa", async ({ page }) => {
   await page.goto("/");
   const imagen = page.locator('img[src*="lighthouse-valle"]');

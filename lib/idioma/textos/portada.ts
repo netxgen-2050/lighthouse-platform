@@ -35,6 +35,7 @@ const es = {
   capitales: { titulo: "Los cinco capitales de la regeneración", fuente: "Fuente" },
   cifras: { titulo: "Cifras del sitio", fuente: "Fuente" },
   porDondeEmpezar: "Por dónde empezar",
+  leyendaImagen: "Imagen ilustrativa",
   notaImagen: "Imagen ilustrativa de la Zona A (memoria técnica de Martín): no es una fotografía ni un plano.",
   recomendado: "Recomendado para vos",
   caminos: {
@@ -93,6 +94,7 @@ const en: Textos<typeof es> = {
   capitales: { titulo: "The five capitals of regeneration", fuente: "Source" },
   cifras: { titulo: "Figures from the site", fuente: "Source" },
   porDondeEmpezar: "Where to start",
+  leyendaImagen: "Illustrative image",
   notaImagen: "Illustrative image of Zone A (Martín's technical report): it is neither a photograph nor a plan.",
   recomendado: "Recommended for you",
   caminos: {

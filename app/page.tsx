@@ -1,5 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
+import { HeroeValle } from "@/components/explorar/heroe-valle";
+import { PanelVidrio } from "@/components/ui/panel-vidrio";
+import { SelloPrototipo } from "@/components/ui/sello-prototipo";
 import { caminosDePortada } from "@/lib/portada";
 import { capitalesDePortada, cifrasDePortada, FUENTE_CAPITALES } from "@/lib/portada-vrn";
 import { TerminoLegal } from "@/components/termino-legal";
@@ -21,15 +23,11 @@ export default async function Home({ searchParams }: Props) {
   const hayLotes = DESTINOS.some((d) => d.href === "/lotes" && d.existe);
   const haySumarte =DESTINOS.some((d) => d.href === "/sumarte" && d.existe);
   return (
-    <div className="relative isolate min-h-full">
-      {/* Decorativa: la imagen no agrega información, y la capa del color de fondo sostiene el contraste en los dos temas. */}
-      <Image src="/imagenes/lighthouse-valle.webp" alt="" fill priority sizes="100vw" className="-z-20 object-cover" />
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-bg/75" />
-      <div className="mx-auto grid max-w-3xl content-center gap-6 px-6 py-16 sm:px-10">
+    <div className="min-h-full">
       {hayCampana(params) && <GuardarOrigen origen={params} />}
-      <p className="w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-        {textos("marco", idioma).aviso}
-      </p>
+      {/* Dirección A "Valle de noche": primero el territorio (foto a sangre, título encima), después los números en vidrio. */}
+      <HeroeValle leyenda={t.leyendaImagen}>
+      <SelloPrototipo />
       <div className="grid gap-4">
         <p className="font-mono text-sm uppercase text-ink">{t.sobretitulo}</p>
         <h1 className="text-4xl font-bold sm:text-5xl">
@@ -53,6 +51,8 @@ export default async function Home({ searchParams }: Props) {
           )}
         </p>
       </div>
+      </HeroeValle>
+      <div className="mx-auto grid max-w-5xl gap-6 px-6 py-10 sm:px-10">
       <ul className="grid gap-3 sm:grid-cols-3">
         {(["agua", "trabajo", "comunidad"] as const).map((k) => (
           <li key={k} className="rounded-xl border border-line bg-surface p-4 text-ink">
@@ -91,14 +91,14 @@ export default async function Home({ searchParams }: Props) {
           </h2>
           <ul className="grid gap-3 sm:grid-cols-3">
             {cifras.map((c) => (
-              <li key={c.id} className="rounded-xl border border-line bg-surface p-4 text-ink">
+              <PanelVidrio como="li" key={c.id}>
                 <p>
                   <strong className="text-2xl">{c.valor}</strong> {c.texto}
                 </p>
                 <p className="text-xs text-muted">
                   {t.cifras.fuente}: <span lang="es">{c.fuente}</span>
                 </p>
-              </li>
+              </PanelVidrio>
             ))}
           </ul>
         </section>

@@ -27,6 +27,7 @@ export const NEUTROS: readonly string[] = [
   "Valle Solar",
   "UnityHub",
   "Lighthouse",
+  "Barrio Norte",
   "NetX",
   "ES",
   "EN",
