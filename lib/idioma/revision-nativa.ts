@@ -27,7 +27,7 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "textos/portada": {
     estado: "pendiente",
-    que: "Portada: título, bajada, los tres caminos y la cantidad de barrios",
+    que: "Portada: promesa a 2030, Argentina, capitales, los tres caminos y la cantidad de barrios (más lib/portada-vrn.ts)",
   },
   "textos/sumarte": {
     estado: "pendiente",

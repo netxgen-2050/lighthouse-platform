@@ -35,8 +35,10 @@ describe("leerParametros", () => {
     expect(JSON.stringify(p)).not.toContain("ana");
   });
   it("ignora un camino desconocido y acepta uno válido", () => {
-    expect(leerParametros({ camino: "lotes" })).toEqual({});
-    expect(leerParametros({ camino: "Congreso" })).toEqual({ camino: "congreso" });
+    expect(leerParametros({ camino: "congreso" })).toEqual({});
+    expect(leerParametros({ camino: "perfil" })).toEqual({});
+    expect(leerParametros({ camino: "Lotes" })).toEqual({ camino: "lotes" });
+    expect(leerParametros({ camino: "territorio" })).toEqual({ camino: "territorio" });
   });
 });
 
@@ -44,17 +46,17 @@ describe("guardarSiNoHay", () => {
   const ahora = new Date("2026-10-12T10:00:00Z");
   it("sin utm_* no guarda", () => {
     const a = almacenFalso();
-    expect(guardarSiNoHay(a, { camino: "perfil" }, ahora)).toBe(false);
+    expect(guardarSiNoHay(a, { camino: "tribus" }, ahora)).toBe(false);
     expect(a.datos.size).toBe(0);
   });
   it("guarda el primero y no lo pisa", () => {
     const a = almacenFalso();
-    expect(guardarSiNoHay(a, { fuente: "newsletter", campana: "congreso-2027", camino: "congreso" }, ahora)).toBe(true);
+    expect(guardarSiNoHay(a, { fuente: "newsletter", campana: "congreso-2027", camino: "lotes" }, ahora)).toBe(true);
     expect(guardarSiNoHay(a, { fuente: "telegram" }, ahora)).toBe(false);
     expect(leerOrigen(a.getItem(CLAVES.origen))).toMatchObject({
       fuente: "newsletter",
       campana: "congreso-2027",
-      camino: "congreso",
+      camino: "lotes",
       fecha: ahora.toISOString(),
     });
   });
@@ -71,6 +73,11 @@ describe("leerOrigen", () => {
     expect(leerOrigen("{roto")).toBeNull();
     expect(leerOrigen("[]")).toBeNull();
     expect(leerOrigen(JSON.stringify({ camino: "perfil", fecha: "x" }))).toBeNull();
+  });
+  it("un origen viejo con camino congreso sigue valiendo: se ignora el camino y quedan fuente y campaña", () => {
+    const o = leerOrigen(JSON.stringify({ fuente: "newsletter", campana: "congreso-2027", camino: "congreso", fecha: "x" }));
+    expect(o).toEqual({ fuente: "newsletter", campana: "congreso-2027", fecha: "x" });
+    expect(o?.camino).toBeUndefined();
   });
   it("conserva cada campo tal como se guardó", () => {
     expect(leerOrigen(JSON.stringify({ fuente: "<b>IG</b>", fecha: "x" }))?.fuente).toBe("<b>IG</b>");

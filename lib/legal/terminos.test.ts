@@ -212,6 +212,15 @@ describe("catálogo legal", () => {
     }
   });
 
+  it("ribera tiene inglés (traducción en borrador) y su español sigue igual al mock-up", () => {
+    expect(terminoEn("ribera")?.titulo.trim()).toBeTruthy();
+    expect(terminoEn("ribera")?.texto.trim()).toBeTruthy();
+    const m = mock.match(/^\s*ribera:\["([^"]+)","([^"]+)"\]/m);
+    expect(m).not.toBeNull();
+    expect(TERMINOS.ribera.titulo).toBe(m![1]);
+    expect(TERMINOS.ribera.texto).toBe(m![2]);
+  });
+
   it("destinoconsejofundacion es borrador, con inglés, y dice que la recomendación no obliga", () => {
     expect(esBorrador("destinoconsejofundacion")).toBe(true);
     expect(terminoEn("destinoconsejofundacion")?.texto.trim()).toBeTruthy();
