@@ -10,7 +10,9 @@ import {
   PUERTAS,
   QUE_DA,
   QUE_NO_TIENE,
+  BARRIO,
   VERSION_PROPUESTA,
+  VERSION_SIM_BARRIO,
   centroDeAnillo,
   faroDeLote,
   loteTraeFaro,
@@ -91,5 +93,25 @@ describe("propuesta v0.1 del bien común", () => {
       ]),
     ).toEqual({ lat: 1, lng: 1 });
     expect(centroDeAnillo([])).toBeNull();
+  });
+});
+
+describe("parámetros del barrio", () => {
+  it("la versión del simulador está a la vista", () => {
+    expect(VERSION_SIM_BARRIO).toEqual({ archivo: "sim/barrio_stack_sim.py", version: "v0.1", fecha: "2026-11-19" });
+  });
+
+  it("cada parámetro dice su fuente", () => {
+    for (const [id, p] of Object.entries(BARRIO)) expect(p.fuente.trim(), id).not.toBe("");
+  });
+
+  it("el precio del lote es 27.500 y sale de MODELO_LOTES; lo que ya vive en lotes no se copia", () => {
+    expect(BARRIO.precioLote.valor).toBe(27_500);
+    expect(BARRIO.precioLote.valor).toBe((MODELO_LOTES.precioLote.min + MODELO_LOTES.precioLote.max) / 2);
+    expect(BARRIO.infraestructuraPorLote.valor).toBe(MODELO_LOTES.infraestructuraPorLote);
+    expect(BARRIO.parteDueno.valor).toBe(MODELO_LOTES.parteDelDueno);
+    expect(BARRIO.parteComun.valor).toBe(MODELO_LOTES.aporteUnico);
+    expect(BARRIO.expensa.valor).toBe(MODELO_LOTES.expensaAnual);
+    expect(BARRIO.presupuestoComun.valor).toBe(MODELO_LOTES.presupuestoComunAnual);
   });
 });

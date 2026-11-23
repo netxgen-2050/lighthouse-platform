@@ -4,12 +4,12 @@ Requiere `bien-comun-propuesta` implementado (módulo y página nuevos).
 
 ## 1. Parámetros
 
-- [ ] 1.1 Sumar `VERSION_SIM_BARRIO` y `BARRIO` a `lib/bien-comun/modelo.ts` según la tabla de `design.md`, importando de `lib/lotes/modelo.ts` lo que ya vive ahí. **Verifica:** test nuevo en `lib/bien-comun/modelo.test.ts`: cada parámetro tiene `fuente`; `BARRIO.precioLote.valor` es 27.500 y sale de `MODELO_LOTES`.
-- [ ] 1.2 Comparar `lotesDelSector()` con 21 y, si difiere, sumar la línea de `design.md` ("Lotes del plano"). **Verifica:** anotarlo en el PR con el número real.
+- [x] 1.1 Sumar `VERSION_SIM_BARRIO` y `BARRIO` a `lib/bien-comun/modelo.ts` según la tabla de `design.md`, importando de `lib/lotes/modelo.ts` lo que ya vive ahí. **Verifica:** test nuevo en `lib/bien-comun/modelo.test.ts`: cada parámetro tiene `fuente`; `BARRIO.precioLote.valor` es 27.500 y sale de `MODELO_LOTES`.
+- [x] 1.2 Comparar `lotesDelSector()` con 21 y, si difiere, sumar la línea de `design.md` ("Lotes del plano"). **Verifica:** anotarlo en el PR con el número real.
 
 ## 2. Cálculo
 
-- [ ] 2.1 Crear `lib/bien-comun/barrio.ts` con `montoALevantar`, `cobrosPorMes`, `cobrandoConLasCuotas`, `coberturaAFechaFija`, `alComunPorAnio` y `parteQueQuedaEnElFideicomiso`, traduciendo `NS_Tokenomics/sim/barrio_stack_sim.py` v0.1. Entradas inválidas → `{ ok: false }`; cuotas = 0 es contado y es válido (`design.md`). <!-- arquitecto: caso contado --> **Verifica:** un caso más con 2 por trimestre, contado, 27.500 → mes 27; además, `lib/bien-comun/barrio.test.ts` con los casos de `design.md` ("Tests contra RESULTS_barrio_stack.md") en verde.
+- [x] 2.1 Crear `lib/bien-comun/barrio.ts` con `montoALevantar`, `cobrosPorMes`, `cobrandoConLasCuotas`, `coberturaAFechaFija`, `alComunPorAnio` y `parteQueQuedaEnElFideicomiso`, traduciendo `NS_Tokenomics/sim/barrio_stack_sim.py` v0.1. Entradas inválidas → `{ ok: false }`; cuotas = 0 es contado y es válido (`design.md`). <!-- arquitecto: caso contado --> **Verifica:** un caso más con 2 por trimestre, contado, 27.500 → mes 27; además, `lib/bien-comun/barrio.test.ts` con los casos de `design.md` ("Tests contra RESULTS_barrio_stack.md") en verde.
 
 ## 3. Pantalla
 

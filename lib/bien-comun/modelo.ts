@@ -125,6 +125,39 @@ export const CAMBIOS_DESDE_V_ANTERIOR = {
   ids: ["tramos", "staking", "reservaTierra", "repartoFijo"],
 } as const;
 
+// ---- Los números del barrio (spec bien-comun-numeros-barrio; NS_Tokenomics doc 34 §4, sim/barrio_stack_sim.py) ----
+export const VERSION_SIM_BARRIO = {
+  archivo: "sim/barrio_stack_sim.py",
+  version: "v0.1",
+  fecha: "2026-11-19",
+} as const;
+
+const SIM = "sim/barrio_stack_sim.py";
+const SIM_LOTES = "sim/lot_sale_sim.py";
+
+/** Parámetros del barrio, cada uno con su fuente. Los que ya viven en `lib/lotes/modelo.ts` se importan, no se copian. */
+export const BARRIO = {
+  lotes: { valor: 21, fuente: "Slides del 9-nov (doc 34 §4)" },
+  precioLote: {
+    valor: (MODELO_LOTES.precioLote.min + MODELO_LOTES.precioLote.max) / 2,
+    fuente: `lib/lotes/modelo.ts (medio del rango) ← ${SIM_LOTES}`,
+  },
+  infraestructuraPorLote: { valor: MODELO_LOTES.infraestructuraPorLote, fuente: "lib/lotes/modelo.ts" },
+  imprevistos: { valor: 0.1, fuente: `${SIM} [criterio]` },
+  armadoLegal: { valor: 40_000, fuente: `${SIM} [criterio], sin presupuesto` },
+  prima: { valor: 0.1, fuente: "Ejemplo de Juanpi en la call del 16-nov (anual, simple)" },
+  anticipo: { valor: 0.2, fuente: `${SIM} [criterio]` },
+  cuotas: { valor: 24, fuente: `Caso base de ${SIM}` },
+  ritmo: { valor: 2, fuente: `Caso base de ${SIM} (lotes por trimestre)` },
+  parteDueno: { valor: MODELO_LOTES.parteDelDueno, fuente: "lib/lotes/modelo.ts" },
+  corredor: { valor: 0.04, fuente: `${SIM_LOTES} [criterio]` },
+  contratoNetx: { valor: 0.03, fuente: `${SIM_LOTES} [verificar]` },
+  parteComun: { valor: MODELO_LOTES.aporteUnico, fuente: "lib/lotes/modelo.ts (aporte único)" },
+  expensa: { valor: MODELO_LOTES.expensaAnual, fuente: "lib/lotes/modelo.ts" },
+  presupuestoComun: { valor: MODELO_LOTES.presupuestoComunAnual, fuente: `lib/lotes/modelo.ts ← sim/RESULTS.md` },
+  horizonteMeses: { valor: 72, fuente: SIM },
+} as const;
+
 // ---- Helpers que usan otras pantallas (misma firma que antes): números para mostrar ----
 
 /** Tokens que traería un lote de `m2` metros cuadrados. Sin superficie, null (nunca 0). */
