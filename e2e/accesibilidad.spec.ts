@@ -513,6 +513,9 @@ test("axe sin violaciones serias o críticas: /fogon con Ana seleccionada y la l
 for (const ruta of rutas) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);
+    if (ruta === "/bien-comun") {
+      await expect(page.getByLabel("Precio del lote (USD)")).toBeVisible();
+    }
     if (ruta === "/territorios/lighthouse" || ruta === "/territorios/lighthouse?vista=lotes") {
       // El mapa se arma en el navegador: auditar con el sello del común ya puesto.
       await expect(page.locator('[aria-label="Terreno común del Lighthouse"][role="button"]')).toHaveCount(1);
@@ -538,10 +541,23 @@ for (const ruta of rutas) {
 }
 
 // Lotes: la lista y una ficha en inglés, y la ficha con la compra simulada en cada paso (lote-ficha-y-compra).
-for (const ruta of ["/lotes?lang=en", "/lotes/lote-1?lang=en", "/lotes/hibrido?lang=en", "/bien-comun?lang=en"]) {
+for (const ruta of ["/lotes?lang=en", "/lotes/lote-1?lang=en", "/lotes/hibrido?lang=en"]) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+}
+
+// /bien-comun con sesión: la calculadora aparece cuando se verifica la sesión; se audita ya con el campo puesto.
+for (const [ruta, campo] of [
+  ["/bien-comun", "Precio del lote (USD)"],
+  ["/bien-comun?lang=en", "Lot price (USD)"],
+] as const) {
+  test(`axe sin violaciones serias o críticas: ${ruta} con la calculadora`, async ({ page }) => {
+    await page.goto(ruta);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByLabel(campo)).toBeVisible();
     expect(await graves(page)).toEqual([]);
   });
 }

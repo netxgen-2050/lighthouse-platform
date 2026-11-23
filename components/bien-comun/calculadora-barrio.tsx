@@ -1,6 +1,7 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useState, type ReactNode } from "react";
+import { TerminoLegal } from "@/components/termino-legal";
 import { EntrarPara } from "@/components/sesion/entrar-para";
 import { useSesion } from "@/components/sesion/contexto";
 import {
@@ -38,8 +39,10 @@ const CLASE_BOTON =
 export function leerNumero(texto: string, idioma: Idioma): number {
   const t = texto.trim();
   if (t === "") return NaN;
-  const miles = idioma === "en" ? /^\d{1,3}(,\d{3})+$/ : /^\d{1,3}(\.\d{3})+$/;
-  const limpio = miles.test(t) ? t.replace(/[.,]/g, "") : t.replace(",", ".");
+  // Miles con su separador y, opcionalmente, decimales con el separador del idioma (en español, punto de miles y coma decimal; en inglés, al revés).
+  const conMiles = idioma === "en" ? /^(\d{1,3}(?:,\d{3})+)(\.\d+)?$/ : /^(\d{1,3}(?:\.\d{3})+)(,\d+)?$/;
+  const m = conMiles.exec(t);
+  const limpio = m ? m[1].replace(/[.,]/g, "") + (m[2] ? "." + m[2].slice(1) : "") : t.replace(",", ".");
   return /^-?\d+(\.\d+)?$/.test(limpio) ? Number(limpio) : NaN;
 }
 
@@ -107,6 +110,7 @@ export function CalculadoraBarrio({ t, idioma, partida }: PropsCalculadora) {
               <div key={campo} className="grid content-start gap-1">
                 <label htmlFor={`${id}-${campo}`} className="text-sm font-medium">
                   {t.campos[campo]}
+                  {campo === "prima" ? <TerminoLegal clave="primaobjetivo" idioma={idioma} /> : null}
                 </label>
                 <input
                   id={`${id}-${campo}`}
@@ -137,13 +141,20 @@ export function CalculadoraBarrio({ t, idioma, partida }: PropsCalculadora) {
         </button>
       </form>
 
-      <div aria-live="polite" aria-atomic="true" className="grid gap-4" data-resultados>
+      <div className="grid gap-4" data-resultados>
         <section aria-labelledby={`${id}-res`} className="grid gap-2">
           <h3 id={`${id}-res`} className="font-medium">
             {t.resultados.titulo}
           </h3>
-          <dl className="grid gap-2 text-sm sm:grid-cols-2">
-            <Dato etiqueta={t.resultados.aLevantar} valor={usdEn(monto.ok ? monto.valor : null, idioma)} id="monto" />
+          <dl aria-live="polite" aria-atomic="true" className="grid gap-2 text-sm sm:grid-cols-2">
+            <Dato
+              etiqueta={
+                <>
+                  {t.resultados.aLevantar}
+                  <TerminoLegal clave="tokeninversor" idioma={idioma} />
+                </>
+              }
+              valor={usdEn(monto.ok ? monto.valor : null, idioma)} id="monto" />
             <Dato etiqueta={t.resultados.devuelve} valor={mes} id="mes" />
             <Dato
               etiqueta={t.resultados.totalRecibido}
@@ -155,9 +166,12 @@ export function CalculadoraBarrio({ t, idioma, partida }: PropsCalculadora) {
             {fija.ok
               ? t.resultados.fechaFija(enteroEn(BARRIO.fechaFijaMeses.valor, idioma), porcentajeEn(fija.valor, idioma))
               : `${t.resultados.fechaFija(enteroEn(BARRIO.fechaFijaMeses.valor, idioma), sin)}`}
+            <TerminoLegal clave="fideicomisobarrio" idioma={idioma} />
           </p>
-          <p className="max-w-3xl text-sm">
-            {t.resultados.parteFideicomiso(porcentajeEn(parteQueQuedaEnElFideicomiso(), idioma))}
+          <p className="max-w-3xl text-sm" data-dato="fideicomiso">
+            {t.resultados.parteFideicomiso(
+              malos.length === 0 ? porcentajeEn(parteQueQuedaEnElFideicomiso(), idioma) : sin,
+            )}
           </p>
         </section>
 
@@ -175,6 +189,7 @@ export function CalculadoraBarrio({ t, idioma, partida }: PropsCalculadora) {
                       {[t.comun.anio, t.comun.partePagos, t.comun.expensas, t.comun.total, t.comun.lotesVendidos].map((c) => (
                         <th key={c} scope="col" className={TH}>
                           {c}
+                          {c === t.comun.expensas ? <TerminoLegal clave="expensas" idioma={idioma} /> : null}
                         </th>
                       ))}
                     </tr>
@@ -205,7 +220,7 @@ export function CalculadoraBarrio({ t, idioma, partida }: PropsCalculadora) {
   );
 }
 
-function Dato({ etiqueta, valor, id }: { etiqueta: string; valor: string; id: string }) {
+function Dato({ etiqueta, valor, id }: { etiqueta: ReactNode; valor: string; id: string }) {
   return (
     <div className="grid content-start gap-0.5 rounded-lg border border-faint p-3" data-dato={id}>
       <dt className="text-muted">{etiqueta}</dt>
@@ -238,6 +253,7 @@ export function SeccionBarrio({ partida }: { partida: Entradas }) {
               VERSION_SIM_BARRIO.version,
               formatearFecha(VERSION_SIM_BARRIO.fecha, idioma, "largo"),
             )}
+            <TerminoLegal clave="noesoferta" idioma={idioma} />
           </p>
           <p className="max-w-3xl text-sm">{t.faltan}</p>
           <CalculadoraBarrio t={t} idioma={idioma} partida={partida} />

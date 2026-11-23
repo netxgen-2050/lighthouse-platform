@@ -272,7 +272,10 @@ test.describe("números del barrio con sesión", () => {
     await seccion(page).getByLabel("Precio del lote (USD)").fill("40000");
     const esperado = okDe(cobrandoConLasCuotas({ ...CASO_BASE, precioLote: 40_000 })).mes;
     await expect(resultados(page)).toContainText(`mes ${esperado}`);
-    await expect(resultados(page)).toHaveAttribute("aria-live", "polite");
+    // La región en vivo es corta (monto, mes y total); la tabla queda fuera.
+    const enVivo = resultados(page).locator('[aria-live="polite"]');
+    await expect(enVivo).toContainText(`mes ${esperado}`);
+    await expect(enVivo.locator("table")).toHaveCount(0);
   });
 
   test("1 lote por trimestre: no en 6 años y ningún mes", async ({ page }) => {
