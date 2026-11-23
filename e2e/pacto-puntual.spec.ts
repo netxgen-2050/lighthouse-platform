@@ -385,6 +385,8 @@ test.describe("en inglés", () => {
 test("axe sin violaciones serias o críticas en /pactos con una postulación enviada y en /pactos/responder con una pendiente", async ({ page, context, baseURL }) => {
   await postularEnergiaSolar(page);
   const analizar = async () => {
+    // Next pone el <title> un instante después de la navegación del cliente: sin esperarlo, axe a veces ve el documento sin título.
+    await expect(page).toHaveTitle(/\S/);
     const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
     return r.violations.filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }));
   };
