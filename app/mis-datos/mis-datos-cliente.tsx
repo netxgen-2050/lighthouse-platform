@@ -1,10 +1,15 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useSesion } from "@/components/sesion/contexto";
 import { borrarDemo } from "@/lib/demo/borrar";
-import { retirarConsentimiento } from "@/lib/privacidad/consentimiento";
+import { CLAVES_COMPARTIDAS } from "@/lib/demo/claves";
+import { quitarConstanciasDe } from "@/lib/pactos/registro-compartido";
+import { retirarConsentimiento, type CanalConsentimiento } from "@/lib/privacidad/consentimiento";
 import { exportarMisDatos, nombreArchivoDatos } from "@/lib/privacidad/exportar";
+import { fechaYHora } from "@/lib/privacidad/fecha";
+import { darNovedades, leerNovedades, retirarNovedades, type CanalNovedades, type Novedades } from "@/lib/privacidad/novedades";
+import { useConsentimiento } from "@/lib/privacidad/usar-consentimiento";
 import { RESPONSABLE } from "@/lib/privacidad/politica";
 import { armarContexto } from "@/lib/reportes/reporte";
 
@@ -31,8 +36,33 @@ function Seccion({ id, titulo, children }: { id: string; titulo: string; childre
   );
 }
 
+/** El camino por el que aceptó, en palabras; sin camino (registro anterior a `consentimiento-alta`) es "sin dato". */
+const CAMINO_CONSENTIMIENTO: Record<CanalConsentimiento, string> = {
+  alta: "al crear tu cuenta",
+  "al-entrar": "al entrar",
+  "nueva-version": "cuando cambió la política",
+};
+
+const CAMINO_NOVEDADES: Record<CanalNovedades, string> = {
+  ...CAMINO_CONSENTIMIENTO,
+  "mis-datos": "desde Mis datos",
+};
+
 export function MisDatosCliente() {
   const { sesion, estado, billetera, salir, cabeceras } = useSesion();
+  const { registro } = useConsentimiento(sesion?.idPersona ?? null);
+  const idPersona = sesion?.idPersona ?? null;
+  const [novedades, setNovedades] = useState<Novedades | null>(null);
+  const [anuncioNovedades, setAnuncioNovedades] = useState({ n: 0, texto: "" });
+  useEffect(() => {
+    if (!idPersona) return;
+    try {
+      // Lectura del almacenamiento del navegador tras hidratar.
+      setNovedades(leerNovedades(window.localStorage, idPersona));
+    } catch {
+      setNovedades(null);
+    }
+  }, [idPersona]);
   const [descarga, setDescarga] = useState<{ n: number; texto: string; error: boolean }>({ n: 0, texto: "", error: false });
   const [confirmando, setConfirmando] = useState(false);
   const [falloRetiro, setFalloRetiro] = useState(false);
@@ -71,10 +101,32 @@ export function MisDatosCliente() {
     }
   }
 
+  function cambiarNovedades(dar: boolean) {
+    if (!sesion) return;
+    const canal = { canal: "mis-datos" as const };
+    const guardado = dar ? darNovedades(window.localStorage, sesion.idPersona, canal) : retirarNovedades(window.localStorage, sesion.idPersona, canal);
+    if (!guardado) {
+      setAnuncioNovedades((a) => ({ n: a.n + 1, texto: "Error: tu navegador no deja guardar este cambio." }));
+      return;
+    }
+    setNovedades(leerNovedades(window.localStorage, sesion.idPersona));
+    setAnuncioNovedades((a) => ({
+      n: a.n + 1,
+      texto: dar ? "Listo: pediste recibir novedades por email." : "Listo: dejaste de recibir novedades por email.",
+    }));
+  }
+
   async function retirar() {
+    // Retirar el consentimiento general también retira las novedades. Primero ellas y después el general: si algo falla,
+    // nunca queda el general retirado con las novedades vigentes.
+    if (sesion && leerNovedades(window.localStorage, sesion.idPersona)?.evento === "acepta") {
+      retirarNovedades(window.localStorage, sesion.idPersona, { canal: "mis-datos" });
+    }
     // Primero se borra (con la persona todavía en sesión: las claves llevan su prefijo) y recién después se sale.
     const fallidas = borrarDemo((c) => window.localStorage.removeItem(c));
-    const consentimientoQuitado = retirarConsentimiento(window.localStorage);
+    // Sus constancias de pactos también salen del registro compartido (las de otras personas quedan).
+    if (sesion && !quitarConstanciasDe(sesion.idPersona)) fallidas.push(CLAVES_COMPARTIDAS.pactosConstancias);
+    const consentimientoQuitado = sesion ? retirarConsentimiento(window.localStorage, sesion.idPersona) : false;
     if (fallidas.length > 0 || !consentimientoQuitado) {
       setFalloRetiro(true);
       return;
@@ -134,6 +186,37 @@ export function MisDatosCliente() {
         </button>
         <p role="status" className={`text-sm font-medium ${descarga.error ? "text-danger" : ""}`}>
           <span key={descarga.n}>{descarga.texto}</span>
+        </p>
+      </Seccion>
+
+      <Seccion id="constancia" titulo="Tu consentimiento">
+        {registro ? (
+          <p className="text-sm">
+            Aceptaste la versión {registro.version} el {fechaYHora(registro.aceptadoEn)}
+            {registro.canal ? `, ${CAMINO_CONSENTIMIENTO[registro.canal]}.` : ". Camino: sin dato."}
+          </p>
+        ) : (
+          <p className="text-sm">Sin dato: no hay un consentimiento registrado.</p>
+        )}
+        {registro?.sensibles && (
+          <p className="text-sm text-muted">
+            Datos sensibles del Pasaporte: aceptaste la versión {registro.sensibles.version} el {fechaYHora(registro.sensibles.aceptadoEn)}.
+          </p>
+        )}
+      </Seccion>
+
+      <Seccion id="novedades" titulo="Novedades por email">
+        <p className="text-sm">
+          {novedades?.evento === "acepta"
+            ? `Pediste recibir novedades por email el ${fechaYHora(novedades.registradoEn)}, ${CAMINO_NOVEDADES[novedades.canal]}.`
+            : "No recibís novedades por email."}
+        </p>
+        <p className="text-sm text-muted">Es opcional y no cambia tu consentimiento de la política. Prototipo: todavía no mandamos emails.</p>
+        <button type="button" onClick={() => cambiarNovedades(novedades?.evento !== "acepta")} className={BOTON_SECUNDARIO}>
+          {novedades?.evento === "acepta" ? "Dejar de recibir novedades" : "Quiero recibir novedades"}
+        </button>
+        <p role="status" className="text-sm font-medium">
+          <span key={anuncioNovedades.n}>{anuncioNovedades.texto}</span>
         </p>
       </Seccion>
 

@@ -1,4 +1,4 @@
-import { agregar, validarReparto, TEXTO_MOTIVO, type Reparto } from "@/lib/cuadratico/motor";
+import { agregar, validarReparto, type Reparto } from "@/lib/cuadratico/motor";
 import { CLAVES } from "@/lib/demo/claves";
 import { buscarConsulta, CONSULTAS, PADRON, REPARTOS_EJEMPLO, VOS } from "./ejemplo";
 import type { Lectura, RepositorioConsultas, ResultadoGuardar } from "./repositorio";
@@ -161,7 +161,7 @@ export class RepositorioNavegador implements RepositorioConsultas {
     if (!guardado) return { ok: false, error: "falla" };
     if (estado(consulta, guardado.cierres[id], this.ahora()) === "cerrada") return { ok: false, error: "cerrada" };
     const v = validarReparto(reglasDe(consulta), reparto);
-    if (!v.ok) return { ok: false, error: "invalido", motivos: v.motivos.map((m) => TEXTO_MOTIVO[m]) };
+    if (!v.ok) return { ok: false, error: "invalido", motivos: v.motivos };
     const limpio: Reparto = Object.fromEntries(Object.entries(reparto).filter(([, votos]) => votos !== 0));
     const ok = this.escribir({ ...guardado, repartos: { ...guardado.repartos, [id]: limpio } });
     return ok ? { ok: true } : { ok: false, error: "falla" };

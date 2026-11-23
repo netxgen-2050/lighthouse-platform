@@ -8,6 +8,8 @@ const PERMITIDOS = [
   /^react\/jsx-runtime$/,
   /^@\/lib\/congreso\/evento$/,
   /^@\/lib\/congreso\/formatos$/,
+  /^@\/lib\/congreso\/interfaz$/,
+  /^@\/lib\/congreso\/idioma$/,
   /^\.\/[a-z-]+$/, // archivos de la misma carpeta
   /^\.\.\/tema-evento\.css$/, // la hoja del tema
 ];

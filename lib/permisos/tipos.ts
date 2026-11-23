@@ -20,7 +20,7 @@ export type Puerta =
   | "voz-tribu"
   | "voz-fondo-comun"
   | "voto-asamblea-residentes"
-  | "voto-fideicomiso"
+  | "influencia-fondo-comun"
   | "creditos";
 
 export type Motivo = "plan" | "pase" | "tribu" | "presencia" | "rol";

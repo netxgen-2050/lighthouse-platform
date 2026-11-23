@@ -1,36 +1,27 @@
+import { sumarte } from "@/lib/idioma/textos/sumarte";
+import type { Idioma } from "@/lib/idioma/tipos";
 import { limpiar } from "@/lib/origen/origen";
 import type { Borrador, Canal, Errores, Momento, Motivo, OrigenPedido, Pedido } from "./tipos";
 
 export const MAX_MENSAJE = 500;
 
 /** Etiqueta visible y destino de cada motivo: los componentes no los escriben a mano. */
-export const MOTIVOS: Record<Motivo, { etiqueta: string; destino: string }> = {
-  "consulta-lote": { etiqueta: "Consulta por un lote", destino: "BioPueblo, vía NetX como agencia" },
-  "invitacion-circulo": { etiqueta: "Invitación al círculo", destino: "Equipo NetX" },
-  "charla-netx": { etiqueta: "Charla para invertir en NetX", destino: "Equipo NetX" },
-};
+export const MOTIVOS: Record<Motivo, { etiqueta: string; destino: string }> = sumarte.es.pedido.motivos;
 
-export const CANALES: Record<Canal, string> = {
-  email: "Email",
-  telegram: "Telegram",
-  whatsapp: "WhatsApp",
-};
+export const CANALES: Record<Canal, string> = sumarte.es.pedido.canales;
 
-export const MOMENTOS: Record<Momento, string> = {
-  manana: "Mañana",
-  tarde: "Tarde",
-  noche: "Noche",
-};
+export const MOMENTOS: Record<Momento, string> = sumarte.es.pedido.momentos;
 
 /** Referencia de una finca: su número o, si no tiene, su id para no confundirla con otra. */
 export function referenciaDeFinca(numero: number | undefined, id: string): string {
   return numero === undefined ? `Finca sin número (${id})` : `Finca ${numero}`;
 }
 
-export function validar(b: Pick<Borrador, "canal" | "mensaje">): Errores {
+export function validar(b: Pick<Borrador, "canal" | "mensaje">, idioma: Idioma = "es"): Errores {
+  const t = sumarte[idioma].pedido;
   const errores: Errores = {};
-  if (!b.canal) errores.canal = "Elegí cómo preferís que te contactemos";
-  if (b.mensaje.length > MAX_MENSAJE) errores.mensaje = `El mensaje puede tener hasta ${MAX_MENSAJE} caracteres`;
+  if (!b.canal) errores.canal = t.errorCanal;
+  if (b.mensaje.length > MAX_MENSAJE) errores.mensaje = t.errorMensaje(MAX_MENSAJE);
   return errores;
 }
 

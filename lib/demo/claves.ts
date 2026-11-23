@@ -9,6 +9,8 @@ export const NOMBRES_BASE = {
   perfilDatos: "lh-perfil",
   compromisos: "lighthouse.compromisos.v1",
   congreso: "lh-congreso-ticket",
+  /** Idioma elegido para la vitrina del Congreso ("es" o "en"). Preferencia de interfaz; cualquier otro valor se ignora. */
+  idiomaCongreso: "lh-congreso-idioma",
   pactos: "lh-pactos",
   semillasRonda: "lh-semillas-ronda",
   sumarte: "lh-sumarte",
@@ -16,10 +18,14 @@ export const NOMBRES_BASE = {
   /** Horas de trabajo en texto libre del Pasaporte. */
   pasaporteHorasTexto: "lh-pasaporte:horas-texto",
   consultasLotes: "lh-consultas-lotes",
+  /** Reservas y pagos SIMULADOS de lotes de Lighthouse VRN (lote, opción, paso, fechas y lo que vio). Sin datos de identidad ni de pago. */
+  lotes: "lh-lotes",
   contactos: "lh-contactos",
   origen: "lh-origen",
   bitacora: "lh-bitacora",
   membresia: "lh-membresia",
+  /** A qué versión del manifiesto de Lighthouse VRN adhirió la persona (si cambia de versión, vuelve a adherir). */
+  adhesionVersion: "lh-adhesion-version",
   postulaciones: "lh-postulaciones",
   actividad: "lh-actividad",
   kyc: "lh-kyc",
@@ -29,6 +35,19 @@ export const NOMBRES_BASE = {
   fogon: "lh-fogon",
   /** Repartos propios y cierres simulados de las consultas del Fogón. */
   fogonConsultas: "lh-fogon-consultas",
+  /** Registros de gobernanza con forma de attestation (validaciones y decisiones llevadas al consejo), solo de agregar. */
+  gobernanza: "lh-gobernanza",
+  /** A qué círculos del común pidió sumarse la persona (`{ [circuloId]: "pedido" }`). Aparte de la membresía a propósito. */
+  equipos: "lh-equipos",
+} as const;
+
+/**
+ * Claves compartidas entre las personas de un mismo navegador: NUNCA llevan el prefijo de una persona (no pasan por `clave`).
+ * Su nombre no empieza con `lh-` a propósito: la fixtura de e2e prefija todo lo `lh-*`.
+ */
+export const CLAVES_COMPARTIDAS = {
+  /** Constancias de los pactos (propuestas, respuestas, retiros), de solo agregar. Ver `lib/pactos/constancias.ts`. */
+  pactosConstancias: "compartido:pactos-constancias",
 } as const;
 
 /** Guarda, sin prefijo, cuál fue la última persona: lo necesita el script que aplica el tema antes de hidratar. */

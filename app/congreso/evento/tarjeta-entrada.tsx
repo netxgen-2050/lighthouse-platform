@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import type { TipoEntrada } from "@/lib/congreso/evento";
 import { textoPrecio } from "@/lib/congreso/formatos";
+import type { Idioma } from "@/lib/congreso/idioma";
+import { textosEvento } from "@/lib/congreso/interfaz";
 import { Boton } from "./boton";
 
 type Props = {
@@ -13,21 +15,23 @@ type Props = {
   alComprar?: () => void;
   /** Destino del botón por defecto, si es un enlace. */
   hrefComprar?: string;
+  idioma?: Idioma;
 };
 
-export function TarjetaEntrada({ tipo, marcaLegal, accion, alComprar, hrefComprar }: Props) {
+export function TarjetaEntrada({ tipo, marcaLegal, accion, alComprar, hrefComprar, idioma = "es" }: Props) {
+  const t = textosEvento(idioma);
   const sinDato = !tipo.precio || !(tipo.precio.monto > 0);
   return (
     <article className={`ev-entrada${tipo.destacado ? " ev-entrada-destacada" : ""}`} data-entrada={tipo.id}>
       <span className="ev-entrada-etiqueta">
-        {tipo.destacado ? <span className="ev-solo-lectores">Destacado: </span> : null}
+        {tipo.destacado ? <span className="ev-solo-lectores">{t.destacado}</span> : null}
         {tipo.etiqueta}
       </span>
       <h3>{tipo.nombre}</h3>
       <p>{tipo.descripcion}</p>
       <div className={`ev-precio${sinDato ? " ev-precio-sin-dato" : ""}`}>
-        {textoPrecio(tipo)}
-        {!sinDato && tipo.esEjemplo ? <small>ejemplo</small> : null}
+        {textoPrecio(tipo, idioma)}
+        {!sinDato && tipo.esEjemplo ? <small>{t.ejemplo}</small> : null}
         {marcaLegal}
       </div>
       <div className="ev-entrada-acciones">

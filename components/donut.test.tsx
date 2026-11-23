@@ -58,6 +58,13 @@ describe("Donut", () => {
     expect(html).toContain("sin dato");
     expect(html).not.toContain("Ver como tabla");
   });
+  test("la primera columna de la tabla dice Opción y se puede cambiar", () => {
+    const porDefecto = renderToStaticMarkup(<Donut titulo="T" porciones={porciones} />);
+    expect(porDefecto).toContain(">Opción</th>");
+    const propia = renderToStaticMarkup(<Donut titulo="T" porciones={porciones} columnaEtiqueta="Clase" />);
+    expect(propia).toContain(">Clase</th>");
+    expect(propia).not.toContain(">Opción</th>");
+  });
   test("solo usa clases de tokens, sin colores sueltos", () => {
     const html = renderToStaticMarkup(<Donut titulo="T" porciones={porciones} resto={{ etiqueta: "Sin usar", valor: 54 }} />);
     expect(html).not.toMatch(/#[0-9a-fA-F]{3,8}\b|stroke="|fill="(?!none)/);

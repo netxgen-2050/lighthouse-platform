@@ -1,28 +1,33 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MarcaSemillas } from "@/components/marca-semillas";
 import { TerminoEconomico } from "@/components/termino-economico";
+import { idiomaDelPedido } from "@/lib/idioma/servidor";
+import { textos } from "@/lib/idioma/textos";
 import { SemillasCliente } from "./semillas-cliente";
 
-export const metadata: Metadata = { title: "Semillas" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: textos("semillas", await idiomaDelPedido()).pagina.titulo };
+}
 
-export default function SemillasPage() {
+export default async function SemillasPage() {
+  const idioma = await idiomaDelPedido();
+  const t = textos("semillas", idioma).pagina;
   return (
     <div className="mx-auto max-w-5xl p-6 sm:p-10">
       <p className="mb-2 text-sm">
-        <Link className="underline" href="/">← Inicio</Link>
+        <Link className="underline" href="/">{t.volverInicio}</Link>
       </p>
       <p className="mb-4 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-        Prototipo interno · datos de ejemplo
+        {textos("marco", idioma).aviso}
       </p>
       <p className="text-sm font-medium text-muted">
-        Semillas
-        <TerminoEconomico clave="semillas" /> · por comunidad
+        <span translate="no">{t.sobretitulo}</span>
+        <TerminoEconomico clave="semillas" />
+        {t.porComunidad}
       </p>
-      <h1 className="text-3xl font-semibold">Lo que sembraste y lo que te abre</h1>
-      <p className="mt-2 mb-4 max-w-2xl text-muted">
-        Las semillas no se venden ni se transfieren: son la cuenta de lo que cada quien aportó al proyecto. Todo es
-        simulado y queda solo en este navegador.
-      </p>
+      <h1 className="text-3xl font-semibold">{t.h1}</h1>
+      <p className="mt-2 mb-4 max-w-2xl text-muted"><MarcaSemillas texto={t.intro} /></p>
       <SemillasCliente />
     </div>
   );

@@ -7,7 +7,7 @@
 #
 # Cada argumento es un carril, que corre en su propia copia del repo (.carriles/N).
 # Dentro de un carril los cambios se apilan: b parte de la rama de a, c de la de b.
-# Al final corre el cierre: prueba de integración, propuestas para mañana y resumen.
+# Al final corre el cierre: prueba de integración y resumen (sin propuestas nuevas desde el 17-oct).
 set -euo pipefail
 
 if [[ $# -lt 1 ]]; then
@@ -135,9 +135,9 @@ done
 # Esperar solo a los carriles: caffeinate también corre en segundo plano y espera a este script.
 wait "${CARRILES[@]}"
 
-echo "[$(date +%T)] Cierre: integración, propuestas y resumen."
+echo "[$(date +%T)] Cierre: integración y resumen."
 correr_claude "$RAIZ" "$(plantilla .claude/cierre.md "" "" "${TODOS[*]}")" "$RAIZ/.noches/$FECHA-cierre.jsonl" \
   || echo "El cierre terminó con error; mirá .noches/$FECHA-cierre.jsonl"
 git switch -q dev 2>/dev/null || true
 
-echo "☀️  Listo. Resumen: docs/noches/$FECHA-resumen.md en la rama agente/propuestas-$FECHA"
+echo "☀️  Listo. Resumen: docs/noches/$FECHA-resumen.md en la rama agente/resumen-$FECHA y en el issue de decisiones"

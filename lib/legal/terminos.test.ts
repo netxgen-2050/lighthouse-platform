@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { TERMINOS, esBorrador, type ClaveTermino } from "./terminos";
+import { fraseDeTermino } from "./mostrar-termino";
+import { TERMINOS, esBorrador, terminoEn, type ClaveTermino } from "./terminos";
 
 const mock = readFileSync(
   path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"),
@@ -12,9 +13,21 @@ describe("catálogo legal", () => {
   it("las claves del catálogo", () => {
     expect(Object.keys(TERMINOS).sort()).toEqual(
       [
+        "acuseConformidad",
         "adhesion",
+        "adhesiongobernanza",
         "adherente",
+        "afectada",
         "agencia",
+        "aunlado",
+        "bloqueo",
+        "concern",
+        "guardianIA",
+        "medidaProvisoria",
+        "principios",
+        "quorum",
+        "urgencia",
+        "avisosimulador",
         "bitacora",
         "art32",
         "art35",
@@ -23,47 +36,265 @@ describe("catálogo legal", () => {
         "calificado",
         "chacra",
         "circulo",
+        "circuloinvertir",
+        "circulotrabajo",
+        "compromisominimo",
+        "consejo",
+        "representante",
+        "validacioncomun",
         "consultivo",
+        "constanciaSemillas",
+        "evaluacionPares",
         "contacto",
         "creditos",
         "datos",
+        "dobleenlace",
+        "derechostierra",
+        "dominio",
         "encuentroeducativo",
         "espejo",
+        "destinoconsejofundacion",
         "estatuto",
-        "fidasamblea",
-        "gobernanzafideicomiso",
+        "fundaciontierra",
+        "influenciafondocomun",
         "guardian",
         "hacienda",
         "inversorexterior",
         "kyc",
         "licencia",
         "loteo",
+        "loteonorte",
+        "aporteunico",
+        "boletoejemplo",
+        "derechosdeberes",
+        "expensas",
+        "precioreferencia",
+        "manifiestovrn",
         "membresia",
+        "noesinversion",
+        "noesoferta",
+        "notasverdes",
         "obra",
+        "ordenanza173",
+        "resguardoshibrido",
+        "consorciofundacion",
+        "pactoDosPartes",
+        "pactopuntual",
         "pacto",
         "pase",
         "pasaporte",
         "pasefundador",
         "personeria",
         "plantribu",
+        "primeroslotes",
+        "infraestructuralote",
+        "partedueno",
+        "retribucionraiz",
+        "nftlote",
+        "tokenbiencomun",
+        "ventatramos",
+        "stakingbiencomun",
+        "partenetxgen",
         "presencia",
+        "primeraperdida",
         "remoto",
         "ribera",
         "ritual",
         "ronda0",
         "safe",
+        "safu",
+        "safuinvertir",
         "semillas",
+        "seriemadre",
+        "serieprograma",
         "sumarte",
         "ticket",
         "transferencia",
+        "unidadesregeneracion",
       ].sort(),
     );
+  });
+  it("los ⚖ de los tokens del bien común son borrador, con inglés, y dicen que es una simulación a verificar", () => {
+    for (const clave of ["nftlote", "tokenbiencomun", "ventatramos", "stakingbiencomun", "partenetxgen", "retribucionraiz"] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+      expect(terminoEn(clave)?.texto.trim(), clave).toBeTruthy();
+      expect(TERMINOS[clave].texto, clave).not.toMatch(/RAIZ|ganancia|retorno|valorizaci/i);
+      expect(terminoEn(clave)?.texto, clave).not.toMatch(/RAIZ|profit|return/i);
+    }
+    for (const clave of ["nftlote", "tokenbiencomun", "ventatramos", "stakingbiencomun", "partenetxgen"] as const) {
+      expect(TERMINOS[clave].texto, clave).toContain("A verificar con abogado");
+      expect(terminoEn(clave)?.texto, clave).toContain("To be verified with a lawyer");
+    }
+  });
+  it("los términos del simulador de series son borrador", () => {
+    for (const clave of [
+      "avisosimulador",
+      "unidadesregeneracion",
+      "notasverdes",
+      "primeraperdida",
+      "safu",
+      "serieprograma",
+    ] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+    }
+    expect(TERMINOS.avisosimulador.texto).toBe(
+      "Prototipo interno · valores de partida, no son una oferta ni un pronóstico · el diseño legal no lo revisó un abogado",
+    );
+  });
+  it("los términos de la gobernanza fractal son borrador, con inglés, y avisan que el reglamento falta", () => {
+    for (const clave of ["circulotrabajo", "consejo", "representante", "validacioncomun", "dobleenlace", "dominio"] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+      expect(terminoEn(clave)?.texto.trim(), clave).toBeTruthy();
+      expect(TERMINOS[clave].texto, clave).toMatch(/todavía|no existe/);
+    }
+  });
+  it("los términos del manifiesto de Lighthouse VRN son borrador, con inglés; derechostierra dice que no es texto jurídico", () => {
+    for (const clave of ["manifiestovrn", "derechostierra", "adhesiongobernanza"] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+      expect(terminoEn(clave)?.texto.trim(), clave).toBeTruthy();
+    }
+    expect(TERMINOS.derechostierra.texto).toContain("Declaración Universal de los Derechos de la Madre Tierra");
+    expect(TERMINOS.derechostierra.texto).toMatch(/no son un texto jurídico/);
+    expect(TERMINOS.manifiestovrn.texto).toMatch(/borrador/);
+    expect(TERMINOS.adhesion.texto).toContain("Lighthouse VRN");
+  });
+
+  it("ningún texto nombra una asociación que custodia el Fondo Común: lo administra el Consejo de la Fundación", () => {
+    for (const [clave, t] of Object.entries(TERMINOS)) {
+      const todo = JSON.stringify(t);
+      expect(todo, clave).not.toMatch(/asociaci[oó]n[^."]*(custodia|administra)[^."]*Fondo Com[uú]n/i);
+      expect(todo, clave).not.toMatch(/association that (holds|keeps|custodies)/i);
+      expect(todo, clave).not.toMatch(/Guardián del Lighthouse|Lighthouse Guardian/);
+    }
+    for (const clave of ["pasefundador", "guardian", "guardianIA"] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+    }
+    expect(TERMINOS.guardian.texto).toContain("Fundación de la tierra");
+  });
+
+  it("los ⚖ del Pase en Sumarte son borrador, con inglés; el Pase no nombra al Guardián y dice que no va a NetX", () => {
+    for (const clave of ["pasefundador", "guardian", "creditos", "influenciafondocomun", "noesinversion", "noesoferta"] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+      expect(terminoEn(clave)?.texto.trim(), clave).toBeTruthy();
+    }
+    expect(TERMINOS.pasefundador.texto).not.toContain("Guardián");
+    expect(TERMINOS.pasefundador.texto).toContain("no a NetX");
+    expect(TERMINOS.influenciafondocomun.texto).toContain("conviction voting");
+    expect(TERMINOS.creditos.texto).not.toContain("Guardián");
+  });
+  it("noesinversion y noesoferta tienen frase en los dos idiomas, distinta de su explicación", () => {
+    expect(fraseDeTermino("noesinversion")).toBe("No es una inversión: no da tierra, lotes, prioridad ni rendimiento, y no se revende.");
+    expect(fraseDeTermino("noesinversion", "en")).toContain("It is not an investment");
+    expect(fraseDeTermino("noesoferta")).toContain("desde esta sección no se vende ni se cobra nada");
+    expect(fraseDeTermino("noesoferta", "en")).toContain("nothing is sold or charged from this section");
+    for (const clave of ["noesinversion", "noesoferta"] as const) {
+      expect(TERMINOS[clave].texto).not.toBe(TERMINOS[clave].frase);
+      expect(TERMINOS[clave].en.texto).not.toBe(TERMINOS[clave].en.frase);
+    }
+  });
+  it("los ⚖ de Invertir en Sumarte no mencionan cupos ni descuentos", () => {
+    for (const clave of ["circuloinvertir", "safuinvertir"] as const) {
+      for (const texto of [TERMINOS[clave].texto, TERMINOS[clave].en.texto]) {
+        expect(texto).not.toMatch(/\b35\b|\b15\b|descuento|discount/i);
+      }
+    }
+  });
+  it("los ⚖ que quedan en Sumarte tienen inglés y los del mock-up conservan su español", () => {
+    for (const clave of ["membresia", "plantribu", "safe", "circulo", "circuloinvertir", "serieprograma", "safu", "safuinvertir", "seriemadre", "fundaciontierra"] as const) {
+      expect(terminoEn(clave)?.titulo.trim(), clave).toBeTruthy();
+      expect(terminoEn(clave)?.texto.trim(), clave).toBeTruthy();
+    }
+    for (const clave of ["membresia", "plantribu", "safe", "circulo"] as const) {
+      const m = mock.match(new RegExp(`^\\s*${clave}:\\["([^"]+)","([^"]+)"\\]`, "m"));
+      expect(m, clave).not.toBeNull();
+      expect(TERMINOS[clave].titulo).toBe(m![1]);
+      expect(TERMINOS[clave].texto).toBe(m![2]);
+    }
+  });
+
+  it("destinoconsejofundacion es borrador, con inglés, y dice que la recomendación no obliga", () => {
+    expect(esBorrador("destinoconsejofundacion")).toBe(true);
+    expect(terminoEn("destinoconsejofundacion")?.texto.trim()).toBeTruthy();
+    expect(TERMINOS.destinoconsejofundacion.texto).toContain("no lo obliga");
+  });
+
+  it("pactoDosPartes es borrador, tiene inglés y aclara que no es un contrato de trabajo ni de inversión", () => {
+    expect(esBorrador("pactoDosPartes")).toBe(true);
+    expect(terminoEn("pactoDosPartes")?.titulo).toBe("Pact accepted by both parties");
+    expect(TERMINOS.pactoDosPartes.texto).toMatch(/no es un contrato de trabajo ni de inversión/i);
+  });
+
+  it("pactopuntual es borrador, tiene inglés y aclara que no es un contrato de trabajo, sin horario impuesto ni pago en dinero", () => {
+    expect(esBorrador("pactopuntual")).toBe(true);
+    expect(terminoEn("pactopuntual")?.titulo).toBe("One-off pact");
+    const texto = TERMINOS.pactopuntual.texto;
+    expect(texto).toMatch(/No es un contrato de trabajo/);
+    expect(texto).toMatch(/horario impuesto/);
+    expect(texto).toMatch(/no hay pago en dinero/);
+    expect(texto).toMatch(/Semillas, que no son un sueldo/);
+    expect(texto).not.toMatch(/brote|germin/i);
+  });
+
+  it("compromisominimo es borrador, tiene inglés y aclara que no es un contrato de trabajo ni un período de prueba y que se puede dejar avisando", () => {
+    expect(esBorrador("compromisominimo")).toBe(true);
+    expect(terminoEn("compromisominimo")?.titulo).toBe("Minimum commitment");
+    const texto = TERMINOS.compromisominimo.texto;
+    expect(texto).toMatch(/no es un contrato de trabajo ni un período de prueba/);
+    expect(texto).toMatch(/horario impuesto/);
+    expect(texto).toMatch(/pago en dinero/);
+    expect(texto).toMatch(/dejarlo antes avisando/);
+    expect(texto).toMatch(/Semillas pendientes/);
+    expect(texto).toMatch(/Las Semillas no son un sueldo/);
+    expect(texto + terminoEn("compromisominimo")?.texto).not.toMatch(/brote|germin|sprout/i);
+    expect(terminoEn("compromisominimo")?.texto).toMatch(/not an employment contract or a probationary period/);
+  });
+
+  it("ordenanza173 es borrador y dice que se verifica con abogado", () => {
+    expect(esBorrador("ordenanza173")).toBe(true);
+    expect(TERMINOS.ordenanza173.texto).toContain("es una simulación sobre un supuesto de trabajo");
+    expect(TERMINOS.ordenanza173.texto).toContain("A verificar con abogado");
+    expect(TERMINOS.ordenanza173.texto).not.toContain("Juego B");
+    expect(TERMINOS.ordenanza173.texto).not.toContain("diseño B");
+    expect(terminoEn("ordenanza173")?.texto).toContain("working assumption");
+  });
+  it("resguardoshibrido y consorciofundacion son borrador, con inglés, y dicen que todavía no existen", () => {
+    for (const clave of ["resguardoshibrido", "consorciofundacion"] as const) {
+      expect(esBorrador(clave), clave).toBe(true);
+      expect(terminoEn(clave)?.texto.trim(), clave).toBeTruthy();
+      expect(TERMINOS[clave].texto, clave).toContain("A verificar con abogado");
+      expect(TERMINOS[clave].texto, clave).not.toMatch(/procomún/i);
+    }
+    expect(TERMINOS.resguardoshibrido.texto).toContain("Ninguna existe todavía");
+    expect(TERMINOS.consorciofundacion.texto).toContain("Ninguna de las dos existe todavía");
+  });
+  it("seriemadre y fundaciontierra son borrador y la Fundación se verifica con abogado", () => {
+    expect(esBorrador("seriemadre")).toBe(true);
+    expect(esBorrador("fundaciontierra")).toBe(true);
+    expect(TERMINOS.fundaciontierra.texto.startsWith("En el modelo híbrido")).toBe(true);
+    expect(TERMINOS.fundaciontierra.texto).toContain("Los lotes privados no quedan en ella");
+    expect(TERMINOS.fundaciontierra.texto).toContain("a verificar con abogado");
+    expect(TERMINOS.fundaciontierra.texto).not.toContain("diseño B");
   });
   it("encuentroeducativo es borrador", () => {
     expect(esBorrador("encuentroeducativo")).toBe(true);
   });
   it("consultivo es borrador", () => {
     expect(esBorrador("consultivo")).toBe(true);
+    expect(TERMINOS.consultivo.frase).toBe(
+      "El resultado es consultivo: no reemplaza las decisiones que reservan el contrato o el estatuto.",
+    );
+    expect(TERMINOS.consultivo.texto).not.toBe(TERMINOS.consultivo.frase);
+    expect(TERMINOS.consultivo.texto).toContain("no obliga");
+    expect(TERMINOS.consultivo.texto).toContain("contrato o el estatuto");
+    expect(TERMINOS.consultivo.texto).toContain("no te cuesta plata");
+    expect(terminoEn("consultivo")).toBeDefined();
+    expect(terminoEn("consultivo")?.texto).not.toBe(TERMINOS.consultivo.en.frase);
+  });
+  it("evaluacionPares y constanciaSemillas son borrador y tienen inglés", () => {
+    for (const k of ["evaluacionPares", "constanciaSemillas"] as const) {
+      expect(esBorrador(k)).toBe(true);
+      expect(terminoEn(k)).toBeDefined();
+    }
   });
   it("agencia es borrador", () => {
     expect(esBorrador("agencia")).toBe(true);
@@ -72,6 +303,26 @@ describe("catálogo legal", () => {
   it("loteo es borrador", () => {
     expect(esBorrador("loteo")).toBe(true);
     expect(TERMINOS.loteo.titulo).toBe("Estado del loteo");
+  });
+  it("loteonorte es borrador, tiene inglés y nombra la Ordenanza 173", () => {
+    expect(esBorrador("loteonorte")).toBe(true);
+    expect(terminoEn("loteonorte")).toBeDefined();
+    expect(TERMINOS.loteonorte.texto).toContain("Ordenanza 173");
+    expect(terminoEn("loteonorte")?.texto).toContain("Ordinance 173");
+  });
+  it("los términos de la ficha de un lote son borrador y tienen inglés", () => {
+    for (const k of ["precioreferencia", "aporteunico", "expensas", "derechosdeberes", "boletoejemplo"] as const) {
+      expect(esBorrador(k), k).toBe(true);
+      expect(terminoEn(k), k).toBeDefined();
+    }
+  });
+  it("boletoejemplo dice que no se pagó nada, en los dos idiomas", () => {
+    expect(TERMINOS.boletoejemplo.texto).toContain("no se pagó nada");
+    expect(terminoEn("boletoejemplo")?.texto).toContain("nothing was paid");
+  });
+  it("derechosdeberes y aporteunico se verifican con abogado", () => {
+    expect(TERMINOS.derechosdeberes.texto).toContain("A verificar con abogado");
+    expect(TERMINOS.aporteunico.texto).toContain("A verificar con abogado");
   });
   it("contacto es borrador", () => {
     expect(esBorrador("contacto")).toBe(true);
@@ -84,14 +335,25 @@ describe("catálogo legal", () => {
   it("inversorexterior es borrador", () => {
     expect(esBorrador("inversorexterior")).toBe(true);
   });
-  it("gobernanzafideicomiso es borrador y dice que en la versión real lo define el contrato", () => {
-    expect(esBorrador("gobernanzafideicomiso")).toBe(true);
-    expect(TERMINOS.gobernanzafideicomiso.texto).toContain("contrato del fideicomiso");
+  it("influenciafondocomun es borrador, con inglés, y habla de conviction voting sin prometer un voto en el fideicomiso", () => {
+    expect(esBorrador("influenciafondocomun")).toBe(true);
+    expect(TERMINOS.influenciafondocomun.texto).toContain("conviction voting");
+    expect(TERMINOS.influenciafondocomun.texto).toContain("No es un voto en ningún fideicomiso");
+    expect(terminoEn("influenciafondocomun")?.texto.trim()).toBeTruthy();
   });
   it("datos y transferencia son borrador y explican en palabras simples", () => {
     expect(esBorrador("datos")).toBe(true);
     expect(esBorrador("transferencia")).toBe(true);
     expect(TERMINOS.transferencia.texto).toContain("Estados Unidos");
+  });
+  it("ticket, presencia, obra y encuentroeducativo tienen versión en inglés, y las demás no", () => {
+    for (const clave of ["ticket", "presencia", "obra", "encuentroeducativo"] as const) {
+      const en = terminoEn(clave);
+      expect(en?.titulo.trim()).toBeTruthy();
+      expect(en?.texto.trim()).toBeTruthy();
+      expect(en?.texto).not.toBe(TERMINOS[clave].texto);
+    }
+    expect(terminoEn("ritual")).toBeUndefined();
   });
   for (const [clave, t] of Object.entries(TERMINOS)) {
     // Los borradores son textos nuevos que no vienen del mock-up.

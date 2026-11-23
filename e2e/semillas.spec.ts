@@ -162,6 +162,15 @@ test("con un Pase activo, la frase 'un servicio que no suma semillas' lleva el �
   await expect(page.getByRole("tooltip")).toContainText("Pase Fundador");
 });
 
+test("los ⚖ de evaluación entre pares y de constancia se abren con teclado", async ({ page }) => {
+  await preparar(page, ["valle"], { valle: {} });
+  await page.goto("/semillas");
+  await page.getByRole("button", { name: "Qué significa legalmente: Evaluación entre pares" }).focus();
+  await expect(page.getByRole("tooltip")).toContainText("Evaluación entre pares");
+  await page.getByRole("button", { name: "Qué significa legalmente: Constancia de Semillas" }).focus();
+  await expect(page.getByRole("tooltip")).toContainText("Constancia de Semillas");
+});
+
 test("un pacto enviado pero no aceptado no suma semillas de tiempo ni habilita la ronda", async ({ page }) => {
   await preparar(page, ["lighthouse"], { lighthouse: { horas: 20, paso: 1 } });
   await page.goto("/semillas");
@@ -242,14 +251,54 @@ test("sin puntuar también se avisa y no se envía", async ({ page }) => {
   );
 });
 
-test("ronda completa: se envía, el factor es 1,0 y queda guardada al recargar", async ({ page }) => {
+test("la guía del nivel elegido queda en la descripción del botón y se ven los 5 niveles", async ({ page }) => {
+  await preparar(page, ["valle"], { valle: {} });
+  await page.goto("/semillas");
+  const rol = page.getByRole("group", { name: "Rol, Martina" });
+  await rol.getByRole("button", { name: "3 de 5" }).click();
+  await expect(rol.getByText("Nivel 3: Cumple lo acordado para su rol.")).toBeVisible();
+  await expect(rol.getByRole("button", { name: "3 de 5" })).toHaveAccessibleDescription(/Cumple lo acordado para su rol\./);
+  await rol.getByText("Ver la guía de los 5 niveles").click();
+  await expect(rol.getByText(/Rol, 1 de 5: /)).toBeVisible();
+  await expect(rol.getByText(/Rol, 5 de 5: /)).toBeVisible();
+});
+
+test("resultado: sin número antes de enviar; al enviar 1,08, notas, descartes, fuerza y constancias", async ({ page }) => {
+  await preparar(page, ["lighthouse"], { lighthouse: { horas: 10 } });
+  await page.goto("/semillas");
+  const resultado = page.getByTestId("resultado-ronda");
+  await expect(resultado).toContainText("se calcula al cerrar la ronda");
+  await expect(page.getByTestId("factor-resultado")).toHaveCount(0);
+  await expect(page.getByTestId("constancias")).toContainText(/sin dato/i);
+  await puntuar(page, 4);
+  await page.getByRole("button", { name: "Enviar ronda" }).click();
+  await expect(page.getByTestId("factor")).toHaveText("1,08");
+  await expect(page.getByTestId("dimension-rol")).toHaveText("Rol: 3,5 de 5 (4 evaluaciones)");
+  await expect(page.getByTestId("dimension-cultura")).toHaveText("Aporte al grupo: 4 de 5 (4 evaluaciones)");
+  await expect(page.getByTestId("descartes")).toContainText("fuera del equipo: 2");
+  await expect(page.getByTestId("descartes")).not.toContainText("reciprocidad");
+  await expect(page.getByTestId("constancia-base")).toContainText("50 Semillas");
+  await expect(page.getByTestId("constancia-ajuste")).toContainText("54 Semillas");
+  await expect(page.getByTestId("constancia-ajuste")).toContainText("apunta a ejemplo-base-lighthouse-2026-10");
+  // Fuerza simulada: 0,1 → 1,04 y rango 0,90–1,10; al recargar vuelve a 0,2.
+  await expect(resultado.getByText(/queda fija al abrir la ronda/)).toBeVisible();
+  await page.getByLabel("Fuerza del ajuste de esta comunidad").selectOption({ label: "Fuerza 0,1" });
+  await expect(page.getByTestId("factor")).toHaveText("1,04");
+  await expect(page.getByTestId("rango")).toContainText("0,90–1,10");
+  await expect(page.getByTestId("constancia-ajuste")).toContainText("-f10");
+  await page.reload();
+  await expect(page.getByLabel("Fuerza del ajuste de esta comunidad")).toHaveValue("0.2");
+  await expect(page.locator("body")).not.toContainText(/brotes|germinar/i);
+});
+
+test("ronda completa: se envía, el factor se calcula y queda guardada al recargar", async ({ page }) => {
   await preparar(page, ["lighthouse"], { lighthouse: { horas: 20 } });
   await page.goto("/semillas");
   await puntuar(page, 5);
   await expect(page.getByText("Puntaje: 5 de 5")).toHaveCount(4);
   await page.getByRole("button", { name: "Enviar ronda" }).click();
   await expect(page.getByText("Ronda enviada (simulado)")).toBeVisible();
-  await expect(page.getByTestId("factor")).toHaveText("1,0");
+  await expect(page.getByTestId("factor")).toHaveText("1,08");
   await expect(page.getByTestId("semillas-tiempo")).toHaveText("303 semillas");
   await page.reload();
   await expect(page.getByText("Ronda enviada (simulado)")).toBeVisible();
@@ -267,16 +316,20 @@ test("cada comunidad tiene su propia ronda", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Enviar ronda" })).toBeVisible();
 });
 
-test("Cómo te reconocieron: con pacto aceptado se ven puntuaciones y explicaciones de ejemplo", async ({ page }) => {
+test("Cómo te reconocieron: notas agregadas y resumen de ejemplo, sin nombres ni motivos", async ({ page }) => {
   await preparar(page, ["valle"], { valle: {} });
   await page.goto("/semillas");
   const recibido = page.getByRole("region", { name: "Cómo te reconocieron" });
   await expect(recibido).toBeVisible();
-  await expect(recibido).toContainText("De Martina");
-  await expect(recibido).toContainText("Rol: 4 de 5");
-  await expect(recibido).toContainText("Aporte al grupo: 5 de 5");
-  await expect(recibido).toContainText("Trae energía a las reuniones");
-  await expect(recibido).toContainText("Ejemplo");
+  await expect(recibido).toContainText("Todavía no hay resultado");
+  await puntuar(page, 4);
+  await page.getByRole("button", { name: "Enviar ronda" }).click();
+  await expect(recibido).toContainText("Rol: 3,5 de 5 (4 evaluaciones)");
+  await expect(recibido).toContainText("Aporte al grupo: 4 de 5 (4 evaluaciones)");
+  await expect(recibido).toContainText("Resumen de ejemplo (simulado)");
+  await expect(recibido).not.toContainText("De Martina");
+  await expect(recibido).not.toContainText(/Martina|Joaquín/);
+  await expect(recibido).not.toContainText("Cumple lo acordado en cada jornada");
 });
 
 test("las notas y las explicaciones se pueden poner con teclado", async ({ page }) => {
@@ -289,6 +342,9 @@ test("las notas y las explicaciones se pueden poner con teclado", async ({ page 
   await expect(tres).toHaveAttribute("aria-pressed", "true");
   await page.keyboard.press("Tab");
   await page.keyboard.press("Tab");
+  // Después de "5 de 5" está "Ver la guía de los 5 niveles" (se abre con teclado).
+  await page.keyboard.press("Tab");
+  await expect(grupo.getByText("Ver la guía de los 5 niveles")).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(grupo.getByLabel("¿Por qué le das esta puntuación?")).toBeFocused();
   await page.keyboard.type("Cumple");
@@ -310,6 +366,6 @@ test("no manda datos a un servidor", async ({ page }) => {
   });
   await puntuar(page, 3);
   await page.getByRole("button", { name: "Enviar ronda" }).click();
-  await expect(page.getByTestId("factor")).toHaveText("1,0");
+  await expect(page.getByTestId("factor")).toHaveText("1,08");
   expect(pedidos).toEqual([]);
 });

@@ -1,4 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
+import { aceptarPaso } from "./ayudas";
 import { COOKIE_PRUEBA, EMAIL_FUERA_DE_LISTA, EMAILS, expect, test, type Page } from "./fixtura";
 
 const LEYO = "Leí el manifiesto con atención y entiendo que sumarme es comprometerme con un grupo de personas";
@@ -62,6 +63,7 @@ test.describe("sin sesión", () => {
   test("entrar como una persona de la lista abre la app y recuerda la sesión al recargar", async ({ page }) => {
     await page.goto("/sumarte");
     await page.getByRole("button", { name: EMAILS.persona }).click();
+    await aceptarPaso(page);
     await expect(menuAvatar(page)).toBeVisible();
     await page.reload();
     await expect(menuAvatar(page)).toBeVisible();
@@ -69,10 +71,10 @@ test.describe("sin sesión", () => {
 });
 
 test.describe("super admin", () => {
-  test("ve NetX y el panel Personas y roles con todas las personas de la lista", async ({ page }) => {
+  test("ve NetX y el panel Personas y roles (en /admin) con todas las personas de la lista", async ({ page }) => {
     await page.goto("/");
     await expect(barra(page).getByRole("link", { name: /NetX/ })).toBeVisible();
-    await page.goto("/netx");
+    await page.goto("/admin/personas");
     const panel = page.getByRole("region", { name: "Personas y roles" });
     await expect(panel).toBeVisible();
     // Encabezado + al menos las 3 personas de prueba (en los previews la lista también trae al equipo).
@@ -94,7 +96,7 @@ test.describe("super admin", () => {
     const previa = (await lista()).find((p) => p.email === nueva);
     if (previa) await request.patch("/api/personas", { headers: cabecera, data: { id: previa.id, rol: "persona", tribuAdmin: null } });
 
-    await page.goto("/netx");
+    await page.goto("/admin/personas");
     const panel = page.getByRole("region", { name: "Personas y roles" });
     await expect(panel.getByLabel(`Rol de ${EMAILS.superadmin}`)).toBeVisible();
     if (!previa) {
@@ -142,19 +144,19 @@ test.describe("super admin", () => {
     await expect(page.getByText(`Tu cuenta: ${EMAILS.superadmin}`)).toBeVisible();
   });
 
-  test("/api/sesion devuelve rol, perfil y tribu con el header de prueba", async ({ request }) => {
+  test("/api/sesion devuelve rol, perfil y comunidad con el header de prueba", async ({ request }) => {
     const r = await request.get("/api/sesion", { headers: { "x-lh-prueba": EMAILS["admin-tribu"].toUpperCase() } });
     expect(r.status()).toBe(200);
     expect(await r.json()).toMatchObject({ email: EMAILS["admin-tribu"], rol: "admin-tribu", perfil: "usuario", tribuAdmin: "valle" });
   });
 });
 
-test.describe("admin de tribu", () => {
+test.describe("admin de comunidad", () => {
   test.use({ rol: "admin-tribu" });
 
-  test("no ve NetX; ve la marca Admin de Valle Solar en la tribu y en su menú", async ({ page }) => {
+  test("ve NetX (toda persona con sesión) y la marca Admin de Valle Solar en la comunidad y en su menú", async ({ page }) => {
     await page.goto("/tribus/valle");
-    await expect(barra(page).getByRole("link", { name: /NetX/ })).toHaveCount(0);
+    await expect(barra(page).getByRole("link", { name: /NetX/ })).toBeVisible();
     await expect(page.getByRole("main").getByText("Admin de Valle Solar")).toBeVisible();
     await menuAvatar(page).click();
     await expect(page.locator("#menu-persona")).toContainText("Admin de Valle Solar");
@@ -162,9 +164,10 @@ test.describe("admin de tribu", () => {
     await expect(page.getByText("Admin de Valle Solar")).toHaveCount(0);
   });
 
-  test("/netx le dice que no tiene acceso", async ({ page }) => {
-    await page.goto("/netx");
-    await expect(page.getByRole("heading", { name: "No tenés acceso a esta vista" })).toBeVisible();
+  test("/admin responde 403 y no muestra el panel de personas", async ({ page }) => {
+    const r = await page.goto("/admin/personas");
+    expect(r?.status()).toBe(403);
+    await expect(page.getByRole("heading", { name: "No tenés acceso a esta página" })).toBeVisible();
     await expect(page.getByRole("region", { name: "Personas y roles" })).toHaveCount(0);
   });
 });
@@ -172,13 +175,16 @@ test.describe("admin de tribu", () => {
 test.describe("persona", () => {
   test.use({ rol: "persona" });
 
-  test("no ve NetX ni la marca de admin, y /netx le dice que no tiene acceso", async ({ page }) => {
+  test("ve NetX pero no la marca de admin; /netx le muestra el Resumen y /admin responde 403", async ({ page }) => {
     await page.goto("/tribus/valle");
-    await expect(barra(page).getByRole("link", { name: /NetX/ })).toHaveCount(0);
+    await expect(barra(page).getByRole("link", { name: /NetX/ })).toBeVisible();
     await expect(page.getByText("Admin de Valle Solar")).toHaveCount(0);
     await page.goto("/netx");
-    await expect(page.getByRole("heading", { name: "No tenés acceso a esta vista" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "¿Cómo se financia NetX?" })).toBeVisible();
     await expect(page.getByText("¿Vamos a vender en febrero?")).toHaveCount(0);
+    const r = await page.goto("/admin");
+    expect(r?.status()).toBe(403);
+    await expect(page.getByRole("heading", { name: "No tenés acceso a esta página" })).toBeVisible();
   });
 
   test("no recibe la lista de personas de la API", async ({ request }) => {
@@ -191,12 +197,12 @@ test.describe("persona", () => {
 test.describe("email fuera de LH_PERSONAS (acceso abierto)", () => {
   test.use({ rol: "ninguno" });
 
-  test("entra como Explorador: sin marca de admin ni NetX, y la API responde 200 como persona común", async ({ page, context, baseURL, request }) => {
+  test("entra como Explorador: sin marca de admin, y la API responde 200 como persona común", async ({ page, context, baseURL, request }) => {
     await context.addCookies([{ name: COOKIE_PRUEBA, value: encodeURIComponent(EMAIL_FUERA_DE_LISTA), url: baseURL! }]);
     await page.goto("/");
     await expect(menuAvatar(page)).toBeVisible();
     await expect(page.getByText("Tu email todavía no tiene acceso a este prototipo")).toHaveCount(0);
-    await expect(barra(page).getByRole("link", { name: /NetX/ })).toHaveCount(0);
+    await expect(barra(page).getByRole("link", { name: /NetX/ })).toBeVisible();
     await menuAvatar(page).click();
     await expect(page.locator("#menu-persona")).toContainText("Nivel: Explorador");
     const r = await request.get("/api/sesion", { headers: { "x-lh-prueba": EMAIL_FUERA_DE_LISTA } });
@@ -204,7 +210,7 @@ test.describe("email fuera de LH_PERSONAS (acceso abierto)", () => {
     expect(await r.json()).toMatchObject({ email: EMAIL_FUERA_DE_LISTA, rol: "persona", tribuAdmin: null });
     // Salir vuelve a Descubrir sin cuenta.
     await page.locator("#menu-persona").getByRole("button", { name: "Salir" }).click();
-    await expect(page.getByRole("heading", { level: 1, name: /Encontrá tu tribu/ })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /Un lugar para vivir/ })).toBeVisible();
     await expect(barra(page).getByRole("button", { name: "Entrar" })).toBeVisible();
   });
 });
@@ -258,15 +264,17 @@ test.describe("salir y cambiar de cuenta", () => {
     await page.goto("/pactos");
     await salir(page);
     await page.getByRole("button", { name: EMAILS.superadmin }).click();
+    await aceptarPaso(page);
     await expect(menuAvatar(page)).toBeVisible();
     await page.goto("/tribus/valle");
-    await expect(page.getByRole("link", { name: "Adherir al manifiesto de la tribu" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Adherir al manifiesto de la comunidad" })).toBeVisible();
     await expect(page.getByText("Tu pedido llegó a Valle Solar.")).toHaveCount(0);
 
     // A vuelve a entrar y su pedido sigue ahí.
     await page.goto("/pactos");
     await salir(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
+    await aceptarPaso(page);
     await expect(menuAvatar(page)).toBeVisible();
     await page.goto("/tribus/valle");
     await expect(page.getByText("Tu pedido llegó a Valle Solar.")).toBeVisible();
@@ -286,6 +294,7 @@ test.describe("datos de antes del login", () => {
     });
     await page.goto("/pactos");
     await page.getByRole("button", { name: EMAILS.persona }).click();
+    await aceptarPaso(page);
     const aviso = page.getByRole("region", { name: "Encontramos datos de antes del login" });
     await expect(aviso).toBeVisible();
     await aviso.getByRole("button", { name: "Importar a mi cuenta" }).click();
@@ -300,6 +309,7 @@ test.describe("datos de antes del login", () => {
     await page.goto("/pactos");
     await salir(page);
     await page.getByRole("button", { name: EMAILS.superadmin }).click();
+    await aceptarPaso(page);
     await expect(menuAvatar(page)).toBeVisible();
     await expect(page.getByRole("region", { name: "Encontramos datos de antes del login" })).toHaveCount(0);
   });

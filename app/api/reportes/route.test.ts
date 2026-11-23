@@ -32,6 +32,7 @@ describe("POST /api/reportes", () => {
       estado: 200,
       idPersona: "p1",
       personaId: null,
+      clavesAnteriores: [],
       persona: { email: "persona@prueba.test", rol: "persona", perfil: "usuario", tribuAdmin: null } as never,
     });
   });

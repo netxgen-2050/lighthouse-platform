@@ -50,7 +50,7 @@ const EMAILS_CONOCIDOS = [...Object.values(EMAILS), EMAIL_FUERA_DE_LISTA, "nueva
  * del navegador traduce las claves `lh-*` de los tests (sembrar y leer datos) a las claves con el prefijo de esa persona.
  * Con `test.use({ rol: "ninguno" })` no hay sesión (para probar Sumarte como puerta de entrada).
  * Con `test.use({ plan: "explorador" })` la persona arranca como Explorador; por defecto es Miembro, para que los e2e
- * que participan (Pactos, Semillas, Fogón, Compromisos) sigan pasando. `plan: "fundador"` siembra un Pase Fundador Brote (simulado).
+ * que participan (Pactos, Semillas, Fogón) sigan pasando. `plan: "fundador"` siembra un Pase Fundador Brote (simulado).
  * `plan: "ninguno"` no siembra nada (queda Explorador).
  */
 export const test = base.extend<Opciones>({

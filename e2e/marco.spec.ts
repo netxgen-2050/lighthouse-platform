@@ -1,18 +1,18 @@
 import { expect, test } from "./fixtura";
 
-test("navegar de la portada a Tribus marca aria-current", async ({ page }) => {
+test("navegar de la portada a Comunidades marca aria-current", async ({ page }) => {
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Principal" });
   await expect(nav.getByRole("link", { name: "Inicio" })).toHaveAttribute("aria-current", "page");
-  await nav.getByRole("link", { name: "Tribus" }).click();
+  await nav.getByRole("link", { name: "Comunidades" }).click();
   await expect(page).toHaveURL(/\/tribus$/);
-  await expect(nav.getByRole("link", { name: "Tribus" })).toHaveAttribute("aria-current", "page");
+  await expect(nav.getByRole("link", { name: "Comunidades" })).toHaveAttribute("aria-current", "page");
 });
 
-test("en una tribu, Tribus sigue marcado", async ({ page }) => {
+test("en una comunidad, Comunidades sigue marcado", async ({ page }) => {
   await page.goto("/tribus/valle");
   const nav = page.getByRole("navigation", { name: "Principal" });
-  await expect(nav.getByRole("link", { name: "Tribus" })).toHaveAttribute("aria-current", "page");
+  await expect(nav.getByRole("link", { name: "Comunidades" })).toHaveAttribute("aria-current", "page");
 });
 
 test("el rail trae solo la navegación, en orden", async ({ page }) => {
@@ -20,9 +20,13 @@ test("el rail trae solo la navegación, en orden", async ({ page }) => {
   const nav = page.getByRole("navigation", { name: "Principal" });
   await expect(nav).toBeVisible();
   const textos = (await nav.getByRole("link").allInnerTexts()).map((t) => t.trim().split("\n")[0]);
-  const orden = ["Inicio", "Territorio", "Tribus", "Pactos", "Semillas", "Fogón", "Compromisos", "Congreso", "Sumarte"];
+  // "Admin" va al final, en el grupo "Interno", y solo lo ve el super admin (el rol por defecto de estas pruebas).
+  const orden = ["Inicio", "Territorio", "Lotes", "Bien común", "Sumarte", "Comunidades", "Pactos", "Semillas", "Fogón", "Admin"];
   expect(textos).toEqual(orden.filter((o) => textos.includes(o)));
-  expect(textos).toEqual(expect.arrayContaining(["Inicio", "Tribus", "Congreso", "Sumarte"]));
+  // Compromisos (27-oct-2026) y Congreso (menú de fase 1, 2-nov-2026) están en pausa: no aparecen en el rail.
+  await expect(nav.getByRole("link", { name: "Compromisos" })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "Congreso" })).toHaveCount(0);
+  expect(textos).toEqual(expect.arrayContaining(["Inicio", "Comunidades", "Sumarte"]));
   // Perfil, Pasaporte, Mi recorrido y Configuración viven en el menú del avatar; NetX y la campanita, en la barra superior.
   await expect(nav.getByRole("link", { name: "Perfil" })).toHaveCount(0);
   await expect(nav.getByRole("link", { name: "NetX" })).toHaveCount(0);
@@ -42,10 +46,12 @@ test("la barra superior está arriba a la derecha con NetX (interno), la campani
   await expect(netx).toContainText("Interno");
   const campanita = barra.locator('a[href="/bandeja"]');
   const avatar = barra.getByRole("button", { name: "Menú de la persona" });
-  const [a, b, c] = await Promise.all([netx.boundingBox(), campanita.boundingBox(), avatar.boundingBox()]);
-  // De izquierda a derecha: NetX, campanita, avatar; el avatar queda contra el borde derecho.
+  const idioma = barra.getByRole("group", { name: "Idioma · Language" });
+  const [a, b, i, c] = await Promise.all([netx.boundingBox(), campanita.boundingBox(), idioma.boundingBox(), avatar.boundingBox()]);
+  // De izquierda a derecha: NetX, campanita, selector de idioma, avatar; el avatar queda contra el borde derecho.
   expect(a!.x).toBeLessThan(b!.x);
-  expect(b!.x).toBeLessThan(c!.x);
+  expect(b!.x).toBeLessThan(i!.x);
+  expect(i!.x).toBeLessThan(c!.x);
   expect(c!.x + c!.width).toBeGreaterThan(1280 - 40);
   await expect(page.locator("main")).toHaveCount(1);
 });
@@ -58,13 +64,14 @@ test("la barra superior queda fija al bajar la página", async ({ page }) => {
   expect(caja.y).toBe(0);
 });
 
-test("celular 390 x 844: la barra superior muestra NetX, la campanita y el avatar sin desbordar", async ({ page }) => {
+test("celular 390 x 844: la barra superior muestra NetX, la campanita, el selector de idioma y el avatar sin desbordar", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const ruta of ["/", "/configuracion", "/sumarte"]) {
     await page.goto(ruta);
     const barra = page.getByRole("banner");
     await expect(barra.getByRole("link", { name: /NetX/ })).toBeVisible();
     await expect(barra.locator('a[href="/bandeja"]')).toBeVisible();
+    await expect(barra.getByRole("group", { name: "Idioma · Language" })).toBeVisible();
     await expect(barra.getByRole("button", { name: "Menú de la persona" })).toBeVisible();
     const caja = (await barra.boundingBox())!;
     expect(caja.height).toBeLessThanOrEqual(56);
@@ -73,14 +80,16 @@ test("celular 390 x 844: la barra superior muestra NetX, la campanita y el avata
   }
 });
 
-test("el rail muestra los grupos Descubrir y Participar en la computadora", async ({ page }) => {
+test("el rail muestra los grupos Descubrir y Lo que viene en la computadora", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Principal" });
   await expect(nav.getByText("Descubrir", { exact: true })).toBeVisible();
-  await expect(nav.getByText("Participar", { exact: true })).toBeVisible();
-  await expect(nav.getByRole("list", { name: "Descubrir" }).getByRole("link")).toHaveCount(3);
-  await expect(nav.getByRole("list", { name: "Participar" }).getByRole("link")).toHaveCount(5);
+  await expect(nav.getByText("Lo que viene", { exact: true })).toBeVisible();
+  // Descubrir trae Inicio, Territorio, Lotes y Bien común.
+  await expect(nav.getByRole("list", { name: "Descubrir" }).getByRole("link")).toHaveCount(4);
+  await expect(nav.getByRole("list", { name: "Lo que viene" }).getByRole("link")).toHaveCount(4);
+  await expect(nav.getByRole("link", { name: "Compromisos" })).toHaveCount(0);
 });
 
 test("menú de la persona: se abre con Enter, trae Perfil, Pasaporte, Mi recorrido y Configuración, y Escape lo cierra", async ({ page }) => {
@@ -155,12 +164,15 @@ test("celular 390 x 844: rail a la izquierda, 72 px o menos, sin scroll horizont
     expect(caja!.x).toBe(0);
     expect(caja!.width).toBeLessThanOrEqual(72);
     await expect(nav.getByRole("link", { name: "Inicio" })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Compromisos" })).toHaveCount(0);
+    // El título del grupo se oculta en el rail angosto; la lista conserva su nombre accesible.
+    await expect(nav.getByRole("list", { name: "Lo que viene" }).getByRole("link", { name: "Comunidades" })).toBeVisible();
     const desborde = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     expect(desborde, `scroll horizontal en ${ruta}`).toBe(false);
   }
 });
 
-test("Tab: primero Saltar al contenido y después Inicio en el rail; justo después del rail van NetX, la campanita y el avatar", async ({ page }) => {
+test("Tab: primero Saltar al contenido y después Inicio en el rail; justo después del rail van NetX, la campanita, el selector de idioma y el avatar",async ({ page }) => {
   await page.goto("/");
   // La barra superior aparece cuando termina de verificarse la sesión: se espera antes de recorrer con Tab.
   await expect(page.getByRole("button", { name: "Menú de la persona" })).toBeVisible();
@@ -169,16 +181,23 @@ test("Tab: primero Saltar al contenido y después Inicio en el rail; justo despu
   await page.keyboard.press("Tab");
   const nav = page.getByRole("navigation", { name: "Principal" });
   await expect(nav.getByRole("link", { name: "Inicio" })).toBeFocused();
-  // Se llega con Tab hasta el último enlace del rail (Sumarte); justo después va NetX, la campanita y luego el avatar.
-  const sumarte = nav.getByRole("link", { name: "Sumarte" });
-  for (let i = 0; i < 20 && !(await sumarte.evaluate((el) => el === document.activeElement)); i++) {
+  // Se llega con Tab hasta el último enlace del rail (Admin, solo para el super admin, después de Sumarte); justo después
+  // va NetX, la campanita y luego el avatar.
+  const admin = nav.getByRole("link", { name: /^Admin/ });
+  for (let i = 0; i < 20 && !(await admin.evaluate((el) => el === document.activeElement)); i++) {
     await page.keyboard.press("Tab");
   }
-  await expect(sumarte).toBeFocused();
+  await expect(admin).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("banner").getByRole("link", { name: /NetX/ })).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(page.locator('a[href="/bandeja"]')).toBeFocused();
+  // Después de la campanita va el selector de idioma (ES, EN) y recién después el avatar.
+  const selector = page.getByRole("group", { name: "Idioma · Language" });
+  await page.keyboard.press("Tab");
+  await expect(selector.getByRole("link", { name: "ES · Español" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(selector.getByRole("link", { name: "EN · English" })).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("button", { name: "Menú de la persona" })).toBeFocused();
 });
@@ -241,7 +260,15 @@ test("el HTML del servidor ya trae un año en el pie (sin JS)", async ({ request
 
 test("portada con titular y botón a /tribus", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Encontrá tu tribu\.\s*Construí en común\./);
-  await page.getByRole("link", { name: "Ver las tribus" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Un lugar para vivir\.\s*Un bien común para cuidar\./);
+  await page.getByRole("link", { name: "Ver las comunidades" }).click();
   await expect(page).toHaveURL(/\/tribus$/);
+});
+
+test("ninguna página se deja indexar: noindex, nofollow y sin pedir sesión", async ({ page }) => {
+  for (const ruta of ["/", "/sumarte", "/territorios/lighthouse", "/lotes", "/lotes/lote-1", "/congreso"]) {
+    const r = await page.goto(ruta);
+    expect(r?.status(), ruta).toBe(200);
+    await expect(page.locator('meta[name="robots"]'), ruta).toHaveAttribute("content", "noindex, nofollow");
+  }
 });

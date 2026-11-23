@@ -12,6 +12,8 @@ export type EntradaBitacora = {
   mostrado: string;
   huella: string;
   borrador: boolean;
+  /** Idioma del texto que se mostró (no el de la página). Ausente = "es" (entradas guardadas antes de este campo). */
+  idioma?: "es" | "en";
 };
 
 export type Bitacora = EntradaBitacora[];
@@ -40,7 +42,9 @@ function esEntrada(x: unknown): x is EntradaBitacora {
     typeof e.clave === "string" &&
     typeof e.mostrado === "string" &&
     typeof e.huella === "string" &&
-    typeof e.borrador === "boolean"
+    typeof e.borrador === "boolean" &&
+    // Se rechaza lo que sobra, no solo lo que falta: un idioma presente tiene que ser "es" o "en".
+    (e.idioma === undefined || e.idioma === "es" || e.idioma === "en")
   );
 }
 

@@ -7,11 +7,14 @@ import {
   listarFincas,
   listarLugares,
   macrolote7,
+  solunaContorno,
   terrenoComun,
   textoHectareas,
   textoSuperficieM2,
   tribuDeBarrio,
 } from "./biopueblo";
+import { seSuperponen } from "./geometria";
+import { lotesDelGrupo } from "./loteo";
 
 describe("biopueblo", () => {
   it("12 barrios, cada uno con su tribu", () => {
@@ -20,13 +23,13 @@ describe("biopueblo", () => {
     for (const b of barrios) expect(tribuDeBarrio(b)?.barrio).toBe(b.barrio);
   });
 
-  it("174 fincas: 166 disponibles, 7 reservadas, 1 cantera (la 303 repetida en el KMZ queda como 303-a y 303-b)", () => {
+  it("170 fincas: 162 disponibles, 7 reservadas, 1 cantera, sin las 4 que pasaron a ser los primeros lotes (la 303 repetida en el KMZ queda como 303-a y 303-b)", () => {
     const fincas = listarFincas();
-    expect(fincas).toHaveLength(174);
-    expect(new Set(fincas.map((f) => f.id)).size).toBe(174);
+    expect(fincas).toHaveLength(170);
+    expect(new Set(fincas.map((f) => f.id)).size).toBe(170);
     expect(fincas.some((f) => f.id === "finca-None")).toBe(false);
     const n = (e: string) => fincas.filter((f) => f.estado === e).length;
-    expect([n("disponible"), n("reservada"), n("cantera")]).toEqual([166, 7, 1]);
+    expect([n("disponible"), n("reservada"), n("cantera")]).toEqual([162, 7, 1]);
   });
 
   it("macrolote, común, lugares y contexto", () => {
@@ -34,6 +37,16 @@ describe("biopueblo", () => {
     expect(terrenoComun().nombre).toBe("Terreno común del Lighthouse");
     expect(listarLugares()).toHaveLength(6);
     expect(listarContexto().length).toBeGreaterThan(0);
+  });
+
+  it("el 7A no se mete en Chacras de Soluna: ni en la finca 548 ni en los primeros lotes", () => {
+    const siete = macrolote7();
+    const soluna = solunaContorno();
+    expect(siete.areaHa).toBe(990.4);
+    expect(seSuperponen(siete.anillo, soluna.anillo)).toBe(false);
+    expect(seSuperponen(siete.anillo, listarFincas().find((f) => f.id === "finca-548")!.anillo)).toBe(false);
+    for (const l of lotesDelGrupo("primeros")) expect(seSuperponen(siete.anillo, l.anillo), l.id).toBe(false);
+    for (const b of listarBarrios()) expect(seSuperponen(b.anillo, soluna.anillo), b.id).toBe(false);
   });
 
   it("conteo de tribus por estado: 3 activas, 5 en formación, 4 vacantes", () => {
@@ -64,5 +77,10 @@ describe("biopueblo", () => {
     expect(textoSuperficieM2(null)).toBe("sin dato");
     expect(textoHectareas(118.8)).toBe("118,8 ha");
     expect(textoHectareas(undefined)).toBe("sin dato");
+    // En inglés: coma de miles, punto decimal y "no data".
+    expect(textoSuperficieM2(9130, "en")).toBe("9,130 m²");
+    expect(textoSuperficieM2(null, "en")).toBe("no data");
+    expect(textoHectareas(118.8, "en")).toBe("118.8 ha");
+    expect(textoHectareas(undefined, "en")).toBe("no data");
   });
 });

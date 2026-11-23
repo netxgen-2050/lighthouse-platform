@@ -1,3 +1,5 @@
+import type { Idioma } from "@/lib/idioma/tipos";
+import { tribus } from "@/lib/idioma/textos/tribus";
 import type { Borrador, Errores, FormaJuridica, Postulacion } from "./tipos";
 
 export const MAX_TEXTO = 1000;
@@ -5,21 +7,17 @@ export const MAX_TEXTO = 1000;
 /** Enlace de ejemplo para agendar la llamada (no es un Calendly real). */
 export const ENLACE_LLAMADA = "https://calendly.com/netx-ejemplo/postulacion";
 
-export const FORMAS_JURIDICAS: Record<FormaJuridica, string> = {
-  "asociacion-civil": "Asociación civil",
-  sas: "SAS",
-  cooperativa: "Cooperativa",
-  fundacion: "Fundación",
-  ninguna: "Todavía ninguna",
-};
+/** Formas jurídicas en español (en inglés, `tribus.en.postulacion.formas`). Una sola fuente: el diccionario. */
+export const FORMAS_JURIDICAS: Record<FormaJuridica, string> = tribus.es.postulacion.formas;
 
-/** Requisitos de ejemplo que se muestran antes del formulario. */
-export const REQUISITOS: { texto: string; legal?: "pacto" }[] = [
-  { texto: "Un grupo de al menos 3 hogares." },
-  { texto: "Una persona responsable de la postulación." },
-  { texto: "Adherir al Pacto de convivencia del Lighthouse y a la regeneración de la tierra.", legal: "pacto" },
-  { texto: "Disponibilidad para una llamada con el equipo." },
-];
+/** Qué requisito (por posición) lleva un ⚖: el tercero, el Pacto de convivencia. */
+export const REQUISITOS_LEGALES: readonly ("pacto" | undefined)[] = [undefined, undefined, "pacto", undefined];
+
+/** Requisitos de ejemplo que se muestran antes del formulario (en español; el inglés está en el diccionario). */
+export const REQUISITOS: { texto: string; legal?: "pacto" }[] = tribus.es.postulacion.listaRequisitos.map((texto, i) => ({
+  texto,
+  legal: REQUISITOS_LEGALES[i],
+}));
 
 export const BORRADOR_VACIO: Borrador = {
   nombreComunidad: "",
@@ -39,16 +37,17 @@ export const BORRADOR_VACIO: Borrador = {
   compromisoTiempo: "",
 };
 
-const OBLIGATORIOS_TEXTO: [keyof Borrador, string][] = [
-  ["nombreComunidad", "Escribí el nombre de la comunidad"],
-  ["lider", "Escribí el nombre de la persona que lidera la postulación"],
-  ["contacto", "Escribí cómo contactar a esa persona"],
-  ["foco", "Contá qué van a producir o aportar en el barrio"],
-  ["pozo", "Contá qué aportarían al pozo común"],
-  ["decisiones", "Contá cómo toman decisiones"],
-  ["ritual", "Contá cuál sería su ritual de entrada"],
-  ["compromisoTiempo", "Contá qué tiempo se comprometen a dedicar en la fase de formación"],
-];
+/** Los campos de texto obligatorios, en el orden de la pantalla; su mensaje está en el diccionario. */
+const OBLIGATORIOS_TEXTO = [
+  "nombreComunidad",
+  "lider",
+  "contacto",
+  "foco",
+  "pozo",
+  "decisiones",
+  "ritual",
+  "compromisoTiempo",
+] as const;
 
 /** Entero positivo escrito con dígitos; cualquier otra cosa no es una cantidad. */
 export function aEntero(texto: string): number | null {
@@ -58,19 +57,21 @@ export function aEntero(texto: string): number | null {
   return Number.isSafeInteger(n) && n > 0 ? n : null;
 }
 
-export function validar(b: Borrador): Errores {
+/** Valida el borrador. Los mensajes salen en el idioma pedido (por defecto, español). */
+export function validar(b: Borrador, idioma: Idioma = "es"): Errores {
+  const mensajes = tribus[idioma].postulacion.errores;
   const errores: Errores = {};
-  for (const [campo, mensaje] of OBLIGATORIOS_TEXTO) {
-    if (!b[campo].trim()) errores[campo] = mensaje;
+  for (const campo of OBLIGATORIOS_TEXTO) {
+    if (!b[campo].trim()) errores[campo] = mensajes[campo];
   }
-  if (aEntero(b.personas) === null) errores.personas = "Escribí cuántas personas son (un número mayor que cero)";
-  if (aEntero(b.hogares) === null) errores.hogares = "Escribí cuántos hogares son (un número mayor que cero)";
+  if (aEntero(b.personas) === null) errores.personas = mensajes.personas;
+  if (aEntero(b.hogares) === null) errores.hogares = mensajes.hogares;
   if (!b.formaJuridica || !Object.hasOwn(FORMAS_JURIDICAS, b.formaJuridica)) {
-    errores.formaJuridica = "Elegí la forma jurídica actual o prevista";
+    errores.formaJuridica = mensajes.formaJuridica;
   }
   for (const campo of Object.keys(b) as (keyof Borrador)[]) {
     if (!errores[campo] && b[campo].length > MAX_TEXTO) {
-      errores[campo] = `Puede tener hasta ${MAX_TEXTO} caracteres`;
+      errores[campo] = mensajes.maximo(MAX_TEXTO);
     }
   }
   return errores;

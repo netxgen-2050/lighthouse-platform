@@ -1,7 +1,9 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { obtenerEvento } from "./evento";
+import { obtenerEvento, resolverEvento } from "./evento";
+import { EVENTO_EJEMPLO } from "./evento-ejemplo";
+import { esNeutro } from "./idioma";
 
 const RAIZ = path.resolve(__dirname, "..", "..");
 
@@ -93,11 +95,71 @@ describe("contenido del evento", () => {
     expect(e.encuentro.parrafos.some((p) => /educativ/i.test(p))).toBe(true);
   });
 
+  it("en inglés, algún párrafo de El encuentro dice educational (ahí va el ⚖ en inglés)", async () => {
+    const e = await obtenerEvento("en");
+    expect(e.encuentro.parrafos.some((p) => /educational/i.test(p))).toBe(true);
+  });
+
   it("trae la página oficial de ejemplo con URL segura", async () => {
     const e = await obtenerEvento();
     expect(e.paginaOficial?.esEjemplo).toBe(true);
     const { url, esEjemplo } = e.paginaOficial!;
     expect(url.startsWith("https://") || (esEjemplo && url.startsWith("#"))).toBe(true);
+  });
+
+  it("sin indicar idioma devuelve el español", async () => {
+    const e = await obtenerEvento();
+    expect(e.idioma).toBe("es");
+    expect(e.entradas.tipos[0].nombre).toBe("Pase completo");
+  });
+
+  it("en inglés: textos clave en inglés, sin objetos con las dos versiones y sin textos sin traducir", async () => {
+    const e = await obtenerEvento("en");
+    expect(e.idioma).toBe("en");
+    expect(e.entradas.tipos[0].nombre).toBe("Full pass");
+    expect(e.preguntas.items[0].pregunta).toBe("What does the full pass include?");
+    expect(e.sinTraducir).toEqual([]);
+    expect(JSON.stringify(e)).not.toMatch(/"es":\s*"|"en":\s*"/);
+  });
+
+  it("todo texto en español existe y no está vacío", () => {
+    const vacios: string[] = [];
+    const recorrer = (v: unknown, ruta: string) => {
+      if (typeof v !== "object" || v === null) return;
+      const o = v as Record<string, unknown>;
+      if (typeof o.es === "string" && Object.keys(o).every((k) => k === "es" || k === "en")) {
+        if (o.es.trim() === "") vacios.push(ruta);
+        return;
+      }
+      for (const [k, x] of Object.entries(o)) recorrer(x, `${ruta}.${k}`);
+    };
+    recorrer(EVENTO_EJEMPLO, "evento");
+    expect(vacios).toEqual([]);
+  });
+
+  it("ningún texto en inglés es igual al español, salvo nombres propios, marcas y números", () => {
+    const iguales: string[] = [];
+    const recorrer = (v: unknown, ruta: string) => {
+      if (typeof v !== "object" || v === null) return;
+      const o = v as Record<string, unknown>;
+      if (typeof o.es === "string" && Object.keys(o).every((k) => k === "es" || k === "en")) {
+        if (o.en === o.es && !esNeutro(o.es)) iguales.push(`${ruta}: ${o.es}`);
+        return;
+      }
+      for (const [k, x] of Object.entries(o)) recorrer(x, `${ruta}.${k}`);
+    };
+    recorrer(EVENTO_EJEMPLO, "evento");
+    expect(iguales).toEqual([]);
+  });
+
+  it("si falta una traducción cae al español y anota la ruta", () => {
+    const fuente = structuredClone(EVENTO_EJEMPLO);
+    fuente.voces.principales[0].afiliacion = { es: "Sin inglés" };
+    const e = resolverEvento(fuente, "en");
+    expect(e.voces.principales[0].afiliacion).toBe("Sin inglés");
+    expect(e.sinTraducir).toContain("voces.principales.0.afiliacion");
+    fuente.voces.principales[0].afiliacion = { es: "Sin inglés", en: "" };
+    expect(resolverEvento(fuente, "en").voces.principales[0].afiliacion).toBe("Sin inglés");
   });
 
   it("ningún archivo de app/ ni components/ importa el contenido de ejemplo", () => {

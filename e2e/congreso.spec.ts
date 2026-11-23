@@ -9,7 +9,7 @@ const TITULOS_EN_ORDEN = [
   "Voces que ya imaginaron",
   "Ocho conversaciones",
   "Un valle que aprende",
-  "No vengas solo. Llegá con tu tribu.",
+  "No vengas solo. Llegá con tu comunidad.",
   "Reservá tu lugar bajo el anillo",
   "Tu ticket también abre la puerta a NetX",
   "Antes de armar la mochila",
@@ -18,15 +18,20 @@ const TITULOS_EN_ORDEN = [
 
 // ===== Con sesión (Miembro por defecto): vitrina completa y registro del ticket =====
 
-test("las secciones aparecen en el orden indicado y el rail marca Congreso", async ({ page }) => {
+test("Congreso no está en el rail, responde por su dirección y ningún destino queda marcado", async ({ page }) => {
+  await page.goto("/congreso");
+  await expect(page.getByRole("heading", { level: 1, name: /Solarpunk Patagonia/ })).toBeVisible();
+  const nav = page.getByRole("navigation", { name: "Principal" });
+  await expect(nav.getByRole("link", { name: "Congreso" })).toHaveCount(0);
+  await expect(nav.locator('[aria-current="page"]')).toHaveCount(0);
+});
+
+test("las secciones aparecen en el orden indicado", async ({ page }) => {
   await page.goto("/congreso");
   await expect(page.getByRole("heading", { level: 1, name: /Solarpunk Patagonia/ })).toBeVisible();
   const titulos = await page.locator("main h2").allInnerTexts();
   expect(titulos).toHaveLength(TITULOS_EN_ORDEN.length);
   TITULOS_EN_ORDEN.forEach((t, i) => expect(titulos[i].startsWith(t), `${i}: ${titulos[i]}`).toBe(true));
-  await expect(
-    page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Congreso", exact: true }),
-  ).toHaveAttribute("aria-current", "page");
 });
 
 test("un solo h1 y la cinta de prototipo", async ({ page }) => {
@@ -63,13 +68,13 @@ test("El encuentro lleva el ⚖ de encuentro educativo y Entradas el del ticket"
   await expect(page.locator("#entradas").getByRole("button", { name: "Qué significa legalmente: Ticket del Congreso" })).toBeVisible();
 });
 
-test("Tribus: título en voseo, N de M van en texto, ejemplo y enlace a /tribus", async ({ page }) => {
+test("Comunidades: título en voseo, N de M van en texto, ejemplo y enlace a /tribus", async ({ page }) => {
   await page.goto("/congreso");
   const tribus = page.locator("#tribus");
-  await expect(tribus.getByRole("heading", { name: "No vengas solo. Llegá con tu tribu." })).toBeVisible();
+  await expect(tribus.getByRole("heading", { name: "No vengas solo. Llegá con tu comunidad." })).toBeVisible();
   await expect(tribus.getByText(/^\d+ de \d+ van$/)).toHaveCount(3);
   await expect(tribus.getByText(/ejemplo/).first()).toBeVisible();
-  await expect(tribus.getByRole("link", { name: "Encontrar mi tribu" })).toHaveAttribute("href", "/tribus");
+  await expect(tribus.getByRole("link", { name: "Encontrar mi comunidad" })).toHaveAttribute("href", "/tribus");
   await expect(page.locator("#territorio").getByRole("link", { name: "Explorar el mapa en NetX" })).toHaveAttribute(
     "href",
     "/territorios/lighthouse",
@@ -84,7 +89,7 @@ test("el modo de origen se activa con aria-pressed, muestra el texto de origen y
   await boton.click();
   await expect(boton).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByText("Viene de UnityHub · agenda")).toBeVisible();
-  await expect(page.getByText("Viene de NetX · tribus")).toBeVisible();
+  await expect(page.getByText("Viene de NetX · comunidades")).toBeVisible();
   await expect(page.getByText("Viene de NetX · ticket vinculado y presencia")).toBeVisible();
   await page.reload();
   await expect(page.getByRole("button", { name: /¿Qué viene de UnityHub\?/ })).toHaveAttribute("aria-pressed", "false");
@@ -130,7 +135,7 @@ test("Comprar abre el diálogo de demostración: sin nombrar quién cobra, sin n
 
 test("el diálogo también se cierra con Entendido y el foco queda dentro mientras está abierto", async ({ page }) => {
   await page.goto("/congreso");
-  const comprar = page.getByRole("button", { name: "Comprar pase de tribu" });
+  const comprar = page.getByRole("button", { name: "Comprar pase de comunidad" });
   await comprar.click();
   const dialogo = page.getByRole("dialog", { name: "Acá se abriría la compra del ticket" });
   await expect(dialogo).toBeVisible();
@@ -168,7 +173,7 @@ test("las preguntas se abren con el teclado", async ({ page }) => {
 test("el cierre tiene las dos acciones y el pie", async ({ page }) => {
   await page.goto("/congreso");
   await expect(page.getByRole("link", { name: "Reservar mi lugar" })).toHaveAttribute("href", "#entradas");
-  await expect(page.getByRole("link", { name: "Llegar con mi tribu" })).toHaveAttribute("href", "#tribus");
+  await expect(page.getByRole("link", { name: "Llegar con mi comunidad" })).toHaveAttribute("href", "#tribus");
   await expect(page.getByText("Convocan NetX Gen, BioPueblo y Rubania")).toBeVisible();
   await expect(page.getByText("Entradas y check-in con UnityHub")).toBeVisible();
 });
@@ -306,11 +311,10 @@ test.describe("celular con sesión: la barra de entradas no tapa a Hifa", () => 
 test.describe("con la política de privacidad pendiente", () => {
   test.use({ rol: "persona", plan: "explorador", consentimiento: "ninguno" });
 
-  test("ve el llamado a aceptar la política y no el formulario del ticket", async ({ page }) => {
+  // Con `consentimiento-alta` la pantalla de consentimiento cubre también las páginas públicas: sin aceptar no se ve la página.
+  test("ve la pantalla de consentimiento y no el formulario del ticket", async ({ page }) => {
     await page.goto("/congreso#ticket");
-    const enlace = page.getByRole("link", { name: "Aceptá la política de privacidad para vincular tu ticket" });
-    await expect(enlace).toBeVisible();
-    await expect(enlace).toHaveAttribute("href", "/sumarte?volver=%2Fcongreso%23ticket&para=explorador");
+    await expect(page.getByRole("heading", { level: 1, name: "Antes de seguir: tu privacidad" })).toBeVisible();
     await expect(page.getByLabel(/Código de tu ticket/)).toHaveCount(0);
   });
 });
@@ -326,7 +330,7 @@ test.describe("visitante sin cuenta", () => {
     await expect(page.getByRole("heading", { level: 1, name: /Solarpunk Patagonia/ })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Reservá tu lugar bajo el anillo" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Tu ticket también abre la puerta a NetX" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "No vengas solo. Llegá con tu tribu." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "No vengas solo. Llegá con tu comunidad." })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Antes de armar la mochila" })).toBeVisible();
     await expect(page.locator("#ticket ol > li")).toHaveCount(5);
     await expect(page.getByText("Código de tu ticket")).toHaveCount(0);
@@ -339,11 +343,10 @@ test.describe("visitante sin cuenta", () => {
     expect(claves.filter((c) => c.includes("congreso-ticket"))).toEqual([]);
   });
 
-  test("el rail muestra Congreso habilitado", async ({ page }) => {
+  test("sin cuenta, /congreso responde y el rail no lo ofrece", async ({ page }) => {
     await page.goto("/congreso");
-    const congreso = page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Congreso", exact: true });
-    await expect(congreso).toHaveAttribute("href", "/congreso");
-    await expect(congreso).not.toHaveAttribute("aria-disabled", "true");
+    await expect(page.getByRole("heading", { level: 1, name: /Solarpunk Patagonia/ })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Congreso", exact: true })).toHaveCount(0);
   });
 
   test("el modo de origen también funciona sin cuenta", async ({ page }) => {

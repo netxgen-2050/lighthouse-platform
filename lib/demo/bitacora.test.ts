@@ -30,6 +30,28 @@ describe("leer", () => {
   });
 });
 
+describe("idioma de la entrada", () => {
+  it("acepta la entrada con idioma y la vieja sin él", () => {
+    const sin = anotar([], base, t0);
+    const conEs = anotar([], { ...base, idioma: "es" }, t0);
+    const conEn = anotar([], { ...base, idioma: "en", borrador: true }, t0);
+    expect(leer(JSON.stringify(sin))).toEqual(sin);
+    expect(leer(JSON.stringify(conEs))[0].idioma).toBe("es");
+    expect(leer(JSON.stringify(conEn))[0].idioma).toBe("en");
+  });
+  it("descarta la entrada con un idioma que no es es ni en", () => {
+    const mala = JSON.stringify([{ ...anotar([], base, t0)[0], idioma: "fr" }]);
+    expect(leer(mala)).toEqual([]);
+    const nula = JSON.stringify([{ ...anotar([], base, t0)[0], idioma: null }]);
+    expect(leer(nula)).toEqual([]);
+  });
+  it("el mismo texto en otro idioma (otra huella) cuenta como otra cosa", () => {
+    let b = anotar([], { ...base, idioma: "es" }, t0);
+    b = anotar(b, { ...base, idioma: "en", huella: "cccccccc", borrador: true }, min(1));
+    expect(b).toHaveLength(2);
+  });
+});
+
 describe("anotar", () => {
   it("no repite lo mismo dentro de 30 minutos y a los 31 sí", () => {
     let b: Bitacora = anotar([], base, t0);

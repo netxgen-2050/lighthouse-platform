@@ -1,13 +1,16 @@
 import Link from "next/link";
 import { buscarTerritorio, textoSuperficie, tribusDeTerritorio } from "@/lib/territorios/datos";
-import { TEXTO_TERRITORIO } from "./textos";
+import type { Idioma } from "@/lib/congreso/idioma";
+import { textosNetx } from "./textos";
 
 const ID_TERRITORIO = "lighthouse";
 
 /** "El territorio": ilustración del valle y las cifras del catálogo de territorios de NetX ("sin dato" si faltan). */
-export function Territorio() {
+export function Territorio({ idioma = "es" }: { idioma?: Idioma }) {
+  const TEXTO_TERRITORIO = textosNetx(idioma).territorio;
   const territorio = buscarTerritorio(ID_TERRITORIO);
-  const superficie = territorio ? textoSuperficie(territorio) : "sin dato";
+  const textoSup = territorio ? textoSuperficie(territorio) : "sin dato";
+  const superficie = textoSup === "sin dato" ? TEXTO_TERRITORIO.sinDato : textoSup;
   const barrios = tribusDeTerritorio(ID_TERRITORIO).length;
   return (
     <section className="ev-seccion ev-territorio" id="territorio" aria-labelledby="t-territorio">
@@ -49,12 +52,16 @@ export function Territorio() {
                 <span>{TEXTO_TERRITORIO.superficie}</span>
               </div>
               <div>
-                <b>{barrios > 0 ? barrios : "sin dato"}</b>
+                <b>{barrios > 0 ? barrios : TEXTO_TERRITORIO.sinDato}</b>
                 <span>{TEXTO_TERRITORIO.barrios}</span>
               </div>
             </div>
             <p>{TEXTO_TERRITORIO.cuerpo}</p>
-            <Link className="ev-boton ev-boton-linea" href="/territorios/lighthouse">
+            <Link
+              className="ev-boton ev-boton-linea"
+              href="/territorios/lighthouse"
+              hrefLang={idioma === "en" ? "es" : undefined}
+            >
               {TEXTO_TERRITORIO.boton}
             </Link>
           </div>

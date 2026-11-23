@@ -8,8 +8,14 @@ export const RUTAS_PUBLICAS: readonly RegExp[] = [
   /^\/tribus$/,
   /^\/tribus\/[^/]+$/,
   /^\/tribus\/[^/]+\/manifiesto$/,
+  // Lotes de Lighthouse VRN: la lista y la ficha se ven sin sesión; reservar y hablar con alguien piden entrar (lote-ficha-y-compra).
+  /^\/lotes$/,
+  /^\/lotes\/[^/]+$/,
+  // El bien común con tokens: simulación para el equipo, se lee sin sesión (bien-comun-tokens).
+  /^\/bien-comun$/,
   // La vitrina del Congreso se ve sin cuenta; vincular el ticket pide cuenta (decisión de Gus, 14-oct-2026).
-  /^\/congreso$/,
+  // Y su versión en inglés (`/congreso/en`), la dirección que enlazan los organizadores.
+  /^\/congreso(\/en)?$/,
   // Sumarte es la puerta de entrada: ahí se elige cómo sumarse y se registra la persona.
   /^\/sumarte$/,
   // La política de privacidad se lee antes de aceptarla: tiene que ser pública.

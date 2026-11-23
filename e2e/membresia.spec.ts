@@ -20,15 +20,15 @@ async function adherirAValle(page: Page) {
 
 test("quien no es miembro ve leer y adherir, y no proponer pacto ni sala", async ({ page }) => {
   await page.goto("/tribus/valle");
-  await expect(page.getByRole("link", { name: "Leer el manifiesto de la tribu" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Adherir al manifiesto de la tribu" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Leer el manifiesto de la comunidad" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Adherir al manifiesto de la comunidad" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Proponer mi pacto" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Entrar a la sala" })).toHaveCount(0);
 });
 
 test("leer: título, introducción y compromisos de Valle Solar", async ({ page }) => {
   await page.goto("/tribus/valle");
-  await page.getByRole("link", { name: "Leer el manifiesto de la tribu" }).click();
+  await page.getByRole("link", { name: "Leer el manifiesto de la comunidad" }).click();
   await expect(page).toHaveURL(/\/tribus\/valle\/manifiesto$/);
   await expect(page.getByRole("heading", { level: 1, name: "Manifiesto de Valle Solar" })).toBeVisible();
   await expect(page.getByText(/crianza compartida/).first()).toBeVisible();
@@ -60,7 +60,7 @@ test("adherir queda deshabilitado hasta llegar al final y marcar las dos casilla
   await expect(page.getByText(/falta marcar las dos casillas/)).toBeVisible();
 });
 
-test("adherir manda el pedido y la aceptación simulada hace miembro solo de esa tribu, también al recargar", async ({ page }) => {
+test("adherir manda el pedido y la aceptación simulada hace miembro solo de esa comunidad, también al recargar", async ({ page }) => {
   await adherirAValle(page);
   await expect(page.getByText("Tu pedido llegó a Valle Solar. Quien la administra lo va a revisar.")).toBeVisible();
 
@@ -80,7 +80,7 @@ test("adherir manda el pedido y la aceptación simulada hace miembro solo de esa
 
   // Otra tribu sigue sin membresía.
   await page.goto("/tribus/taller");
-  await expect(page.getByRole("link", { name: "Adherir al manifiesto de la tribu" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Adherir al manifiesto de la comunidad" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Proponer mi pacto" })).toHaveCount(0);
 });
 
@@ -92,35 +92,36 @@ test("la aceptación simulada también se puede hacer desde la página del manif
   await expect(page.getByRole("button", { name: "Adherir", exact: true })).toHaveCount(0);
 });
 
-test("el Lighthouse tiene su pacto de convivencia y su resumen ofrece lo mismo", async ({ page }) => {
+test("el Lighthouse tiene su manifiesto y su resumen ofrece lo mismo", async ({ page }) => {
   await page.goto("/territorios/lighthouse");
   await expect(page.getByRole("heading", { name: "Pertenecer al Lighthouse" })).toBeVisible();
-  await page.getByRole("link", { name: "Leer el manifiesto del Lighthouse" }).click();
+  await page.getByRole("link", { name: "Leer el manifiesto de Lighthouse VRN" }).click();
   await expect(page).toHaveURL(/\/tribus\/lighthouse\/manifiesto$/);
-  await expect(page.getByRole("heading", { level: 1, name: "Pacto de convivencia del Lighthouse" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Manifiesto de Lighthouse VRN" })).toBeVisible();
 
   await alFinal(page);
   await page.getByLabel(LEYO).check();
   await page.getByLabel(CUIDAR).check();
   await page.getByRole("button", { name: "Adherir", exact: true }).click();
-  await expect(page.getByText("Tu pedido llegó al Lighthouse. Quien lo administra lo va a revisar.")).toBeVisible();
+  await expect(page.getByText("Adheriste al manifiesto de Lighthouse VRN. Ya podés participar en la gobernanza; el común va a confirmar tu adhesión.")).toBeVisible();
 
   await page.goto("/territorios/lighthouse");
   await page.getByRole("button", { name: "Simular: la comunidad me acepta" }).click();
   await expect(page.getByRole("link", { name: "Proponer mi pacto" })).toHaveAttribute("href", "/pactos?comunidad=lighthouse");
   // Ser miembro del Lighthouse no hace miembro de una tribu.
   await page.goto("/tribus/valle");
-  await expect(page.getByRole("link", { name: "Adherir al manifiesto de la tribu" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Adherir al manifiesto de la comunidad" })).toBeVisible();
 });
 
-test("las tribus activas y en formación tienen manifiesto; las vacantes no ofrecen adherir", async ({ page }) => {
+test("las comunidades activas y en formación tienen manifiesto; las vacantes no ofrecen adherir", async ({ page }) => {
   for (const id of ["semilla", "barda", "monte", "agua", "valle", "taller", "avelan", "puerto"]) {
     const r = await page.goto(`/tribus/${id}/manifiesto`);
     expect(r?.status(), id).toBe(200);
     await expect(page.getByRole("heading", { level: 1 }), id).toContainText("Manifiesto");
   }
-  const vacante = await page.goto("/tribus/grano/manifiesto");
-  expect(vacante?.status()).toBe(404);
+  // Desde `idioma-base` el estado HTTP ya no es 404 (ver ADR-004): se comprueba la pantalla de "no encontrado".
+  await page.goto("/tribus/grano/manifiesto");
+  await expect(page.getByRole("heading", { level: 1, name: "No encontramos esa página" })).toBeVisible();
   await page.goto("/tribus/grano");
   await expect(page.getByText(/manifiesto/i)).toHaveCount(0);
 });
@@ -147,7 +148,7 @@ test("con teclado: se llega al texto, se marcan las casillas y se adhiere", asyn
   await expect(page.getByRole("status").filter({ hasText: "Ya sos parte de Valle Solar." })).toBeFocused();
 });
 
-test("al aceptar desde la tribu el foco pasa al aviso, y al volver con el pedido guardado no hay aviso", async ({ page }) => {
+test("al aceptar desde la comunidad el foco pasa al aviso, y al volver con el pedido guardado no hay aviso", async ({ page }) => {
   await adherirAValle(page);
   await page.goto("/tribus/valle");
   // Estado guardado: texto común, la zona de avisos sigue vacía.
@@ -167,7 +168,7 @@ test("al aceptar desde el Lighthouse el foco pasa al aviso", async ({ page }) =>
   await page.goto("/territorios/lighthouse");
   await page.getByRole("button", { name: "Simular: la comunidad me acepta" }).focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("status").filter({ hasText: "Ya sos parte del Lighthouse." })).toBeFocused();
+  await expect(page.getByRole("status").filter({ hasText: "Ya sos parte de Lighthouse VRN." })).toBeFocused();
 });
 
 test("el ⚖ de adherir está junto al botón y junto al enlace",async ({ page }) => {

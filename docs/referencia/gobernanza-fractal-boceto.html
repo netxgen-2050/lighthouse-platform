@@ -1,0 +1,314 @@
+<title>Cómo decidimos en el Lighthouse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@500;600;700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a zoomable holarchy (circles inside circles) on the left, a detail panel on the right; lenses switch which dimension is drawn. */
+:root{
+  --bg:#f6f3ea; --surface:#fffdf7; --ink:#14241a; --muted:#566258; --line:#e0d9c8;
+  --deep:#154626; --on-deep:#f6f3ea; --green:#3c8c4b; --green-soft:#dcebdf;
+  --gold:#eda100; --gold-soft:#fdf0c9; --gold-ink:#6e4d00;
+  --tierra:#3c8c4b; --agua:#2a78d6; --economia:#c98a00; --comunidad:#a8325e; --conocimiento:#6b3fa0; --gobierno:#154626;
+  --ring:#ffffff;
+  --display:"Anek Latin","Figtree",system-ui,sans-serif; --sans:"Figtree",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --bg:#0f1912; --surface:#16231a; --ink:#e8efe6; --muted:#a7b5a9; --line:#2c3d31;
+  --deep:#0b2a16; --on-deep:#e8efe6; --green:#6fbf7d; --green-soft:#1f3a26;
+  --gold:#f2b733; --gold-soft:#3a2f12; --gold-ink:#f6d98a;
+  --tierra:#6fbf7d; --agua:#6aa7ef; --economia:#e7b43e; --comunidad:#e07aa0; --conocimiento:#ad8ae0; --gobierno:#8fd0a0; --ring:#0f1912;}}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#0f1912; --surface:#16231a; --ink:#e8efe6; --muted:#a7b5a9; --line:#2c3d31;
+  --deep:#0b2a16; --on-deep:#e8efe6; --green:#6fbf7d; --green-soft:#1f3a26;
+  --gold:#f2b733; --gold-soft:#3a2f12; --gold-ink:#f6d98a;
+  --tierra:#6fbf7d; --agua:#6aa7ef; --economia:#e7b43e; --comunidad:#e07aa0; --conocimiento:#ad8ae0; --gobierno:#8fd0a0; --ring:#0f1912;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);margin:0}
+.envoltura{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:24px 48px;display:grid;gap:18px}
+header{display:grid;gap:6px}
+h1{font:600 clamp(26px,4vw,34px)/1.1 var(--display);margin:0;text-wrap:balance}
+h2{font:600 20px/1.2 var(--display);margin:0;text-wrap:balance}
+h3{font:600 13px/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0}
+p{margin:0;max-width:66ch}
+.bajada{color:var(--muted)}
+.aviso{font-size:13px;color:var(--gold-ink);background:var(--gold-soft);border:1px dashed var(--gold);border-radius:8px;padding:6px 10px;justify-self:start}
+.lentes{display:flex;flex-wrap:wrap;gap:6px}
+.lentes button{font:500 14px/1 var(--sans);padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.lentes button[aria-pressed="true"]{background:var(--deep);color:var(--on-deep);border-color:var(--deep)}
+button:focus-visible,.arbol button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.escenario{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr);gap:18px;align-items:start}
+@media (max-width:860px){.escenario{grid-template-columns:1fr}}
+.lienzo{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;display:grid;gap:8px}
+.migas{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:14px;min-height:28px}
+.migas button{background:none;border:none;color:var(--green);font:500 14px var(--sans);cursor:pointer;padding:2px 4px;border-radius:4px}
+.migas span{color:var(--muted)}
+svg{width:100%;height:auto;display:block;max-width:100%}
+.leyenda{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
+.leyenda span{display:flex;align-items:center;gap:5px}
+.leyenda i{width:11px;height:11px;border-radius:50%;display:inline-block}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:14px;align-content:start}
+.tipo{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);background:var(--bg)}
+.chip.ok{border-color:var(--green);color:var(--green)}
+.chip.pend{border-style:dashed;color:var(--muted)}
+.lista{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.lista li{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:baseline;font-size:14px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.lista small{color:var(--muted)}
+.rol{font:500 11px/1.4 var(--mono);color:var(--muted)}
+.decision{display:grid;gap:4px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;background:var(--bg);text-align:left;color:var(--ink);font:inherit;width:100%}
+.decision[aria-pressed="true"]{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-soft)}
+.camino{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:12px;color:var(--muted)}
+.camino b{color:var(--ink);font-weight:500}
+.mio{background:var(--gold-soft);border:1px solid var(--gold);border-radius:10px;padding:10px 12px;display:grid;gap:4px;color:var(--ink)}
+.arbol-caja summary{cursor:pointer;font:500 14px var(--sans);color:var(--green)}
+.arbol{list-style:none;margin:6px 0 0;padding-left:0;display:grid;gap:2px;font-size:14px}
+.arbol ul{list-style:none;padding-left:16px;margin:2px 0;display:grid;gap:2px;border-left:1px dashed var(--line)}
+.arbol button{background:none;border:none;color:var(--ink);font:inherit;cursor:pointer;padding:2px 4px;border-radius:4px;text-align:left}
+.dims{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.dim{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:4px}
+.dim b{font:600 15px var(--display)}
+.dim p{font-size:14px;color:var(--muted)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<main class="envoltura">
+  <header>
+    <span class="tipo">Fogón · boceto interactivo para decidir el diseño</span>
+    <h1>Cómo decidimos en el Lighthouse</h1>
+    <p class="bajada">Cada nivel se organiza igual que el de arriba: el común tiene sus círculos, cada tribu tiene los suyos, y cada círculo tiene sus roles. Tocá cualquier círculo para entrar; tocá el fondo o las migas para volver a salir.</p>
+    <span class="aviso">Datos inventados para el boceto · no es la pantalla real</span>
+  </header>
+
+  <div class="lentes" role="group" aria-label="Lente">
+    <button type="button" id="lente-estructura" data-lente="estructura" aria-pressed="true">Estructura</button>
+    <button type="button" id="lente-propositos" data-lente="propositos" aria-pressed="false">Propósitos</button>
+    <button type="button" id="lente-decisiones" data-lente="decisiones" aria-pressed="false">Decisiones que suben</button>
+    <button type="button" id="lente-mi" data-lente="mi" aria-pressed="false">Desde mí</button>
+  </div>
+
+  <section class="escenario">
+    <div class="lienzo">
+      <nav class="migas" id="migas" aria-label="Dónde estás"></nav>
+      <svg id="holarquia" viewBox="-400 -400 800 800" role="img" aria-label="Círculos dentro de círculos: el común, sus círculos, las tribus y los círculos de cada tribu. La lista equivalente está en el panel."></svg>
+      <div class="leyenda" id="leyenda"></div>
+    </div>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </section>
+
+  <section class="dims" aria-label="Las dimensiones del diseño">
+    <div class="dim"><b>Niveles que se repiten</b><p>Común → tribu → círculo → rol. El mismo patrón en cada escala: propósito, dominio, roles y decisiones.</p></div>
+    <div class="dim"><b>Propósito</b><p>Cada círculo existe por una razón: tierra, agua, economía, comunidad, conocimiento o gobierno. La lente Propósitos lo colorea.</p></div>
+    <div class="dim"><b>Doble enlace</b><p>Cada tribu manda un enlace al consejo y el común manda un enlace a cada tribu. Las decisiones suben y bajan por esos enlaces.</p></div>
+    <div class="dim"><b>Desde mí</b><p>Una persona participa en varios círculos a la vez, en niveles distintos. La lente Desde mí la ubica en todos.</p></div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+const P = { tierra:"Tierra", agua:"Agua", economia:"Economía", comunidad:"Comunidad", conocimiento:"Conocimiento", gobierno:"Gobierno" };
+const nombres = ["Ana","Bruno","Carla","Diego","Eva","Facu","Gala","Hugo","Inés","Joaquín","Kira","Lautaro","Mora","Nico","Olivia","Pablo","Quimey","Rocío","Santi","Tina","Ulises","Vera","Wanda","Ximena","Yago","Zoe","Abril","Benja","Cami","Dante","Emma","Felipe","Guada","Iván","Juana","León","Maite","Nahuel","Paz","Ramiro"];
+let k = 0; const nom = () => nombres[(k++) % nombres.length];
+const ROLES = ["Facilita","Enlace hacia arriba","Enlace del nivel de arriba","Memoria","Miembro"];
+function personas(n, extra){ return Array.from({length:n},(_,i)=>({ nombre: i===0 && extra ? extra.nombre : nom(), rol: i===0 && extra ? extra.rol : (ROLES[i] ?? "Miembro"), tipo:"persona", yo: i===0 && extra ? true : false, value:1 })); }
+function circulo(id, nombre, proposito, decide, n, extra){ return { id, nombre, tipo:"circulo", proposito, decide, children: personas(n, extra) }; }
+
+const comun = { id:"comun", nombre:"Lighthouse · el común", tipo:"comun", proposito:"gobierno",
+  decide:["Fondo común","Reglas del territorio","Validar tribus"], children:[
+  circulo("c-perma","Permacultura y suelo","tierra",["Diseño del paisaje","Suelo y compost del común"],6,{nombre:"Vos",rol:"Miembro"}),
+  circulo("c-agua","Agua del Lighthouse","agua",["Cuenca y riego","Cisternas compartidas"],5),
+  circulo("c-legal","Legal y fideicomiso","gobierno",["Estatuto","Contratos con las series"],4),
+  circulo("c-token","Tokenomics y Semillas","economia",["Emisión de Semillas","Parámetros del Juego B"],5),
+  circulo("c-mkt","Comunicación y marketing","comunidad",["Relato público","Bienvenida a quien llega"],5),
+  circulo("c-cuidado","Cuidado y conflictos","comunidad",["Acuerdos de convivencia","Mediación"],4),
+  circulo("c-tec","Plataforma y datos","conocimiento",["NetX","Privacidad"],4),
+  { id:"consejo", nombre:"Consejo de tribus", tipo:"consejo", proposito:"gobierno", decide:["Pedidos al fondo común","Lo que ninguna tribu decide sola"], children:[] },
+]};
+
+const tribus = [
+  ["valle","Valle Solar","activa",[["Cuidado de la tierra","tierra",{nombre:"Vos",rol:"Enlace hacia arriba"}],["Energía solar","economia"],["Crianza compartida","comunidad"],["Arquitectura","conocimiento"]]],
+  ["semilla","Semilla Viva","activa",[["Banco de semillas","tierra"],["Huerta intensiva","tierra"],["Compost","tierra"]]],
+  ["taller","Taller Común","activa",[["Herrería","economia"],["Carpintería","economia"],["Reparación","comunidad"]]],
+  ["barda","Barda Productiva","formacion",[["Olivos y aceite","tierra"],["Vid y bodega","economia"]]],
+  ["monte","Monte Nuevo","formacion",[["Forestación","tierra"],["Bioconstrucción","conocimiento"]]],
+  ["aguaclara","Agua Clara","formacion",[["Toma y cisterna","agua"],["Tratamiento de aguas","agua"]]],
+  ["avelan","Fundación Avelan Kerum","formacion",[["Nutrición","comunidad"],["Educación","conocimiento"],["Sanación","comunidad"],["Energía","economia"]]],
+  ["puerto","Puerto Trueque","formacion",[["Hospedaje","economia"],["Mercado","economia"],["Encuentros","comunidad"]]],
+  ["b3","Barrio 3","busca",[]],["b8","Barrio 8","busca",[]],["b9","Barrio 9","busca",[]],["b12","Barrio 12","busca",[]],
+];
+const ESTADO = { activa:"Activa", formacion:"En formación", busca:"Busca tribu" };
+tribus.forEach(([id,nombre,estado,cs])=>{
+  const t = { id, nombre, tipo:"tribu", estado, proposito:"gobierno", decide: estado==="busca" ? [] : ["Su barrio","Quién entra a la tribu","Su manifiesto"], children:[] };
+  if (estado==="busca") t.children.push({ nombre:"Lugar libre", tipo:"vacio", value:3 });
+  cs.forEach(([cn,pr,extra],i)=> t.children.push(circulo(`${id}-${i}`, cn, pr, [`Lo de ${cn.toLowerCase()} en ${nombre}`], 3 + (i%3), extra)));
+  comun.children.push(t);
+  if (estado!=="busca") comun.children.find(c=>c.id==="consejo").children.push({ nombre: nom(), rol:`Enlace de ${nombre}`, tipo:"persona", value:1, tribu:nombre });
+});
+
+const DECISIONES = [
+  { id:"d1", titulo:"Bomba solar para la huerta de Valle Solar", camino:["valle-0","valle","consejo","comun"], estado:"En el consejo", detalle:"Nació en Cuidado de la tierra, la tribu la aprobó y pide plata del fondo común: sube al consejo." },
+  { id:"d2", titulo:"Parámetros de la regalía de regeneración", camino:["c-token","comun"], estado:"Consulta abierta", detalle:"La propone el círculo de Tokenomics del común; decide el común con su regla." },
+  { id:"d3", titulo:"Calendario de siembra de otoño", camino:["semilla-1","semilla"], estado:"Decidida en la tribu", detalle:"Se resuelve en Semilla Viva: no hace falta subir." },
+  { id:"d4", titulo:"Cisterna compartida entre Agua Clara y Valle Solar", camino:["aguaclara-0","aguaclara","consejo","c-agua"], estado:"Consulta abierta", detalle:"Cruza dos tribus: el consejo la deriva al círculo de Agua del común." },
+];
+
+const root = d3.hierarchy(comun).sum(d => d.value ?? 0).sort((a,b)=> (b.data.tipo==="consejo") - (a.data.tipo==="consejo") || b.value - a.value);
+d3.pack().size([800,800]).padding(d => d.depth===0 ? 14 : d.depth===1 ? 6 : 3)(root);
+root.each(d => { d.x -= 400; d.y -= 400; });
+const porId = new Map(); root.each(d => d.data.id && porId.set(d.data.id, d));
+
+const svg = d3.select("#holarquia");
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let lente = "estructura", foco = root, vista, decisionActiva = null;
+
+const g = svg.append("g");
+const nodos = g.selectAll("circle").data(root.descendants()).join("circle")
+  .attr("data-tipo", d => d.data.tipo)
+  .style("cursor", d => d.data.tipo==="vacio" ? "default" : "pointer")
+  .on("click", (ev, d) => { ev.stopPropagation(); if (d.children && foco !== d) enfocar(d); else if (!d.children) mostrar(d); });
+const etiquetas = g.selectAll("text").data(root.descendants().filter(d => d.data.tipo!=="persona" || true)).join("text")
+  .attr("text-anchor","middle").style("pointer-events","none").style("font-family","var(--sans)");
+const marcas = g.append("g");
+svg.on("click", () => foco.parent && enfocar(foco.parent));
+
+function relleno(d){
+  const t = d.data.tipo;
+  if (t==="comun") return css("--green-soft");
+  if (t==="vacio") return "none";
+  if (lente==="propositos" && (t==="circulo"||t==="persona")) { const p = t==="persona" ? d.parent.data.proposito : d.data.proposito; return mezclar(css("--"+p), t==="persona" ? .55 : .22); }
+  if (t==="consejo") return mezclar(css("--gold"), .25);
+  if (t==="tribu") return d.data.estado==="busca" ? css("--bg") : css("--surface");
+  if (t==="circulo") return mezclar(css("--green"), .14);
+  if (t==="persona") return d.data.yo ? css("--gold") : mezclar(css("--ink"), .35);
+  return css("--surface");
+}
+function mezclar(c, a){ const x = d3.color(c); if(!x) return c; x.opacity = a; return x.formatRgb(); }
+function borde(d){
+  const t = d.data.tipo;
+  if (lente==="mi" && esMio(d)) return css("--gold");
+  if (decisionActiva && decisionActiva.camino.includes(d.data.id)) return css("--gold");
+  if (t==="tribu") return d.data.estado==="activa" ? css("--green") : css("--muted");
+  if (t==="consejo") return css("--gold");
+  if (t==="vacio") return css("--muted");
+  return t==="persona" ? "none" : css("--line");
+}
+const esMio = d => d.data.yo || (d.descendants && d.descendants().some(x => x.data.yo));
+
+function pintar(){
+  nodos.attr("fill", relleno).attr("stroke", borde)
+    .attr("stroke-width", d => (lente==="mi" && esMio(d)) || (decisionActiva && decisionActiva.camino.includes(d.data.id)) ? 3 : d.data.tipo==="tribu" ? 1.5 : 1)
+    .attr("stroke-dasharray", d => d.data.tipo==="vacio" || d.data.estado==="busca" || d.data.estado==="formacion" ? "4 3" : null)
+    .attr("opacity", d => lente==="mi" && d.data.tipo==="persona" && !d.data.yo ? .35 : 1);
+  dibujarCamino(); leyenda();
+}
+
+function enfocar(d){
+  foco = d; decisionActiva = lente==="decisiones" ? decisionActiva : null;
+  const t = svg.transition().duration(matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 650)
+    .tween("zoom", () => { const i = d3.interpolateZoom(vista, [foco.x, foco.y, foco.r * 2.1]); return t => zoom(i(t)); });
+  mostrar(d); migas();
+}
+function zoom(v){
+  vista = v; const s = 800 / v[2];
+  nodos.attr("transform", d => `translate(${(d.x - v[0]) * s},${(d.y - v[1]) * s})`).attr("r", d => d.r * s);
+  etiquetas.attr("transform", d => `translate(${(d.x - v[0]) * s},${(d.y - v[1]) * s - (d.children ? d.r * s * .82 : 0)})`)
+    .text(d => d.data.tipo==="persona" ? (d.r*s > 26 ? d.data.nombre : "") : d.data.nombre)
+    .each(function(d){ if (d.data.tipo==="persona" && d.r*s > 34) { d3.select(this).append("tspan").attr("x",0).attr("dy","1.25em").style("font-size","10px").attr("fill",css("--muted")).text(d.data.rol); } })
+    .style("font-size", d => d.parent===foco || d===foco && d.depth>0 ? (d.children ? "13px" : "11px") : "11px")
+    .style("font-weight", d => d.children ? 600 : 400)
+    .attr("fill", css("--ink"))
+    .style("display", d => (d.parent===foco && d.r*s > 18) || (d===foco && foco!==root) ? "inline" : "none");
+  marcas.selectAll("*").attr("transform", function(){ const n = porId.get(this.dataset.id); return n ? `translate(${(n.x - v[0]) * s},${(n.y - v[1]) * s - n.r*s})` : null; });
+}
+
+function dibujarCamino(){
+  marcas.selectAll("*").remove();
+  if (!decisionActiva) return;
+  decisionActiva.camino.forEach((id,i) => {
+    const gm = marcas.append("g").attr("data-id", id); gm.node().dataset.id = id;
+    gm.append("circle").attr("r",11).attr("fill",css("--gold")).attr("stroke",css("--ring")).attr("stroke-width",2);
+    gm.append("text").text(i+1).attr("text-anchor","middle").attr("dy","4").attr("fill","#14241a").style("font","600 12px var(--sans)");
+  });
+  zoom(vista);
+}
+
+function migas(){
+  const n = document.getElementById("migas"); n.innerHTML = "";
+  foco.ancestors().reverse().forEach((a,i,arr) => {
+    if (i) n.insertAdjacentHTML("beforeend","<span aria-hidden='true'>›</span>");
+    const b = document.createElement("button"); b.type="button"; b.id = "miga-"+i; b.textContent = a.data.nombre;
+    if (i === arr.length-1) b.setAttribute("aria-current","location");
+    b.onclick = () => enfocar(a); n.append(b);
+  });
+}
+
+function tipoTexto(d){
+  return { comun:"El común", circulo: d.parent?.data.tipo==="comun" ? (d.children?.some(p=>p.data.tribu) ? "Círculo transversal" : "Círculo del común") : `Círculo de ${d.parent?.data.nombre}`, tribu:"Tribu", consejo:"Consejo (un enlace por tribu validada)", persona:"Rol", vacio:"Lugar libre" }[d.data.tipo];
+}
+
+function mostrar(d){
+  const panel = document.getElementById("panel"); const x = d.data;
+  if (lente==="decisiones") return panelDecisiones();
+  if (lente==="mi") return panelMio();
+  let h = `<span class="tipo">${tipoTexto(d)}</span><h2>${x.nombre}</h2>`;
+  if (x.tipo==="tribu") h += `<div class="chips"><span class="chip ${x.estado==="activa"?"ok":"pend"}">${ESTADO[x.estado]}</span><span class="chip ${x.estado==="busca"?"pend":"ok"}">${x.estado==="busca"?"Sin validar por el común":"Validada por el común"}</span></div>`;
+  if (x.proposito && x.tipo!=="persona") h += `<p><b>Propósito:</b> ${P[x.proposito]}</p>`;
+  if (x.decide?.length) h += `<div><h3>Decide sobre</h3><div class="chips" style="margin-top:6px">${x.decide.map(s=>`<span class="chip">${s}</span>`).join("")}</div></div>`;
+  const hijos = (d.children||[]);
+  const roles = hijos.filter(c=>c.data.tipo==="persona");
+  const subs = hijos.filter(c=>c.data.tipo!=="persona" && c.data.tipo!=="vacio");
+  if (subs.length) h += `<div><h3>${x.tipo==="comun"?"Adentro del común":"Sus círculos"}</h3><ul class="lista" style="margin-top:6px">${subs.map(c=>`<li><button type="button" class="arbol-ir" data-id="${c.data.id}" style="background:none;border:none;color:var(--green);font:inherit;cursor:pointer;text-align:left;padding:0">${c.data.nombre}</button><small>${c.data.tipo==="tribu"?ESTADO[c.data.estado]:c.children?.length? c.children.length+" "+(c.data.tipo==="consejo"?"enlaces":"roles"):""}</small></li>`).join("")}</ul></div>`;
+  if (roles.length) h += `<div><h3>Roles</h3><ul class="lista" style="margin-top:6px">${roles.map(r=>`<li><span>${r.data.nombre}${r.data.yo?" · vos":""}</span><span class="rol">${r.data.rol}</span></li>`).join("")}</ul></div>`;
+  if (x.tipo==="vacio") h += `<p>Este barrio todavía busca su tribu. Cuando una comunidad se postule y el común la valide, nace con sus círculos y su enlace al consejo.</p>`;
+  if (x.tipo==="tribu" && x.estado!=="busca") h += `<p class="bajada">Lo que la tribu no puede resolver sola sube al <b>Consejo de tribus</b> por su enlace.</p>`;
+  if (x.tipo==="persona") {
+    const todos = root.leaves().filter(l => l.data.tipo==="persona" && l.data.nombre===x.nombre);
+    h += `<p>${x.rol} en <b>${d.parent.data.nombre}</b>${x.tribu?` · viene de ${x.tribu}`:""}. ${/Enlace/.test(x.rol)?"Lleva las decisiones de un nivel al otro.":""}</p>`;
+    h += `<div><h3>Todos los roles de ${x.nombre}</h3><ul class="lista" style="margin-top:6px">${todos.map(l=>`<li><span>${l.parent.data.nombre}<br><small>${l.ancestors().slice(2).reverse().map(a=>a.data.nombre).join(" › ") || "el común"}</small></span><span class="rol">${l.data.rol}</span></li>`).join("")}</ul></div>`;
+  }
+  h += arbol();
+  panel.innerHTML = h; conectarPanel();
+}
+
+function panelDecisiones(){
+  const panel = document.getElementById("panel");
+  let h = `<span class="tipo">Lente · decisiones que suben</span><h2>Cada decisión se toma en el nivel más chico que pueda resolverla</h2><p class="bajada">Elegí una decisión para ver su camino en el dibujo: los números marcan por dónde pasa.</p>`;
+  h += DECISIONES.map(dc => `<button type="button" class="decision" id="dec-${dc.id}" data-dec="${dc.id}" aria-pressed="${decisionActiva?.id===dc.id}"><b>${dc.titulo}</b><span class="camino">${dc.camino.map((id,i)=>`${i?"→ ":""}<b>${porId.get(id)?.data.nombre}</b>`).join(" ")}</span><small class="rol">${dc.estado}</small><span style="font-size:13px;color:var(--muted)">${dc.detalle}</span></button>`).join("");
+  h += arbol(); panel.innerHTML = h;
+  panel.querySelectorAll("[data-dec]").forEach(b => b.onclick = () => { decisionActiva = DECISIONES.find(x=>x.id===b.dataset.dec); enfocar(root); pintar(); panelDecisiones(); });
+  conectarPanel();
+}
+
+function panelMio(){
+  const panel = document.getElementById("panel");
+  const mios = root.leaves().filter(l=>l.data.yo);
+  let h = `<span class="tipo">Lente · desde mí</span><h2>Dónde participás</h2><p class="bajada">La misma persona está en círculos de distintos niveles. En el dibujo, tus círculos tienen borde dorado.</p>`;
+  h += mios.map(m => `<div class="mio"><b>${m.parent.data.nombre}</b><span class="camino">${m.ancestors().slice(1).reverse().map(a=>a.data.nombre).join(" › ")}</span><span class="rol">Tu rol: ${m.data.rol}</span><span style="font-size:13px">Decidís sobre: ${m.parent.data.decide.join(", ")}</span><button type="button" class="arbol-ir" data-id="${m.parent.data.id}" style="justify-self:start;background:none;border:none;color:var(--green);font:500 14px var(--sans);cursor:pointer;padding:0">Ir a este círculo</button></div>`).join("");
+  h += `<p class="bajada">Ideas para jugar: Semillas por facilitar o por ser enlace, una marca por cada decisión que llevaste al consejo, y ver cómo tu círculo cambia el territorio.</p>`;
+  h += arbol(); panel.innerHTML = h; conectarPanel();
+}
+
+function arbol(){
+  const item = d => `<li><button type="button" class="arbol-ir" data-id="${d.data.id ?? ""}">${d.data.nombre}${d.data.tipo==="tribu"?` · ${ESTADO[d.data.estado]}`:""}</button>${d.children && d.children.some(c=>c.data.tipo!=="persona"&&c.data.tipo!=="vacio") ? `<ul>${d.children.filter(c=>c.data.tipo!=="persona"&&c.data.tipo!=="vacio").map(item).join("")}</ul>`:""}</li>`;
+  return `<details class="arbol-caja"><summary>Ver toda la estructura como lista</summary><ul class="arbol">${item(root)}</ul></details>`;
+}
+function conectarPanel(){ document.querySelectorAll("#panel .arbol-ir").forEach(b => { const n = porId.get(b.dataset.id); if (n) b.onclick = () => enfocar(n.children ? n : n.parent); }); }
+
+function leyenda(){
+  const l = document.getElementById("leyenda");
+  if (lente==="propositos") l.innerHTML = Object.entries(P).map(([k,v])=>`<span><i style="background:var(--${k})"></i>${v}</span>`).join("");
+  else if (lente==="mi") l.innerHTML = `<span><i style="background:var(--gold)"></i>Vos y tus círculos</span>`;
+  else if (lente==="decisiones") l.innerHTML = `<span><i style="background:var(--gold)"></i>Camino de la decisión elegida</span>`;
+  else l.innerHTML = `<span><i style="background:var(--green-soft)"></i>El común</span><span><i style="border:2px solid var(--green)"></i>Tribu activa</span><span><i style="border:2px dashed var(--muted)"></i>En formación o busca tribu</span><span><i style="background:var(--gold);opacity:.6"></i>Consejo</span><span><i style="background:var(--ink);opacity:.4"></i>Roles</span>`;
+}
+
+document.querySelectorAll(".lentes button").forEach(b => b.onclick = () => {
+  lente = b.dataset.lente;
+  document.querySelectorAll(".lentes button").forEach(x => x.setAttribute("aria-pressed", x===b));
+  if (lente!=="decisiones") decisionActiva = null;
+  if (lente==="decisiones" && !decisionActiva) decisionActiva = DECISIONES[0];
+  pintar(); mostrar(foco);
+  if (lente==="decisiones") enfocar(root);
+});
+
+vista = [root.x, root.y, root.r * 2.1]; zoom(vista); pintar(); mostrar(root); migas();
+</script>

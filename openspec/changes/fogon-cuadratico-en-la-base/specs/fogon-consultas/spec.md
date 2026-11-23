@@ -137,6 +137,18 @@ Only the super admin SHALL create consultations (title, mode, scope "Equipo", cl
 - **WHEN** el super admin crea una consulta con un email que no está en `personas`
 - **THEN** la API responde 422 con ese email y no crea la consulta
 
+### Requirement: Ámbito de la consulta
+<!-- Enmienda 2026-10-23: gobernanza fractal (fogon-limpieza, fogon-gobernanza-fractal). -->
+Each consultation SHALL have a scope among Equipo, Círculo, Tribu, Lighthouse (el común) and Consejo; Círculo and Tribu MUST also name which circle or tribe. The scope "Asamblea" MUST NOT exist. In this change only the super admin creates consultations and only with scope Equipo; the scope MUST NOT change once the consultation has votes.
+
+#### Scenario: Ámbito de círculo sin decir cuál
+- **WHEN** se intenta guardar en la base una consulta de ámbito Círculo sin indicar el círculo
+- **THEN** la base la rechaza
+
+#### Scenario: Crear con otro ámbito
+- **WHEN** el super admin pide crear una consulta de ámbito Tribu
+- **THEN** la API responde 422 y no crea nada
+
 ### Requirement: Falla al guardar
 If saving the reparto fails or the server does not answer, the screen SHALL keep the person's unsaved reparto, mark it "Sin guardar" and show "No pudimos guardar tu reparto. Probá de nuevo." with `role="alert"`; it MUST NOT show it as saved.
 

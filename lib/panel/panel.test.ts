@@ -2,7 +2,7 @@ import { PERFIL_VACIO } from "@/lib/perfil/modelo";
 import { describe, expect, it } from "vitest";
 import type { EventoActividad } from "@/lib/actividad/actividad";
 import { CLAVES } from "@/lib/demo/claves";
-import { agruparPorDia } from "./linea-tiempo";
+import { agruparPorDia, etiquetaDelDia } from "./linea-tiempo";
 import { leerProgreso, proximoPaso, type Progreso } from "./proximo-paso";
 
 const TODO: Progreso = {
@@ -31,6 +31,14 @@ describe("proximoPaso", () => {
   it("la identidad solo se pide a quien quiere invertir y todavía no la verificó", () => {
     expect(proximoPaso({ ...TODO, quiereInvertir: true, identidadVerificada: true })).toBeNull();
     expect(proximoPaso({ ...TODO, quiereInvertir: false })).toBeNull();
+  });
+
+  it("en inglés: un pacto, el perfil y el resto del orden, con los mismos destinos", () => {
+    const sinPacto = proximoPaso({ ...TODO, propusoPacto: false, tieneTicket: false }, "en");
+    expect(sinPacto).toMatchObject({ clave: "pacto", titulo: "Propose a pact", boton: "Propose a pact", href: "/pactos" });
+    expect(proximoPaso({ ...TODO, perfilCompleto: false }, "en")).toMatchObject({ titulo: "Complete your profile", href: "/perfil" });
+    expect(proximoPaso({ ...TODO, tieneTicket: false }, "en")?.href).toBe("/congreso");
+    expect(proximoPaso(TODO, "en")).toBeNull();
   });
 
   it("todo hecho: no hay próximo paso", () => {
@@ -115,6 +123,13 @@ const ev = (id: string, fecha: string, extra: Partial<EventoActividad> = {}): Ev
   notificacion: false,
   leida: false,
   ...extra,
+});
+
+describe("etiquetaDelDia", () => {
+  it("escribe el día según el idioma", () => {
+    expect(etiquetaDelDia("2026-10-09", "es")).toBe("viernes, 9 de octubre de 2026");
+    expect(etiquetaDelDia("2026-10-09", "en")).toBe("Friday, October 9, 2026");
+  });
 });
 
 describe("agruparPorDia", () => {

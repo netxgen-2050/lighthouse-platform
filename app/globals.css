@@ -279,3 +279,88 @@ h3 {
   border-color: var(--color-rose);
   border-radius: 9999px;
 }
+
+/* Lotes del sector norte: la forma del borde dice el estado (lleno, trazos, puntos). */
+.mapa-leyenda-lote-disponible {
+  background: var(--color-green);
+  border-color: var(--color-deep);
+}
+
+.mapa-leyenda-lote-reservado {
+  background: var(--color-gold-soft);
+  border-color: var(--color-gold-ink);
+  border-style: dashed;
+}
+
+.mapa-leyenda-lote-vendido {
+  background: var(--color-gray);
+  border-color: var(--color-muted);
+  border-style: dotted;
+  border-width: 3px;
+}
+
+.mapa-leyenda-sector {
+  background: transparent;
+  border-color: var(--color-deep);
+}
+
+.mapa-leyenda-produccion {
+  background: var(--color-green-soft);
+  border-color: var(--color-green);
+}
+
+.mapa-leyenda-uso-comun {
+  background: var(--color-surface-2);
+  border-color: var(--color-faint);
+  border-style: dashed;
+}
+
+.mapa-leyenda-parcela {
+  background: var(--color-surface-2);
+  border-color: var(--color-faint);
+}
+
+.mapa-leyenda-camino {
+  background: var(--color-surface-2);
+  border-color: var(--color-faint);
+}
+
+/* Vistas del territorio: sellos de frentes y muestras de la leyenda. Lleno = vigente hoy, punteado = viene después. */
+.mapa-sello-frente {
+  width: 32px;
+  height: 32px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-color: var(--color-deep);
+  border-style: solid;
+}
+
+.mapa-sello-frente-despues {
+  border-style: dashed;
+}
+
+.mapa-sello-elegido {
+  background: var(--color-deep);
+  color: var(--color-on-deep);
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+.mapa-leyenda-frente {
+  background: var(--color-surface);
+  border-color: var(--color-deep);
+  border-radius: 9999px;
+}
+
+.mapa-leyenda-frente-despues {
+  background: var(--color-surface);
+  border-color: var(--color-deep);
+  border-style: dashed;
+  border-radius: 9999px;
+}
+
+.mapa-leyenda-zona {
+  background: var(--color-surface);
+  border-color: var(--color-faint);
+  border-style: dashed;
+}

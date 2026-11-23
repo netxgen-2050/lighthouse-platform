@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { TarjetaIdentidad } from "./tarjeta-identidad";
 import { KycDialogo } from "@/components/kyc-dialogo";
 import { useSesion } from "@/components/sesion/contexto";
 import { SelloBilletera } from "./sello-billetera";
@@ -10,13 +11,15 @@ import { esCodigoValido } from "@/lib/congreso/ticket";
 import { CLAVES } from "@/lib/demo/claves";
 import { leerMembresiaDelNavegador, type Membresias } from "@/lib/membresia/estado";
 import { DATOS_VACIOS, leerDatos, MAX_HORAS, type DatosPersona } from "@/lib/pasaporte/datos";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { fechaLarga } from "@/lib/pasaporte/kyc";
 import {
   fechasPorGuardar,
   fechasPorQuitar,
   leerFechas,
+  NOMBRE_GENESIS,
   sellos,
-  TEXTO_ESTADO_SELLO,
+  textoEstadoSello,
   type EstadoSello,
   type FechasSellos,
   type Sello,
@@ -28,7 +31,6 @@ import { INICIAL, leer as leerSumarte, type EstadoSumarte } from "@/lib/sumarte/
 
 const FOCO = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 const BOTON = `w-fit rounded-lg px-4 py-1.5 font-medium ${FOCO}`;
-const BOTON_PRIMARIO = `${BOTON} bg-deep text-on-deep hover:bg-deep-2`;
 const BOTON_SUAVE = `${BOTON} border border-muted hover:bg-surface-2`;
 const CAMPO = `mt-1 block w-full rounded-lg border border-faint bg-surface px-3 py-2 text-ink ${FOCO}`;
 const TARJETA = "grid content-start gap-4 rounded-xl border border-faint bg-surface p-5";
@@ -69,7 +71,9 @@ function Opcion<T extends string>({
   );
 }
 
-function TarjetaSello({ s, alVerificar, alAprobar }: { s: Sello; alVerificar: () => void; alAprobar: () => void }) {
+function TarjetaSello({ s }: { s: Sello }) {
+  const idioma = useIdioma();
+  const t = useTextos("pasaporte").sellos;
   return (
     <li data-sello={s.id} className="grid content-start gap-3 rounded-xl border border-faint bg-surface p-4">
       <div className="flex items-start gap-4">
@@ -81,42 +85,62 @@ function TarjetaSello({ s, alVerificar, alAprobar }: { s: Sello; alVerificar: ()
         </div>
         <div className="grid min-w-0 gap-1">
           <h3 className="text-lg font-semibold break-words">
-            {s.nombre}
-            {s.legal?.map((k) => <TerminoLegal key={k} clave={k} />)}
+            {s.nombre === NOMBRE_GENESIS ? <span translate="no">{s.nombre}</span> : s.nombre}
+            {s.legal?.map((k) => <TerminoLegal key={k} clave={k} idioma={idioma} />)}
           </h3>
           <p className="flex flex-wrap items-center gap-2">
             <span className={`rounded-full border px-2 py-0.5 text-sm font-medium ${ETIQUETA[s.estado]}`}>
-              {TEXTO_ESTADO_SELLO[s.estado]}
+              {textoEstadoSello(s.estado, idioma)}
             </span>
-            {s.fecha && <span className="text-sm text-muted">{fechaLarga(s.fecha)}</span>}
+            {s.fecha && <span className="text-sm text-muted">{fechaLarga(s.fecha, idioma)}</span>}
           </p>
         </div>
       </div>
       <p className="text-sm">
         {s.detalle}
-        {s.legalDetalle && <TerminoLegal clave={s.legalDetalle} />}
+        {s.legalDetalle && <TerminoLegal clave={s.legalDetalle} idioma={idioma} />}
       </p>
-      {s.id === "identidad" && s.estado === "en-tramite" && (
-        <button type="button" className={BOTON_PRIMARIO} onClick={alAprobar}>
-          Simular: verificación aprobada
-        </button>
-      )}
-      {s.accion?.tipo === "kyc" && (
-        <button type="button" className={BOTON_PRIMARIO} onClick={alVerificar}>
-          {s.accion.texto}
-        </button>
-      )}
-      {s.accion?.tipo === "enlace" && (
-        <Link className={BOTON_SUAVE} href={s.accion.href}>
-          {s.accion.texto}
-        </Link>
-      )}
+      {s.accion &&
+        (s.accion.href.includes("#") ? (
+          // Ancla en la misma página: un enlace común mueve el foco y avisa con `hashchange`.
+          // Si el hash ya es el mismo no hay `hashchange`: se enfoca el encabezado a mano.
+          <a
+            className={BOTON_SUAVE}
+            href={s.accion.href}
+            onClick={() => {
+              const destino = document.getElementById("titulo-identidad");
+              if (window.location.hash === `#${s.accion?.href.split("#")[1]}` && destino) {
+                // Un tick después, para no competir con el foco que mueve el navegador al clicar el enlace.
+                setTimeout(() => {
+                  destino.scrollIntoView();
+                  destino.focus();
+                }, 0);
+              }
+            }}
+          >
+            {s.accion.texto}
+          </a>
+        ) : (
+          <Link className={BOTON_SUAVE} href={s.accion.href}>
+            {s.accion.texto}
+          </Link>
+        ))}
       {s.abre.length > 0 && (
         <div>
-          <p className="text-sm font-medium">{s.estado === "obtenido" ? "Qué abre" : "Qué abriría"}</p>
+          <p className="text-sm font-medium">{s.estado === "obtenido" ? t.queAbre : t.queAbriria}</p>
           <ul className="list-disc pl-5 text-sm">
             {s.abre.map((a) => (
-              <li key={a}>{a}</li>
+              <li key={a}>
+                {a.split(/(conviction voting)/).map((parte, i) =>
+                  i % 2 === 1 ? (
+                    <span key={i} translate="no">
+                      {parte}
+                    </span>
+                  ) : (
+                    parte
+                  ),
+                )}
+              </li>
             ))}
           </ul>
         </div>
@@ -126,6 +150,8 @@ function TarjetaSello({ s, alVerificar, alAprobar }: { s: Sello; alVerificar: ()
 }
 
 export function PasaporteCliente() {
+  const idioma = useIdioma();
+  const t = useTextos("pasaporte");
   const kyc = useKyc();
   const { billetera } = useSesion();
   const [listo, setListo] = useState(false);
@@ -135,6 +161,7 @@ export function PasaporteCliente() {
   const [ticket, setTicket] = useState(false);
   const [fechas, setFechas] = useState<FechasSellos>({});
   const [dialogo, setDialogo] = useState(false);
+  const botonKyc = useRef<HTMLButtonElement>(null);
   const [datosAporte, setDatosAporte] = useState<DatosPersona>(DATOS_VACIOS);
   const [horasTexto, setHorasTexto] = useState("");
   const [falloAlmacen, setFalloAlmacen] = useState(false);
@@ -164,9 +191,10 @@ export function PasaporteCliente() {
         ? sellos(
             { sumarte, membresias, kyc: kyc.kyc, datos: kyc.datos, ticket, presenciaGenesis: false, fechas },
             ahora,
+            idioma,
           )
         : [],
-    [ahora, kyc.cargado, kyc.kyc, kyc.datos, sumarte, membresias, ticket, fechas],
+    [ahora, kyc.cargado, kyc.kyc, kyc.datos, sumarte, membresias, ticket, fechas, idioma],
   );
 
   // Cada sello obtenido guarda el día en que se lo vio por primera vez;
@@ -203,7 +231,7 @@ export function PasaporteCliente() {
     setDatosAporte(siguiente);
   }
 
-  if (!listo || !kyc.cargado) return <p role="status" className="text-sm text-muted">Cargando tu pasaporte…</p>;
+  if (!listo || !kyc.cargado) return <p role="status" className="text-sm text-muted">{t.cargando}</p>;
 
   const horasInvalidas = horasTexto !== "" && datosAporte.horas === undefined;
 
@@ -211,40 +239,41 @@ export function PasaporteCliente() {
     <div className="grid gap-8">
       {(falloAlmacen || kyc.falloAlmacen) && (
         <p role="alert" className="text-sm font-medium text-warn-ink">
-          No pudimos guardar tus datos en este navegador. Se ven ahora, pero se pierden al recargar.
+          {t.errorAlmacenamiento}
         </p>
       )}
 
+      <TarjetaIdentidad
+        kyc={kyc.kyc}
+        datos={kyc.datos}
+        alCompletar={() => setDialogo(true)}
+        alAprobar={kyc.aprobar}
+        botonRef={botonKyc}
+      />
+
       <section aria-labelledby="titulo-sellos" className="grid gap-4">
-        <h2 id="titulo-sellos" className="text-xl font-semibold">Tus sellos</h2>
+        <h2 id="titulo-sellos" className="text-xl font-semibold">{t.sellos.tusSellos}</h2>
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {lista.map((s) => (
-            <TarjetaSello
-              key={s.id}
-              s={s}
-              alVerificar={() => setDialogo(true)}
-              alAprobar={kyc.aprobar}
-            />
+            <TarjetaSello key={s.id} s={s} />
           ))}
           <SelloBilletera billetera={billetera} />
         </ul>
       </section>
 
       <section aria-labelledby="titulo-aporte" className={`${TARJETA} max-w-xl`}>
-        <h2 id="titulo-aporte" className="text-xl font-semibold">Cómo vas a aportar</h2>
-        <p className="text-sm text-muted">
-          Lo usa Pactos para mostrarte los avisos que te tocan. Simulado: lo que cargues queda solo en este navegador.
-        </p>
+        <h2 id="titulo-aporte" className="text-xl font-semibold">{t.aporte.titulo}</h2>
+        <p className="text-sm text-muted">{t.aporte.ayuda}</p>
         <fieldset className="grid gap-2">
-          <legend className="font-medium">Modalidad de aporte</legend>
+          <legend className="font-medium">{t.aporte.modalidad}</legend>
           <div className="flex flex-wrap gap-4">
-            <Opcion nombre="modalidad" valor="obra" actual={datosAporte.modalidad} etiqueta="Obra presencial" alElegir={(v) => cambiarAporte({ modalidad: v })} />
-            <Opcion nombre="modalidad" valor="remoto" actual={datosAporte.modalidad} etiqueta="Remoto" alElegir={(v) => cambiarAporte({ modalidad: v })} />
+            <Opcion nombre="modalidad" valor="obra" actual={datosAporte.modalidad} etiqueta={t.aporte.obra} alElegir={(v) => cambiarAporte({ modalidad: v })} />
+            <Opcion nombre="modalidad" valor="remoto" actual={datosAporte.modalidad} etiqueta={t.aporte.remoto} alElegir={(v) => cambiarAporte({ modalidad: v })} />
           </div>
         </fieldset>
         {datosAporte.modalidad === "obra" && (
           <div>
-            <label htmlFor="horas" className="font-medium">Horas por mes</label>
+            <label htmlFor="horas" className="font-medium">{t.aporte.horas}</label>
             <input
               id="horas"
               type="number"
@@ -256,34 +285,43 @@ export function PasaporteCliente() {
               aria-invalid={horasInvalidas}
               aria-describedby={horasInvalidas ? "horas-error" : undefined}
               onChange={(e) => {
-                const t = e.target.value;
-                setHorasTexto(t);
+                const escrito = e.target.value;
+                setHorasTexto(escrito);
                 try {
-                  window.localStorage.setItem(CLAVES.pasaporteHorasTexto, t);
+                  window.localStorage.setItem(CLAVES.pasaporteHorasTexto, escrito);
                 } catch {
                   // el aviso de almacenamiento lo da cambiarAporte()
                 }
-                const n = t === "" ? undefined : Number(t);
+                const n = escrito === "" ? undefined : Number(escrito);
                 cambiarAporte({ horas: n !== undefined && Number.isFinite(n) && n >= 0 && n <= MAX_HORAS ? n : undefined });
               }}
             />
             {horasInvalidas && (
               <p id="horas-error" className="mt-1 text-sm font-medium text-warn-ink">
-                Ingresá un número de horas entre 0 y {MAX_HORAS}.
+                {t.aporte.horasError(MAX_HORAS)}
               </p>
             )}
           </div>
         )}
       </section>
 
-      <p className="text-sm text-muted">
-        Estos datos los custodiaría el fiduciario. La plataforma guardaría qué se te mostró y cuándo.
-      </p>
+      <p className="text-sm text-muted">{t.notaFiduciario}</p>
 
       <KycDialogo
         abierto={dialogo}
         kyc={kyc.kyc}
-        alCerrar={() => setDialogo(false)}
+        alCerrar={() => {
+          setDialogo(false);
+          // Tras enviar, el botón de KYC desaparece: el foco va al botón de aprobar o, si no, al encabezado.
+          // Se difiere un tick: al cerrarse, el <dialog> devuelve el foco a su origen y pisaría este.
+          setTimeout(() => {
+            const destino =
+              botonKyc.current ??
+              document.querySelector<HTMLElement>("#identidad [data-foco-kyc]") ??
+              document.getElementById("titulo-identidad");
+            destino?.focus();
+          }, 0);
+        }}
         alEnviar={kyc.enviar}
         alAprobar={kyc.aprobar}
       />

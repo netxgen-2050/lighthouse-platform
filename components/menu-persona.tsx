@@ -6,7 +6,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { UserRound } from "lucide-react";
 import { CLAVES } from "@/lib/demo/claves";
 import { cargarPerfil, iniciales } from "@/lib/perfil/modelo";
-import { ETIQUETA_NIVEL } from "@/lib/permisos/niveles";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
+import { etiquetaDeNivel } from "@/lib/permisos/niveles";
 import { esActivo } from "@/lib/ruta-activa";
 import { buscarTribu } from "@/lib/tribus/datos";
 import { inicialesDeEmail } from "@/lib/sesion/iniciales";
@@ -35,16 +36,17 @@ const BOTON_ENTRAR =
 /** Sin sesión, la barra muestra "Sumarte" (destacado) y "Entrar" (para quien ya tiene cuenta); con sesión, el avatar con su menú. */
 export function MenuPersona({ items }: { items: ItemMenu[] }) {
   const { estado, entrar } = useSesion();
+  const t = useTextos("marco");
   if (estado === "ok") return <MenuConSesion items={items} />;
   if (estado === "cargando") return null;
   if (estado === "sin-acceso") return null;
   return (
     <>
       <Link href="/sumarte" className={BOTON_SUMARTE}>
-        Sumarte
+        {t.destinos.sumarte}
       </Link>
-      <button type="button" className={BOTON_ENTRAR} onClick={entrar}>
-        Entrar
+      <button type="button" className={BOTON_ENTRAR} onClick={() => entrar()}>
+        {t.barra.entrar}
       </button>
     </>
   );
@@ -52,7 +54,11 @@ export function MenuPersona({ items }: { items: ItemMenu[] }) {
 
 /** Avatar de la persona (iniciales del perfil, del nombre de la cuenta o del email) con el menú Perfil / Pasaporte / Mi recorrido / Configuración / Salir. */
 function MenuConSesion({ items }: { items: ItemMenu[] }) {
-  const { sesion, nombre, salir, nivel, tribuLider } = useSesion();
+  const { sesion, nombre, salir, nivel, tribuLider, consentimiento } = useSesion();
+  // Sin consentimiento vigente la persona es anónima: el menú solo ofrece "Salir".
+  const vigente = consentimiento === "vigente";
+  const idioma = useIdioma();
+  const t = useTextos("marco");
   const ruta = usePathname();
   const [abierto, setAbierto] = useState(false);
   const [rutaAbierta, setRutaAbierta] = useState(ruta);
@@ -68,8 +74,8 @@ function MenuConSesion({ items }: { items: ItemMenu[] }) {
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar; se repite al cambiar de página (el perfil pudo cambiar).
-    setSiglas(inicialesGuardadas() || (nombre ? iniciales(nombre) : "") || inicialesDeEmail(sesion?.email));
-  }, [ruta, nombre, sesion?.email]);
+    setSiglas((vigente ? inicialesGuardadas() : "") || (nombre ? iniciales(nombre) : "") || inicialesDeEmail(sesion?.email));
+  }, [ruta, nombre, sesion?.email, vigente]);
 
   useEffect(() => {
     if (!abierto) return;
@@ -105,7 +111,7 @@ function MenuConSesion({ items }: { items: ItemMenu[] }) {
       <button
         ref={boton}
         type="button"
-        aria-label="Menú de la persona"
+        aria-label={t.barra.menuPersona}
         aria-expanded={abierto}
         aria-controls="menu-persona"
         aria-current={enMenu ? "page" : undefined}
@@ -124,12 +130,12 @@ function MenuConSesion({ items }: { items: ItemMenu[] }) {
           <ul className="flex flex-col gap-1">
             <li className="px-2 pb-1">
               <p className="break-all text-xs text-muted">{sesion?.email}</p>
-              <p className="mt-1 text-xs text-muted">Nivel: {ETIQUETA_NIVEL[nivel]}</p>
-              {tribuLider && buscarTribu(tribuLider) && (
-                <p className="mt-1 text-xs font-bold">Admin de {buscarTribu(tribuLider)?.nombre}</p>
+              {vigente && <p className="mt-1 text-xs text-muted">{t.barra.nivel(etiquetaDeNivel(nivel, idioma))}</p>}
+              {vigente && tribuLider && buscarTribu(tribuLider) && (
+                <p className="mt-1 text-xs font-bold">{t.barra.adminDe(buscarTribu(tribuLider)?.nombre ?? "")}</p>
               )}
             </li>
-            {items.map((i) => {
+            {(vigente ? items : []).map((i) => {
               const activo = esActivo(i.href, ruta);
               return (
                 <li key={i.href}>
@@ -152,7 +158,7 @@ function MenuConSesion({ items }: { items: ItemMenu[] }) {
                 onClick={() => void salir()}
                 className="w-full rounded-lg px-2 py-2 text-left hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
               >
-                Salir
+                {t.barra.salir}
               </button>
             </li>
           </ul>

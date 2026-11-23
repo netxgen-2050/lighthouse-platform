@@ -18,7 +18,7 @@ ADR-009 (Aceptada el 15-oct-2026, opción C): el login pasa de Privy a **Neon Au
 **Fuera de alcance:**
 - **Retirar Privy** (sacar `@privy-io/*`, `privy-puente.tsx`, las variables de Privy, el sello "Billetera creada" y `idioma-hifa-avisos` 3.1): cambio aparte (`retiro-privy`), después de que este esté mergeado y Gus confirme que Production entra con Neon Auth (ADR-009, punto 6).
 - **Emails del código en español y con nuestra marca** (webhook `send.otp` y proveedor de email): cambio aparte, antes de mostrar la plataforma fuera del equipo (ADR-009, punto 5). En el prototipo se acepta el email de Neon, en inglés.
-- **Billeteras** (tabla `billeteras`, billetera embebida, vincular la billetera propia): se eligen en noviembre (ADR-009, punto 2).
+- **Billeteras** (tabla `billeteras`, billetera embebida, vincular la billetera propia): se eligen en noviembre (ADR-009, punto 2). Propuesta del 23-oct-2026: cuentas Safe con Candide y dueño por passkey (ADR-011, Propuesta). No cambia este login: Neon Auth sigue siendo la entrada y la passkey solo firma lo que va a la blockchain.
 - Email y contraseña, magic link, teléfono, SIWE, segundo factor, organizaciones; las pantallas de cuenta de Neon (`AccountView`, `UserButton`).
 - Pasar a Next.js 16 (ver design: el SDK lo pide como dependencia par).
 - Configurar Neon, Vercel o Google Cloud: lo hace Gus con los pasos del PR.

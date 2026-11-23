@@ -1,14 +1,17 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
-import { nivelMinimoDeRuta, puedeCapacidad, puedeRuta, type Capacidad } from "@/lib/permisos/niveles";
+import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
+import { capacidadDeRuta, nivelMinimoDeRuta, puedeCapacidad, puedeRuta, type Capacidad } from "@/lib/permisos/niveles";
 import {
   corresponderOfrecerImportacion,
   descartarImportacion,
   importarDatosPrevios,
 } from "@/lib/demo/importar";
 import { rutaPideConsentimiento } from "@/lib/privacidad/consentimiento";
+import { ProveedorIdioma, useIdioma, useTextos } from "@/lib/idioma/cliente";
+import { estaTraducida } from "@/lib/idioma/rutas";
+import { AvisoSinTraducir } from "@/components/aviso-sin-traducir";
 import { useSesion } from "./contexto";
 import { PantallaConsentimiento } from "./pantalla-consentimiento";
 
@@ -25,25 +28,63 @@ const BOTON_SECUNDARIO = `${BOTON} border border-faint hover:bg-surface-2`;
 export function Puerta({ children }: { children: ReactNode }) {
   const { estado, nivel, nivelListo, consentimiento } = useSesion();
   const ruta = usePathname();
+  // /admin la protege el servidor (ADR-016): sin permiso ya respondió 403 y no armó nada. Se deja pasar a `children` mientras
+  // la sesión del navegador no está lista (también en el servidor) para que esa respuesta llegue con su estado HTTP 403 y
+  // para que quien no tiene sesión vea el 403 y no sea llevado a Sumarte. `SoloSuperAdmin` cubre la pantalla.
+  if (estado !== "ok" && capacidadDeRuta(ruta) === "admin") return <Contenido>{children}</Contenido>;
   // Mientras se verifica la sesión se espera ("Cargando…"): mostrar la página y rearmarla al confirmar la sesión
   // haría perder lo que la persona ya estaba haciendo (foco, scroll, casillas).
-  if (estado === "sin-sesion") return puedeRuta("sin-cuenta", ruta) ? <>{children}</> : <IrASumarte ruta={ruta} />;
+  if (estado === "sin-sesion") {
+    return puedeRuta("sin-cuenta", ruta) ? <Contenido>{children}</Contenido> : <IrASumarte ruta={ruta} />;
+  }
   if (estado !== "ok") return <PantallaDeEntrada />;
   if (!nivelListo) return <PantallaDeEntrada />;
-  // Sin aceptar la política de privacidad vigente no se usa la app con sesión. Va antes de aplicar el plan elegido en
-  // Sumarte (el registro): Sumarte no se dibuja hasta aceptar. Las páginas públicas de Descubrir quedan abiertas.
+  // Red de seguridad: con sesión pero sin aceptación vigente de la política, la pantalla de consentimiento aparece en cualquier
+  // página (también las públicas) menos `/privacidad`, que tiene que poder leerse. Va antes de aplicar el plan elegido en Sumarte.
   if (rutaPideConsentimiento(ruta)) {
     if (consentimiento === "cargando") return <PantallaDeEntrada />;
-    if (consentimiento === "pendiente") return <PantallaConsentimiento />;
+    // La pantalla de consentimiento todavía es solo en español (llega con `idioma-legal`): se marca como tal.
+    if (consentimiento === "pendiente") {
+      return (
+        <Contenido sinTraducir>
+          <PantallaConsentimiento />
+        </Contenido>
+      );
+    }
+  } else if (consentimiento !== "vigente") {
+    // /privacidad sin consentimiento: se lee como una persona anónima (sin ofrecer importar datos ni nada de su cuenta).
+    return <Contenido>{children}</Contenido>;
   }
   // NetX no redirige: su propia página explica que es solo del super admin.
   if (!puedeRuta(nivel, ruta) && nivelMinimoDeRuta(ruta) !== "superadmin") return <IrASumarte ruta={ruta} />;
   return <ConSesion>{children}</ConSesion>;
 }
 
+/**
+ * Con la plataforma en inglés, una página que todavía no se tradujo (fuera de `RUTAS_TRADUCIDAS`) se muestra en español:
+ * arriba va el aviso y todo lo de adentro queda marcado `lang="es"` y con el idioma de la plataforma fijado en español,
+ * para que lo que pida la página (textos, montos, ⚖) salga en español y coincida con su `lang`. El marco queda afuera, en inglés.
+ */
+export function Contenido({ children, sinTraducir = false }: { children: ReactNode; sinTraducir?: boolean }) {
+  const idioma = useIdioma();
+  const ruta = usePathname();
+  if (idioma !== "en" || (!sinTraducir && estaTraducida(ruta))) return <>{children}</>;
+  return (
+    <>
+      <AvisoSinTraducir />
+      <div lang="es">
+        <ProveedorIdioma idioma="es" soloContenido>
+          {children}
+        </ProveedorIdioma>
+      </div>
+    </>
+  );
+}
+
 /** Lleva a Sumarte con la página que se quería abrir, para avisar qué plan la habilita y volver después. */
 function IrASumarte({ ruta }: { ruta: string }) {
   const router = useRouter();
+  const t = useTextos("comunes");
   useEffect(() => {
     // Se conserva la query (por ejemplo ?sel=) para volver exactamente a la misma vista.
     router.replace(`/sumarte?volver=${encodeURIComponent(ruta + window.location.search)}`);
@@ -51,7 +92,7 @@ function IrASumarte({ ruta }: { ruta: string }) {
   return (
     <div className="mx-auto max-w-xl p-6 sm:p-10">
       <p role="status" className="text-muted">
-        Cargando…
+        {t.cargando}
       </p>
     </div>
   );
@@ -63,6 +104,12 @@ export function SoloConSesion({ children }: { children: ReactNode }) {
   return estado === "ok" ? <>{children}</> : null;
 }
 
+/** Dibuja `children` solo con sesión y consentimiento vigente (la campanita y las preferencias son de la persona, no de una anónima). */
+export function SoloConConsentimiento({ children }: { children: ReactNode }) {
+  const { estado, consentimiento } = useSesion();
+  return estado === "ok" && consentimiento === "vigente" ? <>{children}</> : null;
+}
+
 /** Dibuja `children` solo si el nivel de la persona habilita la capacidad (por ejemplo Hifa o el botón de reportes). */
 export function SoloConCapacidad({ capacidad, children }: { capacidad: Capacidad; children: ReactNode }) {
   const { estado, nivel, consentimiento } = useSesion();
@@ -72,12 +119,15 @@ export function SoloConCapacidad({ capacidad, children }: { capacidad: Capacidad
 
 function ConSesion({ children }: { children: ReactNode }) {
   const { sesion } = useSesion();
+  const t = useTextos("marco");
   const id = sesion?.idPersona ?? "";
   const [ofrecer, setOfrecer] = useState(false);
   // Cambia al importar para volver a leer los datos ya con el prefijo de la persona.
   const [version, setVersion] = useState(0);
 
-  useEffect(() => {
+  // Layout effect: corre antes de los efectos de las páginas de adentro. Si una página anota algo con el prefijo de la
+  // persona al dibujarse (por ejemplo el aviso del loteo de Sumarte en la bitácora), la oferta ya se decidió con los datos de antes.
+  useLayoutEffect(() => {
     try {
       // Lectura del almacenamiento del navegador tras hidratar.
       setOfrecer(corresponderOfrecerImportacion(window.localStorage, id));
@@ -94,12 +144,9 @@ function ConSesion({ children }: { children: ReactNode }) {
           className="mx-auto mt-4 max-w-3xl rounded-xl border border-faint bg-surface-2 p-4 text-sm"
         >
           <h2 id="importar-titulo" className="text-base font-semibold">
-            Encontramos datos de antes del login
+            {t.puerta.importarTitulo}
           </h2>
-          <p className="mt-1 text-muted">
-            Este navegador tiene datos de ejemplo guardados antes de que existieran las cuentas. ¿Querés pasarlos a tu cuenta?
-            Se ofrece una sola vez.
-          </p>
+          <p className="mt-1 text-muted">{t.puerta.importarTexto}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"
@@ -114,7 +161,7 @@ function ConSesion({ children }: { children: ReactNode }) {
                 setVersion((v) => v + 1);
               }}
             >
-              Importar a mi cuenta
+              {t.puerta.importar}
             </button>
             <button
               type="button"
@@ -128,21 +175,24 @@ function ConSesion({ children }: { children: ReactNode }) {
                 setOfrecer(false);
               }}
             >
-              No importar
+              {t.puerta.noImportar}
             </button>
           </div>
         </section>
       )}
       {/* La clave hace que cada persona (y cada importación) lea sus datos desde cero. */}
-      <div key={`${id}:${version}`}>{children}</div>
+      <div key={`${id}:${version}`}>
+        <Contenido>{children}</Contenido>
+      </div>
     </>
   );
 }
 
 function Aviso() {
+  const t = useTextos("marco");
   return (
     <p className="mb-4 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-      Prototipo interno · datos de ejemplo
+      {t.aviso}
     </p>
   );
 }
@@ -150,13 +200,15 @@ function Aviso() {
 /** Lo que se ve cuando todavía no hay sesión utilizable: verificando, sin acceso (`LH_ACCESO=lista`) o con error. */
 function PantallaDeEntrada() {
   const { estado, emailIntento, salir } = useSesion();
+  const t = useTextos("marco");
+  const comunes = useTextos("comunes");
 
   if (estado === "cargando" || estado === "ok" || estado === "sin-sesion") {
     return (
       <div className="mx-auto max-w-xl p-6 sm:p-10">
         <Aviso />
         <p role="status" className="text-muted">
-          Cargando…
+          {comunes.cargando}
         </p>
       </div>
     );
@@ -166,11 +218,11 @@ function PantallaDeEntrada() {
     return (
       <div className="mx-auto max-w-xl p-6 sm:p-10">
         <Aviso />
-        <h1 className="text-2xl font-semibold">Todavía no tenés acceso</h1>
-        <p className="mt-3">Tu email todavía no tiene acceso a este prototipo. Pedíselo a Gus.</p>
-        {emailIntento && <p className="mt-2 text-sm text-muted">Entraste con {emailIntento}.</p>}
+        <h1 className="text-2xl font-semibold">{t.puerta.sinAccesoTitulo}</h1>
+        <p className="mt-3">{t.puerta.sinAccesoTexto}</p>
+        {emailIntento && <p className="mt-2 text-sm text-muted">{t.puerta.entraste(emailIntento)}</p>}
         <button type="button" className={`${BOTON_SECUNDARIO} mt-4`} onClick={() => void salir()}>
-          Salir
+          {t.barra.salir}
         </button>
       </div>
     );
@@ -179,10 +231,10 @@ function PantallaDeEntrada() {
   return (
     <div className="mx-auto max-w-xl p-6 sm:p-10">
       <Aviso />
-      <h1 className="text-2xl font-semibold">No pudimos verificar tu sesión</h1>
-      <p className="mt-3">Probá de nuevo en un momento.</p>
+      <h1 className="text-2xl font-semibold">{t.puerta.errorTitulo}</h1>
+      <p className="mt-3">{t.puerta.errorTexto}</p>
       <button type="button" className={`${BOTON_SECUNDARIO} mt-4`} onClick={() => void salir()}>
-        Volver a la entrada
+        {t.puerta.volverAEntrada}
       </button>
     </div>
   );

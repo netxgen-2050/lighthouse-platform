@@ -6,7 +6,9 @@ import { useSesion } from "./contexto";
 
 /** Muestra el contenido solo al super admin; al resto le dice que no tiene acceso. */
 export function SoloSuperAdmin({ children }: { children: ReactNode }) {
-  const { sesion } = useSesion();
+  const { estado, sesion } = useSesion();
+  // Mientras se verifica la sesión no se dibuja nada (ni el aviso de "sin acceso" ni las operaciones).
+  if (estado === "cargando") return null;
   if (sesion?.rol !== "superadmin") {
     return (
       <div className="mx-auto max-w-xl p-6 sm:p-10">
@@ -14,7 +16,7 @@ export function SoloSuperAdmin({ children }: { children: ReactNode }) {
           Prototipo interno · datos de ejemplo
         </p>
         <h1 className="text-2xl font-semibold">No tenés acceso a esta vista</h1>
-        <p className="mt-3 text-muted">La vista NetX es solo para el super admin del prototipo.</p>
+        <p className="mt-3 text-muted">La administración es solo para el super admin del prototipo.</p>
         <p className="mt-4">
           <Link className="underline" href="/">
             Volver al inicio

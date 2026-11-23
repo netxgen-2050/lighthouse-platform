@@ -1,22 +1,30 @@
 // Funciones puras de formato del evento: fechas, cuenta regresiva y precios.
 import type { TipoEntrada } from "./evento";
+import type { Idioma } from "./idioma";
 
-const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-const MESES_CORTOS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+const MESES: Record<Idioma, string[]> = {
+  es: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+  en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+};
+const MESES_CORTOS: Record<Idioma, string[]> = {
+  es: ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"],
+  en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+};
 
 function partes(iso: string): { anio: number; mes: number; dia: number } {
   const [anio, mes, dia] = iso.slice(0, 10).split("-").map(Number);
   return { anio, mes: mes - 1, dia };
 }
 
-/** "5–9" + "febrero 2027"; si cruza de mes, "28 ene – 2 feb" + "2027". */
-export function rangoFechas(inicio: string, fin: string): { dias: string; mesAnio: string } {
+/** "5–9" + "febrero 2027" / "February 2027"; si cruza de mes, "28 ene – 2 feb" + "2027". Las fechas son sin hora. */
+export function rangoFechas(inicio: string, fin: string, idioma: Idioma = "es"): { dias: string; mesAnio: string } {
   const a = partes(inicio);
   const b = partes(fin);
   if (a.anio === b.anio && a.mes === b.mes) {
-    return { dias: a.dia === b.dia ? String(a.dia) : `${a.dia}–${b.dia}`, mesAnio: `${MESES[a.mes]} ${a.anio}` };
+    return { dias: a.dia === b.dia ? String(a.dia) : `${a.dia}–${b.dia}`, mesAnio: `${MESES[idioma][a.mes]} ${a.anio}` };
   }
-  const dias = `${a.dia} ${MESES_CORTOS[a.mes]} – ${b.dia} ${MESES_CORTOS[b.mes]}`;
+  const cortos = MESES_CORTOS[idioma];
+  const dias = `${a.dia} ${cortos[a.mes]} – ${b.dia} ${cortos[b.mes]}`;
   return { dias, mesAnio: a.anio === b.anio ? String(a.anio) : `${a.anio}–${b.anio}` };
 }
 
@@ -34,10 +42,10 @@ export function tiempoRestante(
   };
 }
 
-/** "USD 290", "USD 250 c/u" o "Precio sin dato". */
-export function textoPrecio(tipo: Pick<TipoEntrada, "precio">): string {
+/** "USD 290", "USD 250 c/u" / "USD 250 each" o "Precio sin dato" / "Price not available". La unidad viene del contenido. */
+export function textoPrecio(tipo: Pick<TipoEntrada, "precio">, idioma: Idioma = "es"): string {
   const p = tipo.precio;
-  if (!p || !(p.monto > 0)) return "Precio sin dato";
-  const monto = new Intl.NumberFormat("es-AR").format(p.monto);
+  if (!p || !(p.monto > 0)) return idioma === "en" ? "Price not available" : "Precio sin dato";
+  const monto = new Intl.NumberFormat(idioma === "en" ? "en-US" : "es-AR").format(p.monto);
   return `${p.moneda} ${monto}${p.unidad ? ` ${p.unidad}` : ""}`;
 }

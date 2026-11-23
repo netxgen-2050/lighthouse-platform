@@ -1,3 +1,5 @@
+import { sinDato } from "../idioma/formatos";
+import type { Idioma } from "../idioma/tipos";
 import { listarTribus } from "../tribus/datos";
 import type { Tribu } from "../tribus/tipos";
 import type { ResumenTerritorio, Territorio } from "./tipos";
@@ -9,8 +11,8 @@ const TERRITORIOS: Territorio[] = [
     id: "lighthouse",
     nombre: "Lighthouse",
     ubicacion: "BioPueblo Mainqué, margen sur del Río Negro",
-    superficie: "~993 ha",
-    descripcion: "~993 ha, doce barrios y las tribus que los están formando.",
+    superficie: "~990 ha",
+    descripcion: "~990 ha, doce barrios y las tribus que los están formando.",
     bienesComunes: [
       "Agua: toma, cisterna y riego",
       "Energía: parque solar comunitario",
@@ -46,6 +48,6 @@ export function resumenDeTerritorio(id: string): ResumenTerritorio | undefined {
   };
 }
 
-export function textoSuperficie(t: { superficie?: string }): string {
-  return t.superficie ? t.superficie : "sin dato";
+export function textoSuperficie(t: { superficie?: string }, idioma: Idioma = "es"): string {
+  return t.superficie ? t.superficie : sinDato(idioma);
 }

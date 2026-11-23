@@ -5,7 +5,9 @@ import { registrarEvento } from "@/lib/actividad/almacen";
 import { EVENTOS } from "@/lib/actividad/eventos";
 import { esCodigoValido, normalizarCodigo } from "@/lib/congreso/ticket";
 
+import type { Idioma } from "@/lib/congreso/idioma";
 import { CLAVES } from "@/lib/demo/claves";
+import { TEXTOS_REGISTRO } from "./registro-ticket.textos";
 
 // Dos apariencias con la misma lógica y los mismos textos: la de NetX (la de siempre) y la del tema del evento.
 const CLASES = {
@@ -44,10 +46,13 @@ type Props = {
   apariencia?: "netx" | "evento";
   /** Se llama al leer el almacenamiento al cargar, al registrar y al quitar (con el código o null). */
   alCambiar?: (ticket: string | null) => void;
+  /** Idioma de los textos fijos; por defecto español. */
+  idioma?: Idioma;
 };
 
-export function RegistroTicket({ apariencia = "netx", alCambiar }: Props = {}) {
+export function RegistroTicket({ apariencia = "netx", alCambiar, idioma = "es" }: Props = {}) {
   const c = CLASES[apariencia];
+  const t = TEXTOS_REGISTRO[idioma];
   const Titulo = apariencia === "evento" ? "h3" : "h2";
   const [listo, setListo] = useState(false);
   const [ticket, setTicket] = useState<string | null>(null);
@@ -117,31 +122,32 @@ export function RegistroTicket({ apariencia = "netx", alCambiar }: Props = {}) {
   return (
     <section aria-labelledby="tu-ticket" className={c.seccion}>
       <Titulo id="tu-ticket" className={c.titulo}>
-        Tu ticket
+        {t.titulo}
       </Titulo>
-      <p className={c.demo}>Modo demostración: el registro queda solo en este navegador.</p>
+      <p className={c.demo}>{t.demo}</p>
       {falloAlmacen && (
         <p role="alert" className={c.error}>
-          Error: tu navegador no permite guardar datos en este sitio, así que el ticket no se puede registrar ni quitar acá. Revisá la configuración de privacidad o probá en otro navegador.
+          {t.falloAlmacen}
         </p>
       )}
       {!listo ? null : ticket ? (
         <div className="grid gap-3" role="status">
           <p ref={mensajeRef} tabIndex={-1} className={c.mensaje}>
             <span aria-hidden="true">✓ </span>
-            <b>Ticket {ticket} registrado</b>
+            <b>{t.registrado(ticket)}</b>
           </p>
           <p className={c.estado}>
-            <b>Genesis pendiente</b>: se confirma cuando el anfitrión escanea tu ticket en el territorio
+            <b>{t.genesisPendiente}</b>
+            {t.genesisPendienteResto}
           </p>
           <button type="button" onClick={quitar} className={c.quitar}>
-            Quitar ticket
+            {t.quitar}
           </button>
         </div>
       ) : (
         <form onSubmit={registrar} noValidate className="grid grid-cols-1 gap-2">
           <label htmlFor="codigo-ticket" className={c.etiqueta}>
-            Código de tu ticket (te llega por mail al comprarlo)
+            {t.etiqueta}
           </label>
           <div className="flex gap-2">
             <input
@@ -149,22 +155,22 @@ export function RegistroTicket({ apariencia = "netx", alCambiar }: Props = {}) {
               ref={campoRef}
               value={texto}
               onChange={(e) => setTexto(e.target.value)}
-              placeholder="Ej.: LH27-8F3K-2Q"
+              placeholder={t.placeholder}
               autoComplete="off"
               aria-invalid={error}
               aria-describedby={error ? "error-ticket" : undefined}
               className={c.campo}
             />
             <button type="submit" className={c.registrar}>
-              Registrar
+              {t.registrar}
             </button>
           </div>
           {error && (
             <p id="error-ticket" role="alert" className={c.error}>
-              Error: el código no tiene el formato LH27-XXXX-XX (letras y números).
+              {t.errorFormato}
             </p>
           )}
-          <p className={c.nota}>¿Todavía no tenés ticket? Lo vende el organizador del Congreso.</p>
+          <p className={c.nota}>{t.nota}</p>
         </form>
       )}
     </section>

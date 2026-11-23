@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { readFile } from "node:fs/promises";
+import { aceptarPaso } from "./ayudas";
 import { EMAILS, expect, prefijoDe, test, VERSION_PRUEBA, type Page } from "./fixtura";
 
 // Con Privy (previews y producción) elegir un plan abre el modal de Privy: los casos que usan "Entrar como…" van en el e2e local.
@@ -59,7 +60,7 @@ test.describe("consentimiento al entrar", () => {
     await expect(titulo(page)).toHaveCount(0);
   });
 
-  test("sin aceptar, Hifa no aparece, Reportar abre el formulario sin cuenta y las páginas públicas siguen abiertas", async ({ page }) => {
+  test("sin aceptar, Hifa no aparece, Reportar abre el formulario sin cuenta y solo la política se puede leer", async ({ page }) => {
     await page.goto("/pactos");
     await expect(titulo(page)).toBeVisible();
     await expect(page.getByRole("button", { name: "Hablar con Hifa" })).toHaveCount(0);
@@ -68,10 +69,13 @@ test.describe("consentimiento al entrar", () => {
     await expect(dialogo.getByText(/Estás reportando sin cuenta/)).toBeVisible();
     await expect(dialogo.getByLabel(/Tu email/)).toBeVisible();
     await page.keyboard.press("Escape");
+    // Las páginas públicas también piden aceptar (red de seguridad de `consentimiento-alta`); la política se lee sin aceptar.
     await page.goto("/tribus");
-    await expect(page.getByRole("heading", { level: 1, name: "Tribus del Lighthouse" })).toBeVisible();
+    await expect(titulo(page)).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Comunidades del Lighthouse" })).toHaveCount(0);
     await page.goto("/privacidad");
     await expect(page.getByRole("heading", { level: 1, name: "Política de privacidad" })).toBeVisible();
+    await expect(titulo(page)).toHaveCount(0);
   });
 
   test("con sesión y la política pendiente, el reporte sale sin cabeceras de sesión", async ({ page }) => {
@@ -140,17 +144,17 @@ test.describe("nueva versión de la política", () => {
 test.describe("registro desde Sumarte", () => {
   test.use({ rol: "ninguno", consentimiento: "ninguno" });
 
-  test("el consentimiento va antes de aplicar el plan elegido", async ({ page }) => {
+  test("el consentimiento va antes del login y del plan elegido, y no vuelve a pedirse después", async ({ page }) => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     const claveSumarte = `${PREFIJO}lh-sumarte`;
     await page.goto("/sumarte");
     await page.getByRole("button", { name: "Hacerme miembro" }).click();
-    await page.getByRole("button", { name: EMAILS.persona }).click();
-    await expect(titulo(page)).toBeVisible();
-    // Todavía no se aplicó nada: el plan espera al consentimiento.
+    // Todavía no hay sesión ni plan aplicado: primero el paso con las casillas.
     expect(await page.evaluate((c) => window.localStorage.getItem(c), claveSumarte)).toBeNull();
-    await aceptar(page);
+    await aceptarPaso(page);
+    await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(page.getByText("Tu plan actual:")).toContainText("Miembro");
+    await expect(titulo(page)).toHaveCount(0);
     expect(await page.evaluate((c) => window.localStorage.getItem(c), claveSumarte)).not.toBeNull();
   });
 });
@@ -158,10 +162,20 @@ test.describe("registro desde Sumarte", () => {
 test.describe("plazo del plan elegido en Sumarte", () => {
   test.use({ rol: "ninguno", consentimiento: "ninguno" });
 
-  test("aceptar después de los 5 minutos del pedido conserva el plan", async ({ page }) => {
+  test("aceptar en la pantalla después de los 5 minutos del pedido conserva el plan", async ({ page }) => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     await page.goto("/sumarte");
     await page.getByRole("button", { name: "Hacerme miembro" }).click();
+    await aceptarPaso(page);
+    // La aceptación del paso venció antes de terminar el login (el servidor tardó): aparece la pantalla de consentimiento.
+    await page.route("**/api/sesion", async (ruta) => {
+      await page.evaluate(() => {
+        const previa = JSON.parse(window.sessionStorage.getItem("lh-consentimiento-previo") ?? "{}");
+        previa.aceptadoEn = new Date(Date.now() - 6 * 60 * 1000).toISOString();
+        window.sessionStorage.setItem("lh-consentimiento-previo", JSON.stringify(previa));
+      });
+      await ruta.continue();
+    });
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(titulo(page)).toBeVisible();
     // Pasaron 10 minutos leyendo la pantalla: el pedido pendiente ya estaría vencido.
@@ -174,15 +188,14 @@ test.describe("plazo del plan elegido en Sumarte", () => {
 test.describe("plan abandonado", () => {
   test.use({ rol: "ninguno", consentimiento: "ninguno" });
 
-  test("un pedido que ya había vencido antes de la pantalla de consentimiento no se revive al aceptar", async ({ page }) => {
+  test("un pedido que ya había vencido antes de terminar el login no se revive", async ({ page }) => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     await page.goto("/sumarte");
     await page.getByRole("button", { name: "Hacerme miembro" }).click();
+    await aceptarPaso(page);
     // La persona abandonó el registro y volvió 30 minutos después: el pedido ya venció.
     await page.evaluate(() => window.sessionStorage.setItem("lh-sumarte-pendiente-hora", String(Date.now() - 30 * 60 * 1000)));
     await page.getByRole("button", { name: EMAILS.persona }).click();
-    await expect(titulo(page)).toBeVisible();
-    await aceptar(page);
     await expect(page.getByText("Tu plan actual:")).toContainText("Explorador");
   });
 });
@@ -192,7 +205,7 @@ test.describe("datos sensibles del KYC", () => {
 
   test("antes del primer paso pide aceptar el tratamiento de los datos sensibles", async ({ page }) => {
     await page.goto("/pasaporte");
-    await page.locator('[data-sello="identidad"]').getByRole("button", { name: "Verificar mi identidad" }).click();
+    await page.getByRole("button", { name: "Completar mi verificación (KYC)" }).click();
     const dialogo = page.getByRole("dialog", { name: /Verificar mi identidad/ });
     await expect(dialogo.getByRole("heading", { name: /Antes de empezar: tus datos sensibles/ })).toBeVisible();
     await expect(dialogo.getByText("los verifica un tercero")).toBeVisible();
@@ -221,7 +234,7 @@ test.describe("datos sensibles del KYC", () => {
       [CLAVE_CONSENTIMIENTO, VERSION_PRUEBA],
     );
     await page.goto("/pasaporte");
-    await page.locator('[data-sello="identidad"]').getByRole("button", { name: "Verificar mi identidad" }).click();
+    await page.getByRole("button", { name: "Completar mi verificación (KYC)" }).click();
     const dialogo = page.getByRole("dialog", { name: /Verificar mi identidad/ });
     await expect(dialogo.getByRole("heading", { name: /Paso 1 de 5/ })).toBeVisible();
   });
@@ -375,5 +388,45 @@ test.describe("retirar el consentimiento", () => {
     expect(propias).toEqual([]);
     // La cookie de prueba ya no está: no hay sesión.
     expect((await page.context().cookies()).find((c) => c.name === "lh-auth-prueba")).toBeUndefined();
+  });
+
+  test("saca del registro compartido las constancias de pactos de la persona y deja las de otra", async ({ page }) => {
+    const clave = "compartido:pactos-constancias";
+    const otra = "prueba:otra@prueba.test";
+    const constancia = (id: string, persona: string) => ({
+      id,
+      esquema: "pacto-propone",
+      afirma: `persona:${persona}`,
+      por: persona,
+      sobre: `pacto:valle:${persona}`,
+      version: 1,
+      apuntaA: null,
+      cuando: "2026-10-28T10:00:00.000Z",
+      revocable: true,
+      datos: {},
+    });
+    await page.addInitScript(
+      ([consentimiento, version, k, lista]) => {
+        if (window.sessionStorage.getItem("sembrado")) return;
+        window.sessionStorage.setItem("sembrado", "1");
+        window.localStorage.setItem(
+          consentimiento,
+          JSON.stringify({ version, aceptadoEn: new Date().toISOString(), aceptado: { politica: true, terminos: true }, sensibles: null }),
+        );
+        window.localStorage.setItem(k, lista);
+      },
+      [
+        CLAVE_CONSENTIMIENTO,
+        VERSION_PRUEBA,
+        clave,
+        JSON.stringify([constancia("p1-pacto-propone", `prueba:${EMAILS.persona}`), constancia("p2-pacto-propone", otra)]),
+      ] as const,
+    );
+    await page.goto("/mis-datos");
+    await page.getByRole("button", { name: "Retirar mi consentimiento" }).click();
+    await page.getByRole("button", { name: "Sí, retirar y borrar mis datos" }).click();
+    await expect(page).toHaveURL(/\/$/);
+    const restantes = JSON.parse(await page.evaluate((k) => window.localStorage.getItem(k) ?? "[]", clave)) as { sobre: string }[];
+    expect(restantes.map((c) => c.sobre)).toEqual([`pacto:valle:${otra}`]);
   });
 });
