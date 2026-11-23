@@ -96,3 +96,12 @@ export function esInfraDeTerceros(url: string): boolean {
 export function ignorarEnSinRed(r: { url(): string; method(): string }): boolean {
   return r.method() === "HEAD" || r.method() === "OPTIONS" || esInfraDeTerceros(r.url());
 }
+
+/**
+ * Las consultas de ejemplo del Fogón cierran el 15 y el 30 de noviembre de 2026 y su estado se calcula
+ * en el navegador con el reloj real: sin esto, los tests se rompen cuando pasa la fecha (pasó el 23-nov).
+ * Fija el reloj del navegador al 10-nov-2026, con todas las consultas abiertas salvo las cerradas a mano.
+ */
+export async function relojDeLasConsultas(page: Page) {
+  await page.clock.setFixedTime(new Date("2026-11-10T15:00:00Z"));
+}
