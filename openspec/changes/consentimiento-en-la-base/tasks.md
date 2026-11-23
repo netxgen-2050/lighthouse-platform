@@ -10,11 +10,11 @@ Rama `agente/consentimiento-en-la-base` desde `main`, **después** de que `base-
 
 ## 2. Cliente
 
-- [ ] 2.1 `lib/privacidad/consentimiento.ts`, `usar-consentimiento.ts`, `novedades.ts`, `proveedor-sesion.tsx` y Mis datos usan la API con sesión (design §3); error "No pudimos guardar tu aceptación. Probá de nuevo." con `role="alert"` y la persona sigue anónima. Verificar con `pnpm verificar` y con el e2e de 3.1.
+- [x] 2.1 `lib/privacidad/consentimiento.ts`, `usar-consentimiento.ts`, `novedades.ts`, `proveedor-sesion.tsx` y Mis datos usan la API con sesión (design §3); error "No pudimos guardar tu aceptación. Probá de nuevo." con `role="alert"` y la persona sigue anónima. Verificar con `pnpm verificar` y con el e2e de 3.1.
 
 ## 3. Pruebas
 
-- [ ] 3.1 `e2e/fixtura.ts` siembra por la API (design §4); sumar a `e2e/consentimiento-alta.spec.ts`: (a) aceptar en un contexto de navegador y entrar desde otro contexto sin ver la pantalla; (b) con la API respondiendo 500 (ruta interceptada), la persona sigue anónima y ve el error; (c) retirar en Mis datos y ver la pantalla al recargar. Verificar con `pnpm test:e2e`.
+- [x] 3.1 `e2e/fixtura.ts` siembra por la API (design §4); sumar a `e2e/consentimiento-alta.spec.ts`: (a) aceptar en un contexto de navegador y entrar desde otro contexto sin ver la pantalla; (b) con la API respondiendo 500 (ruta interceptada), la persona sigue anónima y ve el error; (c) retirar en Mis datos y ver la pantalla al recargar. Verificar con `pnpm test:e2e`.
 
 ## 4. Integración
 

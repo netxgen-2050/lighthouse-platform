@@ -232,6 +232,7 @@ test.describe("Resumen", () => {
     await page.goto("/netx");
     await expect(page.getByRole("heading", { level: 1, name: "¿Cómo se financia NetX?" })).toBeVisible();
     await page.waitForLoadState("networkidle");
-    expect(pedidos.filter((p) => p !== "/api/sesion")).toEqual([]);
+    // Los del layout: la sesión y el estado del consentimiento (que el proveedor lee una vez por persona).
+    expect(pedidos.filter((p) => p !== "/api/sesion" && p !== "/api/consentimientos")).toEqual([]);
   });
 });

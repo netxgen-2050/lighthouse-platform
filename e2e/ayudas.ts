@@ -104,7 +104,15 @@ export function esInfraDeTerceros(url: string): boolean {
   );
 }
 
-/** Para los tests de "sin pedidos de red": infraestructura de terceros o pedidos HEAD y OPTIONS (no llevan cuerpo ni datos). */
+/**
+ * La lectura del estado del consentimiento (`GET /api/consentimientos`): el proveedor de sesión la hace una vez por persona,
+ * junto con `/api/sesion`, y no lleva datos de la pantalla (`consentimiento-en-la-base`).
+ */
+export function esLecturaDelConsentimiento(r: { url(): string; method(): string }): boolean {
+  return r.method() === "GET" && new URL(r.url()).pathname === "/api/consentimientos";
+}
+
+/** Para los tests de "sin pedidos de red": infraestructura de terceros, HEAD y OPTIONS (no llevan cuerpo ni datos) y la lectura del consentimiento. */
 export function ignorarEnSinRed(r: { url(): string; method(): string }): boolean {
-  return r.method() === "HEAD" || r.method() === "OPTIONS" || esInfraDeTerceros(r.url());
+  return r.method() === "HEAD" || r.method() === "OPTIONS" || esInfraDeTerceros(r.url()) || esLecturaDelConsentimiento(r);
 }

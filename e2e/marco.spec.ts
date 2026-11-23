@@ -209,6 +209,8 @@ test("menú de la persona: se cierra cuando el foco sale del menú con Tab", asy
   await page.keyboard.press("Enter");
   const menu = page.locator("#menu-persona");
   await expect(menu).toBeVisible();
+  // El menú trae sus enlaces cuando el servidor confirma el consentimiento (antes solo ofrece Salir): se espera a que estén.
+  await expect(menu.getByRole("link", { name: "Mis datos" })).toBeVisible();
   // Mientras el foco recorre los enlaces del menú, este sigue abierto.
   for (const nombre of ["Perfil", "Pasaporte", "Mi recorrido", "Configuración", "Mis datos"]) {
     await page.keyboard.press("Tab");

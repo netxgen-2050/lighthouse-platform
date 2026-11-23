@@ -21,11 +21,10 @@ export async function GET(req: Request) {
   try {
     const base = await db();
     const estado = await estadoConsentimiento(base, s.personaId);
-    const conFilas = new URL(req.url).searchParams.get("filas") === "1" && s.personaId !== null;
-    return NextResponse.json(
-      { ok: true, estado, ...(conFilas && s.personaId ? { filas: await filasDePersona(base, s.personaId) } : {}) },
-      { headers: SIN_CACHE },
-    );
+    const conFilas = new URL(req.url).searchParams.get("filas") === "1";
+    // Una persona que todavía no existe en la base (no aceptó nunca) no tiene filas: es una lista vacía, no "sin dato".
+    const filas = conFilas ? (s.personaId ? await filasDePersona(base, s.personaId) : []) : undefined;
+    return NextResponse.json({ ok: true, estado, ...(filas ? { filas } : {}) }, { headers: SIN_CACHE });
   } catch {
     console.error("[consentimientos] la base no respondió al leer el estado");
     return NextResponse.json({ ok: false }, { status: 503, headers: SIN_CACHE });
