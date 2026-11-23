@@ -110,6 +110,8 @@ export function MisDatosCliente() {
     // en ese orden) y no borra ninguna. Si no responde no se toca nada del navegador y la sesión sigue abierta.
     const retirado = await retirarEnServidor(cabeceras, sesion.idPersona);
     if (!retirado) {
+      // Solo se ve el aviso vigente: el del borrado local de un intento anterior ya no corresponde.
+      setFalloRetiro(false);
       setFalloRetiroServidor(true);
       return;
     }
