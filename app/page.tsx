@@ -93,7 +93,7 @@ export default async function Home({ searchParams }: Props) {
                   <strong className="text-2xl">{c.valor}</strong> {c.texto}
                 </p>
                 <p className="text-xs text-muted">
-                  {t.cifras.fuente}: {c.fuente}
+                  {t.cifras.fuente}: <span lang="es">{c.fuente}</span>
                 </p>
               </li>
             ))}

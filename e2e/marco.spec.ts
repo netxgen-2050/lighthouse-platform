@@ -260,7 +260,7 @@ test("el HTML del servidor ya trae un año en el pie (sin JS)", async ({ request
 
 test("portada con titular y botón a /tribus", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Un lugar para vivir\.\s*Un bien común para cuidar\./);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Regenerar desde el agua\.\s*Una promesa a 2030\./);
   await page.getByRole("link", { name: "Ver las comunidades" }).click();
   await expect(page).toHaveURL(/\/tribus$/);
 });
