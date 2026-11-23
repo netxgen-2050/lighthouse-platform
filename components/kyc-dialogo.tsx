@@ -86,7 +86,7 @@ export function KycDialogo({ abierto, kyc, alCerrar, alEnviar, alAprobar, motivo
     }
     let guardado = false;
     try {
-      guardado = registrarConsentimientoSensible(window.localStorage);
+      guardado = sesion ? registrarConsentimientoSensible(window.localStorage, sesion.idPersona) : false;
     } catch {
       guardado = false;
     }

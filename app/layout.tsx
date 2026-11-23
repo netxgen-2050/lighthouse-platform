@@ -4,7 +4,7 @@ import { AplicarPreferencias } from "@/components/aplicar-preferencias";
 import { BarraSuperior } from "@/components/barra-superior";
 import { Rail } from "@/components/rail";
 import { ProveedorSesion } from "@/components/sesion/proveedor-sesion";
-import { Puerta, SoloConCapacidad, SoloConSesion } from "@/components/sesion/puerta";
+import { Puerta, SoloConCapacidad, SoloConConsentimiento } from "@/components/sesion/puerta";
 import { SCRIPT_APARIENCIA } from "@/lib/configuracion/script-apariencia";
 import { Pie } from "@/components/pie";
 import { BotonReportar } from "@/components/boton-reportar";
@@ -57,9 +57,9 @@ export default async function RootLayout({
         <ProveedorIdioma idioma={idioma}>
           <ProveedorSesion>
             <SincronizarIdioma />
-            <SoloConSesion>
+            <SoloConConsentimiento>
               <AplicarPreferencias />
-            </SoloConSesion>
+            </SoloConConsentimiento>
             <Rail />
             <div className="flex min-w-0 flex-1 flex-col">
               <BarraSuperior />

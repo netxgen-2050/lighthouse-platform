@@ -3,12 +3,25 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { CLAVE_ULTIMA_PERSONA, establecerPersona } from "@/lib/demo/claves";
+import {
+  canalAlEntrar,
+  descartarAceptacionPrevia,
+  guardarAceptacionPrevia,
+  leerConsentimiento,
+  puedeAbrirLogin,
+  registrarConsentimiento,
+  tomarAceptacionPrevia,
+  type CanalConsentimiento,
+  type ModoAlta,
+} from "@/lib/privacidad/consentimiento";
+import { registrarEleccionNovedades } from "@/lib/privacidad/novedades";
 import { useConsentimiento } from "@/lib/privacidad/usar-consentimiento";
 import { cookieAdminBorrada, cookieAdminSegunSesion, debeEscribirCookieAdmin } from "@/lib/sesion/cookie-admin";
 import { COOKIE_PRUEBA } from "@/lib/sesion/cookies";
 import { calcularNivel, EVENTO_NIVEL, leerEstadoGuardado } from "@/lib/sesion/nivel";
 import { INICIAL, type EstadoSumarte } from "@/lib/sumarte/estado";
 import { ContextoSesion, type EstadoSesion, type PrivyMinimo, type SesionCliente, type ValorSesion } from "./contexto";
+import { PasoAlta } from "./paso-alta";
 
 /**
  * Con el modo de prueba, el email elegido en "Entrar como…" queda en esta cookie de sesión (no en localStorage:
@@ -102,8 +115,12 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
     };
   }, [prueba, privyListoEfectivo, privyAutenticadoEfectivo]);
 
-  // Se fija antes de dibujar la app: todas las claves del navegador salen con el prefijo de esta persona.
-  const idPersona = resultado.estado === "ok" ? (resultado.sesion?.idPersona ?? null) : null;
+  // Quién es según la sesión. Mientras no tenga consentimiento vigente es una persona anónima para todo lo que se guarda.
+  const idSesion = resultado.estado === "ok" ? (resultado.sesion?.idPersona ?? null) : null;
+  const { estado: consentimiento } = useConsentimiento(idSesion);
+  // Se fija antes de dibujar la app: todas las claves del navegador salen con el prefijo de esta persona, pero solo con
+  // consentimiento vigente (si no, quedan sin prefijo, como sin sesión: nada se guarda a su nombre).
+  const idPersona = consentimiento === "vigente" ? idSesion : null;
   establecerPersona(idPersona);
 
   useEffect(() => {
@@ -140,22 +157,127 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
     };
   }, [idPersona]);
 
-  const nivelListo = resultado.estado !== "ok" || (guardado !== null && guardado.id === idPersona);
+  // Sin consentimiento vigente no se lee nada de la persona (es anónima): no hay nivel que esperar, la puerta pide aceptar.
+  const nivelListo = resultado.estado !== "ok" || consentimiento !== "vigente" || (guardado !== null && guardado.id === idPersona);
   const { nivel, tribuLider } = calcularNivel(
     guardado && guardado.id === idPersona ? guardado.estado : INICIAL,
     resultado.estado === "ok" && resultado.sesion ? resultado.sesion : null,
   );
 
-  // Qué aceptó la persona de la política de privacidad: sin eso no usa la app con sesión (lo aplica la puerta).
-  const { estado: consentimiento } = useConsentimiento(idPersona);
-
   const router = useRouter();
   const ruta = usePathname();
+
+  // Aceptación dada en el paso previo al login: se toma (y se borra) en todo inicio de sesión, la haya usado o no, para que no
+  // le quede a la persona siguiente de esta pestaña (design §2). Una vez por sesión.
+  const aceptacionTomada = useRef<string | null>(null);
+  useEffect(() => {
+    if (!idSesion) {
+      aceptacionTomada.current = null;
+      return;
+    }
+    if (consentimiento === "cargando" || aceptacionTomada.current === idSesion) return;
+    aceptacionTomada.current = idSesion;
+    let previa = null;
+    try {
+      previa = tomarAceptacionPrevia(window.sessionStorage, new Date());
+    } catch {
+      previa = null;
+    }
+    if (!previa) return;
+    try {
+      const almacen = window.localStorage;
+      let canal: CanalConsentimiento = previa.modo === "alta" ? "alta" : "al-entrar";
+      if (consentimiento === "pendiente") {
+        canal = previa.modo === "alta" ? "alta" : canalAlEntrar(leerConsentimiento(almacen, idSesion));
+        const registrado = registrarConsentimiento(almacen, idSesion, { politica: true, terminos: true }, {
+          canal,
+          aceptadoEn: new Date(previa.aceptadoEn),
+        });
+        // Las novedades solo se escriben con el consentimiento general vigente.
+        if (!registrado) return;
+      }
+      registrarEleccionNovedades(almacen, idSesion, previa.novedades, { canal });
+    } catch {
+      // Sin almacenamiento no queda registro: la persona verá la pantalla de consentimiento.
+    }
+  }, [idSesion, consentimiento]);
+
+  const [paso, setPaso] = useState<{ modo: ModoAlta; alAceptar?: () => void; continuar?: () => void } | null>(null);
+  const focoAlAbrir = useRef<HTMLElement | null>(null);
 
   const entrarComo = useCallback((email: string) => {
     document.cookie = `${COOKIE_PRUEBA}=${encodeURIComponent(email)}; path=/; SameSite=Lax`;
     setPrueba(email);
   }, []);
+
+  const login = privy?.login;
+  /**
+   * ÚNICA llamada al login (Privy o, sin Privy, "Entrar como…" de Sumarte). Es privada: solo la usa el paso al aceptar, y solo
+   * abre con una aceptación previa vigente (design §1). Nada fuera de este archivo llama a `login` de Privy.
+   */
+  const abrirLogin = useCallback(() => {
+    let puede = false;
+    try {
+      puede = puedeAbrirLogin(window.sessionStorage, new Date());
+    } catch {
+      puede = false;
+    }
+    if (!puede) return;
+    if (login) return login();
+    // Sin Privy no hay ventana de login: se lleva a Sumarte, que ofrece "Entrar como…" (modo de prueba). Desde Sumarte no
+    // navega: avisa y se queda (el panel ya está en la página).
+    if (ruta === "/sumarte") {
+      document.getElementById("entrar-como")?.scrollIntoView?.({ block: "center" });
+      document.getElementById("entrar-como")?.focus();
+      return;
+    }
+    router.push(`/sumarte?volver=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}#entrar-como`);
+  }, [login, ruta, router]);
+
+  const entrar = useCallback((opciones?: { modo?: ModoAlta; alAceptar?: () => void }) => {
+    focoAlAbrir.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setPaso({ modo: opciones?.modo ?? "entrar", alAceptar: opciones?.alAceptar });
+  }, []);
+
+  // Elegir un email del panel "Entrar como…": sin aceptación previa vigente, primero se pasa por el paso.
+  const entrarComoConPaso = useCallback(
+    (email: string) => {
+      let puede = false;
+      try {
+        puede = puedeAbrirLogin(window.sessionStorage, new Date());
+      } catch {
+        puede = false;
+      }
+      if (puede) return entrarComo(email);
+      focoAlAbrir.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      setPaso({ modo: "entrar", continuar: () => entrarComo(email) });
+    },
+    [entrarComo],
+  );
+
+  const cancelarPaso = useCallback(() => {
+    setPaso(null);
+    const volver = focoAlAbrir.current;
+    setTimeout(() => volver?.focus(), 0);
+  }, []);
+
+  const aceptarPaso = useCallback(
+    (datos: { novedades: boolean }): boolean => {
+      if (!paso) return false;
+      let guardado = false;
+      try {
+        guardado = guardarAceptacionPrevia(window.sessionStorage, new Date(), { modo: paso.modo, novedades: datos.novedades });
+      } catch {
+        guardado = false;
+      }
+      if (!guardado) return false;
+      paso.alAceptar?.();
+      setPaso(null);
+      (paso.continuar ?? abrirLogin)();
+      return true;
+    },
+    [paso, abrirLogin],
+  );
 
   // Cookie de /admin (ADR-016): solo la sesión de Privy de un super admin verificado; se renueva en cada cambio de ruta y se
   // borra al salir, al cambiar de persona o si el rol deja de ser super admin.
@@ -189,6 +311,12 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
     document.cookie = `${COOKIE_PRUEBA}=; path=/; max-age=0; SameSite=Lax`;
     setPrueba(null);
     setResultado({ estado: "sin-sesion", sesion: null });
+    // La aceptación del paso no queda en la pestaña para la persona siguiente.
+    try {
+      descartarAceptacionPrevia(window.sessionStorage);
+    } catch {
+      // Sin almacenamiento de la pestaña no hay nada que borrar.
+    }
     try {
       // Sin persona recordada, el script de tema no pinta con las preferencias de quien acaba de salir.
       window.localStorage.removeItem(CLAVE_ULTIMA_PERSONA);
@@ -209,7 +337,6 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
     return token ? { Authorization: `Bearer ${token}` } : {};
   }, [prueba]);
 
-  const login = privy?.login;
   const valor = useMemo<ValorSesion>(
     () => ({
       estado: resultado.estado,
@@ -218,18 +345,8 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       nombre: privy?.nombre ?? null,
       billetera: privy?.billetera ?? null,
       privyDisponible: privy !== null,
-      // Sin Privy no hay ventana de login: se lleva a Sumarte, que ofrece "Entrar como…" (modo de prueba). Desde Sumarte el
-      // botón no navega: avisa y se queda (el panel ya está en la página).
-      entrar: () => {
-        if (login) return login();
-        if (ruta === "/sumarte") {
-          document.getElementById("entrar-como")?.scrollIntoView?.({ block: "center" });
-          document.getElementById("entrar-como")?.focus();
-          return;
-        }
-        router.push(`/sumarte?volver=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}#entrar-como`);
-      },
-      entrarComo,
+      entrar,
+      entrarComo: entrarComoConPaso,
       nivel,
       nivelListo,
       consentimiento,
@@ -237,11 +354,14 @@ function Nucleo({ privy, children }: { privy: PrivyMinimo | null; children: Reac
       salir,
       cabeceras,
     }),
-    [resultado, prueba, privy, login, ruta, router, entrarComo, nivel, nivelListo, consentimiento, tribuLider, salir, cabeceras],
+    [resultado, prueba, privy, entrar, entrarComoConPaso, nivel, nivelListo, consentimiento, tribuLider, salir, cabeceras],
   );
 
   return (
-    <ContextoSesion.Provider value={valor}>{children}</ContextoSesion.Provider>
+    <ContextoSesion.Provider value={valor}>
+      {children}
+      <PasoAlta abierto={paso !== null} modo={paso?.modo ?? "entrar"} alAceptar={aceptarPaso} alCancelar={cancelarPaso} />
+    </ContextoSesion.Provider>
   );
 }
 

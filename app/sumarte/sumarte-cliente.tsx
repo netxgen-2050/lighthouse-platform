@@ -167,12 +167,17 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
         return true;
       }
       const acciones: Accion[] = accion.tipo === "pase" ? [{ tipo: "nivel", nivel: estado.nivelPase }, accion] : [accion];
-      try {
-        guardarPendiente(window.sessionStorage, ACCIONES_DE_PLAN.includes(accion.tipo) ? acciones : []);
-      } catch {
-        // Sin almacenamiento de la pestaña, la persona tendrá que volver a elegir al registrarse.
-      }
-      entrar();
+      // El pedido se guarda recién al aceptar el paso "Crear tu cuenta": si cancela, no queda nada.
+      entrar({
+        modo: "alta",
+        alAceptar: () => {
+          try {
+            guardarPendiente(window.sessionStorage, ACCIONES_DE_PLAN.includes(accion.tipo) ? acciones : []);
+          } catch {
+            // Sin almacenamiento de la pestaña, la persona tendrá que volver a elegir al registrarse.
+          }
+        },
+      });
       return true;
     }
     const siguiente = reducir(estado, accion);
@@ -611,7 +616,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
                 className={BOTON_PRIMARIO}
                 onClick={() => {
                   // Sin cuenta, primero hay que registrarse.
-                  if (!conSesion) return entrar();
+                  if (!conSesion) return entrar({ modo: "alta" });
                   // Sin el sello de identidad, primero se ofrece la verificación.
                   if (kyc.verificada) setFormulario("invitacion");
                   else setDialogoKyc(true);
@@ -650,7 +655,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
                 type="button"
                 aria-expanded={formulario === "charla"}
                 className={BOTON_SUAVE}
-                onClick={() => (conSesion ? setFormulario("charla") : entrar())}
+                onClick={() => (conSesion ? setFormulario("charla") : entrar({ modo: "alta" }))}
               >
                 {t.invertir.empresa.pedirCharla}
               </button>
