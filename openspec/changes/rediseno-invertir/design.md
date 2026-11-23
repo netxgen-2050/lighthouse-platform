@@ -27,8 +27,16 @@ export function barriosEnFinanciamiento(): BarrioEnFinanciamiento[];
 
 Si `barrio.ts` no expone la serie mensual que necesita la curva, se le suma una función que la devuelva (sin cambiar sus resultados ni sus tests) en este cambio.
 
+<!-- arquitecto: un solo resumen de la obra, compartido con Barrio Norte -->
+**Un solo dueño para los números de la obra.** `meta`, `mesDevolucion` y `parteParaElComun` no se recalculan acá: salen de `resumenObraBarrio()` en `lib/bien-comun/barrio.ts`, la misma función que usa el panel de la obra de `rediseno-explorar-valle` (allí `meta` se llama "infraestructura"). El cambio que llegue primero a `dev` la crea; el otro la reutiliza. `barriosEnFinanciamiento()` solo suma la curva y el libro. Un test compara la meta de Invertir con la infraestructura de Barrio Norte (si `lib/barrios/norte.ts` ya existe) y con la calculadora de `/bien-comun`: tienen que dar el mismo número.
+
 ### 2. Solo con sesión, sin números en el HTML
 La página es un server component que dibuja los sellos y un componente cliente que lee `useSesion()`: sin sesión dibuja `EntrarPara`; con sesión calcula y dibuja. El cálculo es puro y corre en el cliente, como la calculadora del barrio, para que el HTML sin sesión no lleve números.
+
+<!-- arquitecto: la puerta manda a Sumarte si la ruta no es pública -->
+**`/invertir` se suma a `RUTAS_PUBLICAS`** (`lib/sesion/rutas-publicas.ts`). Si no, `Puerta` redirige a `/sumarte?volver=/invertir` a quien no tiene sesión (`capacidadDeRuta` → `personal`), el aviso de `EntrarPara` nunca se ve y el escenario "Sin sesión" de la spec no se puede cumplir. Que la ruta sea pública no abre números: el componente cliente los dibuja solo con sesión. Es el mismo criterio que `/bien-comun` y lo que pide `rediseno-menu-cinco` ("cada página decide qué muestra sin sesión"). La página sigue sin indexarse (ADR-030).
+
+Esto **oculta, no protege** (ADR-015): los parámetros del modelo viajan en el JavaScript y quien lo lea puede recalcular la meta. Se acepta porque son números de ejemplo sin datos de personas. Antes de R14 se revisa junto con ADR-015.
 
 ### 3. Curva en SVG propio
 Sin librerías de gráficos. `<svg role="img" aria-labelledby>` con `<title>` y `<desc>`; lo devuelto en trazo continuo con relleno de la escala de regeneración, lo aportado en línea punteada; ejes con etiquetas en texto. Debajo, `<details>` con la tabla equivalente por trimestre (`TablaLibro` o una tabla simple con `caption`). Sin animación con `data-movimiento="reducido"`.
@@ -45,4 +53,5 @@ El cálculo usa la prima anual del inversor como parámetro. Invertir **no la mu
 ## Riesgos
 
 - **La curva puede leerse como promesa.** Mitigación: sellos antes de los números, "caso de ejemplo" en el título de la curva y sin prima a la vista.
+- <!-- arquitecto: la curva deja ver la prima --> **La curva muestra la prima sin nombrarla.** Si lo devuelto termina por encima de lo aportado, la diferencia entre las dos líneas *es* la prima: el test de palabras no la atrapa. Cortar la curva en lo aportado, o mostrar las dos líneas completas, es una decisión de producto que queda para Gus. El implementador no la resuelve por su cuenta: construye la curva completa y lo anota en el PR.
 - **Depende de dos cambios todavía sin construir.** Va último en el orden.

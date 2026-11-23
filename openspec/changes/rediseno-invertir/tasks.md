@@ -4,11 +4,11 @@ Quinto y último de los cinco cambios del rediseño. **Orden:** requiere en `dev
 
 ## 1. Datos
 
-- [ ] 1.1 `lib/invertir/barrios.ts` con test: meta, `juntado` nulo, mes de devolución (y nulo cuando no se devuelve en 6 años), parte para el común, curva mensual y libro por trimestre; si hace falta, sumar a `lib/bien-comun/barrio.ts` la serie mensual sin cambiar sus resultados. **Verifica:** `pnpm test lib/invertir lib/bien-comun` en verde; los tests de `barrio.ts` siguen iguales.
+- [ ] 1.1 `lib/invertir/barrios.ts` con test: meta, `juntado` nulo, mes de devolución (y nulo cuando no se devuelve en 6 años) y parte para el común tomados de `resumenObraBarrio()` (crearla en `lib/bien-comun/barrio.ts` si `rediseno-explorar-valle` todavía no lo hizo); curva mensual y libro por trimestre; si hace falta, sumar a `lib/bien-comun/barrio.ts` la serie mensual sin cambiar sus resultados. **Verifica:** `pnpm test lib/invertir lib/bien-comun` en verde; los tests de `barrio.ts` siguen iguales; un caso comprueba que la meta es igual a la infraestructura de `lib/barrios/norte.ts` si existe. <!-- arquitecto: un solo resumen de la obra -->
 
 ## 2. Página
 
-- [ ] 2.1 `app/invertir/page.tsx` y `lib/idioma/textos/invertir.ts` (es/en): sellos, aviso sin sesión, indicadores con `Indicador` (mono), `ChipEstado` "En financiamiento", "Cómo funciona" con ⚖ `tokeninversor` y `fideicomisobarrio`, enlaces a `/bien-comun` y (con permiso) a `/netx/financiamiento`. **Verifica:** `pnpm build` y `pnpm test lib/idioma` en verde.
+- [ ] 2.1 `app/invertir/page.tsx` y `lib/idioma/textos/invertir.ts` (es/en): sellos, aviso sin sesión, indicadores con `Indicador` (mono), `ChipEstado` "En financiamiento", "Cómo funciona" con ⚖ `tokeninversor` y `fideicomisobarrio`, enlaces a `/bien-comun` y (con permiso) a `/netx/financiamiento`. Sumar `/invertir` a `lib/sesion/rutas-publicas.ts` (`design.md` §2). **Verifica:** `pnpm build` y `pnpm test lib/idioma lib/sesion lib/permisos` en verde, con un caso nuevo `esPublica("/invertir") === true`. <!-- arquitecto: si no es pública, la puerta redirige a Sumarte y el aviso nunca se ve -->
 - [ ] 2.2 Curva en SVG con título, descripción, trazos distintos y tabla equivalente. **Verifica:** test de render (título, `desc`, filas de la tabla iguales a `curva` por trimestre).
 - [ ] 2.3 Libro del barrio con `TablaLibro`. **Verifica:** test de render con las filas de `libro`.
 - [ ] 2.4 `/invertir` pasa a `existe: true` en `lib/navegacion.ts`; sumar `app/invertir/` y `lib/invertir/` a `lib/lotes/sin-numeros-escritos.test.ts`. **Verifica:** `pnpm test lib/navegacion lib/lotes` en verde.
