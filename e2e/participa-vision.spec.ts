@@ -18,7 +18,8 @@ const recorrerTodo = async (page: Page) => {
     window.scrollTo(0, document.body.scrollHeight);
   });
   await expect(page.locator('.vision-aparece[data-fase="oculto"]')).toHaveCount(0);
-  await page.waitForTimeout(900);
+  // Espera a que no quede ninguna animación ni transición activa (el fundido dura 0,7 s): así axe mide los colores finales.
+  await page.waitForFunction(() => document.getAnimations().filter((a) => a.playState === "running").length === 0);
   await page.evaluate(() => window.scrollTo(0, 0));
 };
 
@@ -58,8 +59,8 @@ test("el texto se lee en una columna de 60 a 75 caracteres y la capitular existe
     return { ancho: el.getBoundingClientRect().width, promedio, letra: parseFloat(estilo.fontSize), interlineado: parseFloat(estilo.lineHeight) };
   });
   const caracteres = medida.ancho / medida.promedio;
-  expect(caracteres).toBeGreaterThanOrEqual(55);
-  expect(caracteres).toBeLessThanOrEqual(80);
+  expect(caracteres).toBeGreaterThanOrEqual(60);
+  expect(caracteres).toBeLessThanOrEqual(75);
   expect(medida.letra).toBeGreaterThanOrEqual(18);
   expect(medida.interlineado / medida.letra).toBeCloseTo(1.6, 1);
   const capitular = await page.locator(".vision-capitular").evaluate((el) => getComputedStyle(el, "::first-letter").float);

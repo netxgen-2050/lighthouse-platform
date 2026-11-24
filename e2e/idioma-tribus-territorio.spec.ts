@@ -21,6 +21,8 @@ test.describe("comunidades en inglés", () => {
     await expect(page.getByRole("heading", { level: 3, name: "What we believe" })).toBeVisible();
     await expect(page.getByText("Internal prototype · sample data").first()).toBeVisible();
     await expect(page.getByText("This page is only available in Spanish for now.")).toHaveCount(0);
+    const NOMBRES_PROPIOS = ["Río Negro", "Limay", "Neuquén", "Alto Valle", "jarilla", "alpataco", "chañar"];
+    expect(await textosEnEspanol(page, "main", NOMBRES_PROPIOS)).toEqual([]);
   });
 
   test("ficha de Valle Solar: lo que tiene, lo que busca y el ritual en inglés; el nombre sigue igual", async ({ page }) => {
