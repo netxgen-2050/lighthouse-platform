@@ -171,6 +171,14 @@ describe("armarPortafolio", () => {
     expect(p.totales.faroAcreditados).toBe(faroDelPlan(a.superficieM2, 24)!.anticipo + faroDelPlan(b.superficieM2, 12)!.anticipo);
   });
 
+  test("caso mixto: reservar sin pagar un lote del plan y pagar uno de los primeros 4 no cuenta como pago", () => {
+    const delPlan = reservada(a, 24);
+    const deLosPrimeros = pagada(reservada(primero, null));
+    const p = armarPortafolio([delPlan, deLosPrimeros], SIN_ADHESION);
+    expect(p.totales.entraAlPlan).toBe(true);
+    expect(p.totales.hayPago).toBe(false);
+  });
+
   test("un lote que no está en el loteo se ignora", () => {
     const c: CompraLote = { ...reservada(a, 24), loteId: "no-existe" };
     expect(armarPortafolio([c], SIN_ADHESION).lotes).toEqual([]);

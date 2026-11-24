@@ -180,7 +180,8 @@ export function armarPortafolio(compras: CompraLote[], adhesion: Adhesion): Port
   }
 
   const acreditados = lotes.flatMap((l) => (l.faro.tipo === "acreditado" && l.faro.acreditados !== null ? [l.faro.acreditados] : []));
-  const hayPago = propias.some((c) => c.paso === "pagado");
+  // Solo cuentan los pagos de lotes que entran al plan: los primeros 4 no traen FARO.
+  const hayPago = propias.some((c) => c.paso === "pagado" && loteTraeFaro(loteos.get(c.loteId)!.grupo));
 
   return {
     lotes,
