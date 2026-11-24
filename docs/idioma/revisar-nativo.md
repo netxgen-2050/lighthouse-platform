@@ -6,7 +6,7 @@ Todo el inglés lo escribió un agente y está pendiente hasta que un hablante n
 **Cómo marcar algo como revisado:** en `lib/idioma/revision-nativa.ts`, cambiá el `estado` de la fuente a `"revisado"`
 y sumá `revisadoPor` y `fecha` (AAAA-MM-DD). Después corré `pnpm idioma:pendientes`.
 
-Fuentes pendientes: 48
+Fuentes pendientes: 49
 
 | Fuente | Qué es | Textos en inglés |
 |---|---|---|
@@ -45,6 +45,7 @@ Fuentes pendientes: 48
 | `textos/fogonPropuestas` | Propuestas del Fogón: fases, discusión, concerns y grupos, acuse y quórum, ámbito del consejo, niveles, acciones, condiciones de la matriz, mecanismos y vista sin cuenta | 256 |
 | `textos/gobernanza` | Gobernanza fractal: página Cómo decidimos (estructura, círculos, consejo), marca de validación de la ficha de tribu y Quiénes te validaron en Mi recorrido | 120 |
 | `textos/hibrido` | Qué es tuyo y qué es de todos: tabla de lo privado y lo común, aporte de cada lote, tres escenarios de costo del bien común, calculadora, preguntas para Vagner y resguardos | 62 |
+| `textos/invertir` | Invertir (/invertir): sellos, indicadores del barrio en financiamiento, curva de devolución y libro del barrio (solo con sesión) | 43 |
 | `textos/lotes` | Lotes de Lighthouse VRN: lista, ficha, precio de ejemplo, con casa, costos, derechos y deberes, reserva y pago simulados y boleto de ejemplo | 136 |
 | `textos/manifiestoVrn` | Manifiesto de Lighthouse VRN: ficha del común, tarjeta de Tribus, lectura completa, principios propios de las tribus, aviso de adhesión y bloque de la Vista NetX | 49 |
 | `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 76 |

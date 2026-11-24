@@ -185,7 +185,7 @@ test.describe("sin sesión", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
     // Los destinos del panel están habilitados sin sesión.
     await barra.getByRole("button", { name: "Menú", exact: true }).click();
-    await expect(page.locator("#menu-celular").getByRole("link")).toHaveText(["Explorar", "Bien común", "Sumarte", "Mi tierra"]);
+    await expect(page.locator("#menu-celular").getByRole("link")).toHaveText(["Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
   });
 });
 
