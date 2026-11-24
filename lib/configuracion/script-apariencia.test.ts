@@ -14,12 +14,14 @@ function temaQueDeja(guardado: Record<string, unknown> | null, sistemaOscuro: bo
 }
 
 describe("script de apariencia", () => {
-  it("sin preferencia guardada deja el tema oscuro, aunque el sistema sea claro", () => {
-    expect(temaQueDeja(null, false)).toBe("oscuro");
+  it("sin preferencia guardada sigue al sistema", () => {
+    expect(temaQueDeja(null, false)).toBe("claro");
+    expect(temaQueDeja(null, true)).toBe("oscuro");
   });
 
-  it("respeta el tema claro guardado", () => {
+  it("respeta el tema claro u oscuro guardado, sea cual sea el sistema", () => {
     expect(temaQueDeja({ tema: "claro" }, true)).toBe("claro");
+    expect(temaQueDeja({ tema: "oscuro" }, false)).toBe("oscuro");
   });
 
   it("con 'sistema' sigue al sistema", () => {

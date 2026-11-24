@@ -1,52 +1,51 @@
 @import "tailwindcss";
 
 /*
- * Paleta de la slide de Lighthouse. El tema oscuro (dirección A "Valle de noche" + C "Terminal solar") es el de base;
- * el claro (dirección B "Cartografía viva") lo pisa con <html data-tema="claro">. Mismos nombres de token en los dos.
+ * Paleta del mock-up v6 (docs/referencia/netx-tribus-mockup-v6.html), la de antes del rediseño: el tema claro es el de base;
+ * el oscuro lo pisa con <html data-tema="oscuro">. Mismos nombres de token en los dos.
  * "static": los tokens se emiten siempre, aunque solo los use CSS suelto (vidrio, escala de regeneración).
  * Los pares de texto y fondo los verifica lib/tema-contraste.test.ts.
  */
 @theme static {
-  --color-bg: #0e0f0b;
-  --color-surface: #171812;
-  --color-surface-2: #22231a;
-  --color-ink: #f1eee6;
-  --color-muted: #b9b49b;
-  --color-faint: #8f8b75;
-  --color-line: #35362a;
-  /* Acento (dorado oliva): fondo del botón principal; "on-deep" es el texto oscuro que va encima. */
-  --color-deep: #d8cc92;
-  --color-deep-2: #e6dcaa;
-  --color-on-deep: #0e0f0b;
-  --color-on-deep-muted: #3f3b24;
-  --color-green: #6fa35a;
-  --color-green-soft: #1f2a18;
-  /* "gold" se oscurece porque en la app siempre lleva texto "ink" (que en oscuro es claro). */
-  --color-gold: #8a6512;
-  --color-gold-soft: #33290c;
-  --color-gold-ink: #e8c468;
-  --color-blue: #7db0e8;
-  --color-blue-soft: #1b2a3e;
-  --color-gray: #8d8a78;
-  --color-warn-bg: #33290c;
-  --color-warn-ink: #f0d38a;
-  --color-water: #1a2624;
-  --color-danger: #f19a9a;
+  --color-bg: #f6f3ea;
+  --color-surface: #fffdf7;
+  --color-surface-2: #efeadd;
+  --color-ink: #14241a;
+  --color-muted: #566258;
+  /* Único valor que se aparta del mock-up v6: era #8a8678 (3,28:1 sobre bg); se oscurece para llegar a AA (4,5:1). */
+  --color-faint: #6f6b5d;
+  --color-line: #e0d9c8;
+  --color-deep: #154626;
+  --color-deep-2: #1d5731;
+  --color-on-deep: #f6f3ea;
+  --color-on-deep-muted: #b7d4bf;
+  --color-green: #3c8c4b;
+  --color-green-soft: #dcebdf;
+  --color-gold: #eda100;
+  --color-gold-soft: #fdf0c9;
+  --color-gold-ink: #6e4d00;
+  --color-blue: #2a78d6;
+  --color-blue-soft: #dde9f8;
+  --color-gray: #9b978a;
+  --color-warn-bg: #fff3d6;
+  --color-warn-ink: #5d4300;
+  --color-water: #dbe7e4;
+  --color-danger: #991b1b;
   /* Paletas del mapa por grupo: violeta (terreno común), arcilla (fincas reservadas) y rosa (lugares de interés). */
-  --color-violet: #b799e0;
-  --color-violet-soft: #2f2347;
-  --color-clay: #e08a4f;
-  --color-clay-ink: #f0b48a;
-  --color-rose: #e58aab;
-  --color-rose-soft: #3d1f2d;
-  /* Escala de regeneración, de menos a más avance. Nunca lleva texto encima: el número va al lado. */
-  --color-regen-1: #d9774a;
-  --color-regen-2: #e0a640;
-  --color-regen-3: #cfc85a;
-  --color-regen-4: #9db86e;
-  --color-regen-5: #6fa35a;
-  /* Vidrio: el fondo del tema al 80 % de opacidad, para paneles sobre foto. */
-  --color-vidrio: #0e0f0bcc;
+  --color-violet: #6b3fa0;
+  --color-violet-soft: #e6dcf3;
+  --color-clay: #c2571a;
+  --color-clay-ink: #7a3408;
+  --color-rose: #a8325e;
+  --color-rose-soft: #f6dbe5;
+  /* Escala de regeneración, de menos a más avance: de la arcilla al verde, con 3:1 o más contra el hueso. Nunca lleva texto encima. */
+  --color-regen-1: #c2571a;
+  --color-regen-2: #a97400;
+  --color-regen-3: #86872a;
+  --color-regen-4: #5a9444;
+  --color-regen-5: #3c8c4b;
+  /* Vidrio: el "surface" del tema al 80 % de opacidad, para paneles sobre foto. */
+  --color-vidrio: #fffdf7cc;
 }
 
 /* inline: next/font define sus variables en el <body>, no en :root; sin inline quedarían inválidas. */
@@ -56,49 +55,49 @@
   --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 }
 
-:root {
+/*
+ * Tema oscuro: mismos nombres de token, otros valores (los pone <html data-tema="oscuro">).
+ * Los tokens "deep" se invierten: en oscuro son el verde claro de acento, y "on-deep" el texto oscuro que va encima.
+ * "gold" se oscurece porque en la app siempre lleva texto "ink" (que en oscuro es claro).
+ */
+:root[data-tema="oscuro"] {
   color-scheme: dark;
-}
-
-/* Tema claro (dirección B): mismos nombres de token, otros valores (los pone <html data-tema="claro">). */
-:root[data-tema="claro"] {
-  color-scheme: light;
-  --color-bg: #f3efe6;
-  --color-surface: #fbf9f3;
-  --color-surface-2: #e9e3d3;
-  --color-ink: #16170f;
-  --color-muted: #57543f;
-  --color-faint: #6b6752;
-  --color-line: #d8d1bc;
-  --color-deep: #4a4a1c;
-  --color-deep-2: #5c5c26;
-  --color-on-deep: #f3efe6;
-  --color-on-deep-muted: #d8d1a0;
-  --color-green: #3f7a33;
-  --color-green-soft: #e1e8d2;
-  --color-gold: #e0a640;
-  --color-gold-soft: #f6e7be;
-  --color-gold-ink: #6b4a00;
-  --color-blue: #2a6cc0;
-  --color-blue-soft: #dde7f4;
-  --color-gray: #8e8b7a;
-  --color-warn-bg: #f8e8be;
-  --color-warn-ink: #5a4100;
-  --color-water: #dde4de;
-  --color-danger: #991b1b;
-  --color-violet: #6b3fa0;
-  --color-violet-soft: #e6dcf3;
-  --color-clay: #c2571a;
-  --color-clay-ink: #7a3408;
-  --color-rose: #a8325e;
-  --color-rose-soft: #f6dbe5;
-  /* Los mismos cinco tonos, más oscuros: 3:1 o más contra el hueso. */
-  --color-regen-1: #b4531f;
-  --color-regen-2: #9a6a0a;
-  --color-regen-3: #777212;
-  --color-regen-4: #567f33;
-  --color-regen-5: #3b7430;
-  --color-vidrio: #f3efe6cc;
+  --color-bg: #101a14;
+  --color-surface: #17251d;
+  --color-surface-2: #203128;
+  --color-ink: #eef1e8;
+  --color-muted: #b9c4bb;
+  --color-faint: #93a095;
+  --color-line: #33473b;
+  --color-deep: #8fd0a0;
+  --color-deep-2: #aadfb8;
+  --color-on-deep: #0d1f14;
+  --color-on-deep-muted: #1f4a2c;
+  --color-green: #6fc283;
+  --color-green-soft: #1d3a28;
+  --color-gold: #8a5d00;
+  --color-gold-soft: #3a2d0a;
+  --color-gold-ink: #f2c25a;
+  --color-blue: #6aa8f0;
+  --color-blue-soft: #1c2f4a;
+  --color-gray: #8a9a8f;
+  --color-warn-bg: #3a2d0a;
+  --color-warn-ink: #f3d58a;
+  --color-water: #1a2e2e;
+  --color-danger: #f19a9a;
+  --color-violet: #b799e0;
+  --color-violet-soft: #2f2347;
+  --color-clay: #e08a4f;
+  --color-clay-ink: #f0b48a;
+  --color-rose: #e58aab;
+  --color-rose-soft: #3d1f2d;
+  /* La misma escala, más clara: 3:1 o más contra el verde casi negro. */
+  --color-regen-1: #e08a4f;
+  --color-regen-2: #e0a63a;
+  --color-regen-3: #b8b94f;
+  --color-regen-4: #8cc46a;
+  --color-regen-5: #6fc283;
+  --color-vidrio: #17251dcc;
 }
 
 /* La barra superior es fija: al saltar a un ancla o al enfocar con el teclado, el elemento no queda debajo de ella. */
