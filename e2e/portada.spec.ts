@@ -8,7 +8,7 @@ test.use({ plan: "ninguno" });
 const CAMINOS = [
   { titulo: "Ver los lotes", href: "/explorar#lotes" },
   { titulo: "Explorar el territorio", href: "/explorar#territorio" },
-  { titulo: "Ver las comunidades", href: "/tribus" },
+  { titulo: "Ver las comunidades", href: "/participa" },
 ];
 
 test("la portada responde", async ({ page }) => {

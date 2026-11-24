@@ -37,6 +37,14 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Explorar (/explorar): título del héroe, barra de secciones y apertura de Territorio, Barrio Norte y Lotes",
   },
+  "textos/participa": {
+    estado: "pendiente",
+    que: "Participa (/participa): mapa ilustrado de equipos, lista, detalle del equipo con sus posiciones abiertas y pestaña Visión",
+  },
+  "lib/equipos/posiciones.ts": {
+    estado: "pendiente",
+    que: "Posiciones abiertas de ejemplo de cada equipo del común (título, dedicación y qué se busca), con su inglés",
+  },
   "textos/invertir": {
     estado: "pendiente",
     que: "Invertir (/invertir): sellos, indicadores del barrio en financiamiento, curva de devolución y libro del barrio (solo con sesión)",

@@ -9,11 +9,12 @@ test("en la portada Inicio está marcado y Explorar no", async ({ page }) => {
   await expect(page.getByRole("navigation", { name: "Explorar", exact: true })).toHaveCount(0);
 });
 
-test("Comunidades ya no es de Explorar: en /tribus no hay destino marcado hasta que exista Participa", async ({ page }) => {
+test("Comunidades ya no es de Explorar: /participa, /tribus (redirige) y las fichas /tribus/[id] marcan Participa", async ({ page }) => {
   const nav = page.getByRole("navigation", { name: "Principal" });
-  for (const ruta of ["/tribus", "/tribus/valle"]) {
+  for (const ruta of ["/participa", "/tribus", "/tribus/valle"]) {
     await page.goto(ruta);
-    await expect(nav.locator('[aria-current="page"]'), ruta).toHaveCount(0);
+    await expect(nav.locator('[aria-current="page"]'), ruta).toHaveCount(1);
+    await expect(nav.getByRole("link", { name: "Participa" }), ruta).toHaveAttribute("aria-current", "page");
     await expect(page.getByRole("navigation", { name: "Explorar", exact: true }), ruta).toHaveCount(0);
   }
 });
@@ -181,7 +182,7 @@ test.describe("sin sesión", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
     // Los destinos del panel están habilitados sin sesión.
     await barra.getByRole("button", { name: "Menú", exact: true }).click();
-    await expect(page.locator("#menu-celular").getByRole("link")).toHaveText(["Inicio", "Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
+    await expect(page.locator("#menu-celular").getByRole("link")).toHaveText(["Inicio", "Explorar", "Participa", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
   });
 });
 
@@ -413,11 +414,11 @@ test("el HTML del servidor ya trae un año en el pie (sin JS)", async ({ request
   expect(html).toMatch(/©(?:<!-- -->)? ?(?:<!-- -->)?\d{4}/);
 });
 
-test("portada con titular y botón a /tribus", async ({ page }) => {
+test("portada con titular y botón a /participa", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Regenerar desde el agua\.\s*Una promesa a 2030\./);
   await page.getByRole("link", { name: "Ver las comunidades" }).click();
-  await expect(page).toHaveURL(/\/tribus$/);
+  await expect(page).toHaveURL(/\/participa$/);
 });
 
 test("ninguna página se deja indexar: noindex, nofollow y sin pedir sesión", async ({ page }) => {

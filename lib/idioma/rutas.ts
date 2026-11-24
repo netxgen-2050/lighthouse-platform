@@ -12,13 +12,14 @@ export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   /^\/$/,
   /^\/sumarte$/,
   // Tribus, manifiesto, postulación y territorio (idioma-tribus-territorio).
-  /^\/tribus$/,
   /^\/tribus\/[^/]+$/,
   /^\/tribus\/[^/]+\/manifiesto$/,
   /^\/tribus\/[^/]+\/postular$/,
   /^\/territorios\/[^/]+$/,
   // Explorar: Territorio, Barrio Norte y Lotes (explorar-unificado).
   /^\/explorar$/,
+  // Participa: el mapa ilustrado de equipos y la visión de las comunidades (participa-mapa-equipos).
+  /^\/participa$/,
   // Lotes de Lighthouse VRN: la lista y la ficha (lote-ficha-y-compra).
   /^\/lotes$/,
   /^\/lotes\/[^/]+$/,
@@ -65,6 +66,8 @@ export const RUTAS_INTERNAS: readonly RegExp[] = [
   /^\/fogon\/simulador$/,
   // Redirige a /fogon (fogon-portada-holarquia).
   /^\/fogon\/gobernanza$/,
+  // Redirige a /participa (participa-mapa-equipos).
+  /^\/tribus$/,
 ];
 
 /**

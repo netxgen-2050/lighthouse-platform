@@ -32,7 +32,7 @@ describe("Contenido: página sin traducir con la plataforma en inglés", () => {
   });
 
   it("una página ya traducida no lleva aviso ni envoltorio", () => {
-    const html = dibujar("en", "/tribus");
+    const html = dibujar("en", "/participa");
     expect(html).not.toContain("only available in Spanish");
     expect(html).not.toContain('<div lang="es">');
   });

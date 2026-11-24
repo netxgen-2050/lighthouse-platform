@@ -52,7 +52,7 @@ function comunidadesDe(m: Membresias): Comunidad[] {
       salida.push({ id, nombre: "Lighthouse", href: "/explorar#territorio", estado });
     } else {
       const tribu = buscarTribu(id);
-      salida.push({ id, nombre: tribu ? tribu.nombre : id, href: tribu ? `/tribus/${id}` : "/tribus", estado });
+      salida.push({ id, nombre: tribu ? tribu.nombre : id, href: tribu ? `/tribus/${id}` : "/participa", estado });
     }
   }
   return salida;
@@ -374,7 +374,7 @@ export function PerfilCliente() {
             </ul>
           ) : (
             <p className="text-muted">
-              {t.comunidades.ninguna} <Link className="underline" href="/tribus">{t.comunidades.mirar}</Link>.
+              {t.comunidades.ninguna} <Link className="underline" href="/participa">{t.comunidades.mirar}</Link>.
             </p>
           )}
         </section>

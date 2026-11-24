@@ -25,7 +25,7 @@ export type ProximoPaso = { clave: ClavePaso; titulo: string; detalle: string; b
 /** A dónde lleva cada paso (el texto sale del diccionario `recorrido`). */
 const HREF_DEL_PASO: Record<ClavePaso, string> = {
   perfil: "/perfil",
-  comunidad: "/tribus",
+  comunidad: "/participa",
   pacto: "/pactos",
   identidad: "/pasaporte",
   ticket: "/congreso",

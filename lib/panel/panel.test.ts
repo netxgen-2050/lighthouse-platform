@@ -22,7 +22,7 @@ describe("proximoPaso", () => {
   });
 
   it("respeta el orden: comunidad, pacto, identidad, ticket", () => {
-    expect(proximoPaso({ ...TODO, adhirioAComunidad: false, propusoPacto: false, tieneTicket: false })?.href).toBe("/tribus");
+    expect(proximoPaso({ ...TODO, adhirioAComunidad: false, propusoPacto: false, tieneTicket: false })?.href).toBe("/participa");
     expect(proximoPaso({ ...TODO, propusoPacto: false, tieneTicket: false })?.href).toBe("/pactos");
     expect(proximoPaso({ ...TODO, quiereInvertir: true, tieneTicket: false })?.href).toBe("/pasaporte");
     expect(proximoPaso({ ...TODO, tieneTicket: false })?.href).toBe("/congreso");

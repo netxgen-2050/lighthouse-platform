@@ -45,8 +45,7 @@ test("el orden de la lista es el de la spec", () => {
 
 test("los grupos del menú y del menú de la persona salen de la lista única", () => {
   const etiquetas = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "es"));
-  // Participa se declara pero todavía no existe su página: no se muestra.
-  expect(etiquetas("principal")).toEqual(["Inicio", "Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
+  expect(etiquetas("principal")).toEqual(["Inicio", "Explorar", "Participa", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
   expect(etiquetas("persona")).toEqual(["Perfil", "Pasaporte", "Mi recorrido", "Configuración", "Mis datos"]);
   expect(etiquetas("interno")).toEqual(["NetX", "Admin"]);
   expect(etiquetas("pausa")).toEqual([]);
@@ -54,7 +53,7 @@ test("los grupos del menú y del menú de la persona salen de la lista única", 
 
 test("en inglés los destinos dicen lo que fija el glosario", () => {
   const ingles = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "en"));
-  expect(ingles("principal")).toEqual(["Home", "Explore", "Commons", "Invest", "Join", "My land"]);
+  expect(ingles("principal")).toEqual(["Home", "Explore", "Take part", "Commons", "Invest", "Join", "My land"]);
   expect(DESTINOS.find((d) => d.href === "/participa")).toBeDefined();
   expect(etiquetaDeDestino(DESTINOS.find((d) => d.href === "/participa")!, "en")).toBe("Take part");
   expect(ingles("persona")).toEqual(["Profile", "Passport", "My journey", "Settings", "My data"]);
@@ -89,7 +88,9 @@ test("destinoActivo: Inicio solo en la raíz, Explorar abarca sus secciones y la
   expect(clave("/lotes")).toBe("explorar");
   expect(clave("/territorios/lighthouse")).toBe("explorar");
   expect(clave("/barrios/norte")).toBe("explorar");
-  expect(clave("/tribus/valle")).toBeUndefined();
+  expect(clave("/participa")).toBe("participa");
+  expect(clave("/tribus/valle")).toBe("participa");
+  expect(clave("/tribus/lighthouse/manifiesto")).toBe("participa");
   expect(clave("/bien-comun")).toBe("biencomun");
   expect(clave("/sumarte")).toBe("sumarte");
   expect(clave("/fogon")).toBeUndefined();
@@ -100,16 +101,16 @@ test("destinoActivo: Inicio solo en la raíz, Explorar abarca sus secciones y la
 
 test("con `oculto` puesto el menú trae solo los principales; quitándolo, Compromisos vuelve después de los cinco", () => {
   const etiquetas = () => destinosDelMenu().map((d) => etiquetaDeDestino(d, "es"));
-  expect(etiquetas()).toEqual(["Inicio", "Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
+  expect(etiquetas()).toEqual(["Inicio", "Explorar", "Participa", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
   const compromisos = DESTINOS.find((d) => d.href === "/compromisos") as { oculto?: true };
   compromisos.oculto = undefined;
   try {
-    expect(etiquetas()).toEqual(["Inicio", "Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra", "Compromisos"]);
+    expect(etiquetas()).toEqual(["Inicio", "Explorar", "Participa", "Bien común", "Invertir", "Sumarte", "Mi tierra", "Compromisos"]);
     expect(destinoActivo("/compromisos")?.clave).toBe("compromisos");
   } finally {
     compromisos.oculto = true;
   }
-  expect(etiquetas()).toEqual(["Inicio", "Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
+  expect(etiquetas()).toEqual(["Inicio", "Explorar", "Participa", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
 });
 
 test("la subnavegación de Explorar ya no existe: no hay destinos de Territorio, Barrios, Lotes ni Comunidades", () => {

@@ -11,7 +11,7 @@ export default async function NoEncontrada() {
     <div lang={idioma} data-no-encontrada className="mx-auto max-w-3xl p-6 sm:p-10">
       <h1 className="text-3xl font-semibold">{t.noEncontrada.titulo}</h1>
       <p className="mt-2">
-        <Link className="underline" href="/tribus">{t.noEncontrada.volver}</Link>
+        <Link className="underline" href="/participa">{t.noEncontrada.volver}</Link>
       </p>
     </div>
   );

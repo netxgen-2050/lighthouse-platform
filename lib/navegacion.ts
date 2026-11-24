@@ -67,8 +67,15 @@ export const DESTINOS: readonly Destino[] = [
     existe: true,
     secciones: ["/explorar", "/territorios", "/barrios", "/lotes"],
   },
-  // Participa lo crea el cambio `participa-mapa-equipos`; hasta entonces no se muestra.
-  { href: "/participa", clave: "participa", icono: UsersRound, grupo: "principal", existe: false },
+  // Participa (participa-mapa-equipos): los equipos sobre el mapa ilustrado. `/tribus` redirige acá y las fichas `/tribus/[id]` lo marcan.
+  {
+    href: "/participa",
+    clave: "participa",
+    icono: UsersRound,
+    grupo: "principal",
+    existe: true,
+    secciones: ["/participa", "/tribus"],
+  },
   { href: "/bien-comun", clave: "biencomun", icono: Trees, grupo: "principal", existe: true },
   { href: "/invertir", clave: "invertir", icono: TrendingUp, grupo: "principal", existe: true },
   { href: "/sumarte", clave: "sumarte", icono: Sprout, grupo: "principal", existe: true },
