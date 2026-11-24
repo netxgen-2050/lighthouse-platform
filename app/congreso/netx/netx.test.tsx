@@ -122,7 +122,7 @@ describe("Territorio", () => {
     expect(html).toContain("~990 ha");
     expect(html).toContain('role="img"');
     expect(html).toContain('aria-label="Ilustración del valle');
-    expect(html).toContain('href="/territorios/lighthouse"');
+    expect(html).toContain('href="/explorar#territorio"');
     expect(html).toContain("Explorar el mapa en NetX");
     expect(html).not.toMatch(/<b>0<\/b>/);
   });

@@ -11,6 +11,7 @@ import { ChipEstado } from "@/components/ui/chip-estado";
 import { Indicador } from "@/components/ui/indicador";
 import { PanelVidrio } from "@/components/ui/panel-vidrio";
 import { SelloPrototipo } from "@/components/ui/sello-prototipo";
+import { NivelTitulos } from "@/components/ui/titulo";
 import { VitrinaTerritorio } from "@/app/territorios/[id]/vitrina-territorio";
 import { MarcaLoteo } from "@/app/territorios/[id]/vistas/lotes";
 import { ListaLotes } from "@/app/lotes/lista-lotes";
@@ -84,11 +85,13 @@ export default async function ExplorarPage() {
             <EstadoAdministrativo proyecto="lighthouse-norte" idioma={idioma} />
           </div>
           <PanelVidrio className="min-w-0">
-            <VitrinaTerritorio />
+            <NivelTitulos nivel={3}>
+              <VitrinaTerritorio />
+            </NivelTitulos>
           </PanelVidrio>
           {bienesComunes.length > 0 && (
             <PanelVidrio como="div" className="grid content-start gap-2">
-              <h3 className="text-lg font-semibold">{tt.bienesComunes}</h3>
+              <h3 className="text-xl font-bold">{tt.bienesComunes}</h3>
               <ul className="list-disc pl-5 text-sm">
                 {bienesComunes.map((b) => (
                   <li key={b}>{b}</li>
@@ -143,7 +146,9 @@ export default async function ExplorarPage() {
             </Link>
           </PanelVidrio>
 
-          <PanelObraBarrio lotesDelPlano={vista.lotesDelPlano} />
+          <NivelTitulos nivel={3}>
+            <PanelObraBarrio lotesDelPlano={vista.lotesDelPlano} />
+          </NivelTitulos>
         </section>
 
         {/* Lotes: la lista con enlace a cada ficha (lo que mostraba /lotes). */}
@@ -174,7 +179,9 @@ export default async function ExplorarPage() {
             </p>
           </PanelVidrio>
           <PanelVidrio>
-            <ListaLotes />
+            <NivelTitulos nivel={3}>
+              <ListaLotes />
+            </NivelTitulos>
           </PanelVidrio>
         </section>
       </div>

@@ -118,7 +118,7 @@ test.describe("sin sesión", () => {
 test.describe("con sesión", () => {
   test("el panel de la obra: monto, lo juntado sin dato, mes de devolución y lo que llega al común", async ({ page }) => {
     await page.goto(RUTA);
-    const panel = page.locator("section", { has: page.getByRole("heading", { level: 2, name: "La obra del barrio" }) }).last();
+    const panel = page.locator("section", { has: page.getByRole("heading", { level: 3, name: "La obra del barrio" }) }).last();
     await expect(panel).toContainText(usdEn(obra.infraestructura, "es"));
     await expect(panel.getByRole("meter")).toHaveCount(0);
     await expect(panel).toContainText("Lo juntado");

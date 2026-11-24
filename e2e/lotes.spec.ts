@@ -529,7 +529,7 @@ test.describe("los primeros 4 lotes", () => {
     await page.goto("/lotes");
     const enlaces = page.getByRole("region", { name: "Todos los lotes" }).getByRole("link");
     await expect(enlaces.first()).toContainText("Lote 535");
-    await expect(page.getByRole("heading", { level: 3, name: "Primeros 4 lotes" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 4, name: "Primeros 4 lotes" })).toBeVisible();
     const estado = page.getByRole("region", { name: "Estado administrativo · Primeros 4 lotes" });
     await expect(estado).toContainText("Titular: BioPueblo");
     await expect(estado).toContainText("Aprobación municipal: informada, sin documento a la vista");
@@ -559,7 +559,7 @@ test.describe("los primeros 4 lotes", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lote 535");
     await expect(page.getByRole("region", { name: /NFT del lote/ })).toHaveCount(0);
     await page.goto(`/territorios/lighthouse?sel=${primero.id}`);
-    await expect(page.getByRole("heading", { level: 2, name: "Lote 535" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 3, name: "Lote 535" })).toBeVisible();
     await expect(page.getByText(/FARO del lote/)).toHaveCount(0);
   });
 

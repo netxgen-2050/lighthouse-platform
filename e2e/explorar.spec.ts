@@ -69,6 +69,15 @@ test.describe("sin sesión", () => {
     await page.goto("/territorios/lighthouse?vista=ahora&sel=barrio-6");
     await expect(page).toHaveURL(/\/explorar\?vista=ahora&sel=barrio-6/);
     await expect(page.getByRole("button", { name: /Ahora/ })).toHaveAttribute("aria-pressed", "true");
+    // La selección llega: el barrio queda marcado en la lista y su ficha abre en el panel lateral (en la vista Visión hay barrios elegibles).
+    await page.goto("/territorios/lighthouse?vista=vision&sel=barrio-6");
+    await expect(page).toHaveURL(/\/explorar\?vista=vision&sel=barrio-6/);
+    await expect(page.getByRole("button", { name: /^Barrio 6/ })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByRole("complementary", { name: "Ficha del territorio" }).getByRole("heading", { level: 3 }).first()).toBeVisible();
+    // La fase también viaja en la redirección.
+    await page.goto("/territorios/lighthouse?fase=1");
+    await expect(page).toHaveURL(/\/explorar\?fase=1#territorio$/);
+    await expect(page.getByRole("radio", { name: /^Fase 1/ })).toBeChecked();
     await page.goto("/barrios/norte");
     await expect(page).toHaveURL(/\/explorar#barrio$/);
     await page.goto("/lotes");
@@ -106,7 +115,7 @@ test.describe("sin sesión", () => {
 test.describe("con sesión", () => {
   test("el panel de la obra aparece en /explorar#barrio", async ({ page }) => {
     await page.goto("/explorar#barrio");
-    await expect(page.getByRole("heading", { level: 2, name: "La obra del barrio" })).toBeVisible();
+    await expect(page.locator("#barrio").getByRole("heading", { level: 3, name: "La obra del barrio" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Sumate para ver la obra" })).toHaveCount(0);
   });
 });

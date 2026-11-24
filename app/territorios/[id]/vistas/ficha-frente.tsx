@@ -1,6 +1,7 @@
 "use client";
 
 import { SumarmeEquipo } from "@/components/sumarme-equipo";
+import { Titulo } from "@/components/ui/titulo";
 import { nombreDeEquipo } from "@/lib/equipos/equipos";
 import type { Frente } from "@/lib/equipos/frentes";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
@@ -19,7 +20,7 @@ export function FichaFrente({ frente }: { frente: Frente }) {
   return (
     <div className="grid gap-3">
       {n !== null && <p className="text-sm text-muted">{t.numero(n)}</p>}
-      <h2 className="text-xl font-semibold">{frente.nombre}</h2>
+      <Titulo className="text-xl font-bold">{frente.nombre}</Titulo>
       <p className={MARCA_EJEMPLO}>{t.ejemplo}</p>
       <p className="text-sm">
         <strong>{t.equipo}</strong> {equipo}
