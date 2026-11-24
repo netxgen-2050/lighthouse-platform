@@ -10,7 +10,7 @@ const ANCHO = 640;
 const ALTO = 320;
 const IZQ = 84;
 const DER = 16;
-const ARRIBA = 16;
+const ARRIBA = 32;
 const ABAJO = 44;
 
 /**
@@ -56,6 +56,9 @@ export function CurvaDevolucion({ curva }: { curva: PuntoCurva[] }) {
             </text>
           </g>
         ))}
+        <text x={IZQ - 8} y={12} textAnchor="end" className="fill-muted text-xs">
+          {t.ejeMonto}
+        </text>
         {marcasMes.map((m, i) => (
           <text key={`x${i}`} x={x(m)} y={ALTO - ABAJO + 18} textAnchor="middle" className="fill-muted font-mono text-[11px]">
             {enteroEn(m, idioma)}

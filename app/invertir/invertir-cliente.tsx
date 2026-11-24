@@ -83,8 +83,8 @@ export function InvertirCliente() {
               </p>
             </section>
 
-            <section aria-labelledby="inv-como" className="grid gap-3">
-              <h3 id="inv-como" className="text-xl font-bold">
+            <section aria-labelledby={`inv-${b.id}-como`} className="grid gap-3">
+              <h3 id={`inv-${b.id}-como`}className="text-xl font-bold">
                 {t.comoFunciona.titulo}
               </h3>
               <ul className="grid max-w-3xl list-disc gap-1 pl-5">
@@ -108,15 +108,15 @@ export function InvertirCliente() {
               </div>
             </section>
 
-            <section aria-labelledby="inv-curva" className="grid gap-3">
-              <h3 id="inv-curva" className="text-xl font-bold">
+            <section aria-labelledby={`inv-${b.id}-curva`} className="grid gap-3">
+              <h3 id={`inv-${b.id}-curva`}className="text-xl font-bold">
                 {t.curva.titulo}
               </h3>
               <CurvaDevolucion curva={b.curva} />
             </section>
 
-            <section aria-labelledby="inv-libro" className="grid gap-3">
-              <h3 id="inv-libro" className="text-xl font-bold">
+            <section aria-labelledby={`inv-${b.id}-libro`} className="grid gap-3">
+              <h3 id={`inv-${b.id}-libro`}className="text-xl font-bold">
                 {t.libro.titulo}
               </h3>
               <TablaLibro

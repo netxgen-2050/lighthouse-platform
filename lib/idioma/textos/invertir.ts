@@ -7,7 +7,6 @@ import { conVocabulario } from "../vocabulario";
 const es = {
   titulo: "Invertir",
   bajada: "Qué barrio se financia, cómo se devuelve la plata y qué parte va al común. Todo es de ejemplo.",
-  cargando: "Leyendo tu sesión…",
   sinSesion: {
     aviso: "Invertir se ve con una cuenta: acá aparecen los números del barrio en financiamiento.",
     entrar: "Sumate para ver el barrio",
@@ -57,10 +56,10 @@ const es = {
   },
   libro: {
     titulo: "Libro del barrio · caso de ejemplo",
-    nota: "Movimientos del fideicomiso por trimestre. El “mes N” cuenta desde la primera venta; no hay fechas de calendario.",
+    nota: "Movimientos por trimestre. La parte del común no pasa por el fideicomiso: sale directo de cada pago. El “mes N” cuenta desde la primera venta; no hay fechas de calendario.",
     mes: (mes: string) => `mes ${mes}`,
     motivos: {
-      cuotas: "Entran las cuotas de los lotes",
+      cuotas: "Entra al fideicomiso (su parte de las cuotas)",
       devolucion: "Se devuelve al inversor",
       comun: "Va al común",
     },
@@ -70,7 +69,6 @@ const es = {
 const en: Textos<typeof es> = {
   titulo: "Invest",
   bajada: "Which neighborhood is being financed, how the money is paid back and what share goes to the commons. Everything is sample data.",
-  cargando: "Reading your session…",
   sinSesion: {
     aviso: "Invest is seen with an account: the numbers of the neighborhood being financed appear here.",
     entrar: "Join to see the neighborhood",
@@ -120,10 +118,10 @@ const en: Textos<typeof es> = {
   },
   libro: {
     titulo: "Neighborhood ledger · sample case",
-    nota: "Trust movements by quarter. “Month N” counts from the first sale; there are no calendar dates.",
+    nota: "Movements by quarter. The commons share does not go through the trust: it comes straight out of each payment. “Month N” counts from the first sale; there are no calendar dates.",
     mes: (mes: string) => `month ${mes}`,
     motivos: {
-      cuotas: "Lot installments come in",
+      cuotas: "Enters the trust (its share of the installments)",
       devolucion: "Paid back to the investor",
       comun: "Goes to the commons",
     },
