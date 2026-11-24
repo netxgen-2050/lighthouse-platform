@@ -3,6 +3,7 @@
 import { TerminoLegal } from "@/components/termino-legal";
 import { EntrarPara } from "@/components/sesion/entrar-para";
 import { useSesion } from "@/components/sesion/contexto";
+import { Titulo } from "@/components/ui/titulo";
 import { BarraAvance } from "@/components/ui/barra-avance";
 import { Indicador } from "@/components/ui/indicador";
 import { PanelVidrio } from "@/components/ui/panel-vidrio";
@@ -26,7 +27,7 @@ export function PanelObraBarrio({ lotesDelPlano }: { lotesDelPlano: number }) {
   if (estado !== "ok") {
     return (
       <PanelVidrio como="section" className="grid content-start gap-3">
-        <h2 className="text-xl font-semibold">{t.sinSesion.titulo}</h2>
+        <Titulo className="text-xl font-bold">{t.sinSesion.titulo}</Titulo>
         <p className="text-sm">{t.sinSesion.aviso}</p>
         <EntrarPara texto={t.sinSesion.entrar} />
       </PanelVidrio>
@@ -41,7 +42,7 @@ export function PanelObraBarrio({ lotesDelPlano }: { lotesDelPlano: number }) {
 
   return (
     <PanelVidrio como="section" className="grid content-start gap-4">
-      <h2 className="text-xl font-semibold">{t.obra.titulo}</h2>
+      <Titulo className="text-xl font-bold">{t.obra.titulo}</Titulo>
       <p className="max-w-3xl text-sm">
         {t.obra.intro} <TerminoLegal clave="tokeninversor" idioma={idioma} />
       </p>
@@ -53,12 +54,12 @@ export function PanelObraBarrio({ lotesDelPlano }: { lotesDelPlano: number }) {
         />
       </div>
       <div className="grid gap-1 text-sm">
-        <h3 className="font-medium">{t.obra.devolucion}</h3>
+        <Titulo extra={1} className="font-semibold">{t.obra.devolucion}</Titulo>
         <p>{t.obra.devolucionTexto}</p>
         <p data-dato="mes">{mes}</p>
       </div>
       <div className="grid gap-2">
-        <h3 className="font-medium">{t.obra.comunTitulo}</h3>
+        <Titulo extra={1} className="font-semibold">{t.obra.comunTitulo}</Titulo>
         <div
           role="region"
           tabIndex={0}

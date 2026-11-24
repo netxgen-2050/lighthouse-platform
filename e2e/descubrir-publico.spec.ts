@@ -126,14 +126,14 @@ test.describe("navegación sin sesión", () => {
     await page.getByText(/Fincas disponibles de Soluna/).click();
     await page.getByRole("button", { name: /^Finca / }).first().click();
     const ficha = page.getByRole("complementary", { name: "Ficha del territorio" });
-    const titulo = await ficha.getByRole("heading", { level: 2 }).first().innerText();
+    const titulo = await ficha.getByRole("heading", { level: 3 }).first().innerText();
     await ficha.getByRole("link", { name: "Sumate para consultar por este lote" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
     await aceptarPaso(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
-    await expect(page).toHaveURL(/\/territorios\/lighthouse\?.*sel=/);
-    await expect(ficha.getByRole("heading", { level: 2, name: titulo })).toBeVisible();
+    await expect(page).toHaveURL(/\/explorar\?.*sel=/);
+    await expect(ficha.getByRole("heading", { level: 3, name: titulo })).toBeVisible();
     await expect(ficha.getByRole("button", { name: "Consultar por este lote", exact: true })).toBeVisible();
   });
 });

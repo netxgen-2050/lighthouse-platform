@@ -17,6 +17,8 @@ export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   /^\/tribus\/[^/]+\/manifiesto$/,
   /^\/tribus\/[^/]+\/postular$/,
   /^\/territorios\/[^/]+$/,
+  // Explorar: Territorio, Barrio Norte y Lotes (explorar-unificado).
+  /^\/explorar$/,
   // Lotes de Lighthouse VRN: la lista y la ficha (lote-ficha-y-compra).
   /^\/lotes$/,
   /^\/lotes\/[^/]+$/,

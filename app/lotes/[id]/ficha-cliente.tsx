@@ -399,7 +399,7 @@ export function FichaCliente({ id }: { id: string }) {
       </section>
 
       <p className="text-sm">
-        <Link className="underline" href={`/territorios/lighthouse?sel=${lote.id}`}>
+        <Link className="underline" href={`/explorar?sel=${lote.id}#territorio`}>
           {t.ficha.volverAlMapa}
         </Link>
       </p>

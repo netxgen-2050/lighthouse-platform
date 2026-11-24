@@ -230,9 +230,9 @@ test.describe("sin sesión", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Qué es tuyo y qué es de todos" })).toBeVisible();
   });
 
-  test("el rail marca Lotes", async ({ page }) => {
+  test("el rail marca Explorar", async ({ page }) => {
     await page.goto(RUTA);
-    await expect(page.getByRole("link", { name: "Lotes", exact: true })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Explorar", exact: true })).toHaveAttribute("aria-current", "page");
   });
 });
 

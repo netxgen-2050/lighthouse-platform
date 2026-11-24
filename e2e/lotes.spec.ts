@@ -54,16 +54,18 @@ test.describe("sin sesión", () => {
     expect(claves).toEqual([]);
   });
 
-  test("la lista se ve sin entrar y el rail marca Lotes", async ({ page }) => {
+  test("la lista se ve sin entrar (en Explorar) y el rail marca Explorar", async ({ page }) => {
     await page.goto("/lotes");
-    await expect(page.getByRole("heading", { level: 1, name: "Lotes de Lighthouse VRN" })).toBeVisible();
+    // `/lotes` redirige a la sección Lotes de Explorar.
+    await expect(page).toHaveURL(/\/explorar#lotes$/);
+    await expect(page.locator("#lotes").getByRole("heading", { level: 2, name: "Lotes", exact: true })).toBeVisible();
     await expect(page.getByText("Loteo provisorio, ilustrativo").first()).toBeVisible();
     await expect(page.getByRole("region", { name: "Estado administrativo · Lighthouse VRN" })).toContainText(
       "supuesto de trabajo, no otorgada",
     );
     await expect(page.getByRole("region", { name: "Todos los lotes" }).getByRole("link")).toHaveCount(listarLotes().length);
     await page.goto(`/lotes/${lote.id}`);
-    await expect(page.getByRole("link", { name: "Lotes", exact: true })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Explorar", exact: true })).toHaveAttribute("aria-current", "page");
   });
 });
 
@@ -527,7 +529,7 @@ test.describe("los primeros 4 lotes", () => {
     await page.goto("/lotes");
     const enlaces = page.getByRole("region", { name: "Todos los lotes" }).getByRole("link");
     await expect(enlaces.first()).toContainText("Lote 535");
-    await expect(page.getByRole("heading", { level: 3, name: "Primeros 4 lotes" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 4, name: "Primeros 4 lotes" })).toBeVisible();
     const estado = page.getByRole("region", { name: "Estado administrativo · Primeros 4 lotes" });
     await expect(estado).toContainText("Titular: BioPueblo");
     await expect(estado).toContainText("Aprobación municipal: informada, sin documento a la vista");
@@ -557,7 +559,7 @@ test.describe("los primeros 4 lotes", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lote 535");
     await expect(page.getByRole("region", { name: /NFT del lote/ })).toHaveCount(0);
     await page.goto(`/territorios/lighthouse?sel=${primero.id}`);
-    await expect(page.getByRole("heading", { level: 2, name: "Lote 535" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 3, name: "Lote 535" })).toBeVisible();
     await expect(page.getByText(/FARO del lote/)).toHaveCount(0);
   });
 

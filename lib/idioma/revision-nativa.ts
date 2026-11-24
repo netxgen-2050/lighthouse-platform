@@ -33,6 +33,10 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Barrio Norte (/barrios/norte): lotes por estado, lo que va al bien común y el panel de la obra del barrio (solo con sesión)",
   },
+  "textos/explorar": {
+    estado: "pendiente",
+    que: "Explorar (/explorar): título del héroe, barra de secciones y apertura de Territorio, Barrio Norte y Lotes",
+  },
   "textos/invertir": {
     estado: "pendiente",
     que: "Invertir (/invertir): sellos, indicadores del barrio en financiamiento, curva de devolución y libro del barrio (solo con sesión)",

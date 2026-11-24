@@ -1,15 +1,13 @@
 import {
   BarChart3,
-  Building2,
   CalendarDays,
   Compass,
   FileSignature,
   Flame,
   Handshake,
+  House,
   IdCard,
-  LandPlot,
   Leaf,
-  Map as MapaIcono,
   Mountain,
   Settings,
   ShieldCheck,
@@ -19,7 +17,7 @@ import {
   Trees,
   UserCog,
   UserRound,
-  Users,
+  UsersRound,
   type LucideIcon,
 } from "lucide-react";
 import { marco } from "@/lib/idioma/textos/marco";
@@ -27,10 +25,10 @@ import type { Idioma } from "@/lib/idioma/tipos";
 import { itemActivo } from "@/lib/ruta-activa";
 
 /**
- * "principal": los cinco destinos del menú. "explorar": la subnavegación de Explorar. "persona": menú del avatar.
+ * "principal": los destinos del menú. "persona": menú del avatar.
  * "interno": NetX (barra superior) y Admin (rail). "pausa": módulos en pausa de la fase 1, fuera de todo menú.
  */
-export type IdGrupo = "principal" | "explorar" | "persona" | "interno" | "pausa";
+export type IdGrupo = "principal" | "persona" | "interno" | "pausa";
 
 /** Clave del nombre de un destino en el diccionario del marco (`destinos`); el nombre sale del glosario. */
 export type ClaveDestino = keyof typeof marco.es.destinos;
@@ -60,22 +58,21 @@ export type Destino = {
 // falla si `existe` no coincide con las páginas reales de app/.
 // Invertir, Mi tierra y Barrios aparecen solos cuando el cambio que crea su página pone `existe: true`.
 export const DESTINOS: readonly Destino[] = [
+  { href: "/", clave: "inicio", icono: House, grupo: "principal", existe: true },
   {
-    href: "/",
+    href: "/explorar",
     clave: "explorar",
     icono: Telescope,
     grupo: "principal",
     existe: true,
-    secciones: ["/territorios", "/barrios", "/lotes", "/tribus"],
+    secciones: ["/explorar", "/territorios", "/barrios", "/lotes"],
   },
+  // Participa lo crea el cambio `participa-mapa-equipos`; hasta entonces no se muestra.
+  { href: "/participa", clave: "participa", icono: UsersRound, grupo: "principal", existe: false },
   { href: "/bien-comun", clave: "biencomun", icono: Trees, grupo: "principal", existe: true },
   { href: "/invertir", clave: "invertir", icono: TrendingUp, grupo: "principal", existe: true },
   { href: "/sumarte", clave: "sumarte", icono: Sprout, grupo: "principal", existe: true },
   { href: "/mi-tierra", clave: "miTierra", icono: Mountain, grupo: "principal", existe: true },
-  { href: "/territorios/lighthouse", clave: "territorio", icono: MapaIcono, grupo: "explorar", existe: true },
-  { href: "/barrios/norte", clave: "barrios", icono: Building2, grupo: "explorar", existe: true },
-  { href: "/lotes", clave: "lotes", icono: LandPlot, grupo: "explorar", existe: true },
-  { href: "/tribus", clave: "comunidades", icono: Users, grupo: "explorar", existe: true },
   { href: "/pactos", clave: "pactos", icono: FileSignature, grupo: "pausa", existe: true, oculto: true },
   { href: "/semillas", clave: "semillas", icono: Leaf, grupo: "pausa", existe: true, oculto: true },
   { href: "/fogon", clave: "fogon", icono: Flame, grupo: "pausa", existe: true, oculto: true },

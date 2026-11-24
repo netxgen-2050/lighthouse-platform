@@ -77,7 +77,7 @@ test("Comunidades: título en voseo, N de M van en texto, ejemplo y enlace a /tr
   await expect(tribus.getByRole("link", { name: "Encontrar mi comunidad" })).toHaveAttribute("href", "/tribus");
   await expect(page.locator("#territorio").getByRole("link", { name: "Explorar el mapa en NetX" })).toHaveAttribute(
     "href",
-    "/territorios/lighthouse",
+    "/explorar#territorio",
   );
 });
 

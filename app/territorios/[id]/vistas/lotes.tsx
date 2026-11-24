@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { EstadoAdministrativo } from "@/components/estado-administrativo";
 import { EstadoDeUnLote } from "@/components/lotes/estado-del-lote";
+import { Titulo } from "@/components/ui/titulo";
 import { TerminoLegal } from "@/components/termino-legal";
 import { usdEn } from "@/lib/lotes/formato";
 import { precioLote } from "@/lib/lotes/modelo";
@@ -62,7 +63,7 @@ export function FichaLote({ id }: { id: string }) {
   return (
     <div className="grid gap-3">
       <p className="text-sm text-muted" translate="no">Lighthouse VRN</p>
-      <h2 className="text-xl font-semibold">{tx.loteo.lote(lote.numero)}</h2>
+      <Titulo className="text-xl font-bold">{tx.loteo.lote(lote.numero)}</Titulo>
       <p className="text-sm">
         <strong>{tx.ficha.superficie}</strong> {textoSuperficieM2(lote.superficieM2, idioma)}
       </p>
@@ -100,7 +101,7 @@ export function PanelLotes() {
   const t = tx.loteo;
   return (
     <div className="grid gap-3">
-      <h2 className="text-xl font-semibold">{t.panelTitulo}</h2>
+      <Titulo className="text-xl font-bold">{t.panelTitulo}</Titulo>
       <MarcaLoteo conFuente />
       {resumenDePrimeros(idioma) && <p className="text-sm font-medium">{resumenDePrimeros(idioma)}</p>}
       <p className="text-sm">{resumenDelLoteo(idioma)}</p>

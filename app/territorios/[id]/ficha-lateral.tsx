@@ -22,6 +22,7 @@ import { TEXTO_COMUN, descripcionDeLugar, esNombrePropioDeLugar, nombreDeLugar }
 import { listarTribus, rutaProponerComunidad } from "@/lib/tribus/datos";
 import { textoDeEstado } from "@/lib/tribus/tipos";
 import { EnEspanol } from "@/components/en-espanol";
+import { Titulo } from "@/components/ui/titulo";
 import { TextoBilingue } from "@/components/texto-bilingue";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { sinDato } from "@/lib/idioma/formatos";
@@ -108,9 +109,9 @@ export function FichaLateral({ seleccion, consultas, alConsultar, vista, fase, f
           <SelloTribu iniciales={tribu.iniciales} estado={tribu.estado} />
           <div>
             <p className="text-sm text-muted">{tx.elegir.barrio(el.barrio)}</p>
-            <h2 className="text-xl font-semibold">
+            <Titulo className="text-xl font-bold">
               {vacante ? t.barrioBuscaTribu(el.barrio) : <span translate="no">{tribu.nombre}</span>}
-            </h2>
+            </Titulo>
           </div>
         </div>
         <p>{tribu.foco}</p>
@@ -145,7 +146,7 @@ export function FichaLateral({ seleccion, consultas, alConsultar, vista, fase, f
   if (el?.tipo === "comun") {
     return (
       <div className="grid gap-3">
-        <h2 className="text-xl font-semibold">{idioma === "en" ? tx.marcador.comun : el.nombre}</h2>
+        <Titulo className="text-xl font-bold">{idioma === "en" ? tx.marcador.comun : el.nombre}</Titulo>
         <p className="text-sm">
           <strong>{t.superficie}</strong> {textoHectareas(el.areaHa, idioma)}
         </p>
@@ -167,9 +168,9 @@ export function FichaLateral({ seleccion, consultas, alConsultar, vista, fase, f
     return (
       <div className="grid gap-3">
         <p className="text-sm text-muted" translate="no">Chacras de Soluna</p>
-        <h2 className="text-xl font-semibold">
+        <Titulo className="text-xl font-bold">
           {tx.elegir.finca(el.numero === undefined ? tx.elegir.sinNumero : String(el.numero))}
-        </h2>
+        </Titulo>
         <p className="text-sm">
           <strong>{t.superficie}</strong> {textoSuperficieM2(el.superficieM2, idioma)}
         </p>
@@ -201,11 +202,11 @@ export function FichaLateral({ seleccion, consultas, alConsultar, vista, fase, f
     return (
       <div className="grid gap-3">
         <p className="text-sm text-muted">{tx.leyenda.lugar}</p>
-        <h2 className="text-xl font-semibold">
+        <Titulo className="text-xl font-bold">
           <span translate={esNombrePropioDeLugar(el.id) ? "no" : undefined}>
             {nombreDeLugar(el.id, el.nombre, idioma)}
           </span>
-        </h2>
+        </Titulo>
         <p className="text-sm">{descripcionDeLugar(el.id, idioma)}</p>
       </div>
     );
