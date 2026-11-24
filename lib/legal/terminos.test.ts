@@ -73,6 +73,7 @@ describe("catálogo legal", () => {
         "membresia",
         "noesinversion",
         "noesoferta",
+        "nooferta",
         "notasverdes",
         "obra",
         "ordenanza173",
