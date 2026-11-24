@@ -190,14 +190,15 @@ test.describe("Líder de comunidad", () => {
     await expect(page.getByText("Admin de Valle Solar")).toHaveCount(0);
   });
 
-  test("proponer una comunidad nueva lleva a los barrios vacantes", async ({ page }) => {
+  test("proponer una comunidad nueva lleva a la pestaña Visión de Participa", async ({ page }) => {
     await page.goto("/sumarte");
     await page.getByRole("button", { name: "Sumar mi comunidad" }).click();
     await page.getByRole("radio", { name: "Proponer una comunidad nueva" }).check();
     await page.getByRole("button", { name: "Ser líder de esta comunidad" }).click();
     await expect(page).toHaveURL(/\/participa\?ver=vision#sec-vacantes$/);
     await expect(page.getByRole("heading", { level: 1, name: "Participa" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "Barrios vacantes" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Visión" })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("heading", { level: 2, name: "Lighthouse 2050" })).toBeVisible();
   });
 
   test("bajar a Miembro quita la marca de admin", async ({ page }) => {

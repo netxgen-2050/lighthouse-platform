@@ -3,7 +3,7 @@ import Link from "next/link";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
 import { MapaEquipos } from "@/components/participa/mapa-equipos";
 import type { EquipoVista, FrenteVista } from "@/components/participa/tipos";
-import { VisionComunidades } from "@/components/participa/vision";
+import { Vision2050 } from "@/components/participa/vision-2050";
 import { listarEquipos } from "@/lib/equipos/equipos";
 import type { Frente } from "@/lib/equipos/frentes";
 import { idCortoDeEquipo, posicionesDe } from "@/lib/equipos/posiciones";
@@ -14,7 +14,8 @@ import { nombreDelComun } from "@/lib/manifiestos/lighthouse-vrn";
 import { esDeHoy } from "@/lib/territorios/vistas";
 
 // Participa (spec participa-mapa-equipos): los equipos del común sobre un mapa ilustrado del territorio, con el detalle de cada
-// equipo y sus posiciones abiertas de ejemplo. Pública y bilingüe. La pestaña Visión muestra por ahora las comunidades de ejemplo.
+// equipo y sus posiciones abiertas de ejemplo. Pública y bilingüe. La pestaña Visión es el manifiesto "Lighthouse 2050"
+// (spec participa-vision).
 export async function generateMetadata(): Promise<Metadata> {
   return { title: textos("participa", await idiomaDelPedido()).titulo };
 }
@@ -94,7 +95,7 @@ export default async function ParticipaPage({ searchParams }: Props) {
       </nav>
 
       {vision ? (
-        <VisionComunidades idioma={idioma} />
+        <Vision2050 idioma={idioma} />
       ) : (
         <section aria-labelledby="sec-equipos" className="mt-6 grid gap-4">
           <div>

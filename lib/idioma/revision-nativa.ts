@@ -41,6 +41,10 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Participa (/participa): mapa ilustrado de equipos, lista, detalle del equipo con sus posiciones abiertas y pestaña Visión",
   },
+  "lib/idioma/textos/vision-2050.ts": {
+    estado: "pendiente",
+    que: "Manifiesto Lighthouse 2050 de la pestaña Visión de Participa (postal, de dónde venimos, lo que creemos, lo que pedimos), traducido del español; es la voz del proyecto, a revisar también con Gus",
+  },
   "lib/equipos/posiciones.ts": {
     estado: "pendiente",
     que: "Posiciones abiertas de ejemplo de cada equipo del común (título, dedicación y qué se busca), con su inglés",
@@ -258,6 +262,7 @@ export function fuentesObligatorias(): string[] {
     "lib/fogon/consultas/ejemplo.ts",
     "lib/compromisos/mercado.ts",
     "lib/economia/terminos.ts",
+    "lib/idioma/textos/vision-2050.ts",
   ];
 }
 

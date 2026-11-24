@@ -1,50 +1,9 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "./fixtura";
-import { listarTribus, rutaProponerComunidad } from "@/lib/tribus/datos";
+import { listarTribus } from "@/lib/tribus/datos";
 
-test("listado: 12 tarjetas en orden con estado escrito", async ({ page }) => {
-  await page.goto("/tribus?ver=tribus");
-  const links = page.locator("main ul > li > a[href^='/tribus/']:not([aria-label])");
-  await expect(links).toHaveCount(12);
-  await expect(links.first()).toContainText("Barrio 1");
-  await expect(links.last()).toContainText("Barrio 12");
-  await expect(links.first()).toHaveAttribute("href", "/tribus/semilla");
-  await expect(page.getByText("Estado: Activa").first()).toBeVisible();
-  await expect(page.getByText("Estado: En formación").first()).toBeVisible();
-  await expect(page.getByText("Estado: Busca comunidad").first()).toBeVisible();
-  await expect(page.getByText("Comunidades, personas y cifras de ejemplo.")).toBeVisible();
-});
-
-test("listado: tres secciones con 3, 5 y 4 tarjetas", async ({ page }) => {
-  await page.goto("/tribus?ver=tribus");
-  const secciones = [
-    ["Comunidades activas", "Ya tienen un compromiso con el Lighthouse y están construyendo su barrio.", 3],
-    ["En formación", "Se están organizando para postularse a un barrio del Lighthouse.", 5],
-    ["Barrios vacantes", "Buscan una comunidad. ¿Tenés una?", 4],
-  ] as const;
-  for (const [titulo, texto, n] of secciones) {
-    const sec = page.locator("main section").filter({ has: page.getByRole("heading", { name: titulo, level: 2 }) });
-    await expect(sec.getByText(texto)).toBeVisible();
-    await expect(sec.locator("ul > li")).toHaveCount(n);
-  }
-});
-
-test("listado: tarjetas distintas por estado", async ({ page }) => {
-  await page.goto("/tribus?ver=tribus");
-  const tarjeta = (href: string) => page.locator(`main ul > li:has(a[href='${href}'])`).first();
-  const monte = tarjeta("/tribus/monte");
-  await expect(monte).toContainText("Etapa: Armando su propuesta");
-  await expect(monte).toContainText("Roles que busca: Bioconstrucción, Maquinaria");
-  await expect(monte).not.toContainText("pozo común");
-  const valle = tarjeta("/tribus/valle");
-  await expect(valle).toContainText("Aporta al pozo común");
-  await expect(valle).toContainText("hogares");
-  const grano = tarjeta("/tribus/grano");
-  await expect(grano).toContainText("El barrio necesita: Agricultura extensiva, Animales, Molienda");
-  await expect(grano.getByRole("link", { name: /Proponer una comunidad/ })).toHaveAttribute("href", rutaProponerComunidad("grano"));
-  await grano.getByRole("link", { name: /Proponer una comunidad/ }).click();
-  await expect(page).toHaveURL(/\/tribus\/grano\/postular$/);
-});
+// El listado de las 12 comunidades de ejemplo salió de la pestaña Visión de Participa (spec participa-vision-2050):
+// las fichas siguen en su URL (/tribus/[id]) y se prueban acá abajo.
 
 test("monte: aviso de comunidad en formación; valle no lo tiene", async ({ page }) => {
   await page.goto("/tribus/monte");
@@ -273,13 +232,6 @@ test.describe("⚖ como tooltip, en celular", () => {
     await page.getByRole("heading", { name: "Valle Solar" }).tap();
     await expect(page.getByRole("tooltip")).toHaveCount(0);
   });
-});
-
-test("el listado sigue sin plata ni avales en pantalla", async ({ page }) => {
-  await page.goto("/tribus?ver=tribus");
-  const texto = await page.locator("body").innerText();
-  expect(texto).not.toMatch(/USD/);
-  expect(texto.toLowerCase()).not.toContain("avales");
 });
 
 test.describe("ficha completa", () => {
