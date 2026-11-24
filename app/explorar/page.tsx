@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { TerminoLegal } from "@/components/termino-legal";
+import { AvisoEjemplo } from "@/components/aviso-ejemplo";
 import { EnEspanol } from "@/components/en-espanol";
 import { EstadoAdministrativo } from "@/components/estado-administrativo";
 import { BarraSecciones } from "@/components/explorar/barra-secciones";
@@ -19,7 +20,7 @@ import { idiomaDelPedido } from "@/lib/idioma/servidor";
 import { textos } from "@/lib/idioma/textos";
 import { porcentajeEn, usdEn } from "@/lib/lotes/formato";
 import { resumenDePrimeros, resumenDelLoteo } from "@/lib/territorios/loteo-textos";
-import { buscarTerritorio } from "@/lib/territorios/datos";
+import { buscarTerritorio, textoSuperficie } from "@/lib/territorios/datos";
 import { territorioEn } from "@/lib/territorios/textos";
 
 // Explorar (spec explorar-unificado): Territorio, Barrio Norte y Lotes en una sola página, con el diseño de Barrio Norte
@@ -41,7 +42,8 @@ export default async function ExplorarPage() {
   const tt = textos("territorio", idioma);
   const vista = vistaBarrioNorte();
   const base = buscarTerritorio("lighthouse");
-  const bienesComunes = base ? territorioEn(base, idioma).bienesComunes : [];
+  const territorio = base ? territorioEn(base, idioma) : null;
+  const bienesComunes = territorio?.bienesComunes ?? [];
 
   return (
     <div className="min-h-full">
@@ -63,6 +65,16 @@ export default async function ExplorarPage() {
             {t.territorio.titulo}
           </h2>
           <p className="max-w-3xl text-sm">{t.territorio.intro}</p>
+          {territorio && (
+            <div className="grid max-w-3xl gap-1 text-sm">
+              <p className="text-muted">{territorio.ubicacion}</p>
+              <p>{territorio.descripcion}</p>
+              <p>
+                <strong>{tt.superficie}</strong> {textoSuperficie(territorio, idioma)}
+              </p>
+            </div>
+          )}
+          <AvisoEjemplo />
           <div className="grid gap-1">
             {/* El estado administrativo (Ord. 173) tiene peso legal: sigue en español, marcado, hasta `idioma-legal`. */}
             <EnEspanol>
@@ -93,8 +105,10 @@ export default async function ExplorarPage() {
           </h2>
           <p className="max-w-3xl text-sm">{t.barrio.intro}</p>
 
-          <div className="grid gap-3">
-            <h3 className="text-xl font-bold">{tb.lotes.titulo}</h3>
+          <section aria-labelledby="lotes-del-barrio" className="grid gap-3">
+            <h3 id="lotes-del-barrio" className="text-xl font-bold">
+              {tb.lotes.titulo}
+            </h3>
             <p className="max-w-3xl text-sm">{tb.lotes.intro}</p>
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {ESTADOS_BARRIO.map((estado) => {
@@ -111,7 +125,7 @@ export default async function ExplorarPage() {
             <a href="#lotes" className={ENLACE}>
               {tb.lotes.ver}
             </a>
-          </div>
+          </section>
 
           <PanelVidrio como="div" className="grid content-start gap-3">
             <h3 className="text-xl font-bold">{tb.comun.titulo}</h3>
@@ -148,6 +162,14 @@ export default async function ExplorarPage() {
                 href="/lotes/hibrido"
               >
                 {tl.lista.hibrido}
+              </Link>
+            </p>
+            <p className="text-sm">
+              <Link
+                className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+                href="/bien-comun"
+              >
+                {textos("biencomun", idioma).enlace}
               </Link>
             </p>
           </PanelVidrio>

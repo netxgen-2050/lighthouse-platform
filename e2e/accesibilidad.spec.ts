@@ -28,16 +28,14 @@ const rutas = [
   ...listarTribus().map((t) => `/tribus/${t.id}`),
   "/tribus/lighthouse",
   "/tribus/lighthouse/manifiesto",
-  "/territorios/lighthouse",
-  "/territorios/lighthouse?vista=lotes",
-  "/territorios/lighthouse?vista=ahora",
-  "/territorios/lighthouse?vista=plan",
-  "/territorios/lighthouse?vista=vision",
-  "/lotes",
+  "/explorar",
+  "/explorar?vista=lotes",
+  "/explorar?vista=ahora",
+  "/explorar?vista=plan",
+  "/explorar?vista=vision",
   "/lotes/lote-1",
   "/lotes/hibrido",
   "/bien-comun",
-  "/barrios/norte",
   "/mi-tierra",
   "/congreso",
   "/congreso/en",
@@ -60,7 +58,7 @@ for (const idioma of ["es", "en"] as const) {
     test(`axe sin violaciones serias o críticas: menú del celular cerrado y abierto, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
       await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
       await page.setViewportSize({ width: 390, height: 844 });
-      await page.goto("/lotes");
+      await page.goto("/explorar");
       await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
       const boton = page.getByRole("button", { name: idioma === "es" ? "Menú" : "Menu", exact: true });
       await expect(boton).toBeVisible();
@@ -73,7 +71,7 @@ for (const idioma of ["es", "en"] as const) {
 }
 
 test("hay 48 rutas auditadas", () => {
-  expect(rutas).toHaveLength(48);
+  expect(rutas).toHaveLength(46);
 });
 
 // Invertir (rediseno-invertir), con sesión y con la tabla de la curva abierta: en los dos idiomas y los dos temas.
@@ -127,8 +125,8 @@ for (const idioma of ["es", "en"] as const) {
   }
 }
 
-// Inicio y Barrio Norte (rediseno-explorar-valle): en los dos idiomas y los dos temas.
-for (const ruta of ["/", "/barrios/norte"]) {
+// Inicio y Explorar (rediseno-explorar-valle, explorar-unificado): en los dos idiomas y los dos temas.
+for (const ruta of ["/", "/explorar"]) {
   for (const idioma of ["es", "en"] as const) {
     for (const tema of ["oscuro", "claro"] as const) {
       test(`axe sin violaciones serias o críticas: ${ruta}, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {

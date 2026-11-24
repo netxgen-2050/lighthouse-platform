@@ -6,8 +6,8 @@ import { tribusDeTerritorio } from "@/lib/territorios/datos";
 test.use({ plan: "ninguno" });
 
 const CAMINOS = [
-  { titulo: "Ver los lotes", href: "/lotes" },
-  { titulo: "Explorar el territorio", href: "/territorios/lighthouse" },
+  { titulo: "Ver los lotes", href: "/explorar#lotes" },
+  { titulo: "Explorar el territorio", href: "/explorar#territorio" },
   { titulo: "Ver las comunidades", href: "/tribus" },
 ];
 
@@ -21,7 +21,7 @@ test("muestra los tres caminos en orden, con titular y botón", async ({ page })
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Regenerar desde el agua");
   const principal = page.getByRole("link", { name: "Ver los lotes", exact: true }).first();
   await expect(principal).toBeVisible();
-  await expect(principal).toHaveAttribute("href", "/lotes");
+  await expect(principal).toHaveAttribute("href", "/explorar#lotes");
   await expect(page.getByRole("heading", { level: 2, name: "Por dónde empezar" })).toBeVisible();
   const seccion = page.getByRole("region", { name: "Por dónde empezar" });
   const titulos = await seccion.getByRole("heading", { level: 3 }).allTextContents();
@@ -38,7 +38,7 @@ for (const camino of CAMINOS) {
     await enlace.click();
     await expect(page).toHaveURL(new RegExp(`${camino.href}$`));
     // La navegación del cliente no expone el estado: se pide la ruta aparte y se mira que no sea la not-found.
-    const respuesta = await page.request.get(camino.href);
+    const respuesta = await page.request.get(camino.href.split("#")[0]);
     expect(respuesta.status()).toBe(200);
   });
 }
@@ -67,7 +67,7 @@ test("las tarjetas se recorren con Tab y Enter en la segunda lleva al territorio
   await page.keyboard.press("Tab");
   await expect(enlaces.nth(1)).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/territorios\/lighthouse$/);
+  await expect(page).toHaveURL(/\/explorar#territorio$/);
 });
 
 test("'Ver los lotes' del héroe se alcanza con el teclado y lleva a /lotes", async ({ page }) => {
@@ -79,7 +79,7 @@ test("'Ver los lotes' del héroe se alcanza con el teclado y lleva a /lotes", as
   }
   await expect(principal).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/lotes$/);
+  await expect(page).toHaveURL(/\/explorar#lotes$/);
 });
 
 test("narrativa: promesa a 2030, Argentina con su ⚖ y los cinco capitales", async ({ page }) => {
@@ -160,7 +160,7 @@ test("camino recomendado: el nombre accesible del enlace incluye la marca y reci
   await page.goto("/?camino=territorio");
   const enlace = page.getByRole("region", { name: "Por dónde empezar" }).getByRole("link", { name: /Recomendado para vos/ });
   await expect(enlace).toHaveCount(1);
-  await expect(enlace).toHaveAttribute("href", "/territorios/lighthouse");
+  await expect(enlace).toHaveAttribute("href", "/explorar#territorio");
   await enlace.focus();
   await expect(enlace).toBeFocused();
 });

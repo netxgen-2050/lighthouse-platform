@@ -7,7 +7,7 @@ import { porcentajeEn, usdEn } from "@/lib/lotes/formato";
 // Barrio Norte (rediseno-explorar-valle): los valores que se esperan salen de los módulos, nunca escritos a mano.
 const vista = vistaBarrioNorte();
 const obra = resumenObraBarrio();
-const RUTA = "/barrios/norte";
+const RUTA = "/explorar";
 
 const main = (page: Page) => page.locator("main");
 
@@ -17,7 +17,7 @@ test.describe("sin sesión", () => {
   test("título sobre la foto, sello de venta, totales por estado con texto y aviso para entrar", async ({ page }) => {
     const r = await page.goto(RUTA);
     expect(r?.status()).toBe(200);
-    await expect(page.getByRole("heading", { level: 1, name: "Barrio Norte" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Explorar Lighthouse" })).toBeVisible();
     await expect(page.locator("main")).toHaveCount(1);
     await expect(page.getByText("Prototipo interno · datos de ejemplo")).toBeVisible();
     await expect(page.getByText("venta simulada · aprobación municipal pendiente")).toBeVisible();
@@ -36,7 +36,7 @@ test.describe("sin sesión", () => {
       const n = vista.lotesPorEstado[clave];
       await expect(item).toContainText(n === null ? "sin dato" : enteroEn(n, "es"));
     }
-    await expect(seccion.getByRole("link", { name: "Ver los lotes" })).toHaveAttribute("href", "/lotes");
+    await expect(seccion.getByRole("link", { name: "Ver los lotes" })).toHaveAttribute("href", "#lotes");
     // Bien común: parte de cada pago y expensa, con el enlace.
     await expect(main(page)).toContainText(porcentajeEn(vista.parteParaElComun, "es"));
     await expect(main(page)).toContainText(usdEn(vista.expensa, "es"));
@@ -95,7 +95,7 @@ test.describe("sin sesión", () => {
   test("a 390 px no hay scroll horizontal y los botones tocan 44 px", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(RUTA);
-    await expect(page.getByRole("heading", { level: 1, name: "Barrio Norte" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Explorar Lighthouse" })).toBeVisible();
     const sobra = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(sobra).toBeLessThanOrEqual(0);
     for (const nombre of ["Ver los lotes", "Ver el bien común"]) {
@@ -107,7 +107,7 @@ test.describe("sin sesión", () => {
   test("en inglés se ve en inglés", async ({ page, context, baseURL }) => {
     await context.addCookies([{ name: "lh-idioma", value: "en", url: baseURL! }]);
     await page.goto(RUTA);
-    await expect(page.getByRole("heading", { level: 1, name: "Barrio Norte" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Explore Lighthouse" })).toBeVisible();
     await expect(page.getByText("simulated sale · municipal approval pending")).toBeVisible();
     await expect(page.getByRole("region", { name: "The lots of the neighborhood" })).toContainText("Available");
     await expect(page.getByRole("link", { name: "See the commons" })).toBeVisible();
@@ -118,7 +118,7 @@ test.describe("sin sesión", () => {
 test.describe("con sesión", () => {
   test("el panel de la obra: monto, lo juntado sin dato, mes de devolución y lo que llega al común", async ({ page }) => {
     await page.goto(RUTA);
-    const panel = page.locator("section", { has: page.getByRole("heading", { level: 2, name: "La obra del barrio" }) });
+    const panel = page.locator("section", { has: page.getByRole("heading", { level: 2, name: "La obra del barrio" }) }).last();
     await expect(panel).toContainText(usdEn(obra.infraestructura, "es"));
     await expect(panel.getByRole("meter")).toHaveCount(0);
     await expect(panel).toContainText("Lo juntado");

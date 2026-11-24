@@ -54,16 +54,18 @@ test.describe("sin sesión", () => {
     expect(claves).toEqual([]);
   });
 
-  test("la lista se ve sin entrar y el rail marca Lotes", async ({ page }) => {
+  test("la lista se ve sin entrar (en Explorar) y el rail marca Explorar", async ({ page }) => {
     await page.goto("/lotes");
-    await expect(page.getByRole("heading", { level: 1, name: "Lotes de Lighthouse VRN" })).toBeVisible();
+    // `/lotes` redirige a la sección Lotes de Explorar.
+    await expect(page).toHaveURL(/\/explorar#lotes$/);
+    await expect(page.locator("#lotes").getByRole("heading", { level: 2, name: "Lotes", exact: true })).toBeVisible();
     await expect(page.getByText("Loteo provisorio, ilustrativo").first()).toBeVisible();
     await expect(page.getByRole("region", { name: "Estado administrativo · Lighthouse VRN" })).toContainText(
       "supuesto de trabajo, no otorgada",
     );
     await expect(page.getByRole("region", { name: "Todos los lotes" }).getByRole("link")).toHaveCount(listarLotes().length);
     await page.goto(`/lotes/${lote.id}`);
-    await expect(page.getByRole("link", { name: "Lotes", exact: true })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Explorar", exact: true })).toHaveAttribute("aria-current", "page");
   });
 });
 

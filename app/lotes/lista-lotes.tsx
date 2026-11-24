@@ -15,8 +15,9 @@ export function ListaLotes() {
   const tl = useTextos("territorio").loteo;
   const { compras } = useCompras();
   return (
-    <section aria-labelledby="lista-lotes-titulo" className="mt-4 grid gap-2">
-      <h2 id="lista-lotes-titulo" className="text-lg font-semibold">
+    // El id es propio: en `/explorar` conviven con la lista del mapa (`lista-lotes-titulo`) y un id repetido rompería el nombre de la región.
+    <section aria-labelledby="titulo-todos-los-lotes" className="mt-4 grid gap-2">
+      <h2 id="titulo-todos-los-lotes" className="text-lg font-semibold">
         {t.lista.listaTitulo}
       </h2>
       {(["primeros", "norte"] as GrupoLote[]).map((grupo) => (

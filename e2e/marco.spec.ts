@@ -1,20 +1,21 @@
 import { expect, test } from "./fixtura";
 
-test("en la portada Explorar está marcado y la subnavegación lleva a Comunidades", async ({ page }) => {
+test("en la portada Inicio está marcado y Explorar no", async ({ page }) => {
   await page.goto("/");
   const nav = page.getByRole("navigation", { name: "Principal" });
-  await expect(nav.getByRole("link", { name: "Explorar" })).toHaveAttribute("aria-current", "page");
-  // La portada no muestra la subnavegación.
-  await expect(page.getByRole("navigation", { name: "Explorar" })).toHaveCount(0);
-  await page.goto("/tribus");
-  await expect(nav.getByRole("link", { name: "Explorar" })).toHaveAttribute("aria-current", "page");
+  await expect(nav.getByRole("link", { name: "Inicio" })).toHaveAttribute("aria-current", "page");
+  await expect(nav.getByRole("link", { name: "Explorar" })).not.toHaveAttribute("aria-current", "page");
+  // Ninguna página muestra la subnavegación de Explorar (Territorio, Barrios, Lotes, Comunidades).
+  await expect(page.getByRole("navigation", { name: "Explorar", exact: true })).toHaveCount(0);
 });
 
-test("en una comunidad, Explorar sigue marcado y Comunidades también en la subnavegación", async ({ page }) => {
-  await page.goto("/tribus/valle");
+test("Comunidades ya no es de Explorar: en /tribus no hay destino marcado hasta que exista Participa", async ({ page }) => {
   const nav = page.getByRole("navigation", { name: "Principal" });
-  await expect(nav.getByRole("link", { name: "Explorar" })).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("navigation", { name: "Explorar" }).getByRole("link", { name: "Comunidades" })).toHaveAttribute("aria-current", "page");
+  for (const ruta of ["/tribus", "/tribus/valle"]) {
+    await page.goto(ruta);
+    await expect(nav.locator('[aria-current="page"]'), ruta).toHaveCount(0);
+    await expect(page.getByRole("navigation", { name: "Explorar", exact: true }), ruta).toHaveCount(0);
+  }
 });
 
 test("el rail trae los destinos principales que existen, en orden y sin títulos de grupo", async ({ page }) => {
@@ -25,9 +26,10 @@ test("el rail trae los destinos principales que existen, en orden y sin títulos
   const textos = (await nav.getByRole("link").allInnerTexts()).map((t) => t.trim().split("\n")[0]);
   // "Admin" va al final y solo lo ve el super admin (el rol por defecto de estas pruebas). Invertir y Mi tierra aparecen
   // cuando existan sus páginas (cambios 5 y 4 del rediseño).
-  const orden = ["Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra", "Admin"];
+  // Participa aparece cuando exista su página (cambio `participa-mapa-equipos`).
+  const orden = ["Inicio", "Explorar", "Participa", "Bien común", "Invertir", "Sumarte", "Mi tierra", "Admin"];
   expect(textos).toEqual(orden.filter((o) => textos.includes(o)));
-  expect(textos).toEqual(expect.arrayContaining(["Explorar", "Bien común", "Sumarte"]));
+  expect(textos).toEqual(expect.arrayContaining(["Inicio", "Explorar", "Bien común", "Sumarte"]));
   // Pactos, Semillas, Fogón, Compromisos y Congreso están fuera del menú.
   for (const nombre of ["Pactos", "Semillas", "Fogón", "Compromisos", "Congreso", "Comunidades", "Territorio", "Lotes"]) {
     await expect(nav.getByRole("link", { name: nombre, exact: true })).toHaveCount(0);
@@ -98,28 +100,22 @@ test("Explorar queda marcado en lotes y no hay destino marcado en las páginas e
   await expect(nav.locator('[aria-current="page"]')).toHaveCount(0);
 });
 
-test("subnavegación de Explorar: en Lotes, con Lotes marcado y Barrios entre Territorio y Lotes", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 800 });
-  await page.goto("/lotes");
-  const sub = page.getByRole("navigation", { name: "Explorar" });
-  await expect(sub.getByRole("link")).toHaveText(["Territorio", "Barrios", "Lotes", "Comunidades"]);
-  await expect(sub.getByRole("link", { name: "Lotes" })).toHaveAttribute("aria-current", "page");
-  await expect(sub.locator('[aria-current="page"]')).toHaveCount(1);
-});
-
-test("subnavegación de Explorar en inglés: /tribus dice Communities y lo marca", async ({ page, context, baseURL }) => {
+test("en inglés el rail marca Home en la portada y Explore en /explorar", async ({ page, context, baseURL }) => {
   await context.addCookies([{ name: "lh-idioma", value: "en", url: baseURL! }]);
-  await page.goto("/tribus");
-  const sub = page.getByRole("navigation", { name: "Explore" });
-  await expect(sub.getByRole("link", { name: "Communities" })).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Explore" })).toHaveAttribute("aria-current", "page");
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const nav = page.getByRole("navigation", { name: "Main" });
+  await page.goto("/");
+  await expect(nav.getByRole("link", { name: "Home" })).toHaveAttribute("aria-current", "page");
+  await page.goto("/explorar");
+  await expect(nav.getByRole("link", { name: "Explore" })).toHaveAttribute("aria-current", "page");
+  await expect(nav.getByRole("link", { name: "Home" })).not.toHaveAttribute("aria-current", "page");
 });
 
-test("subnavegación a 390 px no genera scroll horizontal de la página", async ({ page }) => {
+test("sin subnavegación: ni /explorar ni /tribus desbordan a 390 px", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const ruta of ["/lotes", "/tribus", "/territorios/lighthouse"]) {
+  for (const ruta of ["/explorar", "/tribus"]) {
     await page.goto(ruta);
-    await expect(page.getByRole("navigation", { name: "Explorar" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), ruta).toBe(false);
   }
 });
@@ -148,7 +144,7 @@ test("celular 390 x 844: el rail se oculta y el botón Menú abre los destinos; 
   await boton.click();
   await expect(boton).toHaveAttribute("aria-expanded", "true");
   const panel = page.locator("#menu-celular");
-  await expect(panel.getByRole("link", { name: "Explorar" })).toHaveAttribute("aria-current", "page");
+  await expect(panel.getByRole("link", { name: "Inicio" })).toHaveAttribute("aria-current", "page");
   await expect(panel.getByRole("link", { name: "Bien común" })).toBeVisible();
   await panel.getByRole("link", { name: "Sumarte" }).click();
   await expect(page).toHaveURL(/\/sumarte$/);
@@ -159,7 +155,7 @@ test("celular 390 x 844: el rail se oculta y el botón Menú abre los destinos; 
 test("celular: elegir el destino donde ya estás también cierra el panel", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const boton = page.getByRole("button", { name: "Menú", exact: true });
-  for (const [ruta, destino] of [["/", "Explorar"], ["/sumarte", "Sumarte"]]) {
+  for (const [ruta, destino] of [["/", "Inicio"], ["/sumarte", "Sumarte"]]) {
     await page.goto(ruta);
     await boton.click();
     await expect(boton).toHaveAttribute("aria-expanded", "true");
@@ -185,7 +181,7 @@ test.describe("sin sesión", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
     // Los destinos del panel están habilitados sin sesión.
     await barra.getByRole("button", { name: "Menú", exact: true }).click();
-    await expect(page.locator("#menu-celular").getByRole("link")).toHaveText(["Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
+    await expect(page.locator("#menu-celular").getByRole("link")).toHaveText(["Inicio", "Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
   });
 });
 
@@ -196,7 +192,7 @@ test("celular: Escape cierra el menú y el foco vuelve al botón; tocar el botó
   await boton.click();
   await expect(page.locator("#menu-celular")).toBeVisible();
   await page.keyboard.press("Tab");
-  await expect(page.locator("#menu-celular").getByRole("link", { name: "Explorar" })).toBeFocused();
+  await expect(page.locator("#menu-celular").getByRole("link", { name: "Inicio" })).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(page.locator("#menu-celular")).toHaveCount(0);
   await expect(boton).toBeFocused();
@@ -211,7 +207,7 @@ test("celular en inglés: el botón dice Menu y el panel Explore, Commons, Join"
   await page.goto("/");
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   const panel = page.locator("#menu-celular");
-  for (const n of ["Explore", "Commons", "Join"]) await expect(panel.getByRole("link", { name: n })).toBeVisible();
+  for (const n of ["Home", "Explore", "Commons", "Join"]) await expect(panel.getByRole("link", { name: n })).toBeVisible();
 });
 
 test("computadora 1280 px: no hay botón Menú y el rail está a la izquierda; 768 px ya muestra el rail", async ({ page }) => {
@@ -311,7 +307,7 @@ test("Tab en 390 px: Saltar al contenido, el botón Menú y después NetX", asyn
   await expect(page.getByRole("banner").getByRole("link", { name: /NetX/ })).toBeFocused();
 });
 
-test("Tab: primero Saltar al contenido y después Explorar en el rail; justo después del rail van NetX, la campanita, el selector de idioma y el avatar",async ({ page }) => {
+test("Tab: primero Saltar al contenido y después Inicio en el rail; justo después del rail van NetX, la campanita, el selector de idioma y el avatar",async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/");
   // La barra superior aparece cuando termina de verificarse la sesión: se espera antes de recorrer con Tab.
@@ -320,7 +316,7 @@ test("Tab: primero Saltar al contenido y después Explorar en el rail; justo des
   await expect(page.getByRole("link", { name: "Saltar al contenido" })).toBeFocused();
   await page.keyboard.press("Tab");
   const nav = page.getByRole("navigation", { name: "Principal" });
-  await expect(nav.getByRole("link", { name: "Explorar" })).toBeFocused();
+  await expect(nav.getByRole("link", { name: "Inicio" })).toBeFocused();
   // Se llega con Tab hasta el último enlace del rail (Admin, solo para el super admin, después de Sumarte); justo después
   // va NetX, la campanita y luego el avatar.
   const admin = nav.getByRole("link", { name: /^Admin/ });

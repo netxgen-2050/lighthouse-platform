@@ -132,7 +132,7 @@ test.describe("navegación sin sesión", () => {
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
     await aceptarPaso(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
-    await expect(page).toHaveURL(/\/territorios\/lighthouse\?.*sel=/);
+    await expect(page).toHaveURL(/\/explorar\?.*sel=/);
     await expect(ficha.getByRole("heading", { level: 2, name: titulo })).toBeVisible();
     await expect(ficha.getByRole("button", { name: "Consultar por este lote", exact: true })).toBeVisible();
   });

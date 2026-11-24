@@ -206,7 +206,7 @@ test("comprar un lote: el enlace a los lotes se alcanza con el teclado", async (
   await enlace.focus();
   await expect(enlace).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/lotes$/);
+  await expect(page).toHaveURL(/\/explorar#lotes$/);
 });
 
 test("invertir: la frase 'no es una oferta' va antes de las dos tarjetas y sin números en la de proyectos", async ({ page }) => {

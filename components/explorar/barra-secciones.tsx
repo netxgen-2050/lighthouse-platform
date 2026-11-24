@@ -15,9 +15,14 @@ export function BarraSecciones() {
   const [actual, setActual] = useState<SeccionExplorar | null>(null);
 
   useEffect(() => {
-    const desdeHash = window.location.hash.slice(1);
-    const inicial = SECCIONES_EXPLORAR.find((s) => s === desdeHash);
-    if (inicial) setActual(inicial);
+    // Al llegar con un ancla (o al cambiarla con atrás/adelante) la sección del ancla es la actual.
+    const leerHash = () => {
+      const desdeHash = window.location.hash.slice(1);
+      const delHash = SECCIONES_EXPLORAR.find((s) => s === desdeHash);
+      if (delHash) setActual(delHash);
+    };
+    leerHash();
+    window.addEventListener("hashchange", leerHash);
 
     const elementos = SECCIONES_EXPLORAR.map((s) => document.getElementById(s)).filter((e): e is HTMLElement => e !== null);
     const visibles = new Set<string>();
@@ -31,11 +36,15 @@ export function BarraSecciones() {
         const primera = SECCIONES_EXPLORAR.find((s) => visibles.has(s));
         if (primera) setActual(primera);
       },
-      // Franja entre el 15 % y el 45 % de la pantalla, medida desde arriba: debajo de la barra superior y la de secciones.
-      { rootMargin: "-15% 0px -55% 0px" },
+      // Franja fina entre el 20 % y el 25 % de la pantalla, medida desde arriba: debajo de la barra superior y la de secciones,
+      // y justo abajo de donde cae una sección al saltar a su ancla (112 px). Entre dos secciones queda la anterior.
+      { rootMargin: "-20% 0px -75% 0px" },
     );
     for (const e of elementos) observador.observe(e);
-    return () => observador.disconnect();
+    return () => {
+      observador.disconnect();
+      window.removeEventListener("hashchange", leerHash);
+    };
   }, []);
 
   const etiquetas: Record<SeccionExplorar, string> = { territorio: t.barra.territorio, barrio: t.barra.barrio, lotes: t.barra.lotes };
