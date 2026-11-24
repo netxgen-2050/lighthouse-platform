@@ -53,7 +53,7 @@ export type Preferencias = {
 };
 
 export const PREFERENCIAS_INICIALES: Preferencias = {
-  tema: "sistema",
+  tema: "oscuro",
   texto: "normal",
   reducirAnimaciones: false,
   avisos: { comunidades: true, pactos: true, rondas: true, mercado: true, postulaciones: true },

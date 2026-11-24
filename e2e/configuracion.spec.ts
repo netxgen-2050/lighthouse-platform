@@ -47,21 +47,25 @@ test("borrar todo borra la preferencia de idioma de la persona pero la pantalla 
   await expect(html(page)).toHaveAttribute("lang", "en");
 });
 
-test("tema oscuro: toda la app cambia a la paleta oscura y sigue así al recargar y en otras páginas", async ({ page }) => {
+test("primera visita: el tema es el oscuro aunque el sistema sea claro; elegir Claro se mantiene al recargar y en otras páginas", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
-  await page.goto("/configuracion");
-  const claro = await fondo(page);
-  await page.getByRole("radio", { name: "Oscuro" }).check();
+  await page.goto("/");
   await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
-  const oscuro = await fondo(page);
-  expect(oscuro).not.toBe(claro);
-  await page.reload();
+  await page.goto("/configuracion");
   await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
   await expect(page.getByRole("radio", { name: "Oscuro" })).toBeChecked();
-  expect(await fondo(page)).toBe(oscuro);
+  const oscuro = await fondo(page);
+  await page.getByRole("radio", { name: "Claro" }).check();
+  await expect(html(page)).toHaveAttribute("data-tema", "claro");
+  const claro = await fondo(page);
+  expect(claro).not.toBe(oscuro);
+  await page.reload();
+  await expect(html(page)).toHaveAttribute("data-tema", "claro");
+  await expect(page.getByRole("radio", { name: "Claro" })).toBeChecked();
+  expect(await fondo(page)).toBe(claro);
   await page.goto("/tribus");
-  await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
-  expect(await fondo(page)).toBe(oscuro);
+  await expect(html(page)).toHaveAttribute("data-tema", "claro");
+  expect(await fondo(page)).toBe(claro);
 });
 
 test("tema claro gana sobre un sistema oscuro; el del sistema lo sigue", async ({ page }) => {
@@ -188,12 +192,12 @@ test("moneda ARS: /pactos muestra el aporte registrado en pesos con la nota", as
 test("borrar todo vuelve también las preferencias a lo inicial", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/configuracion");
-  await page.getByRole("radio", { name: "Oscuro" }).check();
-  await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
+  await page.getByRole("radio", { name: "Claro" }).check();
+  await expect(html(page)).toHaveAttribute("data-tema", "claro");
   page.once("dialog", (d) => void d.accept());
   await page.getByRole("button", { name: "Borrar todo lo guardado en este navegador" }).click();
   await expect(page.getByRole("status").filter({ hasText: "se borró todo" })).toBeVisible();
-  await expect(html(page)).toHaveAttribute("data-tema", "claro");
+  await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
   expect(await page.evaluate(() => window.localStorage.getItem("lh-configuracion"))).toBeNull();
 });
 
@@ -221,19 +225,22 @@ test("axe sin violaciones serias o críticas: /configuracion en claro y en oscur
   await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/configuracion");
   expect(await graves(page)).toEqual([]);
-  await page.getByRole("radio", { name: "Oscuro" }).check();
+  await page.getByRole("radio", { name: "Claro" }).check();
+  await expect(html(page)).toHaveAttribute("data-tema", "claro");
   expect(await graves(page)).toEqual([]);
   await page.getByRole("radio", { name: "Grande" }).check();
   expect(await graves(page)).toEqual([]);
 });
 
-for (const ruta of ["/", "/tribus", "/sumarte", "/pactos", "/bandeja", "/panel", "/perfil", "/pasaporte", "/semillas", "/compromisos", "/tribus/valle", "/territorios/lighthouse", "/congreso", "/congreso/en", "/netx", "/fogon"]) {
-  test(`axe sin violaciones serias o críticas en tema oscuro: ${ruta}`, async ({ page }) => {
-    await page.addInitScript(() => window.localStorage.setItem("lh-configuracion", JSON.stringify({ tema: "oscuro" })));
-    await page.goto(ruta);
-    await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
-    expect(await graves(page)).toEqual([]);
-  });
+for (const ruta of ["/", "/lotes", "/bien-comun", "/tribus", "/sumarte", "/pactos", "/bandeja", "/panel", "/perfil", "/pasaporte", "/semillas", "/compromisos", "/tribus/valle", "/territorios/lighthouse", "/congreso", "/congreso/en", "/netx", "/fogon"]) {
+  for (const tema of ["oscuro", "claro"]) {
+    test(`axe sin violaciones serias o críticas en tema ${tema}: ${ruta}`, async ({ page }) => {
+      await page.addInitScript((t) => window.localStorage.setItem("lh-configuracion", JSON.stringify({ tema: t })), tema);
+      await page.goto(ruta);
+      await expect(html(page)).toHaveAttribute("data-tema", tema);
+      expect(await graves(page)).toEqual([]);
+    });
+  }
 }
 
 test("axe: el menú del avatar abierto en /configuracion", async ({ page }) => {
