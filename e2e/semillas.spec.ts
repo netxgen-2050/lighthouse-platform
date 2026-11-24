@@ -40,7 +40,10 @@ test("muestra título, aviso de prototipo y un único main", async ({ page }) =>
   await expect(page.getByRole("heading", { level: 1, name: "Lo que sembraste y lo que te abre" })).toBeVisible();
   await expect(page.getByText("Prototipo interno · datos de ejemplo")).toBeVisible();
   await expect(page.locator("main")).toHaveCount(1);
-  await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Semillas" })).toBeVisible();
+  // Semillas está fuera del menú (rediseño de cinco destinos): se llega por la URL y ningún destino queda marcado.
+  const nav = page.getByRole("navigation", { name: "Principal" });
+  await expect(nav.getByRole("link", { name: "Semillas" })).toHaveCount(0);
+  await expect(nav.locator('[aria-current="page"]')).toHaveCount(0);
 });
 
 test("sin ser miembro de ninguna comunidad se explica cómo empezar y no hay ronda", async ({ page }) => {

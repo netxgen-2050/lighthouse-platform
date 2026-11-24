@@ -26,7 +26,7 @@ test("idioma: Español e English están habilitados y English pasa el marco a in
   await expect(page.getByText("próximamente")).toHaveCount(0);
   await page.getByRole("radio", { name: "English" }).check();
   await expect(html(page)).toHaveAttribute("lang", "en");
-  await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Home" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Explore" })).toBeVisible();
   // Es la misma preferencia que el selector de la barra superior.
   await expect(page.getByRole("banner").getByRole("link", { name: "EN · English" })).toHaveAttribute("aria-current", "true");
   await expect(page.getByRole("radio", { name: "English" })).toBeChecked();
