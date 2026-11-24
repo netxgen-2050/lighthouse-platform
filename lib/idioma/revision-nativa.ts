@@ -29,6 +29,10 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Portada: promesa a 2030, Argentina, capitales, los tres caminos y la cantidad de barrios (más lib/portada-vrn.ts)",
   },
+  "textos/barrios": {
+    estado: "pendiente",
+    que: "Barrio Norte (/barrios/norte): lotes por estado, lo que va al bien común y el panel de la obra del barrio (solo con sesión)",
+  },
   "textos/sumarte": {
     estado: "pendiente",
     que: "Sumarte: planes, niveles del pase (Seed, Sprout, Root, a confirmar), comprar un lote, invertir, avisos de nivel, formulario de pedido de contacto y panel Entrar como…",

@@ -22,6 +22,8 @@ export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   /^\/lotes\/[^/]+$/,
   // El bien común con tokens (bien-comun-tokens).
   /^\/bien-comun$/,
+  // Barrio Norte (rediseno-explorar-valle).
+  /^\/barrios\/norte$/,
   // Pasaporte (con la verificación de identidad), Semillas y Pactos (idioma-pasaporte-semillas-pactos).
   /^\/pasaporte$/,
   /^\/semillas$/,

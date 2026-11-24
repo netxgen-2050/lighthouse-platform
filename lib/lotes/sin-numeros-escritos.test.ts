@@ -60,6 +60,13 @@ const ARCHIVOS = [
   ...archivos(path.join(RAIZ, "app", "bien-comun")),
   ...archivos(path.join(RAIZ, "components", "bien-comun")),
   path.join(RAIZ, "lib", "idioma", "textos", "bien-comun.ts"),
+  // Explorar (rediseno-explorar-valle): Inicio y Barrio Norte.
+  ...archivos(path.join(RAIZ, "app", "barrios")),
+  ...archivos(path.join(RAIZ, "components", "explorar")),
+  path.join(RAIZ, "app", "page.tsx"),
+  path.join(RAIZ, "lib", "barrios", "norte.ts"),
+  path.join(RAIZ, "lib", "idioma", "textos", "barrios.ts"),
+  path.join(RAIZ, "lib", "idioma", "textos", "portada.ts"),
 ].filter(existsSync);
 
 // Nada sobre FARO o el tesoro del común habla de ganancia, retorno, valorización ni precio de FARO (spec bien-comun-propuesta).

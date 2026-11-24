@@ -35,6 +35,7 @@ const rutas = [
   "/lotes/lote-1",
   "/lotes/hibrido",
   "/bien-comun",
+  "/barrios/norte",
   "/congreso",
   "/congreso/en",
   "/territorios/no-existe",
@@ -68,9 +69,24 @@ for (const idioma of ["es", "en"] as const) {
   }
 }
 
-test("hay 46 rutas auditadas", () => {
-  expect(rutas).toHaveLength(46);
+test("hay 47 rutas auditadas", () => {
+  expect(rutas).toHaveLength(47);
 });
+
+// Inicio y Barrio Norte (rediseno-explorar-valle): en los dos idiomas y los dos temas.
+for (const ruta of ["/", "/barrios/norte"]) {
+  for (const idioma of ["es", "en"] as const) {
+    for (const tema of ["oscuro", "claro"] as const) {
+      test(`axe sin violaciones serias o críticas: ${ruta}, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
+        await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+        await page.goto(ruta);
+        await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+        await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+        expect(await graves(page)).toEqual([]);
+      });
+    }
+  }
+}
 
 async function graves(page: Page) {
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();

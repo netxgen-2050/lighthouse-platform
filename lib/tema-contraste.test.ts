@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, test } from "vitest";
+import { CLASE_FONDO_DEL_TEXTO } from "@/components/explorar/heroe-valle-clases";
 
 // Lee los tokens de app/globals.css y comprueba el contraste WCAG de los pares que la app usa juntos.
 // Agregá acá cada par nuevo de texto y fondo que empiece a usarse.
@@ -89,6 +90,19 @@ describe.each([
     const vidrio = mezclar(c("vidrio"), base);
     const r = contraste(c("ink"), vidrio);
     expect(r, `ink sobre vidrio con ${_n} en el tema ${nombre}: ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+  });
+
+  // Héroe del valle (Inicio y Barrio Norte): el texto va sobre `bg` con la opacidad de CLASE_FONDO_DEL_TEXTO, y detrás puede
+  // haber cualquier parte de la foto: se mide en el peor caso (toda blanca o toda negra). El título grande usa deep-2 (3:1).
+  test.each([["blanco", BLANCO], ["negro", NEGRO]] as const)("texto del héroe del valle sobre la foto %s", (_n, base) => {
+    const m = /bg-bg\/(\d+)/.exec(CLASE_FONDO_DEL_TEXTO);
+    expect(m, "CLASE_FONDO_DEL_TEXTO tiene que traer bg-bg/NN").not.toBeNull();
+    const [r, g, b] = aRgba(t.bg);
+    const fondo = mezclar([r, g, b, Number(m![1]) / 100], base);
+    const ink = contraste(c("ink"), fondo);
+    expect(ink, `ink sobre el héroe con foto ${_n} en el tema ${nombre}: ${ink.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+    const titulo = contraste(c("deep-2"), fondo);
+    expect(titulo, `deep-2 (título grande) sobre el héroe con foto ${_n} en el tema ${nombre}: ${titulo.toFixed(2)}:1`).toBeGreaterThanOrEqual(3);
   });
 
   test.each(REGEN.flatMap((r) => [[r, "bg"], [r, "surface"]]))("escala %s contra %s llega a 3:1", (tono, fondo) => {

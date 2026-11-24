@@ -98,11 +98,11 @@ test("Explorar queda marcado en lotes y no hay destino marcado en las páginas e
   await expect(nav.locator('[aria-current="page"]')).toHaveCount(0);
 });
 
-test("subnavegación de Explorar: en Lotes, con Lotes marcado y sin Barrios todavía", async ({ page }) => {
+test("subnavegación de Explorar: en Lotes, con Lotes marcado y Barrios entre Territorio y Lotes", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/lotes");
   const sub = page.getByRole("navigation", { name: "Explorar" });
-  await expect(sub.getByRole("link")).toHaveText(["Territorio", "Lotes", "Comunidades"]);
+  await expect(sub.getByRole("link")).toHaveText(["Territorio", "Barrios", "Lotes", "Comunidades"]);
   await expect(sub.getByRole("link", { name: "Lotes" })).toHaveAttribute("aria-current", "page");
   await expect(sub.locator('[aria-current="page"]')).toHaveCount(1);
 });
