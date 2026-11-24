@@ -7,8 +7,8 @@ import { conAdhesionAlManifiesto, conIdentidadVerificada, relojDeLasConsultas } 
 
 const rutas = [
   "/",
-  "/tribus",
-  "/tribus?ver=tribus",
+  "/participa",
+  "/participa?ver=vision",
   "/compromisos",
   "/panel",
   "/pactos",
@@ -432,8 +432,8 @@ test.describe("la plataforma en inglés", () => {
   const RUTAS = [
     "/",
     "/sumarte",
-    "/tribus",
-    "/tribus?ver=tribus",
+    "/participa",
+    "/participa?ver=vision",
     "/tribus/valle",
     "/tribus/valle/manifiesto",
     "/tribus/lighthouse",
@@ -483,7 +483,7 @@ test.describe("la plataforma en inglés", () => {
   });
 
   test("axe en inglés: el menú de la persona abierto", async ({ page }) => {
-    await page.goto("/tribus");
+    await page.goto("/participa");
     await page.getByRole("button", { name: "Person menu" }).click();
     await expect(page.locator("#menu-persona")).toBeVisible();
     expect(await graves(page)).toEqual([]);

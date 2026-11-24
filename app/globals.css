@@ -46,6 +46,25 @@
   --color-regen-5: #3c8c4b;
   /* Vidrio: el "surface" del tema al 80 % de opacidad, para paneles sobre foto. */
   --color-vidrio: #fffdf7cc;
+  /*
+   * Ilustración del mapa de Participa (participa-mapa-equipos): tema claro = mediodía. Son pocos tonos, derivados de la paleta de la app:
+   * agua (azules verdosos), monte nativo (verdes y salvia), barda y meseta (ocres, arena, arcilla) y los acentos del fuego y del sol.
+   * Nunca llevan texto encima: las etiquetas del mapa usan "surface" e "ink".
+   */
+  --color-ilus-rio: #8cc3cc;
+  --color-ilus-rio-hondo: #4f95a8;
+  --color-ilus-rio-brillo: #e1f2f1;
+  --color-ilus-verde: #6c9a58;
+  --color-ilus-verde-hondo: #3f6a3c;
+  --color-ilus-salvia: #b3c78f;
+  --color-ilus-arena: #ecdcb2;
+  --color-ilus-ocre: #d29b56;
+  --color-ilus-arcilla: #a8552d;
+  --color-ilus-fuego: #e8981a;
+  --color-ilus-sol: #fbe27f;
+  --color-ilus-trazo: #3a3325;
+  /* Cuánta luz propia emiten el faro, el fogón y las ventanas: nada de día, todo de noche. */
+  --ilus-luz: 0;
 }
 
 /* inline: next/font define sus variables en el <body>, no en :root; sin inline quedarían inválidas. */
@@ -98,6 +117,20 @@
   --color-regen-4: #8cc46a;
   --color-regen-5: #6fc283;
   --color-vidrio: #17251dcc;
+  /* La ilustración del mapa de Participa de noche: noche de luna, mismo dibujo con otros valores. */
+  --color-ilus-rio: #1f4252;
+  --color-ilus-rio-hondo: #15303d;
+  --color-ilus-rio-brillo: #bcd7e0;
+  --color-ilus-verde: #3a5f45;
+  --color-ilus-verde-hondo: #223e2d;
+  --color-ilus-salvia: #476a50;
+  --color-ilus-arena: #4c4733;
+  --color-ilus-ocre: #70502f;
+  --color-ilus-arcilla: #8f4e33;
+  --color-ilus-fuego: #ffb23d;
+  --color-ilus-sol: #f7e9ab;
+  --color-ilus-trazo: #080e0a;
+  --ilus-luz: 1;
 }
 
 /* La barra superior es fija: al saltar a un ancla o al enfocar con el teclado, el elemento no queda debajo de ella. */

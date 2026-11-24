@@ -14,9 +14,9 @@ test.describe("comunidades en inglés", () => {
   test.use({ locale: "en-US" });
 
   test("listado: estados en inglés, nombres de las comunidades sin traducir y nada de español suelto", async ({ page }) => {
-    await page.goto("/tribus?ver=tribus");
+    await page.goto("/participa?ver=vision");
     await expect(html(page)).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("heading", { level: 1, name: "Lighthouse communities" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Take part" })).toBeVisible();
     await expect(page.getByText("Status: Active").first()).toBeVisible();
     await expect(page.getByText("Status: Forming").first()).toBeVisible();
     await expect(page.getByText("Status: Looking for a community").first()).toBeVisible();

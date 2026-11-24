@@ -1,0 +1,395 @@
+/*
+ * Mapa ilustrado de Participa (participa-mapa-equipos). Solo tokens del tema y de la ilustración (`--color-ilus-*`,
+ * definidos en app/globals.css para los dos temas). El estado de una forma lo pone React con `data-activa`:
+ * el puntero y el foco del teclado se ven igual.
+ */
+.mapa-ilus {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* La capa de las formas se apoya sobre la de fondo (el territorio con el grano del papel). */
+.mapa-ilus-formas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.mapa-papel {
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+.ilus-luz {
+  opacity: var(--ilus-luz);
+  pointer-events: none;
+}
+
+.ilus-ventana {
+  fill: var(--color-ilus-trazo);
+  fill-opacity: 0.7;
+}
+
+:root[data-tema="oscuro"] .ilus-ventana {
+  fill: var(--color-ilus-sol);
+  fill-opacity: 1;
+}
+
+.ilus-haz {
+  opacity: calc(0.3 + var(--ilus-luz) * 0.6);
+}
+
+/* Nombres del territorio: cursiva de Fraunces con halo del color del papel, legible sobre cualquier fondo. */
+.ilus-nombre {
+  font-family: var(--font-display), Georgia, serif;
+  font-style: italic;
+  font-weight: 600;
+  fill: var(--color-ink);
+  stroke: var(--color-surface);
+  stroke-width: 5px;
+  paint-order: stroke;
+  stroke-linejoin: round;
+}
+
+.mapa-velo {
+  fill: var(--color-surface);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mapa-ilus[data-activo] .mapa-velo {
+  opacity: 0.3;
+}
+
+.forma {
+  cursor: pointer;
+  outline: none;
+}
+
+.forma-contorno {
+  fill: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.forma-contorno-luz {
+  stroke: var(--color-surface);
+  stroke-width: 9px;
+}
+
+.forma-contorno-acento {
+  stroke: var(--color-deep);
+  stroke-width: 3.5px;
+  stroke-dasharray: 9 6;
+  stroke-linecap: round;
+}
+
+.forma[data-activa] .forma-contorno {
+  opacity: 1;
+}
+
+.forma-cartel-caja {
+  fill: var(--color-surface);
+  stroke: var(--color-ilus-arcilla);
+  stroke-width: 2.5px;
+}
+
+.forma[data-activa] .forma-cartel-caja {
+  stroke: var(--color-deep);
+  stroke-width: 4px;
+}
+
+.forma-cartel-texto {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 600;
+  fill: var(--color-ink);
+}
+
+.forma-cartel-numero {
+  fill: var(--color-ink);
+}
+
+.forma-cartel-cifra {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-weight: 700;
+  fill: var(--color-surface);
+}
+
+.forma-cuerpo {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+/*
+ * Movimiento: solo con la preferencia del sistema y sin "Reducir animaciones" en Configuración.
+ * Si no, la forma solo muestra contorno, etiqueta y globo.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  :root:not([data-movimiento="reducido"]) .forma-contorno {
+    transition: opacity 0.2s ease;
+  }
+
+  :root:not([data-movimiento="reducido"]) .mapa-velo {
+    transition: opacity 0.25s ease;
+  }
+
+  :root:not([data-movimiento="reducido"]) .forma-cuerpo {
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+
+  :root:not([data-movimiento="reducido"]) .forma[data-activa] .forma-cuerpo {
+    transform: translateY(-4px) scale(1.04);
+  }
+
+  :root:not([data-movimiento="reducido"]) .anim-copa,
+  :root:not([data-movimiento="reducido"]) .anim-tiembla,
+  :root:not([data-movimiento="reducido"]) .anim-sauce,
+  :root:not([data-movimiento="reducido"]) .anim-fuego,
+  :root:not([data-movimiento="reducido"]) .anim-onda,
+  :root:not([data-movimiento="reducido"]) .anim-haz,
+  :root:not([data-movimiento="reducido"]) .anim-brote,
+  :root:not([data-movimiento="reducido"]) .anim-personas,
+  :root:not([data-movimiento="reducido"]) .anim-carretilla,
+  :root:not([data-movimiento="reducido"]) .anim-destello,
+  :root:not([data-movimiento="reducido"]) .anim-chispa {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+  }
+
+  :root:not([data-movimiento="reducido"]) .anim-onda,
+  :root:not([data-movimiento="reducido"]) .anim-haz {
+    transform-origin: 50% 50%;
+  }
+
+  /* Detalles que aparecen al activar la forma. */
+  :root:not([data-movimiento="reducido"]) .anim-brote {
+    transform: scale(0);
+  }
+
+  :root:not([data-movimiento="reducido"]) .anim-personas {
+    opacity: 0;
+    transform: translateY(5px);
+    transition:
+      opacity 0.4s ease,
+      transform 0.4s ease;
+  }
+
+  :root:not([data-movimiento="reducido"]) .forma[data-activa] .anim-personas {
+    opacity: 1;
+    transform: none;
+  }
+
+  :root:not([data-movimiento="reducido"]) .anim-destello,
+  :root:not([data-movimiento="reducido"]) .anim-chispa {
+    opacity: 0;
+  }
+
+  /* La ilustración quieta del detalle muestra los detalles ya presentes (brotes, personas) y no anima nada. */
+  :root:not([data-movimiento="reducido"]) .ilus-quieta .anim-brote {
+    transform: scale(1);
+  }
+
+  :root:not([data-movimiento="reducido"]) .ilus-quieta .anim-personas {
+    opacity: 1;
+    transform: none;
+  }
+
+  :root:not([data-movimiento="reducido"]) .anim-carretilla {
+    transition: transform 0.7s cubic-bezier(0.3, 0.7, 0.3, 1);
+  }
+
+  :root:not([data-movimiento="reducido"]) .forma[data-activa] .anim-carretilla {
+    transform: translateX(14px);
+  }
+
+  :root:not([data-movimiento="reducido"]) .forma[data-activa] .anim-copa {
+    animation: ilus-mecer 1.6s ease-in-out infinite;
+  }
+
+  :root:not([data-movimiento="reducido"]) .forma[data-activa] .anim-tiembla {
+    animation: ilus-temblar 0.4s ease-in-out infinite;
+  }
+
+  :root:not([data-movimiento="reducido"]) .forma[data-activa] .anim-sauce {
+    animation: ilus-sauce 2.6s ease-in-out infinite;
+  }
+
+  :root:not([data-movimiento="reducido"]) .forma[data-activa] .anim-fuego {
+    animation: ilus-fuego 0.55s ease-in-out infinite alternate;
+  }
+
+  :root:not([data-movimiento="reducido"]) .forma[data-activa] .anim-onda {
+    animation: ilus-onda 1.9s ease-out infinite;
+  }
+
+  :root:not([data-movimiento="reducido"]) .forma[data-activa] .anim-haz {
+    animation: ilus-haz 3.2s ease-in-out infinite;
+  }
+
+  :root:not([data-movimiento="reducido"]) .forma[data-activa] .anim-brote {
+    animation: ilus-brotar 0.7s cubic-bezier(0.2, 1.4, 0.4, 1) forwards;
+  }
+
+  :root:not([data-movimiento="reducido"]) .forma[data-activa] .anim-destello {
+    animation: ilus-destello 1.7s ease-in-out infinite;
+  }
+
+  :root:not([data-movimiento="reducido"]) .forma[data-activa] .anim-chispa {
+    animation: ilus-chispa 1.4s ease-out infinite;
+  }
+}
+
+@keyframes ilus-mecer {
+  0%,
+  100% {
+    transform: rotate(-2.6deg);
+  }
+  50% {
+    transform: rotate(2.6deg);
+  }
+}
+
+@keyframes ilus-temblar {
+  0%,
+  100% {
+    transform: rotate(-1.8deg) skewX(-1deg);
+  }
+  50% {
+    transform: rotate(1.8deg) skewX(1deg);
+  }
+}
+
+@keyframes ilus-sauce {
+  0%,
+  100% {
+    transform: skewX(-2.2deg);
+  }
+  50% {
+    transform: skewX(2.2deg);
+  }
+}
+
+@keyframes ilus-fuego {
+  0% {
+    transform: scale(1, 0.92) skewX(-3deg);
+  }
+  100% {
+    transform: scale(1.04, 1.1) skewX(3deg);
+  }
+}
+
+@keyframes ilus-onda {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
+
+@keyframes ilus-haz {
+  0%,
+  100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(-1);
+  }
+}
+
+@keyframes ilus-brotar {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes ilus-destello {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  45% {
+    opacity: 0.9;
+  }
+}
+
+@keyframes ilus-chispa {
+  0% {
+    opacity: 0.95;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-26px);
+  }
+}
+
+/* Detalle del equipo: panel lateral en computadora y hoja inferior en celular. */
+.dialogo-equipo {
+  position: fixed;
+  inset: 0 0 0 auto;
+  margin: 0;
+  width: 420px;
+  max-width: 100%;
+  height: 100dvh;
+  max-height: none;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-left: 1px solid var(--color-line);
+}
+
+.dialogo-equipo::backdrop {
+  background: color-mix(in srgb, var(--color-ink) 45%, transparent);
+}
+
+@media (max-width: 639px) {
+  .dialogo-equipo {
+    inset: auto 0 0 0;
+    width: 100%;
+    height: auto;
+    max-height: 90dvh;
+    border-left: 0;
+    border-top: 1px solid var(--color-line);
+    border-radius: 1.25rem 1.25rem 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root:not([data-movimiento="reducido"]) .dialogo-equipo[open] {
+    animation: dialogo-entra 0.28s ease-out;
+  }
+}
+
+@keyframes dialogo-entra {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 639px) {
+  @keyframes dialogo-entra {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}

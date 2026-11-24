@@ -37,7 +37,7 @@ export async function FichaComun() {
   return (
     <div className="mx-auto max-w-5xl p-6 sm:p-10">
       <p className="mb-2 text-sm">
-        <Link className="underline" href="/tribus">
+        <Link className="underline" href="/participa">
           {textos("tribus", idioma).volverTribus}
         </Link>
       </p>

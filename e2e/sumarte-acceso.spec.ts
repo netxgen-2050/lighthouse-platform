@@ -195,8 +195,9 @@ test.describe("Líder de comunidad", () => {
     await page.getByRole("button", { name: "Sumar mi comunidad" }).click();
     await page.getByRole("radio", { name: "Proponer una comunidad nueva" }).check();
     await page.getByRole("button", { name: "Ser líder de esta comunidad" }).click();
-    await expect(page).toHaveURL(/\/tribus#sec-vacantes$/);
-    await expect(page.getByRole("heading", { level: 1, name: "Comunidades del Lighthouse" })).toBeVisible();
+    await expect(page).toHaveURL(/\/participa\?ver=vision#sec-vacantes$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Participa" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Barrios vacantes" })).toBeVisible();
   });
 
   test("bajar a Miembro quita la marca de admin", async ({ page }) => {

@@ -20,6 +20,7 @@ import { manifiestoVrn } from "./textos/manifiesto-vrn";
 import { marco } from "./textos/marco";
 import { miTierra } from "./textos/mi-tierra";
 import { pactos } from "./textos/pactos";
+import { participa } from "./textos/participa";
 import { pasaporte } from "./textos/pasaporte";
 import { perfil } from "./textos/perfil";
 import { portada } from "./textos/portada";
@@ -49,6 +50,7 @@ export const DICCIONARIOS = {
   marco,
   miTierra,
   pactos,
+  participa,
   pasaporte,
   perfil,
   portada,

@@ -40,7 +40,7 @@ export function caminosDePortada(idioma: Idioma = "es"): Camino[] {
       etiqueta: t.tribus.etiqueta,
       titulo: t.tribus.titulo,
       descripcion: descripcionBarrios(barrios, idioma),
-      href: "/tribus",
+      href: "/participa",
     },
   ];
 }

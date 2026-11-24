@@ -6,7 +6,7 @@ Todo el inglés lo escribió un agente y está pendiente hasta que un hablante n
 **Cómo marcar algo como revisado:** en `lib/idioma/revision-nativa.ts`, cambiá el `estado` de la fuente a `"revisado"`
 y sumá `revisadoPor` y `fecha` (AAAA-MM-DD). Después corré `pnpm idioma:pendientes`.
 
-Fuentes pendientes: 50
+Fuentes pendientes: 52
 
 | Fuente | Qué es | Textos en inglés |
 |---|---|---|
@@ -15,6 +15,7 @@ Fuentes pendientes: 50
 | `lib/congreso/evento-ejemplo.ts` | Página del Congreso en inglés (/congreso/en): datos de ejemplo del evento | — |
 | `lib/economia/terminos.ts` | Término económico 🌱 de Semillas en inglés (borrador, sin revisión) | — |
 | `lib/equipos/frentes.ts` | Los 8 frentes de trabajo de ejemplo de los equipos (nombre, necesidad, quién falta y para cuándo) con su inglés, traducidos del español | — |
+| `lib/equipos/posiciones.ts` | Posiciones abiertas de ejemplo de cada equipo del común (título, dedicación y qué se busca), con su inglés | — |
 | `lib/evaluacion/ejemplo.ts` | Motivos de ejemplo y resumen de ejemplo del feedback de la evaluación entre pares | — |
 | `lib/evaluacion/guia.ts` | Guía por nivel de estrellas (1 a 5) de la evaluación entre pares, rol y cultura | — |
 | `lib/fogon/consultas/ejemplo.ts` | Consultas de ejemplo del Fogón (título, descripción, opciones y nota del monto) con su inglés, traducidas del español | — |
@@ -52,6 +53,7 @@ Fuentes pendientes: 50
 | `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 76 |
 | `textos/miTierra` | Mi tierra (/mi-tierra): tu lote, plan en cuotas, FARO acreditados (simulado), tu voz y actividad | 57 |
 | `textos/pactos` | Pactos: pactos de tiempo y de plata, cambios, historial, avisos y anuncios | 286 |
+| `textos/participa` | Participa (/participa): mapa ilustrado de equipos, lista, detalle del equipo con sus posiciones abiertas y pestaña Visión | 44 |
 | `textos/pasaporte` | Pasaporte: sellos y lo que abren, tarjeta y diálogo de verificación de identidad (KYC) con sus errores, sello de la billetera y datos de aporte | 149 |
 | `textos/perfil` | Perfil: encabezado, formulario, tarjetas, errores de validación y las seis preguntas de la entrevista | 58 |
 | `textos/portada` | Portada: promesa a 2030, Argentina, capitales, los tres caminos y la cantidad de barrios (más lib/portada-vrn.ts) | 31 |

@@ -13,10 +13,10 @@ test.describe("sin cuenta", () => {
   test.use({ rol: "ninguno" });
 
   test("(a) EN en la barra pone el marco en inglés sin cambiar la dirección, y sigue al recargar", async ({ page }) => {
-    await page.goto("/tribus");
+    await page.goto("/participa");
     await expect(html(page)).toHaveAttribute("lang", "es");
     await selector(page).getByRole("link", { name: "EN · English" }).click();
-    await expect(page).toHaveURL(/\/tribus$/);
+    await expect(page).toHaveURL(/\/participa$/);
     await expect(html(page)).toHaveAttribute("lang", "en");
     await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Explore" })).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Home" })).toBeVisible();

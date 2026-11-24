@@ -75,7 +75,7 @@ export default async function TribuPage({ params }: Props) {
 
   const volver = (
     <p className="mb-2 text-sm">
-      <Link className="underline" href="/tribus">{tx.volverTribus}</Link>
+      <Link className="underline" href="/participa?ver=vision">{tx.volverTribus}</Link>
     </p>
   );
   const prototipo = (

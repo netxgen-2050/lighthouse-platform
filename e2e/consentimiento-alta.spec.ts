@@ -101,7 +101,7 @@ test.describe("crear la cuenta en Sumarte", () => {
     // Otra pestaña nueva: la sesión ya existe (cookie), pero la aceptación vive solo en la pestaña de arriba.
     await context.addCookies([{ name: COOKIE_PRUEBA, value: encodeURIComponent(email), url: baseURL! }]);
     const otra = await context.newPage();
-    await otra.goto("/tribus");
+    await otra.goto("/participa");
     await expect(titulo(otra)).toBeVisible();
     await expect(casillaPolitica(otra)).not.toBeChecked();
     await expect(casillaTerminos(otra)).not.toBeChecked();
@@ -148,28 +148,28 @@ test.describe("entrar desde la barra superior", () => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     const email = emailUnico("entrar");
     await panelConEmail(page, email);
-    await page.goto("/tribus");
+    await page.goto("/participa");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
     const dialogo = paso(page, "Entrar");
     await expect(dialogo).toBeVisible();
     await expect(casillaPolitica(dialogo)).not.toBeChecked();
     await expect(casillaTerminos(dialogo)).not.toBeChecked();
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toHaveCount(0);
-    await expect(page).toHaveURL(/\/tribus$/);
+    await expect(page).toHaveURL(/\/participa$/);
     expect((await page.context().cookies()).find((c) => c.name === COOKIE_PRUEBA)).toBeUndefined();
 
     await aceptarPaso(page);
-    await expect(page).toHaveURL(/\/sumarte\?volver=%2Ftribus/);
+    await expect(page).toHaveURL(/\/sumarte\?volver=%2Fparticipa/);
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
     await page.getByRole("button", { name: email }).click();
     await expect(menuAvatar(page)).toBeVisible();
-    await expect(page).toHaveURL(/\/tribus$/);
+    await expect(page).toHaveURL(/\/participa$/);
     await expect(titulo(page)).toHaveCount(0);
     expect((await consentimientoDe(request, email)).estado).toMatchObject({ canal: "al-entrar", version: VERSION_PRUEBA, general: "vigente" });
   });
 
   test("sin aceptar el login no se abre: Cancelar, Escape, ninguna casilla o una sola", async ({ page }) => {
-    await page.goto("/tribus");
+    await page.goto("/participa");
     const entrar = barra(page).getByRole("button", { name: "Entrar" });
     const dialogo = paso(page, "Entrar");
 
@@ -192,7 +192,7 @@ test.describe("entrar desde la barra superior", () => {
     await expect(dialogo.getByRole("alert")).toBeVisible();
     await expect(casillaPolitica(dialogo)).toBeFocused();
 
-    await expect(page).toHaveURL(/\/tribus$/);
+    await expect(page).toHaveURL(/\/participa$/);
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toHaveCount(0);
     await expect(menuAvatar(page)).toHaveCount(0);
     expect((await page.context().cookies()).find((c) => c.name === COOKIE_PRUEBA)).toBeUndefined();
@@ -217,7 +217,7 @@ test.describe("entrar desde la barra superior", () => {
     await registrarConsentimientoDe(request, email, { canal: "alta" });
     const antes = (await consentimientoDe(request, email)).estado;
     await panelConEmail(page, email);
-    await page.goto("/tribus");
+    await page.goto("/participa");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
     await aceptarPaso(page);
     await page.getByRole("button", { name: email }).click();
@@ -245,7 +245,7 @@ test.describe("entrar desde la barra superior", () => {
     await page.locator("#menu-persona").getByRole("button", { name: "Salir" }).click();
     // Otra persona (sin consentimiento) entra en la misma pestaña con una sesión que ya existía: ve la pantalla.
     await context.addCookies([{ name: COOKIE_PRUEBA, value: encodeURIComponent(segunda), url: baseURL! }]);
-    await page.goto("/tribus");
+    await page.goto("/participa");
     await expect(titulo(page)).toBeVisible();
     expect((await consentimientoDe(request, segunda)).estado.general).toBe("pendiente");
   });
@@ -256,16 +256,16 @@ test.describe("red de seguridad: sesión sin consentimiento vigente", () => {
   test.use({ rol: "persona", consentimiento: "ninguno", plan: "ninguno" });
 
   test("con la sesión sembrada, cualquier página muestra la pantalla; la política se lee", async ({ page }) => {
-    await page.goto("/tribus");
+    await page.goto("/participa");
     await expect(titulo(page)).toBeVisible();
-    await expect(page.getByRole("heading", { level: 1, name: "Comunidades del Lighthouse" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { level: 1, name: "Participa" })).toHaveCount(0);
     await page.goto("/privacidad");
     await expect(page.getByRole("heading", { level: 1, name: "Política de privacidad" })).toBeVisible();
     await expect(titulo(page)).toHaveCount(0);
   });
 
   test("el menú de la persona sin consentimiento solo ofrece Salir y no hay campanita", async ({ page }) => {
-    await page.goto("/tribus");
+    await page.goto("/participa");
     await menuAvatar(page).click();
     const menu = page.locator("#menu-persona");
     await expect(menu.getByRole("button", { name: "Salir" })).toBeVisible();
@@ -296,12 +296,12 @@ test.describe("red de seguridad: sesión sin consentimiento vigente", () => {
   });
 
   test("la pantalla suma la casilla de novedades y registra la elección con el camino al-entrar", async ({ page, request, emailActual }) => {
-    await page.goto("/tribus");
+    await page.goto("/participa");
     await expect(casillaNovedades(page)).not.toBeChecked();
     await casillaPolitica(page).check();
     await casillaTerminos(page).check();
     await page.getByRole("button", { name: "Aceptar y continuar" }).click();
-    await expect(page.getByRole("heading", { level: 1, name: "Comunidades del Lighthouse" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Participa" })).toBeVisible();
     const { estado } = await consentimientoDe(request, emailActual);
     expect(estado).toMatchObject({ canal: "al-entrar", general: "vigente" });
     expect(estado.novedadesRegistro).toMatchObject({ evento: "retira", canal: "al-entrar" });
@@ -314,7 +314,7 @@ test.describe("red de seguridad: sesión sin consentimiento vigente", () => {
       if (fallar && ruta.request().method() === "POST") return ruta.fulfill({ status: 500, json: { ok: false } });
       return ruta.continue();
     });
-    await page.goto("/tribus");
+    await page.goto("/participa");
     await casillaPolitica(page).check();
     await casillaTerminos(page).check();
     await page.getByRole("button", { name: "Aceptar y continuar" }).click();
@@ -329,24 +329,24 @@ test.describe("red de seguridad: sesión sin consentimiento vigente", () => {
 
     fallar = false;
     await page.getByRole("button", { name: "Aceptar y continuar" }).click();
-    await expect(page.getByRole("heading", { level: 1, name: "Comunidades del Lighthouse" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Participa" })).toBeVisible();
     expect((await consentimientoDe(request, emailActual)).estado.general).toBe("vigente");
   });
 
   test("aceptar en un navegador y entrar desde otro: el segundo no ve la pantalla de consentimiento", async ({ page, browser, baseURL, emailActual }) => {
-    await page.goto("/tribus");
+    await page.goto("/participa");
     await casillaPolitica(page).check();
     await casillaTerminos(page).check();
     await page.getByRole("button", { name: "Aceptar y continuar" }).click();
-    await expect(page.getByRole("heading", { level: 1, name: "Comunidades del Lighthouse" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Participa" })).toBeVisible();
 
     // Otro contexto del navegador: nada de lo guardado en este (cookies, almacenamiento) está ahí.
     const otro = await browser.newContext({ baseURL, locale: "es-AR" });
     try {
       await otro.addCookies([{ name: COOKIE_PRUEBA, value: encodeURIComponent(emailActual), url: baseURL! }]);
       const celular = await otro.newPage();
-      await celular.goto("/tribus");
-      await expect(celular.getByRole("heading", { level: 1, name: "Comunidades del Lighthouse" })).toBeVisible();
+      await celular.goto("/participa");
+      await expect(celular.getByRole("heading", { level: 1, name: "Participa" })).toBeVisible();
       await expect(titulo(celular)).toHaveCount(0);
       // Mis datos muestra la misma constancia.
       await celular.goto("/mis-datos");
@@ -386,7 +386,7 @@ test.describe("re-consentimiento desde Entrar", () => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     const email = emailUnico("version");
     await panelConEmail(page, email);
-    await page.goto("/tribus");
+    await page.goto("/participa");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
     const dialogo = paso(page, "Entrar");
     await expect(dialogo.getByText(`Versión de la política: ${VERSION_PRUEBA}`)).toBeVisible();
@@ -419,7 +419,7 @@ test.describe("re-consentimiento desde Entrar", () => {
     const email = emailUnico("g2b");
     await registrarConsentimientoDe(request, email, { canal: "alta", novedades: "acepta" });
     await panelConEmail(page, email);
-    await page.goto("/tribus");
+    await page.goto("/participa");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
     await aceptarPaso(page);
     await page.getByRole("button", { name: email }).click();
@@ -476,7 +476,7 @@ test.describe("Mis datos: constancia y novedades", () => {
     expect(filas?.filter((f) => f.evento === "retira").map((f) => f.tipo).sort()).toEqual(["novedades", "politica", "terminos"]);
     // Si la misma persona vuelve a entrar, tiene que aceptar de nuevo.
     await context.addCookies([{ name: COOKIE_PRUEBA, value: encodeURIComponent(emailActual), url: baseURL! }]);
-    await page.goto("/tribus");
+    await page.goto("/participa");
     await expect(titulo(page)).toBeVisible();
   });
 });

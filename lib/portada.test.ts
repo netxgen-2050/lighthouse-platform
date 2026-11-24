@@ -9,7 +9,7 @@ describe("portada", () => {
     expect(caminosDePortada().map((c) => [c.id, c.href])).toEqual([
       ["lotes", "/explorar#lotes"],
       ["territorio", "/explorar#territorio"],
-      ["tribus", "/tribus"],
+      ["tribus", "/participa"],
     ]);
   });
 
@@ -32,7 +32,7 @@ describe("portada", () => {
 
   it("los caminos en inglés tienen los mismos destinos y textos en inglés", () => {
     const caminos = caminosDePortada("en");
-    expect(caminos.map((c) => c.href)).toEqual(["/explorar#lotes", "/explorar#territorio", "/tribus"]);
+    expect(caminos.map((c) => c.href)).toEqual(["/explorar#lotes", "/explorar#territorio", "/participa"]);
     expect(caminos.map((c) => c.titulo)).toEqual(["See the lots", "Explore the territory", "See the communities"]);
   });
 
