@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { TerminoLegal } from "@/components/termino-legal";
 import { EntrarPara } from "@/components/sesion/entrar-para";
 import { useSesion } from "@/components/sesion/contexto";
 import { useCompras } from "@/components/lotes/usar-compras";
@@ -83,16 +84,20 @@ export function MiTierraCliente() {
         </h2>
         <div className={`${TARJETA} sm:grid-cols-3`}>
           <Indicador etiqueta={t.indicadores.lotes} valor={enteroEn(totales.lotes, idioma)} mono />
-          <Indicador
-            etiqueta={t.indicadores.fraccion}
-            valor={totales.fraccionPagada === null ? null : porcentajeEn(totales.fraccionPagada, idioma)}
-            mono
-          />
-          <Indicador
-            etiqueta={t.indicadores.faro}
-            valor={totales.faroAcreditados !== null ? faroEn(totales.faroAcreditados, idioma) : totales.hayPago ? null : t.indicadores.faltaPrimerPago}
-            mono
-          />
+          {totales.entraAlPlan && (
+            <>
+              <Indicador
+                etiqueta={t.indicadores.fraccion}
+                valor={totales.fraccionPagada === null ? null : porcentajeEn(totales.fraccionPagada, idioma)}
+                mono
+              />
+              <Indicador
+                etiqueta={t.indicadores.faro}
+                valor={totales.faroAcreditados !== null ? faroEn(totales.faroAcreditados, idioma) : totales.hayPago ? null : t.indicadores.faltaPrimerPago}
+                mono
+              />
+            </>
+          )}
         </div>
       </section>
 
@@ -156,7 +161,9 @@ function Plan({ l }: { l: LotePortafolio }) {
   const sinPago = l.estado === "reservado";
   return (
     <div className={SUBBLOQUE}>
-      <h4 className="font-semibold">{t.titulo}</h4>
+      <h4 className="font-semibold">
+        {t.titulo} <TerminoLegal clave="tokentierra" idioma={idioma} />
+      </h4>
       {p.tipo === "no-entra" && <p className="text-sm">{t.noEntra}</p>}
       {p.tipo === "sin-dato" && <p className="text-sm">{t.sinDato}</p>}
       {p.tipo === "contado" && (
@@ -194,7 +201,9 @@ function Faro({ faro }: { faro: FaroPortafolio }) {
   const comunes = useTextos("comunes");
   return (
     <div className={SUBBLOQUE}>
-      <h4 className="font-semibold">{t.titulo}</h4>
+      <h4 className="font-semibold">
+        {t.titulo} <TerminoLegal clave="tokenbiencomun" idioma={idioma} />
+      </h4>
       {faro.tipo === "no-aplica" && <p className="text-sm">{t.noAplica}</p>}
       {faro.tipo === "sin-dato" && <p className="text-sm">{comunes.sinDato}</p>}
       {faro.tipo === "sin-pago" && (
@@ -226,6 +235,7 @@ function Faro({ faro }: { faro: FaroPortafolio }) {
 }
 
 function Voz({ adhesion }: { adhesion: { adhirio: boolean; desactualizada: boolean } }) {
+  const idioma = useIdioma();
   const t = useTextos("miTierra").voz;
   const texto = adhesion.adhirio ? t.conAdhesion : adhesion.desactualizada ? t.desactualizada : t.sinAdhesion;
   return (
@@ -233,13 +243,16 @@ function Voz({ adhesion }: { adhesion: { adhirio: boolean; desactualizada: boole
       <h2 id="mt-voz" className="text-xl font-bold">
         {t.titulo}
       </h2>
-      <p role="status" className="max-w-3xl font-medium">
+      <p className="max-w-3xl font-medium">
         <span aria-hidden="true">{adhesion.adhirio ? "✓ " : "○ "}</span>
-        {texto}
+        {texto} <TerminoLegal clave="adhesion" idioma={idioma} />
       </p>
-      <Link href="/tribus/lighthouse/manifiesto" className={`${SUBRAYADO} w-fit text-sm font-medium`}>
-        {adhesion.adhirio ? t.ver : t.adherir}
-      </Link>
+      <p className="text-sm font-medium">
+        <Link href="/tribus/lighthouse/manifiesto" className={SUBRAYADO}>
+          {adhesion.adhirio ? t.ver : t.adherir}
+        </Link>{" "}
+        <TerminoLegal clave="manifiestovrn" idioma={idioma} />
+      </p>
       <div className={SUBBLOQUE}>
         <p className="w-fit rounded-full border border-dashed border-muted px-2 py-0.5 text-xs font-medium">{t.enDiscusion}</p>
         <p className="max-w-3xl text-sm">{t.propuesta}</p>

@@ -99,6 +99,13 @@ describe("armarPortafolio", () => {
     expect(p.lotes[0].faro).toEqual({ tipo: "no-aplica" });
     expect(p.totales.fraccionPagada).toBeNull();
     expect(p.totales.faroAcreditados).toBeNull();
+    // Ningún lote entra al plan: los indicadores de plan y FARO no aplican (no es "sin dato").
+    expect(p.totales.entraAlPlan).toBe(false);
+  });
+
+  test("un lote del plan junto a uno de los primeros 4: los indicadores sí aplican", () => {
+    const p = armarPortafolio([reservada(a, 24), reservada(primero, null)], SIN_ADHESION);
+    expect(p.totales.entraAlPlan).toBe(true);
   });
 
   test("reserva vieja sin plan: plan sin dato, nunca contado", () => {

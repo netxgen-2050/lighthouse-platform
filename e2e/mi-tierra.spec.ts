@@ -147,6 +147,9 @@ test("los primeros 4 lotes no entran al plan y no muestran FARO", async ({ page 
   await expect(tarjeta).toContainText("Este lote no entra al plan en cuotas.");
   await expect(tarjeta).toContainText("Este lote no trae FARO.");
   await expect(tarjeta).not.toContainText("Todavía no se acreditó FARO");
+  // Ningún lote entra al plan: no se muestran los indicadores de plan ni de FARO (no aplican).
+  await expect(main(page).getByText("Pagado del precio del lote")).toHaveCount(0);
+  await expect(main(page).getByText("FARO acreditados (simulado)")).toHaveCount(0);
 });
 
 test("una reserva vieja sin plan dice 'sin dato' y la página no falla", async ({ page }) => {
@@ -235,8 +238,14 @@ test("nunca habla de rendimiento, APY ni precio de FARO, y no se puede llegar a 
   await expect(page.getByRole("heading", { level: 3, name: `Lote ${lote.numero}` })).toBeVisible();
   const texto = await main(page).innerText();
   expect(texto).not.toMatch(/rendimiento|APY|precio de FARO|ganancia|retorno/i);
-  // Teclado: el enlace a la ficha se alcanza con Tab.
+  // Teclado: el enlace a la ficha se alcanza solo con Tab (sin trampa de foco).
   const enlace = page.getByRole("link", { name: `Ver la ficha del lote ${lote.numero}` });
-  await enlace.focus();
+  await page.getByRole("heading", { level: 3, name: `Lote ${lote.numero}` }).click();
+  let llegó = false;
+  for (let i = 0; i < 40 && !llegó; i++) {
+    await page.keyboard.press("Tab");
+    llegó = await enlace.evaluate((el) => el === document.activeElement);
+  }
+  expect(llegó).toBe(true);
   await expect(enlace).toBeFocused();
 });

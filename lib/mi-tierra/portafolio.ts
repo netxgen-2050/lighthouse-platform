@@ -71,6 +71,8 @@ export type Portafolio = {
     faroAcreditados: number | null;
     /** ¿Algún lote tiene ya el primer pago? Si no, se dice "falta el primer pago". */
     hayPago: boolean;
+    /** ¿Algún lote entra al plan en cuotas (y trae FARO)? Si no (solo los primeros 4 lotes), los indicadores de plan y FARO no aplican. */
+    entraAlPlan: boolean;
   };
   voz: { adhirio: boolean; desactualizada: boolean };
 };
@@ -188,6 +190,7 @@ export function armarPortafolio(compras: CompraLote[], adhesion: Adhesion): Port
       fraccionPagada,
       faroAcreditados: acreditados.length === 0 ? null : acreditados.reduce((a, b) => a + b, 0),
       hayPago,
+      entraAlPlan: planes.length > 0,
     },
     voz: {
       adhirio: adhirioAlManifiestoVrn(adhesion.membresias, adhesion.versiones),
