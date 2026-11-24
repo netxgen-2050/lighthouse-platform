@@ -2,6 +2,7 @@
 // (sin textos vacíos, sin copias sin traducir, y anotado en la revisión nativa).
 import type { Idioma, Textos } from "./tipos";
 import { bandeja } from "./textos/bandeja";
+import { barrios } from "./textos/barrios";
 import { biencomun } from "./textos/bien-comun";
 import { canales } from "./textos/canales";
 import { comunes } from "./textos/comunes";
@@ -27,6 +28,7 @@ import { tribus } from "./textos/tribus";
 
 export const DICCIONARIOS = {
   bandeja,
+  barrios,
   biencomun,
   canales,
   comunes,

@@ -160,3 +160,33 @@ export function alComunPorAnio(e: Entradas): Con<{ filas: FilaComun[] }> | Fallo
 /** Qué parte del presupuesto anual del común cubren las expensas de todos los lotes cuando terminan las ventas (0,35 = 35 %). */
 export const parteDelPresupuestoQueCubren = (): number =>
   (LOTES * BARRIO.expensa.valor) / BARRIO.presupuestoComun.valor;
+
+export type ResumenObraBarrio = {
+  /** USD de infraestructura que financiaría el Token Inversor (con imprevistos y armado legal). null si las entradas no valen. */
+  infraestructura: number | null;
+  /** Lo juntado: siempre null ("sin dato") mientras no haya plata real. */
+  juntado: number | null;
+  /** Mes en que se terminaría de devolver al inversor cobrando a medida que entran las cuotas; null = no dentro del horizonte (o sin dato). */
+  mesDevolucion: number | null;
+  /** Lo que le llega al común en cada año del horizonte (parte de los pagos más expensas). */
+  comunPorAnio: (number | null)[];
+  /** Cantidad de lotes con la que se hace el cálculo. */
+  lotesDelModelo: number;
+};
+
+/**
+ * Un solo resumen de la obra del barrio, compartido por Inicio, Barrio Norte e Invertir: así nadie arma su propio monto.
+ * Sin entradas usa los valores de partida del modelo.
+ */
+export function resumenObraBarrio(e: Entradas = ENTRADAS_DE_PARTIDA): ResumenObraBarrio {
+  const monto = montoALevantar(e);
+  const cobrando = cobrandoConLasCuotas(e);
+  const comun = alComunPorAnio(e);
+  return {
+    infraestructura: monto.ok ? monto.valor : null,
+    juntado: null,
+    mesDevolucion: cobrando.ok ? cobrando.mes : null,
+    comunPorAnio: comun.ok ? comun.filas.map((f) => f.total) : [],
+    lotesDelModelo: LOTES,
+  };
+}

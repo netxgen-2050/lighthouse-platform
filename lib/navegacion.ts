@@ -73,7 +73,7 @@ export const DESTINOS: readonly Destino[] = [
   { href: "/sumarte", clave: "sumarte", icono: Sprout, grupo: "principal", existe: true },
   { href: "/mi-tierra", clave: "miTierra", icono: Mountain, grupo: "principal", existe: false },
   { href: "/territorios/lighthouse", clave: "territorio", icono: MapaIcono, grupo: "explorar", existe: true },
-  { href: "/barrios/norte", clave: "barrios", icono: Building2, grupo: "explorar", existe: false },
+  { href: "/barrios/norte", clave: "barrios", icono: Building2, grupo: "explorar", existe: true },
   { href: "/lotes", clave: "lotes", icono: LandPlot, grupo: "explorar", existe: true },
   { href: "/tribus", clave: "comunidades", icono: Users, grupo: "explorar", existe: true },
   { href: "/pactos", clave: "pactos", icono: FileSignature, grupo: "pausa", existe: true, oculto: true },

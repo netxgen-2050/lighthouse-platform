@@ -174,7 +174,7 @@ test.describe("sin datos guardados sin sesión", () => {
   test.use({ consentimiento: "ninguno" });
 
   test("recorrer las páginas públicas no crea claves en el navegador", async ({ page }) => {
-    for (const ruta of ["/", "/territorios/lighthouse", "/tribus", "/tribus/valle", "/tribus/valle/manifiesto", "/sumarte"]) {
+    for (const ruta of ["/", "/barrios/norte", "/territorios/lighthouse", "/tribus", "/tribus/valle", "/tribus/valle/manifiesto", "/sumarte"]) {
       await page.goto(ruta);
       await expect(page.getByRole("main")).toBeVisible();
       await expect(page.getByText("Prototipo interno · datos de ejemplo").first()).toBeVisible();
@@ -193,7 +193,7 @@ test.describe("sin datos guardados sin sesión", () => {
 });
 
 test.describe("accesibilidad sin sesión", () => {
-  for (const ruta of ["/", "/territorios/lighthouse", "/tribus", "/tribus/valle", "/tribus/valle/manifiesto"]) {
+  for (const ruta of ["/", "/barrios/norte", "/territorios/lighthouse", "/tribus", "/tribus/valle", "/tribus/valle/manifiesto"]) {
     test(`axe sin violaciones serias o críticas en ${ruta}`, async ({ page }) => {
       await page.goto(ruta);
       await expect(page.getByRole("main")).toBeVisible();
