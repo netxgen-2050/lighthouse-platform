@@ -9,11 +9,15 @@
   height: auto;
 }
 
-.mapa-papel {
+/* La capa de las formas se apoya sobre la de fondo (el territorio con el grano del papel). */
+.mapa-ilus-formas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+}
+
+.mapa-papel {
   pointer-events: none;
   mix-blend-mode: multiply;
 }
@@ -180,6 +184,16 @@
   :root:not([data-movimiento="reducido"]) .anim-destello,
   :root:not([data-movimiento="reducido"]) .anim-chispa {
     opacity: 0;
+  }
+
+  /* La ilustración quieta del detalle muestra los detalles ya presentes (brotes, personas) y no anima nada. */
+  :root:not([data-movimiento="reducido"]) .ilus-quieta .anim-brote {
+    transform: scale(1);
+  }
+
+  :root:not([data-movimiento="reducido"]) .ilus-quieta .anim-personas {
+    opacity: 1;
+    transform: none;
   }
 
   :root:not([data-movimiento="reducido"]) .anim-carretilla {

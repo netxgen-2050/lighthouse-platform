@@ -9,10 +9,11 @@ export type Ubicacion = { x: number; y: number };
 export const UBICACIONES: Record<string, Ubicacion> = {
   "comun-legal": { x: 168, y: 296 },
   "comun-token": { x: 404, y: 282 },
-  "comun-cuidado": { x: 806, y: 232 },
+  "comun-cuidado": { x: 820, y: 228 },
   "comun-contratistas": { x: 1030, y: 338 },
   "comun-permacultura": { x: 296, y: 428 },
-  "comun-agua": { x: 628, y: 358 },
+  // Agua: en la desembocadura del cañadón (design §3); Cuidado, a su lado, en la plaza del humedal.
+  "comun-agua": { x: 642, y: 244 },
   "comun-marketing": { x: 872, y: 530 },
   "comun-plataforma": { x: 900, y: 742 },
   "comun-gobernanza": { x: 596, y: 654 },

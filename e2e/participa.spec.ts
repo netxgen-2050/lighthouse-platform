@@ -21,8 +21,8 @@ test("abrir Participa: tarjeta del común, pestaña Equipos marcada y el mapa il
   const nav = page.getByRole("navigation", { name: "Secciones de Participa" });
   await expect(nav.getByRole("link", { name: "Equipos" })).toHaveAttribute("aria-current", "page");
   await expect(nav.getByRole("link", { name: "Visión" })).not.toHaveAttribute("aria-current", "page");
-  await expect(page.locator("svg.mapa-ilus").first()).toHaveAttribute("role", "group");
-  await expect(page.locator("svg.mapa-ilus").first().locator("title")).toHaveText(/Mapa ilustrado del territorio/);
+  await expect(page.locator("svg.mapa-ilus-formas").first()).toHaveAttribute("role", "group");
+  await expect(page.locator("svg.mapa-ilus-formas").first().locator("title")).toHaveText(/Mapa ilustrado del territorio/);
   await expect(page.getByText("Ilustración · no es un plano")).toBeVisible();
   await expect(page.locator("[data-equipo]")).toHaveCount(9);
   // La misma lista, como botones, debajo del mapa.
@@ -55,9 +55,66 @@ test("hover: la forma se destaca y aparece el globo con el nombre y las posicion
   await forma(page, "agua").hover();
   await expect(forma(page, "agua")).toHaveAttribute("data-activa", "");
   await expect(page.getByText(`Agua · ${posiciones("agua")} posiciones abiertas`, { exact: true })).toBeVisible();
-  await expect(page.locator("svg.mapa-ilus").first()).toHaveAttribute("data-activo", "comun-agua");
+  await expect(page.locator("svg.mapa-ilus-formas").first()).toHaveAttribute("data-activo", "comun-agua");
   await page.mouse.move(2, 2);
   await expect(forma(page, "agua")).not.toHaveAttribute("data-activa", "");
+});
+
+test("el foco del teclado y el puntero son independientes: pasar el mouse por otra forma no le quita el contorno a la que tiene foco", async ({ page }) => {
+  await page.goto("/participa");
+  await forma(page, "agua").focus();
+  await expect(forma(page, "agua")).toHaveAttribute("data-activa", "");
+  await forma(page, "legal").hover();
+  await expect(forma(page, "legal")).toHaveAttribute("data-activa", "");
+  await expect(forma(page, "agua")).toHaveAttribute("data-activa", "");
+  await page.mouse.move(2, 2);
+  await expect(forma(page, "legal")).not.toHaveAttribute("data-activa", "");
+  // Agua sigue con foco: conserva el contorno, y el globo vuelve a ser el suyo.
+  await expect(forma(page, "agua")).toBeFocused();
+  await expect(forma(page, "agua")).toHaveAttribute("data-activa", "");
+  await expect(page.getByText(`Agua · ${posiciones("agua")} posiciones abiertas`, { exact: true })).toBeVisible();
+  const contorno = await forma(page, "agua").evaluate((g) => getComputedStyle(g.querySelector(".forma-contorno")!).opacity);
+  expect(contorno).toBe("1");
+});
+
+test("el mapa está de noche en el tema oscuro: luna visible, tokens oscuros y los nueve carteles presentes", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.goto("/participa");
+  await expect(page.locator("html")).toHaveAttribute("data-tema", "oscuro");
+  const luz = () => page.locator("svg.mapa-ilus").first().locator(".ilus-luz").first().evaluate((el) => getComputedStyle(el).opacity);
+  expect(await luz()).toBe("1");
+  const rio = () => page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--color-ilus-rio").trim());
+  const rioNoche = await rio();
+  expect(await page.locator("[data-equipo]").evaluateAll((gs) => gs.filter((g) => g.querySelector(".forma-cartel-texto")).length)).toBe(9);
+  await expect(page.locator("[data-equipo]").first().locator(".forma-cartel-texto").first()).toBeVisible();
+  // De día la luna se apaga y el agua cambia de valor.
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/participa");
+  expect(await luz()).toBe("0");
+  expect(await rio()).not.toBe(rioNoche);
+});
+
+test("el detalle trae la ilustración quieta: nada se anima hasta que se activa una forma del mapa", async ({ page }) => {
+  await page.goto("/participa?equipo=marketing");
+  const d = dialogo(page);
+  await expect(d.getByRole("heading", { level: 2, name: "Marketing y comunicación" })).toBeVisible();
+  const animados = await d.locator("svg.ilus-quieta").evaluate((svg) =>
+    [...svg.querySelectorAll("*")].filter((el) => getComputedStyle(el).animationName !== "none").length,
+  );
+  expect(animados).toBe(0);
+  expect(await d.locator("svg.ilus-quieta .forma").getAttribute("data-activa")).toBeNull();
+});
+
+test("Agua queda en la desembocadura del cañadón y Cuidado junto al humedal", async ({ page }) => {
+  await page.goto("/participa");
+  const caja = async (id: string) => (await forma(page, id).locator(".forma-cuerpo").boundingBox())!;
+  const agua = await caja("agua");
+  const cuidado = await caja("cuidado");
+  const gobernanza = await caja("gobernanza");
+  // Agua está arriba del todo del cañadón (cerca del río), bien por encima del fogón que está en su centro.
+  expect(agua.y).toBeLessThan(gobernanza.y);
+  // Cuidado está a su lado, a la misma altura aproximada.
+  expect(Math.abs(cuidado.y + cuidado.height / 2 - (agua.y + agua.height / 2))).toBeLessThan(agua.height);
 });
 
 test("con Tab: llegar a una forma la destaca igual que el puntero", async ({ page }) => {
@@ -302,7 +359,7 @@ test("sin preferencia de movimiento, activar la forma la eleva y anima su detall
 test("zoom del mapa con los botones + y −", async ({ page }) => {
   await page.goto("/participa");
   const region = page.getByRole("region", { name: /Mapa de equipos/ });
-  const ancho = async () => (await region.locator("svg.mapa-ilus").boundingBox())!.width;
+  const ancho = async () => (await region.locator("svg.mapa-ilus-formas").boundingBox())!.width;
   const base = await ancho();
   await page.getByRole("button", { name: "Acercar" }).click();
   expect(await ancho()).toBeGreaterThan(base * 1.4);
@@ -337,7 +394,7 @@ test.describe("celular a 390 px", () => {
 
   test("el mapa entra entero, el detalle es una hoja inferior y no hay scroll horizontal", async ({ page }) => {
     await page.goto("/participa");
-    const svg = page.locator("svg.mapa-ilus").first();
+    const svg = page.locator("svg.mapa-ilus-formas").first();
     await svg.scrollIntoViewIfNeeded();
     expect((await svg.boundingBox())!.width).toBeLessThanOrEqual(390);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);

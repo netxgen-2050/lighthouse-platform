@@ -16,10 +16,11 @@ const FOCO = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visib
 export function IlustracionDelEquipo({ circuloId }: { circuloId: string }) {
   const Forma = formaDe(circuloId);
   return (
-    <svg viewBox="-140 -150 280 215" className="mapa-ilus rounded-xl border border-faint" aria-hidden="true" focusable="false">
+    <svg viewBox="-140 -150 280 215" className="mapa-ilus ilus-quieta rounded-xl border border-faint" aria-hidden="true" focusable="false">
       <rect x={-140} y={-150} width={280} height={215} fill={C.salvia} fillOpacity={0.55} />
       <rect x={-140} y={-150} width={280} height={215} fill={C.arena} fillOpacity={0.55} />
-      <g className="forma" data-activa="">
+      {/* Versión quieta: sin `data-activa`, nada se mueve (la animación es solo del mapa, con puntero o foco). */}
+      <g className="forma">
         <Forma />
       </g>
     </svg>

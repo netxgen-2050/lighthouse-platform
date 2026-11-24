@@ -21,7 +21,7 @@ const CANADON: Punto[] = [
 ];
 /** Dónde están las formas: el fondo evita llenar de detalle debajo de ellas. */
 const CENTROS: Punto[] = [
-  [168, 296], [404, 282], [806, 232], [1030, 338], [296, 428], [628, 358], [872, 530], [900, 742], [596, 654],
+  [168, 296], [404, 282], [820, 228], [1030, 338], [296, 428], [642, 244], [872, 530], [900, 742], [596, 654],
 ];
 
 const MUESTRAS_CANADON = muestrear(CANADON, 60);
@@ -300,15 +300,16 @@ function Humedal() {
   const a = azar(8);
   const cañas = Array.from({ length: 30 }, (_, i) => {
     const ang = (i / 30) * Math.PI * 2;
-    return { x: n1(660 + Math.cos(ang) * (118 + a() * 8)), y: n1(212 + Math.sin(ang) * (38 + a() * 4)), i };
+    return { x: n1(700 + Math.cos(ang) * (136 + a() * 8)), y: n1(212 + Math.sin(ang) * (38 + a() * 4)), i };
   });
   return (
     <g>
-      <path d="M644 176C650 164 648 156 646 148" fill="none" stroke={C.rio} strokeWidth={22} strokeLinecap="round" />
-      <path d={mancha(662, 212, 132, 46, 71, 0.07, 11)} fill={C.verde} fillOpacity={0.55} />
-      <path d={mancha(662, 212, 116, 36, 72, 0.08, 11)} fill={C.rio} {...TRAZO} strokeOpacity={0.3} />
-      <path d={mancha(654, 216, 84, 22, 73, 0.1, 9)} fill={C.rioHondo} fillOpacity={0.4} />
-      <path d="M590 206q16 -5 32 0M690 224q18 -5 36 0M648 196q12 -4 24 0" fill="none" stroke={C.rioBrillo} strokeWidth={1.8} strokeLinecap="round" strokeOpacity={0.9} />
+      {/* El humedal se abre al este de la desembocadura del cañadón (donde está Agua) y llega hasta la plaza de Cuidado. */}
+      <path d="M690 176C696 164 694 156 692 148" fill="none" stroke={C.rio} strokeWidth={22} strokeLinecap="round" />
+      <path d={mancha(700, 212, 150, 46, 71, 0.07, 11)} fill={C.verde} fillOpacity={0.55} />
+      <path d={mancha(700, 212, 134, 36, 72, 0.08, 11)} fill={C.rio} {...TRAZO} strokeOpacity={0.3} />
+      <path d={mancha(710, 216, 96, 22, 73, 0.1, 9)} fill={C.rioHondo} fillOpacity={0.4} />
+      <path d="M628 206q16 -5 32 0M740 224q18 -5 36 0M690 196q12 -4 24 0" fill="none" stroke={C.rioBrillo} strokeWidth={1.8} strokeLinecap="round" strokeOpacity={0.9} />
       {cañas.map((c) => (
         <path key={c.i} d={`M${c.x} ${c.y}q${n1((a() - 0.5) * 4)} -8 ${n1((a() - 0.5) * 6)} -${n1(10 + a() * 8)}`} fill="none" stroke={C.verdeHondo} strokeWidth={1.6} strokeLinecap="round" />
       ))}
@@ -368,22 +369,25 @@ export function Territorio({ nombres }: { nombres: NombresMapa }) {
       <text x={1090} y={540} fontSize={20} className="ilus-nombre">{nombres.barda}</text>
       <text x={140} y={640} fontSize={20} className="ilus-nombre">{nombres.meseta}</text>
       <text x={660} y={820} fontSize={20} className="ilus-nombre" transform="rotate(-8 660 820)">{nombres.canadon}</text>
-      <text x={534} y={236} fontSize={17} className="ilus-nombre" textAnchor="end">{nombres.humedal}</text>
+      <text x={566} y={206} fontSize={17} className="ilus-nombre" textAnchor="end">{nombres.humedal}</text>
     </g>
   );
 }
 
-/** El grano del papel: un solo filtro sobre toda la lámina. Va en su propio `<svg>`, para no repintarse al pasar el puntero. */
+/**
+ * El grano del papel: un solo filtro sobre el territorio. Va en la capa de fondo, debajo de las formas y los carteles
+ * (que quedan limpios), y esa capa no se repinta al pasar el puntero.
+ */
 export function PapelGranulado() {
   return (
-    <svg className="mapa-papel" viewBox={`0 0 ${ANCHO_MAPA} ${ALTO_MAPA}`} preserveAspectRatio="none" aria-hidden="true" focusable="false">
-      <filter id="ilus-papel" x="0" y="0" width="100%" height="100%" filterUnits="userSpaceOnUse">
+    <g aria-hidden="true">
+      <filter id="ilus-papel" x="0" y="0" width={ANCHO_MAPA} height={ALTO_MAPA} filterUnits="userSpaceOnUse">
         <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="ruido" />
         <feColorMatrix in="ruido" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.6 0 0 0 -0.62" result="grano" />
         <feFlood style={{ floodColor: "var(--color-ilus-trazo)" }} result="tinta" />
         <feComposite in="tinta" in2="grano" operator="in" />
       </filter>
-      <rect width={ANCHO_MAPA} height={ALTO_MAPA} filter="url(#ilus-papel)" opacity="0.4" />
-    </svg>
+      <rect className="mapa-papel" width={ANCHO_MAPA} height={ALTO_MAPA} filter="url(#ilus-papel)" opacity="0.4" />
+    </g>
   );
 }

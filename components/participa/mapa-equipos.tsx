@@ -55,7 +55,11 @@ export function MapaEquipos({ equipos, inicial, nombres }: { equipos: EquipoVist
   const idDesc = `${idUnico}-desc`;
   const idDialogo = `${idUnico}-equipo`;
   const [zoom, setZoom] = useState<number>(1);
-  const [activo, setActivo] = useState<string | null>(null);
+  // El puntero y el foco del teclado son estados aparte: si la persona llega con Tab a una forma y pasa el mouse por otra,
+  // las dos quedan destacadas, y el globo sigue al puntero (o al foco si no hay puntero encima).
+  const [puntero, setPuntero] = useState<string | null>(null);
+  const [foco, setFoco] = useState<string | null>(null);
+  const activo = puntero ?? foco;
   const [abierto, setAbierto] = useState<string | null>(() => (equipos.some((e) => e.id === inicial) ? inicial : null));
   const dialogo = useRef<HTMLDialogElement>(null);
   const disparador = useRef<Element | null>(null);
@@ -112,21 +116,24 @@ export function MapaEquipos({ equipos, inicial, nombres }: { equipos: EquipoVist
           className={`overflow-auto rounded-2xl border-2 border-faint bg-surface ${FOCO}`}
         >
           <div className="relative" style={{ width: `${zoom * 100}%` }}>
+            {/* Capa de fondo: el territorio con el grano del papel. Va debajo de las formas y los carteles, que quedan limpios. */}
+            <svg viewBox={`0 0 ${ANCHO_MAPA} ${ALTO_MAPA}`} className="mapa-ilus" aria-hidden="true" focusable="false">
+              <DefsIlustracion />
+              <Territorio nombres={nombres} />
+              <PapelGranulado />
+            </svg>
+            {/* Capa de las formas: la que se lee y se usa. */}
             <svg
               viewBox={`0 0 ${ANCHO_MAPA} ${ALTO_MAPA}`}
               role="group"
               aria-labelledby={idTitulo}
               aria-describedby={idDesc}
-              className="mapa-ilus"
+              className="mapa-ilus mapa-ilus-formas"
               data-activo={activo ?? undefined}
             >
               <title id={idTitulo}>{t.mapa.svgTitulo}</title>
               <desc id={idDesc}>{t.mapa.svgDesc}</desc>
-              <DefsIlustracion />
-              <g aria-hidden="true">
-                <Territorio nombres={nombres} />
-                <rect className="mapa-velo" width={ANCHO_MAPA} height={ALTO_MAPA} />
-              </g>
+              <rect className="mapa-velo" width={ANCHO_MAPA} height={ALTO_MAPA} aria-hidden="true" />
               {equipos.map((e, i) => {
                 const { x, y } = ubicacionDe(e.id, i);
                 const Forma = formaDe(e.id);
@@ -139,14 +146,14 @@ export function MapaEquipos({ equipos, inicial, nombres }: { equipos: EquipoVist
                     tabIndex={0}
                     aria-label={t.mapa.etiquetaForma(e.nombre, cantidad)}
                     data-equipo={e.id}
-                    data-activa={activo === e.id ? "" : undefined}
+                    data-activa={puntero === e.id || foco === e.id ? "" : undefined}
                     transform={`translate(${x} ${y})`}
                     onClick={(ev) => abrir(e.id, ev.currentTarget)}
                     onKeyDown={(ev) => alTeclear(ev, e.id)}
-                    onPointerEnter={() => setActivo(e.id)}
-                    onPointerLeave={() => setActivo((a) => (a === e.id ? null : a))}
-                    onFocus={() => setActivo(e.id)}
-                    onBlur={() => setActivo((a) => (a === e.id ? null : a))}
+                    onPointerEnter={() => setPuntero(e.id)}
+                    onPointerLeave={() => setPuntero((a) => (a === e.id ? null : a))}
+                    onFocus={() => setFoco(e.id)}
+                    onBlur={() => setFoco((a) => (a === e.id ? null : a))}
                   >
                     {/* Zona sensible: más grande que el dibujo, para que sea fácil acertar. */}
                     <ellipse cx={0} cy={-26} rx={124} ry={96} fill="none" pointerEvents="all" />
@@ -160,7 +167,6 @@ export function MapaEquipos({ equipos, inicial, nombres }: { equipos: EquipoVist
                 );
               })}
             </svg>
-            <PapelGranulado />
             {globo && posGlobo && (
               <p
                 aria-hidden="true"
