@@ -43,7 +43,7 @@
 
 /* Nombres del territorio: cursiva de Fraunces con halo del color del papel, legible sobre cualquier fondo. */
 .ilus-nombre {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-fraunces), Georgia, serif;
   font-style: italic;
   font-weight: 600;
   fill: var(--color-ink);
@@ -102,7 +102,7 @@
 }
 
 .forma-cartel-texto {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: var(--font-fraunces), Georgia, serif;
   font-weight: 600;
   fill: var(--color-ink);
 }
@@ -112,7 +112,7 @@
 }
 
 .forma-cartel-cifra {
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-inter-tight), system-ui, sans-serif;
   font-weight: 700;
   fill: var(--color-surface);
 }

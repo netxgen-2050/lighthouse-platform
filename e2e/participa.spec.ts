@@ -207,12 +207,11 @@ test("link directo: /participa?equipo=agua abre el detalle del equipo Agua", asy
   await expect(page.locator("[data-equipo]")).toHaveCount(9);
 });
 
-test("Visión: las 12 comunidades de ejemplo con la marca y el aviso", async ({ page }) => {
+test("Visión: es el manifiesto y no el mapa ni las comunidades de ejemplo (el detalle está en participa-vision.spec.ts)", async ({ page }) => {
   await page.goto("/participa?ver=vision");
   await expect(page.getByRole("link", { name: "Visión" })).toHaveAttribute("aria-current", "page");
-  await expect(page.getByText(/^Ejemplo, a definir: estas comunidades son ejemplos para pensar hacia dónde va el Lighthouse/)).toBeVisible();
-  await expect(page.locator("main ul > li > a[href^='/tribus/']:not([aria-label])")).toHaveCount(12);
-  await expect(page.getByRole("heading", { level: 2, name: "Comunidades activas" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Lighthouse 2050" })).toBeVisible();
+  await expect(page.locator("main ul > li > a[href^='/tribus/']:not([aria-label])")).toHaveCount(0);
   await expect(page.locator("[data-equipo]")).toHaveCount(0);
 });
 

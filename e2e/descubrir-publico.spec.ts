@@ -30,8 +30,8 @@ test.describe("páginas públicas sin sesión", () => {
     await expect(page.getByRole("heading", { level: 1, name: /Regenerar desde el agua/ })).toBeVisible();
     await page.goto("/participa?ver=vision");
     await expect(page.getByRole("heading", { level: 1, name: "Participa" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Sumate para proponer una comunidad" }).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: /Proponer una comunidad para el Barrio/ })).toHaveCount(0);
+    await expect(page.getByRole("heading", { level: 2, name: "Lighthouse 2050" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Conocé los equipos" })).toHaveAttribute("href", "/participa");
   });
 
   test("Sumarte es público y las páginas internas llevan a Sumarte con el aviso del plan que las habilita", async ({ page }) => {

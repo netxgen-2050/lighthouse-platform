@@ -55,10 +55,6 @@ const es = {
       "a-definir": "A definir",
     },
   },
-  vision: {
-    titulo: "Visión · las comunidades",
-    intro: "Hacia dónde puede ir el Lighthouse: doce barrios, una tribu en cada uno.",
-  },
 };
 
 const en: Textos<typeof es> = {
@@ -108,10 +104,6 @@ const en: Textos<typeof es> = {
       voluntariado: "Volunteering",
       "a-definir": "To be defined",
     },
-  },
-  vision: {
-    titulo: "Vision · the communities",
-    intro: "Where the Lighthouse may go: twelve neighborhoods, one tribe in each.",
   },
 };
 
