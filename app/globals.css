@@ -12,6 +12,7 @@
   --color-surface-2: #efeadd;
   --color-ink: #14241a;
   --color-muted: #566258;
+  /* Único valor que se aparta del mock-up v6: era #8a8678 (3,28:1 sobre bg); se oscurece para llegar a AA (4,5:1). */
   --color-faint: #6f6b5d;
   --color-line: #e0d9c8;
   --color-deep: #154626;

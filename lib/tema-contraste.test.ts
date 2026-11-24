@@ -111,7 +111,34 @@ describe.each([
   });
 });
 
-test("la paleta es la de antes del rediseño: hueso con verde profundo en claro, verde casi negro con verde claro en oscuro", () => {
-  expect([CLARO.bg, CLARO.deep]).toEqual(["#f6f3ea", "#154626"]);
-  expect([OSCURO.bg, OSCURO.deep]).toEqual(["#101a14", "#8fd0a0"]);
+// Paleta de antes del rediseño (git show 1b6ed24^:app/globals.css). Única excepción: "faint" claro, oscurecido para llegar a AA.
+// regen-* y vidrio son tokens nuevos del rediseño: no tienen valor de antes.
+const ANTES_CLARO: Record<string, string> = {
+  bg: "#f6f3ea", surface: "#fffdf7", "surface-2": "#efeadd", ink: "#14241a", muted: "#566258", line: "#e0d9c8",
+  deep: "#154626", "deep-2": "#1d5731", "on-deep": "#f6f3ea", "on-deep-muted": "#b7d4bf",
+  green: "#3c8c4b", "green-soft": "#dcebdf", gold: "#eda100", "gold-soft": "#fdf0c9", "gold-ink": "#6e4d00",
+  blue: "#2a78d6", "blue-soft": "#dde9f8", gray: "#9b978a", "warn-bg": "#fff3d6", "warn-ink": "#5d4300",
+  water: "#dbe7e4", danger: "#991b1b", violet: "#6b3fa0", "violet-soft": "#e6dcf3", clay: "#c2571a",
+  "clay-ink": "#7a3408", rose: "#a8325e", "rose-soft": "#f6dbe5",
+};
+const ANTES_OSCURO: Record<string, string> = {
+  bg: "#101a14", surface: "#17251d", "surface-2": "#203128", ink: "#eef1e8", muted: "#b9c4bb", faint: "#93a095", line: "#33473b",
+  deep: "#8fd0a0", "deep-2": "#aadfb8", "on-deep": "#0d1f14", "on-deep-muted": "#1f4a2c",
+  green: "#6fc283", "green-soft": "#1d3a28", gold: "#8a5d00", "gold-soft": "#3a2d0a", "gold-ink": "#f2c25a",
+  blue: "#6aa8f0", "blue-soft": "#1c2f4a", gray: "#8a9a8f", "warn-bg": "#3a2d0a", "warn-ink": "#f3d58a",
+  water: "#1a2e2e", danger: "#f19a9a", violet: "#b799e0", "violet-soft": "#2f2347", clay: "#e08a4f",
+  "clay-ink": "#f0b48a", rose: "#e58aab", "rose-soft": "#3d1f2d",
+};
+
+test.each([
+  ["claro", CLARO, ANTES_CLARO],
+  ["oscuro", OSCURO, ANTES_OSCURO],
+] as const)("la paleta del tema %s es la de antes del rediseño, token por token", (_n, actual, antes) => {
+  for (const [token, valor] of Object.entries(antes)) {
+    expect(actual[token]?.toLowerCase(), `token ${token}`).toBe(valor);
+  }
+});
+
+test("faint claro es la única excepción: oscurecido de #8a8678 a #6f6b5d para llegar a AA", () => {
+  expect(CLARO.faint).toBe("#6f6b5d");
 });
