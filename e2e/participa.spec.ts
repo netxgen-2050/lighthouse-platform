@@ -7,6 +7,12 @@ import { expect, test, type Locator, type Page } from "./fixtura";
 const posiciones = (id: string) => POSICIONES[`comun-${id}`].length;
 const forma = (page: Page, id: string): Locator => page.locator(`[data-equipo="comun-${id}"]`);
 const dialogo = (page: Page): Locator => page.getByRole("dialog");
+/** Espera a que React haya hidratado las formas: antes, un foco o un puntero no llegan a ningún manejador. */
+const hidratada = (page: Page) =>
+  page.waitForFunction(() => {
+    const g = document.querySelector("[data-equipo]");
+    return g !== null && Object.keys(g).some((k) => k.startsWith("__reactProps"));
+  });
 const graves = async (page: Page) => {
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   return r.violations
@@ -62,6 +68,7 @@ test("hover: la forma se destaca y aparece el globo con el nombre y las posicion
 
 test("el foco del teclado y el puntero son independientes: pasar el mouse por otra forma no le quita el contorno a la que tiene foco", async ({ page }) => {
   await page.goto("/participa");
+  await hidratada(page);
   await forma(page, "agua").focus();
   await expect(forma(page, "agua")).toHaveAttribute("data-activa", "");
   await forma(page, "legal").hover();
@@ -73,8 +80,8 @@ test("el foco del teclado y el puntero son independientes: pasar el mouse por ot
   await expect(forma(page, "agua")).toBeFocused();
   await expect(forma(page, "agua")).toHaveAttribute("data-activa", "");
   await expect(page.getByText(`Agua · ${posiciones("agua")} posiciones abiertas`, { exact: true })).toBeVisible();
-  const contorno = await forma(page, "agua").evaluate((g) => getComputedStyle(g.querySelector(".forma-contorno")!).opacity);
-  expect(contorno).toBe("1");
+  // El contorno aparece con una transición de 0,2 s: se espera a que termine en vez de leerlo una sola vez.
+  await expect(forma(page, "agua").locator(".forma-contorno")).toHaveCSS("opacity", "1");
 });
 
 test("el mapa está de noche en el tema oscuro: luna visible, tokens oscuros y los nueve carteles presentes", async ({ page }) => {
@@ -119,6 +126,7 @@ test("Agua queda en la desembocadura del cañadón y Cuidado junto al humedal", 
 
 test("con Tab: llegar a una forma la destaca igual que el puntero", async ({ page }) => {
   await page.goto("/participa");
+  await hidratada(page);
   let llego = false;
   for (let i = 0; i < 60 && !llego; i++) {
     await page.keyboard.press("Tab");
