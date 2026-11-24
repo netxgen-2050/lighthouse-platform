@@ -14,6 +14,7 @@ export const GLOSARIO = {
   descubrir: { es: "Descubrir", en: "Discover" },
   viene: { es: "Lo que viene", en: "Coming next" },
   explorar: { es: "Explorar", en: "Explore" },
+  participa: { es: "Participa", en: "Take part" },
   invertir: { es: "Invertir", en: "Invest" },
   miTierra: { es: "Mi tierra", en: "My land" },
   barrios: { es: "Barrios", en: "Neighborhoods" },

@@ -59,7 +59,7 @@ export function MiTierraCliente() {
           {t.sinCompras.titulo}
         </h2>
         <p className="max-w-3xl">{t.sinCompras.texto}</p>
-        <Link href="/lotes" className={ENLACE}>
+        <Link href="/explorar#lotes" className={ENLACE}>
           {t.sinCompras.ver}
         </Link>
         <Voz adhesion={portafolio.voz} />

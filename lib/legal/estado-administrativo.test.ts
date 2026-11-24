@@ -56,10 +56,9 @@ describe("estado administrativo", () => {
     expect(n.supuestoDeTrabajo).toContain("no otorgada");
     expect(n.en?.supuestoDeTrabajo).toContain("not granted");
   });
-  it("la lista de vistas con lotes incluye el territorio, /lotes y una ficha de cada grupo", () => {
+  it("la lista de vistas con lotes incluye Explorar y una ficha de cada grupo", () => {
     const de = (ruta: string) => VISTAS_CON_LOTES.find((v) => v.ruta === ruta)?.proyectos;
-    expect(de("/territorios/lighthouse")).toEqual(["soluna", "lighthouse-primeros", "lighthouse-norte"]);
-    expect(de("/lotes")).toEqual(["lighthouse-primeros", "lighthouse-norte"]);
+    expect(de("/explorar")).toEqual(["soluna", "lighthouse-primeros", "lighthouse-norte"]);
     expect(de("/lotes/lote-1")).toEqual(["lighthouse-norte"]);
     expect(de("/lotes/lote-535")).toEqual(["lighthouse-primeros"]);
   });

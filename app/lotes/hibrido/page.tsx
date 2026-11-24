@@ -53,7 +53,7 @@ export default async function HibridoPage() {
   return (
     <div className="mx-auto max-w-4xl p-6 sm:p-10">
       <p className="mb-2 text-sm">
-        <Link className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/lotes">
+        <Link className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/explorar#lotes">
           {t.volverALista}
         </Link>
       </p>

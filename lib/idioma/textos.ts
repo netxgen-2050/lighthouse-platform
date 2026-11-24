@@ -8,6 +8,7 @@ import { canales } from "./textos/canales";
 import { comunes } from "./textos/comunes";
 import { compromisos } from "./textos/compromisos";
 import { configuracion } from "./textos/configuracion";
+import { explorar } from "./textos/explorar";
 import { fogon } from "./textos/fogon";
 import { fogonConsultas } from "./textos/fogon-consultas";
 import { fogonPropuestas } from "./textos/fogon-propuestas";
@@ -36,6 +37,7 @@ export const DICCIONARIOS = {
   comunes,
   compromisos,
   configuracion,
+  explorar,
   fogon,
   fogonConsultas,
   fogonPropuestas,

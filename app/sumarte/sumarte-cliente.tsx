@@ -567,7 +567,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
         <p className="max-w-3xl text-sm">{t.comprarLote.texto(monto(MODELO_LOTES.precioLote.min))}</p>
         <EstadoAdministrativo proyecto="lighthouse-primeros" compacto idioma={idioma} />
         <EstadoAdministrativo proyecto="lighthouse-norte" compacto idioma={idioma} />
-        <Link className="w-fit rounded-lg border border-muted px-4 py-1.5 font-medium hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/lotes">
+        <Link className="w-fit rounded-lg border border-muted px-4 py-1.5 font-medium hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/explorar#lotes">
           {t.comprarLote.enlace}
         </Link>
       </section>

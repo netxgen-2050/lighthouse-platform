@@ -21,15 +21,13 @@ function rutasDeApp(dir = APP, ruta = ""): string[] {
 
 test("el orden de la lista es el de la spec", () => {
   expect(DESTINOS.map((d) => etiquetaDeDestino(d, "es"))).toEqual([
+    "Inicio",
     "Explorar",
+    "Participa",
     "Bien común",
     "Invertir",
     "Sumarte",
     "Mi tierra",
-    "Territorio",
-    "Barrios",
-    "Lotes",
-    "Comunidades",
     "Pactos",
     "Semillas",
     "Fogón",
@@ -47,8 +45,8 @@ test("el orden de la lista es el de la spec", () => {
 
 test("los grupos del menú y del menú de la persona salen de la lista única", () => {
   const etiquetas = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "es"));
-  expect(etiquetas("principal")).toEqual(["Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
-  expect(etiquetas("explorar")).toEqual(["Territorio", "Barrios", "Lotes", "Comunidades"]);
+  // Participa se declara pero todavía no existe su página: no se muestra.
+  expect(etiquetas("principal")).toEqual(["Inicio", "Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
   expect(etiquetas("persona")).toEqual(["Perfil", "Pasaporte", "Mi recorrido", "Configuración", "Mis datos"]);
   expect(etiquetas("interno")).toEqual(["NetX", "Admin"]);
   expect(etiquetas("pausa")).toEqual([]);
@@ -56,22 +54,23 @@ test("los grupos del menú y del menú de la persona salen de la lista única", 
 
 test("en inglés los destinos dicen lo que fija el glosario", () => {
   const ingles = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "en"));
-  expect(ingles("principal")).toEqual(["Explore", "Commons", "Invest", "Join", "My land"]);
-  expect(ingles("explorar")).toEqual(["Territory", "Neighborhoods", "Lots", "Communities"]);
+  expect(ingles("principal")).toEqual(["Home", "Explore", "Commons", "Invest", "Join", "My land"]);
+  expect(DESTINOS.find((d) => d.href === "/participa")).toBeDefined();
+  expect(etiquetaDeDestino(DESTINOS.find((d) => d.href === "/participa")!, "en")).toBe("Take part");
   expect(ingles("persona")).toEqual(["Profile", "Passport", "My journey", "Settings", "My data"]);
   const todos = DESTINOS.map((d) => etiquetaDeDestino(d, "en"));
-  expect(todos).toEqual(expect.arrayContaining(["Invest", "My land", "Neighborhoods", "Semillas"]));
+  expect(todos).toEqual(expect.arrayContaining(["Invest", "My land", "Semillas"]));
 });
 
-test("Invertir, Barrios y Mi tierra ya existen", () => {
-  for (const href of ["/invertir", "/barrios/norte", "/mi-tierra"]) {
+test("Explorar, Invertir y Mi tierra ya existen", () => {
+  for (const href of ["/explorar", "/invertir", "/mi-tierra"]) {
     expect(DESTINOS.find((d) => d.href === href)?.existe, href).toBe(true);
   }
 });
 
 test("los cinco destinos en pausa existen, están ocultos y no aparecen en ningún grupo", () => {
   const pausa = ["/fogon", "/pactos", "/semillas", "/compromisos", "/congreso"];
-  const grupos = ["principal", "explorar", "pausa", "persona", "interno"] as const;
+  const grupos = ["principal", "pausa", "persona", "interno"] as const;
   const visibles = grupos.flatMap((g) => destinosDeGrupo(g)).map((d) => d.href);
   for (const href of pausa) {
     const d = DESTINOS.find((x) => x.href === href);
@@ -81,14 +80,16 @@ test("los cinco destinos en pausa existen, están ocultos y no aparecen en ning�
   }
 });
 
-test("destinoActivo: Explorar abarca sus cuatro secciones y las páginas en pausa no marcan ninguno", () => {
+test("destinoActivo: Inicio solo en la raíz, Explorar abarca sus secciones y las páginas en pausa no marcan ninguno", () => {
   const clave = (ruta: string) => destinoActivo(ruta)?.clave;
-  expect(clave("/")).toBe("explorar");
+  expect(clave("/")).toBe("inicio");
+  expect(clave("/explorar")).toBe("explorar");
   expect(clave("/lotes/hibrido")).toBe("explorar");
+  expect(clave("/lotes/x")).toBe("explorar");
   expect(clave("/lotes")).toBe("explorar");
   expect(clave("/territorios/lighthouse")).toBe("explorar");
   expect(clave("/barrios/norte")).toBe("explorar");
-  expect(clave("/tribus/valle")).toBe("explorar");
+  expect(clave("/tribus/valle")).toBeUndefined();
   expect(clave("/bien-comun")).toBe("biencomun");
   expect(clave("/sumarte")).toBe("sumarte");
   expect(clave("/fogon")).toBeUndefined();
@@ -99,22 +100,21 @@ test("destinoActivo: Explorar abarca sus cuatro secciones y las páginas en paus
 
 test("con `oculto` puesto el menú trae solo los principales; quitándolo, Compromisos vuelve después de los cinco", () => {
   const etiquetas = () => destinosDelMenu().map((d) => etiquetaDeDestino(d, "es"));
-  expect(etiquetas()).toEqual(["Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
+  expect(etiquetas()).toEqual(["Inicio", "Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
   const compromisos = DESTINOS.find((d) => d.href === "/compromisos") as { oculto?: true };
   compromisos.oculto = undefined;
   try {
-    expect(etiquetas()).toEqual(["Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra", "Compromisos"]);
+    expect(etiquetas()).toEqual(["Inicio", "Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra", "Compromisos"]);
     expect(destinoActivo("/compromisos")?.clave).toBe("compromisos");
   } finally {
     compromisos.oculto = true;
   }
-  expect(etiquetas()).toEqual(["Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
+  expect(etiquetas()).toEqual(["Inicio", "Explorar", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
 });
 
-test("Lotes existe y aparece en la subnavegación de Explorar", () => {
-  const lotes = DESTINOS.find((d) => d.href === "/lotes");
-  expect(lotes?.existe).toBe(true);
-  expect(destinosDeGrupo("explorar").some((d) => d.href === "/lotes")).toBe(true);
+test("la subnavegación de Explorar ya no existe: no hay destinos de Territorio, Barrios, Lotes ni Comunidades", () => {
+  const hrefs = DESTINOS.map((d) => d.href);
+  for (const href of ["/territorios/lighthouse", "/barrios/norte", "/lotes", "/tribus"]) expect(hrefs).not.toContain(href);
 });
 
 test("todo destino oculto existe", () => {
@@ -143,7 +143,7 @@ test("solo destinos que existen: sin la ruta /panel no se muestra Mi recorrido",
   const etiquetas = destinosDisponibles().map((d) => etiquetaDeDestino(d, "es"));
   // Mientras app/ no tenga /panel; el día que exista, el test de coincidencia obliga a poner existe: true.
   expect(atiende("/panel", rutasDeApp())).toBe(etiquetas.includes("Mi recorrido"));
-  expect(etiquetas).toContain("Comunidades");
+  expect(etiquetas).toContain("Explorar");
   expect(destinosDisponibles().every((d) => d.existe)).toBe(true);
 });
 

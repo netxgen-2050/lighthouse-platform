@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { urlExplorar } from "@/lib/explorar/destino";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
 import { EnEspanol } from "@/components/en-espanol";
 import { EstadoAdministrativo } from "@/components/estado-administrativo";
@@ -16,7 +17,10 @@ export function generateStaticParams() {
   return listarTerritorios().map((t) => ({ id: t.id }));
 }
 
-type Props = { params: Promise<{ id: string }> };
+type Props = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = buscarTerritorio((await params).id);
@@ -26,8 +30,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const tarjeta = "grid content-start gap-3 rounded-xl border border-faint bg-surface p-4";
 
-export default async function TerritorioPage({ params }: Props) {
+export default async function TerritorioPage({ params, searchParams }: Props) {
   const { id } = await params;
+  // Lighthouse ahora es la sección Territorio de Explorar (spec explorar-unificado); el mapa conserva vista, fase y sel.
+  if (id === "lighthouse") redirect(urlExplorar("territorio", await searchParams));
   const idioma = await idiomaDelPedido();
   const base = buscarTerritorio(id);
   if (!base) notFound();

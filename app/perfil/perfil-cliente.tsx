@@ -49,7 +49,7 @@ function comunidadesDe(m: Membresias): Comunidad[] {
   const salida: Comunidad[] = [];
   for (const [id, estado] of Object.entries(m)) {
     if (id === COMUNIDAD_LIGHTHOUSE) {
-      salida.push({ id, nombre: "Lighthouse", href: "/territorios/lighthouse", estado });
+      salida.push({ id, nombre: "Lighthouse", href: "/explorar#territorio", estado });
     } else {
       const tribu = buscarTribu(id);
       salida.push({ id, nombre: tribu ? tribu.nombre : id, href: tribu ? `/tribus/${id}` : "/tribus", estado });

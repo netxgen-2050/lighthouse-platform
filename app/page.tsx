@@ -20,7 +20,6 @@ export default async function Home({ searchParams }: Props) {
   const caminos = caminosDePortada(idioma);
   const cifras = cifrasDePortada(idioma);
   const capitales = capitalesDePortada(idioma);
-  const hayLotes = DESTINOS.some((d) => d.href === "/lotes" && d.existe);
   const haySumarte =DESTINOS.some((d) => d.href === "/sumarte" && d.existe);
   return (
     <div className="min-h-full">
@@ -36,10 +35,10 @@ export default async function Home({ searchParams }: Props) {
         <p className="text-lg text-ink">{t.bajada}</p>
         <p className="flex flex-wrap items-center gap-4">
           <Link
-            href={hayLotes ? "/lotes" : "/territorios/lighthouse"}
+            href="/explorar#lotes"
             className="inline-block rounded-full bg-deep px-5 py-3 font-medium text-on-deep hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
           >
-            {hayLotes ? t.verLotes : t.caminos.territorio.titulo}
+            {t.verLotes}
           </Link>
           {haySumarte && (
             <Link

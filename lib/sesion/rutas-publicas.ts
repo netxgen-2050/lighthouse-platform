@@ -4,6 +4,8 @@
  */
 export const RUTAS_PUBLICAS: readonly RegExp[] = [
   /^\/$/,
+  // Explorar: Territorio, Barrio Norte y Lotes en una sola página (explorar-unificado). Las direcciones viejas redirigen acá.
+  /^\/explorar$/,
   /^\/territorios\/[^/]+$/,
   /^\/tribus$/,
   /^\/tribus\/[^/]+$/,

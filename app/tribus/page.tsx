@@ -106,7 +106,7 @@ function FrenteItem({ f, idioma, futuro }: { f: Frente; idioma: Idioma; futuro: 
             {" · "}
             <Link
               className="underline"
-              href={`/territorios/lighthouse?vista=ahora${esDeHoy(f) ? "" : `&fase=${f.desde}`}&sel=${f.id}`}
+              href={`/explorar?vista=ahora${esDeHoy(f) ? "" : `&fase=${f.desde}`}&sel=${f.id}#territorio`}
               aria-label={`${textos("territorio", idioma).verEnMapa} · ${f.nombre}`}
             >
               {textos("territorio", idioma).verEnMapa}
