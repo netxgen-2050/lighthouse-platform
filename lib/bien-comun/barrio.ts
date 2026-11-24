@@ -93,17 +93,17 @@ export function cobrosPorMes(e: Entradas): Con<{ valor: number[] }> | Fallo {
   return { ok: true, valor: cobros(e) };
 }
 
-/** Si el fideicomiso cobra a medida que entran las cuotas: mes en que se termina de devolver (null = no en el horizonte), total y sobrante. */
-export function cobrandoConLasCuotas(
-  e: Entradas,
-): Con<{ mes: number | null; totalRecibido: number; sobranteFideicomiso: number }> | Fallo {
-  if (!valida(e)) return { ok: false };
+/** Simula el cobro con las cuotas, mes a mes (0 a 72). Una sola fuente para el resultado y para la serie de la curva. */
+function simularCobroConCuotas(e: Entradas) {
   let debido = montoSinValidar(e);
   let prima = 0;
   let total = 0;
   let sobrante = 0;
   let mesFinal: number | null = null;
+  const devueltoPorMes: number[] = [];
+  const devueltoEnElMes: number[] = [];
   cobros(e).forEach((pagado, mes) => {
+    const antes = total;
     if (mesFinal === null && mes > 0) prima += (debido * e.prima) / 12;
     let caja = pagado * PARTE_DEL_FIDEICOMISO;
     if (mesFinal === null) {
@@ -117,8 +117,49 @@ export function cobrandoConLasCuotas(
       if (debido < 0.5 && prima < 0.5) mesFinal = mes;
     }
     sobrante += caja;
+    devueltoPorMes.push(total);
+    devueltoEnElMes.push(total - antes);
   });
-  return { ok: true, mes: mesFinal, totalRecibido: total, sobranteFideicomiso: sobrante };
+  return { mes: mesFinal as number | null, total, sobrante, devueltoPorMes, devueltoEnElMes };
+}
+
+/** Si el fideicomiso cobra a medida que entran las cuotas: mes en que se termina de devolver (null = no en el horizonte), total y sobrante. */
+export function cobrandoConLasCuotas(
+  e: Entradas,
+): Con<{ mes: number | null; totalRecibido: number; sobranteFideicomiso: number }> | Fallo {
+  if (!valida(e)) return { ok: false };
+  const s = simularCobroConCuotas(e);
+  return { ok: true, mes: s.mes, totalRecibido: s.total, sobranteFideicomiso: s.sobrante };
+}
+
+export type MesDelBarrio = {
+  mes: number;
+  /** Lo que pagan los compradores ese mes. */
+  pagado: number;
+  /** Lo que entra al fideicomiso (su parte de lo pagado). */
+  alFideicomiso: number;
+  /** Lo que se le devuelve al inversor ese mes. */
+  devueltoEnElMes: number;
+  /** Lo devuelto al inversor hasta ese mes, acumulado. */
+  devueltoAcumulado: number;
+  /** La parte de lo pagado que va al común. */
+  alComun: number;
+};
+
+/** Serie mensual (mes 0 a 72) del cobro con las cuotas, para la curva y el libro. Sale de la misma simulación que `cobrandoConLasCuotas`. */
+export function serieMensualDelBarrio(e: Entradas): Con<{ meses: MesDelBarrio[]; aportado: number }> | Fallo {
+  if (!valida(e)) return { ok: false };
+  const s = simularCobroConCuotas(e);
+  const pagos = cobros(e);
+  const meses = pagos.map((pagado, mes) => ({
+    mes,
+    pagado,
+    alFideicomiso: pagado * PARTE_DEL_FIDEICOMISO,
+    devueltoEnElMes: s.devueltoEnElMes[mes],
+    devueltoAcumulado: s.devueltoPorMes[mes],
+    alComun: pagado * BARRIO.parteComun.valor,
+  }));
+  return { ok: true, meses, aportado: montoSinValidar(e) };
 }
 
 /** Si se hubiera prometido devolver todo en `meses`: caja del fideicomiso a esa fecha sobre lo que debe (0,21 = 21 %). */

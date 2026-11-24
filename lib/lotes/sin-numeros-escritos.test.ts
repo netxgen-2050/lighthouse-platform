@@ -71,6 +71,11 @@ const ARCHIVOS = [
   ...archivos(path.join(RAIZ, "app", "mi-tierra")),
   ...archivos(path.join(RAIZ, "lib", "mi-tierra")),
   path.join(RAIZ, "lib", "idioma", "textos", "mi-tierra.ts"),
+  // Invertir (rediseno-invertir): sus números salen de los módulos del bien común y de lotes.
+  ...archivos(path.join(RAIZ, "app", "invertir")),
+  ...archivos(path.join(RAIZ, "components", "invertir")),
+  ...archivos(path.join(RAIZ, "lib", "invertir")),
+  path.join(RAIZ, "lib", "idioma", "textos", "invertir.ts"),
 ].filter(existsSync);
 
 // Nada sobre FARO o el tesoro del común habla de ganancia, retorno, valorización ni precio de FARO (spec bien-comun-propuesta).

@@ -76,6 +76,20 @@ test("hay 48 rutas auditadas", () => {
   expect(rutas).toHaveLength(48);
 });
 
+// Invertir (rediseno-invertir), con sesión y con la tabla de la curva abierta: en los dos idiomas y los dos temas.
+for (const idioma of ["es", "en"] as const) {
+  for (const tema of ["oscuro", "claro"] as const) {
+    test(`axe sin violaciones serias o críticas: /invertir con sesión, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
+      await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+      await page.goto("/invertir");
+      await expect(page.locator('svg[data-curva="devolucion"]')).toBeVisible();
+      await page.locator("details summary").first().click();
+      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+      expect(await graves(page)).toEqual([]);
+    });
+  }
+}
+
 // Mi tierra (rediseno-mi-tierra), con una compra en cuotas: en los dos idiomas y los dos temas. Sin compras ya entra en `rutas`.
 for (const idioma of ["es", "en"] as const) {
   for (const tema of ["oscuro", "claro"] as const) {
