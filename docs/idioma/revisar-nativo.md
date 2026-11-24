@@ -10,7 +10,7 @@ Fuentes pendientes: 46
 
 | Fuente | Qué es | Textos en inglés |
 |---|---|---|
-| `glosario` | Glosario de términos de la plataforma (Pase Fundador, Fogón…); confirmado por Gus el 15-oct-2026, falta el nativo | 25 |
+| `glosario` | Glosario de términos de la plataforma (Pase Fundador, Fogón…); confirmado por Gus el 15-oct-2026, falta el nativo | 30 |
 | `lib/compromisos/mercado.ts` | Ofertas de ejemplo del Mercado con su inglés, traducidas del español (las que publica la persona no se traducen) | — |
 | `lib/congreso/evento-ejemplo.ts` | Página del Congreso en inglés (/congreso/en): datos de ejemplo del evento | — |
 | `lib/economia/terminos.ts` | Término económico 🌱 de Semillas en inglés (borrador, sin revisión) | — |
@@ -46,7 +46,7 @@ Fuentes pendientes: 46
 | `textos/hibrido` | Qué es tuyo y qué es de todos: tabla de lo privado y lo común, aporte de cada lote, tres escenarios de costo del bien común, calculadora, preguntas para Vagner y resguardos | 62 |
 | `textos/lotes` | Lotes de Lighthouse VRN: lista, ficha, precio de ejemplo, con casa, costos, derechos y deberes, reserva y pago simulados y boleto de ejemplo | 136 |
 | `textos/manifiestoVrn` | Manifiesto de Lighthouse VRN: ficha del común, tarjeta de Tribus, lectura completa, principios propios de las tribus, aviso de adhesión y bloque de la Vista NetX | 49 |
-| `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 72 |
+| `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 76 |
 | `textos/pactos` | Pactos: pactos de tiempo y de plata, cambios, historial, avisos y anuncios | 286 |
 | `textos/pasaporte` | Pasaporte: sellos y lo que abren, tarjeta y diálogo de verificación de identidad (KYC) con sus errores, sello de la billetera y datos de aporte | 149 |
 | `textos/perfil` | Perfil: encabezado, formulario, tarjetas, errores de validación y las seis preguntas de la entrevista | 58 |

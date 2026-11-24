@@ -249,7 +249,7 @@ test.describe("visitante sin cuenta", () => {
     await expect(page).toHaveURL(/\/congreso\/en$/);
     await page.goto("/tribus");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Communities" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Explore" })).toBeVisible();
   });
 
   test("la preferencia vieja del Congreso (lh-congreso-idioma) se usa una vez si no hay cookie", async ({ page }) => {

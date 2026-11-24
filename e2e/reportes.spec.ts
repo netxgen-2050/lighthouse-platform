@@ -67,14 +67,21 @@ test("clic en Reportar y un solo Escape (sin mover el mouse) cierra el diálogo"
   await expect(dialogo).toBeHidden();
 });
 
-test("celular 390 x 844: el botón se ve, no tapa el rail y no hay scroll horizontal", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+test("768 x 900: el botón no tapa el rail", async ({ page }) => {
+  await page.setViewportSize({ width: 768, height: 900 });
   await page.goto("/");
   const boton = page.getByRole("button", { name: NOMBRE_BOTON });
   await expect(boton).toBeInViewport();
   const b = (await boton.boundingBox())!;
   const r = (await page.getByRole("navigation", { name: "Principal" }).boundingBox())!;
   expect(b.x).toBeGreaterThanOrEqual(r.x + r.width);
+});
+
+test("celular 390 x 844: el botón se ve y no hay scroll horizontal", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const boton = page.getByRole("button", { name: NOMBRE_BOTON });
+  await expect(boton).toBeInViewport();
   const desborde = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   expect(desborde).toBe(false);
 });

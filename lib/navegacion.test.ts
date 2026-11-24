@@ -1,7 +1,7 @@
 import { readdirSync } from "node:fs";
 import path from "node:path";
 import { expect, test } from "vitest";
-import { DESTINOS, destinosDeGrupo, destinosDisponibles, etiquetaDeDestino, GRUPOS_RAIL, tituloDeGrupo } from "./navegacion";
+import { DESTINOS, destinoActivo, destinosDeGrupo, destinosDelMenu, destinosDisponibles, etiquetaDeDestino } from "./navegacion";
 import { esActivo } from "./ruta-activa";
 
 const APP = path.resolve(__dirname, "..", "app");
@@ -21,11 +21,14 @@ function rutasDeApp(dir = APP, ruta = ""): string[] {
 
 test("el orden de la lista es el de la spec", () => {
   expect(DESTINOS.map((d) => etiquetaDeDestino(d, "es"))).toEqual([
-    "Inicio",
-    "Territorio",
-    "Lotes",
+    "Explorar",
     "Bien común",
+    "Invertir",
     "Sumarte",
+    "Mi tierra",
+    "Territorio",
+    "Barrios",
+    "Lotes",
     "Comunidades",
     "Pactos",
     "Semillas",
@@ -42,44 +45,77 @@ test("el orden de la lista es el de la spec", () => {
   ]);
 });
 
-test("los grupos del rail y del menú de la persona salen de la lista única", () => {
+test("los grupos del menú y del menú de la persona salen de la lista única", () => {
   const etiquetas = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "es"));
-  expect(GRUPOS_RAIL.map((g) => tituloDeGrupo(g.id, "es"))).toEqual(["Descubrir", "Sumarte", "Lo que viene"]);
-  expect(etiquetas("descubrir")).toEqual(["Inicio", "Territorio", "Lotes", "Bien común"]);
-  expect(etiquetas("sumarte")).toEqual(["Sumarte"]);
-  expect(etiquetas("viene")).toEqual(["Comunidades", "Pactos", "Semillas", "Fogón"]);
+  // Invertir y Mi tierra no aparecen mientras sus páginas no existan (cambios 4 y 5); Barrios, hasta el cambio 3.
+  expect(etiquetas("principal")).toEqual(["Explorar", "Bien común", "Sumarte"]);
+  expect(etiquetas("explorar")).toEqual(["Territorio", "Lotes", "Comunidades"]);
   expect(etiquetas("persona")).toEqual(["Perfil", "Pasaporte", "Mi recorrido", "Configuración", "Mis datos"]);
   expect(etiquetas("interno")).toEqual(["NetX", "Admin"]);
+  expect(etiquetas("pausa")).toEqual([]);
 });
 
-test("en inglés el rail dice lo que fija el glosario, y Semillas no se traduce", () => {
+test("en inglés los destinos dicen lo que fija el glosario", () => {
   const ingles = (g: Parameters<typeof destinosDeGrupo>[0]) => destinosDeGrupo(g).map((d) => etiquetaDeDestino(d, "en"));
-  expect(GRUPOS_RAIL.map((g) => tituloDeGrupo(g.id, "en"))).toEqual(["Discover", "Join", "Coming next"]);
-  expect(ingles("descubrir")).toEqual(["Home", "Territory", "Lots", "Commons"]);
-  expect(ingles("viene")).toEqual(["Communities", "Pacts", "Semillas", "Fireside"]);
+  expect(ingles("principal")).toEqual(["Explore", "Commons", "Join"]);
+  expect(ingles("explorar")).toEqual(["Territory", "Lots", "Communities"]);
   expect(ingles("persona")).toEqual(["Profile", "Passport", "My journey", "Settings", "My data"]);
+  const todos = DESTINOS.map((d) => etiquetaDeDestino(d, "en"));
+  expect(todos).toEqual(expect.arrayContaining(["Invest", "My land", "Neighborhoods", "Semillas"]));
 });
 
-test("Compromisos existe pero no aparece en ningún grupo", () => {
-  const compromisos = DESTINOS.find((d) => d.href === "/compromisos");
-  expect(compromisos?.existe).toBe(true);
-  expect(compromisos?.oculto).toBe(true);
-  const grupos = ["descubrir", "viene", "sumarte", "persona", "interno"] as const;
-  expect(grupos.flatMap((g) => destinosDeGrupo(g)).some((d) => d.href === "/compromisos")).toBe(false);
+test("Invertir, Mi tierra y Barrios están declarados pero todavía no existen", () => {
+  for (const href of ["/invertir", "/mi-tierra", "/barrios/norte"]) {
+    expect(DESTINOS.find((d) => d.href === href)?.existe, href).toBe(false);
+  }
 });
 
-test("Congreso existe pero no aparece en ningún grupo", () => {
-  const congreso = DESTINOS.find((d) => d.href === "/congreso");
-  expect(congreso?.existe).toBe(true);
-  expect(congreso?.oculto).toBe(true);
-  const grupos = ["descubrir", "viene", "sumarte", "persona", "interno"] as const;
-  expect(grupos.flatMap((g) => destinosDeGrupo(g)).some((d) => d.href === "/congreso")).toBe(false);
+test("los cinco destinos en pausa existen, están ocultos y no aparecen en ningún grupo", () => {
+  const pausa = ["/fogon", "/pactos", "/semillas", "/compromisos", "/congreso"];
+  const grupos = ["principal", "explorar", "pausa", "persona", "interno"] as const;
+  const visibles = grupos.flatMap((g) => destinosDeGrupo(g)).map((d) => d.href);
+  for (const href of pausa) {
+    const d = DESTINOS.find((x) => x.href === href);
+    expect(d?.existe, href).toBe(true);
+    expect(d?.oculto, href).toBe(true);
+    expect(visibles, href).not.toContain(href);
+  }
 });
 
-test("Lotes existe y aparece en el grupo Descubrir", () => {
+test("destinoActivo: Explorar abarca sus cuatro secciones y las páginas en pausa no marcan ninguno", () => {
+  const clave = (ruta: string) => destinoActivo(ruta)?.clave;
+  expect(clave("/")).toBe("explorar");
+  expect(clave("/lotes/hibrido")).toBe("explorar");
+  expect(clave("/lotes")).toBe("explorar");
+  expect(clave("/territorios/lighthouse")).toBe("explorar");
+  expect(clave("/barrios/norte")).toBe("explorar");
+  expect(clave("/tribus/valle")).toBe("explorar");
+  expect(clave("/bien-comun")).toBe("biencomun");
+  expect(clave("/sumarte")).toBe("sumarte");
+  expect(clave("/fogon")).toBeUndefined();
+  expect(clave("/pactos/x")).toBeUndefined();
+  expect(clave("/congreso/en")).toBeUndefined();
+  expect(clave("/perfil")).toBeUndefined();
+});
+
+test("con `oculto` puesto el menú trae solo los principales; quitándolo, Compromisos vuelve después de los cinco", () => {
+  const etiquetas = () => destinosDelMenu().map((d) => etiquetaDeDestino(d, "es"));
+  expect(etiquetas()).toEqual(["Explorar", "Bien común", "Sumarte"]);
+  const compromisos = DESTINOS.find((d) => d.href === "/compromisos") as { oculto?: true };
+  compromisos.oculto = undefined;
+  try {
+    expect(etiquetas()).toEqual(["Explorar", "Bien común", "Sumarte", "Compromisos"]);
+    expect(destinoActivo("/compromisos")?.clave).toBe("compromisos");
+  } finally {
+    compromisos.oculto = true;
+  }
+  expect(etiquetas()).toEqual(["Explorar", "Bien común", "Sumarte"]);
+});
+
+test("Lotes existe y aparece en la subnavegación de Explorar", () => {
   const lotes = DESTINOS.find((d) => d.href === "/lotes");
   expect(lotes?.existe).toBe(true);
-  expect(destinosDeGrupo("descubrir").some((d) => d.href === "/lotes")).toBe(true);
+  expect(destinosDeGrupo("explorar").some((d) => d.href === "/lotes")).toBe(true);
 });
 
 test("todo destino oculto existe", () => {
@@ -112,7 +148,7 @@ test("solo destinos que existen: sin la ruta /panel no se muestra Mi recorrido",
   expect(destinosDisponibles().every((d) => d.existe)).toBe(true);
 });
 
-test("las subrutas marcan su sección y Inicio solo la raíz", () => {
+test("las subrutas marcan su sección y Explorar solo la raíz por su propio href", () => {
   expect(esActivo("/tribus", "/tribus/valle")).toBe(true);
   expect(esActivo("/tribus", "/tribusx")).toBe(false);
   expect(esActivo("/fogon", "/fogon/consultas")).toBe(true);
