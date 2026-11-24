@@ -67,6 +67,10 @@ const ARCHIVOS = [
   path.join(RAIZ, "lib", "barrios", "norte.ts"),
   path.join(RAIZ, "lib", "idioma", "textos", "barrios.ts"),
   path.join(RAIZ, "lib", "idioma", "textos", "portada.ts"),
+  // Mi tierra (rediseno-mi-tierra): sus números salen de lo que la persona vio y de los módulos con versión.
+  ...archivos(path.join(RAIZ, "app", "mi-tierra")),
+  ...archivos(path.join(RAIZ, "lib", "mi-tierra")),
+  path.join(RAIZ, "lib", "idioma", "textos", "mi-tierra.ts"),
 ].filter(existsSync);
 
 // Nada sobre FARO o el tesoro del común habla de ganancia, retorno, valorización ni precio de FARO (spec bien-comun-propuesta).

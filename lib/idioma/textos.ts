@@ -16,6 +16,7 @@ import { hibrido } from "./textos/hibrido";
 import { lotes } from "./textos/lotes";
 import { manifiestoVrn } from "./textos/manifiesto-vrn";
 import { marco } from "./textos/marco";
+import { miTierra } from "./textos/mi-tierra";
 import { pactos } from "./textos/pactos";
 import { pasaporte } from "./textos/pasaporte";
 import { perfil } from "./textos/perfil";
@@ -42,6 +43,7 @@ export const DICCIONARIOS = {
   lotes,
   manifiestoVrn,
   marco,
+  miTierra,
   pactos,
   pasaporte,
   perfil,

@@ -24,6 +24,8 @@ export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   /^\/bien-comun$/,
   // Barrio Norte (rediseno-explorar-valle).
   /^\/barrios\/norte$/,
+  // Mi tierra (rediseno-mi-tierra).
+  /^\/mi-tierra$/,
   // Pasaporte (con la verificación de identidad), Semillas y Pactos (idioma-pasaporte-semillas-pactos).
   /^\/pasaporte$/,
   /^\/semillas$/,

@@ -35,7 +35,7 @@ type Props = {
   opcion: OpcionCompra;
   vio: LoVisto;
   compras: CompraLote[];
-  guardar: (nuevas: CompraLote[]) => boolean;
+  guardar: (nuevas: CompraLote[]) => Promise<boolean>;
   /** La compra de este lote, si la persona la tiene (y el estado de ejemplo todavía lo permite). */
   compra?: CompraLote;
 };
@@ -74,21 +74,27 @@ export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fase]);
 
-  function aplicar(nuevas: CompraLote[], mensaje: string) {
-    if (!guardar(nuevas)) {
+  // Guardar es asíncrono (lib/lotes/reservas.ts). El foco se pide antes de guardar, porque guardar actualiza la lista y el cambio
+  // de paso tiene que encontrar el pedido hecho. `despues` corre una vez guardado (o fallado): así la pantalla pasa de un paso
+  // al siguiente de una sola vez, sin un paso intermedio que se lleve el foco.
+  async function aplicar(nuevas: CompraLote[], mensaje: string, moverFoco = true, despues?: () => void) {
+    mover.current = moverFoco;
+    const guardado = await guardar(nuevas);
+    despues?.();
+    if (!guardado) {
+      mover.current = false;
       setFalloGuardar(true);
       return;
     }
     setFalloGuardar(false);
     setAnuncio(mensaje);
-    mover.current = true;
   }
 
   function alReservar() {
     if (!leido) return;
     const r = reservar(compras, loteId, opcion, vio, new Date());
     if (!r.ok) return;
-    aplicar(r.compras, t.compra.anuncioReservado(numero));
+    void aplicar(r.compras, t.compra.anuncioReservado(numero));
   }
 
   function alSimularPago() {
@@ -105,18 +111,16 @@ export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM
   function alConfirmar() {
     const r = pagar(compras, loteId, new Date());
     if (!r.ok) return;
-    setPagando(false);
     // Con cuotas no se dice que el lote está pagado: es el primer pago.
-    aplicar(r.compras, enCuotas ? t.compra.anuncioPrimerPago(numero) : t.compra.anuncioPagado(numero));
+    void aplicar(r.compras, enCuotas ? t.compra.anuncioPrimerPago(numero) : t.compra.anuncioPagado(numero), true, () => setPagando(false));
   }
 
   function alDeshacer() {
-    setPagando(false);
-    // Un lote que vuelve a estar disponible pide aceptar de nuevo.
-    setLeido(false);
-    aplicar(deshacer(compras, loteId), t.compra.anuncioDeshecho(numero));
-    // Si no cambió la fase (por ejemplo, ya estaba en "inicio"), no queda un movimiento de foco pendiente.
-    if (!compra) mover.current = false;
+    // Un lote que vuelve a estar disponible pide aceptar de nuevo. Si no cambia la fase (ya estaba en "inicio"), no se pide mover el foco.
+    void aplicar(deshacer(compras, loteId), t.compra.anuncioDeshecho(numero), !!compra, () => {
+      setPagando(false);
+      setLeido(false);
+    });
   }
 
   const estadoLegal = ESTADOS_ADMINISTRATIVOS[proyecto];

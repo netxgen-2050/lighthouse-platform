@@ -1,6 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
 import { listarTribus } from "@/lib/tribus/datos";
+import { lotesDelGrupo } from "@/lib/territorios/loteo";
+import { estadoDeLote } from "@/lib/territorios/loteo-estados";
 import { conAdhesionAlManifiesto, conIdentidadVerificada, relojDeLasConsultas } from "./ayudas";
 
 const rutas = [
@@ -36,6 +38,7 @@ const rutas = [
   "/lotes/hibrido",
   "/bien-comun",
   "/barrios/norte",
+  "/mi-tierra",
   "/congreso",
   "/congreso/en",
   "/territorios/no-existe",
@@ -69,9 +72,46 @@ for (const idioma of ["es", "en"] as const) {
   }
 }
 
-test("hay 47 rutas auditadas", () => {
-  expect(rutas).toHaveLength(47);
+test("hay 48 rutas auditadas", () => {
+  expect(rutas).toHaveLength(48);
 });
+
+// Mi tierra (rediseno-mi-tierra), con una compra en cuotas: en los dos idiomas y los dos temas. Sin compras ya entra en `rutas`.
+for (const idioma of ["es", "en"] as const) {
+  for (const tema of ["oscuro", "claro"] as const) {
+    test(`axe sin violaciones serias o críticas: /mi-tierra con una compra en cuotas, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
+      await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+      const idLote = lotesDelGrupo("norte").find((l) => estadoDeLote(l.id) === "disponible")!.id;
+      await page.addInitScript((loteId) => {
+        if (window.localStorage.getItem("lh-lotes")) return;
+        window.localStorage.setItem(
+          "lh-lotes",
+          JSON.stringify([
+            {
+              loteId,
+              opcion: "solo-lote",
+              paso: "pagado",
+              reservadoEl: "2026-11-20T12:00:00.000Z",
+              pagadoEl: "2026-11-21T12:00:00.000Z",
+              vio: {
+                precio: 1000,
+                aporte: null,
+                expensa: null,
+                version: "ejemplo",
+                faro: 100,
+                plan: { cuotas: 24, anticipo: 300, cuota: 30, ultimaCuota: 30, faroAnticipo: 30, faroPorCuota: 3, faroUltimaCuota: 3 },
+              },
+            },
+          ]),
+        );
+      }, idLote);
+      await page.goto("/mi-tierra");
+      await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible();
+      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+      expect(await graves(page)).toEqual([]);
+    });
+  }
+}
 
 // Inicio y Barrio Norte (rediseno-explorar-valle): en los dos idiomas y los dos temas.
 for (const ruta of ["/", "/barrios/norte"]) {
