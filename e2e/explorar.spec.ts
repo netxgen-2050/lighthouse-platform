@@ -72,8 +72,8 @@ test.describe("sin sesión", () => {
     // La selección llega: el barrio queda marcado en la lista y su ficha abre en el panel lateral (en la vista Visión hay barrios elegibles).
     await page.goto("/territorios/lighthouse?vista=vision&sel=barrio-6");
     await expect(page).toHaveURL(/\/explorar\?vista=vision&sel=barrio-6/);
-    await expect(page.getByRole("button", { name: /^Barrio 6/ })).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByRole("complementary", { name: "Ficha del territorio" }).getByRole("heading", { level: 3 }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Barrio 6/, pressed: true })).toBeVisible();
+    await expect(page.getByRole("complementary", { name: "Ficha del territorio" }).getByRole("heading", { level: 3, name: "Valle Solar" })).toBeVisible();
     // La fase también viaja en la redirección.
     await page.goto("/territorios/lighthouse?fase=1");
     await expect(page).toHaveURL(/\/explorar\?fase=1#territorio$/);
