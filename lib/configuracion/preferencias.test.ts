@@ -53,9 +53,9 @@ describe("leerPreferencias", () => {
     expect(PREFERENCIAS_INICIALES.idiomaElegido).toBeNull();
   });
 
-  it("por defecto todo está prendido, el tema es el oscuro y la moneda es USD", () => {
-    expect(PREFERENCIAS_INICIALES.tema).toBe("oscuro");
-    expect(leerPreferencias(null).tema).toBe("oscuro");
+  it("por defecto todo está prendido, el tema es el del sistema y la moneda es USD", () => {
+    expect(PREFERENCIAS_INICIALES.tema).toBe("sistema");
+    expect(leerPreferencias(null).tema).toBe("sistema");
     expect(leerPreferencias(JSON.stringify({ tema: "claro" })).tema).toBe("claro");
     expect(leerPreferencias(JSON.stringify({ tema: "sistema" })).tema).toBe("sistema");
     expect(PREFERENCIAS_INICIALES.moneda).toBe("USD");
@@ -132,8 +132,9 @@ describe("atributosDeApariencia", () => {
     expect(atributosDeApariencia(sistema, false)["data-tema"]).toBe("claro");
   });
 
-  it("sin preferencia guardada el tema es oscuro, aunque el sistema sea claro", () => {
-    expect(atributosDeApariencia(PREFERENCIAS_INICIALES, false)["data-tema"]).toBe("oscuro");
+  it("sin preferencia guardada el tema sigue al sistema, claro u oscuro", () => {
+    expect(atributosDeApariencia(PREFERENCIAS_INICIALES, false)["data-tema"]).toBe("claro");
+    expect(atributosDeApariencia(PREFERENCIAS_INICIALES, true)["data-tema"]).toBe("oscuro");
   });
 
   it("un tema elegido gana sobre el del sistema", () => {

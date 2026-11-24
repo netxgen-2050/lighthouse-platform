@@ -47,25 +47,33 @@ test("borrar todo borra la preferencia de idioma de la persona pero la pantalla 
   await expect(html(page)).toHaveAttribute("lang", "en");
 });
 
-test("primera visita: el tema es el oscuro aunque el sistema sea claro; elegir Claro se mantiene al recargar y en otras páginas", async ({ page }) => {
+test("primera visita: el tema sigue al sistema, claro u oscuro", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/");
-  await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
+  await expect(html(page)).toHaveAttribute("data-tema", "claro");
   await page.goto("/configuracion");
+  await expect(page.getByRole("radio", { name: "El del sistema" })).toBeChecked();
+  const claro = await fondo(page);
+  await page.emulateMedia({ colorScheme: "dark" });
+  await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
+  expect(await fondo(page)).not.toBe(claro);
+});
+
+test("tema oscuro: toda la app cambia a la paleta oscura y sigue así al recargar y en otras páginas", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/configuracion");
+  const claro = await fondo(page);
+  await page.getByRole("radio", { name: "Oscuro" }).check();
+  await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
+  const oscuro = await fondo(page);
+  expect(oscuro).not.toBe(claro);
+  await page.reload();
   await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
   await expect(page.getByRole("radio", { name: "Oscuro" })).toBeChecked();
-  const oscuro = await fondo(page);
-  await page.getByRole("radio", { name: "Claro" }).check();
-  await expect(html(page)).toHaveAttribute("data-tema", "claro");
-  const claro = await fondo(page);
-  expect(claro).not.toBe(oscuro);
-  await page.reload();
-  await expect(html(page)).toHaveAttribute("data-tema", "claro");
-  await expect(page.getByRole("radio", { name: "Claro" })).toBeChecked();
-  expect(await fondo(page)).toBe(claro);
+  expect(await fondo(page)).toBe(oscuro);
   await page.goto("/tribus");
-  await expect(html(page)).toHaveAttribute("data-tema", "claro");
-  expect(await fondo(page)).toBe(claro);
+  await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
+  expect(await fondo(page)).toBe(oscuro);
 });
 
 test("tema claro gana sobre un sistema oscuro; el del sistema lo sigue", async ({ page }) => {
@@ -192,12 +200,12 @@ test("moneda ARS: /pactos muestra el aporte registrado en pesos con la nota", as
 test("borrar todo vuelve también las preferencias a lo inicial", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/configuracion");
-  await page.getByRole("radio", { name: "Claro" }).check();
-  await expect(html(page)).toHaveAttribute("data-tema", "claro");
+  await page.getByRole("radio", { name: "Oscuro" }).check();
+  await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
   page.once("dialog", (d) => void d.accept());
   await page.getByRole("button", { name: "Borrar todo lo guardado en este navegador" }).click();
   await expect(page.getByRole("status").filter({ hasText: "se borró todo" })).toBeVisible();
-  await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
+  await expect(html(page)).toHaveAttribute("data-tema", "claro");
   expect(await page.evaluate(() => window.localStorage.getItem("lh-configuracion"))).toBeNull();
 });
 
@@ -225,8 +233,8 @@ test("axe sin violaciones serias o críticas: /configuracion en claro y en oscur
   await page.emulateMedia({ colorScheme: "light" });
   await page.goto("/configuracion");
   expect(await graves(page)).toEqual([]);
-  await page.getByRole("radio", { name: "Claro" }).check();
-  await expect(html(page)).toHaveAttribute("data-tema", "claro");
+  await page.getByRole("radio", { name: "Oscuro" }).check();
+  await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
   expect(await graves(page)).toEqual([]);
   await page.getByRole("radio", { name: "Grande" }).check();
   expect(await graves(page)).toEqual([]);

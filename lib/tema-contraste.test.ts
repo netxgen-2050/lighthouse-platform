@@ -22,8 +22,8 @@ function tokens(texto: string): Record<string, string> {
   return salida;
 }
 
-const OSCURO = tokens(bloque(/@theme static/));
-const CLARO = { ...OSCURO, ...tokens(bloque(/:root\[data-tema="claro"\]/)) };
+const CLARO = tokens(bloque(/@theme static/));
+const OSCURO = { ...CLARO, ...tokens(bloque(/:root\[data-tema="oscuro"\]/)) };
 
 function aRgba(hex: string): Rgba {
   const h = hex.slice(1);
@@ -111,6 +111,7 @@ describe.each([
   });
 });
 
-test("la escala de regeneración del tema oscuro es la de la slide", () => {
-  expect(REGEN.map((r) => OSCURO[r].toUpperCase())).toEqual(["#D9774A", "#E0A640", "#CFC85A", "#9DB86E", "#6FA35A"]);
+test("la paleta es la de antes del rediseño: hueso con verde profundo en claro, verde casi negro con verde claro en oscuro", () => {
+  expect([CLARO.bg, CLARO.deep]).toEqual(["#f6f3ea", "#154626"]);
+  expect([OSCURO.bg, OSCURO.deep]).toEqual(["#101a14", "#8fd0a0"]);
 });
