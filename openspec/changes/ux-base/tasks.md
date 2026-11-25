@@ -9,7 +9,7 @@ Primero de los ocho cambios `ux-*` (dirección B + C, elegida por Gus el 25-nov-
 
 ## 2. Avisos
 
-- [ ] 2.1 Crear `components/ui/aviso.tsx` y `components/ui/cinta-prototipo.tsx` (design §4), con tests de rol, texto y tono. **Verifica:** `pnpm test components/ui`.
+- [x] 2.1 Crear `components/ui/aviso.tsx` y `components/ui/cinta-prototipo.tsx` (design §4), con tests de rol, texto y tono. **Verifica:** `pnpm test components/ui`.
 - [ ] 2.2 Poner la cinta en `app/layout.tsx` y sacar `SelloPrototipo` de las páginas; `AvisoEjemplo` pasa a `Aviso` tono `info` y solo donde hay comunidades o personas de ejemplo. **Verifica:** `grep -rn "SelloPrototipo" app` solo devuelve la cinta; `grep -rn "border-dashed" app components` no devuelve avisos.
 - [ ] 2.3 `EstadosAdministrativos` agrupa los avisos de cada vista con lotes en un solo bloque `legal`, mismo texto y mismos `aria-label`; `EstadoAdministrativo` compacto con el estilo nuevo. **Verifica:** `pnpm test:e2e e2e/estado-administrativo.spec.ts` en verde sin cambiar sus expectativas de texto.
 

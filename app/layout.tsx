@@ -7,6 +7,7 @@ import { ProveedorSesion } from "@/components/sesion/proveedor-sesion";
 import { Puerta, SoloConCapacidad, SoloConConsentimiento } from "@/components/sesion/puerta";
 import { SCRIPT_APARIENCIA } from "@/lib/configuracion/script-apariencia";
 import { Pie } from "@/components/pie";
+import { CintaPrototipo } from "@/components/ui/cinta-prototipo";
 import { BotonReportar } from "@/components/boton-reportar";
 import { Hifa } from "@/components/hifa/hifa";
 import { ProveedorIdioma, SincronizarIdioma } from "@/lib/idioma/cliente";
@@ -63,6 +64,7 @@ export default async function RootLayout({
             </SoloConConsentimiento>
             <Rail />
             <div className="flex min-w-0 flex-1 flex-col">
+              <CintaPrototipo />
               <BarraSuperior />
               <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
                 <Puerta>{children}</Puerta>
