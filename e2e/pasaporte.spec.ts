@@ -54,7 +54,7 @@ test("cada sello dice qué abre: el Pase Fundador abre canal de fundadores, voz 
   await expect(f).toContainText("Obtenido");
   await expect(f).toContainText("Canal de fundadores · Abierta");
   await expect(f).toContainText("Voz en el Fondo Común · Abierta · 1 voz");
-  await expect(f).toContainText("Voto en el Fideicomiso · Abierta");
+  await expect(f).toContainText("Influencia en el Fondo Común (próximamente: conviction voting) · Abierta");
   await expect(f).toContainText("Créditos comunes y de estadía · Abierta");
 });
 
@@ -168,9 +168,9 @@ test("la tarjeta de identidad va antes de los sellos y explica para qué sirve, 
   expect(titulos[0]).toContain("Verificá tu identidad (KYC)");
   expect(titulos[1]).toContain("Tus sellos");
   const tarjeta = page.locator("#identidad");
-  await expect(tarjeta).toContainText("Lote 7");
+  await expect(tarjeta).toContainText("programa de series");
   await expect(tarjeta).toContainText("aporte en plata en Pactos");
-  await expect(tarjeta).toContainText("No hace falta para recorrer, sumarte a una tribu ni proponer pactos de tiempo");
+  await expect(tarjeta).toContainText("No hace falta para recorrer, sumarte a una comunidad ni proponer pactos de tiempo");
   await expect(tarjeta.getByRole("listitem").filter({ hasText: "Sin empezar" })).toHaveAttribute("aria-current", "step");
   for (const paso of ["Datos personales", "Residencia fiscal y nacionalidad", "Origen de los fondos", "Tipo de inversor", "Revisión y envío"]) {
     await expect(tarjeta.getByRole("listitem").filter({ hasText: paso })).toBeVisible();

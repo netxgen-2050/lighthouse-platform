@@ -47,6 +47,12 @@ describe("validar", () => {
     expect(validar({ ...PERFIL_VACIO, nombre: "   " }).nombre).toBeDefined();
     expect(validar(ANA)).toEqual({});
   });
+  it("los mensajes salen en el idioma pedido", () => {
+    expect(validar(PERFIL_VACIO).nombre).toBe("Escribí tu nombre.");
+    expect(validar(PERFIL_VACIO, "en").nombre).toBe("Enter your name.");
+    expect(validar({ ...ANA, frase: "a".repeat(141) }, "en").frase).toBe("It can be up to 140 characters long.");
+    expect(validar({ ...ANA, roles: ["otro"] }, "en").rolOtro).toBe("Tell us what other role you have.");
+  });
   it("respeta los largos máximos", () => {
     expect(validar({ ...ANA, frase: "a".repeat(141) }).frase).toBeDefined();
     expect(validar({ ...ANA, frase: "a".repeat(140) }).frase).toBeUndefined();

@@ -4,27 +4,36 @@ import { notFound } from "next/navigation";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
 import { EnlaceConCuenta } from "@/components/sesion/entrar-para";
 import { MarcaAdmin } from "@/components/sesion/marca-admin";
+import { PactosParaResponder } from "@/components/sesion/pactos-para-responder";
 import { SelloTribu } from "@/components/sello-tribu";
 import { TerminoLegal } from "@/components/termino-legal";
 import { TextoBilingue } from "@/components/texto-bilingue";
 import { Medidor } from "@/components/medidor";
+import { validadaPorElComun } from "@/lib/gobernanza/registros";
 import { idiomaDelPedido } from "@/lib/idioma/servidor";
 import { textos } from "@/lib/idioma/textos";
+import { nombreDelComun } from "@/lib/manifiestos/lighthouse-vrn";
+import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
 import { destinosDisponibles } from "@/lib/navegacion";
 import { buscarTribu, buscarTribuBilingue, listarTribus, rutaProponerComunidad } from "@/lib/tribus/datos";
 import { MembresiaAcciones } from "@/components/membresia-acciones";
 import { VerBarrio } from "./acciones";
+import { FichaComun } from "./ficha-comun";
+import { Necesidades } from "./necesidades";
 
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return listarTribus().map((t) => ({ id: t.id }));
+  // `lighthouse` es la ficha del común (Lighthouse VRN): no es una tribu.
+  return [...listarTribus().map((t) => ({ id: t.id })), { id: COMUNIDAD_LIGHTHOUSE }];
 }
 
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const t = buscarTribu((await params).id);
+  const id = (await params).id;
+  if (id === COMUNIDAD_LIGHTHOUSE) return { title: nombreDelComun(await idiomaDelPedido()) };
+  const t = buscarTribu(id);
   if (!t) return {};
   const tx = textos("tribus", await idiomaDelPedido());
   return { title: t.estado === "vacante" ? tx.barrioBuscaTribu(t.barrio) : t.nombre };
@@ -44,16 +53,29 @@ const tarjeta ="grid content-start gap-3 rounded-xl border border-faint bg-surfa
 
 export default async function TribuPage({ params }: Props) {
   const { id } = await params;
+  if (id === COMUNIDAD_LIGHTHOUSE) return <FichaComun />;
   const idioma = await idiomaDelPedido();
   const t = buscarTribu(id, idioma);
   const original = buscarTribuBilingue(id);
   if (!t || !original) notFound();
   const tx = textos("tribus", idioma);
   const f = tx.ficha;
+  // Validación del común (dato de ejemplo): en palabras, no solo con color.
+  const gob = textos("gobernanza", idioma).ficha;
+  const validada = validadaPorElComun(t.id);
+  const marcaValidacion = (
+    <p
+      className={`w-fit rounded-full border px-3 py-1 text-sm font-medium ${validada ? "border-deep bg-green-soft text-deep" : "border-faint text-muted"}`}
+    >
+      <span aria-hidden="true">{validada ? "✓ " : "○ "}</span>
+      {validada ? gob.validadaComun : gob.noValidadaComun} {gob.ejemplo}
+      <TerminoLegal clave="validacioncomun" idioma={idioma} />
+    </p>
+  );
 
   const volver = (
     <p className="mb-2 text-sm">
-      <Link className="underline" href="/tribus">{tx.volverTribus}</Link>
+      <Link className="underline" href="/participa?ver=vision">{tx.volverTribus}</Link>
     </p>
   );
   const prototipo = (
@@ -68,6 +90,7 @@ export default async function TribuPage({ params }: Props) {
       <div className="mx-auto max-w-4xl p-6 sm:p-10">
         {volver}
         <h1 className="text-3xl font-semibold">{tx.barrioBuscaTribu(t.barrio)}</h1>
+        <p className="mt-1 w-fit rounded-full border border-dashed border-muted px-2 py-0.5 text-xs font-medium">{tx.equipos.marca}</p>
         <p className="mt-2 mb-4 text-muted">
           {v.introAntes}<strong>{t.foco}</strong>
           {v.introConHogares}{t.hogares}{v.introLicencia}
@@ -76,6 +99,7 @@ export default async function TribuPage({ params }: Props) {
         </p>
         <AvisoEjemplo />
         {prototipo}
+        <div className="mt-2">{marcaValidacion}</div>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <section className={tarjeta}>
             <h2 className="text-lg font-semibold">{v.necesita}</h2>
@@ -106,10 +130,11 @@ export default async function TribuPage({ params }: Props) {
     <div className="mx-auto max-w-5xl p-6 sm:p-10">
       {volver}
       <p className="text-sm text-muted">{tx.barrioFoco(t.barrio, t.foco)}</p>
-      <div className="mt-2 mb-4 flex items-center gap-4">
+      <div className="mt-2 mb-4 flex flex-wrap items-center gap-4">
         <SelloTribu iniciales={t.iniciales} estado={t.estado} grande />
         <div>
           <h1 className="text-3xl font-semibold" translate="no">{t.nombre}</h1>
+          <p className="mt-1 w-fit rounded-full border border-dashed border-muted px-2 py-0.5 text-xs font-medium">{tx.equipos.marca}</p>
           {/* La declaración es la voz de la tribu: en inglés se muestra traducida, con la nota del idioma original. */}
           {original.declaracion && (
             <p className="mt-1 text-muted">
@@ -117,10 +142,13 @@ export default async function TribuPage({ params }: Props) {
             </p>
           )}
         </div>
+        {/* Al lado del título, para no empujar el resto de la ficha hacia abajo. */}
+        <div className="md:ml-auto">{marcaValidacion}</div>
       </div>
       <AvisoEjemplo />
       {prototipo}
       <MarcaAdmin tribu={t.id} nombre={t.nombre} />
+      <PactosParaResponder tribu={t.id} />
       {t.estado === "formacion" && (
         <p
           role="note"
@@ -139,7 +167,7 @@ export default async function TribuPage({ params }: Props) {
         </section>
         <section className={tarjeta}>
           <h2 className="text-lg font-semibold">{f.loQueBusca}</h2>
-          <Etiquetas items={t.busca} />
+          <Necesidades tribuId={t.id} tribuNombre={t.nombre} idioma={idioma} />
           {t.areas && (
             <>
               <h3 className="text-sm font-medium">{f.areas}</h3>

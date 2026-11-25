@@ -12,11 +12,71 @@ export const RUTAS_TRADUCIDAS: readonly RegExp[] = [
   /^\/$/,
   /^\/sumarte$/,
   // Tribus, manifiesto, postulación y territorio (idioma-tribus-territorio).
-  /^\/tribus$/,
   /^\/tribus\/[^/]+$/,
   /^\/tribus\/[^/]+\/manifiesto$/,
   /^\/tribus\/[^/]+\/postular$/,
   /^\/territorios\/[^/]+$/,
+  // Explorar: Territorio, Barrio Norte y Lotes (explorar-unificado).
+  /^\/explorar$/,
+  // Participa: el mapa ilustrado de equipos y la visión de las comunidades (participa-mapa-equipos).
+  /^\/participa$/,
+  // Lotes de Lighthouse VRN: la lista y la ficha (lote-ficha-y-compra).
+  /^\/lotes$/,
+  /^\/lotes\/[^/]+$/,
+  // El bien común con tokens (bien-comun-tokens).
+  /^\/bien-comun$/,
+  // Barrio Norte (rediseno-explorar-valle).
+  /^\/barrios\/norte$/,
+  // Invertir (rediseno-invertir).
+  /^\/invertir$/,
+  // Mi tierra (rediseno-mi-tierra).
+  /^\/mi-tierra$/,
+  // Pasaporte (con la verificación de identidad), Semillas y Pactos (idioma-pasaporte-semillas-pactos).
+  /^\/pasaporte$/,
+  /^\/semillas$/,
+  /^\/pactos$/,
+  // La tribu responde los pactos (pactos-dos-partes).
+  /^\/pactos\/responder$/,
+  // Fogón, Compromisos con su Mercado y Canales (idioma-fogon-mercado).
+  /^\/fogon$/,
+  // Consultas del Fogón: la lista y cada consulta (idioma-pendientes).
+  /^\/fogon\/consultas$/,
+  /^\/fogon\/consultas\/[^/]+$/,
+  // Propuestas del Fogón (fogon-propuestas).
+  /^\/fogon\/propuestas\/[^/]+$/,
+  /^\/compromisos$/,
+  /^\/canales$/,
+  // Perfil, Mi recorrido, la bandeja de notificaciones y Configuración (idioma-perfil-recorrido).
+  /^\/perfil$/,
+  /^\/panel$/,
+  /^\/bandeja$/,
+  /^\/configuracion$/,
+];
+
+/**
+ * Páginas internas del equipo (no se traducen, siguen la excepción de `idioma-hifa-avisos`) o que redirigen. Una página
+ * nueva tiene que estar en esta lista o en `RUTAS_TRADUCIDAS`: lo vigila `rutas.test.ts` (regla "toda pantalla nueva nace
+ * bilingüe", `idioma-pendientes`).
+ */
+export const RUTAS_INTERNAS: readonly RegExp[] = [
+  /^\/admin(\/.*)?$/,
+  /^\/netx(\/.*)?$/,
+  /^\/panel\/bitacora$/,
+  // Redirige a /netx/simulador.
+  /^\/fogon\/simulador$/,
+  // Redirige a /fogon (fogon-portada-holarquia).
+  /^\/fogon\/gobernanza$/,
+  // Redirige a /participa (participa-mapa-equipos).
+  /^\/tribus$/,
+];
+
+/**
+ * Páginas de usuarias que todavía esperan su cambio de idioma. Cuando ese cambio las traduce, pasan a `RUTAS_TRADUCIDAS`
+ * y salen de acá (el test falla si una ruta está en las dos).
+ */
+export const RUTAS_PENDIENTES: readonly { ruta: RegExp; cambio: string }[] = [
+  { ruta: /^\/mis-datos$/, cambio: "idioma-legal" },
+  { ruta: /^\/privacidad$/, cambio: "idioma-legal" },
 ];
 
 function limpiar(ruta: string): string {

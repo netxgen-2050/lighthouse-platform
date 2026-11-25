@@ -1,18 +1,24 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
 import { listarTribus } from "@/lib/tribus/datos";
-import { conIdentidadVerificada } from "./ayudas";
+import { lotesDelGrupo } from "@/lib/territorios/loteo";
+import { estadoDeLote } from "@/lib/territorios/loteo-estados";
+import { conAdhesionAlManifiesto, conIdentidadVerificada, relojDeLasConsultas } from "./ayudas";
 
 const rutas = [
   "/",
-  "/tribus",
+  "/participa",
+  "/participa?ver=vision",
   "/compromisos",
   "/panel",
   "/pactos",
   "/semillas",
   "/canales",
   "/fogon",
+  "/fogon/propuestas/siembra?desde=lighthouse",
   "/netx",
+  "/netx/financiamiento",
+  "/netx/comunidad",
   "/pasaporte",
   "/bandeja",
   "/configuracion",
@@ -20,7 +26,17 @@ const rutas = [
   "/mis-datos",
   "/panel/bitacora",
   ...listarTribus().map((t) => `/tribus/${t.id}`),
-  "/territorios/lighthouse",
+  "/tribus/lighthouse",
+  "/tribus/lighthouse/manifiesto",
+  "/explorar",
+  "/explorar?vista=lotes",
+  "/explorar?vista=ahora",
+  "/explorar?vista=plan",
+  "/explorar?vista=vision",
+  "/lotes/lote-1",
+  "/lotes/hibrido",
+  "/bien-comun",
+  "/mi-tierra",
   "/congreso",
   "/congreso/en",
   "/territorios/no-existe",
@@ -36,9 +52,93 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 32 rutas auditadas", () => {
-  expect(rutas).toHaveLength(32);
+// El menú del celular y la subnavegación de Explorar: cerrados y abiertos, en los dos idiomas y los dos temas.
+for (const idioma of ["es", "en"] as const) {
+  for (const tema of ["oscuro", "claro"] as const) {
+    test(`axe sin violaciones serias o críticas: menú del celular cerrado y abierto, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
+      await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto("/explorar");
+      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+      const boton = page.getByRole("button", { name: idioma === "es" ? "Menú" : "Menu", exact: true });
+      await expect(boton).toBeVisible();
+      expect(await graves(page), "menú cerrado").toEqual([]);
+      await boton.click();
+      await expect(page.locator("#menu-celular")).toBeVisible();
+      expect(await graves(page), "menú abierto").toEqual([]);
+    });
+  }
+}
+
+test("hay 48 rutas auditadas", () => {
+  expect(rutas).toHaveLength(46);
 });
+
+// Invertir (rediseno-invertir), con sesión y con la tabla de la curva abierta: en los dos idiomas y los dos temas.
+for (const idioma of ["es", "en"] as const) {
+  for (const tema of ["oscuro", "claro"] as const) {
+    test(`axe sin violaciones serias o críticas: /invertir con sesión, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
+      await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+      await page.goto("/invertir");
+      await expect(page.locator('svg[data-curva="devolucion"]')).toBeVisible();
+      await page.locator("details summary").first().click();
+      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+      expect(await graves(page)).toEqual([]);
+    });
+  }
+}
+
+// Mi tierra (rediseno-mi-tierra), con una compra en cuotas: en los dos idiomas y los dos temas. Sin compras ya entra en `rutas`.
+for (const idioma of ["es", "en"] as const) {
+  for (const tema of ["oscuro", "claro"] as const) {
+    test(`axe sin violaciones serias o críticas: /mi-tierra con una compra en cuotas, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
+      await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+      const idLote = lotesDelGrupo("norte").find((l) => estadoDeLote(l.id) === "disponible")!.id;
+      await page.addInitScript((loteId) => {
+        if (window.localStorage.getItem("lh-lotes")) return;
+        window.localStorage.setItem(
+          "lh-lotes",
+          JSON.stringify([
+            {
+              loteId,
+              opcion: "solo-lote",
+              paso: "pagado",
+              reservadoEl: "2026-11-20T12:00:00.000Z",
+              pagadoEl: "2026-11-21T12:00:00.000Z",
+              vio: {
+                precio: 1000,
+                aporte: null,
+                expensa: null,
+                version: "ejemplo",
+                faro: 100,
+                plan: { cuotas: 24, anticipo: 300, cuota: 30, ultimaCuota: 30, faroAnticipo: 30, faroPorCuota: 3, faroUltimaCuota: 3 },
+              },
+            },
+          ]),
+        );
+      }, idLote);
+      await page.goto("/mi-tierra");
+      await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible();
+      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+      expect(await graves(page)).toEqual([]);
+    });
+  }
+}
+
+// Inicio y Explorar (rediseno-explorar-valle, explorar-unificado): en los dos idiomas y los dos temas.
+for (const ruta of ["/", "/explorar"]) {
+  for (const idioma of ["es", "en"] as const) {
+    for (const tema of ["oscuro", "claro"] as const) {
+      test(`axe sin violaciones serias o críticas: ${ruta}, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
+        await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+        await page.goto(ruta);
+        await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+        await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+        expect(await graves(page)).toEqual([]);
+      });
+    }
+  }
+}
 
 async function graves(page: Page) {
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
@@ -46,6 +146,25 @@ async function graves(page: Page) {
     .filter((v) => v.impact === "serious" || v.impact === "critical")
     .map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }));
 }
+
+test("axe sin violaciones serias o críticas: una propuesta del Fogón (la bomba) con la tabla de permisos abierta", async ({ page }) => {
+  await page.goto("/fogon/propuestas/consejo-bomba");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await page.getByText("Ver la tabla de permisos por nivel").click();
+  await expect(page.getByRole("table")).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: la bomba con la sección del desafío del Guardián a la vista, en español y en inglés", async ({ page }) => {
+  await page.goto("/fogon/propuestas/consejo-bomba");
+  await page.getByLabel("Mirá la propuesta como…").selectOption("ambito");
+  await expect(page.getByRole("region", { name: /El Guardián desafía esta propuesta/ })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+  await page.goto("/fogon/propuestas/consejo-bomba?lang=en");
+  await page.getByLabel("See the proposal as…").selectOption("ambito");
+  await expect(page.getByRole("region", { name: /The Guardian challenges this proposal/ })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
 
 test("axe sin violaciones serias o críticas: /pasaporte con sellos obtenidos, en trámite y modalidad cargada", async ({ page }) => {
   await page.addInitScript(() => {
@@ -123,7 +242,36 @@ test("axe sin violaciones serias o críticas: /pactos con un cambio enviado y el
   });
   await page.goto("/pactos");
   await page.getByText(/Historial de versiones/).click();
-  await expect(page.getByRole("button", { name: "Simular: la comunidad acepta el cambio" })).toBeVisible();
+  await expect(page.getByTestId("esperando-respuesta-cambio")).toBeVisible();
+  const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+  const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /pactos/responder con un pendiente de otra persona", async ({ page }) => {
+  // El super admin responde los pactos del Lighthouse; la propuesta es de otra persona (siembra de test en el registro compartido).
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      "compartido:pactos-constancias",
+      JSON.stringify([
+        {
+          id: "p1-pacto-propone",
+          esquema: "pacto-propone",
+          afirma: "persona:prueba:persona@prueba.test",
+          por: "prueba:persona@prueba.test",
+          sobre: "pacto:lighthouse:prueba:persona@prueba.test",
+          version: 1,
+          apuntaA: null,
+          cuando: "2026-10-28T10:00:00.000Z",
+          revocable: true,
+          datos: { tipo: "nuevo", rol: "facilitacion", rolOtro: "", descripcion: "Facilito", horas: "10", nombre: "Ana Pérez" },
+        },
+      ]),
+    );
+  });
+  await page.goto("/pactos/responder");
+  await expect(page.getByRole("article")).toHaveCount(1);
+  await page.getByRole("button", { name: "No aceptar" }).click();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
@@ -143,6 +291,23 @@ test("axe sin violaciones serias o críticas: /semillas con la ronda y sus error
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
+test.describe("/sumarte en inglés", () => {
+  test.use({ locale: "en-US" });
+
+  test("axe sin violaciones serias o críticas", async ({ page }) => {
+    await page.goto("/sumarte");
+    await expect(page.getByRole("heading", { level: 2, name: "Invest", exact: true })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+});
+
+test("celular 390 px: /sumarte no tiene desborde horizontal, con la sección Invertir a la vista", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/sumarte");
+  await page.getByRole("heading", { level: 2, name: "Invertir", exact: true }).scrollIntoViewIfNeeded();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+});
+
 test("axe sin violaciones serias o críticas: /sumarte con el formulario de contacto abierto", async ({ page }) => {
   await conIdentidadVerificada(page);
   await page.goto("/sumarte");
@@ -156,28 +321,60 @@ test("axe sin violaciones serias o críticas: /sumarte con el formulario de cont
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("axe sin violaciones serias o críticas: /netx con un pedido en la bandeja", async ({ page }) => {
+test("axe sin violaciones serias o críticas: /admin con un pedido en la bandeja", async ({ page }) => {
   await page.goto("/sumarte");
   await page.getByRole("button", { name: "Pedir una charla" }).click();
   await page.getByRole("radio", { name: "Email" }).check();
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
   await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
-  await page.goto("/netx");
+  await page.goto("/admin");
   await expect(page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" })).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("axe sin violaciones serias o críticas: /?camino=congreso con la tarjeta recomendada", async ({ page }) => {
-  await page.goto("/?camino=congreso&utm_source=newsletter");
+test("axe sin violaciones serias o críticas: /admin, /admin/personas y /admin/comunidades con una postulación y un pedido cargados", async ({ page }) => {
+  await page.goto("/sumarte");
+  await page.getByRole("button", { name: "Pedir una charla" }).click();
+  await page.getByRole("radio", { name: "Email" }).check();
+  await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
+  await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
+  await page.goto("/admin");
+  await expect(page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+  await page.goto("/admin/personas");
+  await expect(page.getByRole("region", { name: "Personas y roles" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+  await page.goto("/admin/comunidades");
+  await expect(page.getByRole("table", { name: "Comunidades del directorio" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: el 403 de /admin", async ({ page }) => {
+  await page.context().clearCookies();
+  const r = await page.goto("/admin");
+  expect(r?.status()).toBe(403);
+  await expect(page.getByRole("heading", { level: 1, name: "No tenés acceso a esta página" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /netx con la tabla del gráfico abierta", async ({ page }) => {
+  await page.goto("/netx");
+  await page.getByText("Ver como tabla").click();
+  await expect(page.getByRole("table", { name: /¿Adónde va lo que paga cada serie\?/ })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /?camino=lotes con la tarjeta recomendada", async ({ page }) => {
+  await page.goto("/?camino=lotes&utm_source=newsletter");
   await expect(page.getByText("Recomendado para vos")).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("axe sin violaciones serias o críticas: /netx con un pedido con origen", async ({ page }) => {
+test("axe sin violaciones serias o críticas: /admin con un pedido con origen", async ({ page }) => {
   await page.goto("/?utm_source=newsletter&utm_campaign=congreso-2027");
   await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-origen"))).not.toBeNull();
   await page.goto("/sumarte");
@@ -185,7 +382,7 @@ test("axe sin violaciones serias o críticas: /netx con un pedido con origen", a
   await page.getByRole("radio", { name: "Email" }).check();
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
   await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
-  await page.goto("/netx");
+  await page.goto("/admin");
   await expect(page.getByRole("row").filter({ hasText: "newsletter · sin dato · congreso-2027" })).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
@@ -199,7 +396,7 @@ test("axe sin violaciones serias o críticas: /panel/bitacora con entradas", asy
     .poll(() => page.evaluate(() => window.localStorage.getItem("lh-bitacora")))
     .not.toBeNull();
   await page.goto("/panel/bitacora");
-  await expect(page.getByRole("row").filter({ hasText: "Estado del loteo" })).toBeVisible();
+  await expect(page.getByRole("row").filter({ hasText: "Estado del loteo" }).filter({ hasText: "Loteo en trámite" })).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
@@ -235,12 +432,24 @@ test.describe("la plataforma en inglés", () => {
   const RUTAS = [
     "/",
     "/sumarte",
-    "/tribus",
+    "/participa",
+    "/participa?ver=vision",
     "/tribus/valle",
     "/tribus/valle/manifiesto",
+    "/tribus/lighthouse",
+    "/tribus/lighthouse/manifiesto",
     "/tribus/grano/postular",
     "/territorios/lighthouse",
     "/configuracion",
+    "/pasaporte",
+    "/semillas",
+    "/pactos",
+    "/fogon",
+    "/compromisos",
+    "/canales",
+    "/perfil",
+    "/panel",
+    "/bandeja",
   ];
   for (const ruta of RUTAS) {
     test(`axe sin violaciones serias o críticas en inglés: ${ruta}`, async ({ page }) => {
@@ -252,8 +461,29 @@ test.describe("la plataforma en inglés", () => {
     });
   }
 
+  test("axe en inglés: el diálogo de verificación de identidad abierto, con un error a la vista", async ({ page }) => {
+    await page.goto("/pasaporte");
+    await page.getByRole("button", { name: "Complete my verification (KYC)" }).click();
+    const dialogo = page.getByRole("dialog", { name: /Verify my identity/ });
+    await dialogo.getByRole("button", { name: "Next" }).click();
+    await expect(dialogo.getByText("Error: Enter your full name.")).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+
+  test("axe en inglés: /semillas con la ronda y sus errores a la vista", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem("lh-membresia", JSON.stringify({ lighthouse: "miembro" }));
+      const tiempo = { rol: "facilitacion", rolOtro: "", descripcion: "Facilito", horas: 20, paso: 2 };
+      window.localStorage.setItem("lh-pactos", JSON.stringify({ comunidades: { lighthouse: { tiempo, aportes: [200] } } }));
+    });
+    await page.goto("/semillas");
+    await page.getByRole("button", { name: "Send round" }).click();
+    await expect(page.getByRole("alert").filter({ hasText: "the round was not sent" })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+
   test("axe en inglés: el menú de la persona abierto", async ({ page }) => {
-    await page.goto("/tribus");
+    await page.goto("/participa");
     await page.getByRole("button", { name: "Person menu" }).click();
     await expect(page.locator("#menu-persona")).toBeVisible();
     expect(await graves(page)).toEqual([]);
@@ -291,12 +521,15 @@ test.describe("/congreso sin sesión", () => {
 });
 
 test("axe sin violaciones serias o críticas: /fogon/consultas", async ({ page }) => {
+  await relojDeLasConsultas(page);
   await page.goto("/fogon/consultas");
   await expect(page.getByRole("heading", { level: 2 })).toHaveCount(4);
   expect(await graves(page)).toEqual([]);
 });
 
 test("axe sin violaciones serias o críticas: /fogon/consultas/u1 abierta, con el reparto a medias y el bloqueo a la vista", async ({ page }) => {
+  await relojDeLasConsultas(page);
+  await conAdhesionAlManifiesto(page);
   await page.goto("/fogon/consultas/u1");
   await expect(page.getByRole("region", { name: "Mi reparto" })).toBeVisible();
   const mas = page.getByRole("button", { name: "Sumar un voto a Regeneración ecológica" });
@@ -307,6 +540,8 @@ test("axe sin violaciones serias o críticas: /fogon/consultas/u1 abierta, con e
 });
 
 test("axe sin violaciones serias o críticas: /fogon/consultas/u4 cerrada, con resultado, tabla de repartos y acta", async ({ page }) => {
+  await relojDeLasConsultas(page);
+  await conAdhesionAlManifiesto(page);
   await page.goto("/fogon/consultas/u4");
   await page.getByRole("button", { name: "Sumar un voto a Vivero de nativas" }).click();
   await page.getByRole("button", { name: "Guardar mi reparto" }).click();
@@ -316,11 +551,73 @@ test("axe sin violaciones serias o críticas: /fogon/consultas/u4 cerrada, con r
   expect(await graves(page)).toEqual([]);
 });
 
+test("axe sin violaciones serias o críticas: /netx/simulador con el año por año y la tabla del gráfico abiertos, en los dos escenarios", async ({ page }) => {
+  await page.goto("/netx/simulador");
+  await page.getByText("Ver año por año").click();
+  await page.getByText("Ver como tabla").click();
+  await page.getByText("Ver los supuestos fijos de este escenario").click();
+  await expect(page.getByRole("table", { name: /Año por año/ })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+  await page.getByRole("radio", { name: "Agrovoltaica · 5 MW" }).check();
+  await expect(page.getByRole("table", { name: /Año por año/ })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /netx/financiamiento con todos los details abiertos", async ({ page }) => {
+  await page.goto("/netx/financiamiento");
+  await expect(page.getByRole("heading", { level: 1, name: "Modelo de financiamiento" })).toBeVisible();
+  await page.evaluate(() => document.querySelectorAll("details").forEach((d) => d.setAttribute("open", "")));
+  await expect(page.getByRole("table", { name: /Rangos|TIR de las Unidades por serie/ })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
+for (const lente of ["Estructura", "Propósitos", "Decisiones que suben", "Desde mí"]) {
+  test(`axe sin violaciones serias o críticas: /fogon con la lente ${lente} y lo de los círculos de adentro a la vista`, async ({ page }) => {
+    await page.goto("/fogon");
+    await expect(page.getByRole("heading", { level: 3, name: "En los círculos de adentro" })).toBeVisible();
+    await page.getByRole("button", { name: lente, exact: true }).click();
+    await expect(page.getByRole("button", { name: lente, exact: true })).toHaveAttribute("aria-pressed", "true");
+    if (lente === "Decisiones que suben") {
+      await page.getByRole("button", { name: "Pedido de Valle Solar al Fondo Común para la bomba solar" }).click();
+      await expect(page.getByTestId("camino-texto")).toBeVisible();
+    }
+    expect(await graves(page)).toEqual([]);
+  });
+}
+
+test("axe sin violaciones serias o críticas: /fogon con Solo las de Lighthouse VRN activado", async ({ page }) => {
+  await page.goto("/fogon");
+  await page.getByRole("button", { name: "Solo las de Lighthouse VRN" }).click();
+  await expect(page.getByRole("button", { name: "Solo las de Lighthouse VRN" })).toHaveAttribute("aria-pressed", "true");
+  expect(await graves(page)).toEqual([]);
+});
+
+test("axe sin violaciones serias o críticas: /fogon con Ana seleccionada y la lista abierta", async ({ page }) => {
+  await page.goto("/fogon");
+  await page.getByText("Ver toda la estructura como lista").click();
+  await page.locator("details").getByRole("button", { name: "Ana (ejemplo) · Miembro" }).click();
+  await expect(page.getByRole("heading", { name: "Todos los roles de Ana (ejemplo)" })).toBeVisible();
+  expect(await graves(page)).toEqual([]);
+});
+
 for (const ruta of rutas) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);
-    if (ruta === "/territorios/lighthouse") {
-      // El mapa se arma en el navegador: auditar con los 12 sellos ya puestos.
+    if (ruta === "/bien-comun") {
+      await expect(page.getByLabel("Precio del lote (USD)")).toBeVisible();
+    }
+    if (ruta === "/territorios/lighthouse" || ruta === "/territorios/lighthouse?vista=lotes") {
+      // El mapa se arma en el navegador: auditar con el sello del común ya puesto.
+      await expect(page.locator('[aria-label="Terreno común del Lighthouse"][role="button"]')).toHaveCount(1);
+    }
+    if (ruta === "/territorios/lighthouse?vista=ahora") {
+      // El mapa se arma en el navegador: auditar con los sellos de los frentes ya puestos.
+      await expect(page.locator('[aria-label^="Frente "][role="button"]')).toHaveCount(4);
+    }
+    if (ruta === "/territorios/lighthouse?vista=plan") {
+      await expect(page.locator('[aria-label="Terreno común del Lighthouse"][role="button"]')).toHaveCount(1);
+    }
+    if (ruta === "/territorios/lighthouse?vista=vision") {
       await expect(page.locator('[aria-label^="Barrio "][role="button"]')).toHaveCount(12);
     }
     const r = await new AxeBuilder({ page })
@@ -332,3 +629,87 @@ for (const ruta of rutas) {
     ).toEqual([]);
   });
 }
+
+// Lotes: la lista y una ficha en inglés, y la ficha con la compra simulada en cada paso (lote-ficha-y-compra).
+for (const ruta of ["/lotes?lang=en", "/lotes/lote-1?lang=en", "/lotes/hibrido?lang=en"]) {
+  test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
+    await page.goto(ruta);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+}
+
+// /bien-comun con sesión: la calculadora aparece cuando se verifica la sesión; se audita ya con el campo puesto.
+for (const [ruta, campo] of [
+  ["/bien-comun", "Precio del lote (USD)"],
+  ["/bien-comun?lang=en", "Lot price (USD)"],
+] as const) {
+  test(`axe sin violaciones serias o críticas: ${ruta} con la calculadora`, async ({ page }) => {
+    await page.goto(ruta);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByLabel(campo)).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+}
+
+test("axe sin violaciones serias o críticas: la ficha de un lote en la reserva, el pago simulado y el boleto, en español y en inglés", async ({ page }) => {
+  for (const [ruta, reservar, pagar, confirmar, leido] of [
+    ["/lotes/lote-1", "Reservar (simulado)", "Simular el primer pago (anticipo)", "Confirmar el primer pago simulado", "Leí lo que comparto y lo que me comprometo a pagar"],
+    [
+      "/lotes/lote-1?lang=en",
+      "Reserve (simulated)",
+      "Simulate the first payment (down payment)",
+      "Confirm the simulated first payment",
+      "I read what I share and what I commit to pay",
+    ],
+  ] as const) {
+    await page.goto(ruta);
+    await page.getByLabel(leido).check();
+    await page.getByRole("button", { name: reservar }).click();
+    expect(await graves(page)).toEqual([]);
+    await page.getByRole("button", { name: pagar }).click();
+    expect(await graves(page)).toEqual([]);
+    await page.getByRole("button", { name: confirmar }).click();
+    await expect(page.getByRole("region", { name: /Boleto de ejemplo|Sample purchase agreement/ })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+    await page.evaluate(() => window.localStorage.removeItem("lh-lotes"));
+  }
+});
+
+test.describe("pasos previos al login (consentimiento-alta)", () => {
+  test.use({ rol: "ninguno", consentimiento: "ninguno" });
+
+  test("axe sin violaciones serias o críticas: Crear tu cuenta y Entrar, abiertos y con el error a la vista", async ({ page }) => {
+    await page.goto("/sumarte");
+    await page.getByRole("button", { name: "Sumarme gratis" }).click();
+    const alta = page.getByRole("dialog", { name: "Crear tu cuenta" });
+    await expect(alta).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+    await alta.getByRole("button", { name: "Aceptar y crear mi cuenta" }).click();
+    await expect(alta.getByRole("alert")).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+    await alta.getByRole("button", { name: "Cancelar" }).click();
+
+    await page.getByRole("banner").getByRole("button", { name: "Entrar" }).click();
+    const entrar = page.getByRole("dialog", { name: "Entrar" });
+    await expect(entrar).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+    await entrar.getByRole("button", { name: "Aceptar y entrar" }).click();
+    await expect(entrar.getByRole("alert")).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+});
+
+test.describe("Mis datos: novedades por email", () => {
+  // Cambia las novedades de la persona en el servidor, que comparten todos los tests: entra con un email propio.
+  test.use({ rol: "persona", identidad: "propia" });
+
+  test("axe sin violaciones serias o críticas con el bloque de novedades", async ({ page }) => {
+    await page.goto("/mis-datos");
+    await expect(page.getByRole("heading", { name: "Novedades por email" })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+    await page.getByRole("button", { name: "Quiero recibir novedades" }).click();
+    await expect(page.getByRole("button", { name: "Dejar de recibir novedades" })).toBeVisible();
+    expect(await graves(page)).toEqual([]);
+  });
+});

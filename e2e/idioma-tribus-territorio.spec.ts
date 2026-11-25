@@ -10,25 +10,19 @@ const html = (page: Page) => page.locator("html");
 const ficha = (page: Page) => page.getByRole("complementary", { name: "Territory details" });
 const NOTA = "Translated from Spanish";
 
-test.describe("tribus en inglés", () => {
+test.describe("comunidades en inglés", () => {
   test.use({ locale: "en-US" });
 
-  test("listado: estados en inglés, nombres de las tribus sin traducir y nada de español suelto", async ({ page }) => {
-    await page.goto("/tribus");
+  test("Visión: el manifiesto Lighthouse 2050 en inglés, sin el aviso de solo en español", async ({ page }) => {
+    await page.goto("/participa?ver=vision");
     await expect(html(page)).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("heading", { level: 1, name: "Lighthouse tribes" })).toBeVisible();
-    await expect(page.getByText("Status: Active").first()).toBeVisible();
-    await expect(page.getByText("Status: Forming").first()).toBeVisible();
-    await expect(page.getByText("Status: Looking for a tribe").first()).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "Active tribes" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "Vacant neighborhoods" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Valle Solar/ })).toBeVisible();
-    await expect(page.locator('main [translate="no"]', { hasText: "Valle Solar" }).first()).toBeVisible();
-    await expect(page.getByText("Contributes to the common pool:").first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Take part" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Lighthouse 2050" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 3, name: "What we believe" })).toBeVisible();
     await expect(page.getByText("Internal prototype · sample data").first()).toBeVisible();
-    expect(await textosEnEspanol(page, "main")).toEqual([]);
-    // Sin el aviso de "solo en español": la página ya está traducida.
     await expect(page.getByText("This page is only available in Spanish for now.")).toHaveCount(0);
+    const NOMBRES_PROPIOS = ["Río Negro", "Limay", "Neuquén", "Alto Valle", "jarilla", "alpataco", "chañar"];
+    expect(await textosEnEspanol(page, "main", NOMBRES_PROPIOS)).toEqual([]);
   });
 
   test("ficha de Valle Solar: lo que tiene, lo que busca y el ritual en inglés; el nombre sigue igual", async ({ page }) => {
@@ -37,23 +31,23 @@ test.describe("tribus en inglés", () => {
     await expect(page.getByRole("heading", { level: 2, name: "What it has" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: "What it is looking for" })).toBeVisible();
     await expect(page.getByText("Vegetable garden")).toBeVisible();
-    await expect(page.getByText("Solar energy", { exact: true })).toBeVisible();
+    await expect(page.locator("summary", { hasText: "Solar energy" })).toBeVisible();
     await expect(page.getByText("Two calls, a weekend living together and the consent of the group.")).toBeVisible();
     await expect(page.getByText("Civil association")).toBeVisible();
     await expect(page.getByText("Funds pledged")).toBeVisible();
     await expect(page.getByText("USD 310,000 of USD 480,000")).toBeVisible();
-    await expect(page.getByText("5 people from the network vouch for this tribe")).toBeVisible();
+    await expect(page.getByText("5 people from the network vouch for this community")).toBeVisible();
     expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
 
-  test("la declaración de la tribu se ve traducida con la nota del idioma original", async ({ page }) => {
+  test("la declaración de la comunidad se ve traducida con la nota del idioma original", async ({ page }) => {
     await page.goto("/tribus/valle");
     const encabezado = page.locator("main h1").locator("xpath=..");
     await expect(encabezado.getByText("Families who want to raise their children in community")).toBeVisible();
     await expect(encabezado.getByText(NOTA)).toBeVisible();
   });
 
-  test("tribu en formación: el aviso y la etapa en inglés", async ({ page }) => {
+  test("comunidad en formación: el aviso y la etapa en inglés", async ({ page }) => {
     await page.goto("/tribus/monte");
     await expect(
       page.getByRole("note").filter({ hasText: "This community is forming" }),
@@ -62,7 +56,7 @@ test.describe("tribus en inglés", () => {
 
   test("barrio vacante: título, necesidades y botón en inglés", async ({ page }) => {
     await page.goto("/tribus/grano");
-    await expect(page.getByRole("heading", { level: 1, name: "Neighborhood 3 is looking for a tribe" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Neighborhood 3 is looking for a community" })).toBeVisible();
     await expect(page.getByText("Extensive farming")).toBeVisible();
     await expect(page.getByText("Starting funds")).toBeVisible();
     await expect(page.getByRole("link", { name: "Propose a community" })).toBeVisible();
@@ -71,12 +65,12 @@ test.describe("tribus en inglés", () => {
 
   test("acciones de membresía: leer, adherir y la aceptación simulada, en inglés", async ({ page }) => {
     await page.goto("/tribus/valle");
-    await expect(page.getByRole("link", { name: "Read the tribe's manifesto" })).toBeVisible();
-    await page.getByRole("link", { name: "Sign on to the tribe's manifesto" }).click();
+    await expect(page.getByRole("link", { name: "Read the community's manifesto" })).toBeVisible();
+    await page.getByRole("link", { name: "Sign on to the community's manifesto" }).click();
     await expect(page).toHaveURL(/\/tribus\/valle\/manifiesto$/);
   });
 
-  test("tribu inexistente: 404 en inglés sin aviso de sin traducir", async ({ page }) => {
+  test("comunidad inexistente: 404 en inglés sin aviso de sin traducir", async ({ page }) => {
     await page.goto("/tribus/no-existe");
     await expect(page.locator("[data-no-encontrada]")).toBeVisible();
     await expect(page.getByText("This page is only available in Spanish for now.")).not.toBeVisible();
@@ -117,7 +111,7 @@ test.describe("manifiesto en inglés", () => {
 
   test("el manifiesto del Lighthouse también está traducido", async ({ page }) => {
     await page.goto("/tribus/lighthouse/manifiesto");
-    await expect(page.getByRole("heading", { level: 1, name: "Lighthouse Coexistence Pact" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Lighthouse VRN Manifesto" })).toBeVisible();
     await expect(page.getByText(NOTA)).toBeVisible();
   });
 });
@@ -161,14 +155,14 @@ test.describe("territorio en inglés", () => {
   test.use({ locale: "en-US" });
 
   test("la vitrina, la leyenda y la ficha del resumen en inglés", async ({ page }) => {
-    await page.goto("/territorios/lighthouse");
+    await page.goto("/territorios/lighthouse?vista=vision");
     await expect(html(page)).toHaveAttribute("lang", "en");
     await expect(page.getByRole("heading", { level: 1, name: "Lighthouse" })).toBeVisible();
-    await expect(page.getByText("~993 ha, twelve neighborhoods and the tribes forming them.")).toBeVisible();
-    const region = page.getByRole("region", { name: "Map of Macrolote 7" });
+    await expect(page.getByText("~990 ha, twelve neighborhoods and the communities forming them.")).toBeVisible();
+    const region = page.getByRole("region", { name: "Map of Macrolote 7", exact: true });
     await expect(region).toBeVisible();
     const leyenda = region.getByRole("group", { name: "Map legend" });
-    await expect(leyenda.getByText("Neighborhood with an active tribe", { exact: true })).toBeVisible();
+    await expect(leyenda.getByText("Neighborhood with an active community", { exact: true })).toBeVisible();
     await expect(leyenda.getByRole("list", { name: "Places of interest" })).toBeVisible();
     await expect(ficha(page).getByText("Choose a neighborhood, the common land or a plot on the map or in the list.")).toBeVisible();
     await expect(ficha(page).getByText("Vacant")).toBeVisible();
@@ -191,17 +185,17 @@ test.describe("territorio en inglés", () => {
     await expect(ficha(page).getByText("A space for gathering and ceremony (sample).")).toBeVisible();
   });
 
-  test("un barrio con tribu: estado, hogares y lo que busca en inglés", async ({ page }) => {
+  test("un barrio con comunidad: estado, hogares y lo que busca en inglés", async ({ page }) => {
     await page.goto("/territorios/lighthouse?sel=barrio-6");
     await expect(ficha(page).getByRole("heading", { name: "Valle Solar" })).toBeVisible();
     await expect(ficha(page).getByText("Status: Active")).toBeVisible();
     await expect(ficha(page).getByText("7 households · 18 people")).toBeVisible();
     await expect(ficha(page).getByText("Natural building")).toBeVisible();
-    await expect(ficha(page).getByRole("link", { name: "Get to know the tribe" })).toBeVisible();
+    await expect(ficha(page).getByRole("link", { name: "Get to know the community" })).toBeVisible();
   });
 
   test("finca disponible en inglés", async ({ page }) => {
-    await page.goto("/territorios/lighthouse");
+    await page.goto("/territorios/lighthouse?vista=vision");
     await page.getByText(/Available Soluna plots/).click();
     await page.getByRole("button", { name: "Plot 502", exact: true }).click();
     await expect(ficha(page).getByRole("heading", { name: "Plot 502" })).toBeVisible();
@@ -212,9 +206,9 @@ test.describe("territorio en inglés", () => {
   });
 
   test("los marcadores del mapa tienen nombre accesible en inglés", async ({ page }) => {
-    await page.goto("/territorios/lighthouse");
+    await page.goto("/territorios/lighthouse?vista=vision");
     await expect(page.locator('[aria-label^="Neighborhood "]')).toHaveCount(12);
-    await expect(page.locator('[aria-label="Neighborhood 3 · Looking for a tribe"]')).toHaveCount(1);
+    await expect(page.locator('[aria-label="Neighborhood 3 · Looking for a community"]')).toHaveCount(1);
     await expect(page.locator('[aria-label="Neighborhood 6 · Valle Solar · Active"]')).toHaveCount(1);
     await expect(page.locator('[aria-label="Place of interest · Temazcal"]')).toHaveCount(1);
   });
@@ -241,7 +235,7 @@ test.describe("en español no cambia nada", () => {
     await expect(page.getByText(NOTA)).toHaveCount(0);
   });
 
-  test("cambiar al inglés desde la página de la tribu traduce los datos sin cambiar la dirección", async ({ page }) => {
+  test("cambiar al inglés desde la página de la comunidad traduce los datos sin cambiar la dirección", async ({ page }) => {
     await page.goto("/tribus/valle");
     await expect(page.getByRole("heading", { level: 2, name: "Lo que tiene" })).toBeVisible();
     await page.goto("/tribus/valle?lang=en");

@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test } from "vitest";
+import { ProveedorIdioma } from "@/lib/idioma/cliente";
 import type { ErrorLectura, Lectura, RepositorioConsultas } from "@/lib/fogon/consultas/repositorio";
 import { ErrorDeLectura } from "./error-lectura";
 
@@ -38,5 +39,21 @@ describe("ErrorDeLectura", () => {
     expect(html).toContain('role="alert"');
     expect(html).not.toContain("<ul");
     expect(html).not.toMatch(/\b0\b/);
+  });
+});
+
+describe("ErrorDeLectura en inglés", () => {
+  const enIngles = (error: ErrorLectura) =>
+    renderToStaticMarkup(
+      <ProveedorIdioma idioma="en">
+        <ErrorDeLectura error={error} />
+      </ProveedorIdioma>,
+    );
+  test("los tres errores se leen en inglés, con role alert", () => {
+    expect(enIngles("no-encontrada")).toContain("find this consultation");
+    expect(enIngles("no-encontrada")).toContain("Back to the consultations");
+    expect(enIngles("sin-sesion")).toContain(">Sign in<");
+    expect(enIngles("falla")).toContain("load the consultations. Try again.");
+    for (const e of ["no-encontrada", "sin-sesion", "falla"] as const) expect(enIngles(e)).toContain('role="alert"');
   });
 });

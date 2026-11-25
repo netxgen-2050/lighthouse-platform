@@ -85,8 +85,12 @@ export function listarBarrios(): Barrio[] {
     .sort((a, b) => a.barrio - b.barrio);
 }
 
+/** Las fincas que pasaron a ser los primeros lotes (R40): se muestran como lotes, no en la vitrina de Soluna. */
+export const FINCAS_PRIMEROS_LOTES: readonly string[] = ["finca-535", "finca-536", "finca-537", "finca-538"];
+
 export function listarFincas(): Finca[] {
   return anillos("finca")
+    .filter(({ p }) => !FINCAS_PRIMEROS_LOTES.includes(p.id))
     .map(({ p, anillo }) => ({
       tipo: "finca" as const,
       id: p.id,

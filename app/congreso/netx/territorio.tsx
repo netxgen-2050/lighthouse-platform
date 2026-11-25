@@ -59,7 +59,7 @@ export function Territorio({ idioma = "es" }: { idioma?: Idioma }) {
             <p>{TEXTO_TERRITORIO.cuerpo}</p>
             <Link
               className="ev-boton ev-boton-linea"
-              href="/territorios/lighthouse"
+              href="/explorar#territorio"
               hrefLang={idioma === "en" ? "es" : undefined}
             >
               {TEXTO_TERRITORIO.boton}

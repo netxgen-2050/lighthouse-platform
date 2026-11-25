@@ -1,7 +1,7 @@
 import { CLAVES } from "@/lib/demo/claves";
 import type { OrigenPedido } from "@/lib/contactos/tipos";
 
-export const CAMINOS_VALIDOS = ["tribus", "perfil", "congreso"] as const;
+export const CAMINOS_VALIDOS = ["lotes", "territorio", "tribus"] as const;
 export type CaminoId = (typeof CAMINOS_VALIDOS)[number];
 
 /** Único límite: evita que un link malicioso llene el navegador con un texto gigante. */

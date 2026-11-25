@@ -1,7 +1,10 @@
 import { esCodigoValido } from "@/lib/congreso/ticket";
 import { CLAVES } from "@/lib/demo/claves";
+import { recorrido } from "@/lib/idioma/textos/recorrido";
+import type { Idioma } from "@/lib/idioma/tipos";
 import { leer as leerMembresia } from "@/lib/membresia/estado";
-import { leer as leerPactos } from "@/lib/pactos/estado";
+import type { ConstanciaPacto } from "@/lib/pactos/constancias";
+import { leerPactosConciliados } from "@/lib/pactos/estado";
 import { basicosCompletos, cargarPerfil } from "@/lib/perfil/modelo";
 import { leerKyc } from "@/lib/pasaporte/kyc";
 
@@ -19,51 +22,26 @@ export type Progreso = {
 
 export type ProximoPaso = { clave: ClavePaso; titulo: string; detalle: string; boton: string; href: string };
 
-const PASOS: Record<ClavePaso, ProximoPaso> = {
-  perfil: {
-    clave: "perfil",
-    titulo: "Completá tu perfil",
-    detalle: "Terminá la entrevista y confirmá tus datos para que podamos orientarte.",
-    boton: "Completar mi perfil",
-    href: "/perfil",
-  },
-  comunidad: {
-    clave: "comunidad",
-    titulo: "Adherí a una comunidad",
-    detalle: "Leé el manifiesto de una comunidad y adherí si te representa.",
-    boton: "Ver comunidades",
-    href: "/tribus",
-  },
-  pacto: {
-    clave: "pacto",
-    titulo: "Proponé un pacto",
-    detalle: "Contá qué vas a aportar a tu comunidad.",
-    boton: "Proponer un pacto",
-    href: "/pactos",
-  },
-  identidad: {
-    clave: "identidad",
-    titulo: "Verificá tu identidad",
-    detalle: "Hace falta para invertir.",
-    boton: "Verificar mi identidad",
-    href: "/pasaporte",
-  },
-  ticket: {
-    clave: "ticket",
-    titulo: "Registrá tu ticket del Congreso",
-    detalle: "Cargá el código de tu ticket.",
-    boton: "Registrar mi ticket",
-    href: "/congreso",
-  },
+/** A dónde lleva cada paso (el texto sale del diccionario `recorrido`). */
+const HREF_DEL_PASO: Record<ClavePaso, string> = {
+  perfil: "/perfil",
+  comunidad: "/participa",
+  pacto: "/pactos",
+  identidad: "/pasaporte",
+  ticket: "/congreso",
 };
 
-/** El único próximo paso, en este orden. null si no falta nada. */
-export function proximoPaso(p: Progreso): ProximoPaso | null {
-  if (!p.perfilCompleto) return PASOS.perfil;
-  if (!p.adhirioAComunidad) return PASOS.comunidad;
-  if (!p.propusoPacto) return PASOS.pacto;
-  if (p.quiereInvertir && !p.identidadVerificada) return PASOS.identidad;
-  if (!p.tieneTicket) return PASOS.ticket;
+function paso(clave: ClavePaso, idioma: Idioma): ProximoPaso {
+  return { clave, ...recorrido[idioma].pasos[clave], href: HREF_DEL_PASO[clave] };
+}
+
+/** El único próximo paso, en este orden y en el idioma pedido. null si no falta nada. */
+export function proximoPaso(p: Progreso, idioma: Idioma = "es"): ProximoPaso | null {
+  if (!p.perfilCompleto) return paso("perfil", idioma);
+  if (!p.adhirioAComunidad) return paso("comunidad", idioma);
+  if (!p.propusoPacto) return paso("pacto", idioma);
+  if (p.quiereInvertir && !p.identidadVerificada) return paso("identidad", idioma);
+  if (!p.tieneTicket) return paso("ticket", idioma);
   return null;
 }
 
@@ -73,10 +51,15 @@ export function proximoPaso(p: Progreso): ProximoPaso | null {
  * El perfil se lee del modelo nuevo (o de la entrevista vieja, migrada). "Quiere invertir" = inició el
  * KYC del Pasaporte; la identidad está verificada cuando el KYC fue aprobado.
  */
-export function leerProgreso(leer: (clave: string) => string | null): Progreso {
+export function leerProgreso(
+  leer: (clave: string) => string | null,
+  idPersona?: string | null,
+  registro?: readonly ConstanciaPacto[] | null,
+): Progreso {
   const perfil = cargarPerfil(leer(CLAVES.perfilDatos), leer(CLAVES.perfil));
   const kyc = leerKyc(leer(CLAVES.kyc));
-  const pactos = leerPactos(leer(CLAVES.pactos));
+  // Con las respuestas de la tribu aplicadas en memoria: un pacto no aceptado vuelve a borrador.
+  const pactos = leerPactosConciliados(leer(CLAVES.pactos), idPersona, registro);
   const membresia = leerMembresia(leer(CLAVES.membresia));
   const crudoTicket = leer(CLAVES.congreso);
   return {

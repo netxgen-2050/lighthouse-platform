@@ -7,6 +7,7 @@
 // (ids, URLs, fechas ISO, iniciales, nombres de personas y del evento, montos) queda siempre `string`.
 import { EVENTO_EJEMPLO } from "./evento-ejemplo";
 import { resolver, type Bilingue, type Idioma } from "./idioma";
+import { conVocabulario } from "@/lib/idioma/vocabulario";
 
 export type EstadoVoz = "confirmada" | "por-confirmar";
 
@@ -123,5 +124,5 @@ export async function obtenerEvento(idioma: Idioma = "es"): Promise<EventoEnIdio
 /** Resuelve un evento bilingüe en un idioma (separado de `obtenerEvento` para probar la caída con contenido a medida). */
 export function resolverEvento(fuente: Evento<Bilingue>, idioma: Idioma): EventoEnIdioma {
   const { valor, sinTraducir } = resolver<Evento<string>>(fuente, idioma);
-  return { ...valor, idioma, sinTraducir };
+  return { ...conVocabulario(valor), idioma, sinTraducir };
 }

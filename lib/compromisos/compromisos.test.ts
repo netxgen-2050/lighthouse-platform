@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { cargar, reducir } from "./estado";
-import { describirCompromiso } from "./formato";
+import { describirCantidad, describirCompromiso } from "./formato";
 import { armarMercado, AUTOR_EJEMPLO, EJEMPLOS_MERCADO, filtrarMercado } from "./mercado";
 import type { Borrador, Compromiso } from "./tipos";
 import { nuevoId, validarCompromiso } from "./validar";
@@ -164,6 +164,49 @@ describe("formato", () => {
       { id: "b", tipo: "ofrezco", clase: "tiempo", descripcion: "b", para: "lighthouse", creado: "2026-10-07T10:00:00Z" },
     ];
     expect(cargar(JSON.stringify(e))).toHaveLength(2);
+  });
+});
+
+describe("en inglés", () => {
+  const en = (b: Borrador) => {
+    const r = validarCompromiso(b, "x", new Date("2026-10-07T00:00:00Z"), "en");
+    return r.ok ? null : r.errores;
+  };
+  test("los mensajes de validación salen en inglés y en español por defecto", () => {
+    expect(en({ ...base, descripcion: "" })?.descripcion).toBe("Write a description.");
+    expect(en({ ...base, descripcion: "a".repeat(141) })?.descripcion).toBe("The description can have up to 140 characters.");
+    expect(en({ ...base, horas: "161" })?.horas).toBe("Hours per month must be a whole number between 1 and 160, or leave it empty.");
+    expect(en({ ...base, clase: "plata", monto: "0" })?.monto).toBe(
+      "The amount must be a whole number of USD between 1 and 1000000, or leave it empty.",
+    );
+    expect(en({ ...base, clase: "bienes", bienes: "a".repeat(61) })?.bienes).toBe("The quantity can have up to 60 characters.");
+    expect(errores({ ...base, descripcion: "" })?.descripcion).toBe("Escribí una descripción.");
+  });
+  test("un borrador válido se guarda igual en los dos idiomas", () => {
+    expect(validarCompromiso(base, "x", new Date("2026-10-07T00:00:00Z"), "en")).toEqual(
+      validarCompromiso(base, "x", new Date("2026-10-07T00:00:00Z"), "es"),
+    );
+  });
+  test("los formatos salen en inglés; el texto de la persona va tal cual", () => {
+    const r = validarCompromiso(base, "x");
+    expect(r.ok && describirCompromiso(r.compromiso, "en")).toBe("I offer · Time · Taller de compost · 8 h/month");
+    const sin = validarCompromiso({ ...base, horas: "" }, "x");
+    expect(sin.ok && describirCompromiso(sin.compromiso, "en")).toBe("I offer · Time · Taller de compost · no data");
+    const plata = validarCompromiso({ ...base, clase: "plata", monto: "500" }, "x");
+    expect(plata.ok && describirCantidad(plata.compromiso, "en")).toBe("USD 500");
+    const trueque = validarCompromiso({ ...base, clase: "trueque" }, "x");
+    expect(trueque.ok && describirCompromiso(trueque.compromiso, "en")).toBe("I offer · Barter · Taller de compost");
+    const bienes = validarCompromiso({ ...base, clase: "bienes", bienes: "20 kg por mes" }, "x");
+    expect(bienes.ok && describirCantidad(bienes.compromiso, "en")).toBe("20 kg por mes");
+  });
+  test("las ofertas de ejemplo tienen su inglés y las propias no", () => {
+    const m = armarMercado([comp("mio", "2026-10-08T10:00:00Z")]);
+    expect(m[0].descripcion.en).toBeUndefined();
+    for (const i of m.slice(1)) {
+      expect(i.descripcion.en?.trim(), i.compromiso.id).toBeTruthy();
+      expect(i.descripcion.original).toBe("es");
+      if (i.compromiso.clase === "bienes") expect(i.bienes?.en?.trim(), i.compromiso.id).toBeTruthy();
+    }
   });
 });
 

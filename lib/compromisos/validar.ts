@@ -1,3 +1,5 @@
+import { textos } from "@/lib/idioma/textos";
+import type { Idioma } from "@/lib/idioma/tipos";
 import {
   MAX_BIENES,
   MAX_DESCRIPCION,
@@ -23,17 +25,20 @@ export function nuevoId(): string {
   return `c-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+/** Valida el borrador; los mensajes de error salen en el idioma pedido (por defecto español). */
 export function validarCompromiso(
   b: Borrador,
   id: string = nuevoId(),
   ahora: Date = new Date(),
+  idioma: Idioma = "es",
 ): ResultadoValidar {
+  const m = textos("compromisos", idioma).errores;
   const errores: Partial<Record<CampoError, string>> = {};
   const descripcion = b.descripcion.trim();
   if (descripcion.length === 0) {
-    errores.descripcion = "Escribí una descripción.";
+    errores.descripcion = m.descripcionVacia;
   } else if (descripcion.length > MAX_DESCRIPCION) {
-    errores.descripcion = `La descripción puede tener hasta ${MAX_DESCRIPCION} caracteres.`;
+    errores.descripcion = m.descripcionLarga(MAX_DESCRIPCION);
   }
 
   let horasPorMes: number | undefined;
@@ -45,7 +50,7 @@ export function validarCompromiso(
     if (t !== "") {
       const n = /^\d+$/.test(t) ? Number(t) : NaN;
       if (!Number.isInteger(n) || n < MIN_HORAS || n > MAX_HORAS) {
-        errores.horas = `Las horas por mes son un número entero entre ${MIN_HORAS} y ${MAX_HORAS}, o dejalo vacío.`;
+        errores.horas = m.horas(MIN_HORAS, MAX_HORAS);
       } else {
         horasPorMes = n;
       }
@@ -55,7 +60,7 @@ export function validarCompromiso(
     if (t !== "") {
       const n = /^\d+$/.test(t) ? Number(t) : NaN;
       if (!Number.isInteger(n) || n < MIN_MONTO || n > MAX_MONTO) {
-        errores.monto = `El monto es un número entero de USD entre ${MIN_MONTO} y ${MAX_MONTO}, o dejalo vacío.`;
+        errores.monto = m.monto(MIN_MONTO, MAX_MONTO);
       } else {
         montoUsd = n;
       }
@@ -63,7 +68,7 @@ export function validarCompromiso(
   } else if (b.clase === "bienes") {
     const t = b.bienes.trim();
     if (t.length > MAX_BIENES) {
-      errores.bienes = `La cantidad puede tener hasta ${MAX_BIENES} caracteres.`;
+      errores.bienes = m.bienes(MAX_BIENES);
     } else if (t !== "") {
       cantidadBienes = t;
     }

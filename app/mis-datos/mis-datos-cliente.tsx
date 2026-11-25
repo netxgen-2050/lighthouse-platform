@@ -3,8 +3,12 @@
 import { useRef, useState, type ReactNode } from "react";
 import { useSesion } from "@/components/sesion/contexto";
 import { borrarDemo } from "@/lib/demo/borrar";
-import { retirarConsentimiento } from "@/lib/privacidad/consentimiento";
+import { CLAVES_COMPARTIDAS } from "@/lib/demo/claves";
+import { quitarConstanciasDe } from "@/lib/pactos/registro-compartido";
+import { borrarSensibles, cambiarNovedadesEnServidor, pedirConsentimiento, publicarEstado, retirarEnServidor } from "@/lib/privacidad/consentimiento";
+import type { CanalRegistrado } from "@/lib/privacidad/estado";
 import { exportarMisDatos, nombreArchivoDatos } from "@/lib/privacidad/exportar";
+import { fechaYHora } from "@/lib/privacidad/fecha";
 import { RESPONSABLE } from "@/lib/privacidad/politica";
 import { armarContexto } from "@/lib/reportes/reporte";
 
@@ -31,25 +35,41 @@ function Seccion({ id, titulo, children }: { id: string; titulo: string; childre
   );
 }
 
+/** El camino por el que aceptó, en palabras; sin camino (registro anterior a `consentimiento-alta`) es "sin dato". */
+const CAMINO: Record<CanalRegistrado, string> = {
+  alta: "al crear tu cuenta",
+  "al-entrar": "al entrar",
+  "nueva-version": "cuando cambió la política",
+  "mis-datos": "desde Mis datos",
+};
+
 export function MisDatosCliente() {
-  const { sesion, estado, billetera, salir, cabeceras } = useSesion();
+  const { sesion, estado, billetera, salir, cabeceras, detalleConsentimiento } = useSesion();
+  // La constancia y las novedades salen del servidor (`consentimiento-en-la-base`).
+  const { registro, novedades } = detalleConsentimiento;
+  const [anuncioNovedades, setAnuncioNovedades] = useState({ n: 0, texto: "" });
   const [descarga, setDescarga] = useState<{ n: number; texto: string; error: boolean }>({ n: 0, texto: "", error: false });
   const [confirmando, setConfirmando] = useState(false);
   const [falloRetiro, setFalloRetiro] = useState(false);
+  // El servidor no registró el retiro (red caída, 503): no se borró nada y es otro mensaje que el del borrado local.
+  const [falloRetiroServidor, setFalloRetiroServidor] = useState(false);
   const [pedido, setPedido] = useState<EstadoPedido>({ fase: "inicial" });
   const botonRetirar = useRef<HTMLButtonElement>(null);
   const botonConfirmar = useRef<HTMLButtonElement>(null);
 
   if (estado !== "ok" || !sesion) return null;
 
-  function descargar() {
+  async function descargar() {
     if (!sesion) return;
     try {
+      // Las filas del libro de consentimientos vienen del servidor; si no responde, esa parte sale como null (sin dato).
+      const delServidor = await pedirConsentimiento(cabeceras, { filas: true });
       const datos = exportarMisDatos({
         almacen: window.localStorage,
         idPersona: sesion.idPersona,
         email: sesion.email,
         billetera,
+        filas: delServidor?.filas ?? null,
       });
       const nombre = nombreArchivoDatos();
       const url = URL.createObjectURL(new Blob([JSON.stringify(datos, null, 2)], { type: "application/json" }));
@@ -71,11 +91,39 @@ export function MisDatosCliente() {
     }
   }
 
+  async function cambiarNovedades(dar: boolean) {
+    if (!sesion) return;
+    const nuevo = await cambiarNovedadesEnServidor(cabeceras, sesion.idPersona, dar);
+    if (!nuevo) {
+      setAnuncioNovedades((a) => ({ n: a.n + 1, texto: "Error: no pudimos guardar este cambio. Probá de nuevo." }));
+      return;
+    }
+    setAnuncioNovedades((a) => ({
+      n: a.n + 1,
+      texto: dar ? "Listo: pediste recibir novedades por email." : "Listo: dejaste de recibir novedades por email.",
+    }));
+  }
+
   async function retirar() {
-    // Primero se borra (con la persona todavía en sesión: las claves llevan su prefijo) y recién después se sale.
+    if (!sesion) return;
+    // Primero el servidor: una sola transacción agrega las filas `retira` (novedades si estaban aceptadas, política y términos,
+    // en ese orden) y no borra ninguna. Si no responde no se toca nada del navegador y la sesión sigue abierta.
+    const retirado = await retirarEnServidor(cabeceras, sesion.idPersona);
+    if (!retirado) {
+      // Solo se ve el aviso vigente: el del borrado local de un intento anterior ya no corresponde.
+      setFalloRetiro(false);
+      setFalloRetiroServidor(true);
+      return;
+    }
+    setFalloRetiroServidor(false);
+    // Después se borra (con la persona todavía en sesión: las claves llevan su prefijo) y recién después se sale.
     const fallidas = borrarDemo((c) => window.localStorage.removeItem(c));
-    const consentimientoQuitado = retirarConsentimiento(window.localStorage);
-    if (fallidas.length > 0 || !consentimientoQuitado) {
+    // Sus constancias de pactos también salen del registro compartido (las de otras personas quedan).
+    if (!quitarConstanciasDe(sesion.idPersona)) fallidas.push(CLAVES_COMPARTIDAS.pactosConstancias);
+    const sensiblesQuitados = borrarSensibles(window.localStorage, sesion.idPersona);
+    if (fallidas.length > 0 || !sensiblesQuitados) {
+      // El servidor ya registró el retiro: la app lo sabe aunque no se haya podido borrar todo del navegador.
+      publicarEstado(sesion.idPersona, retirado);
       setFalloRetiro(true);
       return;
     }
@@ -129,11 +177,42 @@ export function MisDatosCliente() {
           Un archivo JSON con todo lo que el prototipo guarda de vos ({sesion.email}): tu perfil, tus pactos, tus Semillas, tus
           contactos y lo demás. No incluye nada de otras personas. Lo que no cargaste figura como “null” (sin dato).
         </p>
-        <button type="button" onClick={descargar} className={BOTON_PRIMARIO}>
+        <button type="button" onClick={() => void descargar()}className={BOTON_PRIMARIO}>
           Descargar mis datos
         </button>
         <p role="status" className={`text-sm font-medium ${descarga.error ? "text-danger" : ""}`}>
           <span key={descarga.n}>{descarga.texto}</span>
+        </p>
+      </Seccion>
+
+      <Seccion id="constancia" titulo="Tu consentimiento">
+        {registro ? (
+          <p className="text-sm">
+            Aceptaste la versión {registro.version} el {fechaYHora(registro.aceptadoEn)}
+            {registro.canal ? `, ${CAMINO[registro.canal]}.` : ". Camino: sin dato."}
+          </p>
+        ) : (
+          <p className="text-sm">Sin dato: no hay un consentimiento registrado.</p>
+        )}
+        {registro?.sensibles && (
+          <p className="text-sm text-muted">
+            Datos sensibles del Pasaporte: aceptaste la versión {registro.sensibles.version} el {fechaYHora(registro.sensibles.aceptadoEn)}.
+          </p>
+        )}
+      </Seccion>
+
+      <Seccion id="novedades" titulo="Novedades por email">
+        <p className="text-sm">
+          {novedades?.evento === "acepta"
+            ? `Pediste recibir novedades por email el ${fechaYHora(novedades.registradoAt)}, ${novedades.canal ? CAMINO[novedades.canal] : "camino: sin dato"}.`
+            : "No recibís novedades por email."}
+        </p>
+        <p className="text-sm text-muted">Es opcional y no cambia tu consentimiento de la política. Prototipo: todavía no mandamos emails.</p>
+        <button type="button" onClick={() => void cambiarNovedades(novedades?.evento !== "acepta")} className={BOTON_SECUNDARIO}>
+          {novedades?.evento === "acepta" ? "Dejar de recibir novedades" : "Quiero recibir novedades"}
+        </button>
+        <p role="status" className="text-sm font-medium">
+          <span key={anuncioNovedades.n}>{anuncioNovedades.texto}</span>
         </p>
       </Seccion>
 
@@ -156,6 +235,7 @@ export function MisDatosCliente() {
                 onClick={() => {
                   setConfirmando(false);
                   setFalloRetiro(false);
+                  setFalloRetiroServidor(false);
                   // El botón que abrió la pregunta vuelve a existir en el próximo ciclo.
                   setTimeout(() => botonRetirar.current?.focus(), 0);
                 }}
@@ -177,6 +257,11 @@ export function MisDatosCliente() {
           >
             Retirar mi consentimiento
           </button>
+        )}
+        {falloRetiroServidor && (
+          <p role="alert" className="text-sm font-medium text-danger">
+            Error: no pudimos registrar tu retiro. No se borró nada y tu sesión sigue abierta. Probá de nuevo.
+          </p>
         )}
         {falloRetiro && (
           <p role="alert" className="text-sm font-medium text-danger">

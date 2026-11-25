@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
+import { sembrarRespuestaDeLaTribu } from "./ayudas";
 
 const LEYO = "Leí el manifiesto con atención y entiendo que sumarme es comprometerme con un grupo de personas";
 const CUIDAR = "Me comprometo a cuidar estos acuerdos y a hablar con la comunidad si algún día no puedo cumplirlos";
@@ -65,7 +66,8 @@ test("pactos: proponer, aceptar y abrir ronda registran sus eventos", async ({ p
   await page.getByLabel("Tu descripción: qué vas a hacer").fill("Facilito las asambleas");
   await page.getByRole("button", { name: "Enviar a la comunidad" }).click();
   await expect.poll(async () => (await actividad(page)).map((e) => e.texto)).toEqual([expect.stringContaining("Propusiste un pacto en")]);
-  await page.getByRole("button", { name: "Simular: la comunidad acepta" }).click();
+  // La tribu responde (siembra de test) y la persona lo ve al volver a /pactos.
+  await sembrarRespuestaDeLaTribu(page, "acepta");
   await expect.poll(async () => (await actividad(page)).length).toBe(3);
   const eventos = await actividad(page);
   expect(eventos[1].texto).toContain("aceptó tu pacto");
@@ -89,6 +91,21 @@ test("compromisos: una oferta registra la publicación y un aviso de interés co
   expect(interes.visibleDesde).toBeTruthy();
   // Todavía no pasaron los 20 segundos: no cuenta como novedad.
   await expect(campanita(page)).toHaveAttribute("aria-label", "Notificaciones, sin novedades");
+});
+
+test("compromisos: publicar por la URL sigue guardando y el aviso de interés no se muestra al pasar la demora (Mercado en pausa)", async ({ page }) => {
+  await page.clock.install();
+  await page.goto("/compromisos");
+  await page.getByRole("radio", { name: "Ofrezco" }).check();
+  await page.getByRole("radio", { name: "Tiempo" }).check();
+  await page.getByLabel("Descripción").fill("Taller de compost");
+  await page.getByLabel("Horas por mes").fill("8");
+  await page.getByRole("button", { name: "Registrar" }).click();
+  await expect.poll(async () => (await actividad(page)).length).toBe(2);
+  await page.clock.fastForward(30_000);
+  await expect(campanita(page)).toHaveAttribute("aria-label", "Notificaciones, sin novedades");
+  await page.goto("/bandeja");
+  await expect(page.getByText("Todavía no tenés notificaciones")).toBeVisible();
 });
 
 test("postulación: enviar registra la actividad y el aviso de recibida", async ({ page }) => {
@@ -186,6 +203,41 @@ test("un aviso simulado futuro no cuenta hasta que llega", async ({ page }) => {
   await expect(campanita(page)).toHaveAttribute("aria-label", "Notificaciones, sin novedades");
   await expect(page.getByText("Todavía no", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Actividad propia")).toHaveCount(0);
+});
+
+test("el aviso de interés en una oferta (Mercado en pausa) no se cuenta ni se lista", async ({ page }) => {
+  await semilla(page, [
+    evento("1", "Alguien se interesó en tu oferta", "2026-10-01T10:00:00Z", { tipo: "interes-oferta", enlace: "/compromisos" }),
+    evento("2", "Otro aviso", "2026-10-02T10:00:00Z"),
+  ]);
+  await page.goto("/bandeja");
+  await expect(campanita(page)).toHaveAttribute("aria-label", "1 notificación sin leer");
+  await expect(page.getByRole("link", { name: "Otro aviso" })).toBeVisible();
+  await expect(page.getByText("Alguien se interesó en tu oferta")).toHaveCount(0);
+  await expect(page.locator('a[href="/compromisos"]')).toHaveCount(0);
+});
+
+test("un único aviso de interés (Mercado en pausa): sin novedades y bandeja vacía", async ({ page }) => {
+  await semilla(page, [
+    evento("1", "Alguien se interesó en tu oferta", "2026-10-01T10:00:00Z", { tipo: "interes-oferta", enlace: "/compromisos" }),
+  ]);
+  await page.goto("/bandeja");
+  await expect(page.getByText("Todavía no tenés notificaciones")).toBeVisible();
+  await expect(campanita(page)).toHaveAttribute("aria-label", "Notificaciones, sin novedades");
+  await expect(page.getByText("Alguien se interesó en tu oferta")).toHaveCount(0);
+});
+
+test("la publicación en el Mercado (en pausa) no sale en Mi recorrido", async ({ page }) => {
+  await semilla(page, [
+    evento("1", "Publicaste en el mercado: Taller de compost", "2026-10-01T10:00:00Z", { tipo: "mercado", enlace: "/compromisos", notificacion: false }),
+    evento("2", "Actividad visible de control", "2026-10-02T10:00:00Z", { notificacion: false }),
+  ]);
+  await page.goto("/panel");
+  // Esperar a que Mi recorrido deje de cargar y muestre otro evento: recién ahí la ausencia del del Mercado prueba el filtro.
+  await expect(page.getByText("Actividad visible de control")).toBeVisible();
+  await expect(page.locator("main")).toHaveCount(1);
+  await expect(page.getByText("Publicaste en el mercado")).toHaveCount(0);
+  await expect(page.locator('main a[href="/compromisos"]')).toHaveCount(0);
 });
 
 test("axe sin violaciones serias o críticas: /bandeja con notificaciones", async ({ page }) => {

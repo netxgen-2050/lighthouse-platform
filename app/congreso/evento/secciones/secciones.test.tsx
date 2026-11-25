@@ -129,7 +129,7 @@ describe("Cierre", () => {
   it("tiene las dos acciones y el pie, y ningún botón secundario si no se pasa", () => {
     const html = renderToStaticMarkup(<Cierre cierre={evento.cierre} />);
     expect(html).toContain('href="#entradas">Reservar mi lugar<');
-    expect(html).toContain('href="#tribus">Llegar con mi tribu<');
+    expect(html).toContain('href="#tribus">Llegar con mi comunidad<');
     expect(html).toContain("Convocan NetX Gen, BioPueblo y Rubania");
     expect(html).toContain("Entradas y check-in con UnityHub");
     expect(cuantas(html, /<a /g)).toBe(2);

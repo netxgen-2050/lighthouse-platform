@@ -1,5 +1,6 @@
 import { formatearNumero, sinDato } from "@/lib/idioma/formatos";
 import { comunes } from "@/lib/idioma/textos/comunes";
+import { configuracion } from "@/lib/idioma/textos/configuracion";
 import { esIdioma, type Idioma } from "@/lib/idioma/tipos";
 import { USD_ARS } from "@/lib/pactos/datos";
 
@@ -11,13 +12,22 @@ export type Moneda = "USD" | "ARS";
 /** Tipos de aviso que la persona puede prender o apagar. */
 export type TipoAviso = "comunidades" | "pactos" | "rondas" | "mercado" | "postulaciones";
 
-export const TIPOS_AVISO: readonly { id: TipoAviso; etiqueta: string; detalle: string }[] = [
-  { id: "comunidades", etiqueta: "Comunidades", detalle: "Cuando una comunidad acepta tu adhesión." },
-  { id: "pactos", etiqueta: "Pactos", detalle: "Cuando una comunidad acepta tu pacto." },
-  { id: "rondas", etiqueta: "Rondas de reconocimiento", detalle: "Cuando se abre una ronda en tu comunidad." },
-  { id: "mercado", etiqueta: "Mercado", detalle: "Cuando alguien se interesa en lo que publicaste." },
-  { id: "postulaciones", etiqueta: "Postulaciones", detalle: "Cuando recibimos la postulación de tu comunidad." },
-];
+const IDS_AVISO: readonly TipoAviso[] = ["comunidades", "pactos", "rondas", "mercado", "postulaciones"];
+
+/**
+ * Avisos que no se ofrecen en Configuración: "mercado" lleva a /compromisos, que está en pausa por decisión de Gus
+ * del 27-oct-2026. Lo guardado se conserva; para volver, vaciar esta lista (ver docs/notas/compromisos-en-pausa.md).
+ */
+export const AVISOS_EN_PAUSA: readonly TipoAviso[] = ["mercado"];
+
+/** Los tipos de aviso con su etiqueta y su explicación en el idioma pedido (el texto vive en el diccionario `configuracion`). */
+export function tiposAviso(idioma: Idioma = "es"): readonly { id: TipoAviso; etiqueta: string; detalle: string }[] {
+  const t = configuracion[idioma].avisos.tipos;
+  return IDS_AVISO.filter((id) => !AVISOS_EN_PAUSA.includes(id)).map((id) => ({ id, ...t[id] }));
+}
+
+/** Los mismos tipos en español (el idioma por defecto). Las páginas traducidas usan `tiposAviso(idioma)`. */
+export const TIPOS_AVISO = tiposAviso("es");
 
 /** Qué tipos de evento de la actividad (`EventoActividad.tipo`) corresponden a cada tipo de aviso. */
 const EVENTOS_DE_AVISO: Record<TipoAviso, readonly string[]> = {
@@ -62,8 +72,8 @@ export function leerPreferencias(crudo: string | null): Preferencias {
     const r = o as Record<string, unknown>;
     const avisosCrudos = typeof r.avisos === "object" && r.avisos !== null ? (r.avisos as Record<string, unknown>) : {};
     const avisos = { ...base.avisos };
-    for (const t of TIPOS_AVISO) {
-      if (typeof avisosCrudos[t.id] === "boolean") avisos[t.id] = avisosCrudos[t.id] as boolean;
+    for (const id of IDS_AVISO) {
+      if (typeof avisosCrudos[id] === "boolean") avisos[id] = avisosCrudos[id] as boolean;
     }
     return {
       tema: r.tema === "claro" || r.tema === "oscuro" || r.tema === "sistema" ? r.tema : base.tema,

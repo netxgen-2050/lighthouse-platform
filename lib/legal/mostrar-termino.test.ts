@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { huella } from "@/lib/demo/bitacora";
-import { entradaBitacoraTermino, terminoMostrado } from "./mostrar-termino";
+import { entradaBitacoraTermino, fraseConsultiva, terminoMostrado } from "./mostrar-termino";
 import { TERMINOS, terminoEn } from "./terminos";
+
+describe("fraseConsultiva", () => {
+  it("da la frase aprobada en español y su versión en inglés", () => {
+    expect(fraseConsultiva("es")).toBe(
+      "El resultado es consultivo: no reemplaza las decisiones que reservan el contrato o el estatuto.",
+    );
+    expect(fraseConsultiva("en")).toBe(
+      "The result is advisory: it does not replace the decisions reserved by the contract or the statute.",
+    );
+  });
+});
 
 describe("terminoMostrado", () => {
   it("en español es lo de siempre", () => {

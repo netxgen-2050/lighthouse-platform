@@ -76,14 +76,37 @@ describe("mi reparto en plata (U4)", () => {
     expect(partes.piedra).toBe(0);
   });
 
-  test("sin votos propios: sin dato", () => {
-    const partes = repartoEnPlata(u4, {});
+  test("sin votos propios: la votación no empezó, sin dato", () => {
+    for (const reparto of [{}, { vivero: 0 }] as Record<string, number>[]) {
+      const partes = repartoEnPlata(u4, reparto);
+      expect(Object.values(partes).every((p) => p === null)).toBe(true);
+    }
+  });
+
+  test("primer voto: USD 20.000 y el resto en 0", () => {
+    const partes = repartoEnPlata(u4, { vivero: 1 });
+    expect(partes.vivero).toBe(2_000_000);
+    const otras = Object.entries(partes).filter(([id]) => id !== "vivero");
+    expect(otras).toHaveLength(4);
+    expect(otras.every(([, p]) => p === 0)).toBe(true);
+  });
+
+  test("solo votos en contra: ya empezó, todo en 0", () => {
+    const partes = repartoEnPlata({ ...u4, votosEnContra: true }, { vivero: -1 });
+    expect(Object.values(partes)).toHaveLength(5);
+    expect(Object.values(partes).every((p) => p === 0)).toBe(true);
+  });
+
+  test("sacar todos los votos vuelve a sin dato", () => {
+    const partes = repartoEnPlata(u4, mover(u4, { vivero: 1 }, "vivero", -1));
     expect(Object.values(partes).every((p) => p === null)).toBe(true);
   });
 
   test("monto sin cargar: sin dato, nunca 0", () => {
     const sinMonto = { ...u4, presupuesto: { ...u4.presupuesto!, montoCentavos: null } };
-    expect(repartoEnPlata(sinMonto, { vivero: 3 }).vivero).toBeNull();
+    for (const reparto of [{}, { vivero: 3 }] as Record<string, number>[]) {
+      expect(Object.values(repartoEnPlata(sinMonto, reparto)).every((p) => p === null)).toBe(true);
+    }
   });
 
   test("una consulta de prioridades no tiene plata", () => {

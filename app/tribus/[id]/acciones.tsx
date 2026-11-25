@@ -11,7 +11,7 @@ const SUAVE = `${BOTON} border border-muted hover:bg-surface-2`;
 export function VerBarrio() {
   const t = useTextos("tribus").ficha;
   return (
-    <Link className={SUAVE} href="/territorios/lighthouse">
+    <Link className={SUAVE} href="/explorar#territorio">
       {t.verBarrio}
     </Link>
   );

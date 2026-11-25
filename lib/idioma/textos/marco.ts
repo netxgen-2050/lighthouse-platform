@@ -2,6 +2,7 @@
 // Los nombres de las secciones salen del glosario (una sola fuente).
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
+import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
 
@@ -9,15 +10,45 @@ const es = {
   saltar: "Saltar al contenido",
   descripcionSitio: "Plataforma del Lighthouse: territorio y tribus.",
   aviso: "Prototipo interno · datos de ejemplo",
+  // Sello de prototipo en su variante de venta (ADR-030): la aprobación municipal nunca se muestra como otorgada.
+  avisoVenta: "venta simulada · aprobación municipal pendiente",
+  // Chip de estado (components/ui/chip-estado.tsx): lista cerrada.
+  estados: {
+    abierta: "Abierta",
+    enDiscusion: "En discusión",
+    decidida: "Decidida",
+    disponible: "Disponible",
+    reservado: "Reservado",
+    enCuotas: "En cuotas",
+    vendido: "Vendido",
+    enFinanciamiento: "En financiamiento",
+  },
+  // Tabla tipo libro y barra de avance.
+  ui: {
+    fecha: "Fecha",
+    motivo: "Motivo",
+    monto: "Monto",
+    avance: (pct: string) => `${pct} %`,
+  },
   rail: {
     navegacion: "Principal",
     ayudaExplorador: "Sumate gratis para usar esto",
     ayudaMiembro: "Sumate para participar",
-    grupos: { descubrir: G.descubrir.es, participar: G.participar.es, sumarte: G.sumarte.es },
+    grupos: { interno: "Interno" },
+    pendientes: "pendientes",
+    pendientesSinDato: "pendientes sin dato",
   },
   destinos: {
     inicio: G.inicio.es,
+    explorar: G.explorar.es,
+    participa: G.participa.es,
+    invertir: G.invertir.es,
+    miTierra: G.miTierra.es,
+    barrios: G.barrios.es,
+    comunidades: G.comunidades.es,
     territorio: G.territorio.es,
+    lotes: G.lotes.es,
+    biencomun: G.biencomun.es,
     tribus: G.tribus.es,
     pactos: G.pactos.es,
     semillas: G.semillas.es,
@@ -31,6 +62,7 @@ const es = {
     configuracion: G.configuracion.es,
     misDatos: G.misDatos.es,
     netx: "NetX",
+    admin: "Admin",
   },
   niveles: {
     sinCuenta: "Sin cuenta",
@@ -42,6 +74,7 @@ const es = {
   },
   barra: {
     interno: "Interno",
+    menu: "Menú",
     entrar: "Entrar",
     menuPersona: "Menú de la persona",
     nivel: (nivel: string) => `Nivel: ${nivel}`,
@@ -80,15 +113,42 @@ const en: Textos<typeof es> = {
   saltar: "Skip to content",
   descripcionSitio: "Lighthouse platform: territory and tribes.",
   aviso: "Internal prototype · sample data",
+  avisoVenta: "simulated sale · municipal approval pending",
+  estados: {
+    abierta: "Open",
+    enDiscusion: "Under discussion",
+    decidida: "Decided",
+    disponible: "Available",
+    reservado: "Reserved",
+    enCuotas: "In instalments",
+    vendido: "Sold",
+    enFinanciamiento: "Being financed",
+  },
+  ui: {
+    fecha: "Date",
+    motivo: "Reason",
+    monto: "Amount",
+    avance: (pct: string) => `${pct}%`,
+  },
   rail: {
     navegacion: "Main",
     ayudaExplorador: "Join for free to use this",
     ayudaMiembro: "Join to take part",
-    grupos: { descubrir: G.descubrir.en, participar: G.participar.en, sumarte: G.sumarte.en },
+    grupos: { interno: "Internal" },
+    pendientes: "pending",
+    pendientesSinDato: "pending, no data",
   },
   destinos: {
     inicio: G.inicio.en,
+    explorar: G.explorar.en,
+    participa: G.participa.en,
+    invertir: G.invertir.en,
+    miTierra: G.miTierra.en,
+    barrios: G.barrios.en,
+    comunidades: G.comunidades.en,
     territorio: G.territorio.en,
+    lotes: G.lotes.en,
+    biencomun: G.biencomun.en,
     tribus: G.tribus.en,
     pactos: G.pactos.en,
     semillas: G.semillas.en,
@@ -102,6 +162,7 @@ const en: Textos<typeof es> = {
     configuracion: G.configuracion.en,
     misDatos: G.misDatos.en,
     netx: "NetX",
+    admin: "Admin",
   },
   niveles: {
     sinCuenta: "No account",
@@ -113,6 +174,7 @@ const en: Textos<typeof es> = {
   },
   barra: {
     interno: "Internal",
+    menu: "Menu",
     entrar: "Sign in",
     menuPersona: "Person menu",
     nivel: (nivel: string) => `Level: ${nivel}`,
@@ -147,4 +209,4 @@ const en: Textos<typeof es> = {
   },
 };
 
-export const marco = { es, en };
+export const marco = conVocabulario({ es, en });

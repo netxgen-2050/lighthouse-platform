@@ -2,6 +2,7 @@
 // (pendiente de revisión nativa). Los nombres propios de los lugares (Temazcal, Gaia Sapiens Institute) no se traducen.
 import { sinDato } from "@/lib/idioma/formatos";
 import { textoEn, type BilingueConOriginal, type Idioma } from "@/lib/idioma/tipos";
+import { vocabulario } from "@/lib/idioma/vocabulario";
 import type { Territorio } from "./tipos";
 
 export const TEXTO_COMUN: { para: BilingueConOriginal; cuida: BilingueConOriginal } = {
@@ -10,8 +11,8 @@ export const TEXTO_COMUN: { para: BilingueConOriginal; cuida: BilingueConOrigina
     en: "Water, energy, a plant nursery and the spaces used by all the tribes (sample).",
   },
   cuida: {
-    es: "El Guardián del Lighthouse, con la participación de todas las tribus (ejemplo).",
-    en: "The Lighthouse Guardian, with the participation of all the tribes (sample).",
+    es: "El Consejo de la Fundación, con la participación de todas las tribus (ejemplo).",
+    en: "The Foundation Council, with the participation of all the tribes (sample).",
   },
 };
 
@@ -80,8 +81,8 @@ const TERRITORIOS: Record<string, TextosTerritorio> = {
       en: "BioPueblo Mainqué, south bank of the Río Negro",
     },
     descripcion: {
-      es: "~993 ha, doce barrios y las tribus que los están formando.",
-      en: "~993 ha, twelve neighborhoods and the tribes forming them.",
+      es: "~990 ha, doce barrios y las tribus que los están formando.",
+      en: "~990 ha, twelve neighborhoods and the tribes forming them.",
     },
     bienesComunes: [
       { es: "Agua: toma, cisterna y riego", en: "Water: intake, cistern and irrigation" },
@@ -95,7 +96,7 @@ const TERRITORIOS: Record<string, TextosTerritorio> = {
 /** El territorio con ubicación, descripción y bienes comunes en un idioma. El nombre es propio y no se traduce. */
 export function territorioEn(t: Territorio, idioma: Idioma): Territorio {
   const textos = Object.hasOwn(TERRITORIOS, t.id) ? TERRITORIOS[t.id] : undefined;
-  if (idioma === "es" || !textos) return t;
+  if (idioma === "es" || !textos) return { ...t, descripcion: vocabulario(t.descripcion) };
   return {
     ...t,
     ubicacion: textoEn(textos.ubicacion, idioma),

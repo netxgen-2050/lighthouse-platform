@@ -39,54 +39,84 @@ export type PlanPrueba = "explorador" | "miembro" | "fundador" | "ninguno";
  */
 export type ConsentimientoPrueba = "completo" | "basico" | "ninguno";
 
-type Opciones = { rol: RolPrueba; plan: PlanPrueba; consentimiento: ConsentimientoPrueba };
+/**
+ * Con qué email entra la persona: "fija" (el de `EMAILS`, el de siempre) o "propia" (uno inventado para ese test). Desde
+ * `consentimiento-en-la-base` el consentimiento vive en la base del servidor, que **comparten todos los tests** (y los
+ * workers en paralelo): un test que acepta, retira o necesita no haber aceptado nunca tiene que usar su propio email, o le
+ * cambiaría el estado a los demás. Con `consentimiento: "ninguno"` la identidad es siempre "propia".
+ */
+export type IdentidadPrueba = "fija" | "propia";
 
+type Opciones = { rol: RolPrueba; plan: PlanPrueba; consentimiento: ConsentimientoPrueba; identidad: IdentidadPrueba };
 
-/** Todos los emails con los que un e2e puede entrar (por la cookie o por "Entrar como…"). */
+/** Un email de prueba que ningún otro test usa (`.test` no existe en internet: ADR-008). */
+export function emailUnico(local = "persona"): string {
+  return `${local}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}@prueba.test`;
+}
+
+/** Todos los emails fijos con los que un e2e puede entrar (por la cookie o por "Entrar como…"). */
 const EMAILS_CONOCIDOS = [...Object.values(EMAILS), EMAIL_FUERA_DE_LISTA, "nueva@prueba.test"];
+
+type Contexto = import("@playwright/test").BrowserContext;
+
+/**
+ * Siembra el consentimiento por la API, como lo haría la persona (`POST /api/consentimientos` con el modo de prueba, design §4).
+ * Es idempotente: si ya aceptó la versión vigente no escribe nada.
+ */
+async function sembrarConsentimiento(context: Contexto, baseURL: string, emails: string[]): Promise<void> {
+  await Promise.all(
+    emails.map(async (email) => {
+      const r = await context.request.post(`${baseURL}/api/consentimientos`, {
+        headers: { "x-lh-prueba": email },
+        data: { accion: "acepta", canal: "al-entrar", version: VERSION_POLITICA },
+      });
+      if (!r.ok()) throw new Error(`No se pudo sembrar el consentimiento de una persona de prueba (${r.status()}).`);
+    }),
+  );
+}
 
 /**
  * `test` de todos los e2e: antes de navegar, la persona entra con el modo de prueba (cookie) y el almacenamiento
  * del navegador traduce las claves `lh-*` de los tests (sembrar y leer datos) a las claves con el prefijo de esa persona.
  * Con `test.use({ rol: "ninguno" })` no hay sesión (para probar Sumarte como puerta de entrada).
  * Con `test.use({ plan: "explorador" })` la persona arranca como Explorador; por defecto es Miembro, para que los e2e
- * que participan (Pactos, Semillas, Fogón, Compromisos) sigan pasando. `plan: "fundador"` siembra un Pase Fundador Brote (simulado).
+ * que participan (Pactos, Semillas, Fogón) sigan pasando. `plan: "fundador"` siembra un Pase Fundador Brote (simulado).
  * `plan: "ninguno"` no siembra nada (queda Explorador).
  */
-export const test = base.extend<Opciones>({
+export const test = base.extend<Opciones & { emailActual: string }>({
   rol: ["superadmin", { option: true }],
   plan: ["miembro", { option: true }],
   consentimiento: ["completo", { option: true }],
-  page: async ({ page, context, baseURL, rol, plan, consentimiento }, entregar) => {
+  identidad: ["fija", { option: true }],
+  /** El email con el que entra este test (vacío sin sesión). */
+  emailActual: async ({ rol, consentimiento, identidad }, entregar) => {
+    if (rol === "ninguno") return entregar("");
+    await entregar(identidad === "propia" || consentimiento === "ninguno" ? emailUnico(rol) : EMAILS[rol]);
+  },
+  page: async ({ page, context, baseURL, rol, plan, consentimiento, emailActual }, entregar) => {
     if (consentimiento !== "ninguno") {
-      // Se siembra el consentimiento de todos los emails de prueba, con o sin sesión, una sola vez por persona
-      // (si ya hay un registro, no se pisa: así un test puede retirarlo o cambiarlo).
+      // El consentimiento de las personas de prueba se siembra en el servidor, por la API (con o sin sesión en este test, porque
+      // algunos entran después con "Entrar como…"). Los emails fijos que no usa este test se siembran igual: es idempotente.
+      // El de los datos sensibles del KYC sigue en el navegador (todavía no se mudó, `datos-en-la-nube`).
+      if (baseURL) await sembrarConsentimiento(context, baseURL, [...new Set([...EMAILS_CONOCIDOS, ...(emailActual ? [emailActual] : [])])]);
       await page.addInitScript(
         ([prefijos, version, completo]) => {
+          if (!completo) return;
           try {
             for (const prefijo of prefijos) {
-              const clave = `${prefijo}lh-consentimiento`;
+              const clave = `${prefijo}lh-consentimiento-sensibles`;
               if (window.localStorage.getItem(clave) !== null) continue;
-              const ahora = new Date().toISOString();
-              window.localStorage.setItem(
-                clave,
-                JSON.stringify({
-                  version,
-                  aceptadoEn: ahora,
-                  aceptado: { politica: true, terminos: true },
-                  sensibles: completo ? { version, aceptadoEn: ahora } : null,
-                }),
-              );
+              window.localStorage.setItem(clave, JSON.stringify({ version, aceptadoEn: new Date().toISOString() }));
             }
           } catch {
             // Páginas sin almacenamiento (about:blank): no hay nada que sembrar.
           }
         },
-        [EMAILS_CONOCIDOS.map(prefijoDe), VERSION_POLITICA, consentimiento === "completo"] as const,
+        [[...EMAILS_CONOCIDOS, ...(emailActual ? [emailActual] : [])].map(prefijoDe), VERSION_POLITICA, consentimiento === "completo"] as const,
       );
     }
     if (rol !== "ninguno" && baseURL) {
-      const email = EMAILS[rol];
+      const email = emailActual;
       await context.addCookies([{ name: COOKIE_PRUEBA, value: encodeURIComponent(email), url: baseURL }]);
       await page.addInitScript(([prefijo, planInicial]) => {
         const proto = Storage.prototype;
@@ -126,3 +156,41 @@ export const test = base.extend<Opciones>({
     await entregar(page);
   },
 });
+
+// --- Ayudas para los tests de consentimiento (el consentimiento vive en el servidor) -----------------------------------
+
+type PeticionesApi = import("@playwright/test").APIRequestContext;
+
+/** Lo que el servidor guardó del consentimiento de ese email de prueba (estado vigente y todas las filas del libro). */
+export async function consentimientoDe(request: PeticionesApi, email: string) {
+  const r = await request.get("/api/consentimientos?filas=1", { headers: { "x-lh-prueba": email } });
+  if (!r.ok()) throw new Error(`No se pudo leer el consentimiento de prueba (${r.status()}).`);
+  return (await r.json()) as {
+    estado: {
+      general: "vigente" | "pendiente" | "retirado";
+      version: string | null;
+      registradoAt: string | null;
+      canal: string | null;
+      novedades: boolean;
+      novedadesRegistro: { evento: string; version: string; registradoAt: string; canal: string | null } | null;
+    };
+    filas?: { tipo: string; evento: string; version: string; canal: string | null }[];
+  };
+}
+
+/** Registra en el servidor, como lo haría esa persona, un `acepta` (o el pedido que se pase). Siembra de test, no un flujo de la app. */
+export async function registrarConsentimientoDe(request: PeticionesApi, email: string, cuerpo: Record<string, unknown> = {}) {
+  const r = await request.post("/api/consentimientos", {
+    headers: { "x-lh-prueba": email },
+    data: { accion: "acepta", canal: "al-entrar", version: VERSION_POLITICA, ...cuerpo },
+  });
+  if (!r.ok()) throw new Error(`No se pudo registrar el consentimiento de prueba (${r.status()}).`);
+}
+
+/**
+ * Hace que el panel "Entrar como…" de Sumarte ofrezca ESE email (en lugar de los de `LH_PERSONAS`): así un test que necesita una
+ * persona sin consentimiento previo entra con un email propio, que ningún otro test comparte en la base del servidor.
+ */
+export async function panelConEmail(page: import("@playwright/test").Page, email: string) {
+  await page.route("**/api/sesion/prueba", (ruta) => ruta.fulfill({ json: { activo: true, emails: [email] } }));
+}

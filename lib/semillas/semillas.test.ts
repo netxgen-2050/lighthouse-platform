@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { estadoMedidor, FACTOR_EVALUACION, faltantes, mensajeFaltante, rondaCompleta, semillasTiempo, totalConDato } from "./calculo";
-import { COMPANEROS, DIMENSIONES, META_SEMBRADOR, RECONOCIMIENTO_RECIBIDO } from "./datos";
+import { COMPANEROS, DIMENSIONES, META_SEMBRADOR } from "./datos";
 import {
   enviarRonda,
   guardarRondas,
@@ -27,15 +27,6 @@ describe("datos del mock-up", () => {
     expect(DIMENSIONES.map((d) => d[1])).toEqual(["Rol", "Aporte al grupo"]);
     expect(DIMENSIONES[0][2]).toBe("Cómo cumple con las responsabilidades de su trabajo.");
     expect(DIMENSIONES[1][2]).toContain("cultura del grupo");
-  });
-  it("el reconocimiento recibido de ejemplo trae puntuación y explicación", () => {
-    for (const r of RECONOCIMIENTO_RECIBIDO) {
-      for (const x of [r.rol, r.aporte]) {
-        expect(x.nota).toBeGreaterThanOrEqual(1);
-        expect(x.nota).toBeLessThanOrEqual(5);
-        expect(x.porque.length).toBeGreaterThan(0);
-      }
-    }
   });
 });
 
@@ -85,6 +76,19 @@ describe("ronda de reconocimiento", () => {
       ]),
     ).toBe("Error: la ronda no se envió. Faltan 1 puntuación y 2 explicaciones.");
   });
+  it("el aviso también sale en inglés, con el mismo conteo", () => {
+    expect(mensajeFaltante([{ clave: "0|rol", falta: "nota" }], "en")).toBe("Error: the round was not sent. Missing: 1 score.");
+    expect(
+      mensajeFaltante(
+        [
+          { clave: "0|rol", falta: "nota" },
+          { clave: "0|cultura", falta: "razon" },
+          { clave: "1|cultura", falta: "razon" },
+        ],
+        "en",
+      ),
+    ).toBe("Error: the round was not sent. Missing: 1 score and 2 explanations.");
+  });
   it("con notas y explicaciones se puede enviar, y el factor sigue fijo en 1,0", () => {
     expect(rondaCompleta(notas(5), razones, 2)).toBe(true);
     expect(FACTOR_EVALUACION).toBe(1);
@@ -131,8 +135,12 @@ describe("semillas por comunidad, desde lo guardado por /pactos", () => {
     expect(semillasDeComunidad(null, "lighthouse")).toEqual({
       horas: null,
       tiempo: null,
+      variable: null,
+      variableAnterior: null,
       plata: null,
       presencia: null,
+      puntual: null,
+      constancias: [],
       total: null,
       pactoAceptado: false,
     });

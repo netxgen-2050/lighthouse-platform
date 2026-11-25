@@ -2,17 +2,18 @@
 
 import { useEffect, useRef, type Ref } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
+import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import type { DatosPersona } from "@/lib/pasaporte/datos";
-import { fechaLarga, PASOS_KYC, type EstadoKyc } from "@/lib/pasaporte/kyc";
+import { fechaLarga, type EstadoKyc } from "@/lib/pasaporte/kyc";
 
 const FOCO = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 const BOTON = `w-fit rounded-lg px-4 py-1.5 font-medium ${FOCO}`;
 const BOTON_PRIMARIO = `${BOTON} bg-deep text-on-deep hover:bg-deep-2`;
 
 const ETAPAS = [
-  { estado: "sin-tramite", texto: "Sin empezar" },
-  { estado: "en-tramite", texto: "En trámite" },
-  { estado: "aprobado", texto: "Verificada" },
+  { estado: "sin-tramite", clave: "sinTramite" },
+  { estado: "en-tramite", clave: "enTramite" },
+  { estado: "aprobado", clave: "aprobado" },
 ] as const;
 
 /** Tarjeta principal de la verificación de identidad (KYC simulado), arriba de los sellos. */
@@ -29,6 +30,9 @@ export function TarjetaIdentidad({
   alAprobar: () => void;
   botonRef: Ref<HTMLButtonElement>;
 }) {
+  const idioma = useIdioma();
+  const pasaporte = useTextos("pasaporte");
+  const t = pasaporte.identidad;
   const titulo = useRef<HTMLHeadingElement>(null);
 
   // Enlace directo `/pasaporte#identidad`: lleva a la tarjeta y deja el foco en su encabezado.
@@ -57,11 +61,11 @@ export function TarjetaIdentidad({
         tabIndex={-1}
         className={`text-xl font-semibold ${FOCO}`}
       >
-        Verificá tu identidad (KYC)
-        <TerminoLegal clave="kyc" />
+        {t.titulo}
+        <TerminoLegal clave="kyc" idioma={idioma} />
       </h2>
 
-      <ol aria-label="Estado de tu verificación" className="flex flex-wrap gap-2 text-sm">
+      <ol aria-label={t.estadoDeTuVerificacion} className="flex flex-wrap gap-2 text-sm">
         {ETAPAS.map((e, i) => {
           const esActual = i === actual;
           return (
@@ -75,8 +79,8 @@ export function TarjetaIdentidad({
               }`}
             >
               {esActual ? "● " : "○ "}
-              {i + 1}. {e.texto}
-              {esActual && " (estás acá)"}
+              {i + 1}. {t.etapas[e.clave]}
+              {esActual && t.estasAca}
             </li>
           );
         })}
@@ -84,44 +88,41 @@ export function TarjetaIdentidad({
 
       {kyc.estado === "aprobado" ? (
         <div className="grid gap-1">
-          <p className="font-medium">Identidad verificada el {fechaLarga(kyc.aprobado)} (simulado)</p>
+          <p className="font-medium">{t.verificadaEl(fechaLarga(kyc.aprobado, idioma))}</p>
           {datos.residencia === "exterior" ? (
             <p className="text-sm">
-              Por ahora no quedás habilitado/a como inversor/a: tu residencia fiscal es del exterior.
-              <TerminoLegal clave="inversorexterior" />
+              {t.exterior}
+              <TerminoLegal clave="inversorexterior" idioma={idioma} />
             </p>
           ) : datos.residencia === "argentina" ? (
-            <p className="text-sm">Quedaste habilitado/a como inversor/a (simulado).</p>
+            <p className="text-sm">{t.habilitado}</p>
           ) : (
-            <p className="text-sm">Sin dato de tu residencia fiscal: no podemos decir si quedás habilitado/a como inversor/a.</p>
+            <p className="text-sm">{t.sinResidencia}</p>
           )}
         </div>
       ) : (
         <>
-          <p>
-            Lo pide el fiduciario antes de que aportes plata: para pedir la invitación al proyecto del Lote 7 o registrar un
-            aporte en plata en Pactos.
-          </p>
-          <p className="text-sm text-muted">No hace falta para recorrer, sumarte a una tribu ni proponer pactos de tiempo.</p>
+          <p>{t.loPide}</p>
+          <p className="text-sm text-muted">{t.noHaceFalta}</p>
           {kyc.estado === "en-tramite" ? (
             <div className="grid gap-3">
-              <p className="font-medium">Enviaste tus datos el {fechaLarga(kyc.enviado)}</p>
+              <p className="font-medium">{t.enviasteEl(fechaLarga(kyc.enviado, idioma))}</p>
               <button type="button" data-foco-kyc className={BOTON_PRIMARIO} onClick={alAprobar}>
-                Simular: verificación aprobada
+                {t.simularAprobada}
               </button>
             </div>
           ) : (
             <>
               <div>
-                <p className="text-sm font-medium">Qué se te va a pedir</p>
+                <p className="text-sm font-medium">{t.quePide}</p>
                 <ol className="list-decimal pl-5 text-sm">
-                  {PASOS_KYC.map((p) => (
+                  {pasaporte.kyc.pasos.map((p) => (
                     <li key={p}>{p}</li>
                   ))}
                 </ol>
               </div>
               <button ref={botonRef} type="button" className={BOTON_PRIMARIO} onClick={alCompletar}>
-                Completar mi verificación (KYC)
+                {t.completar}
               </button>
             </>
           )}

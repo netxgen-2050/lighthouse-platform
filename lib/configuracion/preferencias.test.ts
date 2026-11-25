@@ -4,6 +4,7 @@ import {
   formatearMonto,
   leerPreferencias,
   NOTA_TIPO_DE_CAMBIO,
+  tiposAviso,
   notaTipoDeCambio,
   PREFERENCIAS_INICIALES,
   TIPO_DE_CAMBIO,
@@ -32,6 +33,18 @@ describe("leerPreferencias", () => {
     expect(p.idiomaElegido).toBeNull();
   });
 
+  it("un aviso de Mercado guardado se conserva aunque no se muestre", () => {
+    expect(leerPreferencias(JSON.stringify({ avisos: { mercado: false } })).avisos.mercado).toBe(false);
+  });
+
+  it("el aviso de Mercado apagado sigue apagado después de cambiar y guardar otra preferencia", () => {
+    const guardado = JSON.stringify(leerPreferencias(JSON.stringify({ avisos: { mercado: false } })));
+    const cambiada = leerPreferencias(guardado);
+    const vuelta = leerPreferencias(JSON.stringify({ ...cambiada, avisos: { ...cambiada.avisos, rondas: false } }));
+    expect(vuelta.avisos.rondas).toBe(false);
+    expect(vuelta.avisos.mercado).toBe(false);
+  });
+
   it("idiomaElegido: es y en valen; otro valor o ausente es null (no eligió)", () => {
     expect(leerPreferencias(JSON.stringify({ idiomaElegido: "en" })).idiomaElegido).toBe("en");
     expect(leerPreferencias(JSON.stringify({ idiomaElegido: "es" })).idiomaElegido).toBe("es");
@@ -42,6 +55,9 @@ describe("leerPreferencias", () => {
 
   it("por defecto todo está prendido, el tema es el del sistema y la moneda es USD", () => {
     expect(PREFERENCIAS_INICIALES.tema).toBe("sistema");
+    expect(leerPreferencias(null).tema).toBe("sistema");
+    expect(leerPreferencias(JSON.stringify({ tema: "claro" })).tema).toBe("claro");
+    expect(leerPreferencias(JSON.stringify({ tema: "sistema" })).tema).toBe("sistema");
     expect(PREFERENCIAS_INICIALES.moneda).toBe("USD");
     expect(PREFERENCIAS_INICIALES.mostrarHifa).toBe(true);
     expect(Object.values(PREFERENCIAS_INICIALES.avisos).every(Boolean)).toBe(true);
@@ -87,6 +103,17 @@ describe("formatearMonto", () => {
   });
 });
 
+describe("tiposAviso", () => {
+  it("son los mismos cuatro en los dos idiomas, con el mismo id (Mercado está en pausa)", () => {
+    const es = tiposAviso("es");
+    const en = tiposAviso("en");
+    expect(es.map((t) => t.id)).toEqual(["comunidades", "pactos", "rondas", "postulaciones"]);
+    expect(en.map((t) => t.id)).toEqual(es.map((t) => t.id));
+    expect(es[0].etiqueta).toBe("Comunidades");
+    expect(en[0].etiqueta).toBe("Communities");
+  });
+});
+
 describe("notaTipoDeCambio", () => {
   it("en español es la nota de siempre", () => {
     expect(NOTA_TIPO_DE_CAMBIO).toBe("Tipo de cambio de ejemplo: 1 USD = 1.400 ARS. No es una cotización real.");
@@ -100,8 +127,14 @@ describe("notaTipoDeCambio", () => {
 
 describe("atributosDeApariencia", () => {
   it("el tema del sistema se resuelve con la preferencia del sistema", () => {
-    expect(atributosDeApariencia(PREFERENCIAS_INICIALES, true)["data-tema"]).toBe("oscuro");
+    const sistema = { ...PREFERENCIAS_INICIALES, tema: "sistema" as const };
+    expect(atributosDeApariencia(sistema, true)["data-tema"]).toBe("oscuro");
+    expect(atributosDeApariencia(sistema, false)["data-tema"]).toBe("claro");
+  });
+
+  it("sin preferencia guardada el tema sigue al sistema, claro u oscuro", () => {
     expect(atributosDeApariencia(PREFERENCIAS_INICIALES, false)["data-tema"]).toBe("claro");
+    expect(atributosDeApariencia(PREFERENCIAS_INICIALES, true)["data-tema"]).toBe("oscuro");
   });
 
   it("un tema elegido gana sobre el del sistema", () => {

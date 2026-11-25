@@ -139,6 +139,26 @@ describe("agregar", () => {
   });
 });
 
+describe("consulta por un lote de Lighthouse VRN", () => {
+  const vrn: Borrador = { ...base, motivo: "consulta-lote-vrn", referencia: "Lote 7", estadoMostrado: "Loteo provisorio" };
+
+  it("va al Equipo NetX, en español y en inglés", () => {
+    expect(MOTIVOS["consulta-lote-vrn"]).toEqual({
+      etiqueta: "Consulta por un lote de Lighthouse VRN",
+      destino: "Equipo NetX",
+    });
+    expect(crearPedido(vrn, new Date(), "a").destino).toBe("Equipo NetX");
+  });
+
+  it("se lee de la bandeja, y un pedido viejo de Soluna sigue con su destino", () => {
+    const nuevo = crearPedido(vrn, new Date(), "n");
+    const viejo = crearPedido(base, new Date(), "v");
+    const leida = leerBandeja(JSON.stringify([nuevo, viejo]));
+    expect(leida.map((p) => p.motivo)).toEqual(["consulta-lote-vrn", "consulta-lote"]);
+    expect(leida[1].destino).toBe("BioPueblo, vía NetX como agencia");
+  });
+});
+
 describe("borrarDemo", () => {
   it("quita lh-contactos", () => {
     const quitadas: string[] = [];

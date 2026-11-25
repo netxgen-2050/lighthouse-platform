@@ -29,6 +29,23 @@ type Props = {
 // La explicación de un término se muestra como tooltip flotante:
 // mouse (entrar/salir), teclado (foco/blur, Escape) y toque (dispositivos sin hover).
 // Lo comparten el ⚖ legal y el 🌱 económico.
+/** "conviction voting" es un nombre de mecanismo: el traductor del navegador no lo cambia. */
+function ConMarcas({ texto }: { texto: string }) {
+  return (
+    <>
+      {texto.split(/(conviction voting)/).map((parte, i) =>
+        i % 2 === 1 ? (
+          <span key={i} translate="no">
+            {parte}
+          </span>
+        ) : (
+          parte
+        ),
+      )}
+    </>
+  );
+}
+
 export function TooltipTermino({
   titulo,
   texto,
@@ -155,7 +172,7 @@ export function TooltipTermino({
             <strong className="block" lang={lang}>
               {titulo}
             </strong>
-            {lang ? <span lang={lang}>{texto}</span> : texto}
+            {lang ? <span lang={lang}><ConMarcas texto={texto} /></span> : <ConMarcas texto={texto} />}
             {borrador && (
               <em className="mt-1 block text-muted" lang={lang}>
                 {textoBorrador}

@@ -71,18 +71,28 @@ function trazo(desde: number, hasta: number): string {
   return `M ${a.x.toFixed(3)} ${a.y.toFixed(3)} A ${R} ${R} 0 ${grande} 1 ${b.x.toFixed(3)} ${b.y.toFixed(3)}`;
 }
 
+export type TextosDonut = { verComoTabla: string; valor: string; restoAria: string };
+
+const TEXTOS_DONUT_ES: TextosDonut = { verComoTabla: "Ver como tabla", valor: "Valor", restoAria: " (créditos que no usaste)" };
+
 export function Donut({
   titulo,
   porciones,
   resto,
   formatoValor = (n) => String(n),
   sinDato = "sin dato",
+  columnaEtiqueta = "Opción",
+  textos = TEXTOS_DONUT_ES,
 }: {
   titulo: string;
   porciones: readonly PorcionDonut[];
   resto?: { etiqueta: string; valor: number };
   formatoValor?: (valor: number) => string;
   sinDato?: string;
+  /** Encabezado de la primera columna de la tabla equivalente. */
+  columnaEtiqueta?: string;
+  /** Textos fijos del gráfico en el idioma de la página (por defecto, español). */
+  textos?: TextosDonut;
 }) {
   const arcos = calcularArcos(porciones, resto);
   return (
@@ -139,7 +149,7 @@ export function Donut({
               <li key={a.id}>
                 {a.numero !== null ? `${a.numero} · ` : ""}
                 {a.etiqueta} · {a.pct} %
-                {a.esResto && <span className="sr-only"> (créditos que no usaste)</span>}
+                {a.esResto && <span className="sr-only">{textos.restoAria}</span>}
               </li>
             ))}
           </ol>
@@ -147,15 +157,15 @@ export function Donut({
         {arcos.length > 0 && (
           <details>
             <summary className="w-fit cursor-pointer underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
-              Ver como tabla
+              {textos.verComoTabla}
             </summary>
             <div className="mt-2 overflow-x-auto">
               <table className="w-full text-left">
                 <caption className="sr-only">{titulo}</caption>
                 <thead>
                   <tr>
-                    <th scope="col" className="pr-4">Opción</th>
-                    <th scope="col" className="pr-4">Valor</th>
+                    <th scope="col" className="pr-4">{columnaEtiqueta}</th>
+                    <th scope="col" className="pr-4">{textos.valor}</th>
                     <th scope="col">%</th>
                   </tr>
                 </thead>

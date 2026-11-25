@@ -1,3 +1,5 @@
+// Estas son las puertas de la PLATAFORMA (quién entra a qué pantalla). No son los permisos dentro de una decisión del Fogón
+// (`lib/fogon/propuestas/permisos.ts`: niveles de implicación, simulados): son cosas distintas y no se mezclan (ADR-022).
 import { marco } from "@/lib/idioma/textos/marco";
 import { sumarte } from "@/lib/idioma/textos/sumarte";
 import type { Idioma } from "@/lib/idioma/tipos";
@@ -5,8 +7,8 @@ import { esPublica } from "@/lib/sesion/rutas-publicas";
 
 /**
  * Niveles de acceso según cómo se suma la persona (Sumarte). Cada uno incluye todo lo del anterior.
- * `fundador` es quien tiene el Pase Fundador (sin Plan Tribu). Votar en el Fideicomiso no sale de este orden sino de la
- * puerta `voto-fideicomiso` (`lib/permisos/tabla.ts`): un líder de tribu sin pase no vota ahí.
+ * `fundador` es quien tiene el Pase Fundador (sin Plan Tribu). La influencia en el Fondo Común no sale de este orden sino
+ * de la puerta `influencia-fondo-comun` (`lib/permisos/tabla.ts`): un líder de tribu sin pase no tiene influencia ahí.
  * `sin-cuenta` no es un plan: es quien todavía no se registró. `superadmin` no se elige: viene de `LH_PERSONAS`.
  */
 export const NIVELES = ["sin-cuenta", "explorador", "miembro", "fundador", "lider", "superadmin"] as const;
@@ -46,7 +48,8 @@ export type Capacidad =
   | "participar"
   | "adherir"
   | "admin-tribu"
-  | "netx";
+  | "vista-netx"
+  | "admin";
 
 /** Nivel mínimo que habilita cada capacidad. */
 export const NIVEL_MINIMO: Record<Capacidad, Nivel> = {
@@ -59,7 +62,8 @@ export const NIVEL_MINIMO: Record<Capacidad, Nivel> = {
   participar: "miembro",
   adherir: "miembro",
   "admin-tribu": "lider",
-  netx: "superadmin",
+  "vista-netx": "explorador",
+  admin: "superadmin",
 };
 
 /** ¿Este nivel llega al mínimo pedido? */
@@ -88,7 +92,10 @@ export function capacidadDeRuta(ruta: string): Capacidad {
   const r = limpiar(ruta);
   if (dentroDe(r, "/sumarte")) return "sumarte";
   if (esPublica(r)) return "descubrir";
-  if (dentroDe(r, "/netx")) return "netx";
+  if (dentroDe(r, "/netx")) return "vista-netx";
+  if (dentroDe(r, "/admin")) return "admin";
+  // La vista de la tribu la abre cualquiera con cuenta: quien no tiene pactos para responder ve un aviso, no se lo manda a Sumarte.
+  if (dentroDe(r, "/pactos/responder")) return "personal";
   if (PARTICIPAR.some((p) => dentroDe(r, p))) return "participar";
   if (dentroDe(r, "/congreso")) return "congreso";
   return "personal";
@@ -114,6 +121,7 @@ const NOMBRE_DE_RUTA: readonly [string, keyof (typeof sumarte)["es"]["avisos"]["
   ["/bandeja", "bandeja"],
   ["/configuracion", "configuracion"],
   ["/netx", "netx"],
+  ["/admin", "admin"],
 ];
 
 /** Aviso de Sumarte cuando alguien abre por dirección una página que su nivel no habilita. */

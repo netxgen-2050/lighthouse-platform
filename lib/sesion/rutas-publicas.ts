@@ -4,10 +4,25 @@
  */
 export const RUTAS_PUBLICAS: readonly RegExp[] = [
   /^\/$/,
+  // Explorar: Territorio, Barrio Norte y Lotes en una sola página (explorar-unificado). Las direcciones viejas redirigen acá.
+  /^\/explorar$/,
   /^\/territorios\/[^/]+$/,
+  // Participa: equipos sobre el mapa ilustrado (participa-mapa-equipos). `/tribus` solo redirige, pero también se ve sin sesión.
+  /^\/participa$/,
   /^\/tribus$/,
   /^\/tribus\/[^/]+$/,
   /^\/tribus\/[^/]+\/manifiesto$/,
+  // Lotes de Lighthouse VRN: la lista y la ficha se ven sin sesión; reservar y hablar con alguien piden entrar (lote-ficha-y-compra).
+  /^\/lotes$/,
+  /^\/lotes\/[^/]+$/,
+  // Barrio Norte: lotes por estado y bien común se ven sin sesión; el panel de la obra pide entrar (rediseno-explorar-valle).
+  /^\/barrios\/norte$/,
+  // Mi tierra: sin sesión muestra solo un aviso para entrar y ningún dato (rediseno-mi-tierra).
+  /^\/mi-tierra$/,
+  // Invertir: sin sesión muestra solo un aviso para entrar y ningún número; los números se dibujan solo con sesión (rediseno-invertir).
+  /^\/invertir$/,
+  // El bien común con tokens: simulación para el equipo, se lee sin sesión (bien-comun-tokens).
+  /^\/bien-comun$/,
   // La vitrina del Congreso se ve sin cuenta; vincular el ticket pide cuenta (decisión de Gus, 14-oct-2026).
   // Y su versión en inglés (`/congreso/en`), la dirección que enlazan los organizadores.
   /^\/congreso(\/en)?$/,

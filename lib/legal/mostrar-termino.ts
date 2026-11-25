@@ -1,6 +1,7 @@
 // Qué muestra el ⚖ de un término en cada idioma, y qué se anota en la bitácora. Funciones puras (design de
 // congreso-bilingue §8): `TerminoLegal` solo las usa y dibuja.
 import { huella } from "@/lib/demo/bitacora";
+import { conVocabulario } from "@/lib/idioma/vocabulario";
 import { esBorrador, TERMINOS, terminoEn, type ClaveTermino } from "./terminos";
 
 export type IdiomaTermino = "es" | "en";
@@ -18,7 +19,12 @@ export type TerminoMostrado = {
   aviso?: { texto: string; lang: "en" };
 };
 
+/** Lo que muestra el ⚖, con el vocabulario de pantalla aplicado ("comunidad" en lugar de "tribu"). */
 export function terminoMostrado(clave: ClaveTermino, idiomaPagina: IdiomaTermino = "es"): TerminoMostrado {
+  return conVocabulario(terminoSinVocabulario(clave, idiomaPagina));
+}
+
+function terminoSinVocabulario(clave: ClaveTermino, idiomaPagina: IdiomaTermino): TerminoMostrado {
   const es = TERMINOS[clave];
   if (idiomaPagina === "en") {
     const en = terminoEn(clave);
@@ -52,6 +58,16 @@ export function terminoMostrado(clave: ClaveTermino, idiomaPagina: IdiomaTermino
     etiqueta: `Qué significa legalmente: ${es.titulo}`,
     textoBorrador: "Borrador: texto a revisar",
   };
+}
+
+/** La frase consultiva que se ve en el acta, en el idioma de la página (la explicación del ⚖ es otro texto). */
+export function fraseConsultiva(idioma: IdiomaTermino = "es"): string {
+  return idioma === "en" ? TERMINOS.consultivo.en.frase : TERMINOS.consultivo.frase;
+}
+
+/** La frase corta de un término que tiene una (por ejemplo "No es una inversión…"), en el idioma de la página. */
+export function fraseDeTermino(clave: "noesinversion" | "noesoferta", idioma: IdiomaTermino = "es"): string {
+  return idioma === "en" ? TERMINOS[clave].en.frase : TERMINOS[clave].frase;
 }
 
 /** La entrada de bitácora de un ⚖: lo que se mostró de verdad, con su idioma y su huella. */

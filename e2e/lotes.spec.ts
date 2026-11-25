@@ -1,0 +1,623 @@
+import { readFile } from "node:fs/promises";
+import { expect, test, type Page } from "./fixtura";
+import { formatearNumero } from "../lib/idioma/formatos";
+import { ESTADOS_EJEMPLO, estadoDeLote } from "../lib/territorios/loteo-estados";
+import { listarLotes, lotesDelGrupo } from "../lib/territorios/loteo";
+import { VERSION_HIBRIDO } from "../lib/lotes/hibrido";
+import { faroEn } from "../lib/bien-comun/formato";
+import { PLAN_CUOTAS, centroDeAnillo, faroDeLote, faroDelPlan, planDeLote } from "../lib/bien-comun/modelo";
+import {
+  MODELO_LOTES,
+  VERSION_MODELO_LOTES,
+  aporteDe,
+  parteDelDuenoDe,
+  precioCasa,
+  precioLote,
+  precioPaquete,
+} from "../lib/lotes/modelo";
+import { usd } from "../lib/series/formato";
+
+// Los valores que se esperan salen del loteo y del módulo del modelo, nunca escritos a mano.
+test.beforeEach(async ({ page }) => {
+  await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+});
+
+const lotes = lotesDelGrupo("norte");
+const primero = lotesDelGrupo("primeros")[0];
+const disponibles = lotes.filter((l) => estadoDeLote(l.id) === "disponible");
+const lote = disponibles[0];
+const otro = disponibles[1];
+const idVendido = Object.keys(ESTADOS_EJEMPLO).find((id) => ESTADOS_EJEMPLO[id] === "vendido")!;
+const idReservadoEjemplo = Object.keys(ESTADOS_EJEMPLO).find((id) => ESTADOS_EJEMPLO[id] === "reservado")!;
+const m2 = (l: { superficieM2?: number }) => `${formatearNumero(l.superficieM2!, "es")} m²`;
+
+// La casilla que hay que marcar para reservar (modelo-hibrido-procomun, design §11).
+const LEI = "Leí lo que comparto y lo que me comprometo a pagar";
+const marcarLeido = (page: Page) => page.getByLabel(LEI).check();
+
+async function conTeclado(page: Page, boton: ReturnType<Page["getByRole"]>) {
+  await boton.focus();
+  await page.keyboard.press("Enter");
+}
+
+test.describe("sin sesión", () => {
+  test.use({ rol: "ninguno" });
+
+  test("se ve la ficha, y reservar y hablar piden entrar sin guardar nada", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    await expect(page.getByRole("heading", { level: 1, name: `Lote ${lote.numero}` })).toBeVisible();
+    await expect(page.getByText(m2(lote)).first()).toBeVisible();
+    await expect(page.getByText("Entrá para reservar este lote")).toBeVisible();
+    await expect(page.getByText("Entrá para hablar con alguien")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reservar (simulado)" })).toHaveCount(0);
+    const claves = await page.evaluate(() => Object.keys(window.localStorage).filter((k) => k.includes("lh-lotes")));
+    expect(claves).toEqual([]);
+  });
+
+  test("la lista se ve sin entrar (en Explorar) y el rail marca Explorar", async ({ page }) => {
+    await page.goto("/lotes");
+    // `/lotes` redirige a la sección Lotes de Explorar.
+    await expect(page).toHaveURL(/\/explorar#lotes$/);
+    await expect(page.locator("#lotes").getByRole("heading", { level: 2, name: "Lotes", exact: true })).toBeVisible();
+    await expect(page.getByText("Loteo provisorio, ilustrativo").first()).toBeVisible();
+    await expect(page.getByRole("region", { name: "Estado administrativo · Lighthouse VRN" })).toContainText(
+      "supuesto de trabajo, no otorgada",
+    );
+    await expect(page.getByRole("region", { name: "Todos los lotes" }).getByRole("link")).toHaveCount(listarLotes().length);
+    await page.goto(`/lotes/${lote.id}`);
+    await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Explorar", exact: true })).toHaveAttribute("aria-current", "page");
+  });
+});
+
+test("una ficha dice superficie, estado, precio de ejemplo con ⚖ y quién vende sin dato", async ({ page }) => {
+  await page.goto(`/lotes/${lote.id}`);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(`Lote ${lote.numero}`);
+  await expect(page.getByText(m2(lote)).first()).toBeVisible();
+  await expect(page.getByText("Disponible").first()).toBeVisible();
+  await expect(page.getByText("Quién vende: sin dato")).toBeVisible();
+  await expect(page.getByText("supuesto de trabajo, no otorgada").first()).toBeVisible();
+  const precio = page.getByRole("region", { name: "Precio del lote" });
+  await expect(precio).toContainText(`${usd(precioLote(lote.superficieM2))} · precio de ejemplo, a confirmar`);
+  await expect(precio).toContainText(`de ${usd(MODELO_LOTES.precioLote.min)} a ${usd(MODELO_LOTES.precioLote.max)}`);
+  await precio.getByRole("button", { name: /Qué significa legalmente: Precio de ejemplo/ }).hover();
+  await expect(page.getByRole("tooltip").filter({ hasText: "Precio de ejemplo" })).toContainText("Borrador: texto a revisar");
+  await expect(page.getByText(/500\.000 por familia/)).toHaveCount(0);
+  await expect(page.locator("main")).toHaveCount(1);
+});
+
+test("un lote que no existe da la página de no encontrado", async ({ page }) => {
+  await page.goto("/lotes/no-existe");
+  await expect(page.locator("[data-no-encontrada]")).toBeVisible();
+});
+
+test("los costos muestran sus valores de ejemplo, la versión del modelo y el aporte aparte", async ({ page }) => {
+  await page.goto(`/lotes/${lote.id}`);
+  const costos = page.getByRole("region", { name: "Costos" });
+  const solo = precioLote(lote.superficieM2)!;
+  await expect(costos.getByRole("row", { name: /Aporte único al bien común/ })).toContainText(usd(aporteDe(solo)));
+  await expect(costos.getByRole("row", { name: /Expensas por año/ })).toContainText(usd(MODELO_LOTES.expensaAnual));
+  await expect(costos.getByRole("row", { name: /Infraestructura por lote/ })).toContainText(usd(MODELO_LOTES.infraestructuraPorLote));
+  await expect(costos.getByRole("row", { name: /Parte del dueño/ })).toContainText(usd(parteDelDuenoDe(solo)));
+  for (const fila of ["Aporte único al bien común", "Expensas por año", "Infraestructura por lote", "Parte del dueño"]) {
+    await expect(costos.getByRole("row", { name: new RegExp(fila) })).toContainText("de ejemplo");
+  }
+  await expect(costos).toContainText(`versión ${VERSION_MODELO_LOTES.version}`);
+  await expect(costos).toContainText(VERSION_MODELO_LOTES.fecha);
+  await expect(costos).toContainText("si se suma al precio o va incluido, sin dato");
+});
+
+test("derechos y deberes con su ⚖ y sin prioridad por un pase", async ({ page }) => {
+  await page.goto(`/lotes/${lote.id}`);
+  const derechos = page.getByRole("region", { name: /Derechos y deberes/ });
+  await expect(derechos).toContainText("servidumbres");
+  await expect(derechos).toContainText("reglamento");
+  await expect(derechos).toContainText("preferencia de reventa");
+  await expect(derechos).toContainText("Ningún pase, ticket ni token da prioridad, crédito o reserva sobre un lote.");
+  await expect(derechos.getByRole("button", { name: /Qué significa legalmente/ })).toBeVisible();
+});
+
+test("elegir Casa familiar con el teclado muestra m², referencia, precio, total y recalcula el aporte", async ({ page }) => {
+  await page.goto(`/lotes/${lote.id}`);
+  const familiar = page.getByRole("radio", { name: /Casa familiar/ });
+  await familiar.focus();
+  await page.keyboard.press("Space");
+  await expect(familiar).toBeChecked();
+  const casa = page.getByRole("region", { name: "Con casa" });
+  await expect(casa).toContainText(`${MODELO_LOTES.casas.familiar.m2} m²`);
+  await expect(casa).toContainText("referencia de Martín");
+  await expect(casa).toContainText(usd(precioCasa("familiar")));
+  const total = precioPaquete(lote.superficieM2, "familiar")!;
+  await expect(casa).toContainText(usd(total));
+  await expect(casa).toContainText("estimación de ejemplo");
+  await expect(page.getByRole("row", { name: /Aporte único al bien común/ })).toContainText(usd(aporteDe(total)));
+});
+
+test.describe("plan en cuotas · Token Tierra (simulado)", () => {
+  const cuotasDe = (n: number) => `${n} cuotas`;
+  const precioDelLote = precioLote(lote.superficieM2)!;
+
+  test("de partida son 24 cuotas, con anticipo, cuota y FARO calculados por el módulo", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    const plan = page.getByRole("region", { name: /Plan en cuotas · Token Tierra \(simulado\)/ });
+    await expect(plan).toBeVisible();
+    await expect(plan.getByRole("radio", { name: cuotasDe(PLAN_CUOTAS.dePartida) })).toBeChecked();
+    const p = planDeLote(precioDelLote, PLAN_CUOTAS.dePartida)!;
+    const f = faroDelPlan(lote.superficieM2, PLAN_CUOTAS.dePartida)!;
+    await expect(plan).toContainText(usd(p.anticipo));
+    await expect(plan).toContainText(usd(p.cuota!));
+    await expect(plan).toContainText(faroEn(f.anticipo, "es"));
+    await expect(plan).toContainText(faroEn(f.porCuota, "es"));
+    await expect(plan).toContainText(faroEn(f.total, "es"));
+    await expect(plan).toContainText("el FARO de las cuotas no pagadas no se emite");
+    await expect(plan).toContainText("Interés y actualización de las cuotas: sin dato");
+    await expect(plan).toContainText("solo para el precio del lote");
+    await expect(plan.getByRole("link", { name: "Ver la propuesta del bien común" })).toHaveAttribute("href", "/bien-comun");
+    await expect(plan.getByRole("button", { name: /Qué significa legalmente: Token Tierra/ })).toBeVisible();
+  });
+
+  test("dice Ordenanza 173, que no está otorgada, y nunca que esté aprobada", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    const plan = page.getByRole("region", { name: /Plan en cuotas · Token Tierra/ });
+    await expect(plan).toContainText("Ordenanza 173");
+    await expect(plan).toContainText("no está otorgada");
+    await expect(plan).toContainText("no es una oferta");
+    await expect(plan).toContainText("a verificar con abogado");
+    await expect(plan).not.toContainText(/está aprobad/);
+    await expect(plan.getByRole("button", { name: /Qué significa legalmente: Ordenanza 173/ })).toBeVisible();
+  });
+
+  test("cambiar a 12 cuotas con el teclado recalcula la cuota y deja el anticipo", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    const plan = page.getByRole("region", { name: /Plan en cuotas · Token Tierra/ });
+    const de24 = plan.getByRole("radio", { name: cuotasDe(PLAN_CUOTAS.dePartida) });
+    await de24.focus();
+    // Las flechas pasan por las opciones en orden: de 24 a 12 es una flecha atrás.
+    await page.keyboard.press("ArrowUp");
+    const doce = plan.getByRole("radio", { name: cuotasDe(12) });
+    await expect(doce).toBeChecked();
+    const p = planDeLote(precioDelLote, 12)!;
+    const f = faroDelPlan(lote.superficieM2, 12)!;
+    await expect(plan).toContainText(usd(p.cuota!));
+    await expect(plan).toContainText(usd(p.anticipo));
+    await expect(plan).toContainText(faroEn(f.porCuota, "es"));
+  });
+
+  test("contado: un solo pago igual al precio del lote, sin cuotas", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    const plan = page.getByRole("region", { name: /Plan en cuotas · Token Tierra/ });
+    await plan.getByRole("radio", { name: "Contado" }).check();
+    await expect(plan).toContainText("Pago único");
+    await expect(plan).toContainText(usd(precioDelLote));
+    await expect(plan).not.toContainText("Cada cuota");
+    await expect(plan).not.toContainText("no se emite");
+    await expect(plan).not.toContainText("Interés y actualización");
+    await expect(plan).toContainText(faroEn(faroDeLote(lote.superficieM2), "es"));
+  });
+
+  test("con casa, dice que la casa se paga aparte", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    await page.getByRole("radio", { name: /Casa familiar/ }).check();
+    await expect(page.getByRole("region", { name: /Plan en cuotas · Token Tierra/ })).toContainText("la casa se paga aparte");
+  });
+
+  test("al contado, el boleto dice el pago único y el lote queda vendido (simulado, a vos)", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    await page.getByRole("radio", { name: "Contado" }).check();
+    await marcarLeido(page);
+    await page.getByRole("button", { name: "Reservar (simulado)" }).click();
+    // Con la reserva hecha, el plan queda fijo.
+    await expect(page.getByRole("radio", { name: "Contado" })).toBeDisabled();
+    await page.getByRole("button", { name: "Simular el pago" }).click();
+    await page.getByRole("button", { name: "Confirmar el pago simulado" }).click();
+    const boleto = page.getByRole("region", { name: /Boleto de ejemplo/ });
+    await expect(boleto).toContainText("Plan de pago: Contado (simulado)");
+    await expect(boleto).toContainText(`Pago único: ${usd(precioDelLote)}`);
+    await expect(boleto).toContainText(`FARO acreditados con el primer pago: ${faroEn(faroDeLote(lote.superficieM2), "es")}`);
+    await expect(boleto).not.toContainText("con cada cuota");
+    await expect(page.getByText("Vendido (simulado, a vos)").first()).toBeVisible();
+  });
+
+  test("en cuotas, la lista y el mapa muestran 'En cuotas (simulado)'", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    await marcarLeido(page);
+    await page.getByRole("button", { name: "Reservar (simulado)" }).click();
+    await page.getByRole("button", { name: "Simular el primer pago (anticipo)" }).click();
+    await page.getByRole("button", { name: "Confirmar el primer pago simulado" }).click();
+    await page.goto("/lotes");
+    await expect(page.getByRole("link", { name: new RegExp(`^Lote ${lote.numero} `) })).toContainText("En cuotas (simulado)");
+    await page.goto(`/territorios/lighthouse?sel=${lote.id}`);
+    await expect(page.getByRole("complementary", { name: "Ficha del territorio" })).toContainText("En cuotas (simulado)");
+  });
+
+  test("una compra con un plan mal formado se lee sin plan, con sin dato, y sin error", async ({ page }) => {
+    const compra = {
+      loteId: lote.id,
+      opcion: "solo-lote",
+      paso: "pagado",
+      reservadoEl: "2026-10-01T12:00:00.000Z",
+      pagadoEl: "2026-10-02T12:00:00.000Z",
+      vio: { precio: 20_000, aporte: 1_000, expensa: 100, version: "v0.0-vieja", plan: { cuotas: 7, anticipo: "x" } },
+    };
+    await page.addInitScript((c) => {
+      if (!window.localStorage.getItem("lh-lotes")) window.localStorage.setItem("lh-lotes", JSON.stringify([c]));
+    }, compra);
+    await page.goto(`/lotes/${lote.id}`);
+    const boleto = page.getByRole("region", { name: /Boleto de ejemplo/ });
+    await expect(boleto).toContainText("Plan de pago: sin dato");
+    const tarjeta = page.getByRole("region", { name: /Plan en cuotas · Token Tierra/ });
+    await expect(tarjeta).toContainText("sin dato");
+    // Sin plan guardado igual lleva los avisos, los ⚖ y el enlace, y no ofrece elegir.
+    await expect(tarjeta).toContainText("Ordenanza 173");
+    await expect(tarjeta).toContainText("no está otorgada");
+    await expect(tarjeta).toContainText("no es una oferta");
+    await expect(tarjeta).toContainText("a verificar con abogado");
+    await expect(tarjeta.getByRole("button", { name: /Qué significa legalmente: Token Tierra/ })).toBeVisible();
+    await expect(tarjeta.getByRole("button", { name: /Qué significa legalmente: Ordenanza 173/ })).toBeVisible();
+    await expect(tarjeta.getByRole("link", { name: "Ver la propuesta del bien común" })).toHaveAttribute("href", "/bien-comun");
+    await expect(tarjeta.getByRole("radio")).toHaveCount(0);
+  });
+});
+
+test("reservar, simular el pago y ver el boleto solo con teclado; recarga y deshacer", async ({ page }) => {
+  const pedidos: string[] = [];
+  await page.goto(`/lotes/${lote.id}`);
+  page.on("request", (r) => {
+    if (r.method() !== "GET" || /compra|reserva|boleto|lh-lotes/i.test(r.url())) pedidos.push(`${r.method()} ${r.url()}`);
+  });
+  // Ningún campo de pago ni de identidad: lo único que hay es la casilla de aceptación.
+  const camposDeLaCompra = page.locator(
+    "section[aria-labelledby=ficha-acciones] :is(input:not([type=checkbox]), textarea, select)",
+  );
+  await expect(camposDeLaCompra).toHaveCount(0);
+
+  // Sin marcar la casilla, reservar está deshabilitado y dice por qué; la casilla se marca con el teclado.
+  const reservar = page.getByRole("button", { name: "Reservar (simulado)" });
+  await expect(reservar).toBeDisabled();
+  await expect(reservar).toHaveAccessibleDescription(/marcá que leíste lo que compartís y lo que pagás/);
+  await page.getByLabel(LEI).focus();
+  await page.keyboard.press("Space");
+  await expect(page.getByLabel(LEI)).toBeChecked();
+  await expect(reservar).toBeEnabled();
+  await conTeclado(page, reservar);
+  await expect(page.getByText("Reserva simulada: no reserva ningún lote de verdad.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Reserva simulada" })).toBeFocused();
+  await expect(page.getByText("Reservado (simulado, por vos)").first()).toBeVisible();
+
+  // El plan de partida es de 24 cuotas: el pago simulado es el primer pago (el anticipo).
+  await conTeclado(page, page.getByRole("button", { name: "Simular el primer pago (anticipo)" }));
+  await expect(page.getByRole("heading", { name: "Primer pago simulado (anticipo)" })).toBeFocused();
+  await expect(page.getByText("No se cobra nada. No ingreses datos de pago: no hay ningún campo.")).toBeVisible();
+  await expect(page.getByText(/Precio elegido:/)).toBeVisible();
+  await expect(page.getByText(/Aporte único al bien común: .* · si se suma al precio o va incluido: sin dato/)).toBeVisible();
+  await expect(camposDeLaCompra).toHaveCount(0);
+
+  await conTeclado(page, page.getByRole("button", { name: "Confirmar el primer pago simulado" }));
+  await expect(page.getByRole("status").filter({ hasText: "primer pago simulado (anticipo)" })).toHaveCount(1);
+  const boleto = page.getByRole("region", { name: /Boleto de ejemplo/ });
+  await expect(boleto).toBeVisible();
+  await expect(boleto.getByRole("heading", { name: /Boleto de ejemplo/ })).toBeFocused();
+  await expect(boleto).toContainText("SIMULADO · SIN VALOR LEGAL · NO SE PAGÓ NADA");
+  await expect(boleto).toContainText("No se cobró nada");
+  await expect(boleto).toContainText("Comprador: Persona de ejemplo");
+  await expect(boleto).toContainText("Vendedor: sin dato");
+  await expect(boleto).toContainText("supuesto de trabajo, no otorgada");
+  await expect(boleto).toContainText(`Lote ${lote.numero}`);
+  await expect(boleto).toContainText(VERSION_MODELO_LOTES.version);
+  // El boleto dice el plan, el anticipo, la cuota y los FARO del primer pago y de cada cuota (simulado), calculados por el módulo.
+  const plan24 = planDeLote(precioLote(lote.superficieM2), PLAN_CUOTAS.dePartida)!;
+  const faro24 = faroDelPlan(lote.superficieM2, PLAN_CUOTAS.dePartida)!;
+  await expect(boleto).toContainText(`Plan de pago: ${PLAN_CUOTAS.dePartida} cuotas`);
+  await expect(boleto).toContainText(`Anticipo: ${usd(plan24.anticipo)}`);
+  await expect(boleto).toContainText(`Cuota: ${usd(plan24.cuota!)}`);
+  await expect(boleto).toContainText(`FARO acreditados con el primer pago: ${faroEn(faro24.anticipo, "es")}`);
+  await expect(boleto).toContainText(`FARO que se acreditarían con cada cuota: ${faroEn(faro24.porCuota, "es")}`);
+  await expect(boleto).toContainText("Primer pago simulado (anticipo) el");
+  // Con cuotas el lote no está vendido: está "En cuotas (simulado)", en la ficha.
+  await expect(page.getByText("En cuotas (simulado)").first()).toBeVisible();
+  await expect(page.getByText("Vendido (simulado, a vos)")).toHaveCount(0);
+  // El boleto muestra la versión del texto de lo que se comparte y se paga, que se aceptó al reservar.
+  await expect(boleto).toContainText(`Texto de lo que se comparte y se paga que aceptaste: ${VERSION_HIBRIDO}`);
+  // La marca va antes que cualquier dato.
+  const textoBoleto = (await boleto.innerText()).replace(/\s+/g, " ");
+  expect(textoBoleto.indexOf("SIMULADO")).toBeLessThan(textoBoleto.indexOf("Comprador"));
+
+  expect(pedidos).toEqual([]);
+
+  await page.reload();
+  await expect(page.getByRole("region", { name: /Boleto de ejemplo/ })).toBeVisible();
+  const guardado = await page.evaluate(() => window.localStorage.getItem("lh-lotes") ?? "");
+  expect(guardado).toContain(lote.id);
+  expect(guardado).not.toMatch(/nombre|documento|domicilio|tarjeta|cbu/i);
+
+  await conTeclado(page, page.getByRole("button", { name: "Deshacer" }));
+  await expect(page.getByRole("button", { name: "Reservar (simulado)" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Reservar (simulado)" })).toBeVisible();
+  await expect(page.getByText("Disponible").first()).toBeVisible();
+});
+
+test("con Casa familiar el boleto dice la opción, el precio de la casa y el total como estimación", async ({ page }) => {
+  await page.goto(`/lotes/${lote.id}`);
+  await page.getByRole("radio", { name: /Casa familiar/ }).check();
+  await marcarLeido(page);
+  await page.getByRole("button", { name: "Reservar (simulado)" }).click();
+  await page.getByRole("button", { name: "Simular el primer pago (anticipo)" }).click();
+  // El anticipo es solo del lote: el paso de pago y el boleto dicen que la casa se paga aparte.
+  await expect(page.getByText("la casa se paga aparte").last()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Primer pago simulado (anticipo)" }).locator("..")).toContainText("la casa se paga aparte");
+  await page.getByRole("button", { name: "Confirmar el primer pago simulado" }).click();
+  const boleto = page.getByRole("region", { name: /Boleto de ejemplo/ });
+  await expect(boleto).toContainText("la casa se paga aparte");
+  await expect(boleto).toContainText("Casa familiar");
+  await expect(boleto).toContainText(usd(precioCasa("familiar")));
+  await expect(boleto).toContainText(usd(precioPaquete(lote.superficieM2, "familiar")));
+  await expect(boleto).toContainText("estimación de ejemplo");
+});
+
+test("lo reservado entra en la descarga de Mis datos y desaparece con Borrar todo", async ({ page }) => {
+  await page.goto(`/lotes/${lote.id}`);
+  await marcarLeido(page);
+  await page.getByRole("button", { name: "Reservar (simulado)" }).click();
+  await expect(page.getByText("Reservado (simulado, por vos)").first()).toBeVisible();
+
+  await page.goto("/mis-datos");
+  const descarga = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Descargar mis datos" }).click();
+  const texto = await readFile((await (await descarga).path())!, "utf8");
+  const json = JSON.parse(texto);
+  expect(json.datos.lotes).toHaveLength(1);
+  expect(json.datos.lotes[0]).toMatchObject({ loteId: lote.id, paso: "reservado" });
+
+  await page.goto("/configuracion");
+  page.once("dialog", (d) => void d.accept());
+  await page.getByRole("button", { name: "Borrar todo lo guardado en este navegador" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "se borró todo" })).toBeVisible();
+  await page.goto(`/lotes/${lote.id}`);
+  await expect(page.getByRole("button", { name: "Reservar (simulado)" })).toBeVisible();
+  await expect(page.getByText("Reservado (simulado, por vos)")).toHaveCount(0);
+});
+
+test("el boleto y el pago simulado muestran lo guardado al reservar, aunque el modelo sea otro", async ({ page }) => {
+  // Valores que el modelo vigente nunca da: si la pantalla recalculara, se verían los de hoy.
+  const visto = { precio: 111_111, aporte: 2_222, expensa: 333, version: "v0.0-vieja", fuente: "Fuente vieja del modelo", precioCasa: 44_444 };
+  const compra = {
+    loteId: lote.id,
+    opcion: "familiar",
+    paso: "reservado",
+    reservadoEl: "2026-10-01T12:00:00.000Z",
+    vio: visto,
+  };
+  await page.addInitScript((c) => {
+    if (!window.localStorage.getItem("lh-lotes")) window.localStorage.setItem("lh-lotes", JSON.stringify([c]));
+  }, compra);
+  await page.goto(`/lotes/${lote.id}`);
+  await conTeclado(page, page.getByRole("button", { name: "Simular el pago" }));
+  await expect(page.getByText(`Precio elegido: ${usd(visto.precio)}`)).toBeVisible();
+  await expect(page.getByText(new RegExp(`Aporte único al bien común: ${usd(visto.aporte)}`))).toBeVisible();
+  // Volver mueve el foco al título del paso al que se vuelve.
+  await conTeclado(page, page.getByRole("button", { name: "Volver" }));
+  await expect(page.getByRole("heading", { name: "Reserva simulada" })).toBeFocused();
+  await conTeclado(page, page.getByRole("button", { name: "Simular el pago" }));
+  await conTeclado(page, page.getByRole("button", { name: "Confirmar el pago simulado" }));
+  const boleto = page.getByRole("region", { name: /Boleto de ejemplo/ });
+  await expect(boleto).toContainText(usd(visto.precio));
+  await expect(boleto).toContainText(usd(visto.aporte));
+  await expect(boleto).toContainText(usd(visto.expensa));
+  await expect(boleto).toContainText(usd(visto.precioCasa));
+  await expect(boleto).toContainText(visto.fuente);
+  await expect(boleto).toContainText(visto.version);
+  // Un registro viejo, sin la versión aceptada ni plan, se sigue leyendo: dice sin dato (nunca se presume contado).
+  await expect(boleto).toContainText("Texto de lo que se comparte y se paga que aceptaste: sin dato");
+  await expect(boleto).toContainText("Plan de pago: sin dato");
+  await expect(boleto).not.toContainText("Contado");
+  // Sin plan, el pago es "el pago" de siempre y el lote queda vendido.
+  await expect(page.getByText("Vendido (simulado, a vos)").first()).toBeVisible();
+  await expect(boleto).not.toContainText(usd(precioCasa("familiar")));
+  await expect(boleto).not.toContainText(VERSION_MODELO_LOTES.fuente);
+});
+
+test("lo guardado que no se puede leer se trata como sin compras", async ({ page }) => {
+  await page.addInitScript(() => {
+    if (!window.localStorage.getItem("lh-lotes")) window.localStorage.setItem("lh-lotes", "{no es json");
+  });
+  await page.goto(`/lotes/${lote.id}`);
+  await expect(page.getByRole("button", { name: "Reservar (simulado)" })).toBeVisible();
+  await expect(page.getByText("Disponible").first()).toBeVisible();
+});
+
+test("un lote vendido o reservado de ejemplo no ofrece reservar", async ({ page }) => {
+  await page.goto(`/lotes/${idVendido}`);
+  await expect(page.getByText("Vendido").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: /Reservar/ })).toHaveCount(0);
+  await page.goto(`/lotes/${idReservadoEjemplo}`);
+  await expect(page.getByText("Reservado").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: /Reservar/ })).toHaveCount(0);
+});
+
+test("lo reservado se ve en el mapa, en la lista y en la ficha, y el panel del mapa enlaza a la ficha", async ({ page }) => {
+  await page.goto(`/territorios/lighthouse?sel=${lote.id}`);
+  const ficha = page.getByRole("complementary", { name: "Ficha del territorio" });
+  await ficha.getByRole("link", { name: "Ver la ficha" }).click();
+  await expect(page).toHaveURL(new RegExp(`/lotes/${lote.id}$`));
+  await marcarLeido(page);
+  await page.getByRole("button", { name: "Reservar (simulado)" }).click();
+  await expect(page.getByText("Reservado (simulado, por vos)").first()).toBeVisible();
+
+  await page.goto(`/territorios/lighthouse?sel=${lote.id}`);
+  await expect(ficha).toContainText("Reservado (simulado, por vos)");
+  await expect(page.getByRole("list", { name: "Lotes del sector norte" }).getByRole("button", { name: new RegExp(`^Lote ${lote.numero} `) })).toContainText(
+    "Reservado (simulado, por vos)",
+  );
+  await page.goto("/lotes");
+  await expect(page.getByRole("link", { name: new RegExp(`^Lote ${lote.numero} `) })).toContainText("Reservado (simulado, por vos)");
+  // Otro lote no se mueve.
+  await expect(page.getByRole("link", { name: new RegExp(`^Lote ${otro.numero} `) })).toContainText("Disponible");
+});
+
+test("hablar con alguien: el pedido llega a la bandeja como consulta por un lote de Lighthouse VRN y no reserva", async ({ page }) => {
+  await page.goto(`/lotes/${lote.id}`);
+  await page.getByRole("button", { name: "Hablar con alguien" }).click();
+  await expect(page.getByText(`Consulta por un lote de Lighthouse VRN · Lote ${lote.numero}`)).toBeVisible();
+  await page.getByRole("radio", { name: "Email" }).check();
+  await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Equipo NetX" })).toBeVisible();
+  await expect(page.getByText("Disponible").first()).toBeVisible();
+  const guardado = await page.evaluate(() => window.localStorage.getItem("lh-lotes"));
+  expect(guardado).toBeNull();
+
+  await page.goto("/admin");
+  const fila = page.getByRole("row").filter({ hasText: `Lote ${lote.numero}` });
+  await expect(fila).toContainText("Consulta por un lote de Lighthouse VRN");
+  await expect(fila).toContainText("Equipo NetX");
+  await expect(fila).not.toContainText("BioPueblo");
+});
+
+test.describe("en inglés", () => {
+  test.use({ locale: "en-US" });
+
+  test("la ficha y el boleto se leen en inglés", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(`Lot ${lote.numero}`);
+    await expect(page.getByText("Who sells: no data")).toBeVisible();
+    await expect(page.getByRole("region", { name: "Costs" })).toContainText("sample");
+    await page.getByLabel("I read what I share and what I commit to pay").check();
+    await page.getByRole("button", { name: "Reserve (simulated)" }).click();
+    await page.getByRole("button", { name: "Simulate the first payment (down payment)" }).click();
+    await page.getByRole("button", { name: "Confirm the simulated first payment" }).click();
+    await expect(page.getByText("SIMULATED · NO LEGAL VALUE · NOTHING WAS PAID")).toBeVisible();
+    await expect(page.getByText("Seller: no data")).toBeVisible();
+    await expect(page.getByText("In instalments (simulated)").first()).toBeVisible();
+  });
+
+  test("la tarjeta del plan se lee en inglés", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    const plan = page.getByRole("region", { name: /Instalment plan · Land Token \(simulated\)/ });
+    await expect(plan).toBeVisible();
+    await expect(plan).toContainText("Ordinance 173/2026");
+    await expect(plan).toContainText("not an offer");
+    await expect(plan.getByRole("radio", { name: "Cash" })).toBeVisible();
+    await expect(plan.getByRole("radio", { name: `${PLAN_CUOTAS.dePartida} instalments` })).toBeChecked();
+  });
+});
+
+test("celular 390 px: sin scroll horizontal en la lista, la ficha, los costos y el boleto", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const sobra = () => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  await page.goto("/lotes");
+  expect(await sobra()).toBeLessThanOrEqual(0);
+  await page.goto(`/lotes/${lote.id}`);
+  await page.getByRole("radio", { name: /Casa amplia/ }).check();
+  expect(await sobra()).toBeLessThanOrEqual(0);
+  await marcarLeido(page);
+  await page.getByRole("button", { name: "Reservar (simulado)" }).click();
+  expect(await sobra()).toBeLessThanOrEqual(0);
+  await page.getByRole("button", { name: "Simular el primer pago (anticipo)" }).click();
+  await page.getByRole("button", { name: "Confirmar el primer pago simulado" }).click();
+  await expect(page.getByRole("region", { name: /Boleto de ejemplo/ })).toBeVisible();
+  expect(await sobra()).toBeLessThanOrEqual(0);
+});
+
+test("/lotes y una ficha no se dejan indexar", async ({ page }) => {
+  for (const ruta of ["/lotes", `/lotes/${lote.id}`]) {
+    await page.goto(ruta);
+    await expect(page.locator('meta[name="robots"]'), ruta).toHaveAttribute("content", "noindex, nofollow");
+  }
+});
+
+test.describe("los primeros 4 lotes", () => {
+  test("/lotes los pone primero, con su propio estado administrativo", async ({ page }) => {
+    await page.goto("/lotes");
+    const enlaces = page.getByRole("region", { name: "Todos los lotes" }).getByRole("link");
+    await expect(enlaces.first()).toContainText("Lote 535");
+    await expect(page.getByRole("heading", { level: 4, name: "Primeros 4 lotes" })).toBeVisible();
+    const estado = page.getByRole("region", { name: "Estado administrativo · Primeros 4 lotes" });
+    await expect(estado).toContainText("Titular: BioPueblo");
+    await expect(estado).toContainText("Aprobación municipal: informada, sin documento a la vista");
+    await expect(estado).toContainText("Fecha: sin dato");
+  });
+
+  test("la ficha avisa que está fuera del 7A y sin documento; el boleto dice lo mismo", async ({ page }) => {
+    await page.goto(`/lotes/${primero.id}`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lote 535");
+    await expect(page.getByText(/fuera del polígono del 7A/)).toBeVisible();
+    await expect(page.getByRole("region", { name: "Lote 535" })).toContainText("Quién vende: sin dato");
+    await expect(page.getByText(/supuesto de trabajo/)).toHaveCount(0);
+    await marcarLeido(page);
+    await conTeclado(page, page.getByRole("button", { name: "Reservar (simulado)" }));
+    await conTeclado(page, page.getByRole("button", { name: "Simular el pago" }));
+    await conTeclado(page, page.getByRole("button", { name: "Confirmar el pago simulado" }));
+    const boleto = page.getByRole("region", { name: /Boleto de ejemplo/ });
+    await expect(boleto).toContainText("Lote 535");
+    await expect(boleto).toContainText("Aprobación municipal: informada, sin documento a la vista");
+    // Los primeros 4 no traen NFT ni FARO (decisión D, 19-nov): el boleto no los menciona.
+    await expect(boleto).not.toContainText("NFT");
+    await expect(boleto).not.toContainText("FARO");
+  });
+
+  test("no muestran la tarjeta del NFT ni FARO, en la ficha ni en el panel del mapa", async ({ page }) => {
+    await page.goto(`/lotes/${primero.id}`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lote 535");
+    await expect(page.getByRole("region", { name: /NFT del lote/ })).toHaveCount(0);
+    await page.goto(`/territorios/lighthouse?sel=${primero.id}`);
+    await expect(page.getByRole("heading", { level: 3, name: "Lote 535" })).toBeVisible();
+    await expect(page.getByText(/FARO del lote/)).toHaveCount(0);
+  });
+
+  test("no muestran Token Tierra: el plan en cuotas dice sin dato", async ({ page }) => {
+    await page.goto(`/lotes/${primero.id}`);
+    await expect(page.getByText("Plan en cuotas: sin dato para estos lotes.")).toBeVisible();
+    await expect(page.getByText(/Token Tierra/)).toHaveCount(0);
+    await expect(page.getByRole("radio", { name: /cuotas/ })).toHaveCount(0);
+  });
+
+  test("en inglés", async ({ page }) => {
+    await page.goto(`/lotes/${primero.id}?lang=en`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lot 535");
+    await expect(page.getByRole("region", { name: "Administrative status · First 4 lots" })).toContainText("reported, no document on hand");
+  });
+});
+
+test.describe("ficha: imagen, explicaciones y medida provisoria", () => {
+  test("la imagen del lote se ve aunque no carguen los mosaicos", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    await expect(page.getByRole("img", { name: `Vista satelital del Lote ${lote.numero}, con su contorno marcado.` })).toBeVisible();
+    await expect(page.getByText(/Imagen: Esri, Maxar, Earthstar Geographics/)).toBeVisible();
+  });
+
+  test("infraestructura y parte del dueño tienen su ⚖, y la retribución en tokens del bien común dice que es provisoria", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    for (const nombre of ["Infraestructura por lote", "Parte del dueño", "Retribución en tokens del bien común: medida provisoria"]) {
+      await expect(page.getByRole("button", { name: `Qué significa legalmente: ${nombre}` })).toBeVisible();
+    }
+    await expect(page.getByText(/nombre provisorio: FARO/)).toBeVisible();
+    await expect(page.getByText(/RAIZ/)).toHaveCount(0);
+    await expect(page.getByText(/Medida provisoria, a hablar con el equipo:/)).toBeVisible();
+    await expect(page.getByText(/no es una promesa/)).toBeVisible();
+  });
+
+  test("la ficha muestra la Ficha del lote (NFT, simulado) con su metadata, sin FARO, y dice que no es una inversión", async ({ page }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    const nft = page.getByRole("region", { name: /Ficha del lote \(NFT, simulado\)/ });
+    await expect(nft).toBeVisible();
+    const c = centroDeAnillo(lote.anillo)!;
+    await expect(nft).toContainText(`${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}`);
+    await expect(nft).toContainText("reglamento, aporte único, expensas");
+    await expect(nft).toContainText("Red");
+    await expect(nft).toContainText("sin definir");
+    await expect(nft).toContainText("No es un instrumento de inversión");
+    await expect(nft).toContainText("No reemplaza la escritura");
+    await expect(nft).not.toContainText("FARO");
+    await expect(page.getByRole("button", { name: /Qué significa legalmente: NFT del lote/ })).toBeVisible();
+    await expect(nft.getByRole("link", { name: "Ver el bien común" })).toHaveAttribute("href", "/bien-comun");
+  });
+
+  test("el panel del mapa muestra el precio del lote elegido", async ({ page }) => {
+    await page.goto(`/territorios/lighthouse?sel=${lote.id}`);
+    await expect(page.getByText(`${usd(precioLote(lote.superficieM2)!)} · precio de ejemplo, a confirmar`)).toBeVisible();
+    // También los FARO del lote, que se acreditan a medida que se paga (simulado).
+    await expect(
+      page.getByText(`FARO del lote, se acreditan a medida que se paga (simulado): ${faroEn(faroDeLote(lote.superficieM2), "es")}`),
+    ).toBeVisible();
+  });
+});
+

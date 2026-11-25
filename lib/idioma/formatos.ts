@@ -26,6 +26,21 @@ export function formatearFecha(iso: string, idioma: Idioma, estilo: EstiloFecha 
   return new Intl.DateTimeFormat(LOCALES[idioma], { ...opciones, ...zona }).format(fecha);
 }
 
+/**
+ * El mes de un "AAAA-MM" en el idioma de la plataforma ("noviembre de 2026" / "November 2026"), sin minúscula inicial forzada.
+ * Un mes inválido devuelve "sin dato" / "no data".
+ */
+export function nombreDelMes(mes: string, idioma: Idioma): string {
+  const m = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(mes);
+  if (!m) return sinDato(idioma);
+  return new Intl.DateTimeFormat(LOCALES[idioma], { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, 1)));
+}
+
+/** Pone la primera letra en mayúscula (para el comienzo de una frase). */
+export function conMayuscula(s: string): string {
+  return s.length === 0 ? s : s[0].toUpperCase() + s.slice(1);
+}
+
 /** Número entero redondeado, con punto de miles en español ("1.200") y coma en inglés ("1,200"). */
 export function formatearNumero(n: number, idioma: Idioma): string {
   const redondo = Math.round(n);

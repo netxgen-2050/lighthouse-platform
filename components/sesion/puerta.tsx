@@ -1,8 +1,8 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
-import { nivelMinimoDeRuta, puedeCapacidad, puedeRuta, type Capacidad } from "@/lib/permisos/niveles";
+import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
+import { capacidadDeRuta, nivelMinimoDeRuta, puedeCapacidad, puedeRuta, type Capacidad } from "@/lib/permisos/niveles";
 import {
   corresponderOfrecerImportacion,
   descartarImportacion,
@@ -28,6 +28,10 @@ const BOTON_SECUNDARIO = `${BOTON} border border-faint hover:bg-surface-2`;
 export function Puerta({ children }: { children: ReactNode }) {
   const { estado, nivel, nivelListo, consentimiento } = useSesion();
   const ruta = usePathname();
+  // /admin la protege el servidor (ADR-016): sin permiso ya respondió 403 y no armó nada. Se deja pasar a `children` mientras
+  // la sesión del navegador no está lista (también en el servidor) para que esa respuesta llegue con su estado HTTP 403 y
+  // para que quien no tiene sesión vea el 403 y no sea llevado a Sumarte. `SoloSuperAdmin` cubre la pantalla.
+  if (estado !== "ok" && capacidadDeRuta(ruta) === "admin") return <Contenido>{children}</Contenido>;
   // Mientras se verifica la sesión se espera ("Cargando…"): mostrar la página y rearmarla al confirmar la sesión
   // haría perder lo que la persona ya estaba haciendo (foco, scroll, casillas).
   if (estado === "sin-sesion") {
@@ -35,8 +39,8 @@ export function Puerta({ children }: { children: ReactNode }) {
   }
   if (estado !== "ok") return <PantallaDeEntrada />;
   if (!nivelListo) return <PantallaDeEntrada />;
-  // Sin aceptar la política de privacidad vigente no se usa la app con sesión. Va antes de aplicar el plan elegido en
-  // Sumarte (el registro): Sumarte no se dibuja hasta aceptar. Las páginas públicas de Descubrir quedan abiertas.
+  // Red de seguridad: con sesión pero sin aceptación vigente de la política, la pantalla de consentimiento aparece en cualquier
+  // página (también las públicas) menos `/privacidad`, que tiene que poder leerse. Va antes de aplicar el plan elegido en Sumarte.
   if (rutaPideConsentimiento(ruta)) {
     if (consentimiento === "cargando") return <PantallaDeEntrada />;
     // La pantalla de consentimiento todavía es solo en español (llega con `idioma-legal`): se marca como tal.
@@ -47,6 +51,9 @@ export function Puerta({ children }: { children: ReactNode }) {
         </Contenido>
       );
     }
+  } else if (consentimiento !== "vigente") {
+    // /privacidad sin consentimiento: se lee como una persona anónima (sin ofrecer importar datos ni nada de su cuenta).
+    return <Contenido>{children}</Contenido>;
   }
   // NetX no redirige: su propia página explica que es solo del super admin.
   if (!puedeRuta(nivel, ruta) && nivelMinimoDeRuta(ruta) !== "superadmin") return <IrASumarte ruta={ruta} />;
@@ -97,6 +104,12 @@ export function SoloConSesion({ children }: { children: ReactNode }) {
   return estado === "ok" ? <>{children}</> : null;
 }
 
+/** Dibuja `children` solo con sesión y consentimiento vigente (la campanita y las preferencias son de la persona, no de una anónima). */
+export function SoloConConsentimiento({ children }: { children: ReactNode }) {
+  const { estado, consentimiento } = useSesion();
+  return estado === "ok" && consentimiento === "vigente" ? <>{children}</> : null;
+}
+
 /** Dibuja `children` solo si el nivel de la persona habilita la capacidad (por ejemplo Hifa o el botón de reportes). */
 export function SoloConCapacidad({ capacidad, children }: { capacidad: Capacidad; children: ReactNode }) {
   const { estado, nivel, consentimiento } = useSesion();
@@ -112,7 +125,9 @@ function ConSesion({ children }: { children: ReactNode }) {
   // Cambia al importar para volver a leer los datos ya con el prefijo de la persona.
   const [version, setVersion] = useState(0);
 
-  useEffect(() => {
+  // Layout effect: corre antes de los efectos de las páginas de adentro. Si una página anota algo con el prefijo de la
+  // persona al dibujarse (por ejemplo el aviso del loteo de Sumarte en la bitácora), la oferta ya se decidió con los datos de antes.
+  useLayoutEffect(() => {
     try {
       // Lectura del almacenamiento del navegador tras hidratar.
       setOfrecer(corresponderOfrecerImportacion(window.localStorage, id));

@@ -26,7 +26,7 @@ test("idioma: Español e English están habilitados y English pasa el marco a in
   await expect(page.getByText("próximamente")).toHaveCount(0);
   await page.getByRole("radio", { name: "English" }).check();
   await expect(html(page)).toHaveAttribute("lang", "en");
-  await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Home" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Explore" })).toBeVisible();
   // Es la misma preferencia que el selector de la barra superior.
   await expect(page.getByRole("banner").getByRole("link", { name: "EN · English" })).toHaveAttribute("aria-current", "true");
   await expect(page.getByRole("radio", { name: "English" })).toBeChecked();
@@ -41,9 +41,22 @@ test("borrar todo borra la preferencia de idioma de la persona pero la pantalla 
   await expect(html(page)).toHaveAttribute("lang", "en");
   await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-configuracion"))).toContain('"idiomaElegido":"en"');
   page.once("dialog", (d) => void d.accept());
-  await page.getByRole("button", { name: "Borrar todo lo guardado en este navegador" }).click();
+  // Con la pantalla ya en inglés: buscar el botón en español dependía de hacer clic antes de que cambiara el texto.
+  await page.getByRole("button", { name: "Delete everything saved in this browser" }).click();
   await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-configuracion"))).toBeNull();
   await expect(html(page)).toHaveAttribute("lang", "en");
+});
+
+test("primera visita: el tema sigue al sistema, claro u oscuro", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/");
+  await expect(html(page)).toHaveAttribute("data-tema", "claro");
+  await page.goto("/configuracion");
+  await expect(page.getByRole("radio", { name: "El del sistema" })).toBeChecked();
+  const claro = await fondo(page);
+  await page.emulateMedia({ colorScheme: "dark" });
+  await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
+  expect(await fondo(page)).not.toBe(claro);
 });
 
 test("tema oscuro: toda la app cambia a la paleta oscura y sigue así al recargar y en otras páginas", async ({ page }) => {
@@ -114,6 +127,13 @@ test("apagar rondas: esas notificaciones dejan de contarse y de verse", async ({
   await page.goto("/configuracion");
   await page.getByRole("checkbox", { name: /Rondas de reconocimiento/ }).check();
   await expect(campanita).toHaveAttribute("aria-label", "2 notificaciones sin leer");
+});
+
+test("los avisos son cuatro y no hay casilla de Mercado (en pausa)", async ({ page }) => {
+  await page.goto("/configuracion");
+  const avisos = page.getByRole("group", { name: "Tipos de aviso" });
+  await expect(avisos.getByRole("checkbox")).toHaveCount(4);
+  await expect(page.getByRole("checkbox", { name: /Mercado/ })).toHaveCount(0);
 });
 
 test("Hifa apagada: el script del <head> ya lo sabe antes de hidratar (sin parpadeo); con Hifa visible, el botón sí se ve", async ({ page }) => {
@@ -214,18 +234,21 @@ test("axe sin violaciones serias o críticas: /configuracion en claro y en oscur
   await page.goto("/configuracion");
   expect(await graves(page)).toEqual([]);
   await page.getByRole("radio", { name: "Oscuro" }).check();
+  await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
   expect(await graves(page)).toEqual([]);
   await page.getByRole("radio", { name: "Grande" }).check();
   expect(await graves(page)).toEqual([]);
 });
 
-for (const ruta of ["/", "/tribus", "/sumarte", "/pactos", "/bandeja", "/panel", "/perfil", "/pasaporte", "/semillas", "/compromisos", "/tribus/valle", "/territorios/lighthouse", "/congreso", "/congreso/en", "/netx", "/fogon"]) {
-  test(`axe sin violaciones serias o críticas en tema oscuro: ${ruta}`, async ({ page }) => {
-    await page.addInitScript(() => window.localStorage.setItem("lh-configuracion", JSON.stringify({ tema: "oscuro" })));
-    await page.goto(ruta);
-    await expect(html(page)).toHaveAttribute("data-tema", "oscuro");
-    expect(await graves(page)).toEqual([]);
-  });
+for (const ruta of ["/", "/lotes", "/bien-comun", "/tribus", "/sumarte", "/pactos", "/bandeja", "/panel", "/perfil", "/pasaporte", "/semillas", "/compromisos", "/tribus/valle", "/territorios/lighthouse", "/congreso", "/congreso/en", "/netx", "/fogon"]) {
+  for (const tema of ["oscuro", "claro"]) {
+    test(`axe sin violaciones serias o críticas en tema ${tema}: ${ruta}`, async ({ page }) => {
+      await page.addInitScript((t) => window.localStorage.setItem("lh-configuracion", JSON.stringify({ tema: t })), tema);
+      await page.goto(ruta);
+      await expect(html(page)).toHaveAttribute("data-tema", tema);
+      expect(await graves(page)).toEqual([]);
+    });
+  }
 }
 
 test("axe: el menú del avatar abierto en /configuracion", async ({ page }) => {
