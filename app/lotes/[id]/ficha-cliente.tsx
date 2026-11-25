@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useId, useState } from "react";
 import { EstadoAdministrativo } from "@/components/estado-administrativo";
+import { EstadosAdministrativos } from "@/components/estados-administrativos";
 import { PedidoContacto } from "@/components/pedido-contacto";
 import { useSesion } from "@/components/sesion/contexto";
 import { EntrarPara } from "@/components/sesion/entrar-para";
 import { TerminoLegal } from "@/components/termino-legal";
+import { Aviso } from "@/components/ui/aviso";
 import { TextoEstado } from "@/components/lotes/estado-del-lote";
 import { useCompras } from "@/components/lotes/usar-compras";
 import { faroEn } from "@/lib/bien-comun/formato";
@@ -330,10 +332,10 @@ export function FichaCliente({ id }: { id: string }) {
         </table>
         <p className="text-sm">{t.costos.aporteSobre}</p>
         <p className="text-sm">{t.costos.aporteAparte}</p>
-        <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+        <Aviso tono="legal">
           <strong>{t.costos.provisoriaTitulo}</strong> {t.costos.provisoria}
           <TerminoLegal clave="retribucionraiz" idioma={idioma} />
-        </p>
+        </Aviso>
         <p className="text-sm text-muted">
           {t.costos.version(VERSION_MODELO_LOTES.fuente, VERSION_MODELO_LOTES.version, VERSION_MODELO_LOTES.fecha)}
         </p>
@@ -359,7 +361,7 @@ export function FichaCliente({ id }: { id: string }) {
         <p className="text-sm font-medium">{t.derechos.queNoDa}</p>
       </section>
 
-      <EstadoAdministrativo proyecto={proyecto} idioma={idioma} />
+      <EstadosAdministrativos proyectos={[proyecto]} idioma={idioma} />
 
       <section aria-labelledby="ficha-resumen" className={TARJETA}>
         <h2 id="ficha-resumen" className="text-lg font-semibold">

@@ -64,9 +64,6 @@ export default async function ParticipaPage({ searchParams }: Props) {
       <h1 className="mt-1 text-3xl font-semibold sm:text-4xl">{t.titulo}</h1>
       <p className="mt-2 mb-4 max-w-3xl text-muted">{t.bajada}</p>
       <AvisoEjemplo />
-      <p className="mt-2 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-        {textos("marco", idioma).aviso}
-      </p>
 
       <section aria-labelledby="sec-comun" className="mt-8">
         <h2 id="sec-comun" className="sr-only">

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type KeyboardEvent } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
 import { TextoEvento } from "@/components/texto-evento";
+import { Aviso } from "@/components/ui/aviso";
 import { listarActividad, type EventoActividad } from "@/lib/actividad/actividad";
 import { EVENTO_CAMBIO, leerActividadDelNavegador } from "@/lib/actividad/almacen";
 import { personaEnSesion } from "@/lib/demo/claves";
@@ -76,7 +77,7 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
   }
 
   const aviso = (
-    <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">{t.modoDemo}</p>
+    <Aviso tono="atencion">{t.modoDemo}</Aviso>
   );
 
   if (!listo) return <p role="status">{comunes.cargando}</p>;

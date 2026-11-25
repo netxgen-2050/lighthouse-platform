@@ -14,9 +14,12 @@ export function EstadoAdministrativo({
   proyecto,
   compacto = false,
   idioma = "es",
+  enGrupo = false,
 }: {
   proyecto: IdProyecto;
   compacto?: boolean;
+  /** Dentro de `EstadosAdministrativos`: sin caja propia, el bloque la pone una sola vez. */
+  enGrupo?: boolean;
   idioma?: Idioma;
 }) {
   const base = ESTADOS_ADMINISTRATIVOS[proyecto];
@@ -54,7 +57,7 @@ export function EstadoAdministrativo({
       <p
         role="note"
         aria-label={en ? "Administrative status" : "Estado administrativo"}
-        className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink"
+        className="rounded-[var(--radius-m)] border border-line bg-warn-bg px-3 py-2 text-sm text-warn-ink"
       >
         <span aria-hidden="true">▲ </span>
         {compactoTexto}
@@ -68,7 +71,11 @@ export function EstadoAdministrativo({
     <section
       // Dos avisos en la misma página (Soluna y Norte) tienen que poder distinguirse: el nombre incluye el proyecto.
       aria-label={`${en ? "Administrative status" : "Estado administrativo"} · ${e.proyecto.split(" · ")[0]}`}
-      className="mt-4 grid gap-1 rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink"
+      className={
+        enGrupo
+          ? "grid gap-1"
+          : "mt-4 grid gap-1 rounded-[var(--radius-m)] border border-line bg-warn-bg px-3 py-2 text-sm text-warn-ink"
+      }
     >
       <p className="font-semibold">
         <span aria-hidden="true">▲ </span>

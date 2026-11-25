@@ -61,9 +61,6 @@ export default async function HibridoPage() {
       <p className="mt-2 max-w-3xl text-muted">{t.bajada}</p>
       <div className="mt-3 grid gap-2">
         <AvisoEjemplo />
-        <p className="w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-          {textos("marco", idioma).aviso}
-        </p>
         <EstadoAdministrativo proyecto="lighthouse-norte" compacto idioma={idioma} />
       </div>
 

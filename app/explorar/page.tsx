@@ -2,15 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { TerminoLegal } from "@/components/termino-legal";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
-import { EnEspanol } from "@/components/en-espanol";
-import { EstadoAdministrativo } from "@/components/estado-administrativo";
+import { EstadosAdministrativos } from "@/components/estados-administrativos";
 import { BarraSecciones } from "@/components/explorar/barra-secciones";
 import { HeroeValle } from "@/components/explorar/heroe-valle";
 import { PanelObraBarrio } from "@/components/explorar/panel-obra-barrio";
 import { ChipEstado } from "@/components/ui/chip-estado";
 import { Indicador } from "@/components/ui/indicador";
 import { PanelVidrio } from "@/components/ui/panel-vidrio";
-import { SelloPrototipo } from "@/components/ui/sello-prototipo";
 import { NivelTitulos } from "@/components/ui/titulo";
 import { VitrinaTerritorio } from "@/app/territorios/[id]/vitrina-territorio";
 import { MarcaLoteo } from "@/app/territorios/[id]/vistas/lotes";
@@ -49,7 +47,6 @@ export default async function ExplorarPage() {
   return (
     <div className="min-h-full">
       <HeroeValle leyenda={textos("portada", idioma).leyendaImagen}>
-        <SelloPrototipo variante="venta" />
         <div className="grid gap-3">
           <p className="font-mono text-sm uppercase text-ink">{t.sobretitulo}</p>
           <h1 className="text-4xl font-bold sm:text-5xl">{t.titulo}</h1>
@@ -76,14 +73,8 @@ export default async function ExplorarPage() {
             </div>
           )}
           <AvisoEjemplo />
-          <div className="grid gap-1">
-            {/* El estado administrativo (Ord. 173) tiene peso legal: sigue en español, marcado, hasta `idioma-legal`. */}
-            <EnEspanol>
-              <EstadoAdministrativo proyecto="soluna" />
-            </EnEspanol>
-            <EstadoAdministrativo proyecto="lighthouse-primeros" idioma={idioma} />
-            <EstadoAdministrativo proyecto="lighthouse-norte" idioma={idioma} />
-          </div>
+          {/* El estado administrativo (Ord. 173) tiene peso legal: el de Soluna sigue en español, marcado, hasta `idioma-legal`. */}
+          <EstadosAdministrativos proyectos={["soluna", "lighthouse-primeros", "lighthouse-norte"]} idioma={idioma} />
           <PanelVidrio className="min-w-0">
             <NivelTitulos nivel={3}>
               <VitrinaTerritorio />

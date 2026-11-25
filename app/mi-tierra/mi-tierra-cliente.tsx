@@ -9,7 +9,6 @@ import { useCompras } from "@/components/lotes/usar-compras";
 import { BarraAvance } from "@/components/ui/barra-avance";
 import { ChipEstado } from "@/components/ui/chip-estado";
 import { Indicador } from "@/components/ui/indicador";
-import { SelloPrototipo } from "@/components/ui/sello-prototipo";
 import { TablaLibro } from "@/components/ui/tabla-libro";
 import { enteroEn, faroEn } from "@/lib/bien-comun/formato";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
@@ -76,8 +75,6 @@ export function MiTierraCliente() {
 
   return (
     <div className="grid gap-6">
-      <SelloPrototipo variante="venta" />
-
       <section aria-labelledby="mt-vistazo" className="grid gap-3">
         <h2 id="mt-vistazo" className="sr-only">
           {t.indicadores.titulo}

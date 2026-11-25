@@ -47,9 +47,6 @@ export default async function LotePage({ params }: Props) {
         <MarcaLoteo />
         {lote.grupo === "primeros" && <p className="text-sm font-medium">{t.ficha.avisoPrimeros}</p>}
         <AvisoEjemplo />
-        <p className="w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-          {textos("marco", idioma).aviso}
-        </p>
       </div>
       <FichaCliente id={lote.id} />
     </div>

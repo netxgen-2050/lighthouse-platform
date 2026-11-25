@@ -14,7 +14,7 @@ const CLASES = {
   netx: {
     seccion: "grid grid-cols-1 content-start gap-3 rounded-xl border border-faint bg-surface p-4",
     titulo: "text-xl font-semibold",
-    demo: "rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink",
+    demo: "rounded-[var(--radius-m)] border border-line bg-warn-bg px-3 py-2 text-sm text-warn-ink",
     error: "text-sm font-medium text-danger",
     quitar:
       "w-fit rounded-lg border border-muted px-3 py-1.5 hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep",

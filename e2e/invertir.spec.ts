@@ -34,8 +34,10 @@ test("con sesión: sellos antes del primer indicador, meta, 'sin dato' en lo jun
   await page.goto("/invertir");
   const sellos = page.locator('[data-sellos="invertir"]');
   await expect(sellos).toContainText("Propuesta v0.1 · en discusión");
-  await expect(sellos).toContainText("Prototipo interno · datos de ejemplo");
-  await expect(sellos).toContainText("venta simulada · aprobación municipal pendiente");
+  // El aviso de prototipo y la venta simulada los dice la cinta fija del layout (ux-base).
+  const cinta = page.locator("[data-cinta-prototipo]");
+  await expect(cinta).toContainText("Prototipo interno · datos de ejemplo");
+  await expect(cinta).toContainText("venta simulada · aprobación municipal pendiente");
   await expect(sellos).toContainText("No es una oferta");
   const ySello = (await sellos.boundingBox())!.y;
   const yIndicador = (await page.getByText("Meta de la obra (infraestructura)").boundingBox())!.y;

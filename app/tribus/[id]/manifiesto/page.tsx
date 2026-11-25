@@ -36,9 +36,6 @@ export default async function ManifiestoPage({ params }: Props) {
           ← <span translate="no">{esLighthouse ? nombreDelComun(idioma) : m.comunidad}</span>
         </Link>
       </p>
-      <p className="mt-2 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-        {textos("marco", idioma).aviso}
-      </p>
       <LecturaManifiesto manifiesto={m} pactos={destinosDisponibles().some((d) => d.href === "/pactos")} />
     </div>
   );

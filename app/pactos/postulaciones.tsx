@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { TerminoLegal } from "@/components/termino-legal";
+import { Aviso } from "@/components/ui/aviso";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { HORAS_PUNTUAL, ROLES, textoDeRol, type ClaveRol } from "@/lib/pactos/datos";
 import { MAX_DESCRIPCION, MAX_ROL_OTRO, faltaDelPuntual, type EdicionPuntual, type PactoPuntual } from "@/lib/pactos/estado";
@@ -167,9 +168,9 @@ export function PostulacionesATareas({ comunidad, puntuales, alEditar, alEnviar,
             </fieldset>
             {maximos(p)}
             {p.paso === "borrador" && p.noPreadmitida && (
-              <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink" data-testid="aviso-no-preadmitida">
+              <Aviso tono="atencion" data-testid="aviso-no-preadmitida">
                 {t.noPreadmitida(holonTexto[0].toUpperCase() + holonTexto.slice(1))} <span lang={langTexto}>{p.noPreadmitida.motivo}</span>
-              </p>
+              </Aviso>
             )}
             {p.paso === "enviado" && <p className="text-sm font-medium" data-testid="esperando-respuesta-puntual">{t.esperando(holonTexto)}</p>}
             {p.paso === "preadmitido" && (
@@ -177,9 +178,9 @@ export function PostulacionesATareas({ comunidad, puntuales, alEditar, alEnviar,
                 <p className="text-sm font-medium">{t.preadmitida(holonTexto)}</p>
                 <p className="text-sm text-muted">{t.sinSemillasTodavia}</p>
                 {p.avisoRevisar && (
-                  <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink" data-testid="aviso-revisar-horas">
+                  <Aviso tono="atencion" data-testid="aviso-revisar-horas">
                     {t.avisoRevisar(holonTexto[0].toUpperCase() + holonTexto.slice(1))} <span lang={langTexto}>{p.avisoRevisar.motivo}</span>
-                  </p>
+                  </Aviso>
                 )}
                 <div className="grid gap-2">
                   <label className="grid gap-1 text-sm">
