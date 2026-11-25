@@ -99,6 +99,49 @@ test.describe("el paso de consentimiento es la única puerta", () => {
     await expect(google).toBeFocused();
   });
 
+  test("el clic en Google pide signIn.social con provider google y la página como callbackURL", async ({ page }) => {
+    const cuerpos: unknown[] = [];
+    await page.route("**/api/auth/sign-in/social", async (ruta) => {
+      cuerpos.push(ruta.request().postDataJSON());
+      await ruta.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ url: null, redirect: false }) });
+    });
+    await abrirFormulario(page);
+    await page.getByRole("dialog").getByRole("button", { name: "Continuar con Google", exact: true }).click();
+    await expect.poll(() => cuerpos.length).toBe(1);
+    const cuerpo = cuerpos[0] as { provider: string; callbackURL: string };
+    expect(cuerpo.provider).toBe("google");
+    expect(cuerpo.callbackURL).toBe(new URL("/", page.url()).toString());
+  });
+
+  test("Google responde 500: mismo error general con role=alert", async ({ page }) => {
+    await page.route("**/api/auth/sign-in/social", (ruta) =>
+      ruta.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ message: "boom" }) }),
+    );
+    await abrirFormulario(page);
+    await page.getByRole("dialog").getByRole("button", { name: "Continuar con Google", exact: true }).click();
+    await expect(alerta(page)).toHaveText("No pudimos iniciar sesión. Probá de nuevo.");
+  });
+
+  test("con el pedido en curso, un segundo clic en Google no hace otro pedido", async ({ page }) => {
+    let pedidos = 0;
+    let liberar: () => void = () => {};
+    const espera = new Promise<void>((r) => (liberar = r));
+    await page.route("**/api/auth/sign-in/social", async (ruta) => {
+      pedidos += 1;
+      await espera;
+      await ruta.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ url: null, redirect: false }) });
+    });
+    await abrirFormulario(page);
+    const google = page.getByRole("dialog").getByRole("button", { name: "Continuar con Google", exact: true });
+    await google.dblclick();
+    await expect(google).toHaveAttribute("aria-disabled", "true");
+    await google.click({ force: true });
+    expect(pedidos).toBe(1);
+    liberar();
+    await expect(google).not.toHaveAttribute("aria-disabled", "true");
+    expect(pedidos).toBe(1);
+  });
+
   test("Enter en el email pide el código y no abre Google", async ({ page }) => {
     const pedidos = espiarAuth(page);
     await simularNeonAuth(page, { pedirCodigo: { status: 200, cuerpo: { success: true } } });

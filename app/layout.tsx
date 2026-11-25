@@ -20,7 +20,7 @@ const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin"], axe
 const interTight = Inter_Tight({ variable: "--font-inter-tight", subsets: ["latin"] });
 const jetbrains = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin"] });
 // Solo para el botón "Continuar con Google": las pautas de marca de Google piden Roboto Medium.
-const roboto = Roboto({ variable: "--font-roboto", weight: ["500"], subsets: ["latin"], display: "swap" });
+const roboto = Roboto({ variable: "--font-roboto", weight: ["500"], subsets: ["latin"], display: "swap", preload: false });
 
 // El título y la descripción dependen del idioma del pedido (cookie o navegador).
 export async function generateMetadata(): Promise<Metadata> {
