@@ -322,10 +322,13 @@ describe("versiones de la política", () => {
     for (const v of VERSIONES_POLITICA.slice(1)) expect(v.cambios.length).toBeGreaterThan(0);
   });
 
-  it("la vigente (login-neon-auth) informa su cambio: el login pasa a Neon Auth y Privy se retira", () => {
+  it("la vigente (lotes-en-la-base) informa su cambio: las reservas pasan a la base", () => {
     const vigente = VERSIONES_POLITICA[VERSIONES_POLITICA.length - 1]!;
     expect(vigente.version).toBe(VERSION_POLITICA);
-    expect(vigente.cambios).toEqual(["El login pasa a hacerse con Neon (Neon Auth); Privy se va a retirar."]);
+    expect(vigente.cambios).toEqual(["Las reservas de lotes simulados ya no quedan solo en tu navegador: se guardan en la base de la plataforma para que un lote reservado se vea reservado para todos."]);
+    expect(VERSIONES_POLITICA.find((v) => v.version === "2026-11-24-borrador")!.cambios).toEqual([
+      "El login pasa a hacerse con Neon (Neon Auth); Privy se va a retirar.",
+    ]);
   });
 
   it("la versión del alta (tres cambios) sigue en el historial", () => {
@@ -436,9 +439,9 @@ describe("la política sin Compromisos", () => {
     expect(textos.filter((t) => /compromiso/i.test(t))).toEqual([]);
   });
 
-  it("la versión de los lotes simulados (ADR-017) sigue en el historial y la vigente es la del login con Neon Auth", () => {
+  it("la versión de los lotes simulados (ADR-017) sigue en el historial y la vigente es la de las reservas en la base", () => {
     expect(VERSIONES_POLITICA.map((v) => v.version)).toContain("2026-11-03-borrador");
-    expect(VERSION_POLITICA).toBe("2026-11-24-borrador");
+    expect(VERSION_POLITICA).toBe("2026-11-25-borrador");
   });
 });
 
@@ -447,7 +450,8 @@ describe("la política con lotes simulados", () => {
     const fila = DATOS_POR_PANTALLA.find((d) => d.pantalla === "Lotes (simulado)");
     expect(fila).toBeDefined();
     expect(fila!.datos).toContain("Nunca datos de pago ni de identidad");
-    expect(fila!.donde).toContain("Solo en tu navegador");
+    expect(fila!.donde).toContain("Neon");
+    expect(fila!.donde).not.toMatch(/solo en tu navegador/i);
   });
 
   it("el resumen y las finalidades nombran los lotes simulados", () => {
