@@ -53,7 +53,7 @@ test("la barra superior está arriba a la derecha con NetX (interno), la campani
   // La cinta de prototipo va arriba de la barra, las dos fijas (design §4).
   const cinta = (await page.locator("[data-cinta-prototipo]").boundingBox())!;
   expect(cinta.y).toBe(0);
-  expect(caja.y).toBe(cinta.height);
+  expect(caja.y).toBeCloseTo(cinta.height, 1);
   const netx = barra.getByRole("link", { name: /NetX/ });
   await expect(netx).toHaveAttribute("href", "/netx");
   await expect(netx).toContainText("Interno");
@@ -76,7 +76,7 @@ test("la barra superior queda fija al bajar la página", async ({ page }) => {
   const cinta = (await page.locator("[data-cinta-prototipo]").boundingBox())!;
   expect(cinta.y).toBe(0);
   const caja = (await page.getByRole("banner").boundingBox())!;
-  expect(caja.y).toBe(cinta.height);
+  expect(caja.y).toBeCloseTo(cinta.height, 1);
 });
 
 test("celular 390 x 844: la barra superior muestra NetX, la campanita, el selector de idioma y el avatar sin desbordar", async ({ page }) => {

@@ -50,7 +50,7 @@ export function BarraSecciones() {
   const etiquetas: Record<SeccionExplorar, string> = { territorio: t.barra.territorio, barrio: t.barra.barrio, lotes: t.barra.lotes };
 
   return (
-    <nav aria-label={t.barra.aria} className="sticky top-12 z-20 border-b border-line bg-surface">
+    <nav aria-label={t.barra.aria} className="sticky top-[var(--alto-fijo,4.5rem)] z-20 border-b border-line bg-surface">
       <ul className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4 sm:px-8">
         {SECCIONES_EXPLORAR.map((s) => {
           const esActual = actual === s;

@@ -31,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const ENLACE =
   "w-fit rounded-full border border-line bg-surface px-5 py-3 font-medium text-ink hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
-const SECCION = "grid scroll-mt-28 content-start gap-4";
+const SECCION = "grid scroll-mt-[calc(var(--alto-fijo,4.5rem)+3.5rem)] content-start gap-4";
 
 export default async function ExplorarPage() {
   const idioma = await idiomaDelPedido();

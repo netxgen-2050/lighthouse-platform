@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buscarManifiesto, buscarManifiestoBilingue, idsConManifiesto } from "@/lib/manifiestos/datos";
 import { idiomaDelPedido } from "@/lib/idioma/servidor";
-import { textos } from "@/lib/idioma/textos";
 import { nombreDelComun } from "@/lib/manifiestos/lighthouse-vrn";
 import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
 import { destinosDisponibles } from "@/lib/navegacion";

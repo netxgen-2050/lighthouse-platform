@@ -6,7 +6,8 @@ import { Rail } from "@/components/rail";
 import { ProveedorSesion } from "@/components/sesion/proveedor-sesion";
 import { Puerta, SoloConCapacidad, SoloConConsentimiento } from "@/components/sesion/puerta";
 import { SCRIPT_APARIENCIA } from "@/lib/configuracion/script-apariencia";
-import { Pie } from "@/components/pie";
+import { BloqueFijo } from "@/components/bloque-fijo";
+import { Pie }from "@/components/pie";
 import { CintaPrototipo } from "@/components/ui/cinta-prototipo";
 import { BotonReportar } from "@/components/boton-reportar";
 import { Hifa } from "@/components/hifa/hifa";
@@ -65,10 +66,10 @@ export default async function RootLayout({
             <Rail />
             <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
               {/* La cinta y la barra se quedan juntas arriba al bajar la página (design §4). */}
-              <div className="sticky top-0 z-30">
+              <BloqueFijo>
                 <CintaPrototipo />
                 <BarraSuperior />
-              </div>
+              </BloqueFijo>
               <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
                 <Puerta>{children}</Puerta>
               </main>
