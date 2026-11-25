@@ -16,7 +16,7 @@ Es el **paso 2** del orden de la fase 1 (`NS_platform/Documentation/backend/01` 
 - **Origen de la visita:** columna `origen` en `personas` (la primera visita, se escribe una sola vez), en `contactos` y en `reservas`. `lh-origen` sigue en el navegador hasta que la persona escribe algo.
 - **Libro `bitacora`** (solo agregar): `anotarEnBitacora` escribe en el servidor con la persona en sesión. El servidor no repite la misma entrada (mismo tipo, clave y huella) en 30 minutos. `/panel/bitacora` lee la base.
 - **Mis datos:** la descarga suma las reservas, los contactos y la bitácora de la base. "Retirar y borrar mis datos" libera los lotes de la persona (agrega `deshace`), borra sus contactos y su origen. La bitácora se conserva (ver Preguntas abiertas). Esta ruta pide sesión, no consentimiento: borrar es un derecho.
-- **Se borra lo del navegador:** `lh-lotes`, `lh-consultas-lotes`, `lh-contactos` y `lh-bitacora` dejan de escribirse y se limpian la próxima vez que la persona entra. **No se copian a la base** (decisión por defecto, ver Preguntas abiertas).
+- **Se borra lo del navegador:** `lh-lotes`, `lh-consultas-lotes`, `lh-contactos` y `lh-bitacora` dejan de escribirse y se limpian la próxima vez que la persona entra. **No se copian a la base** (decisión de Gus, 25-nov).
 - **E2E:** la fixtura siembra reservas, contactos y bitácora por la API. Cada archivo de pruebas usa lotes propios y los libera al empezar con el super admin de prueba, por la ruta normal. Ninguna ruta desactiva el trigger de un libro (revisión de arquitectura).
 - **Congreso: se borran sus datos** (Gus, 25-nov-2026). Salen `lh-congreso-ticket` y `lh-congreso-idioma` de `lib/demo/claves.ts` y del navegador, y se retira el registro del ticket y todo lo que lo lee. No toca la base: va en una noche aparte. Qué pasa con la página `/congreso` (redirigir a `/eventos`) sigue siendo de `eventos-reemplaza-congreso`, que se actualiza para no conservar el ticket.
 - **Mis datos tiene una sola ruta de derechos,** `/api/mis-datos/actividad` (`GET` descarga y `DELETE` borra), que pide sesión pero no consentimiento. Es una excepción nueva a ADR-005, escrita como **ADR-032** (Propuesta).
@@ -63,7 +63,7 @@ Es el **paso 2** del orden de la fase 1 (`NS_platform/Documentation/backend/01` 
 
 ## Decisiones de Gus (25-nov-2026)
 
-1. **Copiar lo del navegador a la base:** ❓ pendiente. Gus pidió que se explique mejor. Mientras tanto vale la propuesta: no se copia, se limpia.
+1. **Copiar lo del navegador a la base:** 🟢 no. Se empieza limpio: lo del navegador se borra sin copiarlo.
 2. **Un lote "en cuotas" de otra persona se ve "vendido":** 🟢 sí.
 3. **La bitácora se conserva al borrar mis datos:** 🟢 sí, como constancia **[verificar con abogado]**.
 4. **La bandeja de contactos la ve solo el super admin:** 🟢 sí.
