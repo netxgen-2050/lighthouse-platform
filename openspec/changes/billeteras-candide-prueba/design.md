@@ -34,7 +34,7 @@
 |---|---|---|
 | Qué ofrece | SDK `abstractionkit` para cuentas Safe ERC-4337 (EntryPoint v0.7 con `SafeAccountV0_3_0`); dueño por passkey (WebAuthn, P-256); bundler y paymaster por URL con clave | ADR-011, docs.candide.dev (23-oct-2026); npm `abstractionkit` 2.1.0 (25-nov-2026) |
 | Qué no ofrece | Login, sesiones, guía para Next.js | ADR-011 |
-| Autenticación | La clave va dentro de la URL del bundler y del paymaster. **Dueño: Gus** (cuenta en dashboard.candide.dev) | ADR-011 punto 5 |
+| Autenticación | La clave va dentro de la URL del bundler y del paymaster. **Dueño: la cuenta del equipo NetXGen** en dashboard.candide.dev (no la cuenta personal de Gus) | ADR-011 punto 5 |
 | Límites | Testnet ilimitada en el plan Starter. Política de patrocinio configurable en el panel (contratos permitidos, topes) | candide.dev/pricing (23-oct-2026) |
 | Dueño de los datos | La passkey es de la persona (vive en su dispositivo). La dirección de la Safe la calculamos nosotros y es la misma con cualquier proveedor. Candide no guarda nada nuestro más allá de las operaciones que retransmite | — |
 | Si no está | Modo simulado para ver la página; para la prueba real no hay plan B en esta noche (el plan B de ADR-011 es Pimlico o Voltaire propio, que cambia solo el adaptador) | ADR-011 punto 7 |
@@ -141,6 +141,6 @@ No hay datos ni migraciones. Para apagar la prueba, se borra `LH_PRUEBA_CANDIDE`
 
 ## Open Questions
 
-- ¿Gus tiene ya cuenta en dashboard.candide.dev? ¿El plan gratis pide clave también para testnet? (lo resuelve el guion).
+- ~~¿Gus tiene ya cuenta en dashboard.candide.dev?~~ Sí: se usa la del equipo NetXGen (25-nov-2026). ¿El plan gratis pide clave también para testnet? (lo resuelve el guion).
 - ¿El id de política de patrocinio hace falta en `abstractionkit` 2.x o alcanza con la política por defecto del proyecto?
 - ¿Cuál es la versión del dominio EIP-712 de EAS en Base Sepolia? (se lee de `version()`; no se fija a mano).
