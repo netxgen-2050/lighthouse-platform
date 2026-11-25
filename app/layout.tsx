@@ -63,15 +63,16 @@ export default async function RootLayout({
               <AplicarPreferencias />
             </SoloConConsentimiento>
             <Rail />
-            <div className="flex min-w-0 flex-1 flex-col">
-              <CintaPrototipo />
-              <BarraSuperior />
+            <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
+              {/* La cinta y la barra se quedan juntas arriba al bajar la página (design §4). */}
+              <div className="sticky top-0 z-30">
+                <CintaPrototipo />
+                <BarraSuperior />
+              </div>
               <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
                 <Puerta>{children}</Puerta>
               </main>
               <Pie anioRespaldo={new Date().getFullYear()} />
-              {/* Espacio para que el botón fijo de Hifa no tape el final de la página. */}
-              <div aria-hidden="true" className="h-16 shrink-0" />
             </div>
             {/* Reportar es para toda persona, con o sin sesión; Hifa se habilita desde el nivel Explorador. */}
             {/* Reportar y Hifa todavía están solo en español (`idioma-hifa-avisos`): en inglés se marcan como español. */}

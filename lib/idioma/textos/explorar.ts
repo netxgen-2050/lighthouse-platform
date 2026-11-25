@@ -10,7 +10,7 @@ const G = GLOSARIO;
 const es = {
   titulo: "Explorar Lighthouse",
   sobretitulo: "Lighthouse VRN · Río Negro, Argentina",
-  bajada: "El territorio, el barrio y los lotes en un solo recorrido: primero el lugar, después los números. Todo es de ejemplo.",
+  bajada: "El territorio, el barrio y los lotes en un solo recorrido: primero el lugar, después los números.",
   barra: {
     aria: "Secciones de Explorar",
     territorio: G.territorio.es,
@@ -34,7 +34,7 @@ const es = {
 const en: Textos<typeof es> = {
   titulo: "Explore Lighthouse",
   sobretitulo: "Lighthouse VRN · Río Negro province, Argentina",
-  bajada: "The territory, the neighborhood and the lots in a single walk: the place first, then the numbers. Everything is sample data.",
+  bajada: "The territory, the neighborhood and the lots in a single walk: the place first, then the numbers.",
   barra: {
     aria: "Explore sections",
     territorio: G.territorio.en,

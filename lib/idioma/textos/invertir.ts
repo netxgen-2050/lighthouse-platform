@@ -6,7 +6,7 @@ import { conVocabulario } from "../vocabulario";
 
 const es = {
   titulo: "Invertir",
-  bajada: "Qué barrio se financia, cómo se devuelve la plata y qué parte va al común. Todo es de ejemplo.",
+  bajada: "Qué barrio se financia, cómo se devuelve la plata y qué parte va al común.",
   sinSesion: {
     aviso: "Invertir se ve con una cuenta: acá aparecen los números del barrio en financiamiento.",
     entrar: "Sumate para ver el barrio",
@@ -68,7 +68,7 @@ const es = {
 
 const en: Textos<typeof es> = {
   titulo: "Invest",
-  bajada: "Which neighborhood is being financed, how the money is paid back and what share goes to the commons. Everything is sample data.",
+  bajada: "Which neighborhood is being financed, how the money is paid back and what share goes to the commons.",
   sinSesion: {
     aviso: "Invest is seen with an account: the numbers of the neighborhood being financed appear here.",
     entrar: "Join to see the neighborhood",

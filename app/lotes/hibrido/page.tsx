@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AvisoEjemplo } from "@/components/aviso-ejemplo";
 import { EstadoAdministrativo } from "@/components/estado-administrativo";
 import { TerminoLegal } from "@/components/termino-legal";
 import { idiomaDelPedido } from "@/lib/idioma/servidor";
@@ -60,7 +59,6 @@ export default async function HibridoPage() {
       <h1 className="text-3xl font-semibold">{t.titulo}</h1>
       <p className="mt-2 max-w-3xl text-muted">{t.bajada}</p>
       <div className="mt-3 grid gap-2">
-        <AvisoEjemplo />
         <EstadoAdministrativo proyecto="lighthouse-norte" compacto idioma={idioma} />
       </div>
 

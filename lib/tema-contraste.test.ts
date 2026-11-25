@@ -68,10 +68,10 @@ const PARES_TEXTO: [string, string][] = [
   ["danger", "bg"],
   ["danger", "surface"],
   ["ink", "gold"],
-  // ux-base: cinta de prototipo (bg sobre ink), píldora del rail (on-deep sobre deep), botón Sumarte (gold-ink sobre gold-soft).
+  // ux-base: cinta de prototipo (bg sobre ink).
   ["bg", "ink"],
-  ["gold-ink", "gold-soft"],
-  ["muted", "surface"],
+  // ux-base, rail sobre `surface`: reposo (muted/surface), hover (muted/surface-2), etiqueta activa (ink/surface) y píldora
+  // (on-deep/deep) ya están en la lista de arriba; no se repiten.
 ];
 
 const REGEN = ["regen-1", "regen-2", "regen-3", "regen-4", "regen-5"];

@@ -15,13 +15,13 @@ Primero de los ocho cambios `ux-*` (dirección B + C, elegida por Gus el 25-nov-
 
 ## 3. Componentes base
 
-- [ ] 3.1 `Boton`, `Pestanas`, `EstadoVacio`, `Esqueleto` y `Seccion` en `components/ui/` (design §5), con tests (variantes, `aria-current`, flechas en `tablist`, `aria-busy`). **Verifica:** `pnpm test components/ui`.
+- [x] 3.1 `Boton`, `Pestanas`, `EstadoVacio`, `Esqueleto` y `Seccion` en `components/ui/` (design §5), con tests (variantes, `aria-current`, flechas en `tablist`, `aria-busy`). **Verifica:** `pnpm test components/ui`.
 - [ ] 3.2 Usar `Pestanas` en Mi recorrido (`/panel`) y Participa, y `EstadoVacio` en el "Todavía no hay nada" de Mi recorrido. **Verifica:** `pnpm test:e2e e2e/panel*.spec.ts e2e/participa.spec.ts`.
 
 ## 4. Pie y textos
 
 - [ ] 4.1 Pie pegado abajo en páginas cortas (design §7). **Verifica:** e2e nuevo en `e2e/marco.spec.ts`: en `/invertir` sin sesión a 390×844, el borde inferior del pie está a 8 px o menos del final del documento y el documento no es más corto que la pantalla.
-- [ ] 4.2 Bajadas sin "Todo es…" en es y en (design §6). **Verifica:** `pnpm test lib/idioma` y `grep -rniE "todo es (de ejemplo|una simulaci)" lib/idioma/textos/{explorar,barrios,invertir,mi-tierra}.ts` vacío.
+- [x] 4.2 Bajadas sin "Todo es…" en es y en (design §6). **Verifica:** `pnpm test lib/idioma` y `grep -rniE "todo es (de ejemplo|una simulaci)" lib/idioma/textos/{explorar,barrios,invertir,mi-tierra}.ts` vacío.
 
 ## 5. Cierre
 

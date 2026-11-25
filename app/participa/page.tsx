@@ -4,6 +4,7 @@ import { AvisoEjemplo } from "@/components/aviso-ejemplo";
 import { MapaEquipos } from "@/components/participa/mapa-equipos";
 import type { EquipoVista, FrenteVista } from "@/components/participa/tipos";
 import { Vision2050 } from "@/components/participa/vision-2050";
+import { Pestanas } from "@/components/ui/pestanas";
 import { listarEquipos } from "@/lib/equipos/equipos";
 import type { Frente } from "@/lib/equipos/frentes";
 import { idCortoDeEquipo, posicionesDe } from "@/lib/equipos/posiciones";
@@ -44,8 +45,6 @@ function equiposVista(idioma: Idioma): EquipoVista[] {
   }));
 }
 
-const base = "px-1 pb-1 underline-offset-8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
-const clase = (actual: boolean) => `${base} ${actual ? "font-bold underline decoration-4" : "text-muted hover:underline"}`;
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -82,14 +81,15 @@ export default async function ParticipaPage({ searchParams }: Props) {
         </Link>
       </section>
 
-      <nav aria-label={t.pestanas.aria} className="mt-6 flex flex-wrap gap-6 border-b border-faint">
-        <Link href="/participa" className={clase(!vision)} aria-current={!vision ? "page" : undefined}>
-          {t.pestanas.equipos}
-        </Link>
-        <Link href="/participa?ver=vision" className={clase(vision)} aria-current={vision ? "page" : undefined}>
-          {t.pestanas.vision}
-        </Link>
-      </nav>
+      <Pestanas
+        aria={t.pestanas.aria}
+        className="mt-6"
+        actual={vision ? "vision" : "equipos"}
+        items={[
+          { clave: "equipos", etiqueta: t.pestanas.equipos, href: "/participa" },
+          { clave: "vision", etiqueta: t.pestanas.vision, href: "/participa?ver=vision" },
+        ]}
+      />
 
       {vision ? (
         <Vision2050 idioma={idioma} />

@@ -55,7 +55,7 @@ Estado administrativo: nuevo envoltorio `EstadosAdministrativos` que recibe la l
 - `Esqueleto`: rectángulos `surface-2` con brillo suave (sin brillo con movimiento reducido), `aria-busy` en el contenedor y texto oculto "Cargando…".
 - `Seccion`: `h2` + bajada opcional + hijos, con el espaciado de §2. Sin borde ni fondo.
 
-Los seis componentes del rediseño (`Indicador`, `BarraAvance`, `PanelVidrio`, `TablaLibro`, `SelloPrototipo`, `ChipEstado`) se quedan; `SelloPrototipo` queda solo como texto de la cinta.
+Los cinco componentes del rediseño que se quedan son `Indicador`, `BarraAvance`, `PanelVidrio`, `TablaLibro` y `ChipEstado`. `SelloPrototipo` se borró: su texto vive ahora en `CintaPrototipo` (cambio anotado en la vuelta de corrección).
 
 ## 6. Textos "todo es…"
 
