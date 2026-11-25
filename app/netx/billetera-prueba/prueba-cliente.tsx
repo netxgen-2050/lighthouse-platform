@@ -213,14 +213,18 @@ export function PruebaCliente({ simulado, faltaConfigurar }: { simulado: boolean
     const limite = performance.now() + TOPE_MS;
     while (vigente.current) {
       let ok = false;
-      let datos: Record<string, unknown> & { error?: string } = {};
+      let estadoHttp = 0;
+      let datos: Record<string, unknown> & { error?: string; tipo?: string } = {};
       try {
-        ({ ok, datos } = await llamar(`operacion?hash=${hash}`));
+        ({ ok, datos, estado: estadoHttp } = await llamar(`operacion?hash=${hash}`));
       } catch {
-        ok = false;
+        estadoHttp = 0; // error de red: puede pasar solo
       }
       if (!ok) {
-        if (performance.now() >= limite) {
+        // Solo se reintenta lo que se puede arreglar solo: un error de red o un 5xx (menos "sin configurar"). Un 4xx, un 503
+        // de "sin configurar" o un 401/403/404 no cambian por esperar.
+        const pasajero = (estadoHttp === 0 || estadoHttp >= 500) && datos.tipo !== "sin-configurar";
+        if (!pasajero || performance.now() >= limite) {
           avisar("falló");
           setErrorOperacion(datos.error ?? "No se pudo consultar la operación.");
           return;

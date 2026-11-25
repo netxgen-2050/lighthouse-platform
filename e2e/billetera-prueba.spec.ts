@@ -101,6 +101,71 @@ test.describe("prueba de billetera con Candide (modo simulado)", () => {
     expect(await page.evaluate(() => Object.keys(window.localStorage).filter((k) => k.includes("prueba-candide")))).toEqual([]);
   });
 
+  test.describe("al volver con una operación guardada", () => {
+    const HASH = `0x${"ab".repeat(32)}`;
+    const INCLUIDA = { ok: true, estado: "incluida", hashTransaccion: `0x${"22".repeat(32)}`, uidConstancia: `0x${"33".repeat(32)}` };
+
+    async function conOperacionGuardada(page: Page) {
+      await page.addInitScript((hash) => {
+        if (window.localStorage.getItem("lh-prueba-candide")) return;
+        window.localStorage.setItem(
+          "lh-prueba-candide",
+          JSON.stringify({
+            idCredencial: "AAAA",
+            x: "0xf4e20f0719c321dd7cd9531c62c4d10a10a9fc87c31637341841b9efa97cc9ba",
+            y: "0x12de54db4e9a67f0f1161276458ad3d17287e8554b3b10f7b1a1cc9a6ab2129d",
+            creadaEn: 1,
+            ultimoHash: hash,
+          }),
+        );
+      }, HASH);
+    }
+
+    test("consulta el último hash al montar y, si ya estaba incluida, no inventa el tiempo de inclusión", async ({ page }) => {
+      await conOperacionGuardada(page);
+      const consultas: string[] = [];
+      await page.route("**/api/netx/billetera-prueba/operacion*", async (ruta) => {
+        consultas.push(ruta.request().url());
+        await ruta.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(INCLUIDA) });
+      });
+      const respuesta = await page.goto(RUTA);
+      test.skip(respuesta?.status() === 404, "La prueba está apagada en este entorno.");
+      await expect(page.getByRole("status")).toContainText("Incluida");
+      expect(consultas.length).toBeGreaterThanOrEqual(1);
+      expect(consultas[0]).toContain(`hash=${HASH}`);
+      await expect(page.getByRole("row", { name: /Esperar la inclusión/ })).toContainText("sin dato");
+      await expect(page.getByRole("row", { name: /Total/ })).toContainText("sin dato");
+    });
+
+    test("un error pasajero (502) se reintenta y después llega el resultado", async ({ page }) => {
+      await conOperacionGuardada(page);
+      let n = 0;
+      await page.route("**/api/netx/billetera-prueba/operacion*", async (ruta) => {
+        n += 1;
+        if (n === 1) await ruta.fulfill({ status: 502, contentType: "application/json", body: JSON.stringify({ ok: false, error: "no responde" }) });
+        else await ruta.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(INCLUIDA) });
+      });
+      const respuesta = await page.goto(RUTA);
+      test.skip(respuesta?.status() === 404, "La prueba está apagada en este entorno.");
+      await expect(page.getByRole("status")).toContainText("Incluida", { timeout: 15_000 });
+      expect(n).toBeGreaterThanOrEqual(2);
+    });
+
+    test("un 403 no se reintenta: falla enseguida y deja empezar de nuevo", async ({ page }) => {
+      await conOperacionGuardada(page);
+      let n = 0;
+      await page.route("**/api/netx/billetera-prueba/operacion*", async (ruta) => {
+        n += 1;
+        await ruta.fulfill({ status: 403, contentType: "application/json", body: JSON.stringify({ ok: false, error: "Solo el super admin puede hacer esto." }) });
+      });
+      const respuesta = await page.goto(RUTA);
+      test.skip(respuesta?.status() === 404, "La prueba está apagada en este entorno.");
+      await expect(page.getByRole("status")).toContainText("Falló");
+      await expect(page.getByRole("button", { name: "Empezar de nuevo" })).toBeEnabled({ timeout: 3_000 });
+      expect(n).toBe(1);
+    });
+  });
+
   test("axe sin violaciones y un solo main", async ({ page }) => {
     const respuesta = await page.goto(RUTA);
     test.skip(respuesta?.status() === 404, "La prueba está apagada en este entorno.");
