@@ -164,15 +164,15 @@ test("finca 502 en la vista Lotes: consultar sí, reservar o comprar no", async 
   await expect(ficha(page).getByRole("button", { name: /comprar|reservar|señar/i })).toHaveCount(0);
 });
 
-test("Ver en el mapa desde Equipos", async ({ page }) => {
-  await page.goto("/tribus");
+test("Ver en el mapa desde el detalle de un equipo", async ({ page }) => {
+  await page.goto("/participa?equipo=agua");
   await page.getByRole("link", { name: /Ver en el mapa.*Agua y cuenca/ }).click();
-  await expect(page).toHaveURL(/\/territorios\/lighthouse\?vista=ahora&sel=agua-cuenca/);
+  await expect(page).toHaveURL(/\/explorar\?vista=ahora&sel=agua-cuenca/);
   await expect(ficha(page).getByRole("heading", { name: "Agua y cuenca" })).toBeVisible();
 });
 
 test("Ver en el mapa de un frente de fase siguiente abre esa fase con el frente elegido", async ({ page }) => {
-  await page.goto("/tribus");
+  await page.goto("/participa?equipo=contratistas");
   await page.getByRole("link", { name: /Ver en el mapa.*Primer obrador/ }).click();
   await expect(page).toHaveURL(/vista=ahora&fase=1&sel=primer-obrador/);
   await expect(ficha(page).getByRole("heading", { name: "Primer obrador" })).toBeVisible();

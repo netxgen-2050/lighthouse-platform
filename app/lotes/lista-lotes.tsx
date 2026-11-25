@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Titulo } from "@/components/ui/titulo";
 import { TextoEstado } from "@/components/lotes/estado-del-lote";
 import { useCompras } from "@/components/lotes/usar-compras";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
@@ -15,13 +16,14 @@ export function ListaLotes() {
   const tl = useTextos("territorio").loteo;
   const { compras } = useCompras();
   return (
-    <section aria-labelledby="lista-lotes-titulo" className="mt-4 grid gap-2">
-      <h2 id="lista-lotes-titulo" className="text-lg font-semibold">
+    // El id es propio: en `/explorar` conviven con la lista del mapa (`lista-lotes-titulo`) y un id repetido rompería el nombre de la región.
+    <section aria-labelledby="titulo-todos-los-lotes" className="mt-4 grid gap-2">
+      <Titulo id="titulo-todos-los-lotes" className="text-xl font-bold">
         {t.lista.listaTitulo}
-      </h2>
+      </Titulo>
       {(["primeros", "norte"] as GrupoLote[]).map((grupo) => (
       <div key={grupo} className="grid gap-2">
-      <h3 className="font-semibold">{grupo === "primeros" ? tl.primerosTitulo : tl.listaTitulo}</h3>
+      <Titulo extra={1} className="font-semibold">{grupo === "primeros" ? tl.primerosTitulo : tl.listaTitulo}</Titulo>
       <ul className="grid gap-2 sm:grid-cols-2">
         {lotesDelGrupo(grupo).map((l) => (
           <li key={l.id}>

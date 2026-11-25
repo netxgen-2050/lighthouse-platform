@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }) => {
 test("ficha: título, ubicación y superficie", async ({ page }) => {
   await page.goto("/territorios/lighthouse");
   await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
-  await expect(page.getByRole("heading", { level: 1, name: "Lighthouse" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Explorar Lighthouse" })).toBeVisible();
   await expect(page.getByText("BioPueblo Mainqué")).toBeVisible();
   await expect(page.getByText("~990 ha", { exact: false }).first()).toBeVisible();
 });
@@ -56,11 +56,13 @@ test("aviso de ejemplo y un solo main", async ({ page }) => {
   await expect(page.locator("main")).toHaveCount(1);
 });
 
-test("navegación: Territorio desde la portada", async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Territorio" }).click();
-  await expect(page).toHaveURL(/\/territorios\/lighthouse$/);
+test("navegación: Territorio desde la barra de secciones de Explorar", async ({ page }) => {
+  await page.goto("/lotes");
+  const barra = page.getByRole("navigation", { name: "Secciones de Explorar" });
+  await barra.getByRole("link", { name: "Territorio" }).click();
+  await expect(page).toHaveURL(/\/explorar#territorio$/);
+  await expect(barra.getByRole("link", { name: "Territorio" })).toHaveAttribute("aria-current", "location");
   await expect(
-    page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Territorio" }),
+    page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Explorar" }),
   ).toHaveAttribute("aria-current", "page");
 });

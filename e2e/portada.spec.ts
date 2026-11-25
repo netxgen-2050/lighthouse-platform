@@ -6,9 +6,9 @@ import { tribusDeTerritorio } from "@/lib/territorios/datos";
 test.use({ plan: "ninguno" });
 
 const CAMINOS = [
-  { titulo: "Ver los lotes", href: "/lotes" },
-  { titulo: "Explorar el territorio", href: "/territorios/lighthouse" },
-  { titulo: "Ver las comunidades", href: "/tribus" },
+  { titulo: "Ver los lotes", href: "/explorar#lotes" },
+  { titulo: "Explorar el territorio", href: "/explorar#territorio" },
+  { titulo: "Ver las comunidades", href: "/participa" },
 ];
 
 test("la portada responde", async ({ page }) => {
@@ -21,7 +21,7 @@ test("muestra los tres caminos en orden, con titular y botón", async ({ page })
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Regenerar desde el agua");
   const principal = page.getByRole("link", { name: "Ver los lotes", exact: true }).first();
   await expect(principal).toBeVisible();
-  await expect(principal).toHaveAttribute("href", "/lotes");
+  await expect(principal).toHaveAttribute("href", "/explorar#lotes");
   await expect(page.getByRole("heading", { level: 2, name: "Por dónde empezar" })).toBeVisible();
   const seccion = page.getByRole("region", { name: "Por dónde empezar" });
   const titulos = await seccion.getByRole("heading", { level: 3 }).allTextContents();
@@ -38,7 +38,7 @@ for (const camino of CAMINOS) {
     await enlace.click();
     await expect(page).toHaveURL(new RegExp(`${camino.href}$`));
     // La navegación del cliente no expone el estado: se pide la ruta aparte y se mira que no sea la not-found.
-    const respuesta = await page.request.get(camino.href);
+    const respuesta = await page.request.get(camino.href.split("#")[0]);
     expect(respuesta.status()).toBe(200);
   });
 }
@@ -67,7 +67,7 @@ test("las tarjetas se recorren con Tab y Enter en la segunda lleva al territorio
   await page.keyboard.press("Tab");
   await expect(enlaces.nth(1)).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/territorios\/lighthouse$/);
+  await expect(page).toHaveURL(/\/explorar#territorio$/);
 });
 
 test("'Ver los lotes' del héroe se alcanza con el teclado y lleva a /lotes", async ({ page }) => {
@@ -79,7 +79,7 @@ test("'Ver los lotes' del héroe se alcanza con el teclado y lleva a /lotes", as
   }
   await expect(principal).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/lotes$/);
+  await expect(page).toHaveURL(/\/explorar#lotes$/);
 });
 
 test("narrativa: promesa a 2030, Argentina con su ⚖ y los cinco capitales", async ({ page }) => {
@@ -160,7 +160,7 @@ test("camino recomendado: el nombre accesible del enlace incluye la marca y reci
   await page.goto("/?camino=territorio");
   const enlace = page.getByRole("region", { name: "Por dónde empezar" }).getByRole("link", { name: /Recomendado para vos/ });
   await expect(enlace).toHaveCount(1);
-  await expect(enlace).toHaveAttribute("href", "/territorios/lighthouse");
+  await expect(enlace).toHaveAttribute("href", "/explorar#territorio");
   await enlace.focus();
   await expect(enlace).toBeFocused();
 });
@@ -209,6 +209,55 @@ test("un parámetro no permitido se descarta y los valores del origen se guardan
   // Los valores de los utm se guardan sin filtros (decisión de Gus, 13-oct).
   expect(o.fuente).toBe("ana@ejemplo.com");
   expect(o.campana).toBe("Promo Feb 2027");
+});
+
+test("foto del valle a sangre con la leyenda, cifras con fuente en paneles de vidrio y botón de 44 px a 390 px", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await expect(page.getByText("Imagen ilustrativa", { exact: true })).toBeVisible();
+  const boton = page.getByRole("link", { name: "Ver los lotes", exact: true }).first();
+  await expect(boton).toBeVisible();
+  expect((await boton.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+  const cifras = page.getByRole("region", { name: "Cifras del sitio" }).locator("li");
+  const n = await cifras.count();
+  expect(n).toBeGreaterThan(0);
+  for (let i = 0; i < n; i++) {
+    await expect(cifras.nth(i)).toHaveClass(/panel-vidrio/);
+    await expect(cifras.nth(i)).toContainText("Fuente:");
+  }
+  const sobra = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(sobra).toBeLessThanOrEqual(0);
+});
+
+test("a 1280 px la foto ocupa el ancho del contenido, con el título y el botón encima y la leyenda", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/");
+  const imagen = page.locator('img[src*="lighthouse-valle"]');
+  await expect(imagen).toHaveAttribute("alt", "");
+  const foto = await imagen.boundingBox();
+  const main = await page.locator("main").boundingBox();
+  expect(foto && main && Math.abs(foto.width - main.width) <= 1).toBe(true);
+  const titulo = await page.getByRole("heading", { level: 1 }).boundingBox();
+  const boton = await page.getByRole("link", { name: "Ver los lotes", exact: true }).first().boundingBox();
+  for (const caja of [titulo, boton]) {
+    expect(caja && foto && caja.y >= foto.y && caja.y + caja.height <= foto.y + foto.height).toBe(true);
+  }
+  await expect(page.getByText("Imagen ilustrativa", { exact: true })).toBeVisible();
+  const sobra = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(sobra).toBeLessThanOrEqual(0);
+});
+
+test("con Tab el foco llega a Ver los lotes y a Elegí cómo sumarte, con anillo visible", async ({ page }) => {
+  await page.goto("/");
+  for (const nombre of ["Ver los lotes", "Elegí cómo sumarte"]) {
+    const enlace = page.getByRole("main").getByRole("link", { name: nombre, exact: true }).first();
+    for (let i = 0; i < 40; i++) {
+      await page.keyboard.press("Tab");
+      if (await enlace.evaluate((el) => el === document.activeElement)) break;
+    }
+    await expect(enlace).toBeFocused();
+    await expect(enlace).toHaveCSS("outline-style", "solid");
+  }
 });
 
 test("la imagen de fondo es decorativa y se aclara que es ilustrativa", async ({ page }) => {

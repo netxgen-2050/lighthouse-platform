@@ -26,21 +26,21 @@ export function caminosDePortada(idioma: Idioma = "es"): Camino[] {
       etiqueta: t.lotes.etiqueta,
       titulo: t.lotes.titulo,
       descripcion: t.lotes.descripcion,
-      href: "/lotes",
+      href: "/explorar#lotes",
     },
     {
       id: "territorio",
       etiqueta: t.territorio.etiqueta,
       titulo: t.territorio.titulo,
       descripcion: t.territorio.descripcion,
-      href: "/territorios/lighthouse",
+      href: "/explorar#territorio",
     },
     {
       id: "tribus",
       etiqueta: t.tribus.etiqueta,
       titulo: t.tribus.titulo,
       descripcion: descripcionBarrios(barrios, idioma),
-      href: "/tribus",
+      href: "/participa",
     },
   ];
 }

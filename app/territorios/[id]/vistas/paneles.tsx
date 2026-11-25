@@ -2,6 +2,7 @@
 
 import type { ComponentType } from "react";
 import { MembresiaAcciones } from "@/components/membresia-acciones";
+import { Titulo } from "@/components/ui/titulo";
 import { nombreDeEquipo } from "@/lib/equipos/equipos";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
@@ -34,8 +35,8 @@ function PanelAhora({ fase, alElegir, seleccion }: PropsPanel) {
   const equipo = (id: string) => nombreDeEquipo(id, idioma) ?? id;
   return (
     <div className="grid gap-3">
-      <h2 className="text-xl font-semibold" translate="no">{macrolote7().nombre}</h2>
-      <h3 className="font-semibold">{t.donde}</h3>
+      <Titulo className="text-xl font-bold" translate="no">{macrolote7().nombre}</Titulo>
+      <Titulo extra={1} className="font-semibold">{t.donde}</Titulo>
       <p className="text-sm text-muted">{t.explicacion}</p>
       <p className={MARCA_EJEMPLO}>{tx.frente.ejemplo}</p>
       {conLugar.length === 0 ? (
@@ -54,7 +55,7 @@ function PanelAhora({ fase, alElegir, seleccion }: PropsPanel) {
       )}
       {sinLugar.length > 0 && (
         <>
-          <h3 className="font-semibold">{t.sinLugar}</h3>
+          <Titulo extra={1} className="font-semibold">{t.sinLugar}</Titulo>
           <ul aria-label={t.sinLugar} className="grid gap-1 text-sm">
             {sinLugar.map((f) => (
               <li key={f.id}>
@@ -66,7 +67,7 @@ function PanelAhora({ fase, alElegir, seleccion }: PropsPanel) {
       )}
       {despues.length > 0 && (
         <>
-          <h3 className="font-semibold">{t.masAdelante}</h3>
+          <Titulo extra={1} className="font-semibold">{t.masAdelante}</Titulo>
           <ul aria-label={t.masAdelante} className="grid gap-1 text-sm">
             {despues.map((f) => (
               <li key={f.id}>
@@ -87,10 +88,10 @@ function PanelPlan(_: PropsPanel) {
   const disponibles = FUENTES_PLAN.filter((f) => f.estado === "disponible");
   return (
     <div className="grid gap-3">
-      <h2 className="text-xl font-semibold">{t.titulo}</h2>
+      <Titulo className="text-xl font-bold">{t.titulo}</Titulo>
       <p className="text-sm">{t.explicacion}</p>
       <p className="text-sm font-medium">{t.sinFases}</p>
-      <h3 className="font-semibold">{t.fuentes}</h3>
+      <Titulo extra={1} className="font-semibold">{t.fuentes}</Titulo>
       {/* Con una sola fuente disponible no hay nada que elegir: se lee en texto. El grupo de botones llega con la segunda. */}
       <ul aria-label={t.fuentes} className="grid gap-1 text-sm">
         {disponibles.map((f) => (
@@ -118,11 +119,11 @@ function PanelVision({ fase }: PropsPanel) {
   ];
   return (
     <div className="grid gap-3">
-      <h2 className="text-xl font-semibold" translate="no">{macrolote7().nombre}</h2>
+      <Titulo className="text-xl font-bold" translate="no">{macrolote7().nombre}</Titulo>
       <p className="text-sm">{t.resumen(textoHectareas(macrolote7().areaHa, idioma))}</p>
       <p className="text-sm font-medium">{tx.vision.fase[fase]}</p>
       <p className="text-sm text-muted">{t.elegiUno}</p>
-      <h3 className="font-semibold">{t.tribusDelTerritorio}</h3>
+      <Titulo extra={1} className="font-semibold">{t.tribusDelTerritorio}</Titulo>
       <p className={MARCA_EJEMPLO}>{tx.vision.ejemploTribus}</p>
       <dl className="grid grid-cols-3 gap-2">
         {cifras.map((c) => (
@@ -148,7 +149,7 @@ export function PertenecerAlLighthouse() {
   const t = useTextos("territorio").ficha;
   return (
     <>
-      <h3 className="font-semibold">{t.pertenecer}</h3>
+      <Titulo extra={1} className="font-semibold">{t.pertenecer}</Titulo>
       <MembresiaAcciones
         comunidad={COMUNIDAD_LIGHTHOUSE}
         nombre="Lighthouse"

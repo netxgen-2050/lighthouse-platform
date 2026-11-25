@@ -66,7 +66,7 @@ test("textos clave en inglés: precios, comunidades, territorio y modo de origen
   await expect(tribus.getByRole("link", { name: "Find my community (in Spanish)" })).toHaveAttribute("hreflang", "es");
   await expect(page.locator("#territorio").getByRole("link", { name: "Explore the map in NetX (in Spanish)" })).toHaveAttribute(
     "href",
-    "/territorios/lighthouse",
+    "/explorar#territorio",
   );
   await expect(page.getByRole("group", { name: "Countdown to the eclipse" })).toBeVisible();
   const boton = page.getByRole("button", { name: /What comes from UnityHub\?/ });
@@ -249,7 +249,7 @@ test.describe("visitante sin cuenta", () => {
     await expect(page).toHaveURL(/\/congreso\/en$/);
     await page.goto("/tribus");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Communities" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Explore" })).toBeVisible();
   });
 
   test("la preferencia vieja del Congreso (lh-congreso-idioma) se usa una vez si no hay cookie", async ({ page }) => {

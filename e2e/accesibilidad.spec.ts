@@ -1,12 +1,14 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtura";
 import { listarTribus } from "@/lib/tribus/datos";
+import { lotesDelGrupo } from "@/lib/territorios/loteo";
+import { estadoDeLote } from "@/lib/territorios/loteo-estados";
 import { conAdhesionAlManifiesto, conIdentidadVerificada, relojDeLasConsultas } from "./ayudas";
 
 const rutas = [
   "/",
-  "/tribus",
-  "/tribus?ver=tribus",
+  "/participa",
+  "/participa?ver=vision",
   "/compromisos",
   "/panel",
   "/pactos",
@@ -26,15 +28,15 @@ const rutas = [
   ...listarTribus().map((t) => `/tribus/${t.id}`),
   "/tribus/lighthouse",
   "/tribus/lighthouse/manifiesto",
-  "/territorios/lighthouse",
-  "/territorios/lighthouse?vista=lotes",
-  "/territorios/lighthouse?vista=ahora",
-  "/territorios/lighthouse?vista=plan",
-  "/territorios/lighthouse?vista=vision",
-  "/lotes",
+  "/explorar",
+  "/explorar?vista=lotes",
+  "/explorar?vista=ahora",
+  "/explorar?vista=plan",
+  "/explorar?vista=vision",
   "/lotes/lote-1",
   "/lotes/hibrido",
   "/bien-comun",
+  "/mi-tierra",
   "/congreso",
   "/congreso/en",
   "/territorios/no-existe",
@@ -50,9 +52,93 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-test("hay 46 rutas auditadas", () => {
+// El menú del celular y la subnavegación de Explorar: cerrados y abiertos, en los dos idiomas y los dos temas.
+for (const idioma of ["es", "en"] as const) {
+  for (const tema of ["oscuro", "claro"] as const) {
+    test(`axe sin violaciones serias o críticas: menú del celular cerrado y abierto, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
+      await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto("/explorar");
+      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+      const boton = page.getByRole("button", { name: idioma === "es" ? "Menú" : "Menu", exact: true });
+      await expect(boton).toBeVisible();
+      expect(await graves(page), "menú cerrado").toEqual([]);
+      await boton.click();
+      await expect(page.locator("#menu-celular")).toBeVisible();
+      expect(await graves(page), "menú abierto").toEqual([]);
+    });
+  }
+}
+
+test("hay 48 rutas auditadas", () => {
   expect(rutas).toHaveLength(46);
 });
+
+// Invertir (rediseno-invertir), con sesión y con la tabla de la curva abierta: en los dos idiomas y los dos temas.
+for (const idioma of ["es", "en"] as const) {
+  for (const tema of ["oscuro", "claro"] as const) {
+    test(`axe sin violaciones serias o críticas: /invertir con sesión, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
+      await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+      await page.goto("/invertir");
+      await expect(page.locator('svg[data-curva="devolucion"]')).toBeVisible();
+      await page.locator("details summary").first().click();
+      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+      expect(await graves(page)).toEqual([]);
+    });
+  }
+}
+
+// Mi tierra (rediseno-mi-tierra), con una compra en cuotas: en los dos idiomas y los dos temas. Sin compras ya entra en `rutas`.
+for (const idioma of ["es", "en"] as const) {
+  for (const tema of ["oscuro", "claro"] as const) {
+    test(`axe sin violaciones serias o críticas: /mi-tierra con una compra en cuotas, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
+      await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+      const idLote = lotesDelGrupo("norte").find((l) => estadoDeLote(l.id) === "disponible")!.id;
+      await page.addInitScript((loteId) => {
+        if (window.localStorage.getItem("lh-lotes")) return;
+        window.localStorage.setItem(
+          "lh-lotes",
+          JSON.stringify([
+            {
+              loteId,
+              opcion: "solo-lote",
+              paso: "pagado",
+              reservadoEl: "2026-11-20T12:00:00.000Z",
+              pagadoEl: "2026-11-21T12:00:00.000Z",
+              vio: {
+                precio: 1000,
+                aporte: null,
+                expensa: null,
+                version: "ejemplo",
+                faro: 100,
+                plan: { cuotas: 24, anticipo: 300, cuota: 30, ultimaCuota: 30, faroAnticipo: 30, faroPorCuota: 3, faroUltimaCuota: 3 },
+              },
+            },
+          ]),
+        );
+      }, idLote);
+      await page.goto("/mi-tierra");
+      await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible();
+      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+      expect(await graves(page)).toEqual([]);
+    });
+  }
+}
+
+// Inicio y Explorar (rediseno-explorar-valle, explorar-unificado): en los dos idiomas y los dos temas.
+for (const ruta of ["/", "/explorar"]) {
+  for (const idioma of ["es", "en"] as const) {
+    for (const tema of ["oscuro", "claro"] as const) {
+      test(`axe sin violaciones serias o críticas: ${ruta}, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
+        await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+        await page.goto(ruta);
+        await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+        await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+        expect(await graves(page)).toEqual([]);
+      });
+    }
+  }
+}
 
 async function graves(page: Page) {
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
@@ -346,8 +432,8 @@ test.describe("la plataforma en inglés", () => {
   const RUTAS = [
     "/",
     "/sumarte",
-    "/tribus",
-    "/tribus?ver=tribus",
+    "/participa",
+    "/participa?ver=vision",
     "/tribus/valle",
     "/tribus/valle/manifiesto",
     "/tribus/lighthouse",
@@ -397,7 +483,7 @@ test.describe("la plataforma en inglés", () => {
   });
 
   test("axe en inglés: el menú de la persona abierto", async ({ page }) => {
-    await page.goto("/tribus");
+    await page.goto("/participa");
     await page.getByRole("button", { name: "Person menu" }).click();
     await expect(page.locator("#menu-persona")).toBeVisible();
     expect(await graves(page)).toEqual([]);

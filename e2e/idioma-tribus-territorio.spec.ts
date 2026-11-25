@@ -13,22 +13,16 @@ const NOTA = "Translated from Spanish";
 test.describe("comunidades en inglés", () => {
   test.use({ locale: "en-US" });
 
-  test("listado: estados en inglés, nombres de las comunidades sin traducir y nada de español suelto", async ({ page }) => {
-    await page.goto("/tribus?ver=tribus");
+  test("Visión: el manifiesto Lighthouse 2050 en inglés, sin el aviso de solo en español", async ({ page }) => {
+    await page.goto("/participa?ver=vision");
     await expect(html(page)).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("heading", { level: 1, name: "Lighthouse communities" })).toBeVisible();
-    await expect(page.getByText("Status: Active").first()).toBeVisible();
-    await expect(page.getByText("Status: Forming").first()).toBeVisible();
-    await expect(page.getByText("Status: Looking for a community").first()).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "Active communities" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "Vacant neighborhoods" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Valle Solar/ })).toBeVisible();
-    await expect(page.locator('main [translate="no"]', { hasText: "Valle Solar" }).first()).toBeVisible();
-    await expect(page.getByText("Contributes to the common pool:").first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Take part" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Lighthouse 2050" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 3, name: "What we believe" })).toBeVisible();
     await expect(page.getByText("Internal prototype · sample data").first()).toBeVisible();
-    expect(await textosEnEspanol(page, "main")).toEqual([]);
-    // Sin el aviso de "solo en español": la página ya está traducida.
     await expect(page.getByText("This page is only available in Spanish for now.")).toHaveCount(0);
+    const NOMBRES_PROPIOS = ["Río Negro", "Limay", "Neuquén", "Alto Valle", "jarilla", "alpataco", "chañar"];
+    expect(await textosEnEspanol(page, "main", NOMBRES_PROPIOS)).toEqual([]);
   });
 
   test("ficha de Valle Solar: lo que tiene, lo que busca y el ritual en inglés; el nombre sigue igual", async ({ page }) => {

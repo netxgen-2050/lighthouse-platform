@@ -10,19 +10,25 @@ const rail = (page: Page) => page.getByRole("navigation", { name: "Principal" })
 const barra = (page: Page) => page.getByRole("banner");
 const PARTICIPAR = ["Pactos", "Semillas", "Fogón"];
 
-async function deshabilitados(page: Page, nombres: string[]) {
-  // Compromisos está en pausa (27-oct-2026): ni el enlace ni su ayuda aparecen.
-  await expect(rail(page).getByRole("link", { name: "Compromisos", exact: true })).toHaveCount(0);
-  await expect(rail(page).getByRole("link", { name: "Sumate para participar: Compromisos" })).toHaveCount(0);
-  for (const nombre of nombres) {
-    const destino = rail(page).getByRole("link", { name: nombre, exact: true });
-    await expect(destino).toHaveAttribute("aria-disabled", "true");
-    await expect(destino).not.toHaveAttribute("href", /.*/);
+// Pactos, Semillas, Fogón y Compromisos salieron del menú (rediseño de cinco destinos, 23-nov-2026): el rail ya no los ofrece
+// ni los muestra bloqueados, tenga el plan que tenga. Lo que sigue decidiendo el plan es el acceso por la dirección
+// (ver "abrir una página de Participar por dirección lleva a Sumarte"). Los helpers conservan el nombre de la regla vieja.
+async function fueraDelMenu(page: Page, nombres: string[]) {
+  await expect(rail(page).locator('[aria-disabled="true"]')).toHaveCount(0);
+  for (const nombre of [...nombres, "Compromisos"]) {
+    await expect(rail(page).getByRole("link", { name: nombre, exact: true })).toHaveCount(0);
+    await expect(rail(page).getByRole("link", { name: `Sumate para participar: ${nombre}` })).toHaveCount(0);
   }
 }
 
+async function deshabilitados(page: Page, nombres: string[]) {
+  await fueraDelMenu(page, nombres);
+}
+
 async function habilitados(page: Page, nombres: string[]) {
-  for (const nombre of nombres) {
+  const fuera = nombres.filter((n) => PARTICIPAR.includes(n));
+  await fueraDelMenu(page, fuera);
+  for (const nombre of nombres.filter((n) => !PARTICIPAR.includes(n))) {
     const destino = rail(page).getByRole("link", { name: nombre, exact: true });
     await expect(destino).toHaveAttribute("href", /^\//);
     await expect(destino).not.toHaveAttribute("aria-disabled", "true");
@@ -41,7 +47,7 @@ test.describe("sumarse desde Sumarte", () => {
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(page.getByText("Tu plan actual:")).toContainText("Explorador");
     await expect(barra(page).getByRole("button", { name: "Menú de la persona" })).toBeVisible();
-    await habilitados(page, ["Comunidades", "Inicio", "Sumarte"]);
+    await habilitados(page, ["Explorar", "Bien común", "Sumarte"]);
     await expect(page.getByRole("button", { name: "Hablar con Hifa" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Reportar un problema o una idea" })).toBeVisible();
     await deshabilitados(page, PARTICIPAR);
@@ -100,7 +106,7 @@ test.describe("acceso abierto", () => {
     await context.addCookies([{ name: COOKIE_PRUEBA, value: encodeURIComponent("nueva@prueba.test"), url: baseURL! }]);
     await page.goto("/");
     await expect(barra(page).getByRole("button", { name: "Menú de la persona" })).toBeVisible();
-    await habilitados(page, ["Comunidades"]);
+    await habilitados(page, ["Explorar"]);
     await deshabilitados(page, PARTICIPAR);
   });
 });
@@ -108,13 +114,10 @@ test.describe("acceso abierto", () => {
 test.describe("Explorador", () => {
   test.use({ rol: "persona", plan: "explorador" });
 
-  test("Participar aparece deshabilitado con 'Sumate para participar' y un enlace a Sumarte", async ({ page }) => {
+  test("el rail no ofrece Participar ni lo muestra bloqueado, y deja Explorar y Sumarte habilitados", async ({ page }) => {
     await page.goto("/");
     await deshabilitados(page, PARTICIPAR);
-    for (const nombre of PARTICIPAR) {
-      await expect(rail(page).getByRole("link", { name: `Sumate para participar: ${nombre}` })).toBeVisible();
-    }
-    await habilitados(page, ["Comunidades", "Sumarte"]);
+    await habilitados(page, ["Explorar", "Sumarte"]);
   });
 
   test("abrir una página de Participar por dirección lleva a Sumarte con el aviso", async ({ page }) => {
@@ -137,16 +140,18 @@ test.describe("Explorador", () => {
     await expect(page.getByRole("link", { name: "Adherir al manifiesto de la comunidad" })).toBeVisible();
   });
 
-  test("subir a Miembro habilita Participar de inmediato y bajar a Explorador lo deshabilita", async ({ page }) => {
+  test("subir a Miembro habilita Participar por la dirección de inmediato y bajar a Explorador lo vuelve a pedir", async ({ page }) => {
     await page.goto("/sumarte");
-    await deshabilitados(page, PARTICIPAR);
     await page.getByRole("button", { name: "Hacerme miembro" }).click();
-    await habilitados(page, PARTICIPAR);
+    await page.goto("/semillas");
+    await expect(page).toHaveURL(/\/semillas$/);
+    await page.goto("/sumarte");
     await page.getByRole("button", { name: "Volver a Explorador" }).click();
-    await deshabilitados(page, PARTICIPAR);
+    await page.goto("/semillas");
+    await expect(page).toHaveURL(/\/sumarte\?volver=%2Fsemillas$/);
   });
 
-  test("axe sin violaciones serias o críticas con destinos deshabilitados en el rail", async ({ page }) => {
+  test("axe sin violaciones serias o críticas en el rail", async ({ page }) => {
     await page.goto("/");
     await deshabilitados(page, PARTICIPAR);
     const r = await new AxeBuilder({ page }).analyze();
@@ -185,13 +190,15 @@ test.describe("Líder de comunidad", () => {
     await expect(page.getByText("Admin de Valle Solar")).toHaveCount(0);
   });
 
-  test("proponer una comunidad nueva lleva a los barrios vacantes", async ({ page }) => {
+  test("proponer una comunidad nueva lleva a la pestaña Visión de Participa", async ({ page }) => {
     await page.goto("/sumarte");
     await page.getByRole("button", { name: "Sumar mi comunidad" }).click();
     await page.getByRole("radio", { name: "Proponer una comunidad nueva" }).check();
     await page.getByRole("button", { name: "Ser líder de esta comunidad" }).click();
-    await expect(page).toHaveURL(/\/tribus#sec-vacantes$/);
-    await expect(page.getByRole("heading", { level: 1, name: "Comunidades del Lighthouse" })).toBeVisible();
+    await expect(page).toHaveURL(/\/participa\?ver=vision#sec-vacantes$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Participa" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Visión" })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("heading", { level: 2, name: "Lighthouse 2050" })).toBeVisible();
   });
 
   test("bajar a Miembro quita la marca de admin", async ({ page }) => {

@@ -29,6 +29,34 @@ export const REVISION_NATIVA: Record<string, Revision> = {
     estado: "pendiente",
     que: "Portada: promesa a 2030, Argentina, capitales, los tres caminos y la cantidad de barrios (más lib/portada-vrn.ts)",
   },
+  "textos/barrios": {
+    estado: "pendiente",
+    que: "Barrio Norte (/barrios/norte): lotes por estado, lo que va al bien común y el panel de la obra del barrio (solo con sesión)",
+  },
+  "textos/explorar": {
+    estado: "pendiente",
+    que: "Explorar (/explorar): título del héroe, barra de secciones y apertura de Territorio, Barrio Norte y Lotes",
+  },
+  "textos/participa": {
+    estado: "pendiente",
+    que: "Participa (/participa): mapa ilustrado de equipos, lista, detalle del equipo con sus posiciones abiertas y pestaña Visión",
+  },
+  "lib/idioma/textos/vision-2050.ts": {
+    estado: "pendiente",
+    que: "Manifiesto Lighthouse 2050 de la pestaña Visión de Participa (postal, de dónde venimos, lo que creemos, lo que pedimos), traducido del español; es la voz del proyecto, a revisar también con Gus",
+  },
+  "lib/equipos/posiciones.ts": {
+    estado: "pendiente",
+    que: "Posiciones abiertas de ejemplo de cada equipo del común (título, dedicación y qué se busca), con su inglés",
+  },
+  "textos/invertir": {
+    estado: "pendiente",
+    que: "Invertir (/invertir): sellos, indicadores del barrio en financiamiento, curva de devolución y libro del barrio (solo con sesión)",
+  },
+  "textos/miTierra": {
+    estado: "pendiente",
+    que: "Mi tierra (/mi-tierra): tu lote, plan en cuotas, FARO acreditados (simulado), tu voz y actividad",
+  },
   "textos/sumarte": {
     estado: "pendiente",
     que: "Sumarte: planes, niveles del pase (Seed, Sprout, Root, a confirmar), comprar un lote, invertir, avisos de nivel, formulario de pedido de contacto y panel Entrar como…",
@@ -234,6 +262,7 @@ export function fuentesObligatorias(): string[] {
     "lib/fogon/consultas/ejemplo.ts",
     "lib/compromisos/mercado.ts",
     "lib/economia/terminos.ts",
+    "lib/idioma/textos/vision-2050.ts",
   ];
 }
 

@@ -10,12 +10,12 @@ export const PALABRAS_ESPANOL = [
  * la lista de palabras en español (con límites de palabra) y con `¿ ¡ ñ`. Vacío = no hay español suelto.
  * Si la propia raíz está dentro de un `lang="es"` (o de un `translate="no"`), no hay nada que mirar.
  */
-export async function textosEnEspanol(page: Page, raiz: Locator | string): Promise<string[]> {
+export async function textosEnEspanol(page: Page, raiz: Locator | string, permitidos: string[] = []): Promise<string[]> {
   const locator = typeof raiz === "string" ? page.locator(raiz) : raiz;
   const cantidad = await locator.count();
   const salida: string[] = [];
   for (let i = 0; i < cantidad; i++) {
-    const encontradas = await locator.nth(i).evaluate((el, palabras) => {
+    const encontradas = await locator.nth(i).evaluate((el, { palabras, permitidos }) => {
       if (el.closest('[lang="es"], [translate="no"]')) return [];
       const copia = el.cloneNode(true) as HTMLElement;
       copia.querySelectorAll('[lang="es"], [translate="no"], script, style').forEach((n) => n.remove());
@@ -26,10 +26,12 @@ export async function textosEnEspanol(page: Page, raiz: Locator | string): Promi
         else n.childNodes.forEach(recorrer);
       };
       recorrer(copia);
-      const texto = trozos.join(" ");
+      // Los nombres propios permitidos (lugares, especies) no cuentan como español suelto.
+      let texto = trozos.join(" ");
+      for (const nombre of permitidos) texto = texto.split(nombre).join(" ");
       const re = new RegExp(`(?<![\\p{L}])(?:${palabras.join("|")})(?![\\p{L}])|[¿¡ñÑ]`, "giu");
       return texto.match(re) ?? [];
-    }, PALABRAS_ESPANOL);
+    }, { palabras: PALABRAS_ESPANOL, permitidos });
     salida.push(...encontradas);
   }
   return salida;

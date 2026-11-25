@@ -33,7 +33,7 @@ test("panel vacío: próximo paso perfil, camino vacío y aviso", async ({ page 
 test("el próximo paso avanza en orden: comunidad, pacto, ticket y listo", async ({ page }) => {
   await sembrar(page, { "lh-perfil": PERFIL_COMPLETO });
   await page.goto("/panel");
-  await expect(proximo(page).getByRole("link")).toHaveAttribute("href", "/tribus");
+  await expect(proximo(page).getByRole("link")).toHaveAttribute("href", "/participa");
 
   await page.evaluate((m) => window.localStorage.setItem("lh-membresia", m), MEMBRESIA);
   await page.reload();
@@ -151,7 +151,7 @@ test("borrar todo: confirma, vacía el camino, la actividad y las notificaciones
   });
   await page.goto("/panel");
   await expect(page.getByText("Algo que hice")).toBeVisible();
-  await expect(proximo(page).getByRole("link")).toHaveAttribute("href", "/tribus");
+  await expect(proximo(page).getByRole("link")).toHaveAttribute("href", "/participa");
   // El borrado vive en Configuración; desde Mi recorrido hay un enlace.
   await page.getByRole("link", { name: "Configuración, en Tus datos" }).click();
   await expect(page).toHaveURL(/\/configuracion$/);
@@ -185,7 +185,7 @@ test("cancelar el borrado no borra nada", async ({ page }) => {
   page.once("dialog", (d) => void d.dismiss());
   await page.getByRole("button", { name: "Borrar todo lo guardado en este navegador" }).click();
   await page.goto("/panel");
-  await expect(proximo(page).getByRole("link")).toHaveAttribute("href", "/tribus");
+  await expect(proximo(page).getByRole("link")).toHaveAttribute("href", "/participa");
 });
 
 test("sin pedidos de red con los datos guardados", async ({ page }) => {

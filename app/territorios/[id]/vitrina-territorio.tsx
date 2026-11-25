@@ -28,6 +28,7 @@ import {
 } from "@/lib/territorios/vistas";
 import { listarTribus } from "@/lib/tribus/datos";
 import { FichaLateral } from "./ficha-lateral";
+import { Titulo } from "@/components/ui/titulo";
 import MapaCliente from "./mapa-cliente";
 
 type Tx = Textos<typeof territorio.es>;
@@ -200,9 +201,9 @@ export function VitrinaTerritorio() {
   return (
     <div className="mt-6 grid gap-6 md:grid-cols-3">
       <section aria-labelledby="mapa-titulo" className="grid min-w-0 content-start gap-3 md:col-span-2">
-        <h2 id="mapa-titulo" className="text-xl font-semibold">
+        <Titulo id="mapa-titulo" className="text-xl font-bold">
           {tx.mapaDe} <span translate="no">Macrolote 7</span>
-        </h2>
+        </Titulo>
 
         <div role="group" aria-label={tx.vistas.grupo} className="flex flex-wrap gap-2">
           {VISTAS.map((v) => (
@@ -244,7 +245,10 @@ export function VitrinaTerritorio() {
           </div>
         </fieldset>
 
-        <MapaCliente seleccion={seleccion} alElegir={elegir} vista={vista} fase={fase} />
+        {/* `isolate`: los paneles de Leaflet (z-index hasta 1000) quedan dentro de este contexto y no tapan la barra de secciones. */}
+        <div className="isolate min-w-0">
+          <MapaCliente seleccion={seleccion} alElegir={elegir} vista={vista} fase={fase} />
+        </div>
         <div role="group" aria-label={tx.leyenda.grupo} className="grid gap-3 text-sm">
           {grupos(tx, vista, fase).map((g) => (
             <div key={g.id} className="grid gap-1">
@@ -275,14 +279,14 @@ export function VitrinaTerritorio() {
         </p>
 
         <section aria-labelledby="elegir-titulo" className="grid gap-2 rounded-xl border border-faint bg-surface p-4">
-          <h3 id="elegir-titulo" className="font-semibold">
+          <Titulo extra={1} id="elegir-titulo" className="font-semibold">
             {tx.elegir.titulo}
-          </h3>
+          </Titulo>
           {vista === "lotes" && (
             <div className="grid gap-2">
-              <h4 id="lista-lotes-titulo" className="text-sm font-semibold">
+              <Titulo extra={2} id="lista-lotes-titulo" className="text-sm font-semibold">
                 {tx.loteo.listaTitulo}
-              </h4>
+              </Titulo>
               <MarcaLoteo />
               {resumenDePrimeros(idioma) && <p className="text-sm font-medium">{resumenDePrimeros(idioma)}</p>}
               <p className="text-sm">{resumenDelLoteo(idioma)}</p>

@@ -409,6 +409,18 @@ export const TERMINOS = {
         "An extra that the Investor Token would aim to receive on top of what was put in, as the installments come in. It is a target, not a promise: it may not be reached and it is not guaranteed. It is a proposal under discussion and a simulation: nothing is offered or paid. To be verified with a lawyer.",
     },
   },
+  // Texto nuevo (rediseno-invertir, 24-nov-2026): borrador de agente a revisar antes de cualquier uso real.
+  nooferta: {
+    titulo: "No es una oferta",
+    texto:
+      "Esta página muestra una propuesta en discusión con datos de ejemplo. No se ofrece ni se vende nada, no se cobra nada y no hay forma de invertir desde acá. Los números son una simulación para conversar, no una promesa. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Not an offer",
+      texto:
+        "This page shows a proposal under discussion with sample data. Nothing is offered or sold, nothing is charged and there is no way to invest from here. The numbers are a simulation to talk about, not a promise. To be verified with a lawyer.",
+    },
+  },
   boletocompraventa: {
     titulo: "Boleto de compraventa",
     texto:

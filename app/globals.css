@@ -1,13 +1,19 @@
 @import "tailwindcss";
 
-/* Paleta y tipografías del mock-up v6 (docs/referencia/netx-tribus-mockup-v6.html). */
-@theme {
+/*
+ * Paleta del mock-up v6 (docs/referencia/netx-tribus-mockup-v6.html), la de antes del rediseño: el tema claro es el de base;
+ * el oscuro lo pisa con <html data-tema="oscuro">. Mismos nombres de token en los dos.
+ * "static": los tokens se emiten siempre, aunque solo los use CSS suelto (vidrio, escala de regeneración).
+ * Los pares de texto y fondo los verifica lib/tema-contraste.test.ts.
+ */
+@theme static {
   --color-bg: #f6f3ea;
   --color-surface: #fffdf7;
   --color-surface-2: #efeadd;
   --color-ink: #14241a;
   --color-muted: #566258;
-  --color-faint: #8a8678;
+  /* Único valor que se aparta del mock-up v6: era #8a8678 (3,28:1 sobre bg); se oscurece para llegar a AA (4,5:1). */
+  --color-faint: #6f6b5d;
   --color-line: #e0d9c8;
   --color-deep: #154626;
   --color-deep-2: #1d5731;
@@ -32,12 +38,39 @@
   --color-clay-ink: #7a3408;
   --color-rose: #a8325e;
   --color-rose-soft: #f6dbe5;
+  /* Escala de regeneración, de menos a más avance: de la arcilla al verde, con 3:1 o más contra el hueso. Nunca lleva texto encima. */
+  --color-regen-1: #c2571a;
+  --color-regen-2: #a97400;
+  --color-regen-3: #86872a;
+  --color-regen-4: #5a9444;
+  --color-regen-5: #3c8c4b;
+  /* Vidrio: el "surface" del tema al 80 % de opacidad, para paneles sobre foto. */
+  --color-vidrio: #fffdf7cc;
+  /*
+   * Ilustración del mapa de Participa (participa-mapa-equipos): tema claro = mediodía. Son pocos tonos, derivados de la paleta de la app:
+   * agua (azules verdosos), monte nativo (verdes y salvia), barda y meseta (ocres, arena, arcilla) y los acentos del fuego y del sol.
+   * Nunca llevan texto encima: las etiquetas del mapa usan "surface" e "ink".
+   */
+  --color-ilus-rio: #8cc3cc;
+  --color-ilus-rio-hondo: #4f95a8;
+  --color-ilus-rio-brillo: #e1f2f1;
+  --color-ilus-verde: #6c9a58;
+  --color-ilus-verde-hondo: #3f6a3c;
+  --color-ilus-salvia: #b3c78f;
+  --color-ilus-arena: #ecdcb2;
+  --color-ilus-ocre: #d29b56;
+  --color-ilus-arcilla: #a8552d;
+  --color-ilus-fuego: #e8981a;
+  --color-ilus-sol: #fbe27f;
+  --color-ilus-trazo: #3a3325;
+  /* Cuánta luz propia emiten el faro, el fogón y las ventanas: nada de día, todo de noche. */
+  --ilus-luz: 0;
 }
 
 /* inline: next/font define sus variables en el <body>, no en :root; sin inline quedarían inválidas. */
 @theme inline {
-  --font-display: var(--font-anek), var(--font-figtree), system-ui, sans-serif;
-  --font-sans: var(--font-figtree), system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-inter-tight), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 }
 
@@ -77,6 +110,27 @@
   --color-clay-ink: #f0b48a;
   --color-rose: #e58aab;
   --color-rose-soft: #3d1f2d;
+  /* La misma escala, más clara: 3:1 o más contra el verde casi negro. */
+  --color-regen-1: #e08a4f;
+  --color-regen-2: #e0a63a;
+  --color-regen-3: #b8b94f;
+  --color-regen-4: #8cc46a;
+  --color-regen-5: #6fc283;
+  --color-vidrio: #17251dcc;
+  /* La ilustración del mapa de Participa de noche: noche de luna, mismo dibujo con otros valores. */
+  --color-ilus-rio: #1f4252;
+  --color-ilus-rio-hondo: #15303d;
+  --color-ilus-rio-brillo: #bcd7e0;
+  --color-ilus-verde: #3a5f45;
+  --color-ilus-verde-hondo: #223e2d;
+  --color-ilus-salvia: #476a50;
+  --color-ilus-arena: #4c4733;
+  --color-ilus-ocre: #70502f;
+  --color-ilus-arcilla: #8f4e33;
+  --color-ilus-fuego: #ffb23d;
+  --color-ilus-sol: #f7e9ab;
+  --color-ilus-trazo: #080e0a;
+  --ilus-luz: 1;
 }
 
 /* La barra superior es fija: al saltar a un ancla o al enfocar con el teclado, el elemento no queda debajo de ella. */
@@ -115,6 +169,31 @@ h1,
 h2,
 h3 {
   @apply font-display;
+  /* Puntas suaves de Fraunces. */
+  font-variation-settings: "SOFT" 100;
+}
+
+/* Panel de vidrio: translúcido con desenfoque sobre foto. Sin soporte o con transparencia reducida, fondo sólido. */
+.panel-vidrio {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .panel-vidrio {
+    background: var(--color-vidrio);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .panel-vidrio {
+      background: var(--color-surface);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
 }
 
 /* Mapa del territorio (Leaflet): solo tokens del tema. */

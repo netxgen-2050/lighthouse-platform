@@ -53,9 +53,9 @@ test("el aviso completo está antes del mapa", async ({ page }) => {
   const aviso = (await page.getByRole("region", { name: "Estado administrativo · Chacras de Soluna" }).boundingBox())!;
   const aviso2 = (await page.getByRole("region", { name: "Estado administrativo · Lighthouse VRN" }).boundingBox())!;
   expect(aviso2.y).toBeLessThan(
-    (await page.getByRole("region", { name: "Mapa del Macrolote 7" }).boundingBox())!.y,
+    (await page.getByRole("region", { name: "Mapa del Macrolote 7", exact: true }).boundingBox())!.y,
   );
-  const mapa = (await page.getByRole("region", { name: "Mapa del Macrolote 7" }).boundingBox())!;
+  const mapa = (await page.getByRole("region", { name: "Mapa del Macrolote 7", exact: true }).boundingBox())!;
   expect(aviso.y).toBeLessThan(mapa.y);
 });
 

@@ -138,7 +138,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
       leido = aplicarAcciones(leido, pendiente);
       if (!guardarEstado(window.localStorage, leido)) setFalloAlmacen(true);
       // Propuso una tribu nueva: sigue en la postulación de un barrio vacante.
-      if (pendiente.some((a) => a.tipo === "tribu" && !a.tribuId)) router.push("/tribus#sec-vacantes");
+      if (pendiente.some((a) => a.tipo === "tribu" && !a.tribuId)) router.push("/participa?ver=vision#sec-vacantes");
     }
     setEstado(leido);
     setListo(true);
@@ -200,7 +200,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
     if (!ok) return;
     setEligiendoTribu(false);
     // Una tribu nueva se arma desde la postulación de un barrio vacante (con sesión; sin sesión se sigue al registrarse).
-    if (nueva && conSesion) router.push("/tribus#sec-vacantes");
+    if (nueva && conSesion) router.push("/participa?ver=vision#sec-vacantes");
   }
 
   // El pedido se guarda primero; recién ahí se hace lo que el botón hacía antes.
@@ -464,7 +464,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
                 {t.tribu.cambiar}
               </button>
               {!tribuLiderada && (
-                <Link className="w-fit text-sm underline" href="/tribus#sec-vacantes">
+                <Link className="w-fit text-sm underline" href="/participa?ver=vision#sec-vacantes">
                   {t.tribu.elegirBarrio}
                 </Link>
               )}
@@ -567,7 +567,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
         <p className="max-w-3xl text-sm">{t.comprarLote.texto(monto(MODELO_LOTES.precioLote.min))}</p>
         <EstadoAdministrativo proyecto="lighthouse-primeros" compacto idioma={idioma} />
         <EstadoAdministrativo proyecto="lighthouse-norte" compacto idioma={idioma} />
-        <Link className="w-fit rounded-lg border border-muted px-4 py-1.5 font-medium hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/lotes">
+        <Link className="w-fit rounded-lg border border-muted px-4 py-1.5 font-medium hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/explorar#lotes">
           {t.comprarLote.enlace}
         </Link>
       </section>

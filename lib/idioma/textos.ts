@@ -2,20 +2,25 @@
 // (sin textos vacíos, sin copias sin traducir, y anotado en la revisión nativa).
 import type { Idioma, Textos } from "./tipos";
 import { bandeja } from "./textos/bandeja";
+import { barrios } from "./textos/barrios";
 import { biencomun } from "./textos/bien-comun";
 import { canales } from "./textos/canales";
 import { comunes } from "./textos/comunes";
 import { compromisos } from "./textos/compromisos";
 import { configuracion } from "./textos/configuracion";
+import { explorar } from "./textos/explorar";
 import { fogon } from "./textos/fogon";
 import { fogonConsultas } from "./textos/fogon-consultas";
 import { fogonPropuestas } from "./textos/fogon-propuestas";
 import { gobernanza } from "./textos/gobernanza";
 import { hibrido } from "./textos/hibrido";
+import { invertir } from "./textos/invertir";
 import { lotes } from "./textos/lotes";
 import { manifiestoVrn } from "./textos/manifiesto-vrn";
 import { marco } from "./textos/marco";
+import { miTierra } from "./textos/mi-tierra";
 import { pactos } from "./textos/pactos";
+import { participa } from "./textos/participa";
 import { pasaporte } from "./textos/pasaporte";
 import { perfil } from "./textos/perfil";
 import { portada } from "./textos/portada";
@@ -27,20 +32,25 @@ import { tribus } from "./textos/tribus";
 
 export const DICCIONARIOS = {
   bandeja,
+  barrios,
   biencomun,
   canales,
   comunes,
   compromisos,
   configuracion,
+  explorar,
   fogon,
   fogonConsultas,
   fogonPropuestas,
   gobernanza,
   hibrido,
+  invertir,
   lotes,
   manifiestoVrn,
   marco,
+  miTierra,
   pactos,
+  participa,
   pasaporte,
   perfil,
   portada,

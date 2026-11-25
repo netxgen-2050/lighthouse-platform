@@ -59,8 +59,9 @@ describe("estaTraducida", () => {
 
   test("las tribus, el manifiesto, la postulación y el territorio están traducidos", () => {
     for (const ruta of [
-      "/tribus",
-      "/tribus/",
+      "/participa",
+      "/participa/",
+      "/participa?ver=vision",
       "/tribus/valle",
       "/tribus/valle/manifiesto",
       "/tribus/grano/postular?x=1",
@@ -88,6 +89,9 @@ describe("estaTraducida", () => {
 
   test("el resto todavía no", () => {
     for (const ruta of [
+      // `/tribus` solo redirige a `/participa`: es interna, no una página traducida.
+      "/tribus",
+      "/participa/otra",
       "/fogon/simulador",
       "/pactos/otra",
       "/semillas/otra",
