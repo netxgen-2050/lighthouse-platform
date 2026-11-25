@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter_Tight, JetBrains_Mono } from "next/font/google";
+import { Fraunces, Inter_Tight, JetBrains_Mono, Roboto } from "next/font/google";
 import { AplicarPreferencias } from "@/components/aplicar-preferencias";
 import { BarraSuperior } from "@/components/barra-superior";
 import { Rail } from "@/components/rail";
@@ -19,6 +19,8 @@ import "./globals.css";
 const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin"], axes: ["SOFT", "opsz"] });
 const interTight = Inter_Tight({ variable: "--font-inter-tight", subsets: ["latin"] });
 const jetbrains = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin"] });
+// Solo para el botón "Continuar con Google": las pautas de marca de Google piden Roboto Medium.
+const roboto = Roboto({ variable: "--font-roboto", weight: ["500"], subsets: ["latin"], display: "swap" });
 
 // El título y la descripción dependen del idioma del pedido (cookie o navegador).
 export async function generateMetadata(): Promise<Metadata> {
@@ -47,7 +49,7 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_APARIENCIA }} />
       </head>
       <body
-        className={`${fraunces.variable} ${interTight.variable} ${jetbrains.variable} flex min-h-screen antialiased`}
+        className={`${fraunces.variable} ${interTight.variable} ${jetbrains.variable} ${roboto.variable} flex min-h-screen antialiased`}
       >
         <a
           href="#contenido"

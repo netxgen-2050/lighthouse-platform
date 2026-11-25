@@ -68,6 +68,7 @@ const PARES_TEXTO: [string, string][] = [
   ["danger", "bg"],
   ["danger", "surface"],
   ["ink", "gold"],
+  ["google-texto", "google-fondo"],
 ];
 
 const REGEN = ["regen-1", "regen-2", "regen-3", "regen-4", "regen-5"];
@@ -103,6 +104,12 @@ describe.each([
     expect(ink, `ink sobre el héroe con foto ${_n} en el tema ${nombre}: ${ink.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
     const titulo = contraste(c("deep-2"), fondo);
     expect(titulo, `deep-2 (título grande) sobre el héroe con foto ${_n} en el tema ${nombre}: ${titulo.toFixed(2)}:1`).toBeGreaterThanOrEqual(3);
+  });
+
+  // Botón de Google: el borde es el límite del control (WCAG 1.4.11, 3:1) contra la página y contra el panel del diálogo.
+  test.each([["bg"], ["surface"]])("borde del botón de Google contra %s llega a 3:1", (fondo) => {
+    const r = contraste(c("google-borde"), c(fondo));
+    expect(r, `google-borde contra ${fondo} en el tema ${nombre}: ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(3);
   });
 
   test.each(REGEN.flatMap((r) => [[r, "bg"], [r, "surface"]]))("escala %s contra %s llega a 3:1", (tono, fondo) => {
