@@ -4,7 +4,7 @@ Para Gus. Cambio: `billeteras-candide-prueba` (`openspec/changes/billeteras-cand
 
 ## 1. Crear la cuenta y la política en Candide
 
-1. Entrá a dashboard.candide.dev (ya tenés cuenta) y creá un proyecto **solo de testnet**, para que la clave no sirva en una red real.
+1. Entrá a dashboard.candide.dev con la **cuenta del equipo NetXGen**, no con tu cuenta personal (la que entra con GitHub), y creá un proyecto **solo de testnet**, para que la clave no sirva en una red real.
 2. Sacá las dos URL de **Base Sepolia**: la del bundler y la del paymaster. Llevan la clave adentro: son secretas, no las pegues en el repo, en un PR ni en un chat.
 3. Creá una política de patrocinio solo para estos dos contratos, con un tope diario bajo (por ejemplo 50 operaciones):
    - `EAS`: `0x4200000000000000000000000000000000000021`
