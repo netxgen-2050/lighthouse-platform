@@ -3,9 +3,9 @@
 Rama `agente/lotes-en-la-base` desde `dev`, **después** de que `consentimiento-en-la-base` esté en `dev` (hay que confirmar que existen `exigirConsentimiento` en `lib/privacidad/servidor.ts` y la migración `0001`). Si falta, frenar y reportar. Orden de la serie: `consentimiento-en-la-base` → **`lotes-en-la-base`** → `contenido-editable-lotes`.
 
 **Límites:**
-- Todo sigue SIMULADO: nada de cobros ni datos de pago. La aprobación municipal nunca figura como otorgada.
+- Es un prototipo técnico y operacional: **lo único simulado es el pago** (Gus, 25-nov). Reservas, contactos y bitácora son registros reales. Nada de cobros ni datos de pago. La aprobación municipal nunca figura como otorgada.
 - No tocar los datos ni el código de Semillas y Compromisos.
-- No tocar nada del Congreso: salió de este cambio (ver el grupo 6).
+- Congreso: solo lo del grupo 6 (noche 3). No toca la base.
 
 <!-- arquitecto: esto NO entra en una noche (migración con triggers, 8 rutas, reservas en 6+ pantallas, 3 formularios, bandeja,
      bitácora, Mis datos, limpieza y ~12 archivos de e2e reescritos). Corte propuesto, en la misma rama y un PR por noche:
@@ -91,9 +91,13 @@ Rama `agente/lotes-en-la-base` desde `dev`, **después** de que `consentimiento-
 
   Verificar con `pnpm test lib/demo` y `pnpm verificar`.
 
-## 6. Congreso (salió de este cambio)
+## 6. Congreso (noche 3: no toca la base, puede ir en otro carril)
 
-No se implementa acá. Choca con `eventos-reemplaza-congreso`, y Gus decide en ese cambio si los datos del Congreso se borran o se conservan. La lista de archivos que armó el arquitecto queda en la historia de esta rama (commit `927a998`, design §5) para quien la retome.
+Gus decidió el 25-nov-2026 que los datos del Congreso se borran. La redirección de `/congreso` a `/eventos` sigue siendo de `eventos-reemplaza-congreso`: este grupo no la hace ni la impide.
+
+- [ ] 6.1 Sacar `congreso` e `idiomaCongreso` de `NOMBRES_BASE` y borrar lo del ticket, con la lista completa de design §5. Si aparece algo que no esté en esa lista, frenar y anotarlo en el PR. `lib/congreso/tribus-con-ticket.ts` se queda: son cifras de ejemplo de la vitrina, no datos de nadie.
+- [ ] 6.2 Limpieza del navegador de `lh-congreso-ticket` y `lh-congreso-idioma`, con y sin prefijo, con la misma marca de 7.1 (o una propia, `lh-limpieza-congreso`, si esta noche va antes). Test unitario.
+- [ ] 6.3 E2E: borrar los del ticket en `congreso`, `congreso-en`, `panel` y `semillas`; revisar `sumarte`, `descubrir-publico`, `accesibilidad` y `bandeja`, que nombran "ticket". Verificar con `pnpm verificar` y `pnpm test:e2e`.
 
 ## 7. Navegador y Mis datos
 

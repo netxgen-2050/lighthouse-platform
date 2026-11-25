@@ -1,5 +1,7 @@
 # Proposal
 
+> **Estado al 25-nov-2026.** Gus decidió que **los datos del Congreso se borran**: el ticket guardado (`lh-congreso-ticket`), la preferencia de idioma (`lh-congreso-idioma`), el registro del ticket y todo lo que lo lee. Ese borrado lo hace `lotes-en-la-base` (grupo 6). En este cambio deja de valer todo lo que conserva o usa el ticket: el "Fuera de alcance" que impide borrarlo, y que el paso de Mi recorrido se cumpla con un ticket ya guardado (se cumple solo con un "Quiero ir"). La redirección de `/congreso` a `/eventos` y el resto siguen igual. Antes de implementarlo, el especificador ajusta este cambio a esa decisión.
+
 ## Why
 
 Gus decidió el 2-nov-2026 que la sección Congreso se reemplaza por Eventos (Backlog D16). `eventos` construye la página; este cambio hace el reemplazo: el rail ofrece Eventos, `/congreso` y `/congreso/en` redirigen, y nada sigue invitando a registrar un ticket de un Congreso que no va a ocurrir. El código de la vitrina se conserva, como se hizo con Compromisos, con una nota para volver.

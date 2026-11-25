@@ -2,12 +2,12 @@
 
 ## Purpose
 
-Guardar en el servidor, como libro de solo agregar, las reservas y pagos SIMULADOS de lotes de Lighthouse VRN, para que un lote reservado por una persona aparezca reservado para todas, sin cobrar nada ni dar prioridad a nadie.
+Guardar en el servidor, como libro de solo agregar, las reservas de lotes de Lighthouse VRN y sus pagos (el pago es lo único simulado), para que un lote reservado por una persona aparezca reservado para todas, sin cobrar nada ni dar prioridad a nadie.
 
 ## ADDED Requirements
 
 ### Requirement: Libro de reservas
-The server SHALL record every simulated reservation, payment and undo of a lot as a new row (`reserva`, `paga`, `deshace`) in the `reservas` ledger, with the person, who appended it, the lot id, the chosen option, what the person saw and the server time. The database MUST reject UPDATE, DELETE and TRUNCATE on `reservas`. No row MUST carry payment data or identity data other than the person's id.
+The server SHALL record every reservation, simulated payment and undo of a lot as a new row (`reserva`, `paga`, `deshace`) in the `reservas` ledger, with the person, who appended it, the lot id, the chosen option, what the person saw and the server time. The database MUST reject UPDATE, DELETE and TRUNCATE on `reservas`. No row MUST carry payment data or identity data other than the person's id.
 
 #### Scenario: Reservar
 - **WHEN** una persona con consentimiento vigente reserva el lote 7 con la opción "solo el lote"

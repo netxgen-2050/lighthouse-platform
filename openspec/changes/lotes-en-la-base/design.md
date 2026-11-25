@@ -88,7 +88,7 @@ personas.origen jsonb  -- la primera visita; se escribe solo si es null
   | `deshacer` | la reserva o el pago vigente es de la persona, o quien lo pide es super admin (`hecho_por` ≠ `persona_id`) | — (sin nada vigente es un no-op, 200) |
 
 - **Quién gana:** quien primero toma el lock. La hora es la del servidor. Ningún rol, pase ni perfil da prioridad (fase 1: "ningún pase da prioridad sobre un lote").
-- **`vio`:** el servidor valida la forma de `LoVisto` (campos conocidos, números finitos o null, `version` texto) y descarta lo demás. No recalcula el precio: es lo que la persona vio, y sigue siendo una simulación.
+- **`vio`:** el servidor valida la forma de `LoVisto` (campos conocidos, números finitos o null, `version` texto) y descarta lo demás. No recalcula el precio: es lo que la persona vio (el precio es de ejemplo y el pago, simulado).
 - **`GET /api/lotes/estados`:** devuelve `{ estados: { [loteId]: "reservado" | "vendido" } }`. Combina los estados de ejemplo con los del libro. No dice de quién es cada reserva y no pide sesión (las páginas de lotes ya son visibles hoy). Va con `Cache-Control: no-store`.
 - **Lo que ve cada persona:** `estadoConCompras(loteId, compras, estados)` suma un tercer parámetro con los estados de la base. Un lote reservado o pagado por otra persona se ve `reservado` o `vendido`. Uno propio se ve `reservado-por-vos`, `vendido-a-vos` o `en-cuotas-tuyo`, como hoy.
 
@@ -171,9 +171,29 @@ Toda escritura a nombre de una persona llama a `exigirConsentimiento`. La excepc
   - "Retirar y borrar" sigue llamando a `borrarDemo` para el resto del navegador; las claves que salen de `NOMBRES_BASE` ya no las recorre, por eso la limpieza de arriba. <!-- arquitecto -->
   - "Retirar y borrar mis datos" llama a `DELETE /api/mis-datos/actividad` **antes** del retiro del consentimiento. Si falla, no retira y muestra el error de hoy.
 
-### 5. Congreso (salió de este cambio)
+### 5. Congreso (noche 3)
 
-No se toca. `eventos-reemplaza-congreso` (2-nov, pendiente) conserva `lib/congreso/`, el ticket guardado y `lh-congreso-ticket`, y redirige `/congreso` a `/eventos`. El 23-nov Gus dijo que los datos del Congreso se borran. Las dos cosas se concilian en ese cambio. El análisis de consumidores que hizo el arquitecto queda en el commit `927a998` de esta rama.
+Gus, 25-nov-2026: **los datos del Congreso se borran.** Este grupo no toca la base. Qué pasa con la página `/congreso` lo decide `eventos-reemplaza-congreso`, que lleva un banner con esta decisión.
+
+- **Claves:** salen `congreso` e `idiomaCongreso` de `NOMBRES_BASE` y se limpian del navegador, con y sin prefijo.
+- **Se borran:**
+  - `lib/congreso/ticket.ts`, `mostrar-ticket.ts` y `preferencia-idioma.ts`, con sus tests;
+  - `app/congreso/registro-ticket.tsx` y su `registro-ticket.textos.ts`;
+  - `app/congreso/netx/ticket-netx.tsx`.
+- **Dejan de leer el ticket o la preferencia vieja:**
+  - Pasaporte, Semillas y `lib/panel/proximo-paso.ts`;
+  - `lib/idioma/cliente.tsx` y `lib/idioma/sincronizar.ts`, con su test (se quitan el campo `viejo` y la regla 3);
+  - `app/congreso/netx/tribus.tsx`, `app/congreso/vitrina.tsx` (se quita el bloque que dibuja `<TicketNetx>`) y `app/congreso/netx/textos.test.ts`;
+  - `lib/panel/panel.test.ts` y `lib/demo/claves.test.ts`.
+
+  Lo que se mostraba según el ticket desaparece y no se reemplaza.
+- **Se quedan como están** (reciben un booleano o son configuración; sacarlos es limpieza para otro cambio):
+  - `lib/pasaporte/sellos.ts`;
+  - `lib/actividad/eventos.ts` y `actividad.ts`;
+  - `lib/permisos/{tipos,tabla}.ts` (la puerta `registrar-ticket`);
+  - `lib/legal/terminos.ts`;
+  - `lib/congreso/tribus-con-ticket.ts` (cifras de ejemplo de la vitrina).
+- **Límite:** si algo fuera de esta lista depende del ticket, el implementador frena y lo reporta. Semillas y Compromisos solo pierden la lectura del ticket: sus datos y su código no se tocan.
 
 ### 6. Pruebas
 
@@ -204,7 +224,7 @@ No se toca. `eventos-reemplaza-congreso` (2-nov, pendiente) conserva `lib/congre
 - **[Una reserva de prueba olvidada bloquea un lote para todo el equipo]** → El super admin la libera desde la API. El panel con botón llega con el paso 3. Mientras tanto queda la ruta y un guion en `docs/guiones/`.
 - **[La bitácora crece rápido]** → No se repite en 30 minutos y tiene tope de 2 KB por entrada. Con el equipo solo son unas miles de filas por mes.
 - **[Dos POST iguales a la vez pueden anotar dos filas]** → El "no repetir en 30 minutos" se lee y escribe sin lock. Una fila de más en una constancia no hace daño; no vale un lock por entrada. El test de los 30 minutos va en serie. <!-- arquitecto -->
-- **[Se pierde lo que el equipo tenía en el navegador]** → Es una simulación. El PR lo avisa, igual que avisó `consentimiento-en-la-base` que había que volver a aceptar.
+- **[Se pierde lo que el equipo tenía en el navegador]** → Son reservas de prueba del equipo (y Gus todavía decide si se copian, proposal). El PR lo avisa, igual que avisó `consentimiento-en-la-base` que había que volver a aceptar.
 - ~~**[El trigger se salta en la ruta de prueba]** → Esa ruta solo existe con `modoPruebaActivo` fuera de producción, y la guarda de ADR-008 impide que esa base tenga personas reales.~~ <!-- arquitecto: ya no aplica: la ruta se sacó (§3). -->
 - **[Los triggers frenan errores de la app, no al dueño de la base]** → El rol de la app en Neon es dueño de las tablas y podría desactivarlos con un `ALTER TABLE`. Pasa igual con `consentimientos`. Un rol aparte sin permiso de DDL es un cambio para cuando haya datos reales (R14/R29), no para este. <!-- arquitecto -->
 - **[El libro de reservas crece con las pruebas]** → Cada e2e agrega un `deshace` por lote al arrancar. En la rama `previews` son unos cientos de filas por noche; se recrea la rama con el script si molesta. <!-- arquitecto -->
@@ -223,6 +243,6 @@ No se toca. `eventos-reemplaza-congreso` (2-nov, pendiente) conserva `lib/congre
 - `NS_platform/Documentation/backend/02 - Modelo de datos (propuestas).md` (tablas `reservas`, `contactos` y `bitacora`, paso 2)
 - ADR-001 (libros de solo agregar), ADR-005 (consentimiento antes de escribir) y ADR-008 (guarda de entornos)
 - ADR-032 (Propuesta): ver y borrar lo propio pide sesión, no consentimiento <!-- arquitecto -->
-- Cambio `eventos-reemplaza-congreso` (choque con el grupo 6, ver §5) <!-- arquitecto -->
+- Cambio `eventos-reemplaza-congreso` (choque resuelto por Gus el 25-nov: los datos se borran, ver §5)
 - Cambios `base-neon`, `consentimiento-en-la-base`, `lotes-compra-simulada`, `mi-tierra`, `loteo-norte` y `bitacora-exposicion`
-- `NS_platform/Documentation/22 - Fase 1 · venta de lotes e híbrido.md` (simulado, sin cobro real, sin prioridad por pase)
+- `NS_platform/Documentation/22 - Fase 1 · venta de lotes e híbrido.md` (pago simulado, sin cobro real, sin prioridad por pase)
