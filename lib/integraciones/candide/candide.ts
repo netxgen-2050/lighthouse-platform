@@ -18,7 +18,7 @@ import type { LlavePublica } from "@/lib/billetera-prueba/passkey";
 import { redDelEntorno, type Red } from "@/lib/billetera-prueba/red";
 import { sanear } from "@/lib/billetera-prueba/sanear";
 import { validarOperacion } from "@/lib/billetera-prueba/validar-operacion";
-import { interpretarEip1271, interpretarRecibo } from "./interpretar";
+import { esRevert, interpretarEip1271, interpretarRecibo } from "./interpretar";
 import type { PuertoCandide } from "./puerto";
 import {
   ErrorDeCandide,
@@ -183,7 +183,7 @@ export function crearCandide(env: Env = process.env): PuertoCandide {
         } catch (e) {
           // El nodo contestó con un error de ejecución (revert). Un fallo de red u otro error no es un veredicto.
           const mensaje = sanear(e, secretos);
-          if (/revert|execution|GS0\d\d/i.test(mensaje)) return interpretarEip1271({ revert: mensaje }, fallbackHandler);
+          if (esRevert(mensaje)) return interpretarEip1271({ revert: mensaje }, fallbackHandler);
           throw e;
         }
       }),

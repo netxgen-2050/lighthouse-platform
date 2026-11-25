@@ -30,7 +30,7 @@
     "next": "15.5.27",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "viem": "2.58.6"
+    "viem": "2.56.5"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

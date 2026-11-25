@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSesion } from "@/components/sesion/contexto";
-import { abreviarDireccion } from "@/lib/billetera-prueba/direccion";
+import { abreviarDireccion } from "@/lib/ui/direccion";
 import { aBase64Url, desdeBase64Url, llaveAHex, llaveDeSpki } from "@/lib/billetera-prueba/passkey";
 import { BASE_SEPOLIA, urlConstancia, urlDireccion, urlTransaccion } from "@/lib/billetera-prueba/red";
 import { formatearSegundos, SIN_DATO, totalDe, type Tiempos } from "@/lib/billetera-prueba/tiempos";
@@ -125,12 +125,25 @@ export function PruebaCliente({ simulado, faltaConfigurar }: { simulado: boolean
     [llamar],
   );
 
-  // Volver a la página: reconoce la passkey guardada y retoma la operación pendiente, si había.
+  // Volver a la página: reconoce la passkey guardada y consulta el último hash guardado (design §3). Si quedó enviada, sigue
+  // esperándola; si ya estaba incluida o falló, muestra el resultado. Esos tiempos no se midieron: quedan en "sin dato".
   useEffect(() => {
     const g = leerGuardada();
     setGuardada(g);
     setCargado(true);
-    if (g) void pedirCuenta(g);
+    if (!g) return;
+    void (async () => {
+      const cuentaOk = await pedirCuenta(g);
+      if (!cuentaOk || !g.ultimoHash || !vigente.current) return;
+      setOcupado(true);
+      try {
+        await esperarInclusion(g.ultimoHash, null);
+      } finally {
+        if (vigente.current) setOcupado(false);
+      }
+    })();
+    // Solo al montar: `esperarInclusion` usa estado que no hace falta observar.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pedirCuenta]);
 
   async function crearPasskey() {
@@ -192,20 +205,33 @@ export function PruebaCliente({ simulado, faltaConfigurar }: { simulado: boolean
     };
   }
 
-  /** Consulta cada 2 s hasta 60 s; después "Todavía sin confirmación". */
-  async function esperarInclusion(hash: string, inicio: number) {
+  /**
+   * Consulta cada 2 s hasta 60 s; después "Todavía sin confirmación". Un error al consultar se reintenta hasta el límite.
+   * `inicio` es cuándo se mandó la operación en esta sesión; al retomar una guardada es `null`: no se midió y queda "sin dato".
+   */
+  async function esperarInclusion(hash: string, inicio: number | null) {
     const limite = performance.now() + TOPE_MS;
     while (vigente.current) {
-      const { ok, datos } = await llamar(`operacion?hash=${hash}`);
+      let ok = false;
+      let datos: Record<string, unknown> & { error?: string } = {};
+      try {
+        ({ ok, datos } = await llamar(`operacion?hash=${hash}`));
+      } catch {
+        ok = false;
+      }
       if (!ok) {
-        avisar("falló");
-        setErrorOperacion(datos.error ?? "No se pudo consultar la operación.");
-        return;
+        if (performance.now() >= limite) {
+          avisar("falló");
+          setErrorOperacion(datos.error ?? "No se pudo consultar la operación.");
+          return;
+        }
+        await dormir(ESPERA_MS);
+        continue;
       }
       const r = datos as unknown as Resultado;
       if (r.estado === "incluida") {
         setResultado(r);
-        setTiempos((t) => ({ ...t, inclusion: performance.now() - inicio }));
+        if (inicio !== null) setTiempos((t) => ({ ...t, inclusion: performance.now() - inicio }));
         setDesplegada(true);
         avisar("incluida", "Aviso: la operación entró en un bloque.");
         return;
@@ -239,7 +265,7 @@ export function PruebaCliente({ simulado, faltaConfigurar }: { simulado: boolean
         const previa = datos as unknown as Resultado;
         if (ok && (previa.estado === "enviada" || previa.estado === "incluida")) {
           avisar("enviada", "Retomando la última operación enviada.");
-          await esperarInclusion(guardada.ultimoHash, performance.now());
+          await esperarInclusion(guardada.ultimoHash, null);
           return;
         }
       }
@@ -322,7 +348,7 @@ export function PruebaCliente({ simulado, faltaConfigurar }: { simulado: boolean
     setAnuncio("Aviso: empezaste de nuevo; la passkey sigue en tu dispositivo, borrala del llavero.");
   }
 
-  if (!cargado) return null;
+  // Antes de leer el almacenamiento del navegador se dibuja igual (así sale en el HTML del servidor), con los botones apagados.
   const total = totalDe(tiempos);
 
   return (
@@ -368,7 +394,7 @@ export function PruebaCliente({ simulado, faltaConfigurar }: { simulado: boolean
         ) : (
           <div className="mt-2 grid gap-2">
             <p className="text-muted">Tu dispositivo guarda la llave privada. Acá solo se guarda la pública.</p>
-            <button type="button" className={BOTON} onClick={crearPasskey} disabled={ocupado}>
+            <button type="button" className={BOTON} onClick={crearPasskey} disabled={ocupado || !cargado}>
               Usar tu huella o tu cara
             </button>
           </div>

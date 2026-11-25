@@ -3,7 +3,7 @@ import { BASE_SEPOLIA } from "@/lib/billetera-prueba/red";
 import incluido from "./__fixtures__/recibo-incluido.json";
 import revertido from "./__fixtures__/recibo-revertido.json";
 import sinAttested from "./__fixtures__/recibo-sin-attested.json";
-import { interpretarEip1271, interpretarRecibo } from "./interpretar";
+import { esRevert, interpretarEip1271, interpretarRecibo } from "./interpretar";
 
 describe("interpretarRecibo", () => {
   it("sin recibo todavía: enviada", () => {
@@ -41,6 +41,21 @@ describe("interpretarRecibo", () => {
     for (const rara of ["hola", 42, {}, { success: "si" }, { success: true }, { success: true, receipt: { transactionHash: "xyz" } }]) {
       expect(interpretarRecibo(rara, BASE_SEPOLIA)).toEqual({ estado: "fallo", motivo: "respuesta inesperada de la red" });
     }
+  });
+});
+
+describe("esRevert", () => {
+  it("reconoce un revert y un código de Safe", () => {
+    expect(esRevert("execution reverted")).toBe(true);
+    expect(esRevert("VM Exception: revert")).toBe(true);
+    expect(esRevert("execution reverted: GS026")).toBe(true);
+  });
+
+  it("un timeout o un error de red no es un revert", () => {
+    expect(esRevert("execution timeout")).toBe(false);
+    expect(esRevert("request failed: fetch failed")).toBe(false);
+    expect(esRevert("Execution client unavailable")).toBe(false);
+    expect(esRevert("")).toBe(false);
   });
 });
 

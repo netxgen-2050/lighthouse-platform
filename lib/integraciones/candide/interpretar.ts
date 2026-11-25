@@ -51,6 +51,14 @@ export function interpretarRecibo(recibo: unknown, red: Red): EstadoOperacion {
 }
 
 /**
+ * ¿El error de un `eth_call` es un revert del contrato? Solo si lo dice: "revert", "reverted" o un código `GS0xx` de Safe. Un
+ * timeout, un corte de red o un error del nodo ("execution timeout", "request failed") no es un revert ni un veredicto.
+ */
+export function esRevert(mensaje: string): boolean {
+  return /\brevert(ed)?\b|\bGS0\d\d\b/i.test(mensaje);
+}
+
+/**
  * Traduce el resultado de `eth_call isValidSignature` (design §6). El resultado se compara con `0x1626ba7e` como `bytes4`.
  * Un `0x` vacío no es un veredicto. Un revert se distingue: con un código `GS…` de Safe es una firma rechazada; sin él, la Safe no
  * tiene la función (su fallback handler no implementa EIP-1271).

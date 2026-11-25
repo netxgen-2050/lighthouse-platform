@@ -88,6 +88,19 @@ test.describe("prueba de billetera con Candide (modo simulado)", () => {
     await expect(page.getByTestId("direccion")).toHaveCount(0);
   });
 
+  test("passkey cancelada: dice 'No se creó la passkey', no guarda nada y deja reintentar", async ({ page }) => {
+    await page.addInitScript(() => {
+      navigator.credentials.create = () => Promise.reject(new DOMException("cancelado", "NotAllowedError"));
+    });
+    const respuesta = await page.goto(RUTA);
+    test.skip(respuesta?.status() === 404, "La prueba está apagada en este entorno.");
+    await activarConTeclado(page, "Usar tu huella o tu cara");
+    await expect(page.getByText(/No se creó la passkey\. Cancelaste el diálogo/)).toBeVisible();
+    await expect(page.getByTestId("direccion")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Usar tu huella o tu cara" })).toBeEnabled();
+    expect(await page.evaluate(() => Object.keys(window.localStorage).filter((k) => k.includes("prueba-candide")))).toEqual([]);
+  });
+
   test("axe sin violaciones y un solo main", async ({ page }) => {
     const respuesta = await page.goto(RUTA);
     test.skip(respuesta?.status() === 404, "La prueba está apagada en este entorno.");
