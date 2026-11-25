@@ -4,8 +4,8 @@
  */
 export const RUTAS_PUBLICAS: readonly RegExp[] = [
   /^\/$/,
-  // Explorar: Territorio, Barrio Norte y Lotes en una sola página (explorar-unificado). Las direcciones viejas redirigen acá.
-  /^\/explorar$/,
+  // Explorar: una página por sección (explorar-paginas). `/explorar` y las direcciones viejas redirigen acá.
+  /^\/explorar(\/(territorio|barrio-norte|lotes))?$/,
   /^\/territorios\/[^/]+$/,
   // Participa: equipos sobre el mapa ilustrado (participa-mapa-equipos). `/tribus` solo redirige, pero también se ve sin sesión.
   /^\/participa$/,

@@ -85,7 +85,7 @@ test.describe("sin sesión", () => {
 test("con sesión y sin compras: 'Todavía no reservaste un lote' y el enlace a los lotes, sin indicadores", async ({ page }) => {
   await page.goto("/mi-tierra");
   await expect(page.getByRole("heading", { name: "Todavía no reservaste un lote" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Ver los lotes" })).toHaveAttribute("href", "/explorar#lotes");
+  await expect(page.getByRole("link", { name: "Ver los lotes" })).toHaveAttribute("href", "/explorar/lotes");
   await expect(main(page)).not.toContainText("Lotes tuyos");
   await expect(main(page)).not.toContainText("venta simulada");
 });

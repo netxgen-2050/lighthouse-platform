@@ -57,8 +57,8 @@ test.describe("sin sesión", () => {
   test("la lista se ve sin entrar (en Explorar) y el rail marca Explorar", async ({ page }) => {
     await page.goto("/lotes");
     // `/lotes` redirige a la sección Lotes de Explorar.
-    await expect(page).toHaveURL(/\/explorar#lotes$/);
-    await expect(page.locator("#lotes").getByRole("heading", { level: 2, name: "Lotes", exact: true })).toBeVisible();
+    await expect(page).toHaveURL(/\/explorar\/lotes$/);
+    await expect(page.getByRole("main").getByRole("heading", { level: 2, name: "Lotes", exact: true })).toBeVisible();
     await expect(page.getByText("Loteo provisorio, ilustrativo").first()).toBeVisible();
     await expect(page.getByRole("region", { name: "Estado administrativo · Lighthouse VRN" })).toContainText(
       "supuesto de trabajo, no otorgada",

@@ -28,7 +28,7 @@ function frenteVista(f: Frente, futuro: boolean): FrenteVista {
     faltan: f.faltan,
     paraCuando: f.paraCuando,
     lugar: f.lugar !== null,
-    hrefMapa: f.lugar ? `/explorar?vista=ahora${esDeHoy(f) ? "" : `&fase=${f.desde}`}&sel=${f.id}#territorio` : null,
+    hrefMapa: f.lugar ? `/explorar/territorio?vista=ahora${esDeHoy(f) ? "" : `&fase=${f.desde}`}&sel=${f.id}` : null,
     masAdelante: futuro ? f.desde : null,
   };
 }
