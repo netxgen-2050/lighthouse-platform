@@ -6,16 +6,20 @@ Prueba interna, en una red de prueba, del camino "sin saber de cripto" de ADR-01
 
 ## ADDED Requirements
 
-### Requirement: La prueba está apagada por defecto y nunca corre en Production
-La página `/netx/billetera-prueba` y sus rutas del servidor SHALL existir solo si `LH_PRUEBA_CANDIDE` vale `1` y el entorno no es Production. En cualquier otro caso MUST responder 404, como si no existieran. Ningún enlace del rail ni de otras páginas MUST apuntar a ella.
+### Requirement: La prueba está apagada por defecto y en Production se prende solo con el OK de Gus
+La página `/netx/billetera-prueba` y sus rutas del servidor SHALL existir solo si `LH_PRUEBA_CANDIDE` vale `1` en el entorno donde corren. En cualquier otro caso MUST responder 404, como si no existieran. El código no distingue Production: la llave es la variable, y en Production solo la carga Gus, después de ver la prueba andar en dev (decisión de Gus, 25-nov-2026). Ningún enlace del rail ni de otras páginas MUST apuntar a ella.
 
 #### Scenario: Variable apagada
 - **WHEN** `LH_PRUEBA_CANDIDE` está vacía o vale otra cosa que `1`
 - **THEN** `GET /netx/billetera-prueba` responde 404 y cada ruta `/api/netx/billetera-prueba/…` responde 404
 
-#### Scenario: Production
-- **WHEN** `VERCEL_ENV` es `production`, aunque `LH_PRUEBA_CANDIDE` valga `1`
+#### Scenario: Production sin la variable
+- **WHEN** `VERCEL_ENV` es `production` y `LH_PRUEBA_CANDIDE` no vale `1`
 - **THEN** la página y las rutas responden 404
+
+#### Scenario: Production con la variable
+- **WHEN** `VERCEL_ENV` es `production` y Gus cargó `LH_PRUEBA_CANDIDE=1` en Production
+- **THEN** la página y las rutas funcionan igual que en un preview, solo para el super admin y con el aviso de red de prueba
 
 #### Scenario: Nada visible para el resto
 - **WHEN** la prueba está encendida y alguien recorre el rail o `/netx`

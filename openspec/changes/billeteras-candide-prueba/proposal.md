@@ -1,5 +1,7 @@
 # Proposal
 
+> **Decisiones de Gus, 25-nov-2026.** (1) **Base Sepolia** confirmada y Gus ya tiene cuenta en dashboard.candide.dev. (2) **Production:** ya no está bloqueada en el código; se prende cargando `LH_PRUEBA_CANDIDE=1` en Production, y eso lo decide Gus después de verla andar en dev (se le pregunta antes). (3) **Prioridades:** ADR-011 (Safe con passkey y Candide) es **imprescindible**: los pasos 1 a 4 tienen que andar. ADR-012 (constancias con EAS) es **deseable** por ahora: el paso 5 y el grupo 7 van al final y se pueden cortar. Los dos ADR siguen en "Propuesta" hasta el reporte.
+
 > **Estado al 25-nov-2026.** Al día con `dev`. La prueba no depende del login: sirve igual con Privy que con Neon Auth. `abstractionkit` se fija en **2.1.0** (era 0.4.3), porque las versiones anteriores daban por inválida toda firma EIP-1271, que es lo que esta prueba mide. Detalle en `design.md`, estado al 25-nov.
 
 ## Why
@@ -11,7 +13,7 @@ Esta prueba recorre de punta a punta el camino "sin saber de cripto" de ADR-011 
 ## What Changes
 
 - **Red: Base Sepolia** (testnet de Base, chain id 84532). Tiene la verificación barata de passkeys (precompilado P-256, RIP-7212) y EAS ya instalado en direcciones fijas. Base es la red que nombra `NS_Tokenomics` (doc 04 §6), y Candide la soporta. Cambiar a OP Sepolia es cambiar un archivo de configuración (ver design).
-- **Página interna `/netx/billetera-prueba`**, solo para el super admin. Está apagada por defecto: sin `LH_PRUEBA_CANDIDE=1` devuelve 404, y en Production siempre devuelve 404. El rail y `/netx` no la enlazan.
+- **Página interna `/netx/billetera-prueba`**, solo para el super admin. Está apagada por defecto: sin `LH_PRUEBA_CANDIDE=1` devuelve 404. En Production queda apagada hasta que Gus cargue la variable ahí, después de verla andar en dev (25-nov-2026: "me lo preguntás a mí cuando estemos listos"). El rail y `/netx` no la enlazan.
 - **Paso 1 · passkey:** el botón "Usar tu huella o tu cara" crea una passkey (WebAuthn) en el navegador. La llave pública y el id de la credencial (datos públicos) se guardan solo en el navegador (`localStorage`). La llave privada nunca sale del dispositivo.
 - **Paso 2 · dirección:** el servidor calcula la dirección de la Safe (con `abstractionkit`, la passkey como única dueña) y dice si ya está desplegada. La cuenta no se despliega hasta la primera operación.
 - **Paso 3 · primera operación:** el servidor arma una UserOperation con el gas pagado por el paymaster de Candide. La operación despliega la Safe y emite **una constancia de EAS en la cadena** con un schema de prueba sin datos personales (`string prueba,uint64 creada_en`, "prueba de Candide"), con la propia Safe como destinataria. Si el schema todavía no está registrado, la misma operación lo registra antes. La persona firma con la passkey y el servidor la manda.
