@@ -73,6 +73,7 @@ test("las tarjetas se recorren con Tab y Enter en la segunda lleva al territorio
 });
 
 test("'Explorar el territorio' del héroe se alcanza con el teclado y lleva a /explorar/territorio", async ({ page }) => {
+  await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
   await page.goto("/");
   const principal = page.getByRole("link", { name: "Explorar el territorio", exact: true }).first();
   for (let i = 0; i < 40; i++) {
@@ -82,6 +83,8 @@ test("'Explorar el territorio' del héroe se alcanza con el teclado y lleva a /e
   await expect(principal).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/explorar\/territorio$/);
+  await expect(page.getByRole("heading", { level: 2, name: "Territorio" })).toBeVisible();
+  await expect(page.getByRole("complementary", { name: "Ficha del territorio" })).toBeVisible();
 });
 
 test("narrativa: promesa a 2030, Argentina con su ⚖ y los cinco capitales", async ({ page }) => {

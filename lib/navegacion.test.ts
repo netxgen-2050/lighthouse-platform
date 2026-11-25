@@ -62,7 +62,7 @@ test("en inglés los destinos dicen lo que fija el glosario", () => {
 });
 
 test("Explorar, Invertir y Mi tierra ya existen", () => {
-  for (const href of ["/explorar", "/invertir", "/mi-tierra"]) {
+  for (const href of ["/explorar/territorio", "/invertir", "/mi-tierra"]) {
     expect(DESTINOS.find((d) => d.href === href)?.existe, href).toBe(true);
   }
 });

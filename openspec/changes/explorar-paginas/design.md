@@ -14,7 +14,7 @@ En `dev` (desde el PR #213), `app/explorar/page.tsx` arma las tres secciones en 
 | Barrio Norte | `/explorar/barrio-norte` | lotes por estado (`ChipEstado` + `Indicador`), bien común con ⚖ expensas, `PanelObraBarrio` (solo con sesión) |
 | Lotes | `/explorar/lotes` | `MarcaLoteo`, resúmenes del loteo, enlaces a híbrido y bien común, `ListaLotes`, y (agregado al implementar) los `EstadoAdministrativo` de `lighthouse-primeros` y `lighthouse-norte`, porque toda vista con lotes los lleva (`lib/legal/vistas-con-lotes.ts`) |
 
-- `/explorar` hace `redirect("/explorar/territorio")`. Territorio va primero por dos motivos: es el orden de lectura del diseño (primero el lugar) y es a donde manda el botón nuevo de Inicio.
+- `/explorar` lleva a `/explorar/territorio` con `RedirigirExplorar`, un componente cliente (ver §4), porque el servidor no ve el `#`. Territorio va primero por dos motivos: es el orden de lectura del diseño (primero el lugar) y es a donde manda el botón nuevo de Inicio.
 - Cada página exporta su `generateMetadata`, con título propio ("Territorio · Explorar", "Barrio Norte · Explorar", "Lotes · Explorar", en los dos idiomas).
 - Los slugs quedan en español, como el resto de la app (`/bien-comun`, `/mi-tierra`).
 

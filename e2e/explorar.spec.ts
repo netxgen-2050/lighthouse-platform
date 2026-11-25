@@ -52,6 +52,18 @@ test.describe("sin sesión", () => {
     }
   });
 
+  test("tocar Explorar en el menú abre Territorio, directo y con Explorar marcado", async ({ page }) => {
+    await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    const rail = page.getByRole("navigation", { name: "Principal" });
+    await expect(rail.getByRole("link", { name: "Explorar" })).toHaveAttribute("href", "/explorar/territorio");
+    await rail.getByRole("link", { name: "Explorar" }).click();
+    await expect(page).toHaveURL(/\/explorar\/territorio$/);
+    await expect(page.getByRole("heading", { level: 2, name: "Territorio" })).toBeVisible();
+    await expect(rail.getByRole("link", { name: "Explorar" })).toHaveAttribute("aria-current", "page");
+  });
+
   test("las pestañas navegan entre páginas y marcan la actual", async ({ page }) => {
     await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
     await page.goto("/explorar/territorio");
