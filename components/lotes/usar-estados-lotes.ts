@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { EstadosDeLaBase } from "@/lib/lotes/compra";
 import { leerEstados } from "@/lib/lotes/reservas";
+import { crearOrdenDePedidos } from "@/lib/lotes/ultimo-pedido";
 
 const EVENTO = "lh-lotes-cambio";
 
@@ -39,9 +40,11 @@ export function useEstadosLotes(): { estados: EstadosDeLaBase | undefined; fallo
 
   useEffect(() => {
     let vigente = true;
+    const orden = crearOrdenDePedidos();
     const pedir = () => {
+      const n = orden.nuevo();
       void leerEstados().then((e) => {
-        if (!vigente) return;
+        if (!vigente || !orden.esElUltimo(n)) return;
         if (e) {
           setEstados(e);
           setFallo(false);

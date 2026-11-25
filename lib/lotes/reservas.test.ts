@@ -29,11 +29,15 @@ describe("leerReservas", () => {
     expect(pedir).not.toHaveBeenCalled();
   });
 
-  it("si el servidor falla o no responde, []", async () => {
-    expect(await leerReservas(OK, responder(503, { ok: false }) as unknown as typeof fetch)).toEqual([]);
-    expect(await leerReservas(OK, responder(403, { consentimiento: false }) as unknown as typeof fetch)).toEqual([]);
-    expect(await leerReservas(OK, vi.fn().mockRejectedValue(new Error("sin red")) as unknown as typeof fetch)).toEqual([]);
-    expect(await leerReservas(OK, responder(200, { compras: "no es una lista" }) as unknown as typeof fetch)).toEqual([]);
+  it("si el servidor falla o no responde, null (no se sabe), no una lista vacía", async () => {
+    expect(await leerReservas(OK, responder(503, { ok: false }) as unknown as typeof fetch)).toBeNull();
+    expect(await leerReservas(OK, responder(403, { consentimiento: false }) as unknown as typeof fetch)).toBeNull();
+    expect(await leerReservas(OK, vi.fn().mockRejectedValue(new Error("sin red")) as unknown as typeof fetch)).toBeNull();
+    expect(await leerReservas(OK, responder(200, { compras: "no es una lista" }) as unknown as typeof fetch)).toBeNull();
+  });
+
+  it("una lista vacía del servidor sigue siendo una lista vacía", async () => {
+    expect(await leerReservas(OK, responder(200, { compras: [] }) as unknown as typeof fetch)).toEqual([]);
   });
 });
 

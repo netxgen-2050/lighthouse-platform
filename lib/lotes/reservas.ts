@@ -21,16 +21,19 @@ export type RespuestaDeEscritura = { ok: true; compras: CompraLote[] } | { ok: f
 
 const MOTIVOS_409: readonly MotivoDeFallo[] = ["no-disponible", "ya-reservado", "no-reservado"];
 
-/** Las compras simuladas de la persona en sesión. Sin sesión, o si el servidor no responde, una lista vacía. */
-export async function leerReservas(sesion: SesionDeReservas, pedir: Fetch = fetch): Promise<CompraLote[]> {
+/**
+ * Las compras simuladas de la persona en sesión. Sin sesión no hay compras: una lista vacía. Si el servidor no responde o
+ * responde mal, `null` (no se sabe): quien llama deja lo que tenía y nunca lo muestra como "no tenés reservas".
+ */
+export async function leerReservas(sesion: SesionDeReservas, pedir: Fetch = fetch): Promise<CompraLote[] | null> {
   if (!hayPersona(sesion)) return [];
   try {
     const res = await pedir("/api/lotes/reservas", { headers: await sesion.cabeceras(), cache: "no-store", credentials: "same-origin" });
-    if (!res.ok) return [];
+    if (!res.ok) return null;
     const j = (await res.json()) as { compras?: CompraLote[] };
-    return Array.isArray(j.compras) ? j.compras : [];
+    return Array.isArray(j.compras) ? j.compras : null;
   } catch {
-    return [];
+    return null;
   }
 }
 

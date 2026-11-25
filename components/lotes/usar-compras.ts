@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSesion } from "@/components/sesion/contexto";
 import type { CompraLote, LoVisto } from "@/lib/lotes/compra";
 import type { OpcionCompra } from "@/lib/lotes/modelo";
+import { crearOrdenDePedidos } from "@/lib/lotes/ultimo-pedido";
 import { deshacerLote, leerReservas, pagarLote, reservarLote, type MotivoDeFallo, type RespuestaDeEscritura } from "@/lib/lotes/reservas";
 import { origenDelNavegador } from "@/lib/origen/origen";
 import { alVolverOCambiar, avisarCambioDeLotes } from "./usar-estados-lotes";
@@ -26,13 +27,16 @@ export function useCompras(): {
   const { estado, cabeceras } = useSesion();
   const [compras, setCompras] = useState<CompraLote[]>([]);
   const [listo, setListo] = useState(false);
+  const orden = useRef(crearOrdenDePedidos()).current;
 
   useEffect(() => {
     if (estado === "cargando") return;
     let vigente = true;
     const pedir = () => {
+      const n = orden.nuevo();
       void leerReservas({ estado, cabeceras }).then((leidas) => {
-        if (!vigente) return;
+        // Una lectura fallida (null) deja `compras` como estaba: no se muestra como "no tenés reservas". Y solo cuenta la más reciente.
+        if (!vigente || !orden.esElUltimo(n) || leidas === null) return;
         setCompras(leidas);
         setListo(true);
       });
@@ -44,15 +48,18 @@ export function useCompras(): {
       vigente = false;
       dejar();
     };
-  }, [estado, cabeceras]);
+  }, [estado, cabeceras, orden]);
 
   // Un lote que cambia de dueño cambia lo que ven todas las pantallas: se avisa también si el servidor dijo "ya está reservado".
   const aplicar = useCallback(async (hacer: () => Promise<RespuestaDeEscritura>): Promise<ResultadoDeAccion> => {
     const r = await hacer();
-    if (r.ok) setCompras(r.compras);
+    if (r.ok) {
+      orden.nuevo(); // una lectura que salió antes de esta escritura ya no puede pisar el resultado
+      setCompras(r.compras);
+    }
     if (r.ok || r.motivo !== "error") avisarCambioDeLotes();
     return r.ok ? { ok: true } : { ok: false, motivo: r.motivo };
-  }, []);
+  }, [orden]);
 
   const sesion = useMemo(() => ({ estado, cabeceras }), [estado, cabeceras]);
   const reservar = useCallback(
