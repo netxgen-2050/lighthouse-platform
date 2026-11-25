@@ -68,4 +68,4 @@ Es el **paso 2** del orden de la fase 1 (`NS_platform/Documentation/backend/01` 
 3. **La bitácora se conserva al borrar mis datos:** 🟢 sí, como constancia **[verificar con abogado]**.
 4. **La bandeja de contactos la ve solo el super admin:** 🟢 sí.
 5. **Los datos del Congreso se borran:** 🟢 sí. Vuelve el grupo 6 como noche 3, y `eventos-reemplaza-congreso` lleva un banner con esta decisión.
-6. **ADR-032:** ❓ pendiente de su OK.
+6. **ADR-032:** 🟢 aceptada.

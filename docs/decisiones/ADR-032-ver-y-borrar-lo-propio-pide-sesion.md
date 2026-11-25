@@ -1,6 +1,6 @@
 # ADR-032 · Ver y borrar lo propio pide sesión, no consentimiento
 
-- **Estado:** Propuesta
+- **Estado:** Aceptada (Gus, 2026-11-25)
 - **Fecha:** 2026-11-25
 - **Cambio OpenSpec relacionado:** lotes-en-la-base
 
