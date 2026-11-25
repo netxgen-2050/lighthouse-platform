@@ -7,7 +7,7 @@ import { porcentajeEn, usdEn } from "@/lib/lotes/formato";
 // Barrio Norte (rediseno-explorar-valle): los valores que se esperan salen de los módulos, nunca escritos a mano.
 const vista = vistaBarrioNorte();
 const obra = resumenObraBarrio();
-const RUTA = "/explorar";
+const RUTA = "/explorar/barrio-norte";
 
 const main = (page: Page) => page.locator("main");
 
@@ -36,7 +36,7 @@ test.describe("sin sesión", () => {
       const n = vista.lotesPorEstado[clave];
       await expect(item).toContainText(n === null ? "sin dato" : enteroEn(n, "es"));
     }
-    await expect(seccion.getByRole("link", { name: "Ver los lotes" })).toHaveAttribute("href", "#lotes");
+    await expect(seccion.getByRole("link", { name: "Ver los lotes" })).toHaveAttribute("href", "/explorar/lotes");
     // Bien común: parte de cada pago y expensa, con el enlace.
     await expect(main(page)).toContainText(porcentajeEn(vista.parteParaElComun, "es"));
     await expect(main(page)).toContainText(usdEn(vista.expensa, "es"));

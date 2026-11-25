@@ -21,7 +21,7 @@ test("ver el territorio anota el estado del loteo", async ({ page }) => {
   await expect.poll(async () => (await leerBitacora(page)).filter((e) => e.tipo === "estado-loteo").length).toBeGreaterThan(0);
   const entradas = (await leerBitacora(page)).filter((x) => x.tipo === "estado-loteo");
   for (const e of entradas) {
-    expect(e.ruta).toBe("/explorar");
+    expect(e.ruta).toBe("/explorar/territorio");
     expect(e.huella).toMatch(/^[0-9a-f]{8}$/);
   }
   // La vista completa anota el titular que muestra; la compacta, solo estado y norma corta.

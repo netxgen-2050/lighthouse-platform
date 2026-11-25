@@ -9,7 +9,7 @@ const es = {
   tituloFin: "Una promesa a 2030.",
   bajada:
     "Para 2030, Lighthouse VRN quiere ser un territorio que se regenera desde el agua, en el Alto Valle de Río Negro, cerca de Vaca Muerta: con trabajo en industrias regenerativas y una comunidad que lo vive y lo cuida. Es nuestra meta, no una garantía.",
-  verLotes: "Ver los lotes",
+  explorarTerritorio: "Explorar el territorio",
   sumarte: "Elegí cómo sumarte",
   promesa: {
     agua: {
@@ -69,7 +69,7 @@ const en: Textos<typeof es> = {
   tituloFin: "A promise for 2030.",
   bajada:
     "By 2030, Lighthouse VRN aims to be a territory regenerating from the water, in the Alto Valle of Río Negro, near Vaca Muerta: with work in regenerative industries and a community that lives in it and cares for it. It is our goal, not a guarantee.",
-  verLotes: "See the lots",
+  explorarTerritorio: "Explore the territory",
   sumarte: "Choose how to join",
   promesa: {
     agua: {

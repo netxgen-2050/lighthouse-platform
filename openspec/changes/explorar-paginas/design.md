@@ -12,7 +12,7 @@ En `dev` (desde el PR #213), `app/explorar/page.tsx` arma las tres secciones en 
 |---|---|---|
 | Territorio | `/explorar/territorio` | intro, ubicación, superficie, `AvisoEjemplo`, los tres `EstadoAdministrativo`, `VitrinaTerritorio` (mapa) y bienes comunes |
 | Barrio Norte | `/explorar/barrio-norte` | lotes por estado (`ChipEstado` + `Indicador`), bien común con ⚖ expensas, `PanelObraBarrio` (solo con sesión) |
-| Lotes | `/explorar/lotes` | `MarcaLoteo`, resúmenes del loteo, enlaces a híbrido y bien común, `ListaLotes` |
+| Lotes | `/explorar/lotes` | `MarcaLoteo`, resúmenes del loteo, enlaces a híbrido y bien común, `ListaLotes`, y (agregado al implementar) los `EstadoAdministrativo` de `lighthouse-primeros` y `lighthouse-norte`, porque toda vista con lotes los lleva (`lib/legal/vistas-con-lotes.ts`) |
 
 - `/explorar` hace `redirect("/explorar/territorio")`. Territorio va primero por dos motivos: es el orden de lectura del diseño (primero el lugar) y es a donde manda el botón nuevo de Inicio.
 - Cada página exporta su `generateMetadata`, con título propio ("Territorio · Explorar", "Barrio Norte · Explorar", "Lotes · Explorar", en los dos idiomas).

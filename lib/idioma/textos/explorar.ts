@@ -1,6 +1,6 @@
-// Textos de Explorar (`/explorar`): una sola página con Territorio, Barrio Norte y Lotes (spec explorar-unificado).
+// Textos de Explorar (`/explorar/*`): una página por sección, Territorio, Barrio Norte y Lotes (spec explorar-paginas).
 // Borrador de agente, para que Gus lo ajuste. Ningún número se escribe acá. Las secciones reusan los textos de
-// `territorio`, `barrios` y `lotes`; acá solo van el héroe, la barra de secciones y la apertura de cada sección.
+// `territorio`, `barrios` y `lotes`; acá solo van el héroe, las pestañas, el título de cada página y la apertura de cada sección.
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
 import { conVocabulario } from "../vocabulario";
@@ -16,6 +16,12 @@ const es = {
     territorio: G.territorio.es,
     barrio: "Barrio Norte",
     lotes: G.lotes.es,
+  },
+  abriendo: "Abriendo Explorar…",
+  paginas: {
+    territorio: `${G.territorio.es} · Explorar`,
+    barrio: "Barrio Norte · Explorar",
+    lotes: `${G.lotes.es} · Explorar`,
   },
   territorio: {
     titulo: G.territorio.es,
@@ -40,6 +46,12 @@ const en: Textos<typeof es> = {
     territorio: G.territorio.en,
     barrio: "Barrio Norte",
     lotes: G.lotes.en,
+  },
+  abriendo: "Opening Explore…",
+  paginas: {
+    territorio: `${G.territorio.en} · Explore`,
+    barrio: "Barrio Norte · Explore",
+    lotes: `${G.lotes.en} · Explore`,
   },
   territorio: {
     titulo: G.territorio.en,

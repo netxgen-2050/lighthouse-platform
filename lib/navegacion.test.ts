@@ -83,6 +83,9 @@ test("destinoActivo: Inicio solo en la raíz, Explorar abarca sus secciones y la
   const clave = (ruta: string) => destinoActivo(ruta)?.clave;
   expect(clave("/")).toBe("inicio");
   expect(clave("/explorar")).toBe("explorar");
+  expect(clave("/explorar/territorio")).toBe("explorar");
+  expect(clave("/explorar/barrio-norte")).toBe("explorar");
+  expect(clave("/explorar/lotes")).toBe("explorar");
   expect(clave("/lotes/hibrido")).toBe("explorar");
   expect(clave("/lotes/x")).toBe("explorar");
   expect(clave("/lotes")).toBe("explorar");
