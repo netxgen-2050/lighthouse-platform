@@ -27,10 +27,10 @@ La base ya existe y está conectada a Vercel (`neon-cyan-diamond`, US East). Est
    - `LH_PERSONAS`: solo emails `.test`, o vacía. La rama `previews` ya tiene personas, así que la carga inicial no corre ahí; en el plan B o en una rama vacía sí.
    - `LH_AUTH_PRUEBA=1` en "Preview" solo si querés que los e2e de los agentes corran contra los previews. Nunca en "Production": el código igual lo ignora.
 6. **Comprobar.** Abrir un preview de esta rama con la cabecera de prueba `super@prueba.test` (o con "Entrar como…" en Sumarte) y ver que es super admin y que `/netx` muestra "Personas y roles". Con `gus@gmail.com` en la cabecera, `/api/sesion` responde 403.
-7. **Plan B y pruebas con email real.** Si todos los previews comparten la rama `previews` y alguien entra con su email real y acepta (cuando `consentimiento-en-la-base` esté), esa persona real queda en la rama compartida y la guarda frena los builds siguientes. Es lo esperado: se recrea `previews` (paso 2) después de cada prueba manual con un email real. Con una rama por preview no pasa: la rama hija se descarta con el preview.
+7. **Pruebas con email real (cambió el 25-nov-2026).** Si alguien entra a un preview con su Google o su email real, esa persona queda en la rama `previews`. **Ya no frena los builds** (decisión de Gus, ADR-008 revisada): la guarda solo pide que haya al menos una persona `.test`. No hace falta limpiar ni recrear `previews` después de cada prueba. Si se quiere limpiar igual, el SQL está en el banner de ADR-008.
 
 ## Qué hace el build
 
-- Antes de `next build` corre `pnpm db:migrate` (`scripts/migrar.ts`). Sin `DATABASE_URL` no hace nada. Con `DATABASE_URL`, fuera de `VERCEL_ENV=production`, primero comprueba la base: virgen (sin tabla `personas`) o solo con personas `.test`; si no, el build falla con el mensaje "Esta base no parece la rama `previews`…" sin imprimir emails.
+- Antes de `next build` corre `pnpm db:migrate` (`scripts/migrar.ts`). Sin `DATABASE_URL` no hace nada. Con `DATABASE_URL`, fuera de `VERCEL_ENV=production`, primero comprueba la base: virgen (sin tabla `personas`) o con al menos una persona `.test` (las reales se permiten desde el 25-nov-2026); si no, el build falla con el mensaje "Esta base no parece la rama `previews`…" sin imprimir emails.
 - Usa `DATABASE_URL_UNPOOLED` si existe y, si no, `DATABASE_URL`. Si una migración falla, el deploy falla.
 - El build nunca siembra datos: los datos de ejemplo se pegan a mano (paso 2).

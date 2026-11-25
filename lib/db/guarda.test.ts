@@ -30,9 +30,15 @@ describe("guardaDeEntorno", () => {
     await expect(guardaDeEntorno(consultarDe(pg), {})).resolves.toBeUndefined();
   });
 
-  it("con un email real: falla sin nombrar el email ni en el mensaje ni en el log", async () => {
+  it("personas .test y reales (pruebas de login en previews): sigue", async () => {
     const { pg } = await baseMigrada();
     await pg.query("insert into personas (email) values ('a@prueba.test'), ('gus@ejemplo.com')");
+    await expect(guardaDeEntorno(consultarDe(pg), { VERCEL_ENV: "preview" })).resolves.toBeUndefined();
+  });
+
+  it("solo emails reales (parece producción): falla sin nombrar el email ni en el mensaje ni en el log", async () => {
+    const { pg } = await baseMigrada();
+    await pg.query("insert into personas (email) values ('gus@ejemplo.com')");
     const espia = [vi.spyOn(console, "log"), vi.spyOn(console, "warn"), vi.spyOn(console, "error")];
     const error = await guardaDeEntorno(consultarDe(pg), { VERCEL_ENV: "preview" }).catch((e: Error) => e);
     expect(error).toBeInstanceOf(Error);
