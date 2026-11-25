@@ -39,8 +39,15 @@ reservas (libro: triggers que rechazan UPDATE, DELETE y TRUNCATE)
   opcion        opcion_compra                          -- obligatoria en 'reserva', nula en los otros
   vio           jsonb                                  -- LoVisto; obligatoria en 'reserva'; ≤ 4 KB
   origen        jsonb                                  -- { fuente, medio, campana, camino }; opcional
-  registrado_at timestamptz not null default now()
+  registrado_at timestamptz not null default now()   -- el servidor lo escribe con clock_timestamp() (ver §2)
   índices: (lote_id, registrado_at desc), (persona_id, registrado_at desc)
+<!-- arquitecto: `now()` es la hora de INICIO de la transacción, no la del insert. Una reserva cuya transacción empezó antes que
+     un `deshace` pero tomó el lock después quedaría con una hora MENOR que el `deshace`, y "el último evento" diría que el lote
+     está libre aunque esté reservado. Por eso cada insert en `reservas` (y en `bitacora`) va con `registrado_at: sql\`clock_timestamp()\``,
+     después de tomar el lock, como ya hace `registrarEn` en `lib/privacidad/servidor.ts`. El default queda solo como red. -->
+<!-- arquitecto: la migración nueva toma el siguiente número libre al implementarse: `fogon-cuadratico-en-la-base` también
+     agrega una migración; si entra antes, esta es la `0003` y hay que regenerar el journal de drizzle sobre `dev`. -->
+
 
 contactos (tabla común: la persona puede borrar los suyos)
   id, persona_id → personas (restrict), motivo text, referencia text, canal text, momento text,
@@ -63,6 +70,15 @@ personas.origen jsonb  -- la primera visita; se escribe solo si es null
 
 - **El estado vigente de un lote es el último evento del libro para ese `lote_id`.** No hay fila o es `deshace`: el lote vuelve a su estado de ejemplo (`estadoDeLote`). Es `reserva`: el lote está reservado por `persona_id`. Es `paga`: está vendido a `persona_id`, al contado o en cuotas según `vio.plan`.
 - **Una sola reserva vigente por lote.** Cada escritura corre en una transacción con `pg_advisory_xact_lock(hashtext('reserva:' || lote_id))`, lee el último evento y recién entonces agrega. Hace falta el driver `neon-serverless`, que es el de `lib/db/cliente.ts`.
+  <!-- arquitecto: usar `hashtextextended('reserva:' || lote_id, 0)` (64 bits), igual que el lock de `registrarEn`, para no
+       compartir espacio de 32 bits con otros locks. El insert va con `clock_timestamp()` (ver §1). El `persona_id` de un
+       `deshace` es SIEMPRE el titular leído bajo el lock (último evento), nunca un dato del cuerpo; `hecho_por` es quien pide.
+       La `opcion` y el `vio` (con `plan`) de una compra vigente salen de la última fila `reserva` del ciclo actual: `paga` no
+       los repite. -->
+  <!-- arquitecto: en PGlite hay una sola conexión y las transacciones se serializan: el test de "dos reservas a la vez" prueba
+       que la segunda ve la fila de la primera, no que el lock funcione en Neon. Se acepta; el e2e (a) cubre el caso real contra
+       el preview. -->
+
 - **Reglas** (las mismas de `compra.ts`, ahora en el servidor):
 
   | Acción | Se permite si | Si no, responde |
@@ -86,6 +102,20 @@ Todas siguen el patrón de `app/api/consentimientos/route.ts`:
 - 503 sin el detalle del error si la base falla.
 
 Toda escritura a nombre de una persona llama a `exigirConsentimiento`. La excepción es `app/api/mis-datos/actividad`, que borra.
+<!-- arquitecto: la excepción se registra en ADR-032 (Propuesta): ver y borrar lo propio pide sesión, no consentimiento. El
+     comentario de `app/api/consentimientos/route.ts` ("esta ruta y /api/sesion son las únicas que escriben o leen sin exigir
+     un consentimiento vigente") se actualiza para nombrar también `/api/mis-datos/actividad`. El DELETE pasa igual por
+     `moldeDeEscritura` (el cliente manda `Content-Type: application/json` y cuerpo `{}`): con la sesión de Neon Auth en una
+     cookie, el chequeo de `Origin` es lo que impide que otra página dispare el borrado. -->
+<!-- arquitecto: `POST /api/contactos` suma un límite de pedidos por persona con `crearLimite({ sal: "contactos" })` de
+     `lib/reportes/limite.ts` (skill revision-seguridad-datos: "límite de pedidos en las rutas que escriben… pedidos de
+     contacto"); 429 con `Retry-After`. Las otras escrituras ya tienen freno propio (lock por lote, 30 minutos en bitácora). -->
+<!-- arquitecto: los GET de pantalla (`/api/lotes/reservas`, `/api/contactos`, `/api/bitacora`) siguen pidiendo consentimiento:
+     sin él la persona es anónima en el cliente y no los llama. La descarga de Mis datos NO usa esos GET: usa
+     `GET /api/mis-datos/actividad` (sesión sola), porque una persona con la política vencida (versión nueva) también tiene
+     derecho a ver lo que hay de ella (Ley 25.326, art. 14 [verificar]) y porque la spec pide los EVENTOS de reserva, no las
+     compras vigentes que devuelve `GET /api/lotes/reservas`. -->
+
 
 | Ruta | Quién | Qué |
 |---|---|---|
@@ -97,8 +127,24 @@ Toda escritura a nombre de una persona llama a `exigirConsentimiento`. La excepc
 | `GET /api/admin/contactos` | super admin | todos los pedidos, con email y nombre de la persona; 403 para el resto |
 | `POST /api/bitacora` | persona con consentimiento | agrega una entrada; si ya hay una igual en los últimos 30 minutos no agrega nada y responde 200; tope de 2 KB |
 | `GET /api/bitacora` | persona con consentimiento | sus entradas, las más nuevas primero, hasta 300 |
+| `GET /api/mis-datos/actividad` | persona con sesión (sin pedir consentimiento) | para la descarga: `{ reservas, contactos, bitacora, origen }` de la persona. `reservas` son TODOS sus eventos (también `deshace`), con `liberadoPorElEquipo: boolean` en lugar del id de quien liberó; sin persona en la base, listas vacías y `origen: null` <!-- arquitecto: nueva --> |
 | `DELETE /api/mis-datos/actividad` | persona con sesión (sin pedir consentimiento) | en una transacción: `deshace` de sus lotes vigentes, borra sus contactos y pone su `personas.origen` en null; la bitácora se conserva |
-| `DELETE /api/prueba/reservas` | solo con `modoPruebaActivo` y fuera de producción de Vercel (si no, 404) | vacía `reservas` saltando el trigger con `ALTER TABLE … DISABLE TRIGGER` dentro de la transacción, solo para e2e |
+| ~~`DELETE /api/prueba/reservas`~~ | — | **sacada** <!-- arquitecto: ver abajo --> |
+
+<!-- arquitecto: `DELETE /api/prueba/reservas` se saca. (1) Es la única ruta de la app que desactiva el trigger de un libro:
+     `ALTER TABLE … DISABLE TRIGGER` toma un lock ACCESS EXCLUSIVE sobre `reservas` (frena todas las lecturas y reservas
+     mientras dura) y, si alguien olvida el ENABLE antes del COMMIT, el libro queda editable para siempre. (2) No pide sesión:
+     en el link de `dev` el modo de prueba está prendido, así que cualquiera con el link vacía las reservas que el equipo está
+     probando ahí. (3) Si los previews comparten la rama `previews` (plan B de ADR-008), una corrida nocturna borra las reservas
+     de todos los previews, también las de otra corrida en paralelo. En su lugar: cada archivo de e2e usa lotes propios y, en
+     su `beforeAll`, el super admin de prueba LIBERA esos lotes por la ruta normal (`POST /api/lotes/reservas` con
+     `accion: "deshacer"`), que agrega un `deshace` y no toca el trigger. En local la base es PGlite en memoria y arranca vacía
+     con cada servidor. Queda la proposal, que todavía nombra esta ruta: la ajusta el especificador si Gus está de acuerdo. -->
+
+- **`DELETE /api/mis-datos/actividad`, locks:** para cada lote vigente de la persona toma el mismo `pg_advisory_xact_lock` que §2, **en orden de `lote_id`**, vuelve a leer el último evento bajo el lock y recién ahí agrega el `deshace` (si en el medio la persona pagó o deshizo desde otra pestaña, se respeta lo último). <!-- arquitecto: sin el lock, un `pagar` simultáneo podía quedar después del `deshace` y el lote seguiría vendido. -->
+- **`DELETE` sin persona en la base** (`sesionDelPedido` devuelve `personaId: null`): 200 sin hacer nada; nunca pudo escribir sin consentimiento. <!-- arquitecto -->
+- **Los datos de lotes que se exportan no llevan el id de otra persona:** el `hecho_por` de un super admin que liberó un lote ajeno sale como `liberadoPorElEquipo: true`. <!-- arquitecto -->
+
 
 **Origen en `personas`:** la primera vez que una persona escribe una reserva o un contacto con origen, el servidor copia ese origen a `personas.origen` solo si está en null (`update … where origen is null`).
 
@@ -111,8 +157,18 @@ Toda escritura a nombre de una persona llama a `exigirConsentimiento`. La excepc
 - **Contactos:** `guardarPedido` pasa a ser asíncrona y llama a `POST /api/contactos`. Los tres formularios esperan la respuesta y muestran el error si falla. `leerBandejaDelNavegador` se reemplaza por `leerMisPedidos()`, que se usa para "ya consultaste por este lote" en la vitrina. La bandeja de `/admin` y `usePendientes` usan `GET /api/admin/contactos`.
 - **Bitácora:** `anotarEnBitacora` hace un POST sin esperar la respuesta. Guarda en memoria lo ya anotado en los últimos 30 minutos para no repetir pedidos, y si falla, no rompe la pantalla. `/panel/bitacora` lee `GET /api/bitacora`.
 - **Limpieza del navegador:** `lib/demo/importar.ts` (o el proveedor de sesión, donde hoy se mudan las claves viejas) borra `lh-lotes`, `lh-consultas-lotes`, `lh-contactos`, `lh-bitacora`, `lh-congreso-ticket` y `lh-congreso-idioma`, con y sin prefijo de persona. Corre una vez por navegador y se marca en `lh-limpieza-paso-2`.
+  <!-- arquitecto: "con prefijo" tiene que ser CUALQUIER prefijo, no solo el de la persona en sesión: la función recorre todas las
+       claves (`almacen.key(i)`) y borra las que son exactamente esos nombres o terminan en `:<nombre>` (`u:<id>:lh-lotes`),
+       así limpia también a otras personas del mismo navegador y las claves de logins anteriores (ids de Privy). Va en
+       `lib/demo/importar.ts` como función pura (`limpiarPaso2(almacen)`) y la llama `components/sesion/proveedor-sesion.tsx`
+       DESPUÉS de `copiarClavesAnteriores`: esa función copia cualquier `u:<idViejo>:*` a la clave nueva y, si corriera después,
+       resucitaría `u:<idNuevo>:lh-lotes`. Es idempotente y barata: puede correr en cada carga sin marca; si se deja la marca
+       `lh-limpieza-paso-2`, que se escriba solo después de la copia. -->
 - **Mis datos:**
   - La descarga suma `reservas`, `contactos` y `bitacora` desde las rutas `GET`. Si una falla, esa parte sale `null` ("sin dato").
+    <!-- arquitecto: desde una sola llamada, `GET /api/mis-datos/actividad` (§3), que trae también `personas.origen`. Si falla,
+         las cuatro partes salen `null`. `exportarMisDatos` recibe ese objeto como recibe hoy `filas`. -->
+  - "Retirar y borrar" sigue llamando a `borrarDemo` para el resto del navegador; las claves que salen de `NOMBRES_BASE` ya no las recorre, por eso la limpieza de arriba. <!-- arquitecto -->
   - "Retirar y borrar mis datos" llama a `DELETE /api/mis-datos/actividad` **antes** del retiro del consentimiento. Si falla, no retira y muestra el error de hoy.
 
 ### 5. Congreso
@@ -122,6 +178,30 @@ Toda escritura a nombre de una persona llama a `exigirConsentimiento`. La excepc
 - Pasaporte, Semillas, `proximo-paso.ts`, `lib/idioma/cliente.tsx` y `app/congreso/netx/tribus.tsx` dejan de leer el ticket. Lo que mostraban según el ticket desaparece; no se reemplaza.
 - `/congreso` queda como vitrina, en el idioma general de la app (`?lang` y la preferencia general).
 - **Límite:** si para sacar el ticket hay que tocar algo fuera de esa lista, el implementador frena y lo reporta en el PR. Nunca toca Semillas ni Compromisos más allá de quitar la lectura del ticket.
+
+<!-- arquitecto: la lista de arriba está incompleta y, con la regla del "Límite", el implementador frenaría seguro. Revisado con
+     `rg` sobre el código de `origin/dev` (25-nov):
+     TAMBIÉN HAY QUE TOCAR (leen o montan el ticket o la preferencia vieja):
+       - `app/congreso/vitrina.tsx`: importa y dibuja `<TicketNetx>` (bloque "ticketVinculado"); se quita ese bloque.
+       - `app/congreso/registro-ticket.textos.ts` (se borra con `registro-ticket.tsx`) y `app/congreso/netx/textos.test.ts`, que lo importa.
+       - `lib/idioma/sincronizar.ts` y `sincronizar.test.ts`: el campo `viejo` (regla 3, "la preferencia vieja del Congreso se
+         usa una vez") queda siempre null; se quita el campo y la regla. `lib/idioma/cliente.tsx` ya estaba en la lista.
+       - `lib/panel/panel.test.ts` (`tieneTicket`, `CLAVES.congreso`) y `lib/demo/claves.test.ts`.
+       - e2e: `congreso.spec.ts`, `congreso-en.spec.ts` (también la prueba de `lh-congreso-idioma` de la línea ~255),
+         `panel.spec.ts`, `semillas.spec.ts`, y revisar `sumarte.spec.ts`, `descubrir-publico.spec.ts`, `accesibilidad.spec.ts`
+         y `bandeja.spec.ts`, que nombran "ticket".
+     PUEDEN QUEDAR COMO ESTÁN (no leen el navegador; solo reciben un booleano o son configuración):
+       - `lib/pasaporte/sellos.ts` (campo `ticket`: el Pasaporte le pasa `false`), `lib/actividad/eventos.ts` y `actividad.ts`
+         (`registrasteTicket`, que ya nadie emite), `lib/permisos/{tipos,tabla}.ts` y su README (puerta `registrar-ticket`),
+         `lib/legal/terminos.ts` (término `ticket`). Sacarlos es limpieza para otro cambio.
+     DUDA (para Gus): `lib/congreso/tribus-con-ticket.ts` no es un dato de nadie, son cifras de EJEMPLO de la vitrina
+       ("N de M van", que prueban `app/congreso/netx/netx.test.tsx` y `e2e/congreso.spec.ts`). Borrarlo cambia lo que muestra la
+       vitrina que este cambio dice conservar. Recomiendo NO borrarlo acá.
+     CHOQUE con `eventos-reemplaza-congreso` (0/24, pendiente): ese cambio dice explícitamente que NO se borran `lib/congreso/`,
+       `lh-congreso-ticket` ni el ticket guardado, que `/congreso` redirige a `/eventos`, y que el paso de Mi recorrido "se cumple
+       con un ticket válido ya guardado". Los dos no pueden implementarse como están escritos. Hasta que Gus elija, el grupo 6 de
+       tasks.md no se implementa. -->
+
 
 ### 6. Pruebas
 
@@ -136,9 +216,10 @@ Toda escritura a nombre de una persona llama a `exigirConsentimiento`. La excepc
   - El borrado de Mis datos deja la bitácora y saca los contactos.
   - Sin consentimiento → 403.
   - `GET /api/lotes/estados` no trae ningún id de persona.
-- **Rutas:** 401, 403, 409, 413 y 422 en cada una. `DELETE /api/prueba/reservas` da 404 con `VERCEL_ENV=production`.
+- **Rutas:** 401, 403, 409, 413 y 422 en cada una. ~~`DELETE /api/prueba/reservas` da 404 con `VERCEL_ENV=production`.~~ <!-- arquitecto: ruta sacada (§3). En su lugar: `DELETE /api/mis-datos/actividad` da 403 sin `Origin` propio y 415 sin JSON; `GET /api/mis-datos/actividad` responde con la política vencida (sin consentimiento vigente) y no trae ningún id de otra persona; `POST /api/contactos` da 429 al pasar el límite. -->
 - **E2E:**
-  - La fixtura llama a `DELETE /api/prueba/reservas` en el arranque global.
+  - ~~La fixtura llama a `DELETE /api/prueba/reservas` en el arranque global.~~ <!-- arquitecto: la fixtura expone `liberarLotes(ids)`, que entra como super admin de prueba y manda `deshacer` por cada lote; cada archivo la llama en su `beforeAll` con SUS lotes. -->
+  - Que dos corridas en paralelo contra el mismo preview usen los mismos lotes sigue siendo posible; se acepta (reintento de Playwright). <!-- arquitecto -->
   - Cada archivo de pruebas usa lotes distintos, para correr en paralelo.
   - Los e2e que hoy siembran `lh-lotes` pasan a sembrar por la API.
   - Uno nuevo: la persona A reserva el lote 7 y la persona B, en otro contexto, lo ve "Reservado" y no puede reservarlo.
@@ -150,8 +231,11 @@ Toda escritura a nombre de una persona llama a `exigirConsentimiento`. La excepc
 - **[Las páginas de lotes muestran primero el estado de ejemplo y después el real]** → Es el mismo patrón que `listo` hoy, y el parpadeo es breve. Leer la base en el render del servidor haría dinámicas páginas que hoy son estáticas, y el build tocaría PGlite. Queda para el paso 3, cuando los lotes vivan en la base.
 - **[Una reserva de prueba olvidada bloquea un lote para todo el equipo]** → El super admin la libera desde la API. El panel con botón llega con el paso 3. Mientras tanto queda la ruta y un guion en `docs/guiones/`.
 - **[La bitácora crece rápido]** → No se repite en 30 minutos y tiene tope de 2 KB por entrada. Con el equipo solo son unas miles de filas por mes.
+- **[Dos POST iguales a la vez pueden anotar dos filas]** → El "no repetir en 30 minutos" se lee y escribe sin lock. Una fila de más en una constancia no hace daño; no vale un lock por entrada. El test de los 30 minutos va en serie. <!-- arquitecto -->
 - **[Se pierde lo que el equipo tenía en el navegador]** → Es una simulación. El PR lo avisa, igual que avisó `consentimiento-en-la-base` que había que volver a aceptar.
-- **[El trigger se salta en la ruta de prueba]** → Esa ruta solo existe con `modoPruebaActivo` fuera de producción, y la guarda de ADR-008 impide que esa base tenga personas reales.
+- ~~**[El trigger se salta en la ruta de prueba]** → Esa ruta solo existe con `modoPruebaActivo` fuera de producción, y la guarda de ADR-008 impide que esa base tenga personas reales.~~ <!-- arquitecto: ya no aplica: la ruta se sacó (§3). -->
+- **[Los triggers frenan errores de la app, no al dueño de la base]** → El rol de la app en Neon es dueño de las tablas y podría desactivarlos con un `ALTER TABLE`. Pasa igual con `consentimientos`. Un rol aparte sin permiso de DDL es un cambio para cuando haya datos reales (R14/R29), no para este. <!-- arquitecto -->
+- **[El libro de reservas crece con las pruebas]** → Cada e2e agrega un `deshace` por lote al arrancar. En la rama `previews` son unos cientos de filas por noche; se recrea la rama con el script si molesta. <!-- arquitecto -->
 
 ## Migration Plan
 
@@ -166,5 +250,7 @@ Toda escritura a nombre de una persona llama a `exigirConsentimiento`. La excepc
 - `NS_platform/Documentation/backend/01 - Inventario de datos del POC.md` (§3, §9, orden y decisiones; 23-nov-2026)
 - `NS_platform/Documentation/backend/02 - Modelo de datos (propuestas).md` (tablas `reservas`, `contactos` y `bitacora`, paso 2)
 - ADR-001 (libros de solo agregar), ADR-005 (consentimiento antes de escribir) y ADR-008 (guarda de entornos)
+- ADR-032 (Propuesta): ver y borrar lo propio pide sesión, no consentimiento <!-- arquitecto -->
+- Cambio `eventos-reemplaza-congreso` (choque con el grupo 6, ver §5) <!-- arquitecto -->
 - Cambios `base-neon`, `consentimiento-en-la-base`, `lotes-compra-simulada`, `mi-tierra`, `loteo-norte` y `bitacora-exposicion`
 - `NS_platform/Documentation/22 - Fase 1 · venta de lotes e híbrido.md` (simulado, sin cobro real, sin prioridad por pase)
