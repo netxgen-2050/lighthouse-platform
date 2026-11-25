@@ -156,7 +156,7 @@ Toda escritura a nombre de una persona llama a `exigirConsentimiento`. La excepc
 - **Errores al escribir:** "No pudimos guardar tu reserva. Probá de nuevo." (`role="alert"`). La pantalla no cambia. Con 409 `ya-reservado`, el aviso es: "Alguien reservó este lote hace un momento." Después se actualizan los estados.
 - **Contactos:** `guardarPedido` pasa a ser asíncrona y llama a `POST /api/contactos`. Los tres formularios esperan la respuesta y muestran el error si falla. `leerBandejaDelNavegador` se reemplaza por `leerMisPedidos()`, que se usa para "ya consultaste por este lote" en la vitrina. La bandeja de `/admin` y `usePendientes` usan `GET /api/admin/contactos`.
 - **Bitácora:** `anotarEnBitacora` hace un POST sin esperar la respuesta. Guarda en memoria lo ya anotado en los últimos 30 minutos para no repetir pedidos, y si falla, no rompe la pantalla. `/panel/bitacora` lee `GET /api/bitacora`.
-- **Limpieza del navegador:** `lib/demo/importar.ts` (o el proveedor de sesión, donde hoy se mudan las claves viejas) borra `lh-lotes`, `lh-consultas-lotes`, `lh-contactos`, `lh-bitacora`, `lh-congreso-ticket` y `lh-congreso-idioma`, con y sin prefijo de persona. Corre una vez por navegador y se marca en `lh-limpieza-paso-2`.
+- **Limpieza del navegador:** `lib/demo/importar.ts` (o el proveedor de sesión, donde hoy se mudan las claves viejas) borra `lh-lotes`, `lh-consultas-lotes`, `lh-contactos` y `lh-bitacora`, con y sin prefijo de persona. Corre una vez por navegador y se marca en `lh-limpieza-paso-2`.
   <!-- arquitecto: "con prefijo" tiene que ser CUALQUIER prefijo, no solo el de la persona en sesión: la función recorre todas las
        claves (`almacen.key(i)`) y borra las que son exactamente esos nombres o terminan en `:<nombre>` (`u:<id>:lh-lotes`),
        así limpia también a otras personas del mismo navegador y las claves de logins anteriores (ids de Privy). Va en
@@ -171,37 +171,9 @@ Toda escritura a nombre de una persona llama a `exigirConsentimiento`. La excepc
   - "Retirar y borrar" sigue llamando a `borrarDemo` para el resto del navegador; las claves que salen de `NOMBRES_BASE` ya no las recorre, por eso la limpieza de arriba. <!-- arquitecto -->
   - "Retirar y borrar mis datos" llama a `DELETE /api/mis-datos/actividad` **antes** del retiro del consentimiento. Si falla, no retira y muestra el error de hoy.
 
-### 5. Congreso
+### 5. Congreso (salió de este cambio)
 
-- Salen `congreso` e `idiomaCongreso` de `NOMBRES_BASE`.
-- Se borran `lib/congreso/ticket.ts`, `mostrar-ticket.ts`, `tribus-con-ticket.ts` y `preferencia-idioma.ts` con sus tests, además de `app/congreso/registro-ticket.tsx` y `app/congreso/netx/ticket-netx.tsx`.
-- Pasaporte, Semillas, `proximo-paso.ts`, `lib/idioma/cliente.tsx` y `app/congreso/netx/tribus.tsx` dejan de leer el ticket. Lo que mostraban según el ticket desaparece; no se reemplaza.
-- `/congreso` queda como vitrina, en el idioma general de la app (`?lang` y la preferencia general).
-- **Límite:** si para sacar el ticket hay que tocar algo fuera de esa lista, el implementador frena y lo reporta en el PR. Nunca toca Semillas ni Compromisos más allá de quitar la lectura del ticket.
-
-<!-- arquitecto: la lista de arriba está incompleta y, con la regla del "Límite", el implementador frenaría seguro. Revisado con
-     `rg` sobre el código de `origin/dev` (25-nov):
-     TAMBIÉN HAY QUE TOCAR (leen o montan el ticket o la preferencia vieja):
-       - `app/congreso/vitrina.tsx`: importa y dibuja `<TicketNetx>` (bloque "ticketVinculado"); se quita ese bloque.
-       - `app/congreso/registro-ticket.textos.ts` (se borra con `registro-ticket.tsx`) y `app/congreso/netx/textos.test.ts`, que lo importa.
-       - `lib/idioma/sincronizar.ts` y `sincronizar.test.ts`: el campo `viejo` (regla 3, "la preferencia vieja del Congreso se
-         usa una vez") queda siempre null; se quita el campo y la regla. `lib/idioma/cliente.tsx` ya estaba en la lista.
-       - `lib/panel/panel.test.ts` (`tieneTicket`, `CLAVES.congreso`) y `lib/demo/claves.test.ts`.
-       - e2e: `congreso.spec.ts`, `congreso-en.spec.ts` (también la prueba de `lh-congreso-idioma` de la línea ~255),
-         `panel.spec.ts`, `semillas.spec.ts`, y revisar `sumarte.spec.ts`, `descubrir-publico.spec.ts`, `accesibilidad.spec.ts`
-         y `bandeja.spec.ts`, que nombran "ticket".
-     PUEDEN QUEDAR COMO ESTÁN (no leen el navegador; solo reciben un booleano o son configuración):
-       - `lib/pasaporte/sellos.ts` (campo `ticket`: el Pasaporte le pasa `false`), `lib/actividad/eventos.ts` y `actividad.ts`
-         (`registrasteTicket`, que ya nadie emite), `lib/permisos/{tipos,tabla}.ts` y su README (puerta `registrar-ticket`),
-         `lib/legal/terminos.ts` (término `ticket`). Sacarlos es limpieza para otro cambio.
-     DUDA (para Gus): `lib/congreso/tribus-con-ticket.ts` no es un dato de nadie, son cifras de EJEMPLO de la vitrina
-       ("N de M van", que prueban `app/congreso/netx/netx.test.tsx` y `e2e/congreso.spec.ts`). Borrarlo cambia lo que muestra la
-       vitrina que este cambio dice conservar. Recomiendo NO borrarlo acá.
-     CHOQUE con `eventos-reemplaza-congreso` (0/24, pendiente): ese cambio dice explícitamente que NO se borran `lib/congreso/`,
-       `lh-congreso-ticket` ni el ticket guardado, que `/congreso` redirige a `/eventos`, y que el paso de Mi recorrido "se cumple
-       con un ticket válido ya guardado". Los dos no pueden implementarse como están escritos. Hasta que Gus elija, el grupo 6 de
-       tasks.md no se implementa. -->
-
+No se toca. `eventos-reemplaza-congreso` (2-nov, pendiente) conserva `lib/congreso/`, el ticket guardado y `lh-congreso-ticket`, y redirige `/congreso` a `/eventos`. El 23-nov Gus dijo que los datos del Congreso se borran. Las dos cosas se concilian en ese cambio. El análisis de consumidores que hizo el arquitecto queda en el commit `927a998` de esta rama.
 
 ### 6. Pruebas
 

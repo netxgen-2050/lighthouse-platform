@@ -4,8 +4,8 @@ Rama `agente/lotes-en-la-base` desde `dev`, **después** de que `consentimiento-
 
 **Límites:**
 - Todo sigue SIMULADO: nada de cobros ni datos de pago. La aprobación municipal nunca figura como otorgada.
-- No tocar los datos ni el código de Semillas y Compromisos más allá de quitar la lectura del ticket (grupo 6).
-- Si la noche no alcanza, el grupo 6 (Congreso) es el que se puede cortar: va al final y no lo necesita nadie más.
+- No tocar los datos ni el código de Semillas y Compromisos.
+- No tocar nada del Congreso: salió de este cambio (ver el grupo 6).
 
 <!-- arquitecto: esto NO entra en una noche (migración con triggers, 8 rutas, reservas en 6+ pantallas, 3 formularios, bandeja,
      bitácora, Mis datos, limpieza y ~12 archivos de e2e reescritos). Corte propuesto, en la misma rama y un PR por noche:
@@ -91,18 +91,13 @@ Rama `agente/lotes-en-la-base` desde `dev`, **después** de que `consentimiento-
 
   Verificar con `pnpm test lib/demo` y `pnpm verificar`.
 
-## 6. Congreso (se puede cortar si la noche no alcanza)
+## 6. Congreso (salió de este cambio)
 
-<!-- arquitecto: BLOQUEADO hasta que Gus resuelva el choque con `eventos-reemplaza-congreso` (design §5). Si sigue, la lista
-     de archivos completa está en design §5 (suma `app/congreso/vitrina.tsx`, `registro-ticket.textos.ts`,
-     `app/congreso/netx/textos.test.ts`, `lib/idioma/sincronizar.ts` y su test, `lib/panel/panel.test.ts`, `lib/demo/claves.test.ts`
-     y los e2e `congreso`, `congreso-en`, `panel`, `semillas`); con esa lista, frenar solo si aparece algo que no esté ahí.
-     `lib/congreso/tribus-con-ticket.ts` no se borra salvo que Gus diga lo contrario. -->
-- [ ] 6.1 Sacar `congreso` e `idiomaCongreso` de `NOMBRES_BASE` y borrar lo del ticket (design §5): `lib/congreso/ticket.ts`, `mostrar-ticket.ts`, `tribus-con-ticket.ts` y `preferencia-idioma.ts` con sus tests, más `app/congreso/registro-ticket.tsx` y `app/congreso/netx/ticket-netx.tsx`. Pasaporte, Semillas, `lib/panel/proximo-paso.ts`, `lib/idioma/cliente.tsx` y `app/congreso/netx/tribus.tsx` dejan de leerlo. `/congreso` queda como vitrina con el idioma general. Si aparece otro archivo que dependa del ticket, frenar y anotarlo en el PR. Verificar con `pnpm verificar` y con los e2e del Congreso (los del ticket se borran; los de la vitrina quedan).
+No se implementa acá. Choca con `eventos-reemplaza-congreso`, y Gus decide en ese cambio si los datos del Congreso se borran o se conservan. La lista de archivos que armó el arquitecto queda en la historia de esta rama (commit `927a998`, design §5) para quien la retome.
 
 ## 7. Navegador y Mis datos
 
-- [ ] 7.1 Limpieza, una sola vez por navegador (marca `lh-limpieza-paso-2`), de `lh-lotes`, `lh-consultas-lotes`, `lh-contactos`, `lh-bitacora`, `lh-congreso-ticket` y `lh-congreso-idioma`, con y sin prefijo, sin copiar nada (en `lib/demo/importar.ts` o donde hoy se mudan las claves). Sacar `lotes`, `consultasLotes`, `contactos` y `bitacora` de `NOMBRES_BASE`. Test unitario con un almacén simulado. Verificar con `pnpm test lib/demo`.
+- [ ] 7.1 Limpieza, una sola vez por navegador (marca `lh-limpieza-paso-2`), de `lh-lotes`, `lh-consultas-lotes`, `lh-contactos`, y `lh-bitacora`, con y sin prefijo, sin copiar nada (en `lib/demo/importar.ts` o donde hoy se mudan las claves). Sacar `lotes`, `consultasLotes`, `contactos` y `bitacora` de `NOMBRES_BASE`. Test unitario con un almacén simulado. Verificar con `pnpm test lib/demo`.
   <!-- arquitecto: `limpiarPaso2(almacen)` recorre TODAS las claves (`key(i)`) y borra el nombre pelado o cualquier `u:<id>:<nombre>`;
        la llama `proveedor-sesion.tsx` después de `copiarClavesAnteriores` (si no, la copia resucita `u:<idNuevo>:lh-lotes`).
        Tests: limpia dos personas y un id viejo de Privy en el mismo almacén; no toca `lighthouse.compromisos.v1` ni otras
