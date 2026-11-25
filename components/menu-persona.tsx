@@ -29,7 +29,7 @@ function inicialesGuardadas(): string {
 }
 
 const BOTON_SUMARTE =
-  "flex h-9 items-center rounded-full bg-gold px-4 text-sm font-bold text-ink hover:bg-gold-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
+  "flex h-9 items-center rounded-full border border-gold-ink bg-gold-soft px-4 text-sm font-bold text-gold-ink hover:bg-gold hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 const BOTON_ENTRAR =
   "flex h-9 items-center rounded-full border border-muted px-4 text-sm font-medium hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 

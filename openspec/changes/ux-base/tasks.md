@@ -4,8 +4,8 @@ Primero de los ocho cambios `ux-*` (dirección B + C, elegida por Gus el 25-nov-
 
 ## 1. Tokens y rail
 
-- [ ] 1.1 Sumar a `app/globals.css` los radios, sombras, duración y curva de design §2, sin tocar colores; transiciones en 0 con movimiento reducido. **Verifica:** `pnpm test lib/tema-contraste lib/sin-colores-sueltos` en verde.
-- [ ] 1.2 Rail con fondo `surface` y activo en píldora `deep` (design §3), en `components/rail.tsx` y `components/rail-enlaces.tsx`; dorado de "Sumarte" ajustado en oscuro. **Verifica:** `pnpm test components/rail` y contraste AA de los pares nuevos en `lib/tema-contraste.test.ts`.
+- [x] 1.1 Sumar a `app/globals.css` los radios, sombras, duración y curva de design §2, sin tocar colores; transiciones en 0 con movimiento reducido. **Verifica:** `pnpm test lib/tema-contraste lib/sin-colores-sueltos` en verde.
+- [x] 1.2 Rail con fondo `surface` y activo en píldora `deep` (design §3), en `components/rail.tsx` y `components/rail-enlaces.tsx`; dorado de "Sumarte" ajustado en oscuro. **Verifica:** `pnpm test components/rail` y contraste AA de los pares nuevos en `lib/tema-contraste.test.ts`.
 
 ## 2. Avisos
 

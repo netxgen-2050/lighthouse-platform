@@ -13,11 +13,17 @@ export type ItemRail = {
   secciones?: readonly string[];
 };
 
-/** Un destino marcado solo con color no se entiende: el actual lleva además negrita y subrayado. */
+/** Un destino marcado solo con color no se entiende: el actual lleva además la píldora detrás del ícono y negrita. */
 export const CLASE_ITEM =
-  "flex flex-col items-center gap-1 rounded-xl px-0.5 py-1.5 text-center text-xs font-medium leading-tight focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold";
+  "group flex flex-col items-center gap-1 rounded-[var(--radius-s)] px-0.5 py-1.5 text-center text-xs font-medium leading-tight text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 export const CLASE_PASTILLA =
-  "rounded-full border border-on-deep-muted px-1 text-[0.5625rem] leading-tight text-on-deep-muted";
+  "rounded-full border border-line px-1 text-[0.5625rem] leading-tight text-muted";
+/** Píldora detrás del ícono: activa en `deep` con el ícono en `on-deep`; en reposo, `surface-2` solo al pasar el mouse. */
+export const claseIcono = (activo: boolean) =>
+  `flex h-7 w-12 items-center justify-center rounded-full transition-colors duration-[var(--dur)] ${
+    activo ? "bg-deep text-on-deep" : "group-hover:bg-surface-2"
+  }`;
+export const claseEtiqueta = (activo: boolean) => `break-words ${activo ? "font-bold text-ink" : ""}`;
 
 /** Los destinos principales del rail, sin títulos de grupo. Con la sesión o sin ella se ven todos habilitados. */
 export function RailEnlaces({ items }: { items: ItemRail[] }) {
@@ -30,12 +36,8 @@ export function RailEnlaces({ items }: { items: ItemRail[] }) {
         return (
           <li key={e.href}>
             <Link href={e.href} aria-current={activo ? "page" : undefined} className={CLASE_ITEM}>
-              <span
-                className={`flex h-7 w-12 items-center justify-center rounded-full ${activo ? "bg-on-deep text-deep" : "hover:bg-deep-2"}`}
-              >
-                {e.icono}
-              </span>
-              <span className={`break-words ${activo ? "font-bold underline underline-offset-2" : ""}`}>{e.etiqueta}</span>
+              <span className={claseIcono(activo)}>{e.icono}</span>
+              <span className={claseEtiqueta(activo)}>{e.etiqueta}</span>
             </Link>
           </li>
         );

@@ -68,6 +68,10 @@ const PARES_TEXTO: [string, string][] = [
   ["danger", "bg"],
   ["danger", "surface"],
   ["ink", "gold"],
+  // ux-base: cinta de prototipo (bg sobre ink), píldora del rail (on-deep sobre deep), botón Sumarte (gold-ink sobre gold-soft).
+  ["bg", "ink"],
+  ["gold-ink", "gold-soft"],
+  ["muted", "surface"],
 ];
 
 const REGEN = ["regen-1", "regen-2", "regen-3", "regen-4", "regen-5"];
@@ -137,6 +141,15 @@ test.each([
   for (const [token, valor] of Object.entries(antes)) {
     expect(actual[token]?.toLowerCase(), `token ${token}`).toBe(valor);
   }
+});
+
+test("la escala de diseño (radios, sombras, movimiento) está en los tokens", () => {
+  for (const t of ["--radius-s: 8px", "--radius-m: 14px", "--radius-l: 20px", "--sombra-1:", "--sombra-2:", "--sombra-3:", "--dur: 180ms", "--curva: cubic-bezier(0.2, 0.8, 0.2, 1)"]) {
+    expect(CSS, t).toContain(t);
+  }
+  // Movimiento reducido (preferencia de la app o del sistema): la duración pasa a 0.
+  expect(CSS).toMatch(/:root\[data-movimiento="reducido"\] \{\s*--dur: 0ms;/);
+  expect(CSS).toMatch(/prefers-reduced-motion: reduce\) \{\s*:root \{\s*--dur: 0ms;/);
 });
 
 test("faint claro es la única excepción: oscurecido de #8a8678 a #6f6b5d para llegar a AA", () => {
