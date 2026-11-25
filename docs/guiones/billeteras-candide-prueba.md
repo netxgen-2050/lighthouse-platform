@@ -4,9 +4,9 @@ Para Gus. Cambio: `billeteras-candide-prueba` (`openspec/changes/billeteras-cand
 
 ## 1. Crear la cuenta y la política en Candide
 
-1. Entrá a dashboard.candide.dev con la **cuenta del equipo NetXGen**, no con tu cuenta personal (la que entra con GitHub), y creá un proyecto **solo de testnet**, para que la clave no sirva en una red real.
-2. Sacá las dos URL de **Base Sepolia**: la del bundler y la del paymaster. Llevan la clave adentro: son secretas, no las pegues en el repo, en un PR ni en un chat.
-3. Creá una política de patrocinio solo para estos dos contratos, con un tope diario bajo (por ejemplo 50 operaciones):
+1. Entrá a dashboard.candide.dev con la **cuenta del equipo NetXGen** (arriba tiene que decir "NetX Gen"), no con tu cuenta personal. Andá a **API Keys** → crear una key, con nombre `lighthouse-sepolia` y solo la red **Base Sepolia** (chain id 84532). En el panel ya no hay "proyectos": la key es lo que separa testnet de una red real.
+2. La pantalla final muestra el **Unified endpoint (bundler + paymaster)**, del tipo `https://api.candide.dev/api/v3/84532/<key>`. Es **una sola URL para las dos cosas**: va igual en `CANDIDE_BUNDLER_URL` y en `CANDIDE_PAYMASTER_URL`. Lleva la clave adentro: es secreta, no la pegues en el repo ni en un PR.
+3. **Primero probá sin política.** Si el paymaster se niega a pagar, andá a **Gas Policies**, creá una política privada solo para estos dos contratos, con un tope diario bajo (por ejemplo 50 operaciones):
    - `EAS`: `0x4200000000000000000000000000000000000021`
    - `SchemaRegistry`: `0x4200000000000000000000000000000000000020`
 4. Mirá en el panel qué filtra de verdad la política: para el paymaster, el destino de la operación es la propia Safe, así que puede no ver las llamadas de adentro. Además, la primera operación incluye dos llamadas que arma la librería (desplegar el verificador de la passkey y cambiar el dueño de la Safe): si el panel solo deja pasar EAS y el registro, tal vez haya que permitir también la fábrica del verificador. **Anotá qué pasó**: va al reporte. La política que garantiza el servidor es la nuestra (solo `attest` y `register`, esas dos llamadas exactas y nada más).
