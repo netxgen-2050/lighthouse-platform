@@ -21,11 +21,11 @@ ADR-005 dice que toda ruta que escribe a nombre de una persona llama antes a `ex
 - Ganamos: Mis datos funciona aunque la política esté vencida o retirada, y la descarga sale de una sola llamada (si falla, todo sale "sin dato").
 - Aceptamos: esta ruta escribe sin consentimiento (el `deshace` y el borrado de contactos). Solo puede quitar o liberar, nunca agregar algo nuevo de la persona.
 - Aceptamos: el `DELETE` necesita el chequeo de `Origin` igual que un `POST`, porque con Neon Auth la sesión va en una cookie.
-- Sigue abierto, y lo decide Gus: si al borrar se conserva la bitácora (propuesta del cambio: sí, como constancia, **[verificar con abogado]**). Esta decisión no cambia con esa respuesta: solo cambia qué borra el `DELETE`.
+- Gus decidió el 25-nov que al borrar se conserva la bitácora, como constancia **[verificar con abogado]**. El `DELETE` libera los lotes, borra los contactos y el origen, y no toca la bitácora.
 - Revisar cuando: se abra la plataforma fuera del equipo (R14 y R29: anonimizar la cuenta), o si aparece otra ruta que quiera saltarse el consentimiento.
 
 ## En palabras simples
-Para usar la plataforma hay que aceptar la política. Pero ver qué datos tuyos tenemos y pedir que los borremos no es "usar la plataforma": es un derecho. Por eso, desde Mis datos, podés descargar y borrar tus reservas de ejemplo, tus consultas y tu origen aunque todavía no hayas aceptado la versión nueva de la política. Esa puerta solo sirve para ver y borrar lo tuyo; para reservar o consultar seguís necesitando haber aceptado.
+Para usar la plataforma hay que aceptar la política. Pero ver qué datos tuyos tenemos y pedir que los borremos no es "usar la plataforma": es un derecho. Por eso, desde Mis datos, podés descargar y borrar tus reservas, tus consultas y tu origen (la bitácora de qué textos legales se te mostraron se conserva como constancia) aunque todavía no hayas aceptado la versión nueva de la política. Esa puerta solo sirve para ver y borrar lo tuyo; para reservar o consultar seguís necesitando haber aceptado.
 
 ## Fuentes
 - `docs/decisiones/ADR-005-consentimiento-antes-de-la-identidad.md` y `ADR-001-modelo-de-datos-hibrido.md` (borrar en un libro es anonimizar).
