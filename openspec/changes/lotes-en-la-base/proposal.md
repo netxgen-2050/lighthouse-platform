@@ -19,7 +19,7 @@ Es el **paso 2** del orden de la fase 1 (`NS_platform/Documentation/backend/01` 
 - **Se borra lo del navegador:** `lh-lotes`, `lh-consultas-lotes`, `lh-contactos` y `lh-bitacora` dejan de escribirse y se limpian la próxima vez que la persona entra. **No se copian a la base** (decisión de Gus, 25-nov).
 - **E2E:** la fixtura siembra reservas, contactos y bitácora por la API. Cada archivo de pruebas usa lotes propios y los libera al empezar con el super admin de prueba, por la ruta normal. Ninguna ruta desactiva el trigger de un libro (revisión de arquitectura).
 - **Congreso: se borran sus datos** (Gus, 25-nov-2026). Salen `lh-congreso-ticket` y `lh-congreso-idioma` de `lib/demo/claves.ts` y del navegador, y se retira el registro del ticket y todo lo que lo lee. No toca la base: va en una noche aparte. Qué pasa con la página `/congreso` (redirigir a `/eventos`) sigue siendo de `eventos-reemplaza-congreso`, que se actualiza para no conservar el ticket.
-- **Mis datos tiene una sola ruta de derechos,** `/api/mis-datos/actividad` (`GET` descarga y `DELETE` borra), que pide sesión pero no consentimiento. Es una excepción nueva a ADR-005, escrita como **ADR-032** (Propuesta).
+- **Mis datos tiene una sola ruta de derechos,** `/api/mis-datos/actividad` (`GET` descarga y `DELETE` borra), que pide sesión pero no consentimiento. Es una excepción nueva a ADR-005, escrita como **ADR-032** (Aceptada por Gus el 25-nov).
 
 **Fuera de alcance:**
 - `lotes`, `planos`, `parametros`, `decisiones` y `cambios_de_contenido`: el panel para que el equipo edite lotes, precios y la propuesta es el paso 3 (`contenido-editable-lotes`). Acá el loteo y los estados de ejemplo siguen en el código.
@@ -57,7 +57,7 @@ Es el **paso 2** del orden de la fase 1 (`NS_platform/Documentation/backend/01` 
 | Privacidad | `lib/privacidad/exportar.ts`, `lib/demo/importar.ts`, `lib/demo/borrar.ts` y `app/mis-datos/mis-datos-cliente.tsx` |
 | Pruebas | `e2e/fixtura.ts` y los e2e de lotes, Mi tierra, contactos, bitácora y Mis datos (la lista completa está en `tasks.md` 8.1) |
 | Congreso | `lib/demo/claves.ts`, `lib/congreso/*`, `app/congreso/*`, Pasaporte, Semillas, `lib/panel/proximo-paso.ts`, `lib/idioma/{cliente,sincronizar}.ts` (lista completa en design §5) |
-| Decisiones | `docs/decisiones/ADR-032-ver-y-borrar-lo-propio-pide-sesion.md` (Propuesta) |
+| Decisiones | `docs/decisiones/ADR-032-ver-y-borrar-lo-propio-pide-sesion.md` (Aceptada) |
 
 **Revisión:** toca datos personales (mensaje de contacto, origen) y una prueba legal (bitácora), así que pidió revisión de arquitectura. **Ya la tuvo (25-nov):** sacó la ruta de prueba que vaciaba reservas, pasó a `clock_timestamp()`, sumó el lock al borrado y el chequeo de origen, completó la descarga (todos los eventos y `personas.origen`) y escribió ADR-032. **No entra en una noche:** va en tres, en la misma rama. La noche 1 son reservas (la migración entera), la noche 2 contactos y bitácora, y la noche 3 el Congreso, que no toca la base y puede ir en otro carril (`tasks.md`).
 
