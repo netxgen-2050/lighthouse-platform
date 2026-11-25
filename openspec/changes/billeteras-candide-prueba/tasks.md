@@ -6,7 +6,7 @@
 
 ## 1. Dependencias y configuración
 
-- [ ] 1.1 Agregar `abstractionkit` con versión exacta (`pnpm add abstractionkit@<versión> --save-exact`). Leer `node_modules/abstractionkit/README.md` y `dist/index.d.mts` y anotar en el PR los nombres reales de: crear la dirección de la Safe con un dueño WebAuthn, crear la UserOperation, patrocinarla con el paymaster de Candide, calcular el hash a firmar, armar la firma WebAuthn, formatearla (con el caso de inicialización), enviarla y esperar el recibo. **Verifica:** `pnpm verificar` en verde y la lista de nombres en el PR.
+- [ ] 1.1 Agregar `abstractionkit` con versión exacta (`pnpm add abstractionkit@2.1.0 --save-exact`; si hay una 2.x posterior, se puede usar y se anota en el PR, pero nunca una menor a 2.0.0). Leer `node_modules/abstractionkit/README.md` y `dist/index.d.mts` y anotar en el PR los nombres reales de: crear la dirección de la Safe con un dueño WebAuthn, crear la UserOperation, patrocinarla con el paymaster de Candide, calcular el hash a firmar, armar la firma WebAuthn, formatearla (con el caso de inicialización), enviarla y esperar el recibo. **Verifica:** `pnpm verificar` en verde y la lista de nombres en el PR.
 - [ ] 1.2 Solo si `abstractionkit` no alcanza para ABI y EIP-712: agregar `viem` con versión exacta y decir en el PR por qué. **Verifica:** el PR lo justifica, o no se agregó.
 - [ ] 1.3 `.env.example`: agregar `LH_PRUEBA_CANDIDE`, `LH_PRUEBA_CANDIDE_SIMULADO`, `LH_PRUEBA_CANDIDE_RPC`, `CANDIDE_BUNDLER_URL`, `CANDIDE_PAYMASTER_URL` y `CANDIDE_SPONSORSHIP_POLICY_ID`, sin valores y con un comentario: solo Preview y Development, las URL llevan la clave y son secretas. **Verifica:** revisión del diff; ninguna variable con `NEXT_PUBLIC_`.
 
@@ -30,7 +30,7 @@
 
 - [ ] 4.1 Una ayuda común: 404 si no está habilitada → super admin verificado en el servidor (como `exigirSuperAdmin` de `app/api/personas/route.ts`) → cuerpo validado. Todas con `force-dynamic` y `no-store`. **Verifica:** tests de ruta: 404 apagada, 404 en Production, 401 sin sesión, 403 con `persona`, y que en esos casos no se llama al puerto (espía en el mock).
 - [ ] 4.2 `cuenta`, `preparar`, `enviar` y `operacion`, según design §3. `enviar` vuelve a validar la política y que `sender` sea la dirección de `{ x, y }`. **Verifica:** tests con el mock: recorrido completo; 400 "Llave pública inválida"; 400 "La operación no cumple la política de gas" con un callData alterado; 400 si `sender` no coincide.
-- [ ] 4.3 `firma-fuera` y `verificar-firma` (design §6). Si la Safe no está desplegada, responden 409 "Primero hacé la primera operación". <!-- arquitecto --> `verificar-firma` devuelve también el fallback handler de la Safe y distingue "firma no válida" (devolvió otro valor) de "la Safe no responde EIP-1271" (revert sin la función), según design §6. **Verifica:** tests con el mock, incluido el caso "no responde EIP-1271".
+- [ ] 4.3 `firma-fuera` y `verificar-firma` (design §6). Si la Safe no está desplegada, responden 409 "Primero hacé la primera operación". <!-- arquitecto --> `verificar-firma` devuelve también el fallback handler de la Safe y distingue "firma no válida" (devolvió otro valor) de "la Safe no responde EIP-1271" (revert sin la función), según design §6. <!-- 25-nov --> El resultado se compara con `0x1626ba7e` (un `bytes4`, nunca como `bool`) y un `eth_call` vacío se muestra como "sin respuesta del nodo" (design §6). **Verifica:** tests con el mock, incluidos "no responde EIP-1271", "devolvió `0x1626ba7e`" y "respuesta vacía".
 
 ## 5. Página `/netx/billetera-prueba`
 

@@ -1,5 +1,7 @@
 # Proposal
 
+> **Estado al 25-nov-2026.** Al día con `dev`. La prueba no depende del login: sirve igual con Privy que con Neon Auth. `abstractionkit` se fija en **2.1.0** (era 0.4.3), porque las versiones anteriores daban por inválida toda firma EIP-1271, que es lo que esta prueba mide. Detalle en `design.md`, estado al 25-nov.
+
 ## Why
 
 ADR-009 (punto 2) dejó el proveedor de billeteras para una prueba de una noche en noviembre, con revisión el 15-nov-2026. ADR-011 (Propuesta, PR #105) propone Candide: una cuenta Safe por persona con una passkey como dueña, gas pagado por nosotros y todo lo de Candide detrás del servidor. ADR-012 (Propuesta) deja una pregunta abierta: ¿valida la firma de una Safe con passkey (EIP-1271) como constancia de EAS fuera de la cadena? Gus quiere probarlo ya, antes de aceptar los dos ADR y antes de especificar `billeteras-safe`.
@@ -39,7 +41,7 @@ Esta prueba recorre de punta a punta el camino "sin saber de cripto" de ADR-011 
 ## Impact
 
 - Código nuevo: `app/netx/billetera-prueba/`, `app/api/netx/billetera-prueba/` (rutas), `lib/integraciones/candide/` (tipos, puerto, mock, adaptador real, índice), `lib/billetera-prueba/` (lógica pura: passkey, política, armado de llamadas a EAS, tiempos) y sus tests, `e2e/billetera-prueba.spec.ts`.
-- Dependencias nuevas: `abstractionkit` (versión exacta) y `viem` (versión exacta, solo para codificar llamadas y hashes EIP-712 si `abstractionkit` no alcanza).
+- Dependencias nuevas: `abstractionkit` (versión exacta, 2.1.0) y `viem` (versión exacta, solo para codificar llamadas y hashes EIP-712 si `abstractionkit` no alcanza).
 - Configuración: `.env.example` (variables nuevas, sin valores), `playwright.config.ts` (enciende la página en modo simulado para el e2e local).
 - Documentación: `docs/guiones/billeteras-candide-prueba.md`.
 - Externo: cuenta de Candide (Gus), clave de testnet y política de patrocinio. Sin plata real.

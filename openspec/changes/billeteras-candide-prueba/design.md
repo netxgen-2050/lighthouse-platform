@@ -1,12 +1,21 @@
 # Design
 
+> **Estado al 25-nov-2026.** Se puso al día con `dev` (rediseño, consentimiento y login con Neon Auth ya mergeados). Qué cambió desde el 23-oct:
+> - **Login:** el código de Neon Auth está en `dev`, apagado hasta que Gus prenda `NEXT_PUBLIC_LH_LOGIN=neon-auth`. Esta prueba **no depende del proveedor de login**: pide la sesión con `sesionDelPedido` y el rol `superadmin` verificado en el servidor, que funcionan igual con Privy y con Neon Auth. No hace falta esperar a que Neon Auth esté prendido para correrla.
+> - **`abstractionkit` pasó de 0.4.3 a 2.1.0** (1.0.0 el 4-nov; 2.0.0 y 2.1.0 el 12-nov). `SafeAccountV0_3_0`, la clase de esta prueba, no cambió su dirección ni su firma. Se fija **2.1.0**, por tres arreglos de la 2.0.0 que tocan justo esta prueba:
+>   - `verifyWebAuthnSignatureForMessageHash` devolvía `false` para **toda** firma: leía el valor mágico de EIP-1271 (`0x1626ba7e`, un `bytes4`) como booleano. Con la 0.4.3, la respuesta a la pregunta de ADR-012 hubiera salido "no válida" por un error de la librería, no de la Safe.
+>   - un `eth_call` vacío ahora se reporta como `BAD_DATA` y no como `false`;
+>   - `SafeAccountV0_3_0` rechaza `parallelPaymasterInitValues` (no lo usamos).
+> - **No se cambia de clase.** La 1.0.0 trae `SafeMultiChainSigAccountV2` (EntryPoint v0.9, Safe 1.5.0), pero la prueba sigue con `SafeAccountV0_3_0`, como dice ADR-011. Qué clase usa `billeteras-safe` se decide con el reporte.
+> - ADR-009 preveía revisar el proveedor el 15-nov; ADR-011 y ADR-012 siguen en "Propuesta". La prueba sirve justamente para decidirlos.
+
 ## Context
 
 - ADR-009 (aceptada) separa el login (Neon Auth) de la billetera y deja el proveedor para una prueba de una noche, con revisión el 15-nov-2026.
 - ADR-011 (Propuesta, PR #105) propone Candide: Safe por persona, passkey como dueña, paymaster nuestro y todo por el servidor. ADR-012 (Propuesta) pide verificar si la firma EIP-1271 de una Safe con passkey sirve para constancias de EAS fuera de la cadena.
 - Hoy no hay nada de billeteras en el código: `lib/sesion/billetera.ts` solo abrevia direcciones. Las rutas solo para super admin ya tienen un patrón: `app/api/personas/route.ts` (`sesionDelPedido` y rol `superadmin` verificado en el servidor). La pantalla usa `SoloSuperAdmin` como `/netx`.
 - La receta de integraciones (`.claude/skills/integracion-externa`) pide puerto, mock y adaptador real, con las credenciales solo en el servidor.
-- `abstractionkit` publicado: 0.4.3 (6-oct-2026), dependencias `@noble/curves` y `@noble/hashes`. No está instalado: los nombres de funciones de este documento salen de la documentación de Candide y **hay que confirmarlos en los tipos de la versión fijada** (`node_modules/abstractionkit/dist/index.d.mts`).
+- `abstractionkit` publicado: **2.1.0** (12-nov-2026; al especificar era 0.4.3, ver el estado al 25-nov), dependencias `@noble/curves` y `@noble/hashes`. No está instalado: los nombres de funciones de este documento salen de la documentación de Candide y **hay que confirmarlos en los tipos de la versión fijada** (`node_modules/abstractionkit/dist/index.d.mts`).
 
 ## Goals / Non-Goals
 
@@ -23,7 +32,7 @@
 
 | Tema | Dato | Fuente / fecha |
 |---|---|---|
-| Qué ofrece | SDK `abstractionkit` para cuentas Safe ERC-4337 (EntryPoint v0.7 con `SafeAccountV0_3_0`); dueño por passkey (WebAuthn, P-256); bundler y paymaster por URL con clave | ADR-011, docs.candide.dev (23-oct-2026); npm `abstractionkit` 0.4.3 |
+| Qué ofrece | SDK `abstractionkit` para cuentas Safe ERC-4337 (EntryPoint v0.7 con `SafeAccountV0_3_0`); dueño por passkey (WebAuthn, P-256); bundler y paymaster por URL con clave | ADR-011, docs.candide.dev (23-oct-2026); npm `abstractionkit` 2.1.0 (25-nov-2026) |
 | Qué no ofrece | Login, sesiones, guía para Next.js | ADR-011 |
 | Autenticación | La clave va dentro de la URL del bundler y del paymaster. **Dueño: Gus** (cuenta en dashboard.candide.dev) | ADR-011 punto 5 |
 | Límites | Testnet ilimitada en el plan Starter. Política de patrocinio configurable en el panel (contratos permitidos, topes) | candide.dev/pricing (23-oct-2026) |
@@ -80,6 +89,7 @@ Si el navegador altera la operación, la firma del paymaster deja de valer (cubr
 - El servidor arma la constancia fuera de la cadena de EAS (tipado EIP-712 `Attest`, dominio `{ name: "EAS", version: <leída de EAS.version()>, chainId, verifyingContract: EAS }`) con el mismo schema, `recipient` = la Safe y `time` = ahora. Calcula su hash EIP-712 y el UID fuera de la cadena (fórmula de la versión 1 de EAS offchain).
 - Como dueño de una Safe, la passkey no firma ese hash directo: firma el **hash de SafeMessage** (EIP-712 con el dominio de la Safe, `SafeMessage(bytes message)` con `message = abi.encode(hashConstancia)`), que es lo que verifica el `CompatibilityFallbackHandler` de la Safe. El servidor devuelve ese hash como `hashAFirmar`.
 - `verificar-firma`: el servidor arma la firma de Safe con la firma WebAuthn y hace `eth_call` a `isValidSignature(bytes32 hashConstancia, bytes firma)` de la Safe desplegada. Resultado: `0x1626ba7e` = válida; cualquier otra cosa o un revert = no válida, con el detalle.
+- <!-- 25-nov --> **El resultado de `isValidSignature` es un `bytes4`, no un booleano:** es válida solo si devuelve exactamente `0x1626ba7e`. No se decodifica como `bool` (el último byte de ese valor es cero también para una firma válida: es el error que tenía `abstractionkit` antes de la 2.0.0). Un `eth_call` que vuelve vacío (`0x`) no es un veredicto: se muestra como "sin respuesta del nodo" y no como "No válida". Hay un test unitario para los tres casos.
 - <!-- arquitecto: el fallback handler de una Safe 4337 puede no tener EIP-1271 --> **Antes de interpretar el resultado, saber qué contesta:** en las Safe con el módulo 4337, el *fallback handler* (el contrato que atiende las funciones que la Safe no tiene, como `isValidSignature`) suele ser el propio `Safe4337Module`, que puede **no** implementar EIP-1271. En ese caso el `eth_call` revierte por falta de la función, no por una firma mala. `verificar-firma` lee el fallback handler de la Safe (`eth_getStorageAt` en la ranura de Safe `0x6c9a6c4a39284e37ed1cf53d337577d14212a4870fb976a4366c693b939918d5`) y lo devuelve en el detalle. La página distingue tres resultados dentro de lo que pide la spec: "Válida para la Safe (EIP-1271)"; "No válida" con el valor devuelto; y "No válida" con el detalle "la Safe no responde EIP-1271 (fallback handler `0x…`)". El tercero es una respuesta a la pregunta de ADR-012, no un error de la prueba. Si `abstractionkit` documenta cómo firmar mensajes con una Safe con passkey (por ejemplo, otro handler o otro formato de firma), se sigue eso y se anota en el PR.
 - **Hipótesis a confirmar en el reporte (no se agrega el SDK de EAS):** la Safe valida su propia firma, pero la verificación estándar de constancias fuera de la cadena del SDK de EAS (`verifyOffchainAttestationSignature`) usa ECDSA y podría no aceptar EIP-1271. El implementador lo confirma **leyendo** el código fuente del SDK (sin instalarlo) y lo anota en el PR. Si no lo acepta, aplica la salida que ya prevé ADR-012: la persona afirma en la cadena desde su Safe con gas pagado.
 
@@ -104,7 +114,7 @@ app/netx/billetera-prueba/page.tsx (server: 404 si no está habilitada) + prueba
 - Todas las rutas: `dynamic = "force-dynamic"`, `Cache-Control: no-store`, 404 si no está habilitada, después super admin (como `exigirSuperAdmin` de `/api/personas`), después validación del cuerpo. Los errores de Candide se reducen a un mensaje sin URL (un `sanear()` puro, testeado).
 
 ### 8. Dependencias
-- `abstractionkit`, **versión exacta** (0.4.3 o la última al implementar). Es la pieza central de ADR-011.
+- `abstractionkit`, **versión exacta: 2.1.0** (o una 2.x posterior; nunca menor a 2.0.0, por el arreglo de EIP-1271). Es la pieza central de ADR-011.
 - `viem`, **versión exacta**, solo si `abstractionkit` no exporta lo necesario para codificar y decodificar ABI y para el hash EIP-712. Se usa solo en el servidor y en la lógica pura. Si `abstractionkit` alcanza, no se agrega.
 
 ### 9. Pruebas
@@ -114,7 +124,7 @@ app/netx/billetera-prueba/page.tsx (server: 404 si no está habilitada) + prueba
 
 ## Risks / Trade-offs
 
-- [La API de `abstractionkit` 0.4.x no coincide con los nombres de este documento] → el implementador se guía por los tipos instalados; si una pieza no existe (por ejemplo, la firma WebAuthn para Safe o el patrocinio), frena y lo reporta en lugar de escribir criptografía a mano.
+- [La API de `abstractionkit` 2.x no coincide con los nombres de este documento] → el implementador se guía por los tipos instalados; si una pieza no existe (por ejemplo, la firma WebAuthn para Safe o el patrocinio), frena y lo reporta en lugar de escribir criptografía a mano.
 - [Los agentes no tienen clave de Candide] → toda la verificación nocturna es con el mock. La prueba real queda en el guion de Gus y se anota en el PR como pendiente.
 - [La passkey depende del dominio] → el guion fija una URL de preview estable.
 - [Una Safe con una sola passkey y sin recuperación] → aceptable solo en testnet. Queda escrito como requisito de `billeteras-safe`.
@@ -132,5 +142,5 @@ No hay datos ni migraciones. Para apagar la prueba, se borra `LH_PRUEBA_CANDIDE`
 ## Open Questions
 
 - ¿Gus tiene ya cuenta en dashboard.candide.dev? ¿El plan gratis pide clave también para testnet? (lo resuelve el guion).
-- ¿El id de política de patrocinio hace falta en `abstractionkit` 0.4.x o alcanza con la política por defecto del proyecto?
+- ¿El id de política de patrocinio hace falta en `abstractionkit` 2.x o alcanza con la política por defecto del proyecto?
 - ¿Cuál es la versión del dominio EIP-712 de EAS en Base Sepolia? (se lee de `version()`; no se fija a mano).
