@@ -7,6 +7,7 @@ import { CLAVES_COMPARTIDAS } from "@/lib/demo/claves";
 import { quitarConstanciasDe } from "@/lib/pactos/registro-compartido";
 import { borrarSensibles, cambiarNovedadesEnServidor, pedirConsentimiento, publicarEstado, retirarEnServidor } from "@/lib/privacidad/consentimiento";
 import type { CanalRegistrado } from "@/lib/privacidad/estado";
+import { borrarActividadEnServidor, pedirActividad } from "@/lib/privacidad/actividad";
 import { exportarMisDatos, nombreArchivoDatos } from "@/lib/privacidad/exportar";
 import { fechaYHora } from "@/lib/privacidad/fecha";
 import { RESPONSABLE } from "@/lib/privacidad/politica";
@@ -63,8 +64,10 @@ export function MisDatosCliente() {
     if (!sesion) return;
     try {
       // Las filas del libro de consentimientos vienen del servidor; si no responde, esa parte sale como null (sin dato).
-      const delServidor = await pedirConsentimiento(cabeceras, { filas: true });
+      // Las reservas (y el origen) vienen de una sola llamada aparte, que no pide consentimiento vigente; si falla, sin dato.
+      const [delServidor, actividad] = await Promise.all([pedirConsentimiento(cabeceras, { filas: true }), pedirActividad(cabeceras)]);
       const datos = exportarMisDatos({
+        actividad,
         almacen: window.localStorage,
         idPersona: sesion.idPersona,
         email: sesion.email,
@@ -106,6 +109,13 @@ export function MisDatosCliente() {
 
   async function retirar() {
     if (!sesion) return;
+    // Antes que nada, se liberan los lotes de la persona en el servidor (una transacción; el libro conserva sus filas). Si falla,
+    // no se retira nada: se le avisa con el mismo error que si el retiro no se hubiera registrado.
+    if (!(await borrarActividadEnServidor(cabeceras))) {
+      setFalloRetiro(false);
+      setFalloRetiroServidor(true);
+      return;
+    }
     // Primero el servidor: una sola transacción agrega las filas `retira` (novedades si estaban aceptadas, política y términos,
     // en ese orden) y no borra ninguna. Si no responde no se toca nada del navegador y la sesión sigue abierta.
     const retirado = await retirarEnServidor(cabeceras, sesion.idPersona);

@@ -30,7 +30,7 @@ Rama `agente/lotes-en-la-base` desde `dev`, **después** de que `consentimiento-
 
 ## 2. Servidor de reservas
 
-- [ ] 2.1 `lib/lotes/servidor.ts`:
+- [x] 2.1 `lib/lotes/servidor.ts`:
   - `estadosDeLotes(bd)`;
   - `comprasDePersona(bd, personaId)` con la forma de `CompraLote[]`;
   - `reservar`, `pagar` y `deshacer`, cada una en una transacción con `pg_advisory_xact_lock` por lote (design §2);
@@ -50,7 +50,7 @@ Rama `agente/lotes-en-la-base` desde `dev`, **después** de que `consentimiento-
   - `personas.origen` se escribe solo si es null.
 
   Verificar con `pnpm test lib/lotes`.
-- [ ] 2.2 Rutas `app/api/lotes/estados` (GET público) y `app/api/lotes/reservas` (GET y POST), con el patrón de `app/api/consentimientos/route.ts` (design §3). Tests de ruta:
+- [x] 2.2 Rutas `app/api/lotes/estados` (GET público) y `app/api/lotes/reservas` (GET y POST), con el patrón de `app/api/consentimientos/route.ts` (design §3). Tests de ruta:
   - 401 sin sesión;
   - 403 sin consentimiento (`consentimiento: false`);
   - 409 con el motivo;
@@ -58,11 +58,11 @@ Rama `agente/lotes-en-la-base` desde `dev`, **después** de que `consentimiento-
   - `estados` no trae ningún id de persona: recorrer la respuesta y buscar UUID y `@`.
 
   Verificar con `pnpm test`.
-- [ ] 2.3 ~~`app/api/prueba/reservas` (DELETE): solo con `modoPruebaActivo` y fuera de producción de Vercel; si no, 404. Test de los dos casos.~~ <!-- arquitecto: la ruta se saca (design §3). En su lugar: --> `e2e/fixtura.ts` suma `liberarLotes(ids)`, que entra como super admin de prueba y manda `POST /api/lotes/reservas` con `accion: "deshacer"` por cada lote. Ninguna ruta desactiva un trigger. Verificar con `pnpm test`.
+- [x] 2.3 ~~`app/api/prueba/reservas` (DELETE): solo con `modoPruebaActivo` y fuera de producción de Vercel; si no, 404. Test de los dos casos.~~ <!-- arquitecto: la ruta se saca (design §3). En su lugar: --> `e2e/fixtura.ts` suma `liberarLotes(ids)`, que entra como super admin de prueba y manda `POST /api/lotes/reservas` con `accion: "deshacer"` por cada lote. Ninguna ruta desactiva un trigger. Verificar con `pnpm test`.
 
 ## 3. Cliente de reservas
 
-- [ ] 3.1 `lib/lotes/reservas.ts`: `leerReservas`, `reservarLote`, `pagarLote` y `deshacerLote` contra la API.
+- [x] 3.1 `lib/lotes/reservas.ts`: `leerReservas`, `reservarLote`, `pagarLote` y `deshacerLote` contra la API.
   - `components/lotes/usar-compras.ts` devuelve `{ compras, reservar, pagar, deshacer, listo }`.
   - Nuevo `components/lotes/usar-estados-lotes.ts`.
   - `estadoConCompras` recibe los estados de la base.
@@ -107,6 +107,11 @@ Gus decidió el 25-nov-2026 que los datos del Congreso se borran. La redirecció
        Tests: limpia dos personas y un id viejo de Privy en el mismo almacén; no toca `lighthouse.compromisos.v1` ni otras
        `lh-*`; correrla dos veces no rompe nada. Actualizar `lib/demo/claves.test.ts`, `lib/demo/bitacora.test.ts`,
        `lib/contactos/pedidos.test.ts` y `lib/privacidad/privacidad.test.ts`, que hoy esperan esas claves. -->
+  <!-- implementador (noche 1, reservas): HECHO `limpiarPaso2` + `NOMBRES_PASO_2` (solo `lh-lotes` y `lh-consultas-lotes`) en
+       `lib/demo/importar.ts`, llamada por `proveedor-sesion.tsx` en un efecto (después de `copiarClavesAnteriores`), sin marca
+       (es idempotente), con sus tests; `lotes` y `consultasLotes` ya salieron de `NOMBRES_BASE`. PENDIENTE (noche 2): sumar
+       `lh-contactos` y `lh-bitacora` a `NOMBRES_PASO_2`, sacar `contactos` y `bitacora` de `NOMBRES_BASE` y actualizar
+       `bitacora.test.ts` y `pedidos.test.ts`. -->
 - [ ] 7.2 `app/api/mis-datos/actividad` (DELETE, pide sesión y no consentimiento): en una transacción agrega `deshace` de los lotes vigentes de la persona, borra sus contactos y pone `personas.origen` en null. La bitácora queda. Tests de los tres efectos y de que la bitácora siga.
   - `lib/privacidad/exportar.ts` suma `reservas`, `contactos` y `bitacora` desde las rutas GET (`null` si una falla).
   - `mis-datos-cliente.tsx` llama al DELETE antes del retiro y, si falla, no retira.
@@ -116,6 +121,9 @@ Gus decidió el 25-nov-2026 que los datos del Congreso se borran. La redirecció
        responde 200 con los datos; el export no trae el id del super admin que liberó (`liberadoPorElEquipo`); DELETE sin
        `Origin` propio da 403; DELETE sin persona en la base da 200 sin escribir. Actualizar el comentario de
        `app/api/consentimientos/route.ts` sobre las rutas que no exigen consentimiento. -->
+  <!-- implementador (noche 1, reservas): HECHO GET y DELETE de `app/api/mis-datos/actividad` con SOLO reservas y origen (con todos
+       los tests extra de arriba), `lib/privacidad/actividad.ts`, `exportar.ts` (`reservas` y `origenPrimeraVisita`), `mis-datos-cliente.tsx` y el comentario de `consentimientos/route.ts`. PENDIENTE (noche 2): borrar
+       los contactos en el DELETE y traer `contactos` y `bitacora` en el GET y en la descarga. -->
 
   Verificar con `pnpm test lib/privacidad` y `pnpm verificar`.
 
@@ -133,6 +141,12 @@ Gus decidió el 25-nov-2026 que los datos del Congreso se borran. La redirecció
   - (e) axe sin violaciones serias en las pantallas tocadas.
 
   Verificar con `pnpm test:e2e`.
+  <!-- implementador (noche 1, reservas): HECHO `liberarLotes`, `reservarPorApi` y `comprasPorApi` en `e2e/fixtura.ts`; (a), (b) y la parte
+       de reservas de (d) y (e) en `e2e/lotes-en-la-base.spec.ts`; `lotes`, `mi-tierra`, `hibrido`, `barrio-norte` y `accesibilidad`
+       pasan a la API, cada archivo con lotes propios (lotes.spec: 1.º y 2.º disponibles del norte y 1.º de los primeros; mi-tierra: 3.º y
+       2.º de los primeros; hibrido: 4.º; barrio-norte: 5.º; lotes-en-la-base: 6.º, 7.º y 8.º; accesibilidad: 9.º y 10.º). El `liberarLotes`
+       va en el `beforeEach` (no en el `beforeAll`) porque dentro de un archivo varios tests reservan el mismo lote.
+       PENDIENTE (noche 2): (c), el resto de (d) y (e), y los e2e que siembran `lh-contactos` o `lh-bitacora`. -->
 
 ## 9. Integración
 

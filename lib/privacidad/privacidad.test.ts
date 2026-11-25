@@ -455,13 +455,15 @@ describe("la política con lotes simulados", () => {
     expect(FINALIDADES.some((t) => t.includes("simular la reserva y la compra de un lote"))).toBe(true);
   });
 
-  it("la descarga de Mis datos trae lo de los lotes", () => {
-    const datos = exportarMisDatos({
-      almacen: almacen({ "u:A:lh-lotes": JSON.stringify([{ loteId: "x" }]) }),
-      idPersona: "A",
-      email: null,
-      billetera: null,
-    }).datos as Record<string, unknown>;
-    expect(datos.lotes).toEqual([{ loteId: "x" }]);
+  it("la descarga de Mis datos trae las reservas del servidor, y null (sin dato) si no se pudieron pedir", () => {
+    const entrada = { almacen: almacen({}), idPersona: "A", email: null, billetera: null };
+    const con = exportarMisDatos({ ...entrada, actividad: { reservas: [{ loteId: "x", evento: "reserva" }], origen: { fuente: "mail" } } }).datos as Record<string, unknown>;
+    expect(con.reservas).toEqual([{ loteId: "x", evento: "reserva" }]);
+    expect(con.origenPrimeraVisita).toEqual({ fuente: "mail" });
+    const sin = exportarMisDatos({ ...entrada, actividad: null }).datos as Record<string, unknown>;
+    expect(sin.reservas).toBeNull();
+    expect(sin.origenPrimeraVisita).toBeNull();
+    // Lo que el navegador tenía de lotes ya no se exporta: no es una clave de la app.
+    expect("lotes" in sin).toBe(false);
   });
 });

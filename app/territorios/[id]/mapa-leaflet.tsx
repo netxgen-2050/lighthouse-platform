@@ -21,7 +21,9 @@ import { nombreDeLugar } from "@/lib/territorios/textos";
 import { esDeHoy, frentesEn, numeroDeFrente, type VistaId } from "@/lib/territorios/vistas";
 import { listarTribus } from "@/lib/tribus/datos";
 import { textoDeEstado } from "@/lib/tribus/tipos";
-import { estadoDeLote } from "@/lib/territorios/loteo-estados";
+import { useEstadosLotes } from "@/components/lotes/usar-estados-lotes";
+import { estadoConCompras } from "@/lib/lotes/compra";
+import type { EstadoLote } from "@/lib/territorios/loteo-estados";
 import { listarLotes, sectorNorte, zonasDelLoteo } from "@/lib/territorios/loteo";
 import {
   ORDEN_GRUPOS,
@@ -65,6 +67,20 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props)
   seleccionActual.current = seleccion;
   const vistaActual = useRef({ vista, fase });
   vistaActual.current = { vista, fase };
+  // Los estados de los lotes según el servidor (lo que reservó otra persona se pinta reservado). Mientras no llegan, los de ejemplo.
+  const { estados } = useEstadosLotes();
+  const estadosActuales = useRef(estados);
+  estadosActuales.current = estados;
+
+  /** Pinta cada lote según su estado actual. Se llama al armar el mapa y cada vez que llegan estados nuevos. */
+  function pintarLotes() {
+    for (const lote of listarLotes()) {
+      const c = capas.current.get(lote.id);
+      if (!c) continue;
+      c.base = estiloLote(estadoConCompras(lote.id, [], estadosActuales.current) as EstadoLote);
+      c.capa.setStyle(lote.id === ultima.current ? estiloElegido(c.base, true) : c.base);
+    }
+  }
 
   function resaltar(id: string | null) {
     if (ultima.current) {
@@ -184,7 +200,7 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props)
       }
       const lotes = listarLotes();
       for (const lote of lotes) {
-        const base = estiloLote(estadoDeLote(lote.id));
+        const base = estiloLote(estadoConCompras(lote.id, [], estadosActuales.current) as EstadoLote);
         registrar(lote.id, L.polygon(aLatLng(lote.anillo), { renderer, ...base }).addTo(grupos["loteo-norte"]), base);
       }
       limitesLotes.current = lotes.length > 0 ? L.latLngBounds(lotes.flatMap((l) => aLatLng(l.anillo))) : null;
@@ -305,6 +321,10 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props)
   useEffect(() => {
     aplicarVista.current?.();
   }, [vista, fase]);
+
+  useEffect(() => {
+    if (estados && mapaRef.current) pintarLotes();
+  }, [estados]);
 
   useEffect(() => {
     if (mapaRef.current) resaltar(seleccion);

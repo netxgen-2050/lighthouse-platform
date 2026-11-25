@@ -1,5 +1,5 @@
 import { conAdhesionAlManifiesto } from "./ayudas";
-import { expect, test, type Page } from "./fixtura";
+import { expect, liberarLotes, reservarPorApi, test, type Page } from "./fixtura";
 import { faroEn } from "../lib/bien-comun/formato";
 import { PLAN_CUOTAS, faroDeLote, faroDelPlan, planDeLote } from "../lib/bien-comun/modelo";
 import { precioLote, VERSION_MODELO_LOTES } from "../lib/lotes/modelo";
@@ -8,13 +8,18 @@ import { estadoDeLote } from "../lib/territorios/loteo-estados";
 import { usd } from "../lib/series/formato";
 
 // Mi tierra (rediseno-mi-tierra): los valores que se esperan salen de los módulos, nunca escritos a mano.
-test.beforeEach(async ({ page }) => {
-  await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
-});
+// Las reservas viven en el servidor (`lotes-en-la-base`): cada test entra con una persona propia (sin compras de otro test) y
+// este archivo usa lotes SOLO suyos (el 3.º disponible del norte y el 2.º de los primeros), que libera antes de cada test.
+test.use({ identidad: "propia" });
 
 const disponibles = lotesDelGrupo("norte").filter((l) => estadoDeLote(l.id) === "disponible");
-const lote = disponibles[0];
-const primero = lotesDelGrupo("primeros").find((l) => estadoDeLote(l.id) === "disponible")!;
+const lote = disponibles[2];
+const primero = lotesDelGrupo("primeros").filter((l) => estadoDeLote(l.id) === "disponible")[1];
+
+test.beforeEach(async ({ page, request }) => {
+  await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+  await liberarLotes(request, [lote.id, primero.id]);
+});
 const LEI = "Leí lo que comparto y lo que me comprometo a pagar";
 const CUOTAS = PLAN_CUOTAS.dePartida;
 const plan = planDeLote(precioLote(lote.superficieM2), CUOTAS)!;
@@ -35,11 +40,13 @@ async function reservarYPagar(page: Page, pagar: boolean) {
   }
 }
 
-/** SIEMBRA DE TEST: una compra guardada tal cual la guardaría la ficha (solo la primera vez). */
-async function sembrar(page: Page, compra: Record<string, unknown>) {
-  await page.addInitScript((c) => {
-    if (!window.localStorage.getItem("lh-lotes")) window.localStorage.setItem("lh-lotes", JSON.stringify([c]));
-  }, compra);
+/** SIEMBRA DE TEST: la compra de la persona de este test, por la API, como la guardaría la ficha. */
+async function sembrar(
+  request: Parameters<typeof liberarLotes>[0],
+  email: string,
+  compra: { loteId: string; opcion: string; paso: "reservado" | "pagado"; vio: Record<string, unknown> },
+) {
+  await reservarPorApi(request, email, compra.loteId, { opcion: compra.opcion, vio: compra.vio, pagar: compra.paso === "pagado" });
 }
 
 const vioDe = (l: { superficieM2?: number }, conPlan: boolean) => ({
@@ -77,6 +84,7 @@ test.describe("sin sesión", () => {
     const texto = await main(page).innerText();
     // Ningún dato: ni lotes, ni cuotas pagadas, ni FARO acreditados (la bajada nombra los temas, sin números).
     expect(texto).not.toMatch(/\d|Reservado|En cuotas|acreditad/);
+    // Sin sesión no se pide ninguna reserva (y el navegador ya no guarda nada de lotes).
     const claves = await page.evaluate(() => Object.keys(window.localStorage).filter((k) => k.includes("lh-lotes")));
     expect(claves).toEqual([]);
   });
@@ -134,14 +142,8 @@ test("pagar el anticipo en 24 cuotas: 0 de 24, anticipo, cuota, FARO acreditados
   await expect(page.getByText("En cuotas (simulado)").first()).toBeVisible();
 });
 
-test("los primeros 4 lotes no entran al plan y no muestran FARO", async ({ page }) => {
-  await sembrar(page, {
-    loteId: primero.id,
-    opcion: "solo-lote",
-    paso: "reservado",
-    reservadoEl: "2026-11-20T12:00:00.000Z",
-    vio: vioDe(primero, false),
-  });
+test("los primeros 4 lotes no entran al plan y no muestran FARO", async ({ page, request, emailActual }) => {
+  await sembrar(request, emailActual, { loteId: primero.id, opcion: "solo-lote", paso: "reservado", vio: vioDe(primero, false) });
   await page.goto("/mi-tierra");
   const tarjeta = page.getByRole("listitem").filter({ hasText: `Lote ${primero.numero}` }).first();
   await expect(tarjeta).toContainText("Este lote no entra al plan en cuotas.");
@@ -152,12 +154,11 @@ test("los primeros 4 lotes no entran al plan y no muestran FARO", async ({ page 
   await expect(main(page).getByText("FARO acreditados (simulado)")).toHaveCount(0);
 });
 
-test("una reserva vieja sin plan dice 'sin dato' y la página no falla", async ({ page }) => {
-  await sembrar(page, {
+test("una reserva sin plan dice 'sin dato' y la página no falla", async ({ page, request, emailActual }) => {
+  await sembrar(request, emailActual, {
     loteId: lote.id,
     opcion: "solo-lote",
     paso: "reservado",
-    reservadoEl: "2026-10-01T12:00:00.000Z",
     vio: { precio: null, aporte: null, expensa: null, version: "v0.0-vieja" },
   });
   await page.goto("/mi-tierra");
@@ -189,16 +190,9 @@ test.describe("con adhesión al manifiesto", () => {
   });
 });
 
-test("en inglés: títulos y textos traducidos", async ({ page, context, baseURL }) => {
+test("en inglés: títulos y textos traducidos", async ({ page, context, baseURL, request, emailActual }) => {
   await context.addCookies([{ name: "lh-idioma", value: "en", url: baseURL! }]);
-  await sembrar(page, {
-    loteId: lote.id,
-    opcion: "solo-lote",
-    paso: "pagado",
-    reservadoEl: "2026-11-20T12:00:00.000Z",
-    pagadoEl: "2026-11-21T12:00:00.000Z",
-    vio: vioDe(lote, true),
-  });
+  await sembrar(request, emailActual, { loteId: lote.id, opcion: "solo-lote", paso: "pagado", vio: vioDe(lote, true) });
   await page.goto("/mi-tierra");
   await expect(page.getByRole("heading", { level: 1, name: "My land" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Your lot" })).toBeVisible();
@@ -209,31 +203,17 @@ test("en inglés: títulos y textos traducidos", async ({ page, context, baseURL
   await expect(main(page)).toContainText("Today FARO gives no vote on the platform.");
 });
 
-test("a 390 px no hay scroll horizontal, con una compra en cuotas", async ({ page }) => {
+test("a 390 px no hay scroll horizontal, con una compra en cuotas", async ({ page, request, emailActual }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await sembrar(page, {
-    loteId: lote.id,
-    opcion: "solo-lote",
-    paso: "pagado",
-    reservadoEl: "2026-11-20T12:00:00.000Z",
-    pagadoEl: "2026-11-21T12:00:00.000Z",
-    vio: vioDe(lote, true),
-  });
+  await sembrar(request, emailActual, { loteId: lote.id, opcion: "solo-lote", paso: "pagado", vio: vioDe(lote, true) });
   await page.goto("/mi-tierra");
   await expect(page.getByRole("heading", { level: 3, name: `Lote ${lote.numero}` })).toBeVisible();
   const desborda = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
   expect(desborda).toBe(false);
 });
 
-test("nunca habla de rendimiento, APY ni precio de FARO, y no se puede llegar a todo con el teclado sin trampa", async ({ page }) => {
-  await sembrar(page, {
-    loteId: lote.id,
-    opcion: "solo-lote",
-    paso: "pagado",
-    reservadoEl: "2026-11-20T12:00:00.000Z",
-    pagadoEl: "2026-11-21T12:00:00.000Z",
-    vio: vioDe(lote, true),
-  });
+test("nunca habla de rendimiento, APY ni precio de FARO, y no se puede llegar a todo con el teclado sin trampa", async ({ page, request, emailActual }) => {
+  await sembrar(request, emailActual, { loteId: lote.id, opcion: "solo-lote", paso: "pagado", vio: vioDe(lote, true) });
   await page.goto("/mi-tierra");
   await expect(page.getByRole("heading", { level: 3, name: `Lote ${lote.numero}` })).toBeVisible();
   const texto = await main(page).innerText();

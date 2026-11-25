@@ -15,7 +15,8 @@ const SIN_CACHE ={ "Cache-Control": "no-store" };
  * El consentimiento de la persona en sesión, guardado en el libro `consentimientos` (consentimiento-en-la-base). `GET` devuelve
  * el estado vigente (con `?filas=1`, también todas las filas de la persona, para la descarga de Mis datos); `POST` registra
  * `acepta` o `retira`. 401 sin sesión, 403 sin acceso, 422 si el pedido no vale, 503 si la base falla (la persona sigue anónima).
- * Esta ruta y `/api/sesion` son las únicas que escriben o leen sin exigir un consentimiento vigente.
+ * Esta ruta, `/api/sesion` y `/api/mis-datos/actividad` (ver y borrar lo propio, ADR-032) son las únicas que escriben o leen sin
+ * exigir un consentimiento vigente.
  */
 export async function GET(req: Request) {
   const s = await sesionDelPedido(req);

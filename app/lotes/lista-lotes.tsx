@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { Titulo } from "@/components/ui/titulo";
-import { TextoEstado } from "@/components/lotes/estado-del-lote";
+import { AvisoEstadosLotes, TextoEstado } from "@/components/lotes/estado-del-lote";
 import { useCompras } from "@/components/lotes/usar-compras";
+import { useEstadosLotes } from "@/components/lotes/usar-estados-lotes";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { estadoConCompras } from "@/lib/lotes/compra";
 import { textoSuperficieM2 } from "@/lib/territorios/biopueblo";
@@ -15,12 +16,14 @@ export function ListaLotes() {
   const t = useTextos("lotes");
   const tl = useTextos("territorio").loteo;
   const { compras } = useCompras();
+  const { estados, fallo } = useEstadosLotes();
   return (
     // El id es propio: en `/explorar` conviven con la lista del mapa (`lista-lotes-titulo`) y un id repetido rompería el nombre de la región.
     <section aria-labelledby="titulo-todos-los-lotes" className="mt-4 grid gap-2">
       <Titulo id="titulo-todos-los-lotes" className="text-xl font-bold">
         {t.lista.listaTitulo}
       </Titulo>
+      <AvisoEstadosLotes fallo={fallo} />
       {(["primeros", "norte"] as GrupoLote[]).map((grupo) => (
       <div key={grupo} className="grid gap-2">
       <Titulo extra={1} className="font-semibold">{grupo === "primeros" ? tl.primerosTitulo : tl.listaTitulo}</Titulo>
@@ -35,7 +38,7 @@ export function ListaLotes() {
               {" · "}
               {textoSuperficieM2(l.superficieM2, idioma)}
               {" · "}
-              <TextoEstado estado={estadoConCompras(l.id, compras)} />
+              <TextoEstado estado={estadoConCompras(l.id, compras, estados)} />
             </Link>
           </li>
         ))}

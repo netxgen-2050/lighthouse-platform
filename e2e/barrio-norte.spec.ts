@@ -1,8 +1,13 @@
-import { expect, test, type Page } from "./fixtura";
+import { emailUnico, expect, liberarLotes, reservarPorApi, test, type Page } from "./fixtura";
 import { vistaBarrioNorte } from "@/lib/barrios/norte";
 import { ANIOS_DEL_HORIZONTE, resumenObraBarrio } from "@/lib/bien-comun/barrio";
 import { enteroEn } from "@/lib/bien-comun/formato";
 import { porcentajeEn, usdEn } from "@/lib/lotes/formato";
+import { lotesDelGrupo } from "@/lib/territorios/loteo";
+import { estadoDeLote } from "@/lib/territorios/loteo-estados";
+
+// El 5.º lote disponible del norte es de este archivo (cada archivo de e2e usa lotes propios: las reservas viven en el servidor).
+const LOTE_PROPIO = lotesDelGrupo("norte").filter((l) => estadoDeLote(l.id) === "disponible")[4].id;
 
 // Barrio Norte (rediseno-explorar-valle): los valores que se esperan salen de los módulos, nunca escritos a mano.
 const vista = vistaBarrioNorte();
@@ -55,19 +60,11 @@ test.describe("sin sesión", () => {
     expect(html).not.toContain(enteroEn(Math.round(obra.infraestructura!), "es"));
   });
 
-  test("las compras simuladas del navegador no cambian los totales por estado", async ({ page }) => {
+  test("las compras simuladas (en el servidor) no cambian los totales de ejemplo por estado", async ({ page, request }) => {
+    // Lote propio de este archivo (el 5.º disponible del norte): lo libera antes y lo reserva otra persona, por la API.
+    await liberarLotes(request, [LOTE_PROPIO]);
     const antes = await page.goto(RUTA).then(() => page.getByRole("region", { name: "Los lotes del barrio" }).innerText());
-    await page.addInitScript(() => {
-      const compra = {
-        loteId: "lote-1",
-        opcion: "solo-lote",
-        paso: "pagado",
-        reservadoEl: "2026-10-01T12:00:00.000Z",
-        pagadoEl: "2026-10-02T12:00:00.000Z",
-        vio: { precio: 20_000, aporte: 1_000, expensa: 100, version: "v0.2" },
-      };
-      window.localStorage.setItem("lh-lotes", JSON.stringify([compra]));
-    });
+    await reservarPorApi(request, emailUnico("barrio"), LOTE_PROPIO, { pagar: true });
     await page.goto(RUTA);
     await expect(page.getByRole("region", { name: "Los lotes del barrio" })).toBeVisible();
     expect(await page.getByRole("region", { name: "Los lotes del barrio" }).innerText()).toBe(antes);

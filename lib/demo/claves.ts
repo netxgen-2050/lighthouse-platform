@@ -17,9 +17,8 @@ export const NOMBRES_BASE = {
   pasaporte: "lh-pasaporte",
   /** Horas de trabajo en texto libre del Pasaporte. */
   pasaporteHorasTexto: "lh-pasaporte:horas-texto",
-  consultasLotes: "lh-consultas-lotes",
-  /** Reservas y pagos SIMULADOS de lotes de Lighthouse VRN (lote, opción, paso, fechas y lo que vio). Sin datos de identidad ni de pago. */
-  lotes: "lh-lotes",
+  // Las reservas de lotes (`lh-lotes`) y `lh-consultas-lotes` salieron de acá en `lotes-en-la-base`: viven en el servidor y el
+  // navegador las borra (`limpiarPaso2` en `lib/demo/importar.ts`).
   contactos: "lh-contactos",
   origen: "lh-origen",
   bitacora: "lh-bitacora",

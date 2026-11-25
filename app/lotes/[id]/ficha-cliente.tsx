@@ -7,8 +7,9 @@ import { PedidoContacto } from "@/components/pedido-contacto";
 import { useSesion } from "@/components/sesion/contexto";
 import { EntrarPara } from "@/components/sesion/entrar-para";
 import { TerminoLegal } from "@/components/termino-legal";
-import { TextoEstado } from "@/components/lotes/estado-del-lote";
+import { AvisoEstadosLotes, TextoEstado } from "@/components/lotes/estado-del-lote";
 import { useCompras } from "@/components/lotes/usar-compras";
+import { useEstadosLotes } from "@/components/lotes/usar-estados-lotes";
 import { faroEn } from "@/lib/bien-comun/formato";
 import { PLAN_CUOTAS, centroDeAnillo, faroDeLote, faroDelPlan, loteTraeFaro, planDeLote } from "@/lib/bien-comun/modelo";
 import { guardarPedido } from "@/lib/contactos/almacen";
@@ -92,7 +93,8 @@ export function FichaCliente({ id }: { id: string }) {
   const t = useTextos("lotes");
   const tl = useTextos("territorio").loteo;
   const tb = useTextos("biencomun");
-  const { compras, guardar } = useCompras();
+  const { compras, reservar, pagar, deshacer } = useCompras();
+  const { estados, fallo: falloEstados } = useEstadosLotes();
   const [elegida, setElegida] = useState<OpcionCompra>("solo-lote");
   const [cuotasElegidas, setCuotasElegidas] = useState<number>(PLAN_CUOTAS.dePartida);
   const grupo = useId();
@@ -100,7 +102,7 @@ export function FichaCliente({ id }: { id: string }) {
   if (!lote) return null;
 
   const proyecto = proyectoDeGrupo(lote.grupo);
-  const estado = estadoConCompras(id, compras);
+  const estado = estadoConCompras(id, compras, estados);
   // La reserva o el pago simulados fijan la opción y el plan: el boleto muestra lo que se vio.
   const compra =
     estado === "reservado-por-vos" || estado === "vendido-a-vos" || estado === "en-cuotas-tuyo" ? compraDe(compras, id) : undefined;
@@ -159,6 +161,7 @@ export function FichaCliente({ id }: { id: string }) {
         <p className="text-sm font-medium">
           {t.ficha.estado} <TextoEstado estado={estado} />
         </p>
+        <AvisoEstadosLotes fallo={falloEstados} />
         <p className="text-sm">
           <strong>{t.ficha.quienVende}</strong> {sd}
         </p>
@@ -392,7 +395,10 @@ export function FichaCliente({ id }: { id: string }) {
           opcion={opcion}
           vio={vio}
           compras={compras}
-          guardar={guardar}
+          reservar={reservar}
+          pagar={pagar}
+          deshacer={deshacer}
+          disponible={estado === "disponible"}
           compra={compra}
         />
         <HablarConAlguien numero={lote.numero} proyecto={proyecto} />
