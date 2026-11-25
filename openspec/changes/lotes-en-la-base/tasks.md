@@ -21,7 +21,7 @@ Rama `agente/lotes-en-la-base` desde `dev`, **después** de que `consentimiento-
 
 ## 1. Base
 
-- [ ] 1.1 `lib/db/schema.ts`:
+- [x] 1.1 `lib/db/schema.ts`:
   - enums `reserva_evento` y `opcion_compra`;
   - tablas `reservas`, `contactos` y `bitacora`;
   - columna `personas.origen` (design §1).

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, index, pgEnum, pgTable, text, timestamp, uniqueIndex, unique, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, unique, uuid } from "drizzle-orm/pg-core";
 
 /**
  * Esquema de la base (Neon Postgres). La base cambia solo por migraciones (`pnpm db:generate`).
@@ -13,6 +13,8 @@ export const tipoConsentimiento = pgEnum("tipo_consentimiento", ["politica", "te
 export const eventoConsentimiento = pgEnum("evento_consentimiento", ["acepta", "retira"]);
 export const canalConsentimiento = pgEnum("canal_consentimiento", ["alta", "al-entrar", "nueva-version", "mis-datos"]);
 export const idiomaConsentimiento = pgEnum("idioma_consentimiento", ["es", "en"]);
+export const reservaEvento = pgEnum("reserva_evento", ["reserva", "paga", "deshace"]);
+export const opcionCompra = pgEnum("opcion_compra", ["solo-lote", "modular", "familiar", "amplia"]);
 
 export const personas = pgTable(
   "personas",
@@ -25,6 +27,8 @@ export const personas = pgTable(
     /** Tribu que administra; hoy solo `valle`. */
     tribuAdmin: text("tribu_admin"),
     acceso: boolean("acceso").notNull().default(true),
+    /** La primera visita ({ fuente, medio, campana, camino }); se escribe solo si es null (`lotes-en-la-base` design §1). */
+    origen: jsonb("origen"),
     creadaAt: timestamp("creada_at", { withTimezone: true }).notNull().defaultNow(),
     cambiadaAt: timestamp("cambiada_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -90,4 +94,78 @@ export const consentimientos = pgTable(
     aceptadoEnCliente: timestamp("aceptado_en_cliente", { withTimezone: true }),
   },
   (t) => [index("consentimientos_persona_tipo_hora").on(t.personaId, t.tipo, t.registradoAt.desc())],
+);
+
+/**
+ * Libro de reservas de lotes (`lotes-en-la-base`, ADR-001): cada reserva, pago simulado y deshacer es una fila nueva. La base
+ * rechaza UPDATE, DELETE y TRUNCATE (triggers en la migración 0002, escritos a mano). Si una migración posterior recrea la
+ * tabla, tiene que volver a crear `reservas_solo_agregar` y `reservas_sin_truncate`. El estado vigente de un lote es su último
+ * evento. Sin datos de pago ni de identidad más que el id de la persona.
+ */
+export const reservas = pgTable(
+  "reservas",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** De quién es la reserva. */
+    personaId: uuid("persona_id")
+      .notNull()
+      .references(() => personas.id, { onDelete: "restrict" }),
+    /** Quién agregó la fila: la persona, o el super admin que libera. */
+    hechoPor: uuid("hecho_por")
+      .notNull()
+      .references(() => personas.id, { onDelete: "restrict" }),
+    /** Id del loteo en código ("lote-7"); sin FK hasta que los lotes vivan en la base. */
+    loteId: text("lote_id").notNull(),
+    evento: reservaEvento("evento").notNull(),
+    /** Obligatoria en `reserva`; nula en los otros. */
+    opcion: opcionCompra("opcion"),
+    /** Lo que la persona vio (LoVisto); obligatoria en `reserva`. */
+    vio: jsonb("vio"),
+    /** { fuente, medio, campana, camino }; opcional. */
+    origen: jsonb("origen"),
+    registradoAt: timestamp("registrado_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("reservas_lote_hora").on(t.loteId, t.registradoAt.desc()), index("reservas_persona_hora").on(t.personaId, t.registradoAt.desc())],
+);
+
+/** Pedidos de contacto. No es un libro: tiene texto libre y la persona puede borrar los suyos (Ley 25.326, art. 16). */
+export const contactos = pgTable(
+  "contactos",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    personaId: uuid("persona_id")
+      .notNull()
+      .references(() => personas.id, { onDelete: "restrict" }),
+    motivo: text("motivo").notNull(),
+    referencia: text("referencia"),
+    canal: text("canal").notNull(),
+    momento: text("momento"),
+    mensaje: text("mensaje"),
+    destino: text("destino"),
+    estadoMostrado: text("estado_mostrado"),
+    origen: jsonb("origen"),
+    creadoAt: timestamp("creado_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("contactos_creado").on(t.creadoAt.desc())],
+);
+
+/** Bitácora de lo que se le mostró a la persona. Libro de solo agregar: mismos triggers que `reservas`. */
+export const bitacora = pgTable(
+  "bitacora",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    personaId: uuid("persona_id")
+      .notNull()
+      .references(() => personas.id, { onDelete: "restrict" }),
+    ruta: text("ruta").notNull(),
+    /** `estado-loteo` o `termino-legal`. */
+    tipo: text("tipo").notNull(),
+    clave: text("clave").notNull(),
+    mostrado: text("mostrado").notNull(),
+    huella: text("huella").notNull(),
+    borrador: boolean("borrador").notNull().default(false),
+    idioma: text("idioma"),
+    mostradoAt: timestamp("mostrado_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("bitacora_persona_tipo_clave").on(t.personaId, t.tipo, t.clave, t.huella, t.mostradoAt.desc())],
 );
