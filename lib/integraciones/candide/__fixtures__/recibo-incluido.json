@@ -1,0 +1,27 @@
+{
+  "_nota": "Forma de eth_getUserOperationReceipt (ERC-4337) armada a mano con el evento Attested de EAS real (topic0 = keccak del evento). No es una respuesta grabada de Candide: reemplazar por una cuando Gus corra el guion.",
+  "userOpHash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "entryPoint": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+  "sender": "0x1111111111111111111111111111111111111111",
+  "nonce": "0x0",
+  "paymaster": "0x0000000000000000000000000000000000000001",
+  "actualGasCost": "0x1",
+  "actualGasUsed": "0x1",
+  "success": true,
+  "logs": [
+    {
+      "address": "0x4200000000000000000000000000000000000021",
+      "topics": [
+        "0x8bf46bf4cfd674fa735a3d63ec1c9ad4153f033c290341f3a588b75685141b35",
+        "0x0000000000000000000000001111111111111111111111111111111111111111",
+        "0x0000000000000000000000001111111111111111111111111111111111111111",
+        "0xe6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6"
+      ],
+      "data": "0xabababababababababababababababababababababababababababababababab"
+    }
+  ],
+  "receipt": {
+    "transactionHash": "0x2222222222222222222222222222222222222222222222222222222222222222",
+    "blockNumber": "0x10"
+  }
+}

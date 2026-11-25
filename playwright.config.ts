@@ -52,6 +52,9 @@ export default defineConfig({
             NEXT_PUBLIC_PRIVY_APP_ID: "",
             PRIVY_APP_SECRET: "",
             VERCEL_ENV: "",
+            // La prueba de billeteras con Candide (billeteras-candide-prueba) se enciende solo acá, y en modo simulado: sin red.
+            LH_PRUEBA_CANDIDE: "1",
+            LH_PRUEBA_CANDIDE_SIMULADO: "1",
           },
         },
         {
