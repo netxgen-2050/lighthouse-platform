@@ -121,7 +121,7 @@ export function sellos(e: EntradaSellos, ahora: Date, idioma: Idioma = "es"): Se
           : m === "pedido"
             ? t.comunidad.detallePedido(c.nombre)
             : t.comunidad.detalleDisponible(c.nombre),
-      accion: m === "no-miembro" ? { tipo: "enlace", texto: t.comunidad.accion(c.nombre), href: esLh ? "/explorar#territorio" : `/tribus/${c.id}` } : undefined,
+      accion: m === "no-miembro" ? { tipo: "enlace", texto: t.comunidad.accion(c.nombre), href: esLh ? "/explorar/territorio" : `/tribus/${c.id}` } : undefined,
       abre: puertasQueAbre({ tribus: [c.id] }, [{ id: c.id, nombre: c.nombre }], idioma),
     });
   }

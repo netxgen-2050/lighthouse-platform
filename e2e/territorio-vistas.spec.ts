@@ -167,7 +167,7 @@ test("finca 502 en la vista Lotes: consultar sí, reservar o comprar no", async 
 test("Ver en el mapa desde el detalle de un equipo", async ({ page }) => {
   await page.goto("/participa?equipo=agua");
   await page.getByRole("link", { name: /Ver en el mapa.*Agua y cuenca/ }).click();
-  await expect(page).toHaveURL(/\/explorar\?vista=ahora&sel=agua-cuenca/);
+  await expect(page).toHaveURL(/\/explorar\/territorio\?vista=ahora&sel=agua-cuenca/);
   await expect(ficha(page).getByRole("heading", { name: "Agua y cuenca" })).toBeVisible();
 });
 

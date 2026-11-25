@@ -35,7 +35,7 @@ export default async function LotePage({ params }: Props) {
   return (
     <div className="mx-auto max-w-3xl p-6 sm:p-10">
       <p className="mb-2 text-sm">
-        <Link className="underline" href="/explorar#lotes">
+        <Link className="underline" href="/explorar/lotes">
           {t.volverALista}
         </Link>
       </p>

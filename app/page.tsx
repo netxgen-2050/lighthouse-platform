@@ -35,10 +35,10 @@ export default async function Home({ searchParams }: Props) {
         <p className="text-lg text-ink">{t.bajada}</p>
         <p className="flex flex-wrap items-center gap-4">
           <Link
-            href="/explorar#lotes"
+            href="/explorar/territorio"
             className="inline-block rounded-full bg-deep px-5 py-3 font-medium text-on-deep hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
           >
-            {t.verLotes}
+            {t.explorarTerritorio}
           </Link>
           {haySumarte && (
             <Link

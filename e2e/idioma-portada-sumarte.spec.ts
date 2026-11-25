@@ -19,7 +19,7 @@ test.describe("portada en inglés", () => {
     for (const camino of ["See the lots", "Explore the territory", "See the communities"]) {
       await expect(page.getByRole("heading", { level: 3, name: camino })).toBeVisible();
     }
-    await expect(page.getByRole("link", { name: "See the lots", exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Explore the territory", exact: true }).first()).toHaveAttribute("href", "/explorar/territorio");
     await expect(page.getByRole("link", { name: "Choose how to join" })).toBeVisible();
     await expect(page.getByRole("link", { name: /See the communities/ })).toContainText(/\d+ neighborhoods and the communities forming them\./);
     expect(await textosEnEspanol(page, "main")).toEqual([]);
