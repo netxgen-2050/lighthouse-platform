@@ -12,6 +12,22 @@ export function avisarCambioDeLotes(): void {
 }
 
 /**
+ * Llama a `pedir` cuando la persona vuelve a la pestaña y cuando alguna pantalla avisa un cambio de lotes.
+ * Devuelve la función que lo deja de escuchar.
+ */
+export function alVolverOCambiar(pedir: () => void): () => void {
+  const alVolver = () => {
+    if (document.visibilityState === "visible") pedir();
+  };
+  document.addEventListener("visibilitychange", alVolver);
+  window.addEventListener(EVENTO, pedir);
+  return () => {
+    document.removeEventListener("visibilitychange", alVolver);
+    window.removeEventListener(EVENTO, pedir);
+  };
+}
+
+/**
  * Los estados de los lotes según el servidor (`GET /api/lotes/estados`, sin ninguna identidad). Se piden al montar, cuando la
  * persona vuelve a la pestaña y cuando alguna pantalla avisa un cambio. Mientras no llegan, `estados` es `undefined` y se dibujan
  * los de ejemplo (el mismo patrón que `listo` en `useCompras`). Si fallan, quedan los de ejemplo y `fallo` es true: la pantalla
@@ -32,16 +48,11 @@ export function useEstadosLotes(): { estados: EstadosDeLaBase | undefined; fallo
         } else setFallo(true);
       });
     };
-    const alVolver = () => {
-      if (document.visibilityState === "visible") pedir();
-    };
     pedir();
-    document.addEventListener("visibilitychange", alVolver);
-    window.addEventListener(EVENTO, pedir);
+    const dejar = alVolverOCambiar(pedir);
     return () => {
       vigente = false;
-      document.removeEventListener("visibilitychange", alVolver);
-      window.removeEventListener(EVENTO, pedir);
+      dejar();
     };
   }, []);
 

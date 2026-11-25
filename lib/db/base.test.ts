@@ -131,6 +131,15 @@ describe("reservas y bitácora (libros) y contactos", () => {
     expect(await base.select().from(contactos).where(eq(contactos.personaId, p.id))).toHaveLength(0);
   });
 
+  it("una reserva sin opción o sin lo que la persona vio se rechaza; paga y deshace no la necesitan", async () => {
+    const p = await persona("check-reservas@prueba.test");
+    await expect(base.insert(reservas).values({ personaId: p.id, hechoPor: p.id, loteId: "lote-2", evento: "reserva", vio: { version: "x" } })).rejects.toThrow();
+    await expect(base.insert(reservas).values({ personaId: p.id, hechoPor: p.id, loteId: "lote-2", evento: "reserva", opcion: "modular" })).rejects.toThrow();
+    await base.insert(reservas).values({ personaId: p.id, hechoPor: p.id, loteId: "lote-2", evento: "reserva", opcion: "modular", vio: { version: "x" } });
+    await base.insert(reservas).values({ personaId: p.id, hechoPor: p.id, loteId: "lote-2", evento: "paga" });
+    await base.insert(reservas).values({ personaId: p.id, hechoPor: p.id, loteId: "lote-2", evento: "deshace" });
+  });
+
   it("rechaza un evento o una opción desconocidos y borrar una persona con reservas", async () => {
     const p = await persona("enums-reservas@prueba.test");
     await expect(

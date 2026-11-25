@@ -6,7 +6,7 @@ import type { CompraLote, LoVisto } from "@/lib/lotes/compra";
 import type { OpcionCompra } from "@/lib/lotes/modelo";
 import { deshacerLote, leerReservas, pagarLote, reservarLote, type MotivoDeFallo, type RespuestaDeEscritura } from "@/lib/lotes/reservas";
 import { origenDelNavegador } from "@/lib/origen/origen";
-import { avisarCambioDeLotes } from "./usar-estados-lotes";
+import { alVolverOCambiar, avisarCambioDeLotes } from "./usar-estados-lotes";
 
 export type ResultadoDeAccion = { ok: true } | { ok: false; motivo: MotivoDeFallo };
 
@@ -30,13 +30,19 @@ export function useCompras(): {
   useEffect(() => {
     if (estado === "cargando") return;
     let vigente = true;
-    void leerReservas({ estado, cabeceras }).then((leidas) => {
-      if (!vigente) return;
-      setCompras(leidas);
-      setListo(true);
-    });
+    const pedir = () => {
+      void leerReservas({ estado, cabeceras }).then((leidas) => {
+        if (!vigente) return;
+        setCompras(leidas);
+        setListo(true);
+      });
+    };
+    pedir();
+    // Si la persona reservó o deshizo en otra pestaña, se relee al volver y cuando una pantalla avisa un cambio de lotes.
+    const dejar = alVolverOCambiar(pedir);
     return () => {
       vigente = false;
+      dejar();
     };
   }, [estado, cabeceras]);
 

@@ -15,7 +15,8 @@ import { formatearFecha, sinDato } from "@/lib/idioma/formatos";
 import { textoSuperficieM2 } from "@/lib/territorios/biopueblo";
 
 // Reservar, pago simulado y boleto de ejemplo (spec lotes-compra-simulada). Todo es simulado: no hay ningún campo de
-// pago ni identidad, y no se hace ningún pedido de red con estos datos. Lo único que se guarda va al navegador.
+// pago ni identidad. Las reservas y pagos simulados se guardan en el servidor, a nombre de la persona en sesión
+// (`lotes-en-la-base`): las acciones llegan por props desde `useCompras`, esperan al servidor y dicen si salió bien.
 
 const BOTON =
   "w-fit rounded-lg px-4 py-1.5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";

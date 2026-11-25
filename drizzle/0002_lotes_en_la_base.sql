@@ -36,7 +36,8 @@ CREATE TABLE "reservas" (
 	"opcion" "opcion_compra",
 	"vio" jsonb,
 	"origen" jsonb,
-	"registrado_at" timestamp with time zone DEFAULT now() NOT NULL
+	"registrado_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "reservas_reserva_con_opcion_y_vio" CHECK ("reservas"."evento" <> 'reserva' OR ("reservas"."opcion" IS NOT NULL AND "reservas"."vio" IS NOT NULL))
 );
 --> statement-breakpoint
 ALTER TABLE "personas" ADD COLUMN "origen" jsonb;--> statement-breakpoint

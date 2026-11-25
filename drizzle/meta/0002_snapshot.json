@@ -762,7 +762,12 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "reservas_reserva_con_opcion_y_vio": {
+          "name": "reservas_reserva_con_opcion_y_vio",
+          "value": "\"reservas\".\"evento\" <> 'reserva' OR (\"reservas\".\"opcion\" IS NOT NULL AND \"reservas\".\"vio\" IS NOT NULL)"
+        }
+      },
       "isRLSEnabled": false
     }
   },

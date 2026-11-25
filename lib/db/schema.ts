@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, index, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, unique, uuid } from "drizzle-orm/pg-core";
+import { boolean, check, index, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, unique, uuid } from "drizzle-orm/pg-core";
 
 /**
  * Esquema de la base (Neon Postgres). La base cambia solo por migraciones (`pnpm db:generate`).
@@ -125,7 +125,12 @@ export const reservas = pgTable(
     origen: jsonb("origen"),
     registradoAt: timestamp("registrado_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("reservas_lote_hora").on(t.loteId, t.registradoAt.desc()), index("reservas_persona_hora").on(t.personaId, t.registradoAt.desc())],
+  (t) => [
+    index("reservas_lote_hora").on(t.loteId, t.registradoAt.desc()),
+    index("reservas_persona_hora").on(t.personaId, t.registradoAt.desc()),
+    // La base, no solo el código, exige que una reserva lleve opción y lo que la persona vio: nunca se inventa "solo-lote".
+    check("reservas_reserva_con_opcion_y_vio", sql`${t.evento} <> 'reserva' OR (${t.opcion} IS NOT NULL AND ${t.vio} IS NOT NULL)`),
+  ],
 );
 
 /** Pedidos de contacto. No es un libro: tiene texto libre y la persona puede borrar los suyos (Ley 25.326, art. 16). */
