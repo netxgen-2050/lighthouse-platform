@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "./fixtura";
+import { expect, liberarLotes, reservarPorApi, test, type Page } from "./fixtura";
 import { listarTribus } from "@/lib/tribus/datos";
 import { lotesDelGrupo } from "@/lib/territorios/loteo";
 import { estadoDeLote } from "@/lib/territorios/loteo-estados";
@@ -91,41 +91,39 @@ for (const idioma of ["es", "en"] as const) {
 }
 
 // Mi tierra (rediseno-mi-tierra), con una compra en cuotas: en los dos idiomas y los dos temas. Sin compras ya entra en `rutas`.
-for (const idioma of ["es", "en"] as const) {
-  for (const tema of ["oscuro", "claro"] as const) {
-    test(`axe sin violaciones serias o críticas: /mi-tierra con una compra en cuotas, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
-      await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
-      const idLote = lotesDelGrupo("norte").find((l) => estadoDeLote(l.id) === "disponible")!.id;
-      await page.addInitScript((loteId) => {
-        if (window.localStorage.getItem("lh-lotes")) return;
-        window.localStorage.setItem(
-          "lh-lotes",
-          JSON.stringify([
-            {
-              loteId,
-              opcion: "solo-lote",
-              paso: "pagado",
-              reservadoEl: "2026-11-20T12:00:00.000Z",
-              pagadoEl: "2026-11-21T12:00:00.000Z",
-              vio: {
-                precio: 1000,
-                aporte: null,
-                expensa: null,
-                version: "ejemplo",
-                faro: 100,
-                plan: { cuotas: 24, anticipo: 300, cuota: 30, ultimaCuota: 30, faroAnticipo: 30, faroPorCuota: 3, faroUltimaCuota: 3 },
-              },
-            },
-          ]),
-        );
-      }, idLote);
-      await page.goto("/mi-tierra");
-      await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible();
-      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
-      expect(await graves(page)).toEqual([]);
-    });
+// Las reservas viven en el servidor (`lotes-en-la-base`): estos tests entran con una persona propia y usan lotes SOLO de este archivo
+// (el 9.º y el 10.º disponibles del norte), que liberan antes de empezar.
+const DISPONIBLES_DEL_NORTE = lotesDelGrupo("norte").filter((l) => estadoDeLote(l.id) === "disponible");
+const LOTE_DE_MI_TIERRA = DISPONIBLES_DEL_NORTE[8].id;
+const LOTE_DE_LA_FICHA = DISPONIBLES_DEL_NORTE[9].id;
+
+test.describe("con una compra (persona propia)", () => {
+  test.use({ identidad: "propia" });
+
+  for (const idioma of ["es", "en"] as const) {
+    for (const tema of ["oscuro", "claro"] as const) {
+      test(`axe sin violaciones serias o críticas: /mi-tierra con una compra en cuotas, ${idioma}, tema ${tema}`, async ({ page, context, baseURL, request, emailActual }) => {
+        await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+        await liberarLotes(request, [LOTE_DE_MI_TIERRA]);
+        await reservarPorApi(request, emailActual, LOTE_DE_MI_TIERRA, {
+          pagar: true,
+          vio: {
+            precio: 1000,
+            aporte: null,
+            expensa: null,
+            version: "ejemplo",
+            faro: 100,
+            plan: { cuotas: 24, anticipo: 300, cuota: 30, ultimaCuota: 30, faroAnticipo: 30, faroPorCuota: 3, faroUltimaCuota: 3 },
+          },
+        });
+        await page.goto("/mi-tierra");
+        await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible();
+        await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+        expect(await graves(page)).toEqual([]);
+      });
+    }
   }
-}
+});
 
 // Inicio y las tres páginas de Explorar (rediseno-explorar-valle, explorar-paginas): en los dos idiomas y los dos temas.
 for (const ruta of ["/", "/explorar/territorio", "/explorar/barrio-norte", "/explorar/lotes"]) {
@@ -654,28 +652,35 @@ for (const [ruta, campo] of [
   });
 }
 
-test("axe sin violaciones serias o críticas: la ficha de un lote en la reserva, el pago simulado y el boleto, en español y en inglés", async ({ page }) => {
-  for (const [ruta, reservar, pagar, confirmar, leido] of [
-    ["/lotes/lote-1", "Reservar (simulado)", "Simular el primer pago (anticipo)", "Confirmar el primer pago simulado", "Leí lo que comparto y lo que me comprometo a pagar"],
-    [
-      "/lotes/lote-1?lang=en",
-      "Reserve (simulated)",
-      "Simulate the first payment (down payment)",
-      "Confirm the simulated first payment",
-      "I read what I share and what I commit to pay",
-    ],
-  ] as const) {
-    await page.goto(ruta);
-    await page.getByLabel(leido).check();
-    await page.getByRole("button", { name: reservar }).click();
-    expect(await graves(page)).toEqual([]);
-    await page.getByRole("button", { name: pagar }).click();
-    expect(await graves(page)).toEqual([]);
-    await page.getByRole("button", { name: confirmar }).click();
-    await expect(page.getByRole("region", { name: /Boleto de ejemplo|Sample purchase agreement/ })).toBeVisible();
-    expect(await graves(page)).toEqual([]);
-    await page.evaluate(() => window.localStorage.removeItem("lh-lotes"));
-  }
+test.describe("la ficha de un lote (persona propia)", () => {
+  test.use({ identidad: "propia" });
+
+  test("axe sin violaciones serias o críticas: la ficha de un lote en la reserva, el pago simulado y el boleto, en español y en inglés", async ({ page, request }) => {
+    await liberarLotes(request, [LOTE_DE_LA_FICHA]);
+    for (const [ruta, reservar, pagar, confirmar, leido] of [
+      [`/lotes/${LOTE_DE_LA_FICHA}`, "Reservar (simulado)", "Simular el primer pago (anticipo)", "Confirmar el primer pago simulado", "Leí lo que comparto y lo que me comprometo a pagar"],
+      [
+        `/lotes/${LOTE_DE_LA_FICHA}?lang=en`,
+        "Reserve (simulated)",
+        "Simulate the first payment (down payment)",
+        "Confirm the simulated first payment",
+        "I read what I share and what I commit to pay",
+      ],
+    ] as const) {
+      await page.goto(ruta);
+      await page.getByLabel(leido).check();
+      await page.getByRole("button", { name: reservar }).click();
+      expect(await graves(page)).toEqual([]);
+      await page.getByRole("button", { name: pagar }).click();
+      expect(await graves(page)).toEqual([]);
+      await page.getByRole("button", { name: confirmar }).click();
+      await expect(page.getByRole("region", { name: /Boleto de ejemplo|Sample purchase agreement/ })).toBeVisible();
+      expect(await graves(page)).toEqual([]);
+      // Deshace la reserva (en el servidor) para repetir el recorrido en el otro idioma.
+      await page.getByRole("button", { name: /^(Deshacer|Undo)$/ }).click();
+      await expect(page.getByRole("button", { name: reservar })).toBeVisible();
+    }
+  });
 });
 
 test.describe("pasos previos al login (consentimiento-alta)", () => {

@@ -10,8 +10,9 @@ import type { territorio } from "@/lib/idioma/textos/territorio";
 import type { Textos } from "@/lib/idioma/tipos";
 import { listarBarrios, listarFincas, terrenoComun, textoSuperficieM2, tribuDeBarrio } from "@/lib/territorios/biopueblo";
 import { MarcaLoteo } from "./vistas/lotes";
-import { TextoEstado } from "@/components/lotes/estado-del-lote";
+import { AvisoEstadosLotes, TextoEstado } from "@/components/lotes/estado-del-lote";
 import { useCompras } from "@/components/lotes/usar-compras";
+import { useEstadosLotes } from "@/components/lotes/usar-estados-lotes";
 import { estadoConCompras } from "@/lib/lotes/compra";
 import { FASE_ACTUAL, FASES, type Fase } from "@/lib/territorios/fases";
 import { listarLotes, sectorNorte, zonasDelLoteo } from "@/lib/territorios/loteo";
@@ -137,6 +138,7 @@ export function VitrinaTerritorio() {
   const idioma = useIdioma();
   const tx = useTextos("territorio");
   const { compras } = useCompras();
+  const { estados, fallo: falloEstados } = useEstadosLotes();
   const [vista, setVista] = useState<VistaId>(VISTA_POR_DEFECTO);
   const [fase, setFase] = useState<Fase>(FASE_ACTUAL);
   const [fuente, setFuente] = useState<FuentePlanId>("ilustrativa");
@@ -288,13 +290,14 @@ export function VitrinaTerritorio() {
                 {tx.loteo.listaTitulo}
               </Titulo>
               <MarcaLoteo />
+              <AvisoEstadosLotes fallo={falloEstados} />
               {resumenDePrimeros(idioma) && <p className="text-sm font-medium">{resumenDePrimeros(idioma)}</p>}
               <p className="text-sm">{resumenDelLoteo(idioma)}</p>
               <ul aria-labelledby="lista-lotes-titulo" className="flex flex-wrap gap-2">
                 {listarLotes().map((l) => (
                   <li key={l.id}>
                     <button type="button" className={botonLista} aria-pressed={seleccion === l.id} onClick={() => elegir(l.id)}>
-                      {tx.loteo.lote(l.numero)} · {textoSuperficieM2(l.superficieM2, idioma)} · <TextoEstado estado={estadoConCompras(l.id, compras)} />
+                      {tx.loteo.lote(l.numero)} · {textoSuperficieM2(l.superficieM2, idioma)} · <TextoEstado estado={estadoConCompras(l.id, compras, estados)} />
                     </button>
                   </li>
                 ))}

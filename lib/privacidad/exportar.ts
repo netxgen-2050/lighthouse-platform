@@ -32,6 +32,8 @@ export function exportarMisDatos(entrada: {
   email: string | null;
   billetera: string | null;
   filas?: FilaPublica[] | null;
+  /** Reservas (todos los eventos) y origen, de `GET /api/mis-datos/actividad`; `null` si no se pudieron pedir. */
+  actividad?: { reservas: unknown[]; origen: unknown } | null;
   ahora?: Date;
 }): Record<string, unknown> {
   const { almacen, idPersona } = entrada;
@@ -41,6 +43,10 @@ export function exportarMisDatos(entrada: {
   const filas = entrada.filas ?? null;
   datos.consentimiento = filas === null ? null : filas.filter((f) => f.tipo !== "novedades");
   datos.novedades = filas === null ? null : filas.filter((f) => f.tipo === "novedades");
+  // Las reservas viven en el servidor: si no se pudieron pedir, sin dato (nunca una lista vacía que parezca "no reservé nada").
+  const actividad = entrada.actividad ?? null;
+  datos.reservas = actividad === null ? null : actividad.reservas;
+  datos.origenPrimeraVisita = actividad === null ? null : actividad.origen;
   datos.consentimientoSensibles = leerValor(almacen, prefijo + NOMBRE_CLAVE_SENSIBLES);
   // Las constancias viven en un registro compartido: solo se incluyen las de los pactos de esta persona (null = no se pudo leer).
   const registro = leerDelNavegador(almacen);
@@ -48,7 +54,7 @@ export function exportarMisDatos(entrada: {
   return {
     exportadoEn: (entrada.ahora ?? new Date()).toISOString(),
     versionPolitica: VERSION_POLITICA,
-    aviso: "Prototipo interno: datos de ejemplo. El consentimiento se guarda en el servidor; lo demás, en este navegador. Un valor null significa sin dato.",
+    aviso: "Prototipo interno: datos de ejemplo. El consentimiento y las reservas de lotes se guardan en el servidor; lo demás, en este navegador. Un valor null significa sin dato.",
     persona: { email: entrada.email, billetera: entrada.billetera },
     datos,
   };

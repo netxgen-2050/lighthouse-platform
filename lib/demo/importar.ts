@@ -85,6 +85,29 @@ export function copiarClavesAnteriores(
   return copiadas;
 }
 
+/**
+ * Lo que el navegador guardaba y ahora vive en el servidor (`lotes-en-la-base`): reservas y consultas de lotes. Se BORRA, no se
+ * copia (Gus, 25-nov: se empieza limpio). Las noches siguientes del cambio suman acá `lh-contactos` y `lh-bitacora`.
+ */
+export const NOMBRES_PASO_2 = ["lh-lotes", "lh-consultas-lotes"] as const;
+
+/**
+ * Borra del navegador las claves de `NOMBRES_PASO_2`: el nombre pelado y cualquier `u:<id>:<nombre>` (de cualquier persona, también
+ * de logins anteriores). Recorre TODAS las claves: no toca nada más. Es idempotente y barata: puede correr en cada carga, y tiene
+ * que correr DESPUÉS de `copiarClavesAnteriores` (esa función copia cualquier `u:<idViejo>:*` y resucitaría la clave nueva).
+ * Devuelve cuántas claves borró.
+ */
+export function limpiarPaso2(almacen: Pick<Storage, "removeItem" | "key" | "length">): number {
+  const claves: string[] = [];
+  for (let i = 0; i < almacen.length; i += 1) {
+    const k = almacen.key(i);
+    if (k !== null) claves.push(k);
+  }
+  const sobran = claves.filter((k) => NOMBRES_PASO_2.some((n) => k === n || (k.startsWith("u:") && k.endsWith(`:${n}`))));
+  for (const k of sobran) almacen.removeItem(k);
+  return sobran.length;
+}
+
 /** La persona eligió no importar: no se vuelve a preguntar (los datos previos quedan sin tocar). */
 export function descartarImportacion(almacen: Almacen): void {
   almacen.setItem(CLAVE_IMPORTACION_RESUELTA, "1");

@@ -19,7 +19,7 @@ import { cookieAdminBorrada, cookieAdminSegunSesion, debeEscribirCookieAdmin } f
 import { COOKIE_PRUEBA } from "@/lib/sesion/cookies";
 import { calcularNivel, EVENTO_NIVEL, leerEstadoGuardado } from "@/lib/sesion/nivel";
 import { INICIAL, type EstadoSumarte } from "@/lib/sumarte/estado";
-import { copiarClavesAnteriores } from "@/lib/demo/importar";
+import { copiarClavesAnteriores, limpiarPaso2 } from "@/lib/demo/importar";
 import { decidirConsulta, loginAAbrir } from "@/lib/sesion/consulta";
 import { loginElegido } from "@/lib/sesion/errores-login";
 import { ContextoSesion, type EstadoSesion, type IdentidadMinima, type SesionCliente, type ValorSesion } from "./contexto";
@@ -148,6 +148,15 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
       // Sin almacenamiento no hay nada que copiar.
     }
   }
+  // Reservas y consultas de lotes ya viven en el servidor (`lotes-en-la-base`): lo que el navegador tenía se borra. Va después de
+  // `copiarClavesAnteriores` (un efecto corre después del dibujo, donde se copia) para que la copia no lo resucite.
+  useEffect(() => {
+    try {
+      limpiarPaso2(window.localStorage);
+    } catch {
+      // Sin almacenamiento no hay nada que limpiar.
+    }
+  }, [idSesion]);
   // El consentimiento sale del servidor (`consentimiento-en-la-base`): sin su confirmación la persona sigue anónima.
   const { estado: consentimiento, registro, novedades, sensibles } = useConsentimiento(idSesion, cabeceras);
   const detalleConsentimiento = useMemo(() => ({ registro, novedades, sensibles }), [registro, novedades, sensibles]);
