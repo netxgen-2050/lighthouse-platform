@@ -21,6 +21,24 @@ const es = {
     fecha: (fecha: string, fuente: string) => `Versión del ${fecha}. Fuente: ${fuente}.`,
     simulacion: "Es una simulación: no es una oferta, no se emite nada y no se cobra nada.",
   },
+  // Índice de la página (ux-bien-comun): el botón del celular y el nombre del índice fijo de la compu.
+  indice: { titulo: "En esta página", cerrar: "Cerrar" },
+  // Línea que resume cada sección plegada. Las cantidades llegan por parámetro (salen del módulo o del propio diccionario).
+  resumenes: {
+    politica: (n: string) => `${n} reglas propuestas, cada una con su origen.`,
+    // `cuantas` es la cantidad de abiertas (para elegir singular, plural o ninguna); `n` es esa misma cantidad ya formateada.
+    decisiones: (n: string, cuantas: number) =>
+      cuantas === 0
+        ? "No quedan decisiones abiertas."
+        : cuantas === 1
+          ? `${n} decisión abierta, con la recomendación de Gus.`
+          : `${n} decisiones abiertas, con la recomendación de Gus.`,
+    cambios: (n: string) => `${n} cosas que salieron del modelo anterior.`,
+    ostrom: (n: string) => `${n} principios y cómo los tomaría el diseño.`,
+    parcelas: "Huertas, bosques, talleres, cocinas, vías y escuela: no son tokens ni se venden.",
+    nft: "La ficha de cada lote privado: no reemplaza la escritura.",
+    abogado: (n: string) => `${n} preguntas para verificar con un abogado.`,
+  },
   frase: {
     titulo: "En una frase",
     texto:
@@ -328,6 +346,21 @@ const en: Textos<typeof es> = {
       `Proposal ${version} · under discussion with the team · sample numbers · legal points to be verified with a lawyer`,
     fecha: (fecha: string, fuente: string) => `Version of ${fecha}. Source: ${fuente}.`,
     simulacion: "This is a simulation: it is not an offer, nothing is issued and nothing is charged.",
+  },
+  indice: { titulo: "On this page", cerrar: "Close" },
+  resumenes: {
+    politica: (n: string) => `${n} proposed rules, each one with its origin.`,
+    decisiones: (n: string, cuantas: number) =>
+      cuantas === 0
+        ? "No open decisions are left."
+        : cuantas === 1
+          ? `${n} open decision, with Gus's recommendation.`
+          : `${n} open decisions, with Gus's recommendation.`,
+    cambios: (n: string) => `${n} things that left the previous model.`,
+    ostrom: (n: string) => `${n} principles and how the design would take them.`,
+    parcelas: "Gardens, forests, workshops, kitchens, roads and school: they are not tokens and are not sold.",
+    nft: "The record of each private lot: it does not replace the deed.",
+    abogado: (n: string) => `${n} questions to verify with a lawyer.`,
   },
   frase: {
     titulo: "In one sentence",
