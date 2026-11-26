@@ -195,7 +195,8 @@ function HojaPersistente({ titulo, children, etiquetaAsa = titulo, expandida: ex
       <h2 id={`${id}-titulo`} className="shrink-0 px-4 pb-2 font-display text-lg font-semibold">
         {titulo}
       </h2>
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4">{children}</div>
+      {/* En reposo la hoja no hace scroll: su contenido está inerte y una región con scroll sin nada enfocable falla en axe. */}
+      <div className={`min-h-0 flex-1 overscroll-contain px-4 pb-4 ${expandida ? "overflow-y-auto" : "overflow-hidden"}`}>{children}</div>
     </section>
   );
 }
