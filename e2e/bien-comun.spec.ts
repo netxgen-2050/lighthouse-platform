@@ -243,6 +243,22 @@ test.describe("sin sesión", () => {
     const d = page.locator("details", { has: page.locator("#h-abogado") });
     await expect.poll(() => d.evaluate((el) => (el as HTMLDetailsElement).open)).toBe(true);
     await expect(page.locator("#h-abogado")).toBeInViewport();
+    // Queda marcada la elegida, aunque al desplegarse cambie el alto y el título nunca llegue a la línea de lectura.
+    const indice = page.getByRole("navigation", { name: "En esta página" });
+    await expect(indice.getByRole("link", { name: "Preguntas para el abogado" })).toHaveAttribute("aria-current", "location");
+    await expect(indice.locator('[aria-current="location"]')).toHaveCount(1);
+    await indice.getByRole("link", { name: "NFT del lote" }).click();
+    await expect(page.locator("#h-nft")).toBeInViewport();
+    await expect(indice.getByRole("link", { name: "NFT del lote" })).toHaveAttribute("aria-current", "location");
+    await expect(indice.locator('[aria-current="location"]')).toHaveCount(1);
+    await page.waitForTimeout(800);
+    await expect(indice.getByRole("link", { name: "NFT del lote" })).toHaveAttribute("aria-current", "location");
+  });
+
+  test("un ancla mal formada no rompe la página", async ({ page }) => {
+    await page.goto(`${RUTA}#%E0`);
+    await esperarHidratacion(page);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 
   test("celular: En esta página abre la hoja y un enlace lleva a su sección desplegada", async ({ page }) => {

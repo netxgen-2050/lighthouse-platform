@@ -18,6 +18,12 @@ describe("seccionActiva", () => {
     expect(seccionActiva(["a", "b", "c"], [-800, 20, 600])).toBe("b");
     expect(seccionActiva(["a", "b", "c"], [-1800, -900, LINEA_DE_LECTURA])).toBe("c");
   });
+  it("al fondo de la página, el último título que se ve, aunque no llegue a la línea de lectura", () => {
+    // Los dos últimos títulos quedan abajo de la línea de 140 px, pero a la vista en una ventana de 900 px.
+    expect(seccionActiva(["a", "b", "c"], [-1500, 500, 700])).toBe("a");
+    expect(seccionActiva(["a", "b", "c"], [-1500, 500, 700], LINEA_DE_LECTURA, { alto: 900 })).toBe("c");
+    expect(seccionActiva(["a", "b", "c"], [-1500, 500, 1200], LINEA_DE_LECTURA, { alto: 900 })).toBe("b");
+  });
   it("sin secciones no hay activa", () => {
     expect(seccionActiva([], [])).toBeNull();
   });

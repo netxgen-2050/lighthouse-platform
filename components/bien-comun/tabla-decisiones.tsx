@@ -38,7 +38,7 @@ export function TablaDecisiones(p: PropsDecisiones) {
         estado: (
           <span className="grid w-fit gap-1">
             <ChipEstado estado={f.estado} />
-            {f.detalleEstado ? <span className="text-sm">{f.detalleEstado}</span> : null}
+            {f.detalleEstado ? <span>{f.detalleEstado}</span> : null}
           </span>
         ),
       }))}

@@ -15,10 +15,18 @@ export const LINEA_DE_LECTURA = 140;
  * La sección que se está leyendo: la última cuyo encabezado ya pasó la línea de lectura. Si todavía ninguno la pasó,
  * la primera. `tops` está en el orden del índice (px del borde de arriba de cada encabezado respecto de la ventana).
  */
-export function seccionActiva(ids: string[], tops: number[], linea = LINEA_DE_LECTURA): string | null {
+export function seccionActiva(
+  ids: string[],
+  tops: number[],
+  linea = LINEA_DE_LECTURA,
+  /** Con la página scrolleada hasta el fondo: el alto de la ventana. Los últimos títulos nunca llegan a la línea de lectura, así que cuenta el último que se ve. */
+  alFondo?: { alto: number },
+): string | null {
   if (ids.length === 0) return null;
   let activa = 0;
-  for (let i = 0; i < ids.length; i++) if (tops[i] <= linea) activa = i;
+  for (let i = 0; i < ids.length; i++) {
+    if (alFondo ? tops[i] < alFondo.alto : tops[i] <= linea) activa = i;
+  }
   return ids[activa];
 }
 
@@ -43,14 +51,30 @@ export function irASeccion(id: string, enfocar = true) {
 function useSeccionActiva(items: ItemIndice[]) {
   const [activa, setActiva] = useState<string | null>(items[0]?.id ?? null);
   const clave = items.map((i) => i.id).join("|");
+  // La sección que la persona eligió en el índice: manda hasta que vuelve a mover la página ella misma, porque al
+  // desplegarla cambia el alto y el recálculo la pisaría con otra.
+  const elegida = useRef<string | null>(null);
   useEffect(() => {
     const ids = clave.split("|").filter(Boolean);
     const elementos = ids.map((id) => document.getElementById(id));
     const calcular = () => {
+      if (elegida.current) {
+        setActiva(elegida.current);
+        return;
+      }
       const tops = elementos.map((el) => el?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY);
-      setActiva(seccionActiva(ids, tops));
+      const alto = window.innerHeight;
+      const alFondo = window.scrollY + alto >= document.documentElement.scrollHeight - 2;
+      setActiva(seccionActiva(ids, tops, LINEA_DE_LECTURA, alFondo ? { alto } : undefined));
+    };
+    const soltarElegida = () => {
+      elegida.current = null;
+      calcular();
     };
     calcular();
+    window.addEventListener("wheel", soltarElegida, { passive: true });
+    window.addEventListener("touchmove", soltarElegida, { passive: true });
+    window.addEventListener("keydown", soltarElegida);
     // Cada vez que un encabezado cruza la línea de lectura se vuelve a calcular.
     const io = new IntersectionObserver(calcular, {
       rootMargin: `-${LINEA_DE_LECTURA}px 0px 0px 0px`,
@@ -63,9 +87,16 @@ function useSeccionActiva(items: ItemIndice[]) {
     return () => {
       io.disconnect();
       ro.disconnect();
+      window.removeEventListener("wheel", soltarElegida);
+      window.removeEventListener("touchmove", soltarElegida);
+      window.removeEventListener("keydown", soltarElegida);
     };
   }, [clave]);
-  return [activa, setActiva] as const;
+  const elegir = (id: string) => {
+    elegida.current = id;
+    setActiva(id);
+  };
+  return [activa, elegir] as const;
 }
 
 function Lista({
@@ -113,7 +144,12 @@ export function IndicePagina({ items, etiqueta }: { items: ItemIndice[]; etiquet
   // Un enlace con #ancla desde afuera también despliega la sección que lo contiene.
   useEffect(() => {
     const id = window.location.hash.slice(1);
-    if (id) irASeccion(decodeURIComponent(id), false);
+    if (!id) return;
+    try {
+      irASeccion(decodeURIComponent(id), false);
+    } catch {
+      // Un ancla mal formada (por ejemplo %E0) no es una sección: se ignora.
+    }
   }, []);
   return (
     <nav aria-label={etiqueta}>
