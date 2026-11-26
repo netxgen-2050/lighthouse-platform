@@ -174,7 +174,8 @@ export function ExploradorLotes({ encabezado, legal }: { encabezado: ReactNode; 
     return (
       <div className="grid gap-3">
         {encabezado}
-        {/* La hoja va antes del mapa en el DOM: el lector anuncia primero el estado administrativo. */}
+        {/* El estado administrativo (Ord. 173) queda a la vista antes del mapa, fuera de la hoja: no se esconde detrás de un control (ux-base). */}
+        {legal}
         <Hoja
           persistente
           abierta
@@ -186,7 +187,6 @@ export function ExploradorLotes({ encabezado, legal }: { encabezado: ReactNode; 
           alExpandir={setHojaAbierta}
         >
           <div className="grid gap-4 pb-6">
-            {legal}
             {/* En reposo la hoja deja ver ~2rem: filtros y tarjetas no se recorren con Tab hasta que se abre. */}
             <div className="grid gap-4" inert={!hojaAbierta}>
               {controles}
