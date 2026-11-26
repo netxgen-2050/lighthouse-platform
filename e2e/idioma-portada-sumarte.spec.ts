@@ -16,12 +16,12 @@ test.describe("portada en inglés", () => {
     await expect(html(page)).toHaveAttribute("lang", "en");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Regenerating from the water.");
     await expect(page.getByText("Internal prototype · sample data")).toBeVisible();
-    for (const camino of ["See the lots", "Explore the territory", "See the communities"]) {
+    for (const camino of ["Where would I live and what does it cost?", "What do I fund and how am I paid back?", "What belongs to everyone and who decides?"]) {
       await expect(page.getByRole("heading", { level: 3, name: camino })).toBeVisible();
     }
     await expect(page.getByRole("link", { name: "Explore the territory", exact: true }).first()).toHaveAttribute("href", "/explorar/territorio");
     await expect(page.getByRole("link", { name: "Choose how to join" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /See the communities/ })).toContainText(/\d+ neighborhoods and the communities forming them\./);
+    await expect(page.getByRole("link", { name: /What belongs to everyone/ })).toContainText(/\d+ neighborhoods and the communities forming them\./);
     expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
 
