@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { UserRound } from "lucide-react";
+import { Ellipsis, UserRound } from "lucide-react";
 import { CLAVES } from "@/lib/demo/claves";
 import { cargarPerfil, iniciales } from "@/lib/perfil/modelo";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
@@ -11,7 +11,9 @@ import { etiquetaDeNivel } from "@/lib/permisos/niveles";
 import { esActivo } from "@/lib/ruta-activa";
 import { buscarTribu } from "@/lib/tribus/datos";
 import { inicialesDeEmail } from "@/lib/sesion/iniciales";
+import { SelectorIdioma } from "./selector-idioma";
 import { useSesion } from "./sesion/contexto";
+import { Boton } from "./ui/boton";
 
 export type ItemMenu = { href: string; etiqueta: string; icono: ReactNode };
 
@@ -28,12 +30,13 @@ function inicialesGuardadas(): string {
   }
 }
 
-const BOTON_SUMARTE =
-  "flex h-9 items-center rounded-full border border-gold-ink bg-gold-soft px-4 text-sm font-bold text-gold-ink hover:bg-gold hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 const BOTON_ENTRAR =
-  "flex h-9 items-center rounded-full border border-muted px-4 text-sm font-medium hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
+  "hidden h-9 items-center rounded-full border border-muted px-4 text-sm font-medium hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep md:flex";
 
-/** Sin sesión, la barra muestra "Sumarte" (destacado) y "Entrar" (para quien ya tiene cuenta); con sesión, el avatar con su menú. */
+/**
+ * Sin sesión, la barra muestra "Sumarte" (botón principal) y, en compu, "Entrar" (para quien ya tiene cuenta) con un menú "⋯"
+ * que guarda el idioma; en el celular "Entrar" y el idioma están en la hoja Más. Con sesión, el avatar con su menú.
+ */
 export function MenuPersona({ items }: { items: ItemMenu[] }) {
   const { estado, entrar } = useSesion();
   const t = useTextos("marco");
@@ -42,13 +45,73 @@ export function MenuPersona({ items }: { items: ItemMenu[] }) {
   if (estado === "sin-acceso") return null;
   return (
     <>
-      <Link href="/sumarte" className={BOTON_SUMARTE}>
+      <Boton href="/sumarte" tamano="s">
         {t.destinos.sumarte}
-      </Link>
+      </Boton>
       <button type="button" className={BOTON_ENTRAR} onClick={() => entrar()}>
         {t.barra.entrar}
       </button>
+      <MenuOpciones />
     </>
+  );
+}
+
+/** Menú "⋯" de compu sin sesión: por ahora solo guarda el selector de idioma (ya no es un control fijo de la barra). */
+function MenuOpciones() {
+  const t = useTextos("marco");
+  const [abierto, setAbierto] = useState(false);
+  const raiz = useRef<HTMLDivElement>(null);
+  const boton = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!abierto) return;
+    const alTeclear = (ev: KeyboardEvent) => {
+      if (ev.key === "Escape") {
+        setAbierto(false);
+        boton.current?.focus();
+      }
+    };
+    const alClicAfuera = (ev: MouseEvent) => {
+      if (raiz.current && !raiz.current.contains(ev.target as Node)) setAbierto(false);
+    };
+    const alSalirFoco = (ev: FocusEvent) => {
+      const destino = ev.relatedTarget as Node | null;
+      if (destino && raiz.current && !raiz.current.contains(destino)) setAbierto(false);
+    };
+    const nodo = raiz.current;
+    document.addEventListener("keydown", alTeclear);
+    document.addEventListener("mousedown", alClicAfuera);
+    nodo?.addEventListener("focusout", alSalirFoco);
+    return () => {
+      document.removeEventListener("keydown", alTeclear);
+      document.removeEventListener("mousedown", alClicAfuera);
+      nodo?.removeEventListener("focusout", alSalirFoco);
+    };
+  }, [abierto]);
+
+  return (
+    <div ref={raiz} className="relative hidden md:block">
+      <button
+        ref={boton}
+        type="button"
+        aria-label={t.barra.masOpciones}
+        aria-expanded={abierto}
+        aria-controls="menu-opciones"
+        onClick={() => setAbierto((a) => !a)}
+        className="flex size-9 items-center justify-center rounded-full hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+      >
+        <Ellipsis aria-hidden="true" size={20} />
+      </button>
+      {abierto && (
+        <div
+          id="menu-opciones"
+          className="absolute right-0 top-full z-50 mt-2 w-52 max-w-[calc(100vw-1rem)] rounded-xl border border-line bg-surface p-2 text-sm text-ink shadow-lg"
+        >
+          <p className="px-2 pb-1 text-xs text-muted">{t.barra.idioma}</p>
+          <SelectorIdioma variante="lista" />
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -152,6 +215,10 @@ function MenuConSesion({ items }: { items: ItemMenu[] }) {
                 </li>
               );
             })}
+            <li className="border-t border-line pt-1">
+              <p className="px-2 pb-1 text-xs text-muted">{t.barra.idioma}</p>
+              <SelectorIdioma variante="lista" />
+            </li>
             <li className="border-t border-line pt-1">
               <button
                 type="button"

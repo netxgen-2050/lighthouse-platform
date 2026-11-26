@@ -84,13 +84,14 @@ function HojaModal({ alCerrar, titulo, etiquetaCerrar, children, devolverFoco }:
   });
 
   useEffect(() => {
-    const antes = document.activeElement as HTMLElement | null;
+    // El disparador ya existe al abrir: se guarda ahora y ahí vuelve el foco.
+    const antes = devolverFoco?.current ?? (document.activeElement as HTMLElement | null);
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     panel.current?.querySelector<HTMLElement>(FOCALIZABLES)?.focus();
     return () => {
       document.body.style.overflow = overflow;
-      (devolverFoco?.current ?? antes)?.focus?.();
+      antes?.focus?.();
     };
   }, [devolverFoco]);
 

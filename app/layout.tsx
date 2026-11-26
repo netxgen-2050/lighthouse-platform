@@ -9,7 +9,8 @@ import { SCRIPT_APARIENCIA } from "@/lib/configuracion/script-apariencia";
 import { BloqueFijo } from "@/components/bloque-fijo";
 import { Pie }from "@/components/pie";
 import { CintaPrototipo } from "@/components/ui/cinta-prototipo";
-import { BotonReportar } from "@/components/boton-reportar";
+import { BarraInferior } from "@/components/barra-inferior";
+import { FormularioReporte } from "@/components/boton-reportar";
 import { Hifa } from "@/components/hifa/hifa";
 import { ProveedorIdioma, SincronizarIdioma } from "@/lib/idioma/cliente";
 import { idiomaDelPedido } from "@/lib/idioma/servidor";
@@ -64,6 +65,7 @@ export default async function RootLayout({
               <AplicarPreferencias />
             </SoloConConsentimiento>
             <Rail />
+            {/* Lo de abajo de la página (la barra inferior del celular y Hifa) se cubre con el pb del pie. */}
             <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
               {/* La cinta y la barra se quedan juntas arriba al bajar la página (design §4). */}
               <BloqueFijo>
@@ -75,10 +77,12 @@ export default async function RootLayout({
               </main>
               <Pie anioRespaldo={new Date().getFullYear()} />
             </div>
-            {/* Reportar es para toda persona, con o sin sesión; Hifa se habilita desde el nivel Explorador. */}
+            <BarraInferior />
+            {/* Reportar es para toda persona, con o sin sesión: su formulario se abre desde la barra superior (compu) o la hoja Más (celular). */}
+            {/* Hifa se habilita desde el nivel Explorador y es el único botón flotante. */}
             {/* Reportar y Hifa todavía están solo en español (`idioma-hifa-avisos`): en inglés se marcan como español. */}
             <div lang={idioma === "en" ? "es" : undefined} className="contents">
-              <BotonReportar version={despliegue.version} entorno={despliegue.entorno} />
+              <FormularioReporte version={despliegue.version} entorno={despliegue.entorno} />
               <SoloConCapacidad capacidad="hifa">
                 <Hifa version={despliegue.version} entorno={despliegue.entorno} />
               </SoloConCapacidad>

@@ -1,9 +1,7 @@
 "use client";
 
-import { Bug } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useSesion } from "@/components/sesion/contexto";
-import { TAMANO_FLOTANTE } from "@/lib/ui/flotantes";
 import {
   armarContexto,
   CONTEXTO_VACIO,
@@ -40,7 +38,19 @@ const campo =
 const boton =
   "rounded-full px-5 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
-export function BotonReportar({ version, entorno }: { version: string; entorno: string }) {
+/** Evento con que cualquier disparador (barra superior, hoja Más) pide abrir el formulario de reporte. */
+export const EVENTO_ABRIR_REPORTE = "lh-abrir-reporte";
+
+/** Pide abrir el formulario de reporte (el diálogo vive una sola vez, en el layout). */
+export function abrirReporte() {
+  window.dispatchEvent(new Event(EVENTO_ABRIR_REPORTE));
+}
+
+/**
+ * El formulario de reporte (diálogo). No tiene disparador propio: se abre con `abrirReporte()` desde la barra superior
+ * en compu y desde la hoja Más en el celular (ux-celular).
+ */
+export function FormularioReporte({ version, entorno }: { version: string; entorno: string }) {
   const { cabeceras, estado: estadoSesion, consentimiento } = useSesion();
   // Con sesión y la política aceptada, el formulario de siempre; en cualquier otro caso, el modo sin cuenta.
   // Si el servidor dice que la sesión ya no vale, se pasa al modo sin cuenta (con su aviso) sin perder lo escrito.
@@ -49,7 +59,8 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
   const [avisoVencida, setAvisoVencida] = useState(false);
   const conCuenta = estadoSesion === "ok" && consentimiento === "vigente" && !sesionVencida;
   const dialogo = useRef<HTMLDialogElement | null>(null);
-  const disparador = useRef<HTMLButtonElement | null>(null);
+  // Quién tenía el foco al abrir (la barra superior o el ítem de la hoja Más): ahí vuelve el foco al cerrar.
+  const origen = useRef<HTMLElement | null>(null);
   const refs = useRef<Partial<Record<CampoReporte, HTMLElement | null>>>({});
   const [tipo, setTipo] = useState<TipoReporte>("bug");
   const [quePaso, setQuePaso] = useState("");
@@ -60,23 +71,6 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
   const [estado, setEstado] = useState<Estado>({ fase: "editando" });
   const [contexto, setContexto] = useState<Contexto>(CONTEXTO_VACIO);
   const [copiado, setCopiado] = useState<"si" | "no" | null>(null);
-  const [sobre, setSobre] = useState(false);
-  const [conFoco, setConFoco] = useState(false);
-  const [descartada, setDescartada] = useState(false);
-  // Visible mientras el puntero esté encima o el botón tenga foco, salvo que se haya descartado con Escape.
-  const sugerencia = (sobre || conFoco) && !descartada;
-
-  // Escape descarta la sugerencia esté donde esté el foco (WCAG 1.4.13), sin mover puntero ni foco.
-  useEffect(() => {
-    if (!sugerencia) return;
-    function alTeclear(ev: KeyboardEvent) {
-      if (ev.key !== "Escape") return;
-      // Sin preventDefault: un keydown cancelado no cierra un <dialog> abierto.
-      setDescartada(true);
-    }
-    document.addEventListener("keydown", alTeclear);
-    return () => document.removeEventListener("keydown", alTeclear);
-  }, [sugerencia]);
 
   function leerContexto(sinCuenta = !conCuenta): Contexto {
     return armarContexto({
@@ -92,8 +86,7 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
   }
 
   function abrir() {
-    // Al abrir el diálogo la sugerencia sobra, aunque el navegador no dispare mouseleave.
-    setSobre(false);
+    origen.current = document.activeElement as HTMLElement | null;
     // Mientras se envía no se toca nada: reabrir no habilita un segundo envío.
     if (estado.fase === "enviando") {
       dialogo.current?.showModal();
@@ -113,6 +106,17 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
     setAvisoVencida(false);
     dialogo.current?.showModal();
   }
+
+  // Los disparadores piden abrir con `abrirReporte()`; el listener usa siempre la última `abrir` (lee el estado vigente).
+  const abrirVigente = useRef(abrir);
+  useEffect(() => {
+    abrirVigente.current = abrir;
+  });
+  useEffect(() => {
+    const alPedir = () => abrirVigente.current();
+    window.addEventListener(EVENTO_ABRIR_REPORTE, alPedir);
+    return () => window.removeEventListener(EVENTO_ABRIR_REPORTE, alPedir);
+  }, []);
 
   function cerrar() {
     dialogo.current?.close();
@@ -207,43 +211,10 @@ export function BotonReportar({ version, entorno }: { version: string; entorno: 
 
   return (
     <>
-      <button
-        ref={disparador}
-        type="button"
-        onClick={abrir}
-        aria-label="Reportar un problema o una idea"
-        aria-describedby={sugerencia ? "tooltip-reportar" : undefined}
-        onMouseEnter={() => {
-          setSobre(true);
-          setDescartada(false);
-        }}
-        onMouseLeave={() => setSobre(false)}
-        onFocus={() => {
-          setConFoco(true);
-          setDescartada(false);
-        }}
-        onBlur={() => setConFoco(false)}
-        className="group fixed right-0 top-1/2 z-40 grid -translate-y-1/2 place-items-center rounded-full border-2 border-dashed border-ink p-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
-      >
-        {/* Mismo tamaño que el botón de Hifa (TAMANO_FLOTANTE); el anillo punteado queda separado por 3 px. */}
-        <span className={`grid ${TAMANO_FLOTANTE} place-items-center rounded-full bg-deep text-on-deep shadow-lg group-hover:bg-deep-2`}>
-          <Bug aria-hidden="true" className="size-7" />
-        </span>
-        {sugerencia && (
-          <span
-            id="tooltip-reportar"
-            role="tooltip"
-            className="absolute right-full top-1/2 mr-2 -translate-y-1/2 whitespace-nowrap rounded-md bg-ink px-2 py-1 text-sm font-medium text-bg"
-          >
-            Reportar
-          </span>
-        )}
-      </button>
-
       <dialog
         ref={dialogo}
         aria-labelledby="titulo-reporte"
-        onClose={() => disparador.current?.focus()}
+        onClose={() => origen.current?.focus?.()}
         className="m-auto max-h-[90dvh] w-[min(36rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-line bg-surface p-5 text-ink backdrop:bg-ink/50"
       >
         <div className="flex items-start justify-between gap-3">
