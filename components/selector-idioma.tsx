@@ -25,7 +25,7 @@ const FOCO = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visib
  * Selector ES / EN, para todos (con y sin cuenta). Desde ux-celular ya no está fijo en la barra superior: vive en el menú del
  * avatar, en el menú "Más opciones" sin sesión, en la hoja Más (lista de filas de 44 px) y en Configuración. Son dos enlaces con `?lang=` (funcionan sin
  * JavaScript y en otra pestaña). Con un clic normal cambia el idioma sin recargar la página; con Ctrl, Cmd o clic medio
- * queda el enlace. El actual lleva `aria-current` y se distingue con subrayado y peso, no solo con color. El nombre del
+ * queda el enlace. El actual lleva `aria-current` y se distingue con fondo, negrita y tilde, no solo con color. El nombre del
  * grupo está en los dos idiomas a propósito: quien no entiende uno tiene que poder encontrarlo.
  */
 export function SelectorIdioma() {

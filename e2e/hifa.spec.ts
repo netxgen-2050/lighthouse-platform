@@ -123,6 +123,20 @@ for (const [ancho, alto] of [
   });
 }
 
+for (const [ancho, alto] of [
+  [375, 667],
+  [667, 375],
+] as const) {
+  test(`${ancho} x ${alto}: el chat de Hifa queda sobre la barra de arriba y su botón cerrar se puede clicar`, async ({ page }) => {
+    await page.setViewportSize({ width: ancho, height: alto });
+    await page.goto("/");
+    const chat = await abrir(page);
+    // Clic real (sin force): falla si la cinta o la barra superior tapan el encabezado del chat.
+    await chat.getByRole("button", { name: "Cerrar el chat con Hifa" }).click();
+    await expect(chat).toBeHidden();
+  });
+}
+
 test("el botón cerrar cierra y devuelve el foco", async ({ page }) => {
   await page.goto("/");
   const chat = await abrir(page);

@@ -40,10 +40,12 @@ test("390 px: al final de la página la barra inferior y Hifa no tapan el pie", 
 
 test("390 px: la barra inferior es la misma en el claro y en el oscuro y sigue a 48 px de alto mínimo", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/mi-tierra");
   const medidas: { alto: number; fondo: string; items: number[] }[] = [];
   for (const tema of ["claro", "oscuro"]) {
-    await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+    // El tema es la preferencia guardada (forzar el atributo lo pisa la hidratación).
+    await page.addInitScript((t) => window.localStorage.setItem("lh-configuracion", JSON.stringify({ tema: t })), tema);
+    await page.goto("/mi-tierra");
+    await expect(page.locator("html")).toHaveAttribute("data-tema", tema);
     const barra = page.getByRole("navigation", { name: "Principal" });
     await expect(barra.getByRole("link", { name: "Mi tierra" })).toHaveAttribute("aria-current", "page");
     await expect(barra.getByRole("link")).toHaveCount(5);

@@ -16,9 +16,21 @@ async function abrirSelector(page: Page) {
   const grupo = selector(page);
   if (await grupo.isVisible()) return grupo;
   // Con sesión hay avatar, sin sesión "Más opciones": se espera al que llegue y se hace clic en ese.
-  await avatar.or(opciones).click();
-  await expect(grupo).toBeVisible();
+  // Se reintenta entero: un clic antes de que termine de hidratar o de leerse la sesión no deja el menú abierto.
+  await expect(async () => {
+    if (!(await grupo.isVisible())) await avatar.or(opciones).click({ timeout: 2000 });
+    await expect(grupo).toBeVisible({ timeout: 1000 });
+  }).toPass();
   return grupo;
+}
+
+/** Abre la hoja Más del celular; se reintenta porque un toque antes de hidratar no la abre. */
+async function abrirMas(page: Page, navegacion: string, nombre: string) {
+  const hoja = page.getByRole("dialog", { name: nombre });
+  await expect(async () => {
+    if (!(await hoja.isVisible())) await page.getByRole("navigation", { name: navegacion }).getByRole("button", { name: nombre, exact: true }).click({ timeout: 2000 });
+    await expect(hoja).toBeVisible({ timeout: 1000 });
+  }).toPass();
 }
 const cookieIdioma =async (page: Page) => (await page.context().cookies()).find((c) => c.name === "lh-idioma")?.value;
 
@@ -57,10 +69,11 @@ test.describe("sin cuenta", () => {
   });
 
   test("(a) el selector es un enlace con ?lang y funciona en otra pestaña", async ({ page }) => {
-    await page.goto("/tribus");
+    // /participa y no /tribus: /tribus redirige a /participa y la dirección del enlace dependería de esa carrera.
+    await page.goto("/participa");
     await abrirSelector(page);
-    await expect(selector(page).getByRole("link", { name: "EN · English" })).toHaveAttribute("href", "/tribus?lang=en");
-    await expect(selector(page).getByRole("link", { name: "ES · Español" })).toHaveAttribute("href", "/tribus?lang=es");
+    await expect(selector(page).getByRole("link", { name: "EN · English" })).toHaveAttribute("href", "/participa?lang=en");
+    await expect(selector(page).getByRole("link", { name: "ES · Español" })).toHaveAttribute("href", "/participa?lang=es");
   });
 
   test("(b) ?lang=en con UTM y ancla termina sin el parámetro y en inglés", async ({ page }) => {
@@ -137,13 +150,13 @@ test.describe("sin cuenta", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/participa");
     await expect(html(page)).toHaveAttribute("lang", "es");
-    await page.getByRole("navigation", { name: "Principal" }).getByRole("button", { name: "Más", exact: true }).click();
+    await abrirMas(page, "Principal", "Más");
     await page.getByRole("dialog", { name: "Más" }).getByRole("link", { name: "EN · English" }).click();
     await expect(html(page)).toHaveAttribute("lang", "en");
     expect(await cookieIdioma(page)).toBe("en");
     await page.reload();
     await expect(html(page)).toHaveAttribute("lang", "en");
-    await page.getByRole("navigation", { name: "Main" }).getByRole("button", { name: "More", exact: true }).click();
+    await abrirMas(page, "Main", "More");
     await expect(page.getByRole("dialog", { name: "More" }).getByRole("link", { name: "EN · English" })).toHaveAttribute("aria-current", "true");
   });
 
@@ -152,7 +165,7 @@ test.describe("sin cuenta", () => {
     for (const ruta of ["/", "/tribus", "/sumarte"]) {
       await page.goto(`${ruta}?lang=en`);
       await expect(barra(page).getByRole("link", { name: "Join" })).toBeVisible();
-      await page.getByRole("navigation", { name: "Main" }).getByRole("button", { name: "More", exact: true }).click();
+      await abrirMas(page, "Main", "More");
       const hoja = page.getByRole("dialog", { name: "More" });
       await expect(hoja.getByRole("group", { name: "Idioma · Language" })).toBeVisible();
       await expect(hoja.getByRole("button", { name: "Sign in" })).toBeVisible();
