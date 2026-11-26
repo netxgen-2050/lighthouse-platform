@@ -97,7 +97,9 @@ describe("armarPortafolio", () => {
     const p = armarPortafolio([pagada(reservada(primero, null))], SIN_ADHESION);
     expect(p.lotes[0].plan).toEqual({ tipo: "no-entra" });
     expect(p.lotes[0].faro).toEqual({ tipo: "no-aplica" });
-    expect(p.totales.fraccionPagada).toBeNull();
+    // El monto de un lote de los primeros 4 se conoce (el precio que vio): cuenta como pago único.
+    expect(p.totales.fraccionPagada).toBe(1);
+    expect(p.totales.pagado).toBe(p.lotes[0].precioVisto);
     expect(p.totales.faroAcreditados).toBeNull();
     // Ningún lote entra al plan: los indicadores de plan y FARO no aplican (no es "sin dato").
     expect(p.totales.entraAlPlan).toBe(false);
@@ -106,6 +108,18 @@ describe("armarPortafolio", () => {
   test("un lote del plan junto a uno de los primeros 4: los indicadores sí aplican", () => {
     const p = armarPortafolio([reservada(a, 24), reservada(primero, null)], SIN_ADHESION);
     expect(p.totales.entraAlPlan).toBe(true);
+  });
+
+  test("lo pagado suma los lotes de ambos tipos: el anticipo del plan más el precio del lote de los primeros 4", () => {
+    const delPlan = pagada(reservada(a, 24));
+    const deLosPrimeros = pagada(reservada(primero, null));
+    const p = armarPortafolio([delPlan, deLosPrimeros], SIN_ADHESION);
+    const anticipo = planDeLote(precioLote(a.superficieM2), 24)!.anticipo;
+    expect(p.totales.pagado).toBe(Math.round(anticipo + precioLote(primero.superficieM2)!));
+  });
+
+  test("un lote de los primeros 4 reservado sin pagar: pagado es 0, no sin dato", () => {
+    expect(armarPortafolio([reservada(primero, null)], SIN_ADHESION).totales.pagado).toBe(0);
   });
 
   test("reserva vieja sin plan: plan sin dato, nunca contado", () => {

@@ -20,7 +20,7 @@ import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { enteroEn, faroEn } from "@/lib/bien-comun/formato";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { usdEn } from "@/lib/lotes/formato";
-import { armarPortafolio, curvaFaro, type FaroPortafolio, type LotePortafolio } from "@/lib/mi-tierra/portafolio";
+import { armarPortafolio, curvaFaro, type FaroPortafolio, type LotePortafolio, type Portafolio } from "@/lib/mi-tierra/portafolio";
 import { leerAdhesionDelNavegador, SIN_ADHESION, type Adhesion } from "@/lib/membresia/versiones";
 
 const TARJETA = "grid content-start gap-3 rounded-xl border border-line bg-surface p-4";
@@ -61,7 +61,7 @@ export function MiTierraCliente() {
   if (portafolio.lotes.length === 0) {
     return (
       <div className="grid gap-6">
-        <section aria-labelledby="mt-sin-compras" className={TARJETA}>
+        <section aria-label={t.sinCompras.titulo} className={TARJETA}>
           <EstadoVacio
             nivel={2}
             titulo={t.sinCompras.titulo}
@@ -80,8 +80,6 @@ export function MiTierraCliente() {
   const { totales } = portafolio;
   const curva = curvaFaro(portafolio.lotes);
   const p = t.posiciones;
-  const faroValor = totales.faroAcreditados !== null ? faroEn(totales.faroAcreditados, idioma) : comunes.sinDato;
-  const faroDetalle = totales.hayPago && totales.faroAcreditados !== null ? p.faroDetalle : totales.hayPago ? p.faroDetalle : t.faro.sinPago;
   const vozValor = portafolio.voz.adhirio ? p.vozAdhirio : portafolio.voz.desactualizada ? p.vozDesactualizada : p.vozSinAdhesion;
 
   return (
@@ -111,13 +109,7 @@ export function MiTierraCliente() {
           })}
           {totales.entraAlPlan && (
             <li>
-              <FilaPosicion
-                icono={<Sprout size={16} />}
-                nombre="FARO"
-                detalle={faroDetalle}
-                valor={faroValor}
-                extra={<MiniCurva puntos={curva} titulo={p.curva} />}
-              />
+              <FilaFaro totales={totales} curva={curva} />
             </li>
           )}
           <li>
@@ -149,6 +141,16 @@ export function MiTierraCliente() {
       </section>
     </div>
   );
+}
+
+/** La fila de FARO de las posiciones: sin primer pago o sin dato del FARO, dice "sin dato" con su explicación, nunca 0. */
+export function FilaFaro({ totales, curva }: { totales: Portafolio["totales"]; curva: number[] }) {
+  const idioma = useIdioma();
+  const t = useTextos("miTierra");
+  const comunes = useTextos("comunes");
+  const valor = totales.faroAcreditados !== null ? faroEn(totales.faroAcreditados, idioma) : comunes.sinDato;
+  const detalle = totales.hayPago ? t.posiciones.faroDetalle : t.faro.sinPago;
+  return <FilaPosicion icono={<Sprout size={16} />} nombre="FARO" detalle={detalle} valor={valor} extra={<MiniCurva puntos={curva} titulo={t.posiciones.curva} />} />;
 }
 
 function TarjetaLote({ l }: { l: LotePortafolio }) {

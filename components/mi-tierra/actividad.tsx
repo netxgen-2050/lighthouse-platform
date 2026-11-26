@@ -25,11 +25,11 @@ export function filtrarLibro(libro: MovimientoLibro[], filtro: FiltroActividad):
 }
 
 /** Actividad como explorador (ux-mi-tierra, design §4): 8 filas, "Ver toda la actividad" y filtro por tipo con pastillas `aria-pressed`. */
-export function Actividad({ libro }: { libro: MovimientoLibro[] }) {
+export function Actividad({ libro, abiertaInicial = false }: { libro: MovimientoLibro[]; abiertaInicial?: boolean }) {
   const idioma = useIdioma();
   const t = useTextos("miTierra").actividad;
   const [filtro, setFiltro] = useState<FiltroActividad>("todo");
-  const [abierta, setAbierta] = useState(false);
+  const [abierta, setAbierta] = useState(abiertaInicial);
   const lista = filtrarLibro(libro, filtro);
   const visibles = abierta ? lista : lista.slice(0, FILAS_VISIBLES);
   const filas = visibles.map((m) => ({
@@ -56,11 +56,12 @@ export function Actividad({ libro }: { libro: MovimientoLibro[] }) {
               filtro === f.id ? "border-ink bg-ink text-bg" : "border-line bg-surface text-ink hover:bg-surface-2"
             }`}
           >
+            {filtro === f.id && <span aria-hidden="true">✓ </span>}
             {f.texto}
           </button>
         ))}
       </div>
-      {filas.length === 0 ? <p className="text-sm text-muted">{t.vacio}</p> : <TablaLibro titulo={t.titulo} filas={filas} />}
+      {filas.length === 0 ? <p className="text-sm text-muted">{t.vacio}</p> : <TablaLibro titulo={t.titulo} filas={filas} dosLineasEnCelular />}
       {lista.length > FILAS_VISIBLES && (
         <details open={abierta} onToggle={(e) => setAbierta((e.currentTarget as HTMLDetailsElement).open)}>
           <summary className="w-fit cursor-pointer text-sm font-medium underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">

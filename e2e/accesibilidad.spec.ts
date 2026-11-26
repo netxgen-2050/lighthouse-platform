@@ -95,10 +95,27 @@ for (const idioma of ["es", "en"] as const) {
 }
 
 // Mi tierra (rediseno-mi-tierra), con una compra en cuotas: en los dos idiomas y los dos temas. Sin compras ya entra en `rutas`.
+const ANCHOS_MI_TIERRA = [390, 1440] as const;
 for (const idioma of ["es", "en"] as const) {
   for (const tema of ["oscuro", "claro"] as const) {
-    test(`axe sin violaciones serias o críticas: /mi-tierra con una compra en cuotas, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
+    for (const ancho of ANCHOS_MI_TIERRA) {
+      test(`axe sin violaciones serias o críticas: /mi-tierra sin lotes (estado vacío), ${idioma}, tema ${tema}, ${ancho} px`, async ({ page, context, baseURL }) => {
+        await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+        await page.setViewportSize({ width: ancho, height: ancho < 600 ? 844 : 900 });
+        await page.goto("/mi-tierra");
+        await expect(page.getByRole("heading", { level: 2 }).first()).toBeVisible();
+        await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+        expect(await graves(page)).toEqual([]);
+      });
+    }
+  }
+}
+for (const idioma of ["es", "en"] as const) {
+  for (const tema of ["oscuro", "claro"] as const) {
+   for (const ancho of ANCHOS_MI_TIERRA) {
+    test(`axe sin violaciones serias o críticas: /mi-tierra con una compra en cuotas, ${idioma}, tema ${tema}, ${ancho} px`, async ({ page, context, baseURL }) => {
       await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+      await page.setViewportSize({ width: ancho, height: ancho < 600 ? 844 : 900 });
       const idLote = lotesDelGrupo("norte").find((l) => estadoDeLote(l.id) === "disponible")!.id;
       await page.addInitScript((loteId) => {
         if (window.localStorage.getItem("lh-lotes")) return;
@@ -127,7 +144,11 @@ for (const idioma of ["es", "en"] as const) {
       await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible();
       await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
       expect(await graves(page)).toEqual([]);
+      // Sin scroll horizontal de la página ni de la actividad.
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+      await expect(page.locator('[data-desborda="true"]')).toHaveCount(0);
     });
+   }
   }
 }
 

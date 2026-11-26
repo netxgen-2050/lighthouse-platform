@@ -8,7 +8,8 @@ import { VERSION_MODELO_LOTES, precioLote } from "@/lib/lotes/modelo";
 import { lotesDelGrupo } from "@/lib/territorios/loteo";
 import { estadoDeLote } from "@/lib/territorios/loteo-estados";
 import type { CompraLote } from "@/lib/lotes/compra";
-import { filtrarLibro, FILAS_VISIBLES } from "./actividad";
+import { FilaFaro } from "@/app/mi-tierra/mi-tierra-cliente";
+import { Actividad, filtrarLibro, FILAS_VISIBLES } from "./actividad";
 import { EncabezadoMiTierra } from "./encabezado";
 import { FilaPosicion } from "./fila-posicion";
 import { MiniCurva } from "./mini-curva";
@@ -63,13 +64,36 @@ describe("EncabezadoMiTierra", () => {
     expect(h).toContain("Todavía no pagaste ninguna cuota");
     expect(h).toContain("Hacer el primer pago (simulado)");
   });
+  test("lote de los primeros 4 pagado: el número principal muestra el monto, no sin dato", () => {
+    const primero = lotesDelGrupo("primeros").find((l) => estadoDeLote(l.id) === "disponible")!;
+    const c = { ...compra(true, primero.id), vio: { ...compra(true).vio, plan: undefined, faro: undefined, precio: precioLote(primero.superficieM2) } } as CompraLote;
+    const p = armarPortafolio([c], SIN_ADHESION);
+    const h = renderToStaticMarkup(<EncabezadoMiTierra portafolio={p} />);
+    expect(p.totales.pagado).toBe(precioLote(primero.superficieM2));
+    expect(h).not.toContain("sin dato");
+  });
+  test("lote de los primeros 4 reservado: ofrece el primer pago y dice que no pagó nada", () => {
+    const primero = lotesDelGrupo("primeros").find((l) => estadoDeLote(l.id) === "disponible")!;
+    const c = { ...compra(false, primero.id), vio: { ...compra(false).vio, plan: undefined, faro: undefined, precio: precioLote(primero.superficieM2) } } as CompraLote;
+    const h = renderToStaticMarkup(<EncabezadoMiTierra portafolio={armarPortafolio([c], SIN_ADHESION)} />);
+    expect(h).toContain("Todavía no pagaste ninguna cuota");
+    expect(h).toContain("Hacer el primer pago (simulado)");
+  });
 });
 
 describe("posiciones", () => {
-  test("FARO sin primer pago: el portafolio no tiene FARO acreditado (la fila dice sin dato)", () => {
+  test("FARO sin primer pago: la fila dice sin dato con la explicación, nunca 0", () => {
     const p = armarPortafolio([compra(false)], SIN_ADHESION);
     expect(p.totales.faroAcreditados).toBeNull();
     expect(p.totales.hayPago).toBe(false);
+    const h = renderToStaticMarkup(<FilaFaro totales={p.totales} curva={[]} />);
+    expect(h).toContain("sin dato");
+    expect(h).toContain(textos("miTierra", "es").faro.sinPago);
+  });
+  test("el estado vendido de la posición dice lo mismo que el chip, sin 'escriturado'", () => {
+    for (const idioma of ["es", "en"] as const) {
+      expect(textos("miTierra", idioma).posiciones.estados.vendido.toLowerCase()).toBe(textos("marco", idioma).estados.vendido.toLowerCase());
+    }
   });
   test("FilaPosicion: con href toda la fila es un enlace", () => {
     const h = renderToStaticMarkup(<FilaPosicion icono="x" nombre="Lote 1" detalle="d" valor="v" href="/lotes/1" />);
@@ -93,5 +117,22 @@ describe("actividad", () => {
   });
   test("se ven 8 filas", () => {
     expect(FILAS_VISIBLES).toBe(8);
+  });
+  test("con más de 8 movimientos: 8 filas y 'Ver toda la actividad'; abierto muestra todas", () => {
+    const muchos = Array.from({ length: 11 }, () => m("pago", false));
+    const cerrado = renderToStaticMarkup(<Actividad libro={muchos} />);
+    expect(cerrado.match(/<tr/g)!.length).toBe(1 + FILAS_VISIBLES);
+    expect(cerrado).toContain("Ver toda la actividad (11");
+    expect(cerrado).not.toContain("<details open");
+    const abierto = renderToStaticMarkup(<Actividad libro={muchos} abiertaInicial />);
+    expect(abierto.match(/<tr/g)!.length).toBe(1 + 11);
+    expect(abierto).toContain("<details open");
+  });
+  test("con 8 o menos no hay 'Ver toda la actividad'", () => {
+    expect(renderToStaticMarkup(<Actividad libro={libro} />)).not.toContain("Ver toda la actividad");
+  });
+  test("la pastilla elegida lleva una marca además del color", () => {
+    const h = renderToStaticMarkup(<Actividad libro={libro} />);
+    expect(h).toMatch(/aria-pressed="true"[^>]*><span aria-hidden="true">✓ <\/span>Todo/);
   });
 });

@@ -26,17 +26,16 @@ export function EncabezadoMiTierra({ portafolio }: { portafolio: Portafolio }) {
   const { totales, lotes } = portafolio;
   const varios = lotes.length > 1;
   const primero = lotes[0];
-  const conPagoPendiente = lotes.find((l) => l.estado === "reservado" && l.plan.tipo !== "no-entra" && l.plan.tipo !== "sin-dato");
+  const conPagoPendiente = lotes.find((l) => l.estado === "reservado" && l.plan.tipo !== "sin-dato");
   const sinPagos = totales.pagado === 0;
   const cuotas = totales.cuotasDelUnico;
   return (
     <section aria-labelledby="mt-numero-etiqueta" className="grid gap-4 border-b border-line pb-6">
-      <div className="grid gap-1">
+      <div role="group" aria-labelledby="mt-numero-etiqueta" className="grid gap-1">
         <p id="mt-numero-etiqueta" className="text-[13px] text-muted">
           {varios ? t.variosLotes : t.unLote}
         </p>
         <p
-          aria-labelledby="mt-numero-etiqueta"
           data-numero-principal
           className="font-mono text-[32px] font-semibold leading-tight tabular-nums text-ink sm:text-[40px]"
         >

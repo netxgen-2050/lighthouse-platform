@@ -183,23 +183,31 @@ export function armarPortafolio(compras: CompraLote[], adhesion: Adhesion): Port
     });
 
   // Lo pagado sobre lo que suman los planes (pesado por el monto de cada plan). Si algún lote no tiene plan o le falta un valor, sin dato.
-  // Los primeros 4 lotes no entran al plan: no cuentan ni suman ni restan.
-  const planes = lotes.map((l) => l.plan).filter((p) => p.tipo !== "no-entra");
-  const todosConPlan = planes.length > 0 && planes.every((p) => p.tipo === "cuotas" || p.tipo === "contado");
+  // Los primeros 4 lotes no tienen plan en cuotas, pero su monto se conoce (el precio que la persona vio): cuentan como un pago único.
+  const planes = lotes.map((l) => l.plan);
   let fraccionPagada: number | null = null;
   let pagadoTotal: number | null = null;
   let totalPlanes: number | null = null;
-  if (todosConPlan) {
+  if (lotes.length > 0) {
     let pagado = 0;
     let suma = 0;
     let completo = true;
-    for (const p of planes) {
-      if ((p.tipo !== "cuotas" && p.tipo !== "contado") || p.total === null || p.fraccionPagada === null) {
+    for (const l of lotes) {
+      const p = l.plan;
+      if (p.tipo === "no-entra") {
+        if (l.precioVisto === null) {
+          completo = false;
+          break;
+        }
+        pagado += l.pagadoEl ? l.precioVisto : 0;
+        suma += l.precioVisto;
+      } else if ((p.tipo !== "cuotas" && p.tipo !== "contado") || p.total === null || p.fraccionPagada === null) {
         completo = false;
         break;
+      } else {
+        pagado += p.total * p.fraccionPagada;
+        suma += p.total;
       }
-      pagado += p.total * p.fraccionPagada;
-      suma += p.total;
     }
     fraccionPagada = completo && suma > 0 ? pagado / suma : null;
     if (completo && suma > 0) {
@@ -225,7 +233,7 @@ export function armarPortafolio(compras: CompraLote[], adhesion: Adhesion): Port
       fraccionPagada,
       faroAcreditados: acreditados.length === 0 ? null : acreditados.reduce((a, b) => a + b, 0),
       hayPago,
-      entraAlPlan: planes.length > 0,
+      entraAlPlan: planes.some((p) => p.tipo !== "no-entra"),
     },
     voz: {
       adhirio: adhirioAlManifiestoVrn(adhesion.membresias, adhesion.versiones),
