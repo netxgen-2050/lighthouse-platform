@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, test } from "vitest";
-import { CLASE_FONDO_DEL_TEXTO_DEL_HEROE } from "@/components/explorar/heroe-valle-clases";
+import { CLASE_DESVANECIDO_DEL_HEROE, CLASE_FONDO_DEL_TEXTO_DEL_HEROE } from "@/components/explorar/heroe-valle-clases";
 
 // Lee los tokens de app/globals.css y comprueba el contraste WCAG de los pares que la app usa juntos.
 // Agregá acá cada par nuevo de texto y fondo que empiece a usarse.
@@ -48,6 +48,13 @@ export function contraste(a: Rgba, b: Rgba): number {
   const [x, y] = [luminancia(a), luminancia(b)].sort((p, q) => q - p);
   return (x + 0.05) / (y + 0.05);
 }
+
+test("el degradado del héroe va de bg al 0 % al mismo valor que el fondo del texto (92 %), sin salto", () => {
+  expect(CLASE_DESVANECIDO_DEL_HEROE).toContain("from-bg/0");
+  const fin = /to-bg\/(\d+)/.exec(CLASE_DESVANECIDO_DEL_HEROE)?.[1];
+  expect(fin).toBe("92");
+  expect(CLASE_FONDO_DEL_TEXTO_DEL_HEROE).toBe(`bg-bg/${fin}`);
+});
 
 const BLANCO: Rgba = [255, 255, 255, 1];
 const NEGRO: Rgba = [0, 0, 0, 1];

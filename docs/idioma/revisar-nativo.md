@@ -57,7 +57,7 @@ Fuentes pendientes: 53
 | `textos/participa` | Participa (/participa): mapa ilustrado de equipos, lista, detalle del equipo con sus posiciones abiertas y pestaña Visión | 42 |
 | `textos/pasaporte` | Pasaporte: sellos y lo que abren, tarjeta y diálogo de verificación de identidad (KYC) con sus errores, sello de la billetera y datos de aporte | 149 |
 | `textos/perfil` | Perfil: encabezado, formulario, tarjetas, errores de validación y las seis preguntas de la entrevista | 58 |
-| `textos/portada` | Portada: promesa a 2030, Argentina, capitales, los tres caminos y la cantidad de barrios (más lib/portada-vrn.ts) | 31 |
+| `textos/portada` | Portada: promesa a 2030, Argentina, capitales, los tres caminos y la cantidad de barrios (más lib/portada-vrn.ts) | 34 |
 | `textos/recorrido` | Mi recorrido: próximo paso (cinco pasos), pestañas, línea de tiempo y tabla de la Bitácora | 45 |
 | `textos/semillas` | Semillas: libro por comunidad, detalle, meta de sembrador/a activo/a y ronda de reconocimiento ("Semillas" no se traduce) | 124 |
 | `textos/sumarte` | Sumarte: planes, niveles del pase (Seed, Sprout, Root, a confirmar), comprar un lote, invertir, avisos de nivel, formulario de pedido de contacto y panel Entrar como… | 159 |

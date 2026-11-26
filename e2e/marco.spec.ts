@@ -525,7 +525,7 @@ test("el HTML del servidor ya trae un año en el pie (sin JS)", async ({ request
 test("portada con titular y botón a /participa", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Regenerar desde el agua\.\s*Una promesa a 2030\./);
-  await page.getByRole("link", { name: "Ver las comunidades" }).click();
+  await page.getByRole("link", { name: /¿Qué es de todos y quién decide\?/ }).click();
   await expect(page).toHaveURL(/\/participa$/);
 });
 

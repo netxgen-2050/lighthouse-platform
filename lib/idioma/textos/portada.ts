@@ -39,19 +39,22 @@ const es = {
   notaImagen: "Imagen ilustrativa de la Zona A (memoria técnica de Martín): no es una fotografía ni un plano.",
   recomendado: "Recomendado para vos",
   caminos: {
-    lotes: {
-      etiqueta: "Comprar",
-      titulo: "Ver los lotes",
-      descripcion: "Del loteo provisorio del sector norte. Es una simulación.",
+    vivir: {
+      etiqueta: "Quiero vivir ahí",
+      titulo: "¿Dónde viviría y cuánto cuesta?",
+      descripcion: "El territorio, lo común y los lotes del loteo provisorio del sector norte. Es una simulación.",
+      accion: "Explorar el territorio",
     },
-    territorio: {
-      etiqueta: "Descubrir",
-      titulo: "Explorar el territorio",
-      descripcion: "Los lotes, lo común y lo que se está trabajando.",
+    invertir: {
+      etiqueta: "Quiero invertir",
+      titulo: "¿Qué financio y cómo me devuelven?",
+      descripcion: "Qué se financia y cómo se reparte, con números de ejemplo. No es una promesa de retorno.",
+      accion: "Ver cómo invertir",
     },
-    tribus: {
-      etiqueta: "Lo que viene",
-      titulo: "Ver las tribus",
+    cuidar: {
+      etiqueta: "Quiero cuidar el bien común",
+      titulo: "¿Qué es de todos y quién decide?",
+      accion: "Ir a Participa",
     },
   },
   /** Descripción del camino de las tribus: con `cantidad` 0 no hay dato y no se muestra número. */
@@ -97,20 +100,24 @@ const en: Textos<typeof es> = {
   leyendaImagen: "Illustrative image",
   notaImagen: "Illustrative image of Zone A (Martín's technical report): it is neither a photograph nor a plan.",
   recomendado: "Recommended for you",
+  // Inglés de los tres caminos: pendiente de revisión nativa, como el resto.
   caminos: {
-    lotes: {
-      etiqueta: "Buy",
-      titulo: "See the lots",
-      descripcion: "From the provisional layout of the north sector. It is a simulation.",
+    vivir: {
+      etiqueta: "I want to live there",
+      titulo: "Where would I live and what does it cost?",
+      descripcion: "The territory, the commons and the lots of the provisional layout of the north sector. It is a simulation.",
+      accion: "Explore the territory",
     },
-    territorio: {
-      etiqueta: "Discover",
-      titulo: "Explore the territory",
-      descripcion: "The lots, the commons and what is being worked on.",
+    invertir: {
+      etiqueta: "I want to invest",
+      titulo: "What do I fund and how am I paid back?",
+      descripcion: "What gets funded and how it is shared, with sample numbers. It is not a promise of return.",
+      accion: "See how to invest",
     },
-    tribus: {
-      etiqueta: "Coming next",
-      titulo: "See the tribes",
+    cuidar: {
+      etiqueta: "I want to look after the commons",
+      titulo: "What belongs to everyone and who decides?",
+      accion: "Go to Participa",
     },
   },
   barrios: (cantidad: number) =>

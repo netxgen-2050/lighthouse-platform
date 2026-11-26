@@ -22,4 +22,11 @@ describe("portada sin cifras", () => {
     expect(html).toContain('id="capitales"');
     expect(html).toContain('id="por-donde-empezar"');
   });
+
+  test("el héroe es el único h1 y el aviso de Argentina va después de los capitales", async () => {
+    const html = renderToStaticMarkup(await Home({ searchParams: Promise.resolve({}) }));
+    expect(html.match(/<h1/g)).toHaveLength(1);
+    expect(html.indexOf('id="por-donde-empezar"')).toBeLessThan(html.indexOf('id="capitales"'));
+    expect(html.indexOf('id="capitales"')).toBeLessThan(html.indexOf('id="argentina"'));
+  });
 });
