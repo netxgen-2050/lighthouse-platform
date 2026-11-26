@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { KycDialogo } from "@/components/kyc-dialogo";
 import { Medidor } from "@/components/medidor";
 import { PedidoContacto } from "@/components/pedido-contacto";
@@ -84,7 +84,7 @@ function ConMarcas({ texto }: { texto: string }) {
   );
 }
 
-export function SumarteCliente({ volver, para, plan }: { volver: string | null; para: string | null; plan: string | null }) {
+export function SumarteCliente({ volver, para }: { volver: string | null; para: string | null }) {
   const router = useRouter();
   const idioma = useIdioma();
   const t = useTextos("sumarte");
@@ -108,7 +108,11 @@ export function SumarteCliente({ volver, para, plan }: { volver: string | null; 
   const { moneda } = usePreferencias();
   const foco = useRef<string | null>(null);
   // Plan que eligió la persona en el selector o que pide la dirección (`?plan=`); mientras no hay uno, se calcula (`planVisto`).
-  const [planElegido, setPlanElegido] = useState<PlanVista | null>(leerPlan(plan));
+  // Se sincroniza con la dirección: al navegar a /sumarte (con otro plan o sin plan) se toma lo que dice; elegir en el selector
+  // lo cambia al instante y reescribe la dirección.
+  const planDeLaDireccion = leerPlan(useSearchParams().get("plan"));
+  const [planElegido, setPlanElegido] = useState<PlanVista | null>(planDeLaDireccion);
+  useEffect(() => setPlanElegido(planDeLaDireccion), [planDeLaDireccion]);
   // Cuántas veces se pidió entrar desde esta página: abre el cajón del modo de prueba, donde está "Entrar como…".
   const [pedidosDeEntrar, setPedidosDeEntrar] = useState(0);
 
@@ -316,6 +320,11 @@ export function SumarteCliente({ volver, para, plan }: { volver: string | null; 
     { id: "cuidar", href: "#planes", ...t.caminos.cuidar },
   ];
   const textosComparativa = t.comparativa;
+  const paraQuien = (texto: string) => (
+    <p className="text-sm">
+      <span className="font-medium">{t.selector.paraQuien.titulo}:</span> {texto}
+    </p>
+  );
 
   return (
     <div className="grid gap-6">
@@ -365,6 +374,7 @@ export function SumarteCliente({ volver, para, plan }: { volver: string | null; 
         <article aria-labelledby="plan-explorador" className={`${TARJETA} ${esExplorador ? BORDE_ACTUAL : BORDE}`}>
           <h2 id="plan-explorador" className="text-xl font-semibold">{t.explorador.nombre}</h2>
           <p className="text-2xl font-bold">{t.explorador.precio}</p>
+          {paraQuien(t.selector.paraQuien.explorador)}
           <p className="text-muted">{t.explorador.descripcion}</p>
           <ul className="list-disc pl-5 text-sm">
             {t.explorador.incluye.map((x) => (
@@ -395,6 +405,7 @@ export function SumarteCliente({ volver, para, plan }: { volver: string | null; 
             </span>
           </p>
           {estado.facturacion === "anual" && <p className="text-sm font-medium">{t.facturacion.dosMesesGratis}</p>}
+          {paraQuien(t.selector.paraQuien.miembro)}
           <p className="text-muted">{t.miembro.descripcion}</p>
           <ul className="list-disc pl-5 text-sm">
             <li>{t.miembro.todoExplorador}</li>
@@ -450,6 +461,7 @@ export function SumarteCliente({ volver, para, plan }: { volver: string | null; 
             {monto(nivel.precio)}
             <span className="text-base font-normal">{t.fundador.pagoUnico}</span>
           </p>
+          {paraQuien(t.selector.paraQuien.fundador)}
           <p className="text-muted">
             {t.fundador.financias}
             <TerminoLegal clave="guardian" idioma={idioma} />
@@ -509,6 +521,7 @@ export function SumarteCliente({ volver, para, plan }: { volver: string | null; 
             </span>
           </p>
           {estado.facturacion === "anual" && <p className="text-sm font-medium">{t.facturacion.dosMesesGratis}</p>}
+          {paraQuien(t.selector.paraQuien.comunidad)}
           <p className="text-muted">{t.tribu.descripcion}</p>
           <ul className="list-disc pl-5 text-sm">
             {t.tribu.incluye.map((x) => (

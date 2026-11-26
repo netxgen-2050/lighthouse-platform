@@ -33,6 +33,13 @@ const es = {
     fundador: "Fundador",
     comunidad: "Comunidad",
     queIncluye: "Qué incluye y qué no",
+    paraQuien: {
+      titulo: "Para quién es",
+      explorador: "Para quien recién llega y quiere conocer el territorio antes de comprometerse.",
+      miembro: "Para quien quiere participar en las salas y proponer pactos.",
+      fundador: "Para quien quiere sostener el Fondo Común del Lighthouse desde el principio.",
+      comunidad: "Para quien lidera una tribu con personería y quiere organizarla acá.",
+    },
   },
   /** Cajón del modo de prueba, al final de la página. */
   modoPrueba: { titulo: "Modo de prueba" },
@@ -264,6 +271,13 @@ const en: Textos<typeof es> = {
     fundador: "Founder",
     comunidad: "Community",
     queIncluye: "What's included and what's not",
+    paraQuien: {
+      titulo: "Who it's for",
+      explorador: "For people who are new and want to get to know the territory before committing.",
+      miembro: "For people who want to take part in the rooms and propose pacts.",
+      fundador: "For people who want to support the Lighthouse Common Fund from the start.",
+      comunidad: "For people who lead an incorporated tribe and want to organize it here.",
+    },
   },
   modoPrueba: { titulo: "Test mode" },
   avisos: {

@@ -497,6 +497,33 @@ test("el plan elegido queda en la dirección, se conserva al recargar y las flec
   await expect(radios.getByRole("radio", { name: "Miembro", exact: true })).toBeChecked();
 });
 
+test("cada plan dice para quién es", async ({ page }) => {
+  await page.goto("/sumarte?plan=explorador");
+  for (const [plan, texto] of [
+    ["Explorador", "Para quien recién llega"],
+    ["Miembro", "Para quien quiere participar en las salas"],
+    ["Fundador", "Para quien quiere sostener el Fondo Común"],
+    ["Comunidad", "Para quien lidera una comunidad con personería"],
+  ] as const) {
+    await verPlan(page, plan);
+    await expect(page.locator("#planes").getByRole("article")).toContainText(`Para quién es: ${texto}`);
+  }
+});
+
+test("el plan se mantiene sincronizado con la dirección: ir a /sumarte sin plan vuelve al de por defecto", async ({ page }) => {
+  await page.goto("/sumarte?plan=fundador");
+  await expect(page.getByRole("heading", { level: 2, name: /^Pase Fundador/ })).toBeVisible();
+  await page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Sumarte", exact: true }).click();
+  await expect(page).toHaveURL(/\/sumarte$/);
+  await expect(page.getByRole("heading", { level: 2, name: /^Miembro de la red/ })).toBeVisible();
+  await verPlan(page, "Comunidad");
+  await expect(page).toHaveURL(/plan=comunidad/);
+  // Elegir en el selector reemplaza la entrada (no apila): atrás vuelve a la página de antes, con su plan.
+  await page.goBack();
+  await expect(page).toHaveURL(/plan=fundador/);
+  await expect(page.getByRole("heading", { level: 2, name: /^Pase Fundador/ })).toBeVisible();
+});
+
 test("los tres caminos de arriba llevan a Comprar un lote, Invertir y los planes", async ({ page }) => {
   await page.goto("/sumarte");
   const caminos = page.getByRole("region", { name: "¿Qué querés hacer?" });

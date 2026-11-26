@@ -11,4 +11,5 @@ Octavo cambio `ux-*`. Va sobre la rama de `ux-bien-comun` (mismo carril).
 
 ## 2. Cierre
 
-- [x] 2.1 **Verifica:** `pnpm verificar` y `pnpm build` en verde; `pnpm exec openspec validate ux-sumarte --strict` pasa; suite e2e completa en verde; axe sin violaciones. En el PR: alto de la página a 390 px antes y después, y capturas en claro y oscuro.
+- [x] 2.1 **Verifica:** `pnpm verificar` y `pnpm build` en verde; `pnpm exec openspec validate ux-sumarte --strict` pasa; suite e2e completa en verde; axe sin violaciones. En el PR: alto de la página a 390 px antes y después.
+- [ ] 2.2 Capturas en claro y oscuro adjuntas al PR. **Pendiente:** el agente no puede adjuntar imágenes; quedaron en `.noches/tmp/sumarte-390-*.png` (ignorado por git) y las adjunta Gus.

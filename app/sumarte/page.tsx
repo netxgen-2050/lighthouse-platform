@@ -9,10 +9,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: textos("sumarte", await idiomaDelPedido()).pagina.titulo };
 }
 
-type Props = { searchParams: Promise<{ volver?: string; para?: string; plan?: string }> };
+type Props = { searchParams: Promise<{ volver?: string; para?: string }> };
 
 export default async function SumartePage({ searchParams }: Props) {
-  const { volver, para, plan } = await searchParams;
+  const { volver, para } = await searchParams;
   const idioma = await idiomaDelPedido();
   const t = textos("sumarte", idioma).pagina;
   return (
@@ -23,7 +23,7 @@ export default async function SumartePage({ searchParams }: Props) {
       <p className="text-sm font-medium text-muted">{t.sobretitulo}</p>
       <h1 className="text-3xl font-semibold">{t.h1}</h1>
       <p className="mt-2 mb-4 max-w-2xl text-muted">{t.intro}</p>
-      <SumarteCliente volver={esRutaInterna(volver) ? volver : null} para={para ?? null} plan={plan ?? null} />
+      <SumarteCliente volver={esRutaInterna(volver) ? volver : null} para={para ?? null} />
     </div>
   );
 }
