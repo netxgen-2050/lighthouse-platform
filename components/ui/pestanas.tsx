@@ -34,12 +34,15 @@ export function Pestanas({
   actual,
   onCambio,
   className = "",
+  prefijo = "",
 }: {
   aria: string;
   items: readonly ItemPestana[];
   actual: string;
   onCambio?: (clave: string) => void;
   className?: string;
+  /** Prefijo de los ids (`<prefijo>pestana-<clave>`, `<prefijo>panel-<clave>`) para tener varias pestañas en una página. */
+  prefijo?: string;
 }) {
   if (items.length > 0 && items.every((it) => it.href)) {
     return (
@@ -58,7 +61,7 @@ export function Pestanas({
     if (destino === null) return;
     e.preventDefault();
     onCambio?.(items[destino].clave);
-    document.getElementById(`pestana-${items[destino].clave}`)?.focus();
+    document.getElementById(`${prefijo}pestana-${items[destino].clave}`)?.focus();
   }
 
   return (
@@ -68,11 +71,11 @@ export function Pestanas({
         return (
           <button
             key={it.clave}
-            id={`pestana-${it.clave}`}
+            id={`${prefijo}pestana-${it.clave}`}
             type="button"
             role="tab"
             aria-selected={activa}
-            aria-controls={`panel-${it.clave}`}
+            aria-controls={`${prefijo}panel-${it.clave}`}
             tabIndex={activa ? 0 : -1}
             onClick={() => onCambio?.(it.clave)}
             onKeyDown={(e) => alTeclear(e, i)}

@@ -114,19 +114,51 @@ test("hay 48 rutas auditadas", () => {
   expect(rutas).toHaveLength(48);
 });
 
-// Invertir (rediseno-invertir), con sesión y con la tabla de la curva abierta: en los dos idiomas y los dos temas.
+// Invertir (ux-invertir), con sesión: cada pestaña, en los dos idiomas, los dos temas y a 390 y 1440 px.
+// En Curva se abre además la tabla; en Libro, "Ver todo el libro".
 for (const idioma of ["es", "en"] as const) {
   for (const tema of ["oscuro", "claro"] as const) {
-    test(`axe sin violaciones serias o críticas: /invertir con sesión, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
-      await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
-      await page.goto("/invertir");
-      await expect(page.locator('svg[data-curva="devolucion"]')).toBeVisible();
-      await page.locator("details summary").first().click();
-      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
-      expect(await graves(page)).toEqual([]);
-    });
+    for (const ancho of [390, 1440] as const) {
+      for (const ver of ["", "curva", "libro"] as const) {
+        test(`axe sin violaciones serias o críticas: /invertir con sesión, pestaña ${ver || "como"}, ${idioma}, tema ${tema}, ${ancho} px`, async ({ page, context, baseURL }) => {
+          await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+          await page.setViewportSize({ width: ancho, height: ancho < 600 ? 844 : 900 });
+          await page.goto(ver ? `/invertir?ver=${ver}` : "/invertir");
+          if (ver === "curva") {
+            await expect(page.locator('svg[data-curva="devolucion"]')).toBeVisible();
+            await page.locator("details summary").first().click();
+          } else if (ver === "libro") {
+            await expect(page.getByRole("table")).toBeVisible();
+            await page.locator("details summary").first().click();
+          } else {
+            await expect(page.locator('[data-dato="prima"]')).toBeVisible();
+          }
+          await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+          expect(await graves(page)).toEqual([]);
+        });
+      }
+    }
   }
 }
+
+// Invertir sin sesión (estado vacío): los dos idiomas y los dos temas, a 390 y 1440 px.
+test.describe("invertir sin sesión", () => {
+  test.use({ rol: "ninguno" });
+  for (const idioma of ["es", "en"] as const) {
+    for (const tema of ["oscuro", "claro"] as const) {
+      for (const ancho of [390, 1440] as const) {
+        test(`axe sin violaciones serias o críticas: /invertir sin sesión, ${idioma}, tema ${tema}, ${ancho} px`, async ({ page, context, baseURL }) => {
+          await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+          await page.setViewportSize({ width: ancho, height: ancho < 600 ? 844 : 900 });
+          await page.goto("/invertir");
+          await expect(page.locator("[data-estado-vacio]")).toBeVisible();
+          await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+          expect(await graves(page)).toEqual([]);
+        });
+      }
+    }
+  }
+});
 
 // Mi tierra (rediseno-mi-tierra), con una compra en cuotas: en los dos idiomas y los dos temas. Sin compras ya entra en `rutas`.
 const ANCHOS_MI_TIERRA = [390, 1440] as const;
