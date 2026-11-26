@@ -115,9 +115,10 @@ test("libro: 8 filas, 'Ver todo' muestra todas y el filtro 'Va al común' deja s
 test("con sesión: enlaza a /bien-comun y nunca habla de rendimiento", async ({ page }) => {
   await page.goto("/invertir");
   await expect(page.getByRole("link", { name: "Leer la propuesta del bien común" })).toHaveAttribute("href", "/bien-comun");
+  const nombres: Record<string, string> = { como: "Cómo funciona", curva: "Curva", libro: "Libro" };
   for (const ver of ["como", "curva", "libro"]) {
     await page.goto(`/invertir?ver=${ver}`);
-    await expect(page.getByRole("tab", { selected: true })).toBeVisible();
+    await expect(page.getByRole("tab", { name: nombres[ver], selected: true })).toBeVisible();
     const texto = await main(page).innerText();
     expect(texto, `pestaña ${ver}`).not.toMatch(/rendimiento|APY|\bTIR\b|ganancia|recupero|valorizaci/i);
   }
@@ -142,11 +143,12 @@ test("en inglés: títulos y textos traducidos", async ({ page, context, baseURL
   await expect(page.getByText("Repayment curve · sample case").first()).toBeAttached();
 });
 
-for (const ver of ["", "?ver=curva", "?ver=libro"]) {
-  test(`a 390 px no hay scroll horizontal (${ver || "Cómo funciona"})`, async ({ page }) => {
+const pestanas: [string, string][] = [["", "Cómo funciona"], ["?ver=curva", "Curva"], ["?ver=libro", "Libro"]];
+for (const [ver, nombre] of pestanas) {
+  test(`a 390 px no hay scroll horizontal (${nombre})`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/invertir${ver}`);
-    await expect(page.getByRole("tab", { selected: true })).toBeVisible();
+    await expect(page.getByRole("tab", { name: nombre, selected: true })).toBeVisible();
     const desborda = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
     expect(desborda).toBe(false);
   });
