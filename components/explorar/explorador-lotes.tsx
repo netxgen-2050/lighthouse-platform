@@ -199,6 +199,8 @@ export function ExploradorLotes({ encabezado, legal }: { encabezado: ReactNode; 
           </div>
         </div>
         <LeyendaLotes />
+        {/* La hoja en reposo (7rem) tapa el pie, que solo reserva 4.5rem: esta marca hace que el pie (globals.css) reserve 7rem y se pueda ver y enfocar al llegar al final. */}
+        <div className="h-0" aria-hidden="true" data-espacio-hoja="" />
       </div>
     );
   }

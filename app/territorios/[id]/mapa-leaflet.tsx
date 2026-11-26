@@ -80,9 +80,10 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase, classNam
     }
     ultima.current = id;
     // El mapa es un canvas: estos atributos son lo único que ven los tests e2e del resaltado.
-    if (id) contenedor.current?.setAttribute("data-elegido", id);
-    else contenedor.current?.removeAttribute("data-elegido");
-    if (!id) return;
+    if (!id) {
+      contenedor.current?.removeAttribute("data-elegido");
+      return;
+    }
     sellos.current.get(id)?.classList.add("mapa-sello-elegido");
     const nueva = capas.current.get(id);
     const m = mapaRef.current;
@@ -94,6 +95,8 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase, classNam
       // Frente: un punto, no un polígono.
       m.setView(puntos.current.get(id)!, Math.max(m.getZoom(), 15));
     }
+    // Va después del encuadre: el movimiento ya empezó (data-moviendo) cuando este atributo aparece.
+    contenedor.current?.setAttribute("data-elegido", id);
   }
 
   useEffect(() => {
@@ -107,6 +110,9 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase, classNam
       const macro = macrolote7();
       const mapa = L.map(contenedor.current, { attributionControl: false });
       mapaRef.current = mapa;
+      // Señal para los tests e2e: mientras el mapa se mueve o hace zoom, el contenedor lleva data-moviendo.
+      mapa.on("movestart", () => contenedor.current?.setAttribute("data-moviendo", ""));
+      mapa.on("moveend", () => contenedor.current?.removeAttribute("data-moviendo"));
       destruir = () => {
         mapa.remove();
         mapaRef.current = null;

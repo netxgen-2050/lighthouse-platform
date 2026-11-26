@@ -277,7 +277,8 @@ test.describe("lista y mapa de lotes (ux-explorar)", () => {
     await page.goto("/explorar/lotes?sel=lote-1");
     const mapa = page.locator(".mapa-leaflet");
     await expect(mapa).toHaveAttribute("data-elegido", "lote-1");
-    await page.waitForTimeout(1200);
+    // El mapa termina de encuadrar el lote cuando suelta data-moviendo; ahí el lote queda en el centro.
+    await expect(mapa).not.toHaveAttribute("data-moviendo", /.*/);
     await page.getByRole("button", { name: "Cerrar" }).click();
     await expect(page).not.toHaveURL(/sel=/);
     await expect(page.locator('article[data-lote="lote-1"]')).not.toHaveAttribute("aria-current", "true");
@@ -317,6 +318,28 @@ test.describe("lista y mapa de lotes (ux-explorar)", () => {
     await page.getByRole("button", { name: "Ver lista" }).click();
     await expect(page.locator("[inert]")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Reservado", exact: true })).toBeVisible();
+  });
+
+  test("a 390 px, al llegar al final el pie queda por encima de la hoja en reposo", async ({ page }) => {
+    await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/explorar/lotes");
+    await expect(page.locator(".mapa-leaflet")).toBeVisible();
+    const enlace = page.getByRole("contentinfo").getByRole("link", { name: /Privacidad/ });
+    await expect(page.locator("[data-espacio-hoja]")).toBeAttached();
+    // Se baja hasta que el scroll se estabiliza en el final real de la página.
+    await expect
+      .poll(async () => {
+        await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+        return page.evaluate(() => Math.round(document.documentElement.scrollHeight - window.scrollY - window.innerHeight));
+      })
+      .toBe(0);
+    await expect(enlace).toBeInViewport();
+    const hoja = await page.locator("main section.fixed, section.fixed.bottom-\\[var\\(--alto-barra-inferior\\)\\]").first().boundingBox();
+    const caja = await enlace.boundingBox();
+    expect(caja).not.toBeNull();
+    expect(hoja).not.toBeNull();
+    expect(caja!.y + caja!.height).toBeLessThanOrEqual(hoja!.y + 1);
   });
 
   for (const ancho of [390, 700]) {
