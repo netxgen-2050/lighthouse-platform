@@ -167,6 +167,79 @@ test.describe("sin sesión", () => {
   });
 });
 
+// ux-explorar: lista y mapa de lotes, filtro, hoja del celular y Territorio sin lista repetida.
+test.describe("lista y mapa de lotes (ux-explorar)", () => {
+  test.use({ rol: "ninguno" });
+
+  test("filtrar Reservado deja solo lotes reservados y lo escribe en la URL", async ({ page }) => {
+    await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/explorar/lotes");
+    const tarjetas = page.locator("article[data-lote]");
+    expect(await tarjetas.count()).toBeGreaterThan(5);
+    await page.getByRole("button", { name: "Reservado", exact: true }).click();
+    await expect(page).toHaveURL(/estado=reservado/);
+    const n = await tarjetas.count();
+    expect(n).toBeGreaterThan(0);
+    for (let i = 0; i < n; i++) await expect(tarjetas.nth(i)).toContainText("Reservado");
+  });
+
+  test("elegir una tarjeta la marca y escribe sel en la URL", async ({ page }) => {
+    await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/explorar/lotes");
+    const tarjeta = page.locator("article[data-lote]").first();
+    const id = await tarjeta.getAttribute("data-lote");
+    await tarjeta.getByRole("link").focus();
+    await expect(tarjeta).toHaveAttribute("aria-current", "true");
+    await expect(page).toHaveURL(new RegExp(`sel=${id}`));
+    await expect(page.getByRole("group", { name: "Lote elegido" }).getByRole("link", { name: "Ver el lote" })).toBeVisible();
+  });
+
+  test("el estado administrativo va antes del mapa en el orden del documento", async ({ page }) => {
+    await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/explorar/lotes");
+    await expect(page.locator(".mapa-leaflet")).toBeVisible();
+    const antes = await page.evaluate(() => {
+      const legal = document.querySelector('[aria-label^="Estado administrativo"]');
+      const mapa = document.querySelector(".mapa-leaflet");
+      return !!legal && !!mapa && !!(legal.compareDocumentPosition(mapa) & Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+    expect(antes).toBe(true);
+  });
+
+  test("a 390 px, Ver lista abre la hoja con las tarjetas", async ({ page }) => {
+    await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/explorar/lotes");
+    const boton = page.getByRole("button", { name: "Ver lista" });
+    await expect(boton).toBeVisible();
+    await boton.click();
+    await expect(page.getByRole("button", { name: "Ver mapa" })).toHaveAttribute("aria-expanded", "true");
+    await expect(page.getByRole("button", { name: "Subir o bajar la lista de lotes" })).toHaveAttribute("aria-expanded", "true");
+    await expect(page.locator("article[data-lote]").first()).toBeInViewport();
+  });
+
+  test("a 390 px la página de lotes ya no mide miles de píxeles (la lista va en la hoja)", async ({ page }) => {
+    await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/explorar/lotes");
+    await expect(page.locator(".mapa-leaflet")).toBeVisible();
+    const alto = await page.evaluate(() => document.documentElement.scrollHeight);
+    console.log(`ALTO /explorar/lotes a 390 px: ${alto} px`);
+    // Antes (auditoría del 25-nov, hallazgo H4) las tres secciones juntas medían 8.150 px.
+    expect(alto).toBeLessThan(3000);
+  });
+
+  test("Territorio enlaza a los lotes y no repite la lista", async ({ page }) => {
+    await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+    await page.goto("/explorar/territorio?vista=lotes");
+    await expect(page.getByRole("link", { name: /^Ver los \d+ lotes$/ })).toHaveAttribute("href", "/explorar/lotes");
+    await expect(page.getByRole("button", { name: /^Lote \d+ ·/ })).toHaveCount(0);
+  });
+});
+
 test.describe("con sesión", () => {
   test("el panel de la obra aparece en /explorar/barrio-norte", async ({ page }) => {
     await page.goto("/explorar/barrio-norte");

@@ -45,7 +45,8 @@ export function aplicarFiltro(lotes: LoteConEstado[], filtro: FiltroLotes): Lote
   const visibles = filtro.estados.length === 0 ? lotes : lotes.filter((l) => filtro.estados.includes(l.estado));
   const copia = [...visibles];
   const porNumero = (a: LoteConEstado, b: LoteConEstado) => a.lote.numero - b.lote.numero;
-  if (filtro.orden === "numero") return copia.sort(porNumero);
+  // "Número" es el orden del loteo: los primeros 4 van primero y después el sector norte por número.
+  if (filtro.orden === "numero") return copia;
   const signo = filtro.orden === "superficie" ? 1 : -1;
   return copia.sort((a, b) => {
     const sa = a.lote.superficieM2;

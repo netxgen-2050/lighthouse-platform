@@ -40,7 +40,8 @@ describe("aplicarFiltro", () => {
   it("ordena por superficie y deja sin dato al final", () => {
     expect(aplicarFiltro(lotes, { estados: [], orden: "superficie" }).map((l) => l.lote.numero)).toEqual([3, 4, 1, 2]);
     expect(aplicarFiltro(lotes, { estados: [], orden: "superficie-desc" }).map((l) => l.lote.numero)).toEqual([1, 4, 3, 2]);
-    expect(aplicarFiltro(lotes, { estados: [], orden: "numero" }).map((l) => l.lote.numero)).toEqual([1, 2, 3, 4]);
+    // "Número" respeta el orden en que llega el loteo (primeros 4, después el norte por número).
+    expect(aplicarFiltro(lotes, { estados: [], orden: "numero" }).map((l) => l.lote.numero)).toEqual([3, 1, 2, 4]);
   });
 });
 

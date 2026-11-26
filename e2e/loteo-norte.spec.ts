@@ -12,6 +12,8 @@ const ficha = (page: Page) => page.getByRole("complementary", { name: "Ficha del
 const vistas = (page: Page) => page.getByRole("group", { name: "Vista del mapa" });
 const lista = (page: Page) => page.getByRole("list", { name: "Lotes del sector norte" });
 const noEsBoceto = fuenteDelLoteo() !== "ilustrativa";
+// La leyenda completa va desplegable debajo de la compacta (ux-explorar): se abre para leerla.
+const abrirLeyenda = (page: Page, en = false) => page.getByText(en ? "See the full legend" : "Ver la leyenda completa").click();
 
 test("la vista Lotes está marcada por defecto y el mapa se llama Lotes", async ({ page }) => {
   await page.goto("/territorios/lighthouse");
@@ -21,11 +23,14 @@ test("la vista Lotes está marcada por defecto y el mapa se llama Lotes", async 
   await expect(page.locator('[aria-label^="Barrio "]')).toHaveCount(0);
 });
 
-test("el resumen y la marca salen de los datos y la lista tiene todos los lotes", async ({ page }) => {
+test("el resumen y la marca salen de los datos y Territorio enlaza a la lista de todos los lotes", async ({ page }) => {
   await page.goto("/territorios/lighthouse");
   await expect(ficha(page).getByText(resumenDelLoteo("es"))).toBeVisible();
   await expect(ficha(page).getByText("Loteo provisorio, ilustrativo")).toBeVisible();
-  await expect(lista(page).getByRole("button")).toHaveCount(listarLotes().length);
+  // La lista vive en Explorar / Lotes: Territorio solo enlaza (ux-explorar).
+  await expect(lista(page)).toHaveCount(0);
+  await expect(page.getByRole("link", { name: `Ver los ${listarLotes().length} lotes` })).toHaveAttribute("href", "/explorar/lotes");
+  await abrirLeyenda(page);
   await expect(page.getByText("Estados de ejemplo.").first()).toBeVisible();
   const leyenda = page.getByRole("group", { name: "Leyenda del mapa" });
   for (const estado of ["Disponible", "Reservado", "Vendido"]) await expect(leyenda).toContainText(estado);
@@ -48,15 +53,21 @@ test("con el plano de Martín, dice que qué es un lote es nuestra lectura y sep
   await expect(ficha(page).getByText(/parcelas con otros usos, según la memoria técnica/)).toBeVisible();
   await ficha(page).getByText("Qué es cada parcela").click();
   await expect(ficha(page).getByText(/CH-01.*Chacra: vid y olivo/)).toBeVisible();
+  await abrirLeyenda(page);
   await expect(page.getByRole("group", { name: "Leyenda del mapa" })).toContainText("Otra parcela (no es un lote)");
 });
 
-test("elegir un lote con el teclado: Tab, Enter, panel y URL", async ({ page }) => {
-  await page.goto("/territorios/lighthouse");
-  await lista(page).getByRole("button", { name: /^Lote 6 ·/ }).focus();
+test("las tarjetas de Explorar / Lotes se recorren con Tab y Enter abre la ficha", async ({ page }) => {
+  await page.goto("/explorar/lotes");
+  await page.locator('article[data-lote="lote-6"]').getByRole("link").focus();
   await page.keyboard.press("Tab");
-  await expect(lista(page).getByRole("button", { name: /^Lote 7 ·/ })).toBeFocused();
+  await expect(page.locator('article[data-lote="lote-7"]').getByRole("link")).toBeFocused();
   await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/lotes\/lote-7$/);
+});
+
+test("elegir un lote por el enlace: URL y panel del territorio", async ({ page }) => {
+  await page.goto("/territorios/lighthouse?sel=lote-7");
   await expect(page).toHaveURL(/sel=lote-7/);
   await expect(ficha(page).getByRole("heading", { name: "Lote 7" })).toBeVisible();
   await expect(ficha(page).getByText(`${formatearNumero(lotesDelGrupo("norte")[6].superficieM2!, "es")} m²`)).toBeVisible();
@@ -67,11 +78,14 @@ test("elegir un lote con el teclado: Tab, Enter, panel y URL", async ({ page }) 
   await expect(ficha(page).getByRole("link", { name: /comprar|reservar|señar|buy|reserve/i })).toHaveCount(0);
 });
 
-test("cada lote de la lista dice su número, superficie y estado", async ({ page }) => {
-  await page.goto("/territorios/lighthouse");
+test("cada tarjeta de la lista dice su número, superficie y estado", async ({ page }) => {
+  await page.goto("/explorar/lotes");
   const l = lotesDelGrupo("norte")[0];
   const m2 = l.superficieM2 === undefined ? "sin dato" : `${formatearNumero(l.superficieM2, "es")} m²`;
-  await expect(lista(page).getByRole("button", { name: `Lote ${l.numero} · ${m2} · Disponible` })).toBeVisible();
+  const tarjeta = page.locator(`article[data-lote="${l.id}"]`);
+  await expect(tarjeta).toContainText(`Lote ${l.numero}`);
+  await expect(tarjeta).toContainText(m2);
+  await expect(tarjeta).toContainText("Disponible");
 });
 
 test("enlace a un lote vendido: abre Lotes con el lote elegido y dice Vendido", async ({ page }) => {
@@ -79,7 +93,6 @@ test("enlace a un lote vendido: abre Lotes con el lote elegido y dice Vendido", 
   await expect(vistas(page).getByRole("button", { name: /Lotes/ })).toHaveAttribute("aria-pressed", "true");
   await expect(ficha(page).getByRole("heading", { name: "Lote 13" })).toBeVisible();
   await expect(ficha(page).getByText(/Vendido/)).toBeVisible();
-  await expect(lista(page).getByRole("button", { name: /^Lote 13 ·/ })).toHaveAttribute("aria-pressed", "true");
 });
 
 test("en las otras vistas no hay lista de lotes y el enlace a un lote no lo elige", async ({ page }) => {
@@ -92,7 +105,7 @@ test("en las otras vistas no hay lista de lotes y el enlace a un lote no lo elig
 test("celular 390 px: sin scroll horizontal", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/territorios/lighthouse");
-  await expect(lista(page).getByRole("button").first()).toBeVisible();
+  await expect(page.getByRole("link", { name: /^Ver los \d+ lotes$/ })).toBeVisible();
   const sobra = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(sobra).toBeLessThanOrEqual(0);
 });
@@ -113,6 +126,7 @@ test.describe("en inglés", () => {
   test("marca, estados y lote vendido en inglés", async ({ page }) => {
     await page.goto("/territorios/lighthouse");
     await expect(page.getByRole("complementary", { name: "Territory details" }).getByText("Provisional, illustrative subdivision")).toBeVisible();
+    await abrirLeyenda(page, true);
     const leyenda = page.getByRole("group", { name: "Map legend" });
     for (const estado of ["Available", "Reserved", "Sold"]) await expect(leyenda).toContainText(estado);
     await expect(page.getByRole("region", { name: /^Map of Macrolote 7 · Lots view/ })).toBeVisible();

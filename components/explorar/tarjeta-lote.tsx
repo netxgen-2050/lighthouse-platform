@@ -19,6 +19,15 @@ const CHIP: Record<EstadoMostrado, EstadoChip> = {
   "en-cuotas-tuyo": "enCuotas",
 };
 
+type TextosEstado = { reservadoPorVos: string; vendidoAVos: string; enCuotasTuyo: string };
+/** Lo que la persona hizo en la simulación, en palabras; null si el estado es el de ejemplo. */
+function textoDeLaPersona(estado: EstadoMostrado, t: TextosEstado): string | null {
+  if (estado === "reservado-por-vos") return t.reservadoPorVos;
+  if (estado === "vendido-a-vos") return t.vendidoAVos;
+  if (estado === "en-cuotas-tuyo") return t.enCuotasTuyo;
+  return null;
+}
+
 type Props = {
   lote: Lote;
   estado: EstadoMostrado;
@@ -36,6 +45,8 @@ export function TarjetaLote({ lote, estado, seleccionada = false, alEnfocar }: P
   const idioma = useIdioma();
   const t = useTextos("explorar").lista;
   const tl = useTextos("territorio").loteo;
+  const tle = useTextos("lotes").estado;
+  const propio = textoDeLaPersona(estado, tle);
   const idTitulo = `tarjeta-${lote.id}`;
   const precio = precioLote(lote.superficieM2);
   return (
@@ -57,12 +68,14 @@ export function TarjetaLote({ lote, estado, seleccionada = false, alEnfocar }: P
         <span className="grid min-w-0 gap-1">
           <span id={idTitulo} className="font-display text-lg font-semibold text-ink">
             {tl.lote(lote.numero)}
-          </span>
+          </span>{" "}
           <span className="font-mono text-sm text-ink">
             {lote.superficieM2 === undefined ? t.sinSuperficie : textoSuperficieM2(lote.superficieM2, idioma)}
-          </span>
+          </span>{" "}
           <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <ChipEstado estado={CHIP[estado]} />
+            <ChipEstado estado={CHIP[estado]} />{" "}
+            {/* Lo que la persona reservó o "pagó" en la simulación lo dice en palabras, además del chip. */}
+            {propio && <span className="text-sm text-muted">{propio}</span>}{" "}
             {precio !== null && <span className="text-sm text-muted">{t.precioEjemplo(usdEn(precio, idioma))}</span>}
           </span>
         </span>

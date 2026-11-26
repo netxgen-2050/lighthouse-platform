@@ -13,13 +13,15 @@ export function Desplegable({ id, titulo, children, className = "" }: { id: stri
     setAbierta(window.matchMedia("(min-width: 768px)").matches);
   }, []);
   return (
-    <details open={abierta} onToggle={(e) => setAbierta(e.currentTarget.open)} className={className}>
-      <summary className="flex min-h-11 cursor-pointer items-center rounded-[var(--radius-s)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
-        <h2 id={id} className="text-lg font-semibold">
-          {titulo}
-        </h2>
-      </summary>
-      <div className="grid gap-3 pt-2">{children}</div>
-    </details>
+    <section aria-labelledby={id} className={className}>
+      <details open={abierta} onToggle={(e) => setAbierta(e.currentTarget.open)}>
+        <summary className="flex min-h-11 cursor-pointer items-center rounded-[var(--radius-s)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
+          <h2 id={id} className="text-lg font-semibold">
+            {titulo}
+          </h2>
+        </summary>
+        <div className="grid gap-3 pt-2">{children}</div>
+      </details>
+    </section>
   );
 }
