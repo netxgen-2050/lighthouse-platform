@@ -75,6 +75,10 @@ const es = {
   barra: {
     interno: "Interno",
     menu: "Menú",
+    mas: "Más",
+    masOpciones: "Más opciones",
+    cerrar: "Cerrar",
+    idioma: "Idioma",
     entrar: "Entrar",
     menuPersona: "Menú de la persona",
     nivel: (nivel: string) => `Nivel: ${nivel}`,
@@ -175,6 +179,10 @@ const en: Textos<typeof es> = {
   barra: {
     interno: "Internal",
     menu: "Menu",
+    mas: "More",
+    masOpciones: "More options",
+    cerrar: "Close",
+    idioma: "Language",
     entrar: "Sign in",
     menuPersona: "Person menu",
     nivel: (nivel: string) => `Level: ${nivel}`,

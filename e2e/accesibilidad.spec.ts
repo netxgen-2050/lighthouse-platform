@@ -3,7 +3,7 @@ import { expect, liberarLotes, reservarPorApi, test, type Page } from "./fixtura
 import { listarTribus } from "@/lib/tribus/datos";
 import { lotesDelGrupo } from "@/lib/territorios/loteo";
 import { estadoDeLote } from "@/lib/territorios/loteo-estados";
-import { conAdhesionAlManifiesto, conIdentidadVerificada, relojDeLasConsultas } from "./ayudas";
+import { conAdhesionAlManifiesto, conIdentidadVerificada, esperarHidratacion, relojDeLasConsultas } from "./ayudas";
 
 const rutas = [
   "/",
@@ -54,21 +54,27 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-// El menú del celular y la subnavegación de Explorar: cerrados y abiertos, en los dos idiomas y los dos temas.
+// La barra inferior y la hoja Más del celular: con la hoja cerrada y abierta, con y sin sesión, en los dos idiomas y los dos temas.
 for (const idioma of ["es", "en"] as const) {
   for (const tema of ["oscuro", "claro"] as const) {
-    test(`axe sin violaciones serias o críticas: menú del celular cerrado y abierto, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
-      await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
-      await page.setViewportSize({ width: 390, height: 844 });
-      await page.goto("/explorar/territorio");
-      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
-      const boton = page.getByRole("button", { name: idioma === "es" ? "Menú" : "Menu", exact: true });
-      await expect(boton).toBeVisible();
-      expect(await graves(page), "menú cerrado").toEqual([]);
-      await boton.click();
-      await expect(page.locator("#menu-celular")).toBeVisible();
-      expect(await graves(page), "menú abierto").toEqual([]);
-    });
+    for (const [rol, abrirRol] of [["superadmin", "con sesión"], ["ninguno", "sin sesión"]] as const) {
+      test.describe(`hoja Más ${abrirRol}, ${idioma}, tema ${tema}`, () => {
+        test.use({ rol });
+
+        test("axe sin violaciones serias o críticas: cerrada y abierta", async ({ page, context, baseURL }) => {
+          await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+          await page.setViewportSize({ width: 390, height: 844 });
+          await page.goto("/explorar/territorio");
+          await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+          const boton = page.getByRole("button", { name: idioma === "es" ? "Más" : "More", exact: true });
+          await expect(boton).toBeVisible();
+          expect(await graves(page), "hoja cerrada").toEqual([]);
+          await boton.click();
+          await expect(page.getByRole("dialog", { name: idioma === "es" ? "Más" : "More" })).toBeVisible();
+          expect(await graves(page), "hoja abierta").toEqual([]);
+        });
+      });
+    }
   }
 }
 
@@ -141,10 +147,19 @@ for (const ruta of ["/", "/explorar/territorio", "/explorar/barrio-norte", "/exp
 }
 
 async function graves(page: Page) {
-  const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
-  return r.violations
-    .filter((v) => v.impact === "serious" || v.impact === "critical")
-    .map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }));
+  // Axe se mide con la página hidratada y sin transiciones de color en curso (los botones y la barra las usan).
+  await esperarHidratacion(page);
+  let ultimas: { id: string; impact: string | null | undefined; nodos: unknown[] }[] = [];
+  // Una violación real se repite en cada medición; una que viene de un cuadro intermedio de una transición, no.
+  for (let i = 0; i < 3; i++) {
+    await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))));
+    const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    ultimas = r.violations
+      .filter((v) => v.impact === "serious" || v.impact === "critical")
+      .map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }));
+    if (ultimas.length === 0) return [];
+  }
+  return ultimas;
 }
 
 test("axe sin violaciones serias o críticas: una propuesta del Fogón (la bomba) con la tabla de permisos abierta", async ({ page }) => {

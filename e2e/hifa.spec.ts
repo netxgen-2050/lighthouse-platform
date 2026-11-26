@@ -24,16 +24,23 @@ for (const [ancho, alto] of [
   [1280, 720],
   [390, 844],
 ] as const) {
-  test(`${ancho} px: Reportar y Hifa no se superponen y no hay scroll horizontal`, async ({ page }) => {
+  test(`${ancho} px: Hifa es el único flotante, no tapa la barra inferior y no hay scroll horizontal`, async ({ page }) => {
     await page.setViewportSize({ width: ancho, height: alto });
     await page.goto("/");
     const hifa = (await page.getByRole("button", { name: BOTON }).boundingBox())!;
-    const rep = (await page.getByRole("button", { name: "Reportar un problema o una idea" }).boundingBox())!;
-    expect(Math.abs(rep.x + rep.width - ancho)).toBeLessThanOrEqual(1);
-    expect(Math.abs(rep.y + rep.height / 2 - alto / 2)).toBeLessThanOrEqual(2);
-    const separados =
-      rep.y + rep.height <= hifa.y || hifa.y + hifa.height <= rep.y || rep.x + rep.width <= hifa.x || hifa.x + hifa.width <= rep.x;
-    expect(separados).toBe(true);
+    // Reportar ya no flota: en compu está en la barra superior y en el celular dentro de la hoja Más.
+    const flotantes = await page.evaluate(() =>
+      Array.from(document.querySelectorAll("button"))
+        .filter((b) => getComputedStyle(b).position === "fixed" && b.getBoundingClientRect().width > 0)
+        .map((b) => b.getAttribute("aria-label")),
+    );
+    expect(flotantes).toEqual([BOTON]);
+    if (ancho < 768) {
+      // En el celular queda 12 px por encima de la barra inferior.
+      const barra = (await page.getByRole("navigation", { name: "Principal" }).boundingBox())!;
+      expect(hifa.y + hifa.height).toBeLessThanOrEqual(barra.y - 11);
+      expect(Math.abs(barra.y - (hifa.y + hifa.height) - 12)).toBeLessThanOrEqual(2);
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
   });
 }
@@ -82,48 +89,6 @@ test("con un tooltip visible, Escape lo oculta, Hifa sigue abierta y el foco no 
   await expect(termino).toBeFocused();
 });
 
-test("mouse quieto sobre Reportar, abrir Hifa con el teclado: el primer Escape solo oculta el tooltip y el segundo cierra Hifa", async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("button", { name: "Reportar un problema o una idea" }).hover();
-  await expect(page.getByRole("tooltip")).toBeVisible();
-  await page.keyboard.press("Shift"); // modalidad teclado
-  await page.getByRole("button", { name: BOTON }).focus();
-  await page.keyboard.press("Enter");
-  const chat = page.getByRole("dialog", { name: "Chat con Hifa" });
-  await expect(chat).toBeVisible();
-  await expect(page.getByRole("tooltip")).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("tooltip")).toHaveCount(0);
-  await expect(chat).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(chat).toBeHidden();
-});
-
-test("con el mouse sobre Reportar y el foco en el chat, Escape oculta el tooltip y un segundo Escape cierra Hifa", async ({ page }) => {
-  await page.goto("/");
-  const chat = await abrir(page);
-  await chat.getByLabel("Escribile a Hifa").focus();
-  await page.getByRole("button", { name: "Reportar un problema o una idea" }).hover();
-  await expect(page.getByRole("tooltip")).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("tooltip")).toHaveCount(0);
-  await expect(chat).toBeVisible();
-  await expect(chat.getByLabel("Escribile a Hifa")).toBeFocused();
-  await page.keyboard.press("Escape");
-  await expect(chat).toBeHidden();
-});
-
-test("el tooltip de Reportar sigue visible si el mouse sale pero el botón conserva el foco", async ({ page }) => {
-  await page.goto("/");
-  const reportar = page.getByRole("button", { name: "Reportar un problema o una idea" });
-  await reportar.focus();
-  await expect(page.getByRole("tooltip")).toBeVisible();
-  await reportar.hover();
-  await page.mouse.move(5, 5);
-  await expect(reportar).toBeFocused();
-  await expect(page.getByRole("tooltip")).toBeVisible();
-});
-
 test("tras aceptar, el foco queda dentro del chat y Escape lo cierra", async ({ page }) => {
   await page.route("**/api/reportes", async (ruta) => {
     await new Promise((r) => setTimeout(r, 400));
@@ -143,14 +108,32 @@ for (const [ancho, alto] of [
   [1280, 720],
   [390, 844],
 ] as const) {
-  test(`${ancho} px: con el chat abierto no tapa la pestaña Reportar`, async ({ page }) => {
+  test(`${ancho} px: con el chat abierto no tapa la barra inferior ni el botón de Hifa`, async ({ page }) => {
     await page.setViewportSize({ width: ancho, height: alto });
     await page.goto("/");
     const chat = await abrir(page);
     const ventana = (await chat.boundingBox())!;
-    const rep = (await page.getByRole("button", { name: "Reportar un problema o una idea" }).boundingBox())!;
-    expect(ventana.x + ventana.width).toBeLessThanOrEqual(rep.x);
+    const hifa = (await page.getByRole("button", { name: BOTON }).boundingBox())!;
+    expect(ventana.x + ventana.width).toBeLessThanOrEqual(hifa.x);
+    if (ancho < 768) {
+      const barra = (await page.getByRole("navigation", { name: "Principal" }).boundingBox())!;
+      expect(ventana.y + ventana.height).toBeLessThanOrEqual(barra.y);
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
+  });
+}
+
+for (const [ancho, alto] of [
+  [375, 667],
+  [667, 375],
+] as const) {
+  test(`${ancho} x ${alto}: el chat de Hifa queda sobre la barra de arriba y su botón cerrar se puede clicar`, async ({ page }) => {
+    await page.setViewportSize({ width: ancho, height: alto });
+    await page.goto("/");
+    const chat = await abrir(page);
+    // Clic real (sin force): falla si la cinta o la barra superior tapan el encabezado del chat.
+    await chat.getByRole("button", { name: "Cerrar el chat con Hifa" }).click();
+    await expect(chat).toBeHidden();
   });
 }
 

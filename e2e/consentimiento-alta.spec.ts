@@ -269,7 +269,9 @@ test.describe("red de seguridad: sesión sin consentimiento vigente", () => {
     await menuAvatar(page).click();
     const menu = page.locator("#menu-persona");
     await expect(menu.getByRole("button", { name: "Salir" })).toBeVisible();
-    await expect(menu.getByRole("link")).toHaveCount(0);
+    // Sin consentimiento no hay destinos de la persona; el idioma (ES, EN) sí se ofrece: no depende de la cuenta.
+    await expect(menu.getByRole("link")).toHaveText(["Español", "English"].map((n) => new RegExp(n)));
+    await expect(menu.locator("a:not([hreflang])")).toHaveCount(0);
     await expect(barra(page).getByRole("button", { name: /Notificaciones/ })).toHaveCount(0);
   });
 

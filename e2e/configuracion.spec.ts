@@ -27,8 +27,10 @@ test("idioma: Español e English están habilitados y English pasa el marco a in
   await page.getByRole("radio", { name: "English" }).check();
   await expect(html(page)).toHaveAttribute("lang", "en");
   await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Explore" })).toBeVisible();
-  // Es la misma preferencia que el selector de la barra superior.
+  // Es la misma preferencia que el selector del menú del avatar.
+  await page.getByRole("button", { name: "Person menu" }).click();
   await expect(page.getByRole("banner").getByRole("link", { name: "EN · English" })).toHaveAttribute("aria-current", "true");
+  await page.keyboard.press("Escape");
   await expect(page.getByRole("radio", { name: "English" })).toBeChecked();
   await page.getByRole("radio", { name: "Español" }).check();
   await expect(html(page)).toHaveAttribute("lang", "es");
@@ -223,6 +225,8 @@ test("solo teclado: se cambia el tema con las flechas y el menú del avatar llev
 });
 
 async function graves(page: Page) {
+  // Los botones de la barra pasan de un color a otro con una transición: axe se mide cuando terminó.
+  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))));
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   return r.violations
     .filter((v) => v.impact === "serious" || v.impact === "critical")

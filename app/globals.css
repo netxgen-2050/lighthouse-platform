@@ -172,6 +172,31 @@ html {
   --dur: 0ms;
 }
 
+/* Alto de la barra inferior del celular (ux-celular): 56 px más la zona segura. En compu no hay barra. */
+:root {
+  --alto-barra-inferior: calc(3.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 768px) {
+  :root {
+    --alto-barra-inferior: 0px;
+  }
+}
+
+/* La hoja sube desde abajo; con --dur en 0 (movimiento reducido) no hay animación. */
+@keyframes hoja-sube {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.hoja-sube {
+  animation: hoja-sube calc(var(--dur) * 1.5) var(--curva);
+}
+
 /* Brillo suave del esqueleto de carga; sin brillo con movimiento reducido. */
 @keyframes esqueleto-brillo {
   0%,

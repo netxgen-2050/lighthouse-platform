@@ -163,3 +163,12 @@ test("el rail marca Congreso también en la versión en inglés", () => {
   expect(esActivo("/congreso", "/congreso/en")).toBe(true);
   expect(esActivo("/congreso", "/congreso")).toBe(true);
 });
+
+test("la barra inferior lleva cinco destinos y Más el resto del menú", async () => {
+  const { destinosDeLaBarra, destinosDeMas } = await import("./navegacion");
+  const nombres = (l: ReturnType<typeof destinosDeLaBarra>) => l.map((d) => etiquetaDeDestino(d, "es"));
+  expect(nombres(destinosDeLaBarra())).toEqual(["Inicio", "Explorar", "Participa", "Invertir", "Mi tierra"]);
+  expect(nombres(destinosDeMas())).toEqual(["Bien común", "Sumarte"]);
+  // Entre las dos listas están todos los del menú, sin repetir ninguno.
+  expect([...destinosDeLaBarra(), ...destinosDeMas()].map((d) => d.href).sort()).toEqual(destinosDelMenu().map((d) => d.href).sort());
+});

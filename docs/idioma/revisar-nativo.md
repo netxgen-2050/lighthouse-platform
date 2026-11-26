@@ -51,7 +51,7 @@ Fuentes pendientes: 53
 | `textos/invertir` | Invertir (/invertir): sellos, indicadores del barrio en financiamiento, curva de devolución y libro del barrio (solo con sesión) | 42 |
 | `textos/lotes` | Lotes de Lighthouse VRN: lista, ficha, precio de ejemplo, con casa, costos, derechos y deberes, reserva y pago simulados y boleto de ejemplo | 138 |
 | `textos/manifiestoVrn` | Manifiesto de Lighthouse VRN: ficha del común, tarjeta de Tribus, lectura completa, principios propios de las tribus, aviso de adhesión y bloque de la Vista NetX | 49 |
-| `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 76 |
+| `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 80 |
 | `textos/miTierra` | Mi tierra (/mi-tierra): tu lote, plan en cuotas, FARO acreditados (simulado), tu voz y actividad | 57 |
 | `textos/pactos` | Pactos: pactos de tiempo y de plata, cambios, historial, avisos y anuncios | 286 |
 | `textos/participa` | Participa (/participa): mapa ilustrado de equipos, lista, detalle del equipo con sus posiciones abiertas y pestaña Visión | 42 |
