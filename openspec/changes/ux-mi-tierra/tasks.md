@@ -4,9 +4,9 @@ Quinto cambio `ux-*`. Va sobre la rama de `ux-celular`.
 
 ## 1. Mi tierra con lote
 
-- [ ] 1.1 Encabezado con número, barra y cuotas, y acciones que ya existen (design §1 y §2). **Verifica:** `pnpm test components/mi-tierra`; test de que no aparece ninguna palabra de rendimiento (APY, rendimiento, ganancia) en es ni en.
-- [ ] 1.2 Posiciones en filas (lote, FARO, voz) con mini curva condicional (design §3). **Verifica:** `pnpm test components/mi-tierra`; FARO sin primer pago dice "sin dato".
-- [ ] 1.3 Actividad con 8 filas, "Ver toda la actividad" y filtro (design §4). **Verifica:** `pnpm test:e2e e2e/mi-tierra.spec.ts`.
+- [x] 1.1 Encabezado con número, barra y cuotas, y acciones que ya existen (design §1 y §2). **Verifica:** `pnpm test components/mi-tierra`; test de que no aparece ninguna palabra de rendimiento (APY, rendimiento, ganancia) en es ni en.
+- [x] 1.2 Posiciones en filas (lote, FARO, voz) con mini curva condicional (design §3). **Verifica:** `pnpm test components/mi-tierra`; FARO sin primer pago dice "sin dato".
+- [x] 1.3 Actividad con 8 filas, "Ver toda la actividad" y filtro (design §4). **Verifica:** `pnpm test:e2e e2e/mi-tierra.spec.ts`.
 
 ## 2. Mi tierra sin lote
 

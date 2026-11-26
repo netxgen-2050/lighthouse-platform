@@ -35,7 +35,7 @@ export function EstadoVacio({
       {vistaPrevia && (
         <div className="grid w-full gap-1">
           {etiquetaVistaPrevia && <p className="text-sm font-medium text-muted">{etiquetaVistaPrevia}</p>}
-          <div aria-hidden="true" className="opacity-60">
+          <div aria-hidden="true" inert className="opacity-60">
             {vistaPrevia}
           </div>
         </div>

@@ -97,6 +97,22 @@ for (const idioma of ["es", "en"] as const) {
 }
 
 // Mi tierra (rediseno-mi-tierra), con una compra en cuotas: en los dos idiomas y los dos temas. Sin compras ya entra en `rutas`.
+const ANCHOS_MI_TIERRA = [390, 1440] as const;
+for (const idioma of ["es", "en"] as const) {
+  for (const tema of ["oscuro", "claro"] as const) {
+    for (const ancho of ANCHOS_MI_TIERRA) {
+      test(`axe sin violaciones serias o críticas: /mi-tierra sin lotes (estado vacío), ${idioma}, tema ${tema}, ${ancho} px`, async ({ page, context, baseURL }) => {
+        await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+        await page.setViewportSize({ width: ancho, height: ancho < 600 ? 844 : 900 });
+        await page.goto("/mi-tierra");
+        await expect(page.getByRole("heading", { level: 2 }).first()).toBeVisible();
+        await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+        expect(await graves(page)).toEqual([]);
+      });
+    }
+  }
+}
+
 // Las reservas viven en el servidor (`lotes-en-la-base`): estos tests entran con una persona propia y usan lotes SOLO de este archivo
 // (el 9.º y el 10.º disponibles del norte), que liberan antes de empezar.
 const DISPONIBLES_DEL_NORTE = lotesDelGrupo("norte").filter((l) => estadoDeLote(l.id) === "disponible");
@@ -108,25 +124,31 @@ test.describe("con una compra (persona propia)", () => {
 
   for (const idioma of ["es", "en"] as const) {
     for (const tema of ["oscuro", "claro"] as const) {
-      test(`axe sin violaciones serias o críticas: /mi-tierra con una compra en cuotas, ${idioma}, tema ${tema}`, async ({ page, context, baseURL, request, emailActual }) => {
-        await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
-        await liberarLotes(request, [LOTE_DE_MI_TIERRA]);
-        await reservarPorApi(request, emailActual, LOTE_DE_MI_TIERRA, {
-          pagar: true,
-          vio: {
-            precio: 1000,
-            aporte: null,
-            expensa: null,
-            version: "ejemplo",
-            faro: 100,
-            plan: { cuotas: 24, anticipo: 300, cuota: 30, ultimaCuota: 30, faroAnticipo: 30, faroPorCuota: 3, faroUltimaCuota: 3 },
-          },
+      for (const ancho of ANCHOS_MI_TIERRA) {
+        test(`axe sin violaciones serias o críticas: /mi-tierra con una compra en cuotas, ${idioma}, tema ${tema}, ${ancho} px`, async ({ page, context, baseURL, request, emailActual }) => {
+          await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+          await page.setViewportSize({ width: ancho, height: ancho < 600 ? 844 : 900 });
+          await liberarLotes(request, [LOTE_DE_MI_TIERRA]);
+          await reservarPorApi(request, emailActual, LOTE_DE_MI_TIERRA, {
+            pagar: true,
+            vio: {
+              precio: 1000,
+              aporte: null,
+              expensa: null,
+              version: "ejemplo",
+              faro: 100,
+              plan: { cuotas: 24, anticipo: 300, cuota: 30, ultimaCuota: 30, faroAnticipo: 30, faroPorCuota: 3, faroUltimaCuota: 3 },
+            },
+          });
+          await page.goto("/mi-tierra");
+          await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible();
+          await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+          expect(await graves(page)).toEqual([]);
+          // Sin scroll horizontal de la página ni de la actividad.
+          expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+          await expect(page.locator('[data-desborda="true"]')).toHaveCount(0);
         });
-        await page.goto("/mi-tierra");
-        await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible();
-        await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
-        expect(await graves(page)).toEqual([]);
-      });
+      }
     }
   }
 });
