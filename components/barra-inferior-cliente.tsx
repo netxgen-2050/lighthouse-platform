@@ -53,13 +53,14 @@ export function BarraInferiorCliente({ barra, mas, persona, netx, admin, etiquet
     <>
       <nav
         aria-label={etiquetaNavegacion}
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface pb-[env(safe-area-inset-bottom,0px)] text-ink md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 bg-surface pb-[env(safe-area-inset-bottom,0px)] text-ink md:hidden"
       >
-        <ul className="flex">
+        {/* h-14 (56 px, con el borde) es el valor de --alto-barra-inferior: el espacio que reservan Hifa y el pie. */}
+        <ul className="flex h-14 border-t border-line">
           {barra.map((e) => {
             const activo = marcado === e;
             return (
-              <li key={e.href} className="min-w-0 flex-1">
+              <li key={e.href} className="flex min-w-0 flex-1">
                 <Link href={e.href} aria-current={activo ? "page" : undefined} className={claseItem(activo)}>
                   {e.icono}
                   <span className={claseEtiqueta(activo)}>{e.etiqueta}</span>
@@ -67,7 +68,7 @@ export function BarraInferiorCliente({ barra, mas, persona, netx, admin, etiquet
               </li>
             );
           })}
-          <li className="min-w-0 flex-1">
+          <li className="flex min-w-0 flex-1">
             <button
               ref={disparador}
               type="button"
@@ -96,7 +97,7 @@ export function BarraInferiorCliente({ barra, mas, persona, netx, admin, etiquet
 }
 
 function claseItem(activo: boolean) {
-  return `flex min-h-12 flex-col items-center justify-center gap-0.5 px-1 py-1.5 ${activo ? "text-deep" : "text-muted"} ${FOCO}`;
+  return `flex min-h-12 w-full flex-1 flex-col items-center justify-center gap-0.5 px-1 py-1.5 ${activo ? "text-deep" : "text-muted"} ${FOCO}`;
 }
 
 function claseEtiqueta(activo: boolean) {

@@ -8,7 +8,7 @@ import { ProveedorIdioma } from "@/lib/idioma/cliente";
 import { BarraInferiorCliente } from "./barra-inferior-cliente";
 
 // Sin Testing Library ni jsdom en el repo: acá se prueba el marcado inicial; abrir Más, Escape, el foco de vuelta y el
-// arrastre los cubre e2e/barra-inferior.spec.ts en un navegador real.
+// arrastre los cubre e2e/marco.spec.ts y e2e/barra-inferior.spec.ts en un navegador real.
 const i = (href: string, etiqueta: string, secciones?: string[]) => ({ href, etiqueta, icono: <svg />, secciones });
 const barra = [i("/", "Inicio"), i("/explorar", "Explorar", ["/lotes"]), i("/participa", "Participa"), i("/invertir", "Invertir"), i("/mi-tierra", "Mi tierra")];
 const dibujar = () =>

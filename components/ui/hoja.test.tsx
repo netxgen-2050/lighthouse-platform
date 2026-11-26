@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { cierraAlArrastrar, Hoja, UMBRAL_CIERRE } from "./hoja";
 
 // Sin jsdom en el repo: acá va el marcado inicial y la regla del arrastre; foco atrapado, Escape y arrastre reales
-// los cubre e2e/hoja.spec.ts en un navegador.
+// los cubre e2e/marco.spec.ts en un navegador.
 describe("Hoja", () => {
   it("cerrada no dibuja nada", () => {
     const html = renderToStaticMarkup(
