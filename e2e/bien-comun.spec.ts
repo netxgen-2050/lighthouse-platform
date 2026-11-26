@@ -286,7 +286,8 @@ test.describe("sin sesión", () => {
     await irYDesplegar(page, RUTA);
     const chicos = await page.evaluate(() =>
       Array.from(document.querySelectorAll("main p, main li, main td, main th"))
-        .filter((el) => el.getClientRects().length > 0 && !el.closest('[data-resultados], form, [aria-labelledby="h-barrio"]'))
+        // Fuera: el aviso de estado y el índice (componentes de la interfaz de ux-base) y la calculadora del barrio (sin cambios).
+        .filter((el) => el.getClientRects().length > 0 && !el.closest('[role="note"], nav, [data-resultados], form, [aria-labelledby="h-barrio"]'))
         .filter((el) => parseFloat(getComputedStyle(el).fontSize) < 16)
         .map((el) => (el.textContent ?? "").slice(0, 50)),
     );
