@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type KeyboardEvent } from "react";
+import { useEffect, useState } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
 import { TextoEvento } from "@/components/texto-evento";
+import { Aviso } from "@/components/ui/aviso";
+import { EstadoVacio } from "@/components/ui/estado-vacio";
+import { Pestanas } from "@/components/ui/pestanas";
 import { listarActividad, type EventoActividad } from "@/lib/actividad/actividad";
 import { EVENTO_CAMBIO, leerActividadDelNavegador } from "@/lib/actividad/almacen";
 import { personaEnSesion } from "@/lib/demo/claves";
@@ -63,20 +66,8 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
     };
   }, []);
 
-  function alTeclear(e: KeyboardEvent, i: number) {
-    let destino = -1;
-    if (e.key === "ArrowRight") destino = (i + 1) % PESTANAS.length;
-    else if (e.key === "ArrowLeft") destino = (i - 1 + PESTANAS.length) % PESTANAS.length;
-    else if (e.key === "Home") destino = 0;
-    else if (e.key === "End") destino = PESTANAS.length - 1;
-    if (destino < 0) return;
-    e.preventDefault();
-    setPestana(PESTANAS[destino]);
-    document.getElementById(`pestana-${PESTANAS[destino]}`)?.focus();
-  }
-
   const aviso = (
-    <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">{t.modoDemo}</p>
+    <Aviso tono="atencion">{t.modoDemo}</Aviso>
   );
 
   if (!listo) return <p role="status">{comunes.cargando}</p>;
@@ -111,29 +102,12 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
       </section>
 
       <div className="grid gap-4">
-        <div role="tablist" aria-label={t.pestanas.aria} className="flex flex-wrap gap-2 border-b border-line pb-2">
-          {PESTANAS.map((clave, i) => {
-            const activa = pestana === clave;
-            return (
-              <button
-                key={clave}
-                id={`pestana-${clave}`}
-                type="button"
-                role="tab"
-                aria-selected={activa}
-                aria-controls={`panel-${clave}`}
-                tabIndex={activa ? 0 : -1}
-                onClick={() => setPestana(clave)}
-                onKeyDown={(e) => alTeclear(e, i)}
-                className={`rounded-lg px-4 py-1.5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep ${
-                  activa ? "bg-deep text-on-deep" : "border border-muted hover:bg-surface-2"
-                }`}
-              >
-                {t.pestanas[clave]}
-              </button>
-            );
-          })}
-        </div>
+        <Pestanas
+          aria={t.pestanas.aria}
+          items={PESTANAS.map((clave) => ({ clave, etiqueta: t.pestanas[clave] }))}
+          actual={pestana}
+          onCambio={(c) => setPestana(c as Pestana)}
+        />
 
         <div
           role="tabpanel"
@@ -145,7 +119,7 @@ export function Recorrido({ pestanaInicial = "camino" }: { pestanaInicial?: Pest
         >
           {pestana === "camino" &&
             (grupos.length === 0 ? (
-              <p className="rounded-xl border border-faint bg-surface p-4">{t.vacio}</p>
+              <EstadoVacio texto={t.vacio} />
             ) : (
               <div className="grid gap-5">
                 {grupos.map((g) => (

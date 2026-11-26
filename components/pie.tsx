@@ -17,7 +17,8 @@ export function Pie({ anioRespaldo }: { anioRespaldo: number }) {
   );
   const t = useTextos("marco");
   return (
-    <footer className="border-t border-line bg-surface-2 text-sm text-muted">
+    // El pb-16 deja lugar al botón fijo de Hifa y queda dentro del pie, así su borde inferior es el final del documento.
+    <footer className="border-t border-line bg-surface-2 pb-16 text-sm text-muted">
       <div className="mx-auto flex max-w-5xl flex-wrap justify-between gap-2 px-6 py-4 sm:px-10">
         <p>{t.pie.prototipo}</p>
         <p className="flex flex-wrap gap-x-4">

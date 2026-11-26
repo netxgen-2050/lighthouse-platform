@@ -78,11 +78,6 @@ export default async function TribuPage({ params }: Props) {
       <Link className="underline" href="/participa?ver=vision">{tx.volverTribus}</Link>
     </p>
   );
-  const prototipo = (
-    <p className="mt-2 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-      {textos("marco", idioma).aviso}
-    </p>
-  );
 
   if (t.estado === "vacante") {
     const v = f.vacante;
@@ -98,7 +93,6 @@ export default async function TribuPage({ params }: Props) {
           <TerminoLegal clave="adherente" />{v.introFin}
         </p>
         <AvisoEjemplo />
-        {prototipo}
         <div className="mt-2">{marcaValidacion}</div>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <section className={tarjeta}>
@@ -146,7 +140,6 @@ export default async function TribuPage({ params }: Props) {
         <div className="md:ml-auto">{marcaValidacion}</div>
       </div>
       <AvisoEjemplo />
-      {prototipo}
       <MarcaAdmin tribu={t.id} nombre={t.nombre} />
       <PactosParaResponder tribu={t.id} />
       {t.estado === "formacion" && (

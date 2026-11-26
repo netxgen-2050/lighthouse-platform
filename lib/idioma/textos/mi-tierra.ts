@@ -6,7 +6,7 @@ import { conVocabulario } from "../vocabulario";
 
 const es = {
   titulo: "Mi tierra",
-  bajada: "Tu lote, tu plan en cuotas, tus FARO, tu voz y lo que fuiste haciendo, en un solo lugar. Todo es una simulación: no se cobró nada.",
+  bajada: "Tu lote, tu plan en cuotas, tus FARO, tu voz y lo que fuiste haciendo, en un solo lugar. El pago es simulado: no se cobra nada.",
   cargando: "Leyendo tus reservas…",
   sinSesion: {
     aviso: "Mi tierra se ve con una cuenta: acá aparecen tus reservas y pagos simulados.",
@@ -85,7 +85,7 @@ const es = {
 
 const en: Textos<typeof es> = {
   titulo: "My land",
-  bajada: "Your lot, your instalment plan, your FARO, your voice and what you have done, in one place. It is all a simulation: nothing was charged.",
+  bajada: "Your lot, your instalment plan, your FARO, your voice and what you have done, in one place. Payment is simulated: nothing is charged.",
   cargando: "Reading your reservations…",
   sinSesion: {
     aviso: "My land is visible with an account: your simulated reservations and payments show up here.",

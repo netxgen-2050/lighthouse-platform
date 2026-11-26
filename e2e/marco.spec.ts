@@ -50,7 +50,10 @@ test("la barra superior está arriba a la derecha con NetX (interno), la campani
   const barra = page.getByRole("banner");
   await expect(barra).toBeVisible();
   const caja = (await barra.boundingBox())!;
-  expect(caja.y).toBe(0);
+  // La cinta de prototipo va arriba de la barra, las dos fijas (design §4).
+  const cinta = (await page.locator("[data-cinta-prototipo]").boundingBox())!;
+  expect(cinta.y).toBe(0);
+  expect(caja.y).toBeCloseTo(cinta.height, 1);
   const netx = barra.getByRole("link", { name: /NetX/ });
   await expect(netx).toHaveAttribute("href", "/netx");
   await expect(netx).toContainText("Interno");
@@ -70,8 +73,10 @@ test("la barra superior queda fija al bajar la página", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 600 });
   await page.goto("/pactos");
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  const cinta = (await page.locator("[data-cinta-prototipo]").boundingBox())!;
+  expect(cinta.y).toBe(0);
   const caja = (await page.getByRole("banner").boundingBox())!;
-  expect(caja.y).toBe(0);
+  expect(caja.y).toBeCloseTo(cinta.height, 1);
 });
 
 test("celular 390 x 844: la barra superior muestra NetX, la campanita, el selector de idioma y el avatar sin desbordar", async ({ page }) => {
@@ -378,7 +383,8 @@ test("las fuentes del mock-up se aplican (texto y títulos)", async ({ page }) =
   const familia = (selector: string) =>
     page.locator(selector).first().evaluate((el) => getComputedStyle(el).fontFamily);
   expect(await familia("h1")).toContain("Fraunces");
-  expect(await familia("main p")).toContain("Inter Tight");
+  // El primer `p` es el sobretítulo (mono): se mide un párrafo de contenido.
+  expect(await familia("main p:not([class*='font-mono'])")).toContain("Inter Tight");
 });
 
 test("la tabla tipo libro no genera scroll horizontal de la página a 390 x 844", async ({ page }) => {
@@ -408,6 +414,20 @@ for (const ruta of ["/", "/tribus", "/tribus/grano"]) {
     await expect(pie).toContainText(anio);
   });
 }
+
+test("pie pegado abajo en una página corta (celular, /invertir sin sesión)", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/invertir");
+  const pie = page.getByRole("contentinfo");
+  await expect(pie).toBeVisible();
+  const medidas = await page.evaluate(() => ({
+    alto: document.documentElement.scrollHeight,
+    pantalla: window.innerHeight,
+    pieAbajo: document.querySelector("footer")!.getBoundingClientRect().bottom + window.scrollY,
+  }));
+  expect(medidas.alto).toBeGreaterThanOrEqual(medidas.pantalla);
+  expect(medidas.alto - medidas.pieAbajo).toBeLessThanOrEqual(8);
+});
 
 test("el HTML del servidor ya trae un año en el pie (sin JS)", async ({ request }) => {
   const html = await (await request.get("/")).text();

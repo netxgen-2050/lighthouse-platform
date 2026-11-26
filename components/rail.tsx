@@ -18,7 +18,7 @@ export async function Rail() {
   }));
   const admin = destinosDeGrupo("interno").find((d) => d.clave === "admin");
   return (
-    <div className="sticky top-0 hidden h-dvh w-20 shrink-0 flex-col overflow-y-auto overscroll-contain bg-deep py-3 text-on-deep md:flex">
+    <div className="sticky top-0 hidden h-dvh w-20 shrink-0 flex-col overflow-y-auto overscroll-contain border-r border-line bg-surface py-3 text-muted md:flex">
       <nav aria-label={t.rail.navegacion}>
         <RailEnlaces items={items} />
         {admin && (

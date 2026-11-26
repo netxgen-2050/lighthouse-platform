@@ -70,8 +70,7 @@ test.describe("sin cuenta", () => {
     await page.goto("/privacidad?lang=en");
     const aviso = page.getByText("This page is only available in Spanish for now.");
     await expect(aviso).toBeVisible();
-    await expect(aviso).toHaveAttribute("lang", "en");
-    await expect(page.locator('main [lang="es"]').first()).toBeVisible();
+    await expect(aviso).toHaveAttribute("lang", "en");    await expect(page.locator('main [lang="es"]').first()).toBeVisible();
     await expect(page.locator('main [lang="es"] h1')).toHaveCount(1);
     expect(await textosEnEspanol(page, "main")).toEqual([]);
   });

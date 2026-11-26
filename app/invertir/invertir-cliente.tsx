@@ -9,7 +9,7 @@ import { puedeCapacidad } from "@/lib/permisos/niveles";
 import { TerminoLegal } from "@/components/termino-legal";
 import { ChipEstado } from "@/components/ui/chip-estado";
 import { Indicador } from "@/components/ui/indicador";
-import { SelloPrototipo } from "@/components/ui/sello-prototipo";
+import { Aviso } from "@/components/ui/aviso";
 import { TablaLibro } from "@/components/ui/tabla-libro";
 import { ANIOS_DEL_HORIZONTE } from "@/lib/bien-comun/barrio";
 import { enteroEn } from "@/lib/bien-comun/formato";
@@ -46,13 +46,12 @@ export function InvertirCliente() {
   return (
     <div className="grid gap-8">
       <div role="group" aria-label={t.sellos.etiqueta} className="grid w-fit max-w-3xl gap-2" data-sellos="invertir">
-        <p className="w-fit rounded-lg border-2 border-dashed border-muted bg-warn-bg px-3 py-2 font-semibold text-warn-ink">
+        <Aviso tono="atencion" className="font-semibold">
           {t.sellos.propuesta(VERSION_PROPUESTA.version)}
-        </p>
-        <SelloPrototipo variante="venta" />
-        <p className="w-fit rounded-lg border-2 border-dashed border-muted bg-warn-bg px-3 py-2 font-semibold text-warn-ink">
+        </Aviso>
+        <Aviso tono="legal" className="font-semibold">
           {t.sellos.noEsOferta} <TerminoLegal clave="nooferta" idioma={idioma} />
-        </p>
+        </Aviso>
       </div>
       {barrios.map((b) => {
         const mes =

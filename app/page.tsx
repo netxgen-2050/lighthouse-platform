@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { HeroeValle } from "@/components/explorar/heroe-valle";
 import { PanelVidrio } from "@/components/ui/panel-vidrio";
-import { SelloPrototipo } from "@/components/ui/sello-prototipo";
 import { caminosDePortada } from "@/lib/portada";
 import { capitalesDePortada, cifrasDePortada, FUENTE_CAPITALES } from "@/lib/portada-vrn";
 import { TerminoLegal } from "@/components/termino-legal";
@@ -26,7 +25,6 @@ export default async function Home({ searchParams }: Props) {
       {hayCampana(params) && <GuardarOrigen origen={params} />}
       {/* Dirección A "Valle de noche": primero el territorio (foto a sangre, título encima), después los números en vidrio. */}
       <HeroeValle leyenda={t.leyendaImagen}>
-      <SelloPrototipo />
       <div className="grid gap-4">
         <p className="font-mono text-sm uppercase text-ink">{t.sobretitulo}</p>
         <h1 className="text-4xl font-bold sm:text-5xl">

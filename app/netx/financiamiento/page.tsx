@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { VERSIONES, fechaCorta } from "@/lib/financiamiento/fuentes";
 import { FUTUROS_SIMULADOS } from "@/lib/financiamiento/riesgo";
+import { Aviso } from "@/components/ui/aviso";
 import { TERMINOS } from "@/lib/legal/terminos";
 import { VERSION_MODELO_LOTES } from "@/lib/lotes/modelo";
 import { VERSION_MODELO } from "@/lib/series/escenarios";
@@ -32,9 +33,9 @@ export default function ModeloFinanciamientoPage() {
       <p className="text-sm font-medium text-muted">Vista NetX · para el equipo de NetXGen</p>
       <h1 className="text-3xl font-semibold">Modelo de financiamiento</h1>
 
-      <p className="mt-3 mb-4 max-w-3xl rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+      <Aviso tono="legal" className="mt-3 mb-4 max-w-3xl">
         {TERMINOS.avisosimulador.texto}
-      </p>
+      </Aviso>
 
       <p className="mb-4 max-w-3xl text-lg">
         El detalle de cómo entra la plata: en qué orden cobra cada uno, cómo se puede invertir hoy, qué pasa si sale mal y

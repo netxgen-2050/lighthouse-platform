@@ -6,7 +6,9 @@ import { Rail } from "@/components/rail";
 import { ProveedorSesion } from "@/components/sesion/proveedor-sesion";
 import { Puerta, SoloConCapacidad, SoloConConsentimiento } from "@/components/sesion/puerta";
 import { SCRIPT_APARIENCIA } from "@/lib/configuracion/script-apariencia";
-import { Pie } from "@/components/pie";
+import { BloqueFijo } from "@/components/bloque-fijo";
+import { Pie }from "@/components/pie";
+import { CintaPrototipo } from "@/components/ui/cinta-prototipo";
 import { BotonReportar } from "@/components/boton-reportar";
 import { Hifa } from "@/components/hifa/hifa";
 import { ProveedorIdioma, SincronizarIdioma } from "@/lib/idioma/cliente";
@@ -62,14 +64,16 @@ export default async function RootLayout({
               <AplicarPreferencias />
             </SoloConConsentimiento>
             <Rail />
-            <div className="flex min-w-0 flex-1 flex-col">
-              <BarraSuperior />
+            <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
+              {/* La cinta y la barra se quedan juntas arriba al bajar la página (design §4). */}
+              <BloqueFijo>
+                <CintaPrototipo />
+                <BarraSuperior />
+              </BloqueFijo>
               <main id="contenido" tabIndex={-1} className="flex-1 focus:outline-none">
                 <Puerta>{children}</Puerta>
               </main>
               <Pie anioRespaldo={new Date().getFullYear()} />
-              {/* Espacio para que el botón fijo de Hifa no tape el final de la página. */}
-              <div aria-hidden="true" className="h-16 shrink-0" />
             </div>
             {/* Reportar es para toda persona, con o sin sesión; Hifa se habilita desde el nivel Explorador. */}
             {/* Reportar y Hifa todavía están solo en español (`idioma-hifa-avisos`): en inglés se marcan como español. */}
