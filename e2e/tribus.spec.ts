@@ -279,7 +279,7 @@ test.describe("ficha completa", () => {
     await page.goto("/tribus/valle");
     await expect(page.getByRole("link", { name: "Proponer mi pacto" })).toHaveAttribute("href", "/pactos?comunidad=valle");
     await page.getByRole("link", { name: "Ver su barrio en el mapa" }).click();
-    await expect(page).toHaveURL(/\/explorar#territorio$/);
+    await expect(page).toHaveURL(/\/explorar\/territorio$/);
   });
 
   test("grano: vacante con medidores, sin red de confianza, proponer una comunidad lleva al formulario", async ({ page }) => {

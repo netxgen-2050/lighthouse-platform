@@ -62,7 +62,7 @@ export type Destino = {
 export const DESTINOS: readonly Destino[] = [
   { href: "/", clave: "inicio", icono: House, grupo: "principal", existe: true, barra: true },
   {
-    href: "/explorar",
+    href: "/explorar/territorio",
     clave: "explorar",
     icono: Telescope,
     grupo: "principal",

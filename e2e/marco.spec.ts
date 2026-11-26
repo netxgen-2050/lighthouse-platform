@@ -117,14 +117,14 @@ test("en inglés el rail marca Home en la portada y Explore en /explorar", async
   const nav = page.getByRole("navigation", { name: "Main" });
   await page.goto("/");
   await expect(nav.getByRole("link", { name: "Home" })).toHaveAttribute("aria-current", "page");
-  await page.goto("/explorar");
+  await page.goto("/explorar/territorio");
   await expect(nav.getByRole("link", { name: "Explore" })).toHaveAttribute("aria-current", "page");
   await expect(nav.getByRole("link", { name: "Home" })).not.toHaveAttribute("aria-current", "page");
 });
 
 test("sin subnavegación: ni /explorar ni /tribus desbordan a 390 px", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const ruta of ["/explorar", "/tribus"]) {
+  for (const ruta of ["/explorar/territorio", "/explorar/barrio-norte", "/explorar/lotes", "/tribus"]) {
     await page.goto(ruta);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), ruta).toBe(false);

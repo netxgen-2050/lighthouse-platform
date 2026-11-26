@@ -28,6 +28,9 @@ type Props = {
   persistente?: boolean;
   /** Nombre del asa de la variante persistente (expandir o contraer). */
   etiquetaAsa?: string;
+  /** Persistente controlada desde afuera (un botón "Ver lista" / "Ver mapa" hace lo mismo que arrastrar). Sin esto, ella decide. */
+  expandida?: boolean;
+  alExpandir?: (expandida: boolean) => void;
 };
 
 /**
@@ -152,9 +155,15 @@ function HojaModal({ alCerrar, titulo, etiquetaCerrar, children, devolverFoco }:
   );
 }
 
-function HojaPersistente({ titulo, children, etiquetaAsa = titulo }: Props) {
+function HojaPersistente({ titulo, children, etiquetaAsa = titulo, expandida: expandidaFuera, alExpandir }: Props) {
   const id = useId();
-  const [expandida, setExpandida] = useState(false);
+  const [propia, setPropia] = useState(false);
+  const expandida = expandidaFuera ?? propia;
+  const setExpandida = (v: boolean | ((e: boolean) => boolean)) => {
+    const nuevo = typeof v === "function" ? v(expandida) : v;
+    setPropia(nuevo);
+    alExpandir?.(nuevo);
+  };
   const arrastre = useArrastre((dy) => {
     if (dy < -UMBRAL_CIERRE) setExpandida(true);
     else if (cierraAlArrastrar(dy)) setExpandida(false);

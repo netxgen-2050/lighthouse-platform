@@ -35,7 +35,7 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "textos/explorar": {
     estado: "pendiente",
-    que: "Explorar (/explorar): título del héroe, barra de secciones y apertura de Territorio, Barrio Norte y Lotes",
+    que: "Explorar (/explorar/*): título del héroe, pestañas, título de cada página y apertura de Territorio, Barrio Norte y Lotes",
   },
   "textos/participa": {
     estado: "pendiente",

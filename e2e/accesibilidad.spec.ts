@@ -28,11 +28,13 @@ const rutas = [
   ...listarTribus().map((t) => `/tribus/${t.id}`),
   "/tribus/lighthouse",
   "/tribus/lighthouse/manifiesto",
-  "/explorar",
-  "/explorar?vista=lotes",
-  "/explorar?vista=ahora",
-  "/explorar?vista=plan",
-  "/explorar?vista=vision",
+  "/explorar/territorio",
+  "/explorar/barrio-norte",
+  "/explorar/lotes",
+  "/explorar/territorio?vista=lotes",
+  "/explorar/territorio?vista=ahora",
+  "/explorar/territorio?vista=plan",
+  "/explorar/territorio?vista=vision",
   "/lotes/lote-1",
   "/lotes/hibrido",
   "/bien-comun",
@@ -62,7 +64,7 @@ for (const idioma of ["es", "en"] as const) {
         test("axe sin violaciones serias o críticas: cerrada y abierta", async ({ page, context, baseURL }) => {
           await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
           await page.setViewportSize({ width: 390, height: 844 });
-          await page.goto("/explorar");
+          await page.goto("/explorar/territorio");
           await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
           const boton = page.getByRole("button", { name: idioma === "es" ? "Más" : "More", exact: true });
           await expect(boton).toBeVisible();
@@ -77,7 +79,7 @@ for (const idioma of ["es", "en"] as const) {
 }
 
 test("hay 48 rutas auditadas", () => {
-  expect(rutas).toHaveLength(46);
+  expect(rutas).toHaveLength(48);
 });
 
 // Invertir (rediseno-invertir), con sesión y con la tabla de la curva abierta: en los dos idiomas y los dos temas.
@@ -131,8 +133,8 @@ for (const idioma of ["es", "en"] as const) {
   }
 }
 
-// Inicio y Explorar (rediseno-explorar-valle, explorar-unificado): en los dos idiomas y los dos temas.
-for (const ruta of ["/", "/explorar"]) {
+// Inicio y las tres páginas de Explorar (rediseno-explorar-valle, explorar-paginas): en los dos idiomas y los dos temas.
+for (const ruta of ["/", "/explorar/territorio", "/explorar/barrio-norte", "/explorar/lotes"]) {
   for (const idioma of ["es", "en"] as const) {
     for (const tema of ["oscuro", "claro"] as const) {
       test(`axe sin violaciones serias o críticas: ${ruta}, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
@@ -646,7 +648,7 @@ for (const ruta of rutas) {
 }
 
 // Lotes: la lista y una ficha en inglés, y la ficha con la compra simulada en cada paso (lote-ficha-y-compra).
-for (const ruta of ["/lotes?lang=en", "/lotes/lote-1?lang=en", "/lotes/hibrido?lang=en"]) {
+for (const ruta of ["/explorar/lotes?lang=en", "/lotes/lote-1?lang=en", "/lotes/hibrido?lang=en"]) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();

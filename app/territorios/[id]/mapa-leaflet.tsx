@@ -42,9 +42,15 @@ type Props = {
   alElegir: (id: string) => void;
   vista: VistaId;
   fase: Fase;
+  /** Clases del contenedor (el alto). Sin esto, el alto de siempre. */
+  className?: string;
+  /** Nombre accesible del mapa; sin esto, el de siempre. */
+  etiqueta?: string;
+  /** Ids de lotes que se muestran con todo su color; el resto queda atenuado. Sin esto, todos (Explorar / Lotes). */
+  lotesVisibles?: ReadonlySet<string> | null;
 };
 
-export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props) {
+export default function MapaLeaflet({ seleccion, alElegir, vista, fase, className, etiqueta, lotesVisibles = null }: Props) {
   const idioma = useIdioma();
   const tx = useTextos("territorio");
   const contenedor = useRef<HTMLDivElement>(null);
@@ -292,6 +298,7 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props)
       };
       aplicarVista.current();
       resaltar(seleccionActual.current);
+      aplicarFiltro();
     })();
 
     return () => {
@@ -310,14 +317,33 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props)
     if (mapaRef.current) resaltar(seleccion);
   }, [seleccion]);
 
+  // Filtro de lotes: los que no entran quedan atenuados (el borde sigue diciendo su estado); el elegido se vuelve a resaltar.
+  const visiblesRef = useRef(lotesVisibles);
+  visiblesRef.current = lotesVisibles;
+  const aplicarFiltro = () => {
+    for (const [id, c] of capas.current) {
+      if (!id.startsWith("lote-")) continue;
+      const entra = !visiblesRef.current || visiblesRef.current.has(id);
+      c.capa.setStyle(entra ? c.base : { ...c.base, fillOpacity: 0.04, opacity: 0.35 });
+    }
+    if (ultima.current) {
+      const e = capas.current.get(ultima.current);
+      if (e) e.capa.setStyle(estiloElegido(e.base, ultima.current.startsWith("lote-")));
+    }
+  };
+  useEffect(() => {
+    aplicarFiltro();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lotesVisibles, vista, seleccion]);
+
   const faseTexto = fase === FASE_ACTUAL ? tx.mapa.faseHoy(fase) : String(fase);
 
   return (
     <div
       ref={contenedor}
       role="region"
-      aria-label={tx.mapa.aria(tx.vistas[vista].corto, faseTexto)}
-      className="mapa-leaflet h-[26rem] w-full rounded-xl border border-faint"
+      aria-label={etiqueta ?? tx.mapa.aria(tx.vistas[vista].corto, faseTexto)}
+      className={`mapa-leaflet w-full rounded-xl border border-faint ${className ?? "h-[26rem]"}`}
     />
   );
 }

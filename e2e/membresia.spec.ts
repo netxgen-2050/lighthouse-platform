@@ -178,7 +178,7 @@ test("el ⚖ de adherir está junto al botón y junto al enlace",async ({ page }
   await expect(page.getByRole("button", { name: "Qué significa legalmente: Adherir a un manifiesto" })).toHaveCount(2);
 });
 
-for (const ruta of ["/tribus/valle/manifiesto", "/tribus/valle", "/territorios/lighthouse"]) {
+for (const ruta of ["/tribus/valle/manifiesto", "/tribus/valle", "/explorar/territorio"]) {
   test(`axe sin violaciones serias o críticas en ${ruta}`, async ({ page }) => {
     await page.goto(ruta);
     await expect(page.getByText(/manifiesto/i).first()).toBeVisible();

@@ -26,14 +26,14 @@ export function caminosDePortada(idioma: Idioma = "es"): Camino[] {
       etiqueta: t.lotes.etiqueta,
       titulo: t.lotes.titulo,
       descripcion: t.lotes.descripcion,
-      href: "/explorar#lotes",
+      href: "/explorar/lotes",
     },
     {
       id: "territorio",
       etiqueta: t.territorio.etiqueta,
       titulo: t.territorio.titulo,
       descripcion: t.territorio.descripcion,
-      href: "/explorar#territorio",
+      href: "/explorar/territorio",
     },
     {
       id: "tribus",
