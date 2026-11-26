@@ -3,6 +3,7 @@
 import { useTextos } from "@/lib/idioma/cliente";
 import { estadoConCompras, type EstadoMostrado } from "@/lib/lotes/compra";
 import { useCompras } from "./usar-compras";
+import { useEstadosLotes } from "./usar-estados-lotes";
 
 const GLIFO: Record<EstadoMostrado, string> = {
   disponible: "●",
@@ -38,5 +39,21 @@ export function TextoEstado({ estado }: { estado: EstadoMostrado }) {
  */
 export function EstadoDeUnLote({ id }: { id: string }) {
   const { compras } = useCompras();
-  return <TextoEstado estado={estadoConCompras(id, compras)} />;
+  const { estados } = useEstadosLotes();
+  return <TextoEstado estado={estadoConCompras(id, compras, estados)} />;
+}
+
+/**
+ * Aviso discreto cuando el servidor no respondió los estados: quedan los de ejemplo (nunca se da un lote por disponible por
+ * eso). Lleva palabras y símbolo, no solo color.
+ */
+export function AvisoEstadosLotes({ fallo }: { fallo: boolean }) {
+  const t = useTextos("lotes").estado;
+  if (!fallo) return null;
+  return (
+    <p role="status" className="text-sm text-muted">
+      <span aria-hidden="true">▲ </span>
+      {t.sinRespuesta}
+    </p>
+  );
 }

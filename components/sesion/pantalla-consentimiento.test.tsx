@@ -29,7 +29,7 @@ describe("pantalla de consentimiento: re-consentimiento con lo que cambió", () 
     expect(html).toContain("Cambió la política de privacidad desde la última vez que la aceptaste");
     expect(html).toContain(`Aceptaste la versión ${VERSION_ANTERIOR} el`);
     expect(html).toContain("Qué cambió");
-    expect(html).toContain("El login pasa a hacerse con Neon (Neon Auth); Privy se va a retirar.");
+    expect(html).toContain("Las reservas de lotes simulados ya no quedan solo en tu navegador: se guardan en la base de la plataforma para que un lote reservado se vea reservado para todos.");
     expect(html).toContain("Leer la política completa");
   });
 

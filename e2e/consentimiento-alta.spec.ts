@@ -391,7 +391,7 @@ test.describe("re-consentimiento desde Entrar", () => {
     const dialogo = paso(page, "Entrar");
     await expect(dialogo.getByText(`Versión de la política: ${VERSION_PRUEBA}`)).toBeVisible();
     await expect(dialogo.getByText("Qué cambió")).toBeVisible();
-    await expect(dialogo.getByRole("listitem").filter({ hasText: "Neon (Neon Auth)" }).first()).toBeVisible();
+    await expect(dialogo.getByRole("listitem").filter({ hasText: "Las reservas de lotes simulados" }).first()).toBeVisible();
     await aceptarPaso(page);
     await page.getByRole("button", { name: email }).click();
     await expect(menuAvatar(page)).toBeVisible();
