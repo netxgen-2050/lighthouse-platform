@@ -8,13 +8,19 @@ const es = {
   titulo: "Invertir",
   bajada: "Qué barrio se financia, cómo se devuelve la plata y qué parte va al común.",
   sinSesion: {
-    aviso: "Invertir se ve con una cuenta: acá aparecen los números del barrio en financiamiento.",
+    titulo: "Invertir se ve con una cuenta",
+    aviso: "Acá aparecen los números del barrio en financiamiento.",
     entrar: "Sumate para ver el barrio",
   },
-  sellos: {
+  aviso: {
     etiqueta: "Estado de esta página",
-    propuesta: (version: string) => `Propuesta ${version} · en discusión`,
-    noEsOferta: "No es una oferta",
+    texto: (version: string) => `Propuesta ${version} en discusión · no es una oferta`,
+  },
+  pestanas: {
+    etiqueta: "Detalle del barrio",
+    como: "Cómo funciona",
+    curva: "Curva",
+    libro: "Libro",
   },
   barrio: {
     titulo: "Barrio Norte",
@@ -63,6 +69,15 @@ const es = {
       devolucion: "Se devuelve al inversor",
       comun: "Va al común",
     },
+    filtro: "Filtrar el libro por tipo",
+    todo: "Todo",
+    filtros: {
+      cuotas: "Entra al fideicomiso",
+      devolucion: "Se devuelve al inversor",
+      comun: "Va al común",
+    },
+    verTodo: (n: string) => `Ver todo el libro (${n} movimientos)`,
+    vacio: "No hay movimientos de este tipo.",
   },
 };
 
@@ -70,13 +85,19 @@ const en: Textos<typeof es> = {
   titulo: "Invest",
   bajada: "Which neighborhood is being financed, how the money is paid back and what share goes to the commons.",
   sinSesion: {
-    aviso: "Invest is seen with an account: the numbers of the neighborhood being financed appear here.",
+    titulo: "Invest is seen with an account",
+    aviso: "The numbers of the neighborhood being financed appear here.",
     entrar: "Join to see the neighborhood",
   },
-  sellos: {
+  aviso: {
     etiqueta: "Status of this page",
-    propuesta: (version: string) => `Proposal ${version} · under discussion`,
-    noEsOferta: "Not an offer",
+    texto: (version: string) => `Proposal ${version} under discussion · not an offer`,
+  },
+  pestanas: {
+    etiqueta: "Neighborhood details",
+    como: "How it works",
+    curva: "Curve",
+    libro: "Ledger",
   },
   barrio: {
     titulo: "Barrio Norte",
@@ -125,6 +146,15 @@ const en: Textos<typeof es> = {
       devolucion: "Paid back to the investor",
       comun: "Goes to the commons",
     },
+    filtro: "Filter the ledger by type",
+    todo: "All",
+    filtros: {
+      cuotas: "Enters the trust",
+      devolucion: "Paid back to the investor",
+      comun: "Goes to the commons",
+    },
+    verTodo: (n: string) => `See the whole ledger (${n} movements)`,
+    vacio: "There are no movements of this type.",
   },
 };
 

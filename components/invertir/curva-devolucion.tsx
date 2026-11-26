@@ -1,17 +1,19 @@
 "use client";
 
-import { useId } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { enteroEn } from "@/lib/bien-comun/formato";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { usdEn } from "@/lib/lotes/formato";
 import { curvaPorTrimestre, type PuntoCurva } from "@/lib/invertir/barrios";
 
-const ANCHO = 640;
+// El dibujo usa el ancho real del contenedor como unidad (1 unidad = 1 px), así las etiquetas de los ejes miden 13 px
+// también en el celular (ux-invertir, design §2). 640 es el ancho de partida antes de medir.
+const ANCHO_INICIAL = 640;
 const ALTO = 320;
-const IZQ = 84;
+const IZQ = 104;
 const DER = 16;
 const ARRIBA = 32;
-const ABAJO = 44;
+const ABAJO = 48;
 
 /**
  * Curva de devolución en SVG propio, sin librerías: lo devuelto al inversor (trazo continuo con relleno) frente a lo que trajo
@@ -22,6 +24,17 @@ export function CurvaDevolucion({ curva }: { curva: PuntoCurva[] }) {
   const idioma = useIdioma();
   const t = useTextos("invertir").curva;
   const id = useId();
+  const caja = useRef<HTMLDivElement>(null);
+  const [ANCHO, setAncho] = useState(ANCHO_INICIAL);
+  useEffect(() => {
+    const el = caja.current;
+    if (!el) return;
+    const medir = () => setAncho(Math.max(300, Math.round(el.clientWidth)));
+    medir();
+    const observador = new ResizeObserver(medir);
+    observador.observe(el);
+    return () => observador.disconnect();
+  }, [curva.length]);
   if (curva.length === 0) return null;
 
   const ultimoMes = curva[curva.length - 1].mes;
@@ -38,12 +51,12 @@ export function CurvaDevolucion({ curva }: { curva: PuntoCurva[] }) {
   const filas = curvaPorTrimestre(curva);
 
   return (
-    <div className="grid gap-3">
+    <div ref={caja} className="grid gap-3">
       <svg
         role="img"
         aria-labelledby={`${idTitulo} ${idDesc}`}
         viewBox={`0 0 ${ANCHO} ${ALTO}`}
-        className="h-auto w-full max-w-3xl"
+        className="h-auto w-full"
         data-curva="devolucion"
       >
         <title id={idTitulo}>{t.titulo}</title>
@@ -51,20 +64,20 @@ export function CurvaDevolucion({ curva }: { curva: PuntoCurva[] }) {
         {marcasMonto.map((m, i) => (
           <g key={`m${i}`}>
             <line x1={IZQ} x2={ANCHO - DER} y1={y(m)} y2={y(m)} className="stroke-line" strokeWidth={1} />
-            <text x={IZQ - 8} y={y(m) + 4} textAnchor="end" className="fill-muted font-mono text-[11px]">
+            <text x={IZQ - 8} y={y(m) + 4} textAnchor="end" className="fill-muted font-mono text-[13px]">
               {usdEn(m, idioma)}
             </text>
           </g>
         ))}
-        <text x={IZQ - 8} y={12} textAnchor="end" className="fill-muted text-xs">
+        <text x={IZQ - 8} y={14} textAnchor="end" className="fill-muted text-[13px]">
           {t.ejeMonto}
         </text>
         {marcasMes.map((m, i) => (
-          <text key={`x${i}`} x={x(m)} y={ALTO - ABAJO + 18} textAnchor="middle" className="fill-muted font-mono text-[11px]">
+          <text key={`x${i}`} x={x(m)} y={ALTO - ABAJO + 18} textAnchor="middle" className="fill-muted font-mono text-[13px]">
             {enteroEn(m, idioma)}
           </text>
         ))}
-        <text x={(IZQ + ANCHO - DER) / 2} y={ALTO - 6} textAnchor="middle" className="fill-muted text-xs">
+        <text x={(IZQ + ANCHO - DER) / 2} y={ALTO - 6} textAnchor="middle" className="fill-muted text-[13px]">
           {t.ejeMes}
         </text>
         <path d={area} className="fill-green-soft" stroke="none" />
