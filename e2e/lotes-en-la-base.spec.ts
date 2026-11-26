@@ -166,8 +166,11 @@ test.describe("Mis datos con las reservas", () => {
 
 test("axe sin violaciones serias o críticas en la ficha, la lista, Mis datos y con el aviso de estados", async ({ page, request }) => {
   await sinMosaicos(page);
-  const graves = async () =>
-    (await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => v.id);
+  const graves = async () => {
+    // Next manda el <title> en un pedazo aparte del HTML: sin esperarlo, axe a veces ve la página sin título (document-title).
+    await expect(page).toHaveTitle(/\S/);
+    return (await new AxeBuilder({ page }).analyze()).violations.filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => v.id);
+  };
   // Una reserva ajena: la ficha dice "Reservado" y no ofrece reservar.
   await reservarPorApi(request, emailUnico("ajena"), LOTE_A.id);
   await page.goto(`/lotes/${LOTE_A.id}`);
