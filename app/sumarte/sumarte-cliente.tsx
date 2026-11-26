@@ -2,14 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { KycDialogo } from "@/components/kyc-dialogo";
 import { Medidor } from "@/components/medidor";
 import { PedidoContacto } from "@/components/pedido-contacto";
 import { useSesion } from "@/components/sesion/contexto";
 import { EntrarComo } from "@/components/sesion/entrar-como";
 import { TerminoLegal } from "@/components/termino-legal";
-import { TextoBilingue } from "@/components/texto-bilingue";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { GLOSARIO } from "@/lib/idioma/glosario";
 import { sumarte } from "@/lib/idioma/textos/sumarte";
@@ -39,9 +38,13 @@ import { TICKETS_SAFE } from "@/lib/financiamiento/fuentes";
 import { MODELO_LOTES } from "@/lib/lotes/modelo";
 import { fraseDeTermino } from "@/lib/legal/mostrar-termino";
 import { EstadoAdministrativo } from "@/components/estado-administrativo";
+import { CaminosSumarte } from "@/components/sumarte/caminos";
+import { ListaDelPlan, TablaComparacion } from "@/components/sumarte/comparacion";
+import { ModoDePrueba } from "@/components/sumarte/modo-de-prueba";
+import { leerPlan, PLAN_POR_DEFECTO, planDeLaPersona, type PlanVista } from "@/components/sumarte/planes";
+import { SelectorPlanes } from "@/components/sumarte/selector-planes";
 import {
   COHORT,
-  FILAS,
   MEMBRESIA,
   PASSES,
   PLAN_TRIBU,
@@ -93,6 +96,8 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
   const conSesion = estadoSesion === "ok";
   const [estado, setEstado] = useState<EstadoSumarte>(INICIAL);
   const [listo, setListo] = useState(false);
+  // ¿Ya se leyó lo guardado de la persona con sesión? (Sin esto, el plan que se ve se calcularía con el estado inicial.)
+  const [leidoConSesion, setLeidoConSesion] = useState(false);
   const [falloAlmacen, setFalloAlmacen] = useState(false);
   const [formulario, setFormulario] = useState<"invitacion" | "charla" | null>(null);
   const [dialogoKyc, setDialogoKyc] = useState(false);
@@ -102,12 +107,34 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
   const kyc = useKyc();
   const { moneda } = usePreferencias();
   const foco = useRef<string | null>(null);
+  // Plan que eligió la persona en el selector o que pide la dirección (`?plan=`); mientras no hay uno, se calcula (`planVisto`).
+  // Se sincroniza con la dirección: al navegar a /sumarte (con otro plan o sin plan) se toma lo que dice; elegir en el selector
+  // lo cambia al instante y reescribe la dirección.
+  const planDeLaDireccion = leerPlan(useSearchParams().get("plan"));
+  const [planElegido, setPlanElegido] = useState<PlanVista | null>(planDeLaDireccion);
+  useEffect(() => setPlanElegido(planDeLaDireccion), [planDeLaDireccion]);
+  // Cuántas veces se pidió entrar desde esta página: abre el cajón del modo de prueba, donde está "Entrar como…".
+  const [pedidosDeEntrar, setPedidosDeEntrar] = useState(0);
 
   // Nivel que hace falta para lo que se quería abrir (la página, o la acción que pidió sumarse).
   const requerido: Nivel | null = nivelDeParametro(para) ?? (volver ? nivelMinimoDeRuta(volver) : null);
   const volverAlLugar = volver && !volver.startsWith("/sumarte") ? volver : null;
   const faltaNivel = requerido !== null && requerido !== "sin-cuenta" && !alcanza(nivelCuenta, requerido);
   const aviso = !volverAlLugar || !faltaNivel ? null : para ? avisoDeNivel(requerido!, idioma) : avisoDeRuta(volverAlLugar, idioma);
+
+  // Plan que se ve (ux-sumarte, design §2): el elegido; si no hay, el que hace falta para lo que se quería abrir (si todavía
+  // no alcanza), si no el que la persona ya tiene, y sin nada de eso Miembro. Hasta leer la cuenta no se muestra ninguno,
+  // para que la tarjeta no salte de uno a otro.
+  const planQueHaceFalta: PlanVista | null = !faltaNivel
+    ? null
+    : requerido === "lider"
+      ? "comunidad"
+      : requerido === "fundador" || requerido === "miembro" || requerido === "explorador"
+        ? requerido
+        : null;
+  const cuentaLeida = estadoSesion !== "cargando" && (!conSesion || leidoConSesion);
+  const planVisto: PlanVista | null =
+    planElegido ?? (!cuentaLeida ? null : (planQueHaceFalta ?? (conSesion ? planDeLaPersona(estado) : PLAN_POR_DEFECTO)));
 
   useEffect(() => {
     // Lectura del almacenamiento del navegador tras hidratar (no existe en el servidor). Sin sesión no se lee ni se guarda nada.
@@ -142,6 +169,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
     }
     setEstado(leido);
     setListo(true);
+    setLeidoConSesion(true);
   }, [conSesion, router]);
 
   // Con el nivel que hacía falta, vuelve a donde la persona estaba (por ejemplo, la página que abrió por dirección).
@@ -156,6 +184,20 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
     foco.current = null;
   }, [estado]);
 
+  /** Elegir un plan en el selector: se ve ese plan y queda en la dirección (`?plan=`), sin recargar. */
+  function elegirPlanVisto(elegido: PlanVista) {
+    setPlanElegido(elegido);
+    const params = new URLSearchParams(window.location.search);
+    params.set("plan", elegido);
+    window.history.replaceState(window.history.state, "", `${window.location.pathname}?${params}${window.location.hash}`);
+  }
+
+  /** Abre el paso de entrar y, de paso, el cajón "Modo de prueba": ahí está el panel "Entrar como…". */
+  function pedirEntrar(opciones?: Parameters<typeof entrar>[0]) {
+    setPedidosDeEntrar((n) => n + 1);
+    entrar(opciones);
+  }
+
   /**
    * Sin cuenta, elegir un plan abre el registro (Privy, o "Entrar como…" en el modo de prueba): lo elegido queda pendiente
    * en esta pestaña y se aplica al volver con la cuenta. La facturación y el nivel del pase solo mueven la pantalla.
@@ -168,7 +210,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
       }
       const acciones: Accion[] = accion.tipo === "pase" ? [{ tipo: "nivel", nivel: estado.nivelPase }, accion] : [accion];
       // El pedido se guarda recién al aceptar el paso "Crear tu cuenta": si cancela, no queda nada.
-      entrar({
+      pedirEntrar({
         modo: "alta",
         alAceptar: () => {
           try {
@@ -248,6 +290,42 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
     />
   );
 
+  // Mensual / Anual vive con los planes que se cobran por período (Miembro y Comunidad); el pase es un pago único.
+  const facturacion = (
+    <div role="group" aria-label={t.facturacion.grupo} className="flex flex-wrap gap-2">
+      {(["mensual", "anual"] as const).map((f) => (
+        <button
+          key={f}
+          type="button"
+          aria-pressed={estado.facturacion === f}
+          onClick={() => dispatch({ tipo: "facturacion", facturacion: f })}
+          className={`min-h-11 rounded-lg border px-4 py-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep ${estado.facturacion === f ? "border-deep bg-deep text-on-deep" : "border-muted hover:bg-surface-2"}`}
+        >
+          {estado.facturacion === f && <span aria-hidden="true">✓ </span>}
+          {f === "mensual" ? t.facturacion.mensual : t.facturacion.anual}
+          {f === "anual" && <span className="ml-2 text-sm">{t.facturacion.dosMesesGratis}</span>}
+        </button>
+      ))}
+    </div>
+  );
+  const etiquetasDePlan: Record<PlanVista, string> = {
+    explorador: t.selector.explorador,
+    miembro: t.selector.miembro,
+    fundador: t.selector.fundador,
+    comunidad: t.selector.comunidad,
+  };
+  const caminos = [
+    { id: "vivir", href: "#comprar-lote", ...t.caminos.vivir },
+    { id: "invertir", href: "#invertir", ...t.caminos.invertir },
+    { id: "cuidar", href: "#planes", ...t.caminos.cuidar },
+  ];
+  const textosComparativa = t.comparativa;
+  const paraQuien = (texto: string) => (
+    <p className="text-sm">
+      <span className="font-medium">{t.selector.paraQuien.titulo}:</span> {texto}
+    </p>
+  );
+
   return (
     <div className="grid gap-6">
       {aviso && (
@@ -256,29 +334,16 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
           {volverAlLugar ? t.avisos.yVolvemos : ""}.
         </p>
       )}
-      {!conSesion && listo && <p className="max-w-2xl text-sm">{t.registro.ayuda(marco.barra.entrar)}</p>}
-      <EntrarComo />
       {falloAlmacen && (
         <p role="alert" className="text-sm font-medium text-danger">
           {t.registro.errorAlmacenamiento}
         </p>
       )}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div role="group" aria-label={t.facturacion.grupo} className="flex gap-2">
-          {(["mensual", "anual"] as const).map((f) => (
-            <button
-              key={f}
-              type="button"
-              aria-pressed={estado.facturacion === f}
-              onClick={() => dispatch({ tipo: "facturacion", facturacion: f })}
-              className={`rounded-lg border px-4 py-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep ${estado.facturacion === f ? "border-deep bg-deep text-on-deep" : "border-muted hover:bg-surface-2"}`}
-            >
-              {estado.facturacion === f && <span aria-hidden="true">✓ </span>}
-              {f === "mensual" ? t.facturacion.mensual : t.facturacion.anual}
-              {f === "anual" && <span className="ml-2 text-sm">{t.facturacion.dosMesesGratis}</span>}
-            </button>
-          ))}
-        </div>
+
+      <CaminosSumarte titulo={t.caminos.titulo} caminos={caminos} />
+
+      <div id="planes" className="grid scroll-mt-[calc(var(--alto-fijo,0px)+1rem)] gap-4">
+        {!conSesion && listo && <p className="max-w-2xl text-sm">{t.registro.ayuda(marco.barra.entrar)}</p>}
         <p className="text-sm text-muted" aria-live="polite">
           {listo ? (
             conSesion ? (
@@ -290,20 +355,26 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
             )
           ) : null}
         </p>
-      </div>
 
-      {moneda === "ARS" && (
-        <p className="text-sm text-muted">
-          {t.pesos.montos} {notaTipoDeCambio(idioma)}{" "}
-          <Link className="underline" href="/configuracion">{t.pesos.cambiarMoneda}</Link>
-        </p>
-      )}
+        {moneda === "ARS" && (
+          <p className="text-sm text-muted">
+            {t.pesos.montos} {notaTipoDeCambio(idioma)}{" "}
+            <Link className="underline" href="/configuracion">{t.pesos.cambiarMoneda}</Link>
+          </p>
+        )}
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {planVisto === null && <div aria-hidden="true" className="min-h-96" />}
+        {planVisto !== null && (
+          <SelectorPlanes nombre={t.selector.grupo} etiquetas={etiquetasDePlan} actual={planVisto} onCambio={elegirPlanVisto} />
+        )}
+        {(planVisto === "miembro" || planVisto === "comunidad") && facturacion}
+
+      <div className="max-w-3xl">
+      {planVisto === "explorador" && (
         <article aria-labelledby="plan-explorador" className={`${TARJETA} ${esExplorador ? BORDE_ACTUAL : BORDE}`}>
           <h2 id="plan-explorador" className="text-xl font-semibold">{t.explorador.nombre}</h2>
           <p className="text-2xl font-bold">{t.explorador.precio}</p>
-          <p className="text-muted">{t.explorador.descripcion}</p>
+          {paraQuien(t.selector.paraQuien.explorador)}
           <ul className="list-disc pl-5 text-sm">
             {t.explorador.incluye.map((x) => (
               <li key={x}>{x}</li>
@@ -316,8 +387,11 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
               {conSesion ? t.explorador.volver : t.explorador.sumarme}
             </button>
           )}
+          <ListaDelPlan plan="explorador" titulo={t.selector.queIncluye} t={textosComparativa} />
         </article>
+      )}
 
+      {planVisto === "miembro" && (
         <article aria-labelledby="plan-miembro" className={`${TARJETA} ${esMiembro ? BORDE_ACTUAL : BORDE}`}>
           <h2 id="plan-miembro" className="text-xl font-semibold">
             {t.miembro.nombre}
@@ -330,7 +404,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
             </span>
           </p>
           {estado.facturacion === "anual" && <p className="text-sm font-medium">{t.facturacion.dosMesesGratis}</p>}
-          <p className="text-muted">{t.miembro.descripcion}</p>
+          {paraQuien(t.selector.paraQuien.miembro)}
           <ul className="list-disc pl-5 text-sm">
             <li>{t.miembro.todoExplorador}</li>
             <li>{t.miembro.salas}</li>
@@ -349,8 +423,11 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
               {t.miembro.hacerme}
             </button>
           )}
+          <ListaDelPlan plan="miembro" titulo={t.selector.queIncluye} t={textosComparativa} />
         </article>
+      )}
 
+      {planVisto === "fundador" && (
         <article aria-labelledby="plan-fundador" className={`${TARJETA} ${paseActivo ? BORDE_ACTUAL : "border-2 border-gold-ink"}`}>
           <p className="w-fit rounded-full bg-gold-soft px-3 py-1 text-sm font-medium text-gold-ink">{t.fundador.cohorte}</p>
           <h2 id="plan-fundador" className="text-xl font-semibold">
@@ -382,6 +459,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
             {monto(nivel.precio)}
             <span className="text-base font-normal">{t.fundador.pagoUnico}</span>
           </p>
+          {paraQuien(t.selector.paraQuien.fundador)}
           <p className="text-muted">
             {t.fundador.financias}
             <TerminoLegal clave="guardian" idioma={idioma} />
@@ -424,8 +502,11 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
             {fraseDeTermino("noesinversion", idioma)}
             <TerminoLegal clave="noesinversion" idioma={idioma} />
           </p>
+          <ListaDelPlan plan="fundador" titulo={t.selector.queIncluye} t={textosComparativa} />
         </article>
+      )}
 
+      {planVisto === "comunidad" && (
         <article aria-labelledby="plan-tribu" className={`${TARJETA} ${esLider ? BORDE_ACTUAL : BORDE}`}>
           <h2 id="plan-tribu" className="text-xl font-semibold">
             {t.tribu.nombre}
@@ -438,7 +519,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
             </span>
           </p>
           {estado.facturacion === "anual" && <p className="text-sm font-medium">{t.facturacion.dosMesesGratis}</p>}
-          <p className="text-muted">{t.tribu.descripcion}</p>
+          {paraQuien(t.selector.paraQuien.comunidad)}
           <ul className="list-disc pl-5 text-sm">
             {t.tribu.incluye.map((x) => (
               <li key={x}>
@@ -517,6 +598,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
             </button>
           )}
         </article>
+      )}
       </div>
 
       {/* Línea informativa: no hay botón de adherir ni condiciona ningún plan; elegir un plan no registra una adhesión. */}
@@ -526,44 +608,12 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
         {t.adhesion.despues}{" "}
         <Link className="underline" href="/tribus/lighthouse">{t.adhesion.enlace}</Link>
       </p>
+      </div>
 
-      <section aria-labelledby="comparativa" className={`min-w-0 rounded-xl border bg-surface p-4 ${BORDE}`}>
-        <h2 id="comparativa" className="mb-2 text-xl font-semibold">{t.comparativa.titulo}</h2>
-        {/* relative: los textos sr-only de la tabla (position: absolute) quedan recortados con la tabla y no ensanchan la página. */}
-        <div className="relative overflow-x-auto">
-          <table className="w-full min-w-[32rem] border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b border-line">
-                <td className="p-2"><span className="sr-only">{t.comparativa.funcion}</span></td>
-                <th scope="col" className="p-2">{GLOSARIO.explorador[idioma]}</th>
-                <th scope="col" className="p-2">{GLOSARIO.miembro[idioma]}</th>
-                <th scope="col" className="p-2">{GLOSARIO.paseFundador[idioma]}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {FILAS.map((f) => (
-                <tr key={f.texto.es} className="border-b border-line">
-                  <th scope="row" className="p-2 font-normal">
-                    <TextoBilingue valor={f.texto} sinNota />
-                  </th>
-                  {f.incluye.map((si, i) => (
-                    <td key={i} className="p-2">
-                      <span aria-hidden="true">{si ? "✓" : "—"}</span>
-                      <span className="sr-only">{si ? t.comparativa.incluido : t.comparativa.noIncluido}</span>
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="mt-3 text-sm">
-          <Link className="underline" href="/pasaporte">{t.comparativa.verSellos}</Link>
-        </p>
-      </section>
+      <TablaComparacion plan={planVisto} idioma={idioma} t={textosComparativa} />
 
       <section aria-labelledby="comprar-lote" className={`${TARJETA} ${BORDE}`}>
-        <h2 id="comprar-lote" className="text-2xl font-semibold">{t.comprarLote.titulo}</h2>
+        <h2 id="comprar-lote" className="scroll-mt-[calc(var(--alto-fijo,0px)+1rem)] text-2xl font-semibold">{t.comprarLote.titulo}</h2>
         <p className="max-w-3xl text-sm">{t.comprarLote.texto(monto(MODELO_LOTES.precioLote.min))}</p>
         <EstadoAdministrativo proyecto="lighthouse-primeros" compacto idioma={idioma} />
         <EstadoAdministrativo proyecto="lighthouse-norte" compacto idioma={idioma} />
@@ -573,7 +623,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
       </section>
 
       <section aria-labelledby="invertir" className="grid gap-3">
-        <h2 id="invertir" className="text-2xl font-semibold">{t.invertir.titulo}</h2>
+        <h2 id="invertir" className="scroll-mt-[calc(var(--alto-fijo,0px)+1rem)] text-2xl font-semibold">{t.invertir.titulo}</h2>
         <p className="max-w-3xl text-sm text-muted">{t.invertir.intro}</p>
         <p className="max-w-3xl text-sm font-medium">
           {fraseDeTermino("noesoferta", idioma)}
@@ -620,7 +670,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
                 className={BOTON_PRIMARIO}
                 onClick={() => {
                   // Sin cuenta, primero hay que registrarse.
-                  if (!conSesion) return entrar({ modo: "alta" });
+                  if (!conSesion) return pedirEntrar({ modo: "alta" });
                   // Sin el sello de identidad, primero se ofrece la verificación.
                   if (kyc.verificada) setFormulario("invitacion");
                   else setDialogoKyc(true);
@@ -659,7 +709,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
                 type="button"
                 aria-expanded={formulario === "charla"}
                 className={BOTON_SUAVE}
-                onClick={() => (conSesion ? setFormulario("charla") : entrar({ modo: "alta" }))}
+                onClick={() => (conSesion ? setFormulario("charla") : pedirEntrar({ modo: "alta" }))}
               >
                 {t.invertir.empresa.pedirCharla}
               </button>
@@ -677,6 +727,10 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
           </article>
         </div>
       </section>
+
+      <ModoDePrueba titulo={t.modoPrueba.titulo} abrir={pedidosDeEntrar}>
+        <EntrarComo />
+      </ModoDePrueba>
 
       {dialogoDeIdentidad}
     </div>

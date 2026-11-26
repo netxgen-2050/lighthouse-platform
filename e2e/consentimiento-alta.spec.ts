@@ -1,4 +1,4 @@
-import { aceptarPaso } from "./ayudas";
+import { abrirModoDePrueba, aceptarPaso } from "./ayudas";
 import {
   COOKIE_PRUEBA,
   consentimientoDe,
@@ -41,7 +41,7 @@ test.describe("crear la cuenta en Sumarte", () => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     const email = emailUnico("alta");
     await panelConEmail(page, email);
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=explorador");
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
     const dialogo = paso(page, "Crear tu cuenta");
     await expect(dialogo).toBeVisible();
@@ -64,6 +64,7 @@ test.describe("crear la cuenta en Sumarte", () => {
     await expect(dialogo).toBeHidden();
     // Sin entrar, el servidor no sabe nada de esta persona: no hay ninguna fila suya.
     expect((await consentimientoDe(request, email)).filas).toEqual([]);
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
     await expect(page.getByText("Tu plan actual:")).toContainText("Explorador");
     await expect(titulo(page)).toHaveCount(0);
@@ -94,7 +95,7 @@ test.describe("crear la cuenta en Sumarte", () => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     const email = emailUnico("pestana");
     await panelConEmail(page, email);
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=explorador");
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
     await aceptarPaso(page);
     expect(await page.evaluate(() => window.sessionStorage.getItem("lh-consentimiento-previo"))).not.toBeNull();
@@ -112,9 +113,10 @@ test.describe("crear la cuenta en Sumarte", () => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     const email = emailUnico("novedades");
     await panelConEmail(page, email);
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=explorador");
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
     await aceptarPaso(page, { novedades: true });
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
     await expect(menuAvatar(page)).toBeVisible();
     const { estado } = await consentimientoDe(request, email);
@@ -161,6 +163,7 @@ test.describe("entrar desde la barra superior", () => {
     await aceptarPaso(page);
     await expect(page).toHaveURL(/\/sumarte\?volver=%2Fparticipa/);
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
     await expect(menuAvatar(page)).toBeVisible();
     await expect(page).toHaveURL(/\/participa$/);
@@ -203,6 +206,7 @@ test.describe("entrar desde la barra superior", () => {
     const email = emailUnico("espera");
     await panelConEmail(page, email);
     await page.goto("/sumarte#entrar-como");
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
     await expect(paso(page, "Entrar")).toBeVisible();
     expect((await page.context().cookies()).find((c) => c.name === COOKIE_PRUEBA)).toBeUndefined();
@@ -220,6 +224,7 @@ test.describe("entrar desde la barra superior", () => {
     await page.goto("/participa");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
     await aceptarPaso(page);
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
     await expect(menuAvatar(page)).toBeVisible();
     // Misma fecha y mismo camino: el servidor no agregó otra aceptación.
@@ -236,7 +241,7 @@ test.describe("entrar desde la barra superior", () => {
     const segunda = emailUnico("segunda");
     await registrarConsentimientoDe(request, primera);
     await panelConEmail(page, primera);
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=explorador");
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
     await aceptarPaso(page);
     await page.getByRole("button", { name: primera }).click();
@@ -395,6 +400,7 @@ test.describe("re-consentimiento desde Entrar", () => {
     await expect(dialogo.getByText("Qué cambió")).toBeVisible();
     await expect(dialogo.getByRole("listitem").filter({ hasText: "Las reservas de lotes simulados" }).first()).toBeVisible();
     await aceptarPaso(page);
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
     await expect(menuAvatar(page)).toBeVisible();
     await expect(titulo(page)).toHaveCount(0);
@@ -406,9 +412,10 @@ test.describe("re-consentimiento desde Entrar", () => {
     const email = emailUnico("g2a");
     await registrarConsentimientoDe(request, email, { canal: "alta", novedades: "acepta" });
     await panelConEmail(page, email);
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=explorador");
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
     await aceptarPaso(page);
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
     await expect(menuAvatar(page)).toBeVisible();
     // La casilla sin marcar no la dio de baja (el servidor aplica la regla con la última fila).
@@ -424,6 +431,7 @@ test.describe("re-consentimiento desde Entrar", () => {
     await page.goto("/participa");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
     await aceptarPaso(page);
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
     await expect(menuAvatar(page)).toBeVisible();
     await expect.poll(async () => (await consentimientoDe(request, email)).filas?.length).toBe(3);
@@ -494,7 +502,7 @@ test.describe("Privy no recibe el email antes de las casillas", () => {
       const url = new URL(r.url());
       if (url.hostname === "auth.privy.io" && /passwordless|oauth/.test(url.pathname)) pedidos.push(r.url());
     });
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=explorador");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
     await expect(paso(page, "Entrar")).toBeVisible();
     await paso(page, "Entrar").getByRole("button", { name: "Cancelar" }).click();

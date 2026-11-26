@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { readFile } from "node:fs/promises";
-import { aceptarPaso } from "./ayudas";
+import { abrirModoDePrueba, aceptarPaso } from "./ayudas";
 import { consentimientoDe, EMAILS, emailUnico, expect, panelConEmail, prefijoDe, registrarConsentimientoDe, test, VERSION_PRUEBA, type Page } from "./fixtura";
 
 // Con Privy (previews y producción) elegir un plan abre el modal de Privy: los casos que usan "Entrar como…" van en el e2e local.
@@ -135,6 +135,7 @@ test.describe("registro desde Sumarte", () => {
     // Todavía no hay sesión ni plan aplicado: primero el paso con las casillas.
     expect(await page.evaluate((c) => window.localStorage.getItem(c), claveSumarte)).toBeNull();
     await aceptarPaso(page);
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
     await expect(page.getByText("Tu plan actual:")).toContainText("Miembro");
     await expect(titulo(page)).toHaveCount(0);
@@ -161,6 +162,7 @@ test.describe("plazo del plan elegido en Sumarte", () => {
       });
       await ruta.continue();
     });
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
     await expect(titulo(page)).toBeVisible();
     // Pasaron 10 minutos leyendo la pantalla: el pedido pendiente ya estaría vencido.
@@ -182,6 +184,7 @@ test.describe("plan abandonado", () => {
     await aceptarPaso(page);
     // La persona abandonó el registro y volvió 30 minutos después: el pedido ya venció.
     await page.evaluate(() => window.sessionStorage.setItem("lh-sumarte-pendiente-hora", String(Date.now() - 30 * 60 * 1000)));
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
     await expect(page.getByText("Tu plan actual:")).toContainText("Explorador");
   });
