@@ -54,6 +54,38 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
+// ux-explorar: lista y mapa de lotes a 390 px, con la hoja en reposo y abierta, y la ficha del lote, en los dos temas.
+for (const tema of ["oscuro", "claro"] as const) {
+  test(`axe sin violaciones serias o críticas: /explorar/lotes a 390 px con la hoja en reposo y abierta, tema ${tema}`, async ({ page }) => {
+    await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/explorar/lotes");
+    await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+    const boton = page.getByRole("button", { name: "Ver lista" });
+    await expect(boton).toBeVisible();
+    const grave = async () => {
+      const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+      return r.violations
+        .filter((v) => v.impact === "serious" || v.impact === "critical")
+        .map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }));
+    };
+    expect(await grave(), "hoja en reposo").toEqual([]);
+    await boton.click();
+    await expect(page.getByRole("button", { name: "Ver mapa" })).toHaveAttribute("aria-expanded", "true");
+    expect(await grave(), "hoja abierta").toEqual([]);
+  });
+
+  test(`axe sin violaciones serias o críticas: la ficha de un lote a 390 px, tema ${tema}`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/lotes/lote-1");
+    await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+    await expect(page.getByRole("heading", { level: 1, name: "Lote 1" })).toBeVisible();
+    const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+  });
+}
+
 // La barra inferior y la hoja Más del celular: con la hoja cerrada y abierta, con y sin sesión, en los dos idiomas y los dos temas.
 for (const idioma of ["es", "en"] as const) {
   for (const tema of ["oscuro", "claro"] as const) {

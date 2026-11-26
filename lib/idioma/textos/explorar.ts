@@ -35,6 +35,44 @@ const es = {
     titulo: G.lotes.es,
     intro: "Cada lote con su superficie y su estado. Tocá uno para ver su ficha, sus derechos y sus costos.",
   },
+  // Lista y mapa de lotes (spec ux-explorar). Los números llegan por parámetro desde el loteo: nunca se escriben acá.
+  lista: {
+    resumen: (total: number, disponibles: number) => `${total} lotes · ${disponibles} disponibles`,
+    filtroEstado: "Filtrar por estado",
+    orden: "Ordenar por",
+    ordenes: { numero: "Número", superficie: "Superficie, de menor a mayor", "superficie-desc": "Superficie, de mayor a menor" },
+    sinResultados: "Ningún lote tiene ese estado.",
+    verLista: "Ver lista",
+    verMapa: "Ver mapa",
+    asa: "Subir o bajar la lista de lotes",
+    cantidad: (n: number) => `Mostrando ${n} lotes`,
+    precioEjemplo: (monto: string) => `desde ${monto} · ejemplo`,
+    sinSuperficie: "Superficie: sin dato",
+    elegido: "Lote elegido",
+    verElLote: "Ver el lote",
+    cerrarTarjeta: "Cerrar",
+  },
+  mapaLotes: {
+    aria: (disponibles: number, reservados: number, vendidos: number) =>
+      `Mapa de los lotes del sector norte: ${disponibles} disponibles, ${reservados} reservados y ${vendidos} vendidos. La selección se hace desde la lista.`,
+    leyenda: "Leyenda del mapa",
+    disponible: "Disponible: relleno liso",
+    reservado: "Reservado: borde de trazos",
+    vendido: "Vendido: borde de puntos",
+  },
+  territorioLotes: {
+    ver: (n: number) => `Ver los ${n} lotes`,
+    leyendaCompleta: "Ver la leyenda completa",
+    leyendaCompacta: "Leyenda",
+  },
+  ficha: {
+    indicadores: "Datos del lote",
+    superficie: "Superficie",
+    estado: "Estado",
+    precio: "Precio de ejemplo",
+    cuotas: "En cuotas",
+    cuotasSi: "Sí, simulado",
+  },
 };
 
 const en: Textos<typeof es> = {
@@ -64,6 +102,43 @@ const en: Textos<typeof es> = {
   lotes: {
     titulo: G.lotes.en,
     intro: "Each lot with its area and state. Tap one to see its page, its rights and its costs.",
+  },
+  lista: {
+    resumen: (total: number, disponibles: number) => `${total} lots · ${disponibles} available`,
+    filtroEstado: "Filter by state",
+    orden: "Sort by",
+    ordenes: { numero: "Number", superficie: "Area, smallest first", "superficie-desc": "Area, largest first" },
+    sinResultados: "No lot has that state.",
+    verLista: "Show list",
+    verMapa: "Show map",
+    asa: "Raise or lower the lot list",
+    cantidad: (n: number) => `Showing ${n} lots`,
+    precioEjemplo: (monto: string) => `from ${monto} · example`,
+    sinSuperficie: "Area: no data",
+    elegido: "Selected lot",
+    verElLote: "See the lot",
+    cerrarTarjeta: "Close",
+  },
+  mapaLotes: {
+    aria: (disponibles: number, reservados: number, vendidos: number) =>
+      `Map of the northern sector lots: ${disponibles} available, ${reservados} reserved and ${vendidos} sold. Selection is done from the list.`,
+    leyenda: "Map legend",
+    disponible: "Available: solid fill",
+    reservado: "Reserved: dashed border",
+    vendido: "Sold: dotted border",
+  },
+  territorioLotes: {
+    ver: (n: number) => `See the ${n} lots`,
+    leyendaCompleta: "See the full legend",
+    leyendaCompacta: "Legend",
+  },
+  ficha: {
+    indicadores: "Lot data",
+    superficie: "Area",
+    estado: "State",
+    precio: "Example price",
+    cuotas: "In installments",
+    cuotasSi: "Yes, simulated",
   },
 };
 

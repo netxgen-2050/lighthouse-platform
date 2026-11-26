@@ -160,7 +160,7 @@ test("celular 390 x 844: la barra inferior trae los cinco destinos y Más; tocar
   const mas = barra.getByRole("button", { name: "Más", exact: true });
   expect((await mas.boundingBox())!.height).toBeGreaterThanOrEqual(48);
   await barra.getByRole("link", { name: "Explorar" }).click();
-  await expect(page).toHaveURL(/\/explorar$/);
+  await expect(page).toHaveURL(/\/explorar\/territorio$/);
   await expect(barra.getByRole("link", { name: "Explorar" })).toHaveAttribute("aria-current", "page");
   await expect(barra.locator('[aria-current="page"]')).toHaveCount(1);
 });

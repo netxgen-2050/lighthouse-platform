@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { AvisoEjemplo } from "@/components/aviso-ejemplo";
-import { EnEspanol } from "@/components/en-espanol";
-import { EstadoAdministrativo } from "@/components/estado-administrativo";
+import { EstadosAdministrativos } from "@/components/estados-administrativos";
 import { PanelVidrio } from "@/components/ui/panel-vidrio";
 import { NivelTitulos } from "@/components/ui/titulo";
 import { VitrinaTerritorio } from "@/app/territorios/[id]/vitrina-territorio";
@@ -40,19 +39,13 @@ export default async function ExplorarTerritorioPage() {
         </div>
       )}
       <AvisoEjemplo />
-      <div className="grid gap-1">
-        {/* El estado administrativo (Ord. 173) tiene peso legal: sigue en español, marcado, hasta `idioma-legal`. */}
-        <EnEspanol>
-          <EstadoAdministrativo proyecto="soluna" />
-        </EnEspanol>
-        <EstadoAdministrativo proyecto="lighthouse-primeros" idioma={idioma} />
-        <EstadoAdministrativo proyecto="lighthouse-norte" idioma={idioma} />
-      </div>
-      <PanelVidrio className="min-w-0">
+      {/* El estado administrativo (Ord. 173) tiene peso legal: el de Soluna sigue en español, marcado, hasta `idioma-legal`. */}
+      <EstadosAdministrativos proyectos={["soluna", "lighthouse-primeros", "lighthouse-norte"]} idioma={idioma} />
+      <div className="min-w-0">
         <NivelTitulos nivel={3}>
           <VitrinaTerritorio />
         </NivelTitulos>
-      </PanelVidrio>
+      </div>
       {bienesComunes.length > 0 && (
         <PanelVidrio como="div" className="grid content-start gap-2">
           <h3 className="text-xl font-bold">{tt.bienesComunes}</h3>

@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { HeroeValle } from "@/components/explorar/heroe-valle";
 import { PestanasExplorar } from "@/components/explorar/pestanas-explorar";
-import { SelloPrototipo } from "@/components/ui/sello-prototipo";
 import { idiomaDelPedido } from "@/lib/idioma/servidor";
 import { textos } from "@/lib/idioma/textos";
 
@@ -14,7 +13,6 @@ export default async function ExplorarLayout({ children }: { children: ReactNode
   return (
     <div className="min-h-full">
       <HeroeValle leyenda={textos("portada", idioma).leyendaImagen}>
-        <SelloPrototipo variante="venta" />
         <div className="grid gap-3">
           <p className="font-mono text-sm uppercase text-ink">{t.sobretitulo}</p>
           <h1 className="text-4xl font-bold sm:text-5xl">{t.titulo}</h1>
@@ -24,7 +22,8 @@ export default async function ExplorarLayout({ children }: { children: ReactNode
 
       <PestanasExplorar />
 
-      <div className="mx-auto grid max-w-5xl gap-14 px-6 py-10 sm:px-10">{children}</div>
+      {/* Ancho para lista y mapa; Territorio y Barrio Norte se limitan solos (`max-w-5xl`). */}
+      <div className="mx-auto grid max-w-[88rem] gap-14 px-4 py-8 sm:px-8 sm:py-10">{children}</div>
     </div>
   );
 }
