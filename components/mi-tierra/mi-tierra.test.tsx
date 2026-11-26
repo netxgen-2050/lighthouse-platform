@@ -76,8 +76,11 @@ describe("EncabezadoMiTierra", () => {
     const primero = lotesDelGrupo("primeros").find((l) => estadoDeLote(l.id) === "disponible")!;
     const c = { ...compra(false, primero.id), vio: { ...compra(false).vio, plan: undefined, faro: undefined, precio: precioLote(primero.superficieM2) } } as CompraLote;
     const h = renderToStaticMarkup(<EncabezadoMiTierra portafolio={armarPortafolio([c], SIN_ADHESION)} />);
-    expect(h).toContain("Todavía no pagaste ninguna cuota");
+    expect(h).toContain("Todavía no hiciste ningún pago");
+    expect(h).not.toContain("cuota");
     expect(h).toContain("Hacer el primer pago (simulado)");
+    expect(textos("miTierra", "en").encabezado.sinPagosSinCuotas).toBe("You have not made any payment yet");
+    expect(textos("miTierra", "en").encabezado.sinPagosSinCuotas).not.toMatch(/instalment/i);
   });
 });
 

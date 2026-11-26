@@ -41,7 +41,7 @@ export function EncabezadoMiTierra({ portafolio }: { portafolio: Portafolio }) {
         >
           {totales.pagado === null ? comunes.sinDato : usdEn(totales.pagado, idioma)}
         </p>
-        {sinPagos && <p className="text-sm text-muted">{t.sinPagos}</p>}
+        {sinPagos && <p className="text-sm text-muted">{lotes.some((l) => l.plan.tipo === "cuotas") ? t.sinPagos : t.sinPagosSinCuotas}</p>}
       </div>
       <div className="grid max-w-xl gap-1">
         {totales.fraccionPagada !== null && totales.totalPlanes !== null && (
