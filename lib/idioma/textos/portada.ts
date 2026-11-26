@@ -39,7 +39,7 @@ const es = {
   notaImagen: "Imagen ilustrativa de la Zona A (memoria técnica de Martín): no es una fotografía ni un plano.",
   recomendado: "Recomendado para vos",
   /** Va seguido del ⚖ de `sinretorno`. */
-  sobreRetorno: "Sobre el retorno",
+  sobreRetorno: "Sin promesa de retorno",
   caminos: {
     vivir: {
       etiqueta: "Quiero vivir ahí",
@@ -102,7 +102,7 @@ const en: Textos<typeof es> = {
   leyendaImagen: "Illustrative image",
   notaImagen: "Illustrative image of Zone A (Martín's technical report): it is neither a photograph nor a plan.",
   recomendado: "Recommended for you",
-  sobreRetorno: "About returns",
+  sobreRetorno: "No promise of return",
   // Inglés de los tres caminos: pendiente de revisión nativa, como el resto.
   caminos: {
     vivir: {

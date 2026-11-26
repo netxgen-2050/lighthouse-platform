@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "./fixtura";
 import { tribusDeTerritorio } from "@/lib/territorios/datos";
+import { esperarHidratacion } from "./ayudas";
 
 // La portada no depende del plan: sin sembrar Sumarte, "lh-origen" es el único dato de la persona y los tests que miran
 // cuándo se lee (la importación de datos previos revisa los nombres en orden) no se adelantan por otra clave.
@@ -61,7 +62,7 @@ test("las tarjetas se recorren con Tab y Enter en la segunda lleva a Invertir", 
     await expect(enlace).toHaveCSS("outline-style", "solid");
     await expect(enlace).toHaveCSS("outline-width", "2px");
     if (i < CAMINOS.length - 1) await page.keyboard.press("Tab");
-    // Entre el segundo y el tercero está el ⚖ "Sobre el retorno" del camino de invertir.
+    // Entre el segundo y el tercero está el ⚖ "Sin promesa de retorno" del camino de invertir.
     if (i === 1) await page.keyboard.press("Tab");
   }
   await page.keyboard.press("Shift+Tab");
@@ -282,6 +283,7 @@ test("la imagen de fondo es decorativa y se aclara que es ilustrativa", async ({
 test("el camino de invertir lleva su ⚖ de 'sin promesa de retorno' fuera del enlace", async ({ page }) => {
   await page.goto("/");
   const seccion = page.getByRole("region", { name: "Por dónde empezar" });
+  await expect(seccion.getByText("Sin promesa de retorno")).toBeVisible();
   await expect(seccion.getByRole("button", { name: /Sin promesa de retorno/ })).toBeVisible();
   await expect(seccion.getByRole("link").getByRole("button")).toHaveCount(0);
 });
@@ -291,6 +293,8 @@ test("a 1440 px la fila de capitales no es una parada de Tab", async ({ page }) 
   await page.goto("/");
   const fila = page.getByRole("region", { name: "Los cinco capitales de la regeneración" }).locator("ul");
   await expect(fila).toBeVisible();
+  // El HTML del servidor nunca trae tabindex: se espera a que la página esté hidratada para que la medición ya haya corrido.
+  await esperarHidratacion(page);
   await expect(fila).not.toHaveAttribute("tabindex", /.*/);
 });
 
@@ -315,6 +319,8 @@ test("en el celular los capitales van en una fila con scroll horizontal y el sig
   await page.goto("/");
   const fila = page.getByRole("region", { name: "Los cinco capitales de la regeneración" }).locator("ul");
   expect(await fila.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+  // Con scroll, la fila se alcanza con el teclado (tras hidratar).
+  await expect(fila).toHaveAttribute("tabindex", "0");
   const segundo = await fila.locator("li").nth(1).boundingBox();
   expect(segundo && segundo.x < 390).toBe(true);
 });
