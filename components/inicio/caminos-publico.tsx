@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import type { Camino } from "@/lib/portada";
 import { DibujoCuidar, DibujoInvertir, DibujoVivir } from "./dibujos";
 
@@ -15,12 +16,15 @@ export function CaminosPublico({
   caminos,
   recomendadoId,
   textoRecomendado,
+  legal = {},
 }: {
   idTitulo: string;
   titulo: string;
   caminos: Camino[];
   recomendadoId?: string;
   textoRecomendado: string;
+  /** Aviso legal (texto + ⚖) de un camino. Va debajo de la tarjeta, no adentro: un botón dentro de un enlace no es válido. */
+  legal?: Partial<Record<Camino["id"], ReactNode>>;
 }) {
   return (
     <section aria-labelledby={idTitulo} className="mx-auto grid max-w-5xl gap-6 px-6 pb-12 sm:px-10">
@@ -32,7 +36,7 @@ export function CaminosPublico({
           const Dibujo = DIBUJOS[c.id];
           const recomendado = c.id === recomendadoId;
           return (
-            <li key={c.id} className="grid">
+            <li key={c.id} className="grid content-start gap-2">
               <Link
                 href={c.href}
                 className={`grid content-start gap-2 rounded-xl bg-surface text-ink hover:border-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep ${
@@ -50,6 +54,7 @@ export function CaminosPublico({
                 <span className="text-sm text-muted">{c.descripcion}</span>
                 <span className="mt-1 font-medium text-deep-2 underline">{c.accion}</span>
               </Link>
+              {legal[c.id] && <p className="text-sm text-muted">{legal[c.id]}</p>}
             </li>
           );
         })}

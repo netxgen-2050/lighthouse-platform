@@ -63,6 +63,13 @@ export default async function Home({ searchParams }: Props) {
         caminos={caminos}
         recomendadoId={recomendado?.id}
         textoRecomendado={t.recomendado}
+        legal={{
+          invertir: (
+            <>
+              {t.sobreRetorno} <TerminoLegal clave="sinretorno" idioma={idioma} />
+            </>
+          ),
+        }}
       />
       <FranjaCifras
         titulo={t.cifras.titulo}

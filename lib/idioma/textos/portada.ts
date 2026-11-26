@@ -38,6 +38,8 @@ const es = {
   leyendaImagen: "Imagen ilustrativa",
   notaImagen: "Imagen ilustrativa de la Zona A (memoria técnica de Martín): no es una fotografía ni un plano.",
   recomendado: "Recomendado para vos",
+  /** Va seguido del ⚖ de `sinretorno`. */
+  sobreRetorno: "Sobre el retorno",
   caminos: {
     vivir: {
       etiqueta: "Quiero vivir ahí",
@@ -48,7 +50,7 @@ const es = {
     invertir: {
       etiqueta: "Quiero invertir",
       titulo: "¿Qué financio y cómo me devuelven?",
-      descripcion: "Qué se financia y cómo se reparte, con números de ejemplo. No es una promesa de retorno.",
+      descripcion: "Qué se financia y cómo se reparte, con números de ejemplo.",
       accion: "Ver cómo invertir",
     },
     cuidar: {
@@ -100,6 +102,7 @@ const en: Textos<typeof es> = {
   leyendaImagen: "Illustrative image",
   notaImagen: "Illustrative image of Zone A (Martín's technical report): it is neither a photograph nor a plan.",
   recomendado: "Recommended for you",
+  sobreRetorno: "About returns",
   // Inglés de los tres caminos: pendiente de revisión nativa, como el resto.
   caminos: {
     vivir: {
@@ -111,7 +114,7 @@ const en: Textos<typeof es> = {
     invertir: {
       etiqueta: "I want to invest",
       titulo: "What do I fund and how am I paid back?",
-      descripcion: "What gets funded and how it is shared, with sample numbers. It is not a promise of return.",
+      descripcion: "What gets funded and how it is shared, with sample numbers.",
       accion: "See how to invest",
     },
     cuidar: {

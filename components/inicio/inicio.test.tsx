@@ -53,7 +53,8 @@ describe("franja de capitales", () => {
     const capitales = ["natural", "humano", "social", "construido", "financiero"].map((id) => ({ id, nombre: id, texto: "t" }));
     const html = renderToStaticMarkup(<FranjaCapitales titulo="Capitales" etiquetaFuente="Fuente" fuente="FUENTE" capitales={capitales} />);
     expect(html).toContain("snap-x");
-    expect(html).toContain('tabindex="0"');
+    // Sin medir todavía (servidor) no es una parada de Tab; el foco se activa solo si la fila se desplaza.
+    expect(html).not.toContain("tabindex");
     expect(html.match(/<h3/g)).toHaveLength(5);
     expect(html.match(/<svg[^>]*aria-hidden="true"/g)).toHaveLength(5);
     expect(html.indexOf("FUENTE")).toBeGreaterThan(html.lastIndexOf("</ul>"));

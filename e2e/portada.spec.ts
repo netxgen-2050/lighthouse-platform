@@ -61,7 +61,10 @@ test("las tarjetas se recorren con Tab y Enter en la segunda lleva a Invertir", 
     await expect(enlace).toHaveCSS("outline-style", "solid");
     await expect(enlace).toHaveCSS("outline-width", "2px");
     if (i < CAMINOS.length - 1) await page.keyboard.press("Tab");
+    // Entre el segundo y el tercero está el ⚖ "Sobre el retorno" del camino de invertir.
+    if (i === 1) await page.keyboard.press("Tab");
   }
+  await page.keyboard.press("Shift+Tab");
   await page.keyboard.press("Shift+Tab");
   await page.keyboard.press("Shift+Tab");
   await expect(enlaces.nth(0)).toBeFocused();
@@ -274,6 +277,21 @@ test("la imagen de fondo es decorativa y se aclara que es ilustrativa", async ({
   const imagen = page.locator('img[src*="lighthouse-valle"]');
   await expect(imagen).toHaveAttribute("alt", "");
   await expect(page.getByText(/Imagen ilustrativa de la Zona A/)).toBeVisible();
+});
+
+test("el camino de invertir lleva su ⚖ de 'sin promesa de retorno' fuera del enlace", async ({ page }) => {
+  await page.goto("/");
+  const seccion = page.getByRole("region", { name: "Por dónde empezar" });
+  await expect(seccion.getByRole("button", { name: /Sin promesa de retorno/ })).toBeVisible();
+  await expect(seccion.getByRole("link").getByRole("button")).toHaveCount(0);
+});
+
+test("a 1440 px la fila de capitales no es una parada de Tab", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const fila = page.getByRole("region", { name: "Los cinco capitales de la regeneración" }).locator("ul");
+  await expect(fila).toBeVisible();
+  await expect(fila).not.toHaveAttribute("tabindex", /.*/);
 });
 
 test("los dibujos de las franjas y los caminos son decorativos", async ({ page }) => {

@@ -5,7 +5,7 @@ import { CLASE_DESVANECIDO_DEL_HEROE, CLASE_FONDO_DEL_TEXTO_DEL_HEROE } from "./
 /**
  * Foto del valle a sangre dentro del área de contenido (el layout no pone padding al `<main>`), con el contenido directo encima,
  * sin caja translúcida. La foto es decorativa (`alt=""`); una franja superior sin texto la desvanece hacia el color de fondo del tema y
- * todo el bloque de texto lleva ese color al 80 %, así el contraste se sostiene en los dos temas con cualquier alto de contenido.
+ * todo el bloque de texto lleva ese color al 92 %, así el contraste se sostiene en los dos temas con cualquier alto de contenido.
  * La leyenda "Imagen ilustrativa" lleva su propio fondo. Sin parallax ni animación.
  */
 export function HeroeValle({ leyenda, children, alto = false }: { leyenda: string; children: ReactNode; alto?: boolean }) {
