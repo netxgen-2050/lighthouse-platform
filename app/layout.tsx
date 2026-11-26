@@ -9,6 +9,7 @@ import { SCRIPT_APARIENCIA } from "@/lib/configuracion/script-apariencia";
 import { BloqueFijo } from "@/components/bloque-fijo";
 import { Pie }from "@/components/pie";
 import { CintaPrototipo } from "@/components/ui/cinta-prototipo";
+import { MarcaHidratada } from "@/components/marca-hidratada";
 import { BarraInferior } from "@/components/barra-inferior";
 import { FormularioReporte } from "@/components/boton-reportar";
 import { Hifa } from "@/components/hifa/hifa";
@@ -61,6 +62,7 @@ export default async function RootLayout({
         <ProveedorIdioma idioma={idioma}>
           <ProveedorSesion>
             <SincronizarIdioma />
+            <MarcaHidratada />
             <SoloConConsentimiento>
               <AplicarPreferencias />
             </SoloConConsentimiento>

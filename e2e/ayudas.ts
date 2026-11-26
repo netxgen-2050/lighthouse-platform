@@ -125,3 +125,8 @@ export function ignorarEnSinRed(r: { url(): string; method(): string }): boolean
 export async function relojDeLasConsultas(page: Page) {
   await page.clock.setFixedTime(new Date("2026-11-10T15:00:00Z"));
 }
+
+/** Espera a que React termine de hidratar (el layout pone `data-hidratado` en `<html>`): antes de eso un toque no hace nada. */
+export async function esperarHidratacion(page: Page) {
+  await page.locator("html[data-hidratado]").waitFor({ state: "attached" });
+}

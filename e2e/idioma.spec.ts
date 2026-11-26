@@ -1,6 +1,7 @@
 import { RUTAS_TRADUCIDAS } from "@/lib/idioma/rutas";
 import { expect, test, type Page } from "./fixtura";
 import { textosEnEspanol } from "./ayudas-idioma";
+import { esperarHidratacion } from "./ayudas";
 
 const html = (page: Page) => page.locator("html");
 const barra = (page: Page) => page.getByRole("banner");
@@ -14,22 +15,36 @@ async function abrirSelector(page: Page) {
   const avatar = barra(page).getByRole("button", { name: "Menú de la persona" });
   const opciones = barra(page).getByRole("button", { name: /^(Más opciones|More options)$/ });
   const grupo = selector(page);
+  await esperarHidratacion(page);
   if (await grupo.isVisible()) return grupo;
   // Con sesión hay avatar, sin sesión "Más opciones": se espera al que llegue y se hace clic en ese.
   // Se reintenta entero: un clic antes de que termine de hidratar o de leerse la sesión no deja el menú abierto.
   await expect(async () => {
-    if (!(await grupo.isVisible())) await avatar.or(opciones).click({ timeout: 2000 });
-    await expect(grupo).toBeVisible({ timeout: 1000 });
+    if (!(await grupo.isVisible())) await avatar.or(opciones).click({ timeout: 10_000 });
+    await expect(grupo).toBeVisible({ timeout: 2000 });
   }).toPass();
   return grupo;
+}
+
+/**
+ * Elige un idioma con clic en su enlace y espera a que la página cambie. Si el enlace se vuelve a dibujar justo al hacer
+ * clic (la sesión llega y el menú se redibuja), reabre el menú y repite.
+ */
+async function elegirIdioma(page: Page, enlace: "EN · English" | "ES · Español", lang: "en" | "es") {
+  await expect(async () => {
+    await abrirSelector(page);
+    await selector(page).getByRole("link", { name: enlace }).click({ timeout: 3000 });
+    await expect(html(page)).toHaveAttribute("lang", lang, { timeout: 3000 });
+  }).toPass();
 }
 
 /** Abre la hoja Más del celular; se reintenta porque un toque antes de hidratar no la abre. */
 async function abrirMas(page: Page, navegacion: string, nombre: string) {
   const hoja = page.getByRole("dialog", { name: nombre });
+  await esperarHidratacion(page);
   await expect(async () => {
-    if (!(await hoja.isVisible())) await page.getByRole("navigation", { name: navegacion }).getByRole("button", { name: nombre, exact: true }).click({ timeout: 2000 });
-    await expect(hoja).toBeVisible({ timeout: 1000 });
+    if (!(await hoja.isVisible())) await page.getByRole("navigation", { name: navegacion }).getByRole("button", { name: nombre, exact: true }).click({ timeout: 10_000 });
+    await expect(hoja).toBeVisible({ timeout: 2000 });
   }).toPass();
 }
 const cookieIdioma =async (page: Page) => (await page.context().cookies()).find((c) => c.name === "lh-idioma")?.value;
@@ -169,8 +184,10 @@ test.describe("sin cuenta", () => {
       const hoja = page.getByRole("dialog", { name: "More" });
       await expect(hoja.getByRole("group", { name: "Idioma · Language" })).toBeVisible();
       await expect(hoja.getByRole("button", { name: "Sign in" })).toBeVisible();
-      await page.keyboard.press("Escape");
-      await expect(hoja).toHaveCount(0);
+      await expect(async () => {
+        if (await hoja.isVisible()) await page.keyboard.press("Escape");
+        await expect(hoja).toHaveCount(0, { timeout: 1500 });
+      }).toPass();
       const caja = (await barra(page).boundingBox())!;
       expect(caja.height).toBeLessThanOrEqual(56);
       expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), `desborde en ${ruta}`).toBe(false);
@@ -321,9 +338,7 @@ test("(g) lo elegido en el navegador gana y se guarda en la persona", async ({ p
 
 test("(g) elegir el idioma con sesión lo guarda en las preferencias de la persona", async ({ page }) => {
   await page.goto("/tribus");
-  await abrirSelector(page);
-  await selector(page).getByRole("link", { name: "EN · English" }).click();
-  await expect(html(page)).toHaveAttribute("lang", "en");
+  await elegirIdioma(page, "EN · English", "en");
   await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-configuracion"))).toContain('"idiomaElegido":"en"');
 });
 
