@@ -1,7 +1,9 @@
-import { SUBTARJETA, TARJETA } from "./estilos";
+import { CAJA, SEPARADOR } from "./estilos";
 
 // Los dos carriles y los tres puentes, en HTML: dos secciones con sus nodos en listas y los puentes como una lista ordenada
 // entre ambas, cada uno con "de → a" dicho en texto. Las flechas son decorativas. En pantallas angostas se apila.
+// Una sola capa de cajas: cada carril y cada puente es una caja; lo que lleva adentro se separa con una línea.
+// El título y la introducción de la sección los pone la página (`Seccion`).
 export type NodoDiagrama = { id: string; nombre: string; texto: string };
 export type CarrilDiagrama = { titulo: string; bajada: string; nodos: NodoDiagrama[] };
 export type PuenteDiagrama = {
@@ -13,8 +15,6 @@ export type PuenteDiagrama = {
 };
 
 export type PropsDiagrama = {
-  titulo: string;
-  intro: string;
   carrilA: CarrilDiagrama;
   carrilB: CarrilDiagrama;
   puentesTitulo: string;
@@ -25,14 +25,14 @@ export type PropsDiagrama = {
 
 function Carril({ carril, id }: { carril: CarrilDiagrama; id: string }) {
   return (
-    <section aria-labelledby={id} className={TARJETA}>
+    <section aria-labelledby={id} className={`${CAJA} gap-3`}>
       <h3 id={id} className="text-lg font-semibold">
         {carril.titulo}
       </h3>
-      <p className="text-sm text-muted">{carril.bajada}</p>
-      <ul className="grid gap-2">
+      <p className="text-muted">{carril.bajada}</p>
+      <ul className="grid gap-3">
         {carril.nodos.map((n) => (
-          <li key={n.id} className={SUBTARJETA}>
+          <li key={n.id} className={`grid gap-1 ${SEPARADOR}`}>
             <strong>{n.nombre}</strong>
             <span>{n.texto}</span>
           </li>
@@ -44,22 +44,18 @@ function Carril({ carril, id }: { carril: CarrilDiagrama; id: string }) {
 
 export function DiagramaCarriles(p: PropsDiagrama) {
   return (
-    <section aria-labelledby="h-carriles" className="grid gap-3">
-      <h2 id="h-carriles" className="text-xl font-semibold">
-        {p.titulo}
-      </h2>
-      <p className="max-w-3xl text-sm">{p.intro}</p>
-      <div className="grid gap-3 md:grid-cols-2">
+    <div className="grid gap-6">
+      <div className="grid gap-4 md:grid-cols-2">
         <Carril carril={p.carrilA} id="h-carril-a" />
         <Carril carril={p.carrilB} id="h-carril-b" />
       </div>
-      <section aria-labelledby="h-puentes" className={TARJETA}>
+      <section aria-labelledby="h-puentes" className="grid gap-3">
         <h3 id="h-puentes" className="text-lg font-semibold">
           {p.puentesTitulo}
         </h3>
-        <ol className="grid gap-2 md:grid-cols-3">
+        <ol className="grid gap-4 md:grid-cols-3">
           {p.puentes.map((b) => (
-            <li key={b.id} className={SUBTARJETA}>
+            <li key={b.id} className={CAJA}>
               <strong>{b.nombre}</strong>
               <span>{b.texto}</span>
               <span className="font-medium">
@@ -72,6 +68,6 @@ export function DiagramaCarriles(p: PropsDiagrama) {
           ))}
         </ol>
       </section>
-    </section>
+    </div>
   );
 }

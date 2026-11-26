@@ -667,6 +667,22 @@ for (const [ruta, campo] of [
   });
 }
 
+// /bien-comun con índice y secciones plegables (ux-bien-comun): cerradas y abiertas, claro y oscuro, a 390 y 1440 px.
+for (const ancho of [390, 1440] as const) {
+  for (const tema of ["claro", "oscuro"] as const) {
+    test(`axe sin violaciones serias o críticas: /bien-comun a ${ancho} px, tema ${tema}, secciones cerradas y abiertas`, async ({ page }) => {
+      await page.setViewportSize({ width: ancho, height: 900 });
+      await page.goto("/bien-comun");
+      await esperarHidratacion(page);
+      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+      await expect(page.getByLabel("Precio del lote (USD)")).toBeVisible();
+      expect(await graves(page), "cerradas").toEqual([]);
+      await page.evaluate(() => document.querySelectorAll("details").forEach((d) => (d.open = true)));
+      expect(await graves(page), "abiertas").toEqual([]);
+    });
+  }
+}
+
 test("axe sin violaciones serias o críticas: la ficha de un lote en la reserva, el pago simulado y el boleto, en español y en inglés", async ({ page }) => {
   for (const [ruta, reservar, pagar, confirmar, leido] of [
     ["/lotes/lote-1", "Reservar (simulado)", "Simular el primer pago (anticipo)", "Confirmar el primer pago simulado", "Leí lo que comparto y lo que me comprometo a pagar"],
