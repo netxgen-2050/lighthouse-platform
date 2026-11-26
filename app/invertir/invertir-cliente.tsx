@@ -118,8 +118,8 @@ function Barrio({ b }: { b: BarrioEnFinanciamiento }) {
       </Aviso>
 
       <div className="grid gap-4">
-        <Pestanas aria={t.pestanas.etiqueta} items={items} actual={pestana} onCambio={elegir} />
-        <div role="tabpanel" id={`panel-${pestana}`} aria-labelledby={`pestana-${pestana}`} className="grid gap-3">
+        <Pestanas aria={t.pestanas.etiqueta} items={items} actual={pestana} onCambio={elegir} prefijo={`${b.id}-`} />
+        <div role="tabpanel" id={`${b.id}-panel-${pestana}`} aria-labelledby={`${b.id}-pestana-${pestana}`} className="grid gap-3">
           {pestana === "como" && (
             <>
               <ul className="grid max-w-3xl list-disc gap-1 pl-5">

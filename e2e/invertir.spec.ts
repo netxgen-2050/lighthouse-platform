@@ -115,8 +115,12 @@ test("libro: 8 filas, 'Ver todo' muestra todas y el filtro 'Va al común' deja s
 test("con sesión: enlaza a /bien-comun y nunca habla de rendimiento", async ({ page }) => {
   await page.goto("/invertir");
   await expect(page.getByRole("link", { name: "Leer la propuesta del bien común" })).toHaveAttribute("href", "/bien-comun");
-  const texto = await main(page).innerText();
-  expect(texto).not.toMatch(/rendimiento|APY|\bTIR\b|ganancia|recupero|valorizaci/i);
+  for (const ver of ["como", "curva", "libro"]) {
+    await page.goto(`/invertir?ver=${ver}`);
+    await expect(page.getByRole("tab", { selected: true })).toBeVisible();
+    const texto = await main(page).innerText();
+    expect(texto, `pestaña ${ver}`).not.toMatch(/rendimiento|APY|\bTIR\b|ganancia|recupero|valorizaci/i);
+  }
 });
 
 test("el menú trae Invertir y lleva a la página", async ({ page }) => {
