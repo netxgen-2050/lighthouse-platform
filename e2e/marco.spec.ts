@@ -381,6 +381,8 @@ test("Tab en 390 px: Saltar al contenido, la marca, la campanita y el avatar; la
   await expect(page.getByRole("button", { name: "Menú de la persona" })).toBeVisible();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Saltar al contenido" })).toBeFocused();
+  // La campanita llega cuando termina de leerse el consentimiento: se espera antes de seguir con Tab.
+  await expect(page.locator('a[href="/bandeja"]')).toBeVisible();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("banner").getByRole("link", { name: "Lighthouse" })).toBeFocused();
   await page.keyboard.press("Tab");

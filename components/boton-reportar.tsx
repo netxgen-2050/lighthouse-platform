@@ -42,8 +42,9 @@ const boton =
 export const EVENTO_ABRIR_REPORTE = "lh-abrir-reporte";
 
 /** Pide abrir el formulario de reporte (el diálogo vive una sola vez, en el layout). */
-export function abrirReporte() {
-  window.dispatchEvent(new Event(EVENTO_ABRIR_REPORTE));
+export function abrirReporte(origen?: HTMLElement | null) {
+  // `origen` es el botón al que vuelve el foco al cerrar: en Safari y Firefox de macOS un clic no enfoca el botón.
+  window.dispatchEvent(new CustomEvent<HTMLElement | null>(EVENTO_ABRIR_REPORTE, { detail: origen ?? null }));
 }
 
 /**
@@ -85,8 +86,8 @@ export function FormularioReporte({ version, entorno }: { version: string; entor
     });
   }
 
-  function abrir() {
-    origen.current = document.activeElement as HTMLElement | null;
+  function abrir(desde?: HTMLElement | null) {
+    origen.current = desde ?? (document.activeElement as HTMLElement | null);
     // Mientras se envía no se toca nada: reabrir no habilita un segundo envío.
     if (estado.fase === "enviando") {
       dialogo.current?.showModal();
@@ -113,7 +114,7 @@ export function FormularioReporte({ version, entorno }: { version: string; entor
     abrirVigente.current = abrir;
   });
   useEffect(() => {
-    const alPedir = () => abrirVigente.current();
+    const alPedir = (e: Event) => abrirVigente.current((e as CustomEvent<HTMLElement | null>).detail);
     window.addEventListener(EVENTO_ABRIR_REPORTE, alPedir);
     return () => window.removeEventListener(EVENTO_ABRIR_REPORTE, alPedir);
   }, []);

@@ -120,7 +120,7 @@ function HojaModal({ alCerrar, titulo, etiquetaCerrar, children, devolverFoco }:
   }
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-[70]">
       <div aria-hidden="true" className="absolute inset-0 bg-ink/40" onClick={alCerrar} />
       <div
         ref={panel}

@@ -147,6 +147,8 @@ for (const ruta of ["/", "/explorar"]) {
 }
 
 async function graves(page: Page) {
+  // Los botones pasan de un color a otro con una transición al cambiar de tema: axe se mide cuando terminó.
+  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))));
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   return r.violations
     .filter((v) => v.impact === "serious" || v.impact === "critical")

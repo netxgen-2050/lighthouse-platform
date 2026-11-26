@@ -108,7 +108,7 @@ function MenuOpciones() {
           className="absolute right-0 top-full z-50 mt-2 w-52 max-w-[calc(100vw-1rem)] rounded-xl border border-line bg-surface p-2 text-sm text-ink shadow-lg"
         >
           <p className="px-2 pb-1 text-xs text-muted">{t.barra.idioma}</p>
-          <SelectorIdioma variante="lista" />
+          <SelectorIdioma />
         </div>
       )}
     </div>
@@ -217,7 +217,7 @@ function MenuConSesion({ items }: { items: ItemMenu[] }) {
             })}
             <li className="border-t border-line pt-1">
               <p className="px-2 pb-1 text-xs text-muted">{t.barra.idioma}</p>
-              <SelectorIdioma variante="lista" />
+              <SelectorIdioma />
             </li>
             <li className="border-t border-line pt-1">
               <button

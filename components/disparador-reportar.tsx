@@ -16,7 +16,7 @@ export function DisparadorReportar() {
       <Boton
         variante="texto"
         tamano="s"
-        onClick={abrirReporte}
+        onClick={(e) => abrirReporte(e.currentTarget)}
         aria-label="Reportar un problema o una idea"
         lang={idioma === "en" ? "es" : undefined}
       >

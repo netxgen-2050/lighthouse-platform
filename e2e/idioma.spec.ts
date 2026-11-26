@@ -133,6 +133,20 @@ test.describe("sin cuenta", () => {
     await expect(page.getByText("This page is only available in Spanish for now.")).toHaveCount(0);
   });
 
+  test("(h) cambiar a inglés en el celular: Más, English, y sigue en inglés al recargar", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/participa");
+    await expect(html(page)).toHaveAttribute("lang", "es");
+    await page.getByRole("navigation", { name: "Principal" }).getByRole("button", { name: "Más", exact: true }).click();
+    await page.getByRole("dialog", { name: "Más" }).getByRole("link", { name: "EN · English" }).click();
+    await expect(html(page)).toHaveAttribute("lang", "en");
+    expect(await cookieIdioma(page)).toBe("en");
+    await page.reload();
+    await expect(html(page)).toHaveAttribute("lang", "en");
+    await page.getByRole("navigation", { name: "Main" }).getByRole("button", { name: "More", exact: true }).click();
+    await expect(page.getByRole("dialog", { name: "More" }).getByRole("link", { name: "EN · English" })).toHaveAttribute("aria-current", "true");
+  });
+
   test("(h) 390 px en inglés: sin desborde, la barra muestra Join y la hoja More trae Sign in y el selector", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     for (const ruta of ["/", "/tribus", "/sumarte"]) {
@@ -199,14 +213,12 @@ test.describe("el Congreso", () => {
     // el enlace sigue su href y pierde query y ancla, como sin JavaScript).
     await abrirSelector(page);
     await expect(selector(page).getByRole("link", { name: "EN · English" })).toHaveAttribute("href", /utm_source=x/);
-    // El Congreso tiene su propia barra pegada arriba, que tapa el menú: se activa con el teclado (el Congreso trae su selector).
-    await selector(page).getByRole("link", { name: "EN · English" }).focus();
-    await page.keyboard.press("Enter");
+    // La barra pegada del Congreso no tapa el menú de la barra superior: el clic llega.
+    await selector(page).getByRole("link", { name: "EN · English" }).click();
     await expect(page).toHaveURL(/\/congreso\/en\?utm_source=x#tribus$/);
     await abrirSelector(page);
     await expect(selector(page).getByRole("link", { name: "ES · Español" })).toHaveAttribute("href", /utm_source=x/);
-    await selector(page).getByRole("link", { name: "ES · Español" }).focus();
-    await page.keyboard.press("Enter");
+    await selector(page).getByRole("link", { name: "ES · Español" }).click();
     await expect(page).toHaveURL(/\/congreso\?utm_source=x#tribus$/);
   });
 });

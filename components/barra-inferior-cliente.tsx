@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bug, Ellipsis } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { useTextos } from "@/lib/idioma/cliente";
 import { puedeCapacidad } from "@/lib/permisos/niveles";
 import { itemActivo } from "@/lib/ruta-activa";
@@ -90,6 +90,7 @@ export function BarraInferiorCliente({ barra, mas, persona, netx, admin, etiquet
           netx={netx}
           admin={verAdmin ? admin : undefined}
           cerrar={() => setAbierta(false)}
+          origen={disparador}
         />
       </Hoja>
     </>
@@ -123,12 +124,15 @@ function ContenidoMas({
   netx,
   admin,
   cerrar,
+  origen,
 }: {
   mas: ItemRail[];
   persona: ItemMenu[];
   netx?: ItemRail;
   admin?: ItemRail;
   cerrar: () => void;
+  /** El botón "Más": a él vuelve el foco al cerrar el formulario de reporte. */
+  origen: RefObject<HTMLElement | null>;
 }) {
   const t = useTextos("marco");
   const ruta = usePathname();
@@ -164,7 +168,7 @@ function ContenidoMas({
       )}
       <div className="border-t border-line pt-2">
         <h3 className="px-3 pb-1 text-sm font-medium text-muted">{t.barra.idioma}</h3>
-        <SelectorIdioma variante="lista" />
+        <SelectorIdioma />
       </div>
       <div className="border-t border-line pt-2">
         <button
@@ -173,8 +177,9 @@ function ContenidoMas({
           className={`${FILA} w-full text-left`}
           onClick={() => {
             cerrar();
-            // Tras cerrar la hoja el foco vuelve a "Más" y de ahí lo toma el formulario para devolverlo al cerrar.
-            window.setTimeout(abrirReporte, 0);
+            // El foco del formulario vuelve a "Más" (no a document.activeElement, que en Safari y Firefox de macOS puede ser body).
+            const desde = origen.current;
+            window.setTimeout(() => abrirReporte(desde), 0);
           }}
         >
           <Bug aria-hidden="true" size={20} />

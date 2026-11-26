@@ -20,7 +20,9 @@ export function BloqueFijo({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div ref={ref} className="sticky top-0 z-30">
+    // z-55: por encima de la barra pegada del Congreso (z-50), que si no tapa los menús desplegables de la barra superior.
+    // La hoja modal (z-70) y su fondo quedan por encima de todo.
+    <div ref={ref} className="sticky top-0 z-[55]">
       {children}
     </div>
   );

@@ -23,12 +23,12 @@ const FOCO = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visib
 
 /**
  * Selector ES / EN, para todos (con y sin cuenta). Desde ux-celular ya no está fijo en la barra superior: vive en el menú del
- * avatar, en el menú "Más opciones" sin sesión, en la hoja Más (variante `lista`, filas de 44 px) y en Configuración. Son dos enlaces con `?lang=` (funcionan sin
+ * avatar, en el menú "Más opciones" sin sesión, en la hoja Más (lista de filas de 44 px) y en Configuración. Son dos enlaces con `?lang=` (funcionan sin
  * JavaScript y en otra pestaña). Con un clic normal cambia el idioma sin recargar la página; con Ctrl, Cmd o clic medio
  * queda el enlace. El actual lleva `aria-current` y se distingue con subrayado y peso, no solo con color. El nombre del
  * grupo está en los dos idiomas a propósito: quien no entiende uno tiene que poder encontrarlo.
  */
-export function SelectorIdioma({ variante = "barra" }: { variante?: "barra" | "lista" }) {
+export function SelectorIdioma() {
   const idioma = useIdiomaDePlataforma();
   const ruta = usePathname();
   const cambiar = useCambiarIdioma();
@@ -56,7 +56,6 @@ export function SelectorIdioma({ variante = "barra" }: { variante?: "barra" | "l
     cambiar(destino, nueva);
   }
 
-  const lista = variante === "lista";
   return (
     <div
       role="group"
@@ -64,7 +63,7 @@ export function SelectorIdioma({ variante = "barra" }: { variante?: "barra" | "l
       // Otras partes de la página cambian la query sin cambiar la ruta (`history.replaceState`): se relee al acercarse.
       onPointerEnter={() => setResto(restoDeLaQuery(window.location.search))}
       onFocus={() => setResto(restoDeLaQuery(window.location.search))}
-      className={lista ? "flex flex-col gap-1 text-base" : "flex items-center rounded-full border border-muted text-sm"}
+      className="flex flex-col gap-1 text-base"
     >
       {OPCIONES.map((o) => {
         const actual = o.idioma === idioma;
@@ -76,18 +75,12 @@ export function SelectorIdioma({ variante = "barra" }: { variante?: "barra" | "l
             hrefLang={o.idioma}
             aria-current={actual ? "true" : undefined}
             onClick={(e) => elegir(e, o.idioma)}
-            className={
-              lista
-                ? `flex min-h-11 items-center justify-between gap-2 rounded-[var(--radius-s)] px-3 ${FOCO} ${
-                    actual ? "bg-surface-2 font-bold" : "hover:bg-surface-2"
-                  }`
-                : `flex h-8 items-center px-2.5 first:rounded-l-full last:rounded-r-full ${FOCO} ${
-                    actual ? "bg-deep font-bold text-on-deep underline underline-offset-2" : "hover:bg-surface-2"
-                  }`
-            }
+            className={`flex min-h-11 items-center justify-between gap-2 rounded-[var(--radius-s)] px-3 ${FOCO} ${
+              actual ? "bg-surface-2 font-bold" : "hover:bg-surface-2"
+            }`}
           >
-            <span aria-hidden="true">{lista ? o.largo : o.corto}</span>
-            {lista && actual && <Check aria-hidden="true" size={18} />}
+            <span aria-hidden="true">{o.largo}</span>
+            {actual && <Check aria-hidden="true" size={18} />}
             <span className="sr-only">
               {o.corto} · {o.largo}
             </span>
