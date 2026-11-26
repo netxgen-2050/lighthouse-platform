@@ -20,7 +20,6 @@ export function CintaPrototipo() {
   const venta = esRutaDeVenta(usePathname());
   return (
     <p
-      role="note"
       data-cinta-prototipo
       className="flex flex-wrap items-center justify-center gap-x-2 bg-ink px-3 py-1 text-center text-xs text-bg"
     >

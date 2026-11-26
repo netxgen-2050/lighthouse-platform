@@ -383,7 +383,8 @@ test("las fuentes del mock-up se aplican (texto y títulos)", async ({ page }) =
   const familia = (selector: string) =>
     page.locator(selector).first().evaluate((el) => getComputedStyle(el).fontFamily);
   expect(await familia("h1")).toContain("Fraunces");
-  expect(await familia("main p")).toContain("Inter Tight");
+  // El primer `p` es el sobretítulo (mono): se mide un párrafo de contenido.
+  expect(await familia("main p:not([class*='font-mono'])")).toContain("Inter Tight");
 });
 
 test("la tabla tipo libro no genera scroll horizontal de la página a 390 x 844", async ({ page }) => {

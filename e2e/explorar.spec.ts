@@ -49,8 +49,13 @@ test.describe("sin sesión", () => {
     await expect(barra.getByRole("link", { name: "Territorio" })).not.toHaveAttribute("aria-current", "location");
     await expect(page.locator("#lotes")).toBeInViewport();
     // La barra queda pegada al bajar.
-    const arriba = await barra.evaluate((el) => el.getBoundingClientRect().top);
-    expect(arriba).toBeLessThan(60);
+    // (justo debajo del bloque fijo: cinta + barra superior, alto real en --alto-fijo)
+    const { arriba, fijo } = await barra.evaluate((el) => ({
+      arriba: el.getBoundingClientRect().top,
+      fijo: parseFloat(document.documentElement.style.getPropertyValue("--alto-fijo")),
+    }));
+    expect(fijo).toBeGreaterThan(0);
+    expect(arriba).toBeCloseTo(fijo, 0);
     await barra.getByRole("link", { name: "Barrio Norte" }).click();
     await expect(barra.getByRole("link", { name: "Barrio Norte" })).toHaveAttribute("aria-current", "location");
   });

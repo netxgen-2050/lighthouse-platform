@@ -45,7 +45,7 @@ describe("CintaPrototipo", () => {
   test("general: solo el aviso de prototipo", () => {
     ruta.actual = "/mi-recorrido";
     const h = html(<CintaPrototipo />);
-    expect(h).toContain('role="note"');
+    expect(h).not.toContain('role="note"');
     expect(h).toContain("Prototipo interno · datos de ejemplo");
     expect(h).not.toContain("aprobación municipal");
   });

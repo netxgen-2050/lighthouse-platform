@@ -8,11 +8,10 @@ export function AvisoSinTraducir() {
   return (
     <Aviso
       tono="info"
-      lang="en"
       // La pantalla de "no encontrado" sí está traducida (lleva `data-no-encontrada`): ahí el aviso sobra.
       className="has-[+div_[data-no-encontrada]]:hidden mx-6 mt-4 w-fit sm:mx-10"
     >
-      This page is only available in Spanish for now.
+      <span lang="en">This page is only available in Spanish for now.</span>
     </Aviso>
   );
 }

@@ -115,8 +115,8 @@ test.describe("⚖ como tooltip, posición y accesibilidad", () => {
     await page.evaluate(() => {
       document.body.style.paddingBottom = "2000px";
     });
-    // Justo debajo de la barra superior fija (48 px): arriba no hay lugar para el tooltip.
-    await boton.evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - 52));
+    // Justo debajo del bloque fijo (cinta + barra, alto en --alto-fijo): arriba no hay lugar para el tooltip.
+    await boton.evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - (parseFloat(document.documentElement.style.getPropertyValue("--alto-fijo")) + 4)));
     await boton.hover();
     const tooltip = page.getByRole("tooltip");
     await expect(tooltip).toBeVisible();
@@ -135,7 +135,7 @@ test.describe("⚖ como tooltip, posición y accesibilidad", () => {
     await page.evaluate(() => {
       document.body.style.paddingBottom = "2000px";
     });
-    await boton.evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - 52));
+    await boton.evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - (parseFloat(document.documentElement.style.getPropertyValue("--alto-fijo")) + 4)));
     await boton.hover();
     await expect(page.getByRole("tooltip")).toBeVisible();
     const tapado = await page.getByRole("button", { name: PERSONERIA }).evaluate((el) => {
