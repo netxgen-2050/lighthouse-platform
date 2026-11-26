@@ -85,9 +85,35 @@ test.describe("sin sesión", () => {
 test("con sesión y sin compras: 'Todavía no reservaste un lote' y el enlace a los lotes, sin indicadores", async ({ page }) => {
   await page.goto("/mi-tierra");
   await expect(page.getByRole("heading", { name: "Todavía no reservaste un lote" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Ver los lotes" })).toHaveAttribute("href", "/explorar#lotes");
+  // `/explorar#lotes` hasta que llegue `/explorar/lotes` a esta base (ver RUTA_LOTES en mi-tierra-cliente.tsx).
+  await expect(page.getByRole("link", { name: "Explorar los lotes" })).toHaveAttribute("href", "/explorar#lotes");
+  await expect(main(page).getByText("Así se va a ver")).toBeVisible();
+  await expect(main(page).getByText("ejemplo").first()).toBeVisible();
   await expect(main(page)).not.toContainText("Lotes tuyos");
   await expect(main(page)).not.toContainText("venta simulada");
+});
+
+test("con un lote pagado: número principal, posiciones, filtro de actividad y sin rendimientos", async ({ page }) => {
+  await sembrar(page, {
+    loteId: lote.id,
+    opcion: "solo-lote",
+    paso: "pagado",
+    reservadoEl: "2026-11-20T12:00:00.000Z",
+    pagadoEl: "2026-11-21T12:00:00.000Z",
+    vio: vioDe(lote, true),
+  });
+  await page.goto("/mi-tierra");
+  await expect(page.locator("[data-numero-principal]")).toContainText(usd(plan.anticipo));
+  await expect(main(page)).toContainText(`0 de ${CUOTAS} cuotas pagadas`);
+  const pos = page.locator("#mt-posiciones");
+  await expect(pos.getByRole("link", { name: new RegExp(`Lote ${lote.numero}`) })).toHaveAttribute("href", `/lotes/${lote.id}`);
+  await expect(pos).toContainText("FARO");
+  await page.getByRole("button", { name: "Pagos", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Pagos", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("table").locator("tbody tr")).toHaveCount(1);
+  await page.getByRole("button", { name: "Reservas" }).click();
+  await expect(page.getByRole("table").locator("tbody tr")).toHaveCount(1);
+  expect(await main(page).innerText()).not.toMatch(/rendimiento|APY|ganancia/i);
 });
 
 test("el menú trae Mi tierra y lleva a la página", async ({ page }) => {
@@ -100,8 +126,10 @@ test("reservar desde la ficha: aparece 'Reservado' con 'falta el primer pago' y 
   await reservarYPagar(page, false);
   await page.goto("/mi-tierra");
   await expect(page.getByRole("heading", { level: 3, name: `Lote ${lote.numero}` })).toBeVisible();
-  await expect(main(page).locator('[data-estado="reservado"]')).toBeVisible();
-  await expect(main(page).locator('[data-estado="reservado"]')).toContainText("Reservado");
+  // El chip sale en el encabezado y en el detalle del lote.
+  await expect(main(page).locator('[data-estado="reservado"]')).toHaveCount(2);
+  await expect(main(page).locator('[data-estado="reservado"]').first()).toContainText("Reservado");
+  await expect(page.locator("[data-numero-principal]")).toContainText("USD 0");
   await expect(main(page)).toContainText(usd(precioLote(lote.superficieM2)!));
   await expect(main(page)).toContainText("Falta el primer pago.");
   await expect(main(page)).toContainText("Todavía no se acreditó FARO: falta el primer pago");
@@ -113,7 +141,7 @@ test("pagar el anticipo en 24 cuotas: 0 de 24, anticipo, cuota, FARO acreditados
   expect(CUOTAS).toBe(24);
   await reservarYPagar(page, true);
   await page.goto("/mi-tierra");
-  const tarjeta = page.getByRole("listitem").filter({ hasText: `Lote ${lote.numero}` }).first();
+  const tarjeta = page.locator("#mt-detalle").getByRole("listitem").filter({ hasText: `Lote ${lote.numero}` }).first();
   await expect(tarjeta.locator('[data-estado="enCuotas"]')).toContainText("En cuotas");
   await expect(tarjeta).toContainText(`0 de ${CUOTAS} cuotas`);
   await expect(tarjeta).toContainText(usd(plan.anticipo));
@@ -143,7 +171,7 @@ test("los primeros 4 lotes no entran al plan y no muestran FARO", async ({ page 
     vio: vioDe(primero, false),
   });
   await page.goto("/mi-tierra");
-  const tarjeta = page.getByRole("listitem").filter({ hasText: `Lote ${primero.numero}` }).first();
+  const tarjeta = page.locator("#mt-detalle").getByRole("listitem").filter({ hasText: `Lote ${primero.numero}` }).first();
   await expect(tarjeta).toContainText("Este lote no entra al plan en cuotas.");
   await expect(tarjeta).toContainText("Este lote no trae FARO.");
   await expect(tarjeta).not.toContainText("Todavía no se acreditó FARO");
@@ -161,7 +189,7 @@ test("una reserva vieja sin plan dice 'sin dato' y la página no falla", async (
     vio: { precio: null, aporte: null, expensa: null, version: "v0.0-vieja" },
   });
   await page.goto("/mi-tierra");
-  const tarjeta = page.getByRole("listitem").filter({ hasText: `Lote ${lote.numero}` }).first();
+  const tarjeta = page.locator("#mt-detalle").getByRole("listitem").filter({ hasText: `Lote ${lote.numero}` }).first();
   await expect(tarjeta).toContainText("No quedó guardado qué plan viste al reservar: sin dato.");
   await expect(tarjeta).toContainText("Modelo v0.0-vieja");
   await expect(tarjeta).toContainText("sin dato");
