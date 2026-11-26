@@ -10,6 +10,11 @@ export function cierraAlArrastrar(dy: number): boolean {
   return dy > UMBRAL_CIERRE;
 }
 
+/** Estado siguiente de la hoja persistente: acepta un valor o una función del valor actual (el que manda es el de afuera si la controlan). */
+export function siguienteExpansion(actual: boolean, v: boolean | ((e: boolean) => boolean)): boolean {
+  return typeof v === "function" ? v(actual) : v;
+}
+
 const FOCALIZABLES =
   'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -160,7 +165,7 @@ function HojaPersistente({ titulo, children, etiquetaAsa = titulo, expandida: ex
   const [propia, setPropia] = useState(false);
   const expandida = expandidaFuera ?? propia;
   const setExpandida = (v: boolean | ((e: boolean) => boolean)) => {
-    const nuevo = typeof v === "function" ? v(expandida) : v;
+    const nuevo = siguienteExpansion(expandida, v);
     setPropia(nuevo);
     alExpandir?.(nuevo);
   };

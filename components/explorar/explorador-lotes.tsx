@@ -25,15 +25,16 @@ import type { EstadoLote } from "@/lib/territorios/loteo-estados";
 
 const CONSULTA_COMPU = "(min-width: 768px)";
 
-function useEsCompu(): boolean {
-  return useSyncExternalStore(
+/** null = todavía no se sabe (servidor e hidratación): no se arma ninguna de las dos vistas ni se carga el mapa. */
+function useEsCompu(): boolean | null {
+  return useSyncExternalStore<boolean | null>(
     (avisar) => {
       const m = window.matchMedia(CONSULTA_COMPU);
       m.addEventListener("change", avisar);
       return () => m.removeEventListener("change", avisar);
     },
     () => window.matchMedia(CONSULTA_COMPU).matches,
-    () => true,
+    () => null,
   );
 }
 
@@ -84,8 +85,12 @@ export function ExploradorLotes({ encabezado, legal }: { encabezado: ReactNode; 
   }
 
   function cambiar(nuevo: FiltroLotes) {
+    // Si el filtro deja afuera al lote elegido, se suelta la selección (si no, quedaría resaltado y con su tarjeta flotante).
+    const sigue = seleccion !== null && aplicarFiltro(todos, nuevo).some((l) => l.lote.id === seleccion);
+    const sel = sigue ? seleccion : null;
     setFiltro(nuevo);
-    escribirUrl(nuevo, seleccion);
+    if (sel !== seleccion) setSeleccion(sel);
+    escribirUrl(nuevo, sel);
   }
 
   function alternarEstado(e: EstadoLote) {
@@ -149,6 +154,17 @@ export function ExploradorLotes({ encabezado, legal }: { encabezado: ReactNode; 
     <MapaLotes seleccion={seleccion} alElegir={elegir} visibles={visibles} elegido={elegido} conteo={conteo} />
   );
 
+  if (esCompu === null) {
+    // Servidor e hidratación: el encabezado y el bloque legal ya salen en el HTML; el mapa llega cuando se sabe el tamaño de pantalla.
+    return (
+      <div className="grid gap-4">
+        {encabezado}
+        {legal}
+        <div className="min-h-80" aria-hidden="true" />
+      </div>
+    );
+  }
+
   if (!esCompu) {
     return (
       <div className="grid gap-3">
@@ -166,11 +182,15 @@ export function ExploradorLotes({ encabezado, legal }: { encabezado: ReactNode; 
         >
           <div className="grid gap-4 pb-6">
             {legal}
-            {controles}
-            {tarjetas}
+            {/* En reposo la hoja deja ver ~2rem: filtros y tarjetas no se recorren con Tab hasta que se abre. */}
+            <div className="grid gap-4" inert={!hojaAbierta}>
+              {controles}
+              {tarjetas}
+            </div>
           </div>
         </Hoja>
-        <div className="relative h-[calc(100dvh-var(--alto-fijo,4.5rem)-var(--alto-barra-inferior)-3rem)] min-h-80">
+        {/* Se descuentan los 7rem de la hoja en reposo (max-h-28) para que la tarjeta flotante no quede tapada. */}
+        <div className="relative h-[calc(100dvh-var(--alto-fijo,4.5rem)-var(--alto-barra-inferior)-7rem)] min-h-80">
           {mapa}
           <div className="absolute right-3 top-3 z-10">
             <Boton variante="secundario" tamano="s" aria-expanded={hojaAbierta} onClick={() => setHojaAbierta((a) => !a)}>

@@ -79,6 +79,9 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase, classNam
       sellos.current.get(ultima.current)?.classList.remove("mapa-sello-elegido");
     }
     ultima.current = id;
+    // El mapa es un canvas: estos atributos son lo único que ven los tests e2e del resaltado.
+    if (id) contenedor.current?.setAttribute("data-elegido", id);
+    else contenedor.current?.removeAttribute("data-elegido");
     if (!id) return;
     sellos.current.get(id)?.classList.add("mapa-sello-elegido");
     const nueva = capas.current.get(id);
@@ -321,11 +324,14 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase, classNam
   const visiblesRef = useRef(lotesVisibles);
   visiblesRef.current = lotesVisibles;
   const aplicarFiltro = () => {
+    let atenuados = 0;
     for (const [id, c] of capas.current) {
       if (!id.startsWith("lote-")) continue;
       const entra = !visiblesRef.current || visiblesRef.current.has(id);
+      if (!entra) atenuados++;
       c.capa.setStyle(entra ? c.base : { ...c.base, fillOpacity: 0.04, opacity: 0.35 });
     }
+    contenedor.current?.setAttribute("data-atenuados", String(atenuados));
     if (ultima.current) {
       const e = capas.current.get(ultima.current);
       if (e) e.capa.setStyle(estiloElegido(e.base, ultima.current.startsWith("lote-")));

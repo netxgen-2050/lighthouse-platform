@@ -77,9 +77,19 @@ export function LeyendaLotes() {
   const t = useTextos("explorar").mapaLotes;
   return (
     <ul aria-label={t.leyenda} className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted">
-      <li>● {t.disponible}</li>
-      <li>◐ {t.reservado}</li>
-      <li>✕ {t.vendido}</li>
+      {(
+        [
+          ["border-solid", t.disponible],
+          ["border-dashed", t.reservado],
+          ["border-dotted", t.vendido],
+        ] as const
+      ).map(([borde, texto]) => (
+        <li key={borde} className="flex items-center gap-2">
+          {/* Muestra del borde que dibuja el mapa (liso, de trazos, de puntos); el texto ya dice el estado. */}
+          <span aria-hidden="true" className={`inline-block h-3 w-6 rounded-sm border-2 border-ink ${borde}`} />
+          {texto}
+        </li>
+      ))}
     </ul>
   );
 }

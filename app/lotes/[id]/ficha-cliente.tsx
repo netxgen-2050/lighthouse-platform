@@ -401,7 +401,7 @@ export function FichaCliente({ id }: { id: string }) {
       {/* Acción principal: en el celular queda fija abajo, encima de la barra inferior (con tope de alto y scroll propio). */}
       <section
         aria-labelledby="ficha-acciones"
-        className={`${TARJETA} sticky bottom-[var(--alto-barra-inferior)] z-20 max-h-[45dvh] overflow-y-auto shadow-[var(--sombra-2)] sm:static sm:max-h-none sm:overflow-visible sm:shadow-none`}
+        className={`${TARJETA} sticky bottom-[var(--alto-barra-inferior)] z-20 max-h-[45dvh] overflow-y-auto shadow-[var(--sombra-2)] md:static md:max-h-none md:overflow-visible md:shadow-none`}
       >
         <h2 id="ficha-acciones" className="sr-only">
           {t.acciones.titulo}

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, test } from "vitest";
-import { CLASE_DEGRADADO_DEL_HEROE } from "@/components/explorar/heroe-valle-clases";
+import { CLASE_FONDO_DEL_TEXTO_DEL_HEROE } from "@/components/explorar/heroe-valle-clases";
 
 // Lee los tokens de app/globals.css y comprueba el contraste WCAG de los pares que la app usa juntos.
 // Agregá acá cada par nuevo de texto y fondo que empiece a usarse.
@@ -96,11 +96,11 @@ describe.each([
     expect(r, `ink sobre vidrio con ${_n} en el tema ${nombre}: ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
   });
 
-  // Héroe del valle (Inicio y Barrio Norte): el texto va sobre `bg` con la opacidad de CLASE_DEGRADADO_DEL_HEROE, y detrás puede
+  // Héroe del valle (Inicio y Barrio Norte): el texto va sobre `bg` con la opacidad de CLASE_FONDO_DEL_TEXTO_DEL_HEROE (todo el bloque de texto, sin importar su alto), y detrás puede
   // haber cualquier parte de la foto: se mide en el peor caso (toda blanca o toda negra). El título grande usa deep-2 (3:1).
   test.each([["blanco", BLANCO], ["negro", NEGRO]] as const)("texto del héroe del valle sobre la foto %s", (_n, base) => {
-    const m = /via-bg\/(\d+)/.exec(CLASE_DEGRADADO_DEL_HEROE);
-    expect(m, "CLASE_DEGRADADO_DEL_HEROE tiene que traer via-bg/NN").not.toBeNull();
+    const m = /bg-bg\/(\d+)/.exec(CLASE_FONDO_DEL_TEXTO_DEL_HEROE);
+    expect(m, "CLASE_FONDO_DEL_TEXTO_DEL_HEROE tiene que traer bg-bg/NN").not.toBeNull();
     const [r, g, b] = aRgba(t.bg);
     const fondo = mezclar([r, g, b, Number(m![1]) / 100], base);
     const ink = contraste(c("ink"), fondo);

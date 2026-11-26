@@ -66,15 +66,12 @@ const es = {
     leyendaCompacta: "Leyenda",
   },
   ficha: {
-    plano: "Plano del lote",
     indicadores: "Datos del lote",
     superficie: "Superficie",
     estado: "Estado",
     precio: "Precio de ejemplo",
     cuotas: "En cuotas",
     cuotasSi: "Sí, simulado",
-    comunYTuyo: "Qué es tuyo y qué es de todos",
-    costos: "Costos del lote",
   },
 };
 
@@ -136,15 +133,12 @@ const en: Textos<typeof es> = {
     leyendaCompacta: "Legend",
   },
   ficha: {
-    plano: "Lot plan",
     indicadores: "Lot data",
     superficie: "Area",
     estado: "State",
     precio: "Example price",
     cuotas: "In installments",
     cuotasSi: "Yes, simulated",
-    comunYTuyo: "What is yours and what is everyone's",
-    costos: "Lot costs",
   },
 };
 
