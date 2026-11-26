@@ -30,10 +30,30 @@ export function seccionActiva(
   return ids[activa];
 }
 
+// Mientras la página se mueve por orden del índice, ese scroll no cuenta como "la persona movió la página".
+let scrollPropio = false;
+let finScrollPropio: (() => void) | null = null;
+
+function empezarScrollPropio() {
+  finScrollPropio?.();
+  scrollPropio = true;
+  // `scrollend` avisa que terminó; si no hubo nada que scrollear (o el navegador no lo manda), el plazo lo suelta.
+  const plazo = window.setTimeout(() => finScrollPropio?.(), 1500);
+  const fin = () => {
+    scrollPropio = false;
+    window.clearTimeout(plazo);
+    window.removeEventListener("scrollend", fin);
+    finScrollPropio = null;
+  };
+  finScrollPropio = fin;
+  window.addEventListener("scrollend", fin);
+}
+
 /** Despliega la sección plegable que contiene al encabezado (si la hay) y lleva la vista hasta él. */
 export function irASeccion(id: string, enfocar = true) {
   const el = document.getElementById(id);
   if (!el) return;
+  empezarScrollPropio();
   const plegable = el.closest("details");
   if (plegable) plegable.open = true;
   const reducido =
@@ -67,14 +87,15 @@ function useSeccionActiva(items: ItemIndice[]) {
       const alFondo = window.scrollY + alto >= document.documentElement.scrollHeight - 2;
       setActiva(seccionActiva(ids, tops, LINEA_DE_LECTURA, alFondo ? { alto } : undefined));
     };
+    // Cualquier scroll que no pidió el índice (rueda, barra, teclas de scroll, autoscroll, toque) suelta la elegida. Tab, Shift y
+    // demás teclas que no mueven la página no llegan acá: no hay scroll.
     const soltarElegida = () => {
+      if (scrollPropio || !elegida.current) return;
       elegida.current = null;
       calcular();
     };
     calcular();
-    window.addEventListener("wheel", soltarElegida, { passive: true });
-    window.addEventListener("touchmove", soltarElegida, { passive: true });
-    window.addEventListener("keydown", soltarElegida);
+    window.addEventListener("scroll", soltarElegida, { passive: true });
     // Cada vez que un encabezado cruza la línea de lectura se vuelve a calcular.
     const io = new IntersectionObserver(calcular, {
       rootMargin: `-${LINEA_DE_LECTURA}px 0px 0px 0px`,
@@ -87,9 +108,7 @@ function useSeccionActiva(items: ItemIndice[]) {
     return () => {
       io.disconnect();
       ro.disconnect();
-      window.removeEventListener("wheel", soltarElegida);
-      window.removeEventListener("touchmove", soltarElegida);
-      window.removeEventListener("keydown", soltarElegida);
+      window.removeEventListener("scroll", soltarElegida);
     };
   }, [clave]);
   const elegir = (id: string) => {
@@ -199,6 +218,8 @@ export function IndicePaginaMovil({
             activa={activa}
             alElegir={(id) => {
               setActiva(id);
+              // Cerrar la hoja puede mover la página: ese scroll tampoco es de la persona.
+              empezarScrollPropio();
               setAbierta(false);
               // La hoja devuelve el foco al botón al cerrarse: se va a la sección después de eso.
               window.setTimeout(() => irASeccion(id), 60);

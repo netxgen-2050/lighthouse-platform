@@ -26,7 +26,13 @@ const es = {
   // Línea que resume cada sección plegada. Las cantidades llegan por parámetro (salen del módulo o del propio diccionario).
   resumenes: {
     politica: (n: string) => `${n} reglas propuestas, cada una con su origen.`,
-    decisiones: (n: string) => `${n} decisiones abiertas, con la recomendación de Gus.`,
+    // `cuantas` es la cantidad de abiertas (para elegir singular, plural o ninguna); `n` es esa misma cantidad ya formateada.
+    decisiones: (n: string, cuantas: number) =>
+      cuantas === 0
+        ? "No quedan decisiones abiertas."
+        : cuantas === 1
+          ? `${n} decisión abierta, con la recomendación de Gus.`
+          : `${n} decisiones abiertas, con la recomendación de Gus.`,
     cambios: (n: string) => `${n} cosas que salieron del modelo anterior.`,
     ostrom: (n: string) => `${n} principios y cómo los tomaría el diseño.`,
     parcelas: "Huertas, bosques, talleres, cocinas, vías y escuela: no son tokens ni se venden.",
@@ -344,7 +350,12 @@ const en: Textos<typeof es> = {
   indice: { titulo: "On this page", cerrar: "Close" },
   resumenes: {
     politica: (n: string) => `${n} proposed rules, each one with its origin.`,
-    decisiones: (n: string) => `${n} open decisions, with Gus's recommendation.`,
+    decisiones: (n: string, cuantas: number) =>
+      cuantas === 0
+        ? "No open decisions are left."
+        : cuantas === 1
+          ? `${n} open decision, with Gus's recommendation.`
+          : `${n} open decisions, with Gus's recommendation.`,
     cambios: (n: string) => `${n} things that left the previous model.`,
     ostrom: (n: string) => `${n} principles and how the design would take them.`,
     parcelas: "Gardens, forests, workshops, kitchens, roads and school: they are not tokens and are not sold.",

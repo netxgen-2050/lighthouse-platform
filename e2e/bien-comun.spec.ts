@@ -255,6 +255,28 @@ test.describe("sin sesión", () => {
     await expect(indice.getByRole("link", { name: "NFT del lote" })).toHaveAttribute("aria-current", "location");
   });
 
+  test("compu: Tab no suelta la sección elegida, pero scrollear sí", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(RUTA);
+    await esperarHidratacion(page);
+    const indice = page.getByRole("navigation", { name: "En esta página" });
+    const nft = indice.getByRole("link", { name: "NFT del lote" });
+    await nft.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#h-nft")).toBeInViewport();
+    await page.waitForTimeout(1600);
+    await expect(nft).toHaveAttribute("aria-current", "location");
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Shift+Tab");
+    await page.waitForTimeout(300);
+    await expect(nft).toHaveAttribute("aria-current", "location");
+    // Scrollear con la rueda (o arrastrar la barra) vuelve a seguir lo que se lee.
+    await page.mouse.move(700, 450);
+    await page.mouse.wheel(0, -3000);
+    await expect(nft).not.toHaveAttribute("aria-current", "location");
+    await expect(indice.locator('[aria-current="location"]')).toHaveCount(1);
+  });
+
   test("un ancla mal formada no rompe la página", async ({ page }) => {
     await page.goto(`${RUTA}#%E0`);
     await esperarHidratacion(page);

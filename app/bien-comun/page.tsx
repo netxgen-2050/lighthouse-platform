@@ -54,7 +54,8 @@ export default async function BienComunPage() {
   const meses = enteroEn(POLITICA.transferencia.revisionMeses, idioma);
   // Las cantidades salen del módulo, nunca del diccionario.
   const cantidadDecisiones = enteroEn(DECISIONES.length, idioma);
-  const cantidadAbiertas = enteroEn(DECISIONES.filter((d) => d.estado === "abierta").length, idioma);
+  const abiertas = DECISIONES.filter((d) => d.estado === "abierta").length;
+  const cantidadAbiertas = enteroEn(abiertas, idioma);
   const cantidadReglas = enteroEn(Object.keys(POLITICA).length, idioma);
   const cantidadCambios = enteroEn(CAMBIOS_DESDE_V_ANTERIOR.ids.length, idioma);
   const cantidadPrincipios = enteroEn(t.ostrom.filas.length, idioma);
@@ -231,7 +232,7 @@ export default async function BienComunPage() {
           <SeccionBarrio partida={ENTRADAS_DE_PARTIDA} />
 
           <div className="mt-8 sm:mt-12">
-            <SeccionPlegable id="h-decisiones" titulo={t.decisiones.titulo} resumen={t.resumenes.decisiones(cantidadAbiertas)}>
+            <SeccionPlegable id="h-decisiones" titulo={t.decisiones.titulo} resumen={t.resumenes.decisiones(cantidadAbiertas, abiertas)}>
               <p className={LECTURA}>{t.decisiones.intro(cantidadDecisiones)}</p>
               <TablaDecisiones
                 caption={t.decisiones.caption(cantidadDecisiones)}
