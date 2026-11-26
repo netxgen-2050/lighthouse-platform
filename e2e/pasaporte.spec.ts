@@ -47,7 +47,7 @@ test("una persona nueva: Explorador/a obtenido con fecha y los demás con su bot
 });
 
 test("cada sello dice qué abre: el Pase Fundador abre canal de fundadores, voz en el Fondo Común y créditos", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
   await page.getByRole("button", { name: "Quiero el Pase Brote" }).click();
   await page.goto("/pasaporte");
   const f = sello(page, "fundador");

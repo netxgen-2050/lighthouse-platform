@@ -175,16 +175,17 @@ test("ocultar a Hifa: el botón desaparece en todas las páginas y vuelve al pre
 });
 
 test("moneda ARS: /sumarte muestra los precios en pesos con la nota del tipo de cambio de ejemplo", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
   await expect(page.getByText("USD 1.500").first()).toBeVisible();
   await expect(page.getByText("Tipo de cambio de ejemplo")).toHaveCount(0);
   await page.goto("/configuracion");
   await page.getByRole("radio", { name: /Pesos argentinos/ }).check();
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
   await expect(page.getByText("ARS 2.100.000").first()).toBeVisible();
-  await expect(page.getByRole("article", { name: /Miembro de la red/ })).toContainText("ARS 140.000/año");
   await expect(page.getByText(/Tipo de cambio de ejemplo: 1 USD = 1\.400 ARS/)).toBeVisible();
   await expect(page.getByText("USD 1.500")).toHaveCount(0);
+  await page.getByRole("radio", { name: "Miembro", exact: true }).check({ force: true });
+  await expect(page.getByRole("article", { name: /Miembro de la red/ })).toContainText("ARS 140.000/año");
 });
 
 test("moneda ARS: /pactos muestra el aporte registrado en pesos con la nota", async ({ page }) => {

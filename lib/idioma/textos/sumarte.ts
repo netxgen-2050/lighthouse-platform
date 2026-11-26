@@ -17,6 +17,25 @@ const es = {
     intro:
       "Sumarte es la puerta de entrada: cómo te sumás define qué podés hacer. Explorar es gratis. La membresía te abre las salas y los pactos. El Pase Fundador sostiene el Fondo Común del Lighthouse y te da influencia y créditos. Comprar un lote e invertir son otros caminos: están más abajo. Valores de ejemplo, a re-ajustar. Nada se cobra de verdad: todo lo que elijas acá es simulado y queda solo en este navegador.",
   },
+  /** Los tres caminos de arriba (ux-sumarte): cada uno lleva a la parte de la página que le corresponde. */
+  caminos: {
+    titulo: "¿Qué querés hacer?",
+    vivir: { etiqueta: "Quiero vivir", titulo: "Comprar un lote", texto: "Lotes de ejemplo en Lighthouse VRN." },
+    invertir: { etiqueta: "Quiero invertir", titulo: "Invertir", texto: "Otro camino, con otros documentos." },
+    cuidar: { etiqueta: "Quiero cuidar el bien común", titulo: "Elegir un plan", texto: "Cuatro planes, uno por vez." },
+  },
+  /** Selector de planes (ux-sumarte). */
+  selector: {
+    grupo: "Plan",
+    planes: "Planes",
+    explorador: "Explorador",
+    miembro: "Miembro",
+    fundador: "Fundador",
+    comunidad: "Comunidad",
+    queIncluye: "Qué incluye y qué no",
+  },
+  /** Cajón del modo de prueba, al final de la página. */
+  modoPrueba: { titulo: "Modo de prueba" },
   /** Avisos de qué plan habilita una página o una acción (`lib/permisos/niveles.ts`). */
   avisos: {
     rutas: {
@@ -231,6 +250,22 @@ const en: Textos<typeof es> = {
     intro:
       "Joining is the way in: how you join defines what you can do. Exploring is free. Membership opens the rooms and the pacts. The Founder Pass supports the Lighthouse Common Fund and gives you influence and credits. Buying a lot and investing are different paths: they're further down. Sample values, to be re-tuned. Nothing is really charged: everything you choose here is simulated and stays only in this browser.",
   },
+  caminos: {
+    titulo: "What do you want to do?",
+    vivir: { etiqueta: "I want to live", titulo: "Buy a lot", texto: "Sample lots at Lighthouse VRN." },
+    invertir: { etiqueta: "I want to invest", titulo: "Invest", texto: "A different path, with different documents." },
+    cuidar: { etiqueta: "I want to look after the common good", titulo: "Choose a plan", texto: "Four plans, one at a time." },
+  },
+  selector: {
+    grupo: "Plan",
+    planes: "Plans",
+    explorador: "Explorer",
+    miembro: "Member",
+    fundador: "Founder",
+    comunidad: "Community",
+    queIncluye: "What's included and what's not",
+  },
+  modoPrueba: { titulo: "Test mode" },
   avisos: {
     rutas: {
       pactos: G.pactos.en,

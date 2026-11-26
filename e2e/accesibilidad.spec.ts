@@ -711,7 +711,7 @@ test.describe("pasos previos al login (consentimiento-alta)", () => {
   test.use({ rol: "ninguno", consentimiento: "ninguno" });
 
   test("axe sin violaciones serias o críticas: Crear tu cuenta y Entrar, abiertos y con el error a la vista", async ({ page }) => {
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=explorador");
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
     const alta = page.getByRole("dialog", { name: "Crear tu cuenta" });
     await expect(alta).toBeVisible();

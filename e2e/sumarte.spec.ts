@@ -10,16 +10,26 @@ test("muestra título, aviso de prototipo, cuatro planes y la tabla", async ({ p
   expect(respuesta?.status()).toBe(200);
   await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
   await expect(page.getByText("Prototipo interno · datos de ejemplo")).toBeVisible();
-  for (const plan of ["Explorador", "Miembro de la red", "Pase Fundador", "Plan Comunidad"]) {
-    await expect(page.getByRole("heading", { level: 2, name: new RegExp(`^${plan}`) })).toBeVisible();
+  const selector = page.getByRole("radiogroup", { name: "Plan" });
+  await expect(selector.getByRole("radio")).toHaveCount(4);
+  for (const plan of ["Explorador", "Miembro", "Fundador", "Comunidad"]) {
+    await expect(selector.getByRole("radio", { name: plan, exact: true })).toBeAttached();
   }
+  // Un plan por vez: por defecto Miembro.
+  await expect(selector.getByRole("radio", { name: "Miembro", exact: true })).toBeChecked();
+  await expect(page.getByRole("heading", { level: 2, name: /^Miembro de la red/ })).toBeVisible();
+  await expect(page.locator("#planes").getByRole("article")).toHaveCount(1);
   await expect(page.getByRole("heading", { name: "Qué incluye cada plan" })).toBeVisible();
   await expect(page.locator("tbody tr")).toHaveCount(8);
   await expect(page.locator("main")).toHaveCount(1);
 });
 
+/** Elige un plan en el selector (los radios son nativos y quedan ocultos tras la etiqueta). */
+const verPlan = (page: Page, nombre: "Explorador" | "Miembro" | "Fundador" | "Comunidad") =>
+  page.getByRole("radiogroup", { name: "Plan" }).getByRole("radio", { name: nombre, exact: true }).check({ force: true });
+
 test("cambiar a anual / mensual", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=miembro");
   const miembro = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Miembro de la red/ }) });
   await page.getByRole("button", { name: /^Mensual/ }).click();
   await expect(miembro).toContainText("USD 10/mes");
@@ -30,23 +40,28 @@ test("cambiar a anual / mensual", async ({ page }) => {
 });
 
 test("el período aplica a todos los planes periódicos; el pase no cambia", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=miembro");
   const miembro = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Miembro de la red/ }) });
   const tribu = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Plan Comunidad/ }) });
   const pase = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Pase Fundador/ }) });
   await page.getByRole("button", { name: /^Mensual/ }).click();
-  await expect(tribu).toContainText("USD 60/mes");
-  await expect(tribu).not.toContainText("/año");
   await expect(miembro).not.toContainText("/año");
   await expect(miembro).not.toContainText("2 meses gratis");
+  await verPlan(page, "Comunidad");
+  await expect(tribu).toContainText("USD 60/mes");
+  await expect(tribu).not.toContainText("/año");
   await expect(tribu).not.toContainText("2 meses gratis");
+  await verPlan(page, "Fundador");
   await expect(pase).toContainText("pago único · de por vida");
+  await verPlan(page, "Comunidad");
   await page.getByRole("button", { name: /^Anual/ }).click();
   await expect(tribu).toContainText("USD 600/año");
   await expect(tribu).not.toContainText("/mes");
+  await expect(tribu).toContainText("2 meses gratis");
+  await verPlan(page, "Miembro");
   await expect(miembro).not.toContainText("/mes");
   await expect(miembro).toContainText("2 meses gratis");
-  await expect(tribu).toContainText("2 meses gratis");
+  await verPlan(page, "Fundador");
   await expect(pase).toContainText("USD 1.500 · pago único · de por vida");
   // Legible: el texto del pase no es más chico que el de los otros precios (16 px, no 12).
   const tamano = await pase.getByText("pago único · de por vida").evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
@@ -57,11 +72,12 @@ test("moneda en pesos: con Anual los dos precios periódicos se convierten y dic
   await page.addInitScript(() => {
     window.localStorage.setItem("lh-configuracion", JSON.stringify({ moneda: "ARS" }));
   });
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=miembro");
   const miembro = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Miembro de la red/ }) });
   const tribu = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Plan Comunidad/ }) });
   await page.getByRole("button", { name: /^Anual/ }).click();
   await expect(miembro).toContainText("ARS 140.000/año");
+  await verPlan(page, "Comunidad");
   await expect(tribu).toContainText("ARS 840.000/año");
   await expect(tribu).not.toContainText("USD");
   await page.getByRole("button", { name: /^Mensual/ }).click();
@@ -69,7 +85,7 @@ test("moneda en pesos: con Anual los dos precios periódicos se convierten y dic
 });
 
 test("elegir el nivel Raíz cambia precio y créditos", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
   const pase = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Pase Fundador/ }) });
   await pase.getByRole("radio", { name: /Raíz/ }).check({ force: true });
   await expect(pase).toContainText("USD 5.000 · pago único");
@@ -83,7 +99,7 @@ const tarjetaPase = (page: Page) =>
   page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Pase Fundador/ }) });
 
 test("la tarjeta del Pase dice que da influencia en el Fondo Común, con su ⚖, y no nombra fideicomiso, voto ni Ronda 0", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
   const pase = tarjetaPase(page);
   await expect(pase).toContainText("Influencia en el Fondo Común");
   await expect(pase).toContainText(": la distribución de grandes sumas se va a decidir con conviction voting (próximamente)");
@@ -95,7 +111,7 @@ test("la tarjeta del Pase dice que da influencia en el Fondo Común, con su ⚖,
 });
 
 test("la tarjeta del Pase dice que no es una inversión, con su ⚖ en borrador", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
   const pase = tarjetaPase(page);
   await expect(pase).toContainText("No es una inversión: no da tierra, lotes, prioridad ni rendimiento, y no se revende.");
   await pase.getByRole("button", { name: "Qué significa legalmente: No es una inversión" }).click();
@@ -108,11 +124,13 @@ test("valores de ejemplo: el aviso se lee antes de los planes y los precios sigu
   await expect(aviso).toBeVisible();
   await expect(page.getByText(/Nada se cobra de verdad/).first()).toBeVisible();
   const avisoY = (await aviso.boundingBox())!.y;
-  const planesY = (await page.getByRole("heading", { level: 2, name: /^Explorador/ }).boundingBox())!.y;
+  const planesY = (await page.getByRole("heading", { level: 2, name: /^Miembro de la red/ }).boundingBox())!.y;
   expect(avisoY).toBeLessThan(planesY);
   await page.getByRole("button", { name: /^Mensual/ }).click();
   await expect(page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Miembro de la red/ }) })).toContainText("USD 10/mes");
+  await verPlan(page, "Comunidad");
   await expect(page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Plan Comunidad/ }) })).toContainText("USD 60/mes");
+  await verPlan(page, "Fundador");
   for (const nivel of ["Semilla", "Brote", "Raíz"]) {
     await expect(tarjetaPase(page).getByRole("radio", { name: new RegExp(nivel) })).toBeAttached();
   }
@@ -122,14 +140,16 @@ test("valores de ejemplo: el aviso se lee antes de los planes y los precios sigu
 });
 
 test("a dónde va la plata de cada plan", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
   await expect(tarjetaPase(page)).toContainText("Va al Fondo Común del bien común, no a NetX.");
+  await verPlan(page, "Miembro");
   await expect(page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Miembro de la red/ }) })).toContainText("La cobra NetX: es un servicio.");
+  await verPlan(page, "Comunidad");
   await expect(page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Plan Comunidad/ }) })).toContainText("Lo cobra NetX: un servicio que le factura a la comunidad.");
 });
 
 test("planes sin Congreso: ni el Explorador ni la comparativa lo ofrecen y la cohorte no tiene fecha", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=explorador");
   const explorador = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /^Explorador/ }) });
   await expect(explorador).not.toContainText(/Congreso|ticket/i);
   const comparativa = page.getByRole("region", { name: "Qué incluye cada plan" });
@@ -138,6 +158,7 @@ test("planes sin Congreso: ni el Explorador ni la comparativa lo ofrecen y la co
   const fila = comparativa.getByRole("row").filter({ hasText: "Influencia en el Fondo Común (próximamente: conviction voting)" });
   await expect(fila.getByText("Incluido", { exact: true })).toHaveCount(1);
   await expect(fila.getByText("No incluido", { exact: true })).toHaveCount(2);
+  await verPlan(page, "Fundador");
   await expect(tarjetaPase(page)).toContainText("Cohorte Génesis · fecha a definir");
   await expect(tarjetaPase(page)).toContainText("Registro Genesis si venís a un evento de comunidad (a definir)");
   await expect(tarjetaPase(page)).not.toContainText("Feb 2027");
@@ -157,7 +178,7 @@ test.describe("elegir un plan no adhiere", () => {
   test.use({ rol: "persona" });
 
   test("después de activar el Pase, /fogon sigue pidiendo adherir al manifiesto", async ({ page }) => {
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=fundador");
     await page.getByRole("button", { name: "Quiero el Pase Brote" }).click();
     await expect(page.getByText("Pase Brote activo (simulado)")).toBeVisible();
     await page.goto("/fogon");
@@ -272,7 +293,7 @@ test.describe("comprar el Pase", () => {
   test.use({ rol: "persona" });
 
 test("una persona Miembro activa el Pase Brote y pasa a ser Fundadora", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
   await page.getByRole("button", { name: "Menú de la persona" }).click();
   await expect(page.locator("#menu-persona")).toContainText("Nivel: Miembro");
   await page.getByRole("button", { name: "Quiero el Pase Brote" }).click();
@@ -288,13 +309,13 @@ test("una persona Miembro activa el Pase Brote y pasa a ser Fundadora", async ({
 });
 
 test("medidores de la cohorte legibles en texto",async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
   await expect(page.getByText("142 de 300")).toBeVisible();
   await expect(page.getByText("USD 46.000 de USD 75.000")).toBeVisible();
 });
 
 test("activar el pase no hace pedidos de red, sobrevive a la recarga y se deshace", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
   const pedidos: string[] = [];
   // Cualquier fetch/XHR/WebSocket o método que no sea GET cuenta, sea cual sea el dominio (local o preview).
   // Se ignoran los prefetch de enlaces del rail que hace Next (solo ?_rsc=, sin datos propios).
@@ -314,7 +335,9 @@ test("activar el pase no hace pedidos de red, sobrevive a la recarga y se deshac
   expect(pedidos).toEqual([]);
   await page.reload();
   await expect(page.getByText("Pase Brote activo (simulado)")).toBeVisible();
+  await verPlan(page, "Explorador");
   await page.getByRole("button", { name: "Volver a Explorador" }).click();
+  await verPlan(page, "Fundador");
   await expect(page.getByText("Pase Brote activo (simulado)")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Quiero el Pase Brote" })).toBeVisible();
   await page.reload();
@@ -338,11 +361,13 @@ test("pedir invitación (sin medidores) y pedir una charla quedan simulados", as
 });
 
 test("los ⚖ del catálogo están en la pantalla", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
+  await expect(page.getByRole("button", { name: "Qué significa legalmente: Pase Fundador", exact: true })).toBeVisible();
+  await verPlan(page, "Miembro");
+  await expect(page.getByRole("button", { name: "Qué significa legalmente: Membresía de la red", exact: true })).toBeVisible();
+  await verPlan(page, "Comunidad");
+  await expect(page.getByRole("button", { name: "Qué significa legalmente: Plan Comunidad", exact: true })).toBeVisible();
   for (const t of [
-    "Pase Fundador",
-    "Membresía de la red",
-    "Plan Comunidad",
     "Invertir en la empresa",
     "Círculo por invitación",
     "Serie",
@@ -367,6 +392,7 @@ test.describe("en inglés", () => {
     await expect(page.getByRole("link", { name: "See how it works in the NetX View (in Spanish)" })).toBeVisible();
     await expect(page.getByRole("link", { name: "See how NetX is funded in the NetX View (in Spanish)" })).toBeVisible();
     await expect(page.getByText("Sample values, to be re-tuned")).toBeVisible();
+    await page.getByRole("radiogroup", { name: "Plan" }).getByRole("radio", { name: "Founder", exact: true }).check({ force: true });
     await expect(page.getByText("Genesis Cohort · date to be defined")).toBeVisible();
   });
 
@@ -399,14 +425,14 @@ test("almacenamiento bloqueado: avisa", async ({ page }) => {
       throw new DOMException("bloqueado", "SecurityError");
     };
   });
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
   await page.getByRole("button", { name: "Quiero el Pase Brote" }).click();
   await expect(page.getByRole("alert").filter({ hasText: "no permite guardar datos" })).toBeVisible();
   await expect(page.getByText("Pase Brote activo (simulado)")).toHaveCount(0);
 });
 
 test("teclado: se puede activar el pase solo con teclado", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
   const boton = page.getByRole("button", { name: "Quiero el Pase Brote" });
   await boton.focus();
   await page.keyboard.press("Enter");
@@ -414,7 +440,7 @@ test("teclado: se puede activar el pase solo con teclado", async ({ page }) => {
 });
 
 test("teclado: elegir la comunidad con el Plan Comunidad deja el foco en el aviso, que se guarda al recargar", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=comunidad");
   await page.getByRole("button", { name: "Sumar mi comunidad" }).focus();
   await page.keyboard.press("Enter");
   await page.getByRole("radio", { name: /Valle Solar/ }).focus();
@@ -428,7 +454,7 @@ test("teclado: elegir la comunidad con el Plan Comunidad deja el foco en el avis
 });
 
 test("con el pase activo el nivel queda fijo y los datos no se contradicen", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
   const pase = page.getByRole("article").filter({ has: page.getByRole("heading", { name: /Pase Fundador/ }) });
   await page.getByRole("button", { name: "Quiero el Pase Brote" }).click();
   await expect(pase.getByRole("radio", { name: /Raíz/ })).toBeDisabled();
@@ -437,15 +463,48 @@ test("con el pase activo el nivel queda fijo y los datos no se contradicen", asy
 });
 
 test("el botón de facturación elegido lleva una marca además del color", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=miembro");
   await page.getByRole("button", { name: /^Mensual/ }).click();
   await expect(page.getByRole("button", { name: /^Mensual/ })).toContainText("✓");
   await expect(page.getByRole("button", { name: /^Anual/ })).not.toContainText("✓");
 });
 
-test("axe sin violaciones serias o críticas en /sumarte", async ({ page }) => {
+for (const plan of ["explorador", "miembro", "fundador", "comunidad"]) {
+  test(`axe sin violaciones serias o críticas en /sumarte con el plan ${plan}`, async ({ page }) => {
+    await page.goto(`/sumarte?plan=${plan}`);
+    const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+  });
+}
+
+test("el plan elegido queda en la dirección, se conserva al recargar y las flechas cambian de plan", async ({ page }) => {
   await page.goto("/sumarte");
-  const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
-  const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
-  expect(graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+  const radios = page.getByRole("radiogroup", { name: "Plan" });
+  await radios.getByRole("radio", { name: "Miembro", exact: true }).focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(radios.getByRole("radio", { name: "Fundador", exact: true })).toBeChecked();
+  await expect(page).toHaveURL(/plan=fundador/);
+  await expect(page.getByRole("heading", { level: 2, name: /^Pase Fundador/ })).toBeVisible();
+  await page.reload();
+  await expect(radios.getByRole("radio", { name: "Fundador", exact: true })).toBeChecked();
+  await page.keyboard.press("Tab");
+  await radios.getByRole("radio", { name: "Fundador", exact: true }).focus();
+  await page.keyboard.press("ArrowLeft");
+  await expect(page).toHaveURL(/plan=miembro/);
+  // Una dirección con un plan que no existe cae en el de por defecto.
+  await page.goto("/sumarte?plan=inventado");
+  await expect(radios.getByRole("radio", { name: "Miembro", exact: true })).toBeChecked();
+});
+
+test("los tres caminos de arriba llevan a Comprar un lote, Invertir y los planes", async ({ page }) => {
+  await page.goto("/sumarte");
+  const caminos = page.getByRole("region", { name: "¿Qué querés hacer?" });
+  await expect(caminos.getByRole("link")).toHaveCount(3);
+  await caminos.getByRole("link", { name: /Quiero vivir/ }).click();
+  await expect(page).toHaveURL(/#comprar-lote$/);
+  await expect(page.getByRole("heading", { level: 2, name: "Comprar un lote" })).toBeInViewport();
+  await caminos.getByRole("link", { name: /Quiero invertir/ }).click();
+  await expect(page).toHaveURL(/#invertir$/);
+  await expect(page.getByRole("heading", { level: 2, name: "Invertir", exact: true })).toBeInViewport();
 });

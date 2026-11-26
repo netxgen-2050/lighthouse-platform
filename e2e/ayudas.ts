@@ -130,3 +130,16 @@ export async function relojDeLasConsultas(page: Page) {
 export async function esperarHidratacion(page: Page) {
   await page.locator("html[data-hidratado]").waitFor({ state: "attached" });
 }
+
+/**
+ * Abre el cajón "Modo de prueba" de Sumarte (cerrado por defecto) para llegar al panel "Entrar como…". Si ya está abierto
+ * (por ejemplo porque se llegó con `#entrar-como`), no hace nada.
+ */
+export async function abrirModoDePrueba(page: Page) {
+  await esperarHidratacion(page);
+  const cajon = page.locator("details:has(#entrar-como)");
+  const resumen = cajon.locator("summary");
+  await resumen.waitFor({ state: "visible" });
+  if (!(await cajon.evaluate((el) => (el as HTMLDetailsElement).open))) await resumen.click();
+  await page.locator("#entrar-como").waitFor({ state: "visible" });
+}

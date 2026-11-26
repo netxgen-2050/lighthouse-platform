@@ -50,7 +50,7 @@ test("elegir la finca 502 anota la vista compacta, sin expediente ni titular", a
 });
 
 test("abrir el ⚖ Pase Fundador con teclado anota el término", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
   await abrirPaseConTeclado(page);
   await expect.poll(async () => (await leerBitacora(page)).filter((e) => e.clave === "pasefundador").length).toBe(1);
   const [e] = (await leerBitacora(page)).filter((x) => x.clave === "pasefundador");
@@ -60,7 +60,7 @@ test("abrir el ⚖ Pase Fundador con teclado anota el término", async ({ page }
 });
 
 test("abrir el mismo ⚖ varias veces no repite la entrada", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
   const boton = page.getByRole("button", { name: "Qué significa legalmente: Pase Fundador" }).first();
   for (let i = 0; i < 3; i++) {
     await boton.hover();
@@ -74,7 +74,7 @@ test("abrir el mismo ⚖ varias veces no repite la entrada", async ({ page }) =>
 test.describe("con pantalla táctil", () => {
   test.use({ hasTouch: true });
   test("tocar el ⚖ Pase Fundador anota el término", async ({ page }) => {
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=fundador");
     await page.getByRole("button", { name: "Qué significa legalmente: Pase Fundador" }).first().tap();
     await expect(page.getByRole("tooltip").filter({ hasText: "Pase Fundador" })).toBeVisible();
     await expect.poll(async () => (await leerBitacora(page)).filter((e) => e.clave === "pasefundador").length).toBe(1);
