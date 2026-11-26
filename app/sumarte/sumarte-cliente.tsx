@@ -375,7 +375,6 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
           <h2 id="plan-explorador" className="text-xl font-semibold">{t.explorador.nombre}</h2>
           <p className="text-2xl font-bold">{t.explorador.precio}</p>
           {paraQuien(t.selector.paraQuien.explorador)}
-          <p className="text-muted">{t.explorador.descripcion}</p>
           <ul className="list-disc pl-5 text-sm">
             {t.explorador.incluye.map((x) => (
               <li key={x}>{x}</li>
@@ -406,7 +405,6 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
           </p>
           {estado.facturacion === "anual" && <p className="text-sm font-medium">{t.facturacion.dosMesesGratis}</p>}
           {paraQuien(t.selector.paraQuien.miembro)}
-          <p className="text-muted">{t.miembro.descripcion}</p>
           <ul className="list-disc pl-5 text-sm">
             <li>{t.miembro.todoExplorador}</li>
             <li>{t.miembro.salas}</li>
@@ -522,7 +520,6 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
           </p>
           {estado.facturacion === "anual" && <p className="text-sm font-medium">{t.facturacion.dosMesesGratis}</p>}
           {paraQuien(t.selector.paraQuien.comunidad)}
-          <p className="text-muted">{t.tribu.descripcion}</p>
           <ul className="list-disc pl-5 text-sm">
             {t.tribu.incluye.map((x) => (
               <li key={x}>

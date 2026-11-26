@@ -37,7 +37,7 @@ const es = {
       titulo: "Para quién es",
       explorador: "Para quien recién llega y quiere conocer el territorio antes de comprometerse.",
       miembro: "Para quien quiere participar en las salas y proponer pactos.",
-      fundador: "Para quien quiere sostener el Fondo Común del Lighthouse desde el principio.",
+      fundador: "Para quien quiere entrar temprano al Lighthouse y apoyarlo desde el principio.",
       comunidad: "Para quien lidera una tribu con personería y quiere organizarla acá.",
     },
   },
@@ -102,7 +102,6 @@ const es = {
   explorador: {
     nombre: G.explorador.es,
     precio: "Gratis",
-    descripcion: "Conocé el territorio, las tribus y a la gente.",
     incluye: [
       "Mapa y páginas de tribus",
       "Entrevista con el agente",
@@ -114,7 +113,6 @@ const es = {
   },
   miembro: {
     nombre: `${G.miembro.es} de la red`,
-    descripcion: "Entrá a las salas, proponé pactos y empezá a sumar.",
     todoExplorador: `Todo lo de ${G.explorador.es}`,
     salas: "Salas de tribu y foros",
     pactosY: "Pactos y ",
@@ -144,7 +142,6 @@ const es = {
   niveles: { semilla: "Semilla", brote: "Brote", raiz: "Raíz" },
   tribu: {
     nombre: G.planTribu.es,
-    descripcion: "Para tribus con personería que quieren organizarse acá.",
     incluye: [
       "Página pública y convocatorias",
       "Pactos, rondas de reconocimiento y Semillas",
@@ -275,7 +272,7 @@ const en: Textos<typeof es> = {
       titulo: "Who it's for",
       explorador: "For people who are new and want to get to know the territory before committing.",
       miembro: "For people who want to take part in the rooms and propose pacts.",
-      fundador: "For people who want to support the Lighthouse Common Fund from the start.",
+      fundador: "For people who want to join the Lighthouse early and back it from the start.",
       comunidad: "For people who lead an incorporated tribe and want to organize it here.",
     },
   },
@@ -336,7 +333,6 @@ const en: Textos<typeof es> = {
   explorador: {
     nombre: G.explorador.en,
     precio: "Free",
-    descripcion: "Get to know the territory, the tribes and the people.",
     incluye: [
       "Map and tribe pages",
       "Interview with the agent",
@@ -348,7 +344,6 @@ const en: Textos<typeof es> = {
   },
   miembro: {
     nombre: `${G.miembro.en} of the network`,
-    descripcion: "Enter the rooms, propose pacts and start contributing.",
     todoExplorador: `Everything in ${G.explorador.en}`,
     salas: "Tribe rooms and forums",
     pactosY: "Pacts and ",
@@ -378,7 +373,6 @@ const en: Textos<typeof es> = {
   niveles: { semilla: "Seed", brote: "Sprout", raiz: "Root" },
   tribu: {
     nombre: G.planTribu.en,
-    descripcion: "For incorporated tribes that want to organize here.",
     incluye: [
       "Public page and open calls",
       "Pacts, recognition rounds and Semillas",

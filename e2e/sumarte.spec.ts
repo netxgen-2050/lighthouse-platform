@@ -502,7 +502,7 @@ test("cada plan dice para quién es", async ({ page }) => {
   for (const [plan, texto] of [
     ["Explorador", "Para quien recién llega"],
     ["Miembro", "Para quien quiere participar en las salas"],
-    ["Fundador", "Para quien quiere sostener el Fondo Común"],
+    ["Fundador", "Para quien quiere entrar temprano al Lighthouse"],
     ["Comunidad", "Para quien lidera una comunidad con personería"],
   ] as const) {
     await verPlan(page, plan);
