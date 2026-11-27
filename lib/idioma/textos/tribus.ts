@@ -121,7 +121,7 @@ const es = {
     adherirManifiesto: (lighthouse: boolean) =>
       lighthouse ? "Adherir al manifiesto de Lighthouse VRN" : "Adherir al manifiesto de la tribu",
     sumateAdherir: "Sumate para adherir",
-    puedesLeer: `Podés leer el manifiesto sin cuenta. Para adherir, sumate como ${G.miembro.es}.`,
+    puedesLeer: `Podés leer el manifiesto sin cuenta. Para adherir, creá tu cuenta: es gratis.`,
     pedidoLlego: (lighthouse: boolean, nombre: string) =>
       lighthouse
         ? "Adheriste al manifiesto de Lighthouse VRN. Ya podés participar en la gobernanza; el común va a confirmar tu adhesión."
@@ -376,7 +376,7 @@ const en: Textos<typeof es> = {
     adherirManifiesto: (lighthouse: boolean) =>
       lighthouse ? "Sign on to the Lighthouse VRN manifesto" : "Sign on to the tribe's manifesto",
     sumateAdherir: "Join to sign on",
-    puedesLeer: `You can read the manifesto without an account. To sign on, join as a ${G.miembro.en}.`,
+    puedesLeer: `You can read the manifesto without an account. To sign on, create your account: it's free.`,
     pedidoLlego: (lighthouse: boolean, nombre: string) =>
       lighthouse
         ? "You signed on to the Lighthouse VRN manifesto. You can now take part in governance; the commons will confirm your sign-on."

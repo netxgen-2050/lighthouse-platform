@@ -53,6 +53,7 @@ describe("catálogo legal", () => {
         "derechostierra",
         "dominio",
         "encuentroeducativo",
+        "faroprepago",
         "espejo",
         "destinoconsejofundacion",
         "estatuto",

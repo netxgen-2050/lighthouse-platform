@@ -2,21 +2,35 @@ import Link from "next/link";
 import { TextoBilingue } from "@/components/texto-bilingue";
 import type { Idioma } from "@/lib/idioma/tipos";
 import { GLOSARIO } from "@/lib/idioma/glosario";
-import { FILAS } from "@/lib/sumarte/datos";
+import { FILAS, type Estado } from "@/lib/sumarte/datos";
 import { columnaDeLaTabla, type PlanVista } from "./planes";
 
-type TextosComparativa = { titulo: string; funcion: string; incluido: string; noIncluido: string; verSellos: string };
+type TextosComparativa = {
+  titulo: string;
+  funcion: string;
+  incluido: string;
+  noIncluido: string;
+  proximamente: string;
+  verSellos: string;
+};
+
+const SIMBOLO: Record<Estado, string> = { si: "✓", no: "—", pronto: "◷" };
+
+function textoDeEstado(estado: Estado, t: TextosComparativa): string {
+  return estado === "si" ? t.incluido : estado === "no" ? t.noIncluido : t.proximamente;
+}
 
 /**
- * Tabla comparativa (≥ 768 px, ux-sumarte design §3): encabezado fijo bajo la barra y la columna del plan elegido resaltada
- * con fondo y negrita. En el celular no se muestra: ahí `ListaDelPlan` dice lo mismo, dentro del plan elegido.
+ * Tabla comparativa (≥ 1024 px, sumarte-planes-v2 design §3): encabezado fijo bajo la barra y la columna del plan elegido
+ * resaltada con fondo y negrita. Cada celda dice en texto "Incluido", "No incluido" o "Próximamente". En el celular no se
+ * muestra: ahí `ListaDelPlan` dice lo mismo, dentro del plan elegido.
  */
 export function TablaComparacion({ plan, idioma, t }: { plan: PlanVista | null; idioma: Idioma; t: TextosComparativa }) {
   const elegida = columnaDeLaTabla(plan);
   const celda = (i: number) => (i === elegida ? "bg-surface-2" : "");
   const encabezado = (i: number) => `p-2 ${celda(i)} ${i === elegida ? "font-bold" : "font-medium"}`;
   return (
-    <section aria-labelledby="comparativa" className="hidden min-w-0 rounded-xl border border-line bg-surface p-4 md:block">
+    <section aria-labelledby="comparativa" className="hidden min-w-0 rounded-xl border border-line bg-surface p-4 lg:block">
       <h2 id="comparativa" className="mb-2 text-xl font-semibold">{t.titulo}</h2>
       {/* relative: los textos sr-only de la tabla (position: absolute) no ensanchan la página. */}
       <div className="relative">
@@ -26,7 +40,7 @@ export function TablaComparacion({ plan, idioma, t }: { plan: PlanVista | null; 
               <td className="p-2"><span className="sr-only">{t.funcion}</span></td>
               <th scope="col" className={encabezado(0)}>{GLOSARIO.explorador[idioma]}</th>
               <th scope="col" className={encabezado(1)}>{GLOSARIO.miembro[idioma]}</th>
-              <th scope="col" className={encabezado(2)}>{GLOSARIO.paseFundador[idioma]}</th>
+              <th scope="col" className={encabezado(2)}>{GLOSARIO.fundador[idioma]}</th>
             </tr>
           </thead>
           <tbody>
@@ -35,10 +49,10 @@ export function TablaComparacion({ plan, idioma, t }: { plan: PlanVista | null; 
                 <th scope="row" className="p-2 font-normal">
                   <TextoBilingue valor={f.texto} sinNota />
                 </th>
-                {f.incluye.map((si, i) => (
+                {f.incluye.map((estado, i) => (
                   <td key={i} className={`p-2 ${celda(i)}`}>
-                    <span aria-hidden="true">{si ? "✓" : "—"}</span>
-                    <span className="sr-only">{si ? t.incluido : t.noIncluido}</span>
+                    <span aria-hidden="true">{SIMBOLO[estado]} </span>
+                    <span className={estado === "si" ? "font-medium" : "text-muted"}>{textoDeEstado(estado, t)}</span>
                   </td>
                 ))}
               </tr>
@@ -54,8 +68,8 @@ export function TablaComparacion({ plan, idioma, t }: { plan: PlanVista | null; 
 }
 
 /**
- * Lo mismo que la tabla, para el celular (< 768 px): una lista del plan elegido con ✓ / — y el texto al lado, nunca solo el
- * símbolo. Comunidad no tiene columna en la tabla: ya lista lo que incluye en su propia tarjeta.
+ * Lo mismo que la tabla, para el celular (< 1024 px): una lista del plan elegido con el símbolo y el texto al lado, nunca
+ * solo el símbolo.
  */
 export function ListaDelPlan({
   plan,
@@ -69,18 +83,18 @@ export function ListaDelPlan({
   const columna = columnaDeLaTabla(plan);
   if (columna === null) return null;
   return (
-    <section aria-labelledby="que-incluye" className="grid gap-2 border-t border-line pt-3 md:hidden">
-      <h3 id="que-incluye" className="font-semibold">{titulo}</h3>
+    <section aria-labelledby={`que-incluye-${plan}`} className="grid gap-2 border-t border-line pt-3 lg:hidden">
+      <h3 id={`que-incluye-${plan}`} className="font-semibold">{titulo}</h3>
       <ul className="grid gap-1.5 text-sm">
         {FILAS.map((f) => {
-          const si = f.incluye[columna];
+          const estado = f.incluye[columna];
           return (
             <li key={f.texto.es} className="flex gap-2">
-              <span aria-hidden="true" className="w-4 shrink-0 text-center">{si ? "✓" : "—"}</span>
+              <span aria-hidden="true" className="w-4 shrink-0 text-center">{SIMBOLO[estado]}</span>
               <span>
                 <TextoBilingue valor={f.texto} sinNota />
                 {" · "}
-                <span className={si ? "font-medium" : "text-muted"}>{si ? t.incluido : t.noIncluido}</span>
+                <span className={estado === "si" ? "font-medium" : "text-muted"}>{textoDeEstado(estado, t)}</span>
               </span>
             </li>
           );

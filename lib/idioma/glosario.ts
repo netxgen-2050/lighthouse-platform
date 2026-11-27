@@ -35,7 +35,10 @@ export const GLOSARIO = {
   configuracion: { es: "Configuración", en: "Settings" },
   misDatos: { es: "Mis datos", en: "My data" },
   explorador: { es: "Explorador", en: "Explorer" },
-  miembro: { es: "Miembro", en: "Member" },
+  // Nombres que se ven de los planes de la fase 1 (sumarte-planes-v2). El identificador interno `miembro` es Amigo.
+  miembro: { es: "Amigo", en: "Friend" },
+  fundador: { es: "Fundador", en: "Founder" },
+  aliado: { es: "Aliado", en: "Ally" },
   paseFundador: { es: "Pase Fundador", en: "Founder Pass" },
   planTribu: { es: "Plan Tribu", en: "Tribe Plan" },
   ronda0: { es: "Ronda 0", en: "Round 0" },

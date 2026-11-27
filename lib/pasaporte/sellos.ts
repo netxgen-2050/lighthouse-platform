@@ -1,7 +1,7 @@
 // Los sellos del pasaporte: cada uno certifica algo y abre puertas concretas.
 // El estado sale de lo que ya hay en el navegador (Sumarte, membresía, Congreso, KYC);
 // lo que abre sale del servicio de permisos (`lib/permisos/`).
-import { filasDePuertas, type TribuAceptada } from "@/lib/canales/puertas";
+import { filasDePuertas, PASE_DE_PERMISOS, type TribuAceptada } from "@/lib/canales/puertas";
 import { textos } from "@/lib/idioma/textos";
 import type { Idioma } from "@/lib/idioma/tipos";
 import type { ClaveTermino } from "@/lib/legal/terminos";
@@ -178,16 +178,15 @@ export function sellos(e: EntradaSellos, ahora: Date, idioma: Idioma = "es"): Se
   }
   lista.push(inversor);
 
-  // El nivel del pase se muestra con su nombre en el idioma de la página (en español, como siempre, con el id guardado).
-  const nivelDelPase = e.sumarte.pase ? (idioma === "en" ? textos("sumarte", "en").niveles[e.sumarte.pase] : e.sumarte.pase) : "";
   lista.push({
     id: "fundador",
     nombre: t.fundador.nombre,
     estado: e.sumarte.pase ? "obtenido" : "disponible",
     fecha: e.sumarte.pase ? fechaDe("fundador") : undefined,
-    detalle: e.sumarte.pase ? t.fundador.detalleSi(nivelDelPase) : t.fundador.detalleNo,
+    detalle: e.sumarte.pase ? t.fundador.detalleSi : t.fundador.detalleNo,
     accion: e.sumarte.pase ? undefined : { tipo: "enlace", texto: t.fundador.accion, href: "/sumarte" },
-    abre: puertasQueAbre({ pase: e.sumarte.pase ?? "semilla" }, [], idioma),
+    // La tabla de permisos conserva tres columnas de pase que dan lo mismo: se usa una (los niveles ya no existen en Sumarte).
+    abre: puertasQueAbre({ pase: PASE_DE_PERMISOS }, [], idioma),
     legal: ["pasefundador"],
   });
 

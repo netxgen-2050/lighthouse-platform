@@ -44,11 +44,11 @@ describe("capacidades por nivel", () => {
       expect(puedeCapacidad("sin-cuenta", c)).toBe(false);
     }
   });
-  it("Explorador suma Hifa, Congreso, espacio personal y Reportar, pero no participa", () => {
-    for (const c of ["hifa", "congreso", "personal", "reportar", "vista-netx"] as const) expect(puedeCapacidad("explorador", c)).toBe(true);
-    for (const c of ["participar", "adherir", "admin-tribu", "admin"] as const) expect(puedeCapacidad("explorador", c)).toBe(false);
+  it("Explorador suma Hifa, Congreso, espacio personal, Reportar y adherir (la voz no se compra), pero no las funciones en pausa", () => {
+    for (const c of ["hifa", "congreso", "personal", "reportar", "vista-netx", "adherir"] as const) expect(puedeCapacidad("explorador", c)).toBe(true);
+    for (const c of ["participar", "admin-tribu", "admin"] as const) expect(puedeCapacidad("explorador", c)).toBe(false);
   });
-  it("Miembro participa y adhiere; Líder suma la administración de su comunidad; NetX es solo del super admin", () => {
+  it("Amigo (nivel interno miembro) participa y adhiere; Aliado (lider) suma la administración de su comunidad; NetX es solo del super admin", () => {
     expect(puedeCapacidad("miembro", "participar")).toBe(true);
     expect(puedeCapacidad("miembro", "adherir")).toBe(true);
     expect(puedeCapacidad("miembro", "admin-tribu")).toBe(false);
@@ -99,14 +99,14 @@ describe("rutas", () => {
   });
 
   it("el aviso dice qué plan habilita la página", () => {
-    expect(avisoDeRuta("/pactos")).toBe("Pactos se habilita con el plan Miembro.");
+    expect(avisoDeRuta("/pactos")).toBe("Pactos se habilita con el plan Amigo.");
     expect(avisoDeRuta("/perfil")).toBe("Perfil se habilita al sumarte gratis como Explorador.");
     expect(avisoDeRuta("/netx")).toContain("Explorador");
     expect(avisoDeRuta("/admin")).toContain("super admin");
   });
 
   it("el aviso dice en inglés qué plan habilita la página", () => {
-    expect(avisoDeRuta("/pactos", "en")).toBe("Pacts is unlocked with the Member plan.");
+    expect(avisoDeRuta("/pactos", "en")).toBe("Pacts is unlocked with the Friend plan.");
     expect(avisoDeRuta("/perfil", "en")).toBe("Profile is unlocked by joining for free as an Explorer.");
     expect(avisoDeRuta("/panel", "en")).toContain("My journey");
     expect(avisoDeRuta("/admin", "en")).toContain("super admin");
@@ -114,10 +114,10 @@ describe("rutas", () => {
   });
 
   it("el aviso de una acción en inglés", () => {
-    expect(avisoDeNivel("miembro", "en")).toBe("This action is unlocked with the Member plan.");
-    expect(avisoDeNivel("lider", "en")).toBe("This action is unlocked with the Community Plan.");
+    expect(avisoDeNivel("miembro", "en")).toBe("This action is unlocked with the Friend plan.");
+    expect(avisoDeNivel("lider", "en")).toBe("This action is for Allies, by agreement.");
     expect(avisoDeNivel("superadmin", "en")).toBe("This action can't be unlocked from here.");
-    expect(avisoDeNivel("miembro")).toBe("Esta acción se habilita con el plan Miembro.");
+    expect(avisoDeNivel("miembro")).toBe("Esta acción se habilita con el plan Amigo.");
   });
 
   it("la ayuda del rail distingue lo gratis de lo de Miembro", () => {

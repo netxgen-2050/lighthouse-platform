@@ -69,8 +69,8 @@ const es = {
     sinCuenta: "Sin cuenta",
     explorador: G.explorador.es,
     miembro: G.miembro.es,
-    fundador: "Fundador",
-    lider: "Líder de tribu",
+    fundador: G.fundador.es,
+    lider: G.aliado.es,
     superadmin: "Super admin",
   },
   barra: {
@@ -174,8 +174,8 @@ const en: Textos<typeof es> = {
     sinCuenta: "No account",
     explorador: G.explorador.en,
     miembro: G.miembro.en,
-    fundador: "Founder",
-    lider: "Tribe leader",
+    fundador: G.fundador.en,
+    lider: G.aliado.en,
     superadmin: "Super admin",
   },
   barra: {

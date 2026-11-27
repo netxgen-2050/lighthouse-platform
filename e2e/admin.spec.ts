@@ -120,15 +120,15 @@ test.describe("super admin", () => {
     await expect(page.getByText("Recibimos tu postulación (simulado)")).toBeVisible();
     // Un pedido de contacto (flujo de contactos.spec.ts).
     await page.goto("/sumarte");
-    await page.getByRole("button", { name: "Pedir una charla" }).click();
+    await page.getByRole("button", { name: "Hablemos" }).click();
     await page.getByRole("radio", { name: "Email" }).check();
     await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
-    await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
+    await expect(page.getByText("Pedido enviado (simulado)")).toBeVisible();
 
     await page.goto("/admin");
     await expect(rail(page).getByRole("link", { name: "Admin, 2 pendientes" })).toBeVisible();
     await expect(pestanas(page).getByRole("link", { name: "Pendientes · 2" })).toBeVisible();
     await expect(page.getByTestId("total-postulaciones")).toHaveText("1");
-    await expect(page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" })).toBeVisible();
+    await expect(page.getByRole("row").filter({ hasText: "Pedido de Aliados" })).toBeVisible();
   });
 });

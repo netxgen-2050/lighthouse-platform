@@ -47,7 +47,7 @@ describe("sellos", () => {
   });
 
   it("el Pase Fundador abre el canal de fundadores, la voz en el Fondo Común y los créditos", () => {
-    const s = por({ ...vacia, sumarte: { ...INICIAL, plan: "miembro", pase: "brote" } });
+    const s = por({ ...vacia, sumarte: { ...INICIAL, plan: "miembro", pase: "fundador" } });
     expect(s.fundador.estado).toBe("obtenido");
     expect(s["miembro-red"].estado).toBe("obtenido");
     const abre = s.fundador.abre.join(" | ");
@@ -114,7 +114,7 @@ describe("sellos en inglés", () => {
   const todos = (e: EntradaSellos, idioma: "es" | "en") => sellos(e, ahora, idioma);
   const escenarios: [string, EntradaSellos][] = [
     ["persona nueva", vacia],
-    ["con pase y trámite de identidad", { ...vacia, sumarte: { ...INICIAL, plan: "miembro", pase: "brote" }, kyc: { estado: "en-tramite", enviado: "2026-10-01T10:00:00.000Z" } }],
+    ["con pase y trámite de identidad", { ...vacia, sumarte: { ...INICIAL, plan: "miembro", pase: "fundador" }, kyc: { estado: "en-tramite", enviado: "2026-10-01T10:00:00.000Z" } }],
     ["identidad aprobada con residencia en el exterior", { ...vacia, kyc: aprobado, datos: { residencia: "exterior" } }],
     ["identidad aprobada con residencia en Argentina y ticket", { ...vacia, kyc: aprobado, datos: { residencia: "argentina" }, ticket: true }],
   ];
@@ -138,10 +138,10 @@ describe("sellos en inglés", () => {
   });
 
   it("Genesis conserva su nombre y lo que abre un sello sale en inglés", () => {
-    const en = Object.fromEntries(todos({ ...vacia, sumarte: { ...INICIAL, plan: "miembro", pase: "brote" } }, "en").map((s) => [s.id, s]));
+    const en = Object.fromEntries(todos({ ...vacia, sumarte: { ...INICIAL, plan: "miembro", pase: "fundador" } }, "en").map((s) => [s.id, s]));
     expect(en.genesis.nombre).toBe("Genesis");
     expect(en.fundador.nombre).toBe("Founder Pass");
-    expect(en.fundador.detalle).toBe("You have the Founder Pass Sprout (simulated).");
+    expect(en.fundador.detalle).toBe("You have the Founder Pass (simulated).");
     expect(en.fundador.abre.join(" | ")).toContain("Founders channel");
     expect(en.fundador.abre.join(" | ")).toContain("Voice in the Common Fund · Open · 1 voice");
     expect(en.residente.estado).toBe("no-disponible");

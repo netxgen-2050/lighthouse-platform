@@ -34,7 +34,7 @@ describe("filasDePuertas en inglés", () => {
     expect(fundadores.abreCon).toBe("Founder Pass");
     expect(buscarEn(filas, "Vote in the Residents' Assembly").abreCon).toBe("being a resident");
     expect(buscarEn(filas, "Network forums").abreCon).toBe(
-      "Member plan, Founder Pass, being accepted into a community, Genesis presence or being a resident",
+      "Friend plan, Founder Pass, being accepted into a community, Genesis presence or being a resident",
     );
   });
 
@@ -46,9 +46,9 @@ describe("filasDePuertas en inglés", () => {
   });
 
   it("los nombres de los planes y del pase salen del glosario", () => {
-    expect(nombresDePlanes("en")).toEqual({ explorador: "Explorer", miembro: "Member" });
-    expect(nombresDePases("en")).toEqual({ semilla: "Seed", brote: "Sprout", raiz: "Root" });
-    expect(nombresDePases("es")).toEqual({ semilla: "Semilla", brote: "Brote", raiz: "Raíz" });
+    expect(nombresDePlanes("en")).toEqual({ explorador: "Explorer", miembro: "Friend" });
+    expect(nombresDePases("en")).toEqual({ fundador: "Founder" });
+    expect(nombresDePases("es")).toEqual({ fundador: "Fundador" });
   });
 });
 
@@ -98,11 +98,11 @@ describe("filasDePuertas", () => {
   it("la pista sale de la tabla y no incluye lo que solo refuerza", () => {
     expect(buscar(filasDePuertas(base), "Voz en el Fondo Común").abreCon).toBe("Pase Fundador");
     expect(buscar(filasDePuertas(base), "Foros de la red").abreCon).toBe(
-      "plan Miembro, Pase Fundador, ser aceptado en una comunidad, presencia Genesis o ser residente",
+      "plan Amigo, Pase Fundador, ser aceptado en una comunidad, presencia Genesis o ser residente",
     );
   });
 
-  it("Miembro entra a las salas de comunidad como visita", () => {
+  it("Amigo entra a las salas de comunidad como visita", () => {
     const f = buscar(filasDePuertas(con({ plan: "miembro" })), "Salas de comunidad");
     expect(f.estado).toBe("Abierta como visita");
   });
@@ -122,7 +122,7 @@ describe("filasDePuertas", () => {
     const filas = filasDePuertas(con({ tribus: ["valle"] }), [VALLE]);
     expect(buscar(filas, "Voz en otras comunidades").abreCon).toBe("ser aceptado en otra comunidad");
     expect(buscar(filas, "Salas de otras comunidades").abreCon).toBe(
-      "plan Miembro (como visita), Pase Fundador (como visita) o ser aceptado en otra comunidad",
+      "plan Amigo (como visita), Pase Fundador (como visita) o ser aceptado en otra comunidad",
     );
     expect(JSON.stringify(filas)).not.toContain("esa comunidad");
   });

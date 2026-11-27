@@ -125,7 +125,7 @@ test.describe("crear la cuenta en Sumarte", () => {
 
   test("Cancelar y Escape no guardan nada y el foco vuelve al botón", async ({ page }) => {
     await page.goto("/sumarte");
-    const boton = page.getByRole("button", { name: "Hacerme miembro" });
+    const boton = page.getByRole("button", { name: "Hacerme Amigo" });
     await boton.click();
     await expect(paso(page, "Crear tu cuenta")).toBeVisible();
     await paso(page, "Crear tu cuenta").getByRole("button", { name: "Cancelar" }).click();

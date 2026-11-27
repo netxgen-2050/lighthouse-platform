@@ -131,13 +131,13 @@ test.describe("registro desde Sumarte", () => {
     await panelConEmail(page, email);
     const claveSumarte = `${prefijoDe(email)}lh-sumarte`;
     await page.goto("/sumarte");
-    await page.getByRole("button", { name: "Hacerme miembro" }).click();
+    await page.getByRole("button", { name: "Hacerme Amigo" }).click();
     // Todavía no hay sesión ni plan aplicado: primero el paso con las casillas.
     expect(await page.evaluate((c) => window.localStorage.getItem(c), claveSumarte)).toBeNull();
     await aceptarPaso(page);
     await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
-    await expect(page.getByText("Tu plan actual:")).toContainText("Miembro");
+    await expect(page.getByText("Tu plan actual:")).toContainText("Amigo");
     await expect(titulo(page)).toHaveCount(0);
     expect(await page.evaluate((c) => window.localStorage.getItem(c), claveSumarte)).not.toBeNull();
   });
@@ -151,7 +151,7 @@ test.describe("plazo del plan elegido en Sumarte", () => {
     const email = emailUnico("plazo");
     await panelConEmail(page, email);
     await page.goto("/sumarte");
-    await page.getByRole("button", { name: "Hacerme miembro" }).click();
+    await page.getByRole("button", { name: "Hacerme Amigo" }).click();
     await aceptarPaso(page);
     // La aceptación del paso venció antes de terminar el login (el servidor tardó): aparece la pantalla de consentimiento.
     await page.route("**/api/sesion", async (ruta) => {
@@ -168,7 +168,7 @@ test.describe("plazo del plan elegido en Sumarte", () => {
     // Pasaron 10 minutos leyendo la pantalla: el pedido pendiente ya estaría vencido.
     await page.evaluate(() => window.sessionStorage.setItem("lh-sumarte-pendiente-hora", String(Date.now() - 10 * 60 * 1000)));
     await aceptar(page);
-    await expect(page.getByText("Tu plan actual:")).toContainText("Miembro");
+    await expect(page.getByText("Tu plan actual:")).toContainText("Amigo");
   });
 });
 
@@ -180,7 +180,7 @@ test.describe("plan abandonado", () => {
     const email = emailUnico("abandono");
     await panelConEmail(page, email);
     await page.goto("/sumarte");
-    await page.getByRole("button", { name: "Hacerme miembro" }).click();
+    await page.getByRole("button", { name: "Hacerme Amigo" }).click();
     await aceptarPaso(page);
     // La persona abandonó el registro y volvió 30 minutos después: el pedido ya venció.
     await page.evaluate(() => window.sessionStorage.setItem("lh-sumarte-pendiente-hora", String(Date.now() - 30 * 60 * 1000)));
