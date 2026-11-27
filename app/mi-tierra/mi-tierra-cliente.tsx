@@ -94,11 +94,13 @@ export function MiTierraCliente() {
           {portafolio.lotes.map((l) => {
             const valor =
               l.plan.tipo === "cuotas"
-                ? p.cuotas(enteroEn(l.plan.cuotasPagadas, idioma), enteroEn(l.plan.cuotas, idioma))
+                ? l.plan.cuotasPagadas === 0 && l.estado !== "reservado"
+                  ? p.anticipoPagado
+                  : p.cuotas(enteroEn(l.plan.cuotasPagadas, idioma), enteroEn(l.plan.cuotas, idioma))
                 : l.plan.tipo === "contado"
                   ? p.contado
                   : l.plan.tipo === "no-entra"
-                    ? p.fueraDelPlan
+                    ? p.pagoUnico
                     : comunes.sinDato;
             const detalle = [l.superficieM2 === null ? comunes.sinDato : p.m2(enteroEn(l.superficieM2, idioma)), p.estados[l.estado === "vendido" ? "vendido" : l.estado]].join(" · ");
             return (

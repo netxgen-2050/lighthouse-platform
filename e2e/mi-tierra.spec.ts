@@ -104,7 +104,8 @@ test("con un lote pagado: número principal, posiciones, filtro de actividad y s
   await sembrar(request, emailActual, { loteId: lote.id, opcion: "solo-lote", paso: "pagado", vio: vioDe(lote, true) });
   await page.goto("/mi-tierra");
   await expect(page.locator("[data-numero-principal]")).toContainText(usd(plan.anticipo));
-  await expect(main(page)).toContainText(`0 de ${CUOTAS} cuotas pagadas`);
+  await expect(page.locator("#mt-numero-etiqueta").locator("xpath=../..")).toContainText(`Anticipo pagado · faltan ${CUOTAS} cuotas`);
+  await expect(page.locator("#mt-posiciones")).toContainText("anticipo pagado");
   const pos = page.locator("#mt-posiciones");
   await expect(pos.getByRole("link", { name: new RegExp(`Lote ${lote.numero}`) })).toHaveAttribute("href", `/lotes/${lote.id}`);
   await expect(pos).toContainText("FARO");

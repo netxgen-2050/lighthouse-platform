@@ -29,6 +29,17 @@ export function EncabezadoMiTierra({ portafolio }: { portafolio: Portafolio }) {
   const conPagoPendiente = lotes.find((l) => l.estado === "reservado" && l.plan.tipo !== "sin-dato");
   const sinPagos = totales.pagado === 0;
   const cuotas = totales.cuotasDelUnico;
+  // La línea de cuotas habla del único lote en cuotas, y solo si ya tiene el anticipo pagado (si no, ya se dice que no pagó nada).
+  const enCuotas = lotes.filter((l) => l.plan.tipo === "cuotas");
+  const conAnticipo = cuotas !== null && enCuotas.length === 1 && enCuotas[0].estado !== "reservado";
+  const lineaCuotas = !conAnticipo
+    ? null
+    : cuotas.pagadas === 0
+      ? t.anticipoPagado(enteroEn(cuotas.total, idioma))
+      : t.cuotaDe(enteroEn(cuotas.pagadas, idioma), enteroEn(cuotas.total, idioma));
+  // Los primeros 4 lotes se pagan de una vez: suman a lo pagado y se dice que fue un pago único.
+  const soloPagoUnico = !sinPagos && lotes.every((l) => l.plan.tipo === "no-entra");
+  const extra = lineaCuotas ?? (soloPagoUnico ? t.pagoUnico : null);
   return (
     <section aria-labelledby="mt-numero-etiqueta" className="grid gap-4 border-b border-line pb-6">
       <div role="group" aria-labelledby="mt-numero-etiqueta" className="grid gap-1">
@@ -49,7 +60,7 @@ export function EncabezadoMiTierra({ portafolio }: { portafolio: Portafolio }) {
             <BarraAvance etiqueta={t.avance} fraccion={totales.fraccionPagada} />
             <p className="text-sm text-muted">
               {t.avanceDe(porcentajeEn(totales.fraccionPagada, idioma), usdEn(totales.totalPlanes, idioma))}
-              {cuotas && ` · ${t.cuotaDe(enteroEn(cuotas.pagadas, idioma), enteroEn(cuotas.total, idioma))}`}
+              {extra && ` · ${extra}`}
             </p>
           </>
         )}
