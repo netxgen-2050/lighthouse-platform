@@ -166,7 +166,8 @@ describe("semillas por comunidad, desde lo guardado por /pactos", () => {
     expect(semillasDeComunidad(guardado({ lighthouse: enorme }), "lighthouse").horas).toBe(80);
   });
   it("el pase", () => {
-    expect(paseActivo(JSON.stringify({ pase: "brote" }))).toBe("brote");
+    expect(paseActivo(JSON.stringify({ pase: "fundador" }))).toBe("fundador");
+    expect(paseActivo(JSON.stringify({ pase: "brote" }))).toBe("fundador");
     expect(paseActivo(JSON.stringify({ pase: null }))).toBeNull();
     expect(paseActivo("x")).toBeNull();
   });

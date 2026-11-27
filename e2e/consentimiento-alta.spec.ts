@@ -1,4 +1,4 @@
-import { abrirModoDePrueba, aceptarPaso } from "./ayudas";
+import { abrirModoDePrueba, aceptarPantalla, aceptarPaso } from "./ayudas";
 import {
   COOKIE_PRUEBA,
   consentimientoDe,
@@ -119,13 +119,15 @@ test.describe("crear la cuenta en Sumarte", () => {
     await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
     await expect(menuAvatar(page)).toBeVisible();
-    const { estado } = await consentimientoDe(request, email);
-    expect(estado).toMatchObject({ novedades: true, novedadesRegistro: { evento: "acepta", canal: "alta", version: VERSION_PRUEBA } });
+    // El avatar aparece apenas hay sesión; el servidor registra la aceptación un instante después.
+    await expect
+      .poll(async () => (await consentimientoDe(request, email)).estado)
+      .toMatchObject({ novedades: true, novedadesRegistro: { evento: "acepta", canal: "alta", version: VERSION_PRUEBA } });
   });
 
   test("Cancelar y Escape no guardan nada y el foco vuelve al botón", async ({ page }) => {
     await page.goto("/sumarte");
-    const boton = page.getByRole("button", { name: "Hacerme miembro" });
+    const boton = page.getByRole("button", { name: "Hacerme Amigo" });
     await boton.click();
     await expect(paso(page, "Crear tu cuenta")).toBeVisible();
     await paso(page, "Crear tu cuenta").getByRole("button", { name: "Cancelar" }).click();
@@ -146,76 +148,80 @@ test.describe("crear la cuenta en Sumarte", () => {
 test.describe("entrar desde la barra superior", () => {
   test.use({ rol: "ninguno", consentimiento: "ninguno" });
 
-  test("abre el paso Entrar sin abrir el login; al aceptar entra, sin pantalla de consentimiento", async ({ page, request }) => {
+  test("Entrar abre el login directo, sin casillas; la primera vez, la pantalla de consentimiento sale después del login", async ({ page, request }) => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     const email = emailUnico("entrar");
     await panelConEmail(page, email);
     await page.goto("/participa");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
-    const dialogo = paso(page, "Entrar");
-    await expect(dialogo).toBeVisible();
-    await expect(casillaPolitica(dialogo)).not.toBeChecked();
-    await expect(casillaTerminos(dialogo)).not.toBeChecked();
-    await expect(page.getByRole("heading", { name: "Entrar como…" })).toHaveCount(0);
-    await expect(page).toHaveURL(/\/participa$/);
+    // Sin Neon Auth el login es el panel "Entrar como…" de Sumarte: se llega directo, sin el paso de las casillas.
+    await expect(page).toHaveURL(/\/sumarte\?volver=%2Fparticipa/);
+    await expect(paso(page, "Entrar")).toHaveCount(0);
+    await expect(casillaPolitica(page)).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
     expect((await page.context().cookies()).find((c) => c.name === COOKIE_PRUEBA)).toBeUndefined();
 
-    await aceptarPaso(page);
-    await expect(page).toHaveURL(/\/sumarte\?volver=%2Fparticipa/);
-    await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
     await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
-    await expect(menuAvatar(page)).toBeVisible();
-    await expect(page).toHaveURL(/\/participa$/);
+    // Nunca aceptó: ve la pantalla con las casillas sin marcar y sigue anónima para lo que se guarda.
+    await expect(titulo(page)).toBeVisible();
+    await expect(casillaPolitica(page)).not.toBeChecked();
+    await expect(casillaTerminos(page)).not.toBeChecked();
+    expect((await consentimientoDe(request, email)).filas).toEqual([]);
+
+    await aceptarPantalla(page);
     await expect(titulo(page)).toHaveCount(0);
+    await expect(menuAvatar(page)).toBeVisible();
     expect((await consentimientoDe(request, email)).estado).toMatchObject({ canal: "al-entrar", version: VERSION_PRUEBA, general: "vigente" });
   });
 
-  test("sin aceptar el login no se abre: Cancelar, Escape, ninguna casilla o una sola", async ({ page }) => {
-    await page.goto("/participa");
-    const entrar = barra(page).getByRole("button", { name: "Entrar" });
-    const dialogo = paso(page, "Entrar");
-
-    await entrar.click();
-    await dialogo.getByRole("button", { name: "Cancelar" }).click();
-    await expect(dialogo).toBeHidden();
-    await expect(entrar).toBeFocused();
-
-    await entrar.click();
-    await page.keyboard.press("Escape");
-    await expect(dialogo).toBeHidden();
-    await expect(entrar).toBeFocused();
-
-    await entrar.click();
-    await dialogo.getByRole("button", { name: "Aceptar y entrar" }).click();
-    await expect(dialogo.getByRole("alert")).toContainText("tenés que marcar las dos casillas");
-    await expect(casillaPolitica(dialogo)).toBeFocused();
-    await casillaTerminos(dialogo).check();
-    await dialogo.getByRole("button", { name: "Aceptar y entrar" }).click();
-    await expect(dialogo.getByRole("alert")).toBeVisible();
-    await expect(casillaPolitica(dialogo)).toBeFocused();
-
-    await expect(page).toHaveURL(/\/participa$/);
-    await expect(page.getByRole("heading", { name: "Entrar como…" })).toHaveCount(0);
-    await expect(menuAvatar(page)).toHaveCount(0);
-    expect((await page.context().cookies()).find((c) => c.name === COOKIE_PRUEBA)).toBeUndefined();
+  test("en la pantalla, con una sola casilla marcada no se registra nada; la persona sigue anónima", async ({ page, request }) => {
+    test.skip(CON_PRIVY, SIN_PRIVY);
+    const email = emailUnico("incompleta");
+    await panelConEmail(page, email);
+    await page.goto("/sumarte#entrar-como");
+    await abrirModoDePrueba(page);
+    await page.getByRole("button", { name: email }).click();
+    await expect(titulo(page)).toBeVisible();
+    await casillaTerminos(page).check();
+    await page.getByRole("button", { name: "Aceptar y continuar" }).click();
+    await expect(page.getByRole("alert").filter({ hasText: "tenés que marcar las dos casillas" })).toBeVisible();
+    await expect(casillaPolitica(page)).toBeFocused();
+    expect((await consentimientoDe(request, email)).filas).toEqual([]);
   });
 
-  test("elegir un email de Entrar como… sin aceptación previa abre el paso y la sesión espera", async ({ page }) => {
+  test("Entrar como… en modo de prueba entra directo, sin el paso; sin consentimiento ve la pantalla", async ({ page }) => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     const email = emailUnico("espera");
     await panelConEmail(page, email);
     await page.goto("/sumarte#entrar-como");
     await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
-    await expect(paso(page, "Entrar")).toBeVisible();
-    expect((await page.context().cookies()).find((c) => c.name === COOKIE_PRUEBA)).toBeUndefined();
-    await expect(menuAvatar(page)).toHaveCount(0);
-    await aceptarPaso(page);
+    await expect(paso(page, "Entrar")).toHaveCount(0);
+    expect((await page.context().cookies()).find((c) => c.name === COOKIE_PRUEBA)).toBeDefined();
+    await expect(titulo(page)).toBeVisible();
+    await aceptarPantalla(page);
     await expect(menuAvatar(page)).toBeVisible();
   });
 
-  test("una persona con consentimiento vigente también pasa por el paso, y su constancia no cambia", async ({ page, request }) => {
+  test("una aceptación de Crear tu cuenta que quedó en la pestaña no vale para quien después aprieta Entrar", async ({ page, request }) => {
+    test.skip(CON_PRIVY, SIN_PRIVY);
+    const email = emailUnico("ajena");
+    await panelConEmail(page, email);
+    await page.goto("/sumarte?plan=explorador");
+    await page.getByRole("button", { name: "Sumarme gratis" }).click();
+    await aceptarPaso(page);
+    expect(await page.evaluate(() => window.sessionStorage.getItem("lh-consentimiento-previo"))).not.toBeNull();
+    // Otra persona, en la misma pestaña, antes de los 5 minutos: aprieta Entrar sin haber visto ninguna casilla.
+    await barra(page).getByRole("button", { name: "Entrar" }).click();
+    expect(await page.evaluate(() => window.sessionStorage.getItem("lh-consentimiento-previo"))).toBeNull();
+    await abrirModoDePrueba(page);
+    await page.getByRole("button", { name: email }).click();
+    await expect(titulo(page)).toBeVisible();
+    expect((await consentimientoDe(request, email)).filas).toEqual([]);
+  });
+
+  test("quien ya tiene consentimiento vigente entra sin ver casillas, y su constancia no cambia", async ({ page, request }) => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     const email = emailUnico("vigente");
     await registrarConsentimientoDe(request, email, { canal: "alta" });
@@ -223,15 +229,14 @@ test.describe("entrar desde la barra superior", () => {
     await panelConEmail(page, email);
     await page.goto("/participa");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
-    await aceptarPaso(page);
     await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
     await expect(menuAvatar(page)).toBeVisible();
+    await expect(titulo(page)).toHaveCount(0);
     // Misma fecha y mismo camino: el servidor no agregó otra aceptación.
-    await expect.poll(async () => (await consentimientoDe(request, email)).filas?.length).toBe(3);
+    await expect.poll(async () => (await consentimientoDe(request, email)).filas?.length).toBe(2);
     const despues = (await consentimientoDe(request, email)).estado;
     expect(despues).toMatchObject({ registradoAt: antes.registradoAt, canal: "alta", general: "vigente" });
-    // La aceptación del paso se consumió: no queda en la pestaña para otra persona.
     expect(await page.evaluate(() => window.sessionStorage.getItem("lh-consentimiento-previo"))).toBeNull();
   });
 
@@ -389,19 +394,19 @@ test.describe("re-consentimiento con novedades ya decididas", () => {
 test.describe("re-consentimiento desde Entrar", () => {
   test.use({ rol: "ninguno", consentimiento: "ninguno" });
 
-  test("el paso Entrar muestra la versión vigente y Qué cambió", async ({ page, request }) => {
+  test("la pantalla después de Entrar usa el texto de la primera vez y, al aceptar, queda la constancia", async ({ page, request }) => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     const email = emailUnico("version");
     await panelConEmail(page, email);
     await page.goto("/participa");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
-    const dialogo = paso(page, "Entrar");
-    await expect(dialogo.getByText(`Versión de la política: ${VERSION_PRUEBA}`)).toBeVisible();
-    await expect(dialogo.getByText("Qué cambió")).toBeVisible();
-    await expect(dialogo.getByRole("listitem").filter({ hasText: "Las reservas de lotes simulados" }).first()).toBeVisible();
-    await aceptarPaso(page);
     await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
+    await expect(titulo(page)).toBeVisible();
+    await expect(page.getByText("Para usar la plataforma con tu cuenta necesitamos tu consentimiento.")).toBeVisible();
+    // "Qué cambió" es solo para quien aceptó una versión anterior (se prueba en pantalla-consentimiento.test.tsx).
+    await expect(page.getByText("Cambió la política de privacidad")).toHaveCount(0);
+    await aceptarPantalla(page);
     await expect(menuAvatar(page)).toBeVisible();
     await expect(titulo(page)).toHaveCount(0);
     expect((await consentimientoDe(request, email)).estado).toMatchObject({ canal: "al-entrar", version: VERSION_PRUEBA });
@@ -430,10 +435,10 @@ test.describe("re-consentimiento desde Entrar", () => {
     await panelConEmail(page, email);
     await page.goto("/participa");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
-    await aceptarPaso(page);
     await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
     await expect(menuAvatar(page)).toBeVisible();
+    await expect(titulo(page)).toHaveCount(0);
     await expect.poll(async () => (await consentimientoDe(request, email)).filas?.length).toBe(3);
     expect((await consentimientoDe(request, email)).estado).toMatchObject({ novedades: true, novedadesRegistro: { evento: "acepta", canal: "alta" } });
   });
@@ -492,10 +497,10 @@ test.describe("Mis datos: constancia y novedades", () => {
 });
 
 // 4.2: solo con Privy (contra el preview con BASE_URL). Sin las casillas, la plataforma no llama al login de Privy.
-test.describe("Privy no recibe el email antes de las casillas", () => {
+test.describe("Privy no recibe el email antes de las casillas de Crear tu cuenta", () => {
   test.use({ rol: "ninguno", consentimiento: "ninguno" });
 
-  test("ni la barra ni Sumarte abren el login de Privy sin aceptar", async ({ page }) => {
+  test("Sumarte no abre el login de Privy sin aceptar", async ({ page }) => {
     test.skip(!CON_PRIVY, "Solo corre en un entorno con Privy (BASE_URL o NEXT_PUBLIC_PRIVY_APP_ID)");
     const pedidos: string[] = [];
     page.on("request", (r) => {
@@ -503,9 +508,6 @@ test.describe("Privy no recibe el email antes de las casillas", () => {
       if (url.hostname === "auth.privy.io" && /passwordless|oauth/.test(url.pathname)) pedidos.push(r.url());
     });
     await page.goto("/sumarte?plan=explorador");
-    await barra(page).getByRole("button", { name: "Entrar" }).click();
-    await expect(paso(page, "Entrar")).toBeVisible();
-    await paso(page, "Entrar").getByRole("button", { name: "Cancelar" }).click();
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
     await expect(paso(page, "Crear tu cuenta")).toBeVisible();
     await expect(page.locator("#privy-modal-content, [data-privy-dialog]")).toHaveCount(0);

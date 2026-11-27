@@ -1,5 +1,4 @@
 import { expect, test, type Page } from "./fixtura";
-import { conIdentidadVerificada } from "./ayudas";
 import { textosEnEspanol } from "./ayudas-idioma";
 
 const html = (page: Page) => page.locator("html");
@@ -46,85 +45,62 @@ test("?lang=en&utm_source=deck muestra la portada en inglés y guarda el origen"
 test.describe("Sumarte en inglés", () => {
   test.use({ locale: "en-US", rol: "ninguno" });
 
-  test("encabezado, cuatro planes con sus nombres y montos con coma de miles", async ({ page }) => {
+  test("encabezado, tres planes con sus nombres, Aliados y montos con coma de miles", async ({ page }) => {
     await page.goto("/sumarte");
     await expect(html(page)).toHaveAttribute("lang", "en");
     await expect(page.getByRole("heading", { level: 1, name: "Choose how to join" })).toBeVisible();
     await expect(page.getByText("Internal prototype · sample data")).toBeVisible();
-    const selector = page.getByRole("radiogroup", { name: "Plan" });
-    for (const plan of ["Explorer", "Member", "Founder", "Community"]) {
-      await expect(selector.getByRole("radio", { name: plan, exact: true })).toBeAttached();
+    // El selector de un plan por vez es del celular: en compu está en la página pero oculto.
+    const selector = page.locator('[role="radiogroup"][aria-label="Plan"]');
+    await expect(selector.locator('input[type="radio"]')).toHaveCount(3);
+    for (const plan of ["Explorer", "Friend", "Founder"]) {
+      await expect(selector.locator("label", { hasText: plan })).toBeAttached();
     }
-    for (const [radio, titulo] of [
-      ["Explorer", /^Explorer/],
-      ["Community", /^Community Plan/],
-      ["Member", /^Member of the network/],
-      ["Founder", /^Founder Pass/],
-    ] as const) {
-      await selector.getByRole("radio", { name: radio, exact: true }).check({ force: true });
-      await expect(page.getByRole("heading", { level: 2, name: titulo })).toBeVisible();
-    }
-    const pase = tarjeta(page, /Founder Pass/);
-    await expect(pase).toContainText("USD 1,500 · one-time payment");
-    await expect(pase).toContainText("USD 450 in common and stay credits");
-    await pase.getByRole("radio", { name: /Root/ }).check({ force: true });
-    await expect(pase).toContainText("USD 5,000 · one-time payment");
-    await expect(pase.getByRole("button", { name: "I want the Root Pass" })).toBeVisible();
-    await expect(page.getByText("142 of 300")).toBeVisible();
-    await expect(page.getByText("USD 46,000 of USD 75,000")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Explorer" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: /^Friend/ })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Founder" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Allies" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Let's talk" })).toBeVisible();
+    const fundador = tarjeta(page, /^Founder/);
+    await expect(fundador).toContainText("USD 1,500 · one-time payment");
+    await expect(fundador).toContainText("63 of 100 passes left");
+    await expect(tarjeta(page, /^Friend/)).toContainText("Most chosen");
     await expect(page.getByRole("heading", { name: "What each plan includes" })).toBeVisible();
-    await expect(page.locator("tbody tr")).toHaveCount(8);
+    await expect(page.locator("tbody tr")).toHaveCount(10);
     await expect(page.getByRole("heading", { name: "Invest", exact: true })).toBeVisible();
-    await expect(page.getByText("This is not an offer")).toBeVisible();
     await expect(page.getByText("Translated from Spanish")).toHaveCount(0);
   });
 
   test("facturación mensual y anual", async ({ page }) => {
-    await page.goto("/sumarte?plan=miembro");
-    const miembro = tarjeta(page, /Member of the network/);
+    await page.goto("/sumarte?plan=amigo");
+    const amigo = tarjeta(page, /^Friend/);
     await page.getByRole("button", { name: /^Monthly/ }).click();
-    await expect(miembro).toContainText("USD 10/month");
+    await expect(amigo).toContainText("USD 9/month");
     await page.getByRole("button", { name: /^Yearly/ }).click();
-    await expect(miembro).toContainText("USD 100/year");
-    await expect(miembro).toContainText("2 months free");
-    await page.getByRole("radio", { name: "Community", exact: true }).check({ force: true });
-    await expect(tarjeta(page, /Community Plan/)).toContainText("2 months free");
+    await expect(amigo).toContainText("USD 90/year");
+    await expect(amigo).toContainText("2 months free");
+  });
+
+  test("las reglas del FARO de prepago se leen en inglés, en borrador", async ({ page }) => {
+    await page.goto("/sumarte?plan=amigo");
+    const faro = page.locator("#faro-amigo");
+    await expect(faro.getByText("Draft · to be defined")).toBeVisible();
+    await expect(faro.getByRole("listitem")).toHaveCount(5);
+    await expect(faro).toContainText("1 FARO = USD 1 (to be defined) at list price");
+    await expect(faro).toContainText("It gives no voice");
   });
 
   test("el contenido no deja español suelto, con cada plan", async ({ page }) => {
-    for (const plan of ["explorador", "miembro", "fundador", "comunidad"]) {
+    for (const plan of ["explorador", "amigo", "fundador"]) {
       await page.goto(`/sumarte?plan=${plan}`);
       await expect(page.getByRole("heading", { name: "Invest", exact: true })).toBeVisible();
       expect(await textosEnEspanol(page, "main")).toEqual([]);
     }
   });
 
-  test("Semillas se escribe 'Semillas (seeds)' la primera vez y sin traducción automática", async ({ page }) => {
-    await page.goto("/sumarte?plan=miembro");
-    const miembro = tarjeta(page, /Member of the network/);
-    await expect(miembro.locator('[translate="no"]', { hasText: "Semillas (seeds)" })).toBeVisible();
-  });
-
-  test("el ⚖ de 'Semillas' se ve en español con 'Only available in Spanish'; el del Pase ya está en inglés", async ({ page }) => {
-    await page.goto("/sumarte?plan=miembro");
-    await tarjeta(page, /Member of the network/)
-      .getByRole("button", { name: "What it means legally (only in Spanish): Semillas" })
-      .click();
-    await expect(page.getByText("Only available in Spanish").first()).toBeVisible();
-    await page.getByRole("radio", { name: "Founder", exact: true }).check({ force: true });
-    await expect(
-      tarjeta(page, /Founder Pass/).getByRole("button", { name: "What it means legally: Founder Pass" }),
-    ).toBeVisible();
-  });
-
-  test("la frase 'no es una inversión' se lee en inglés, sin la marca de solo en español", async ({ page }) => {
-    await page.goto("/sumarte?plan=fundador");
-    const pase = tarjeta(page, /Founder Pass/);
-    await expect(
-      pase.getByText("It is not an investment: it gives no land, lots, priority or return, and it cannot be resold."),
-    ).toBeVisible();
-    await expect(pase.locator('[lang="es"]')).toHaveCount(0);
-    await expect(pase.getByText("(only available in Spanish)")).toHaveCount(0);
+  test("el ⚖ del FARO de prepago ya está en inglés", async ({ page }) => {
+    await page.goto("/sumarte?plan=amigo");
+    await expect(page.locator("#faro-amigo").getByRole("button", { name: "What it means legally: Prepaid FARO" })).toBeVisible();
   });
 
   test("sin cuenta, el panel de ayuda y el aviso de registro están en inglés", async ({ page }) => {
@@ -141,27 +117,20 @@ test.describe("Sumarte en inglés con una cuenta Explorer", () => {
   test("abrir /pactos por dirección lleva a Sumarte con el aviso en inglés", async ({ page }) => {
     await page.goto("/pactos");
     await expect(page).toHaveURL(/\/sumarte\?volver=%2Fpactos$/);
-    await expect(page.getByText("Pacts is unlocked with the Member plan.")).toBeVisible();
+    await expect(page.getByText("Pacts is unlocked with the Friend plan.")).toBeVisible();
     await expect(page.getByText("Choose a plan to join and we'll take you back to where you were.")).toBeVisible();
     await expect(page.getByText("Your current plan:")).toContainText("Explorer");
   });
 
-  test("elegir Member guarda el plan y se lee 'Your plan (simulated)'", async ({ page }) => {
-    await page.goto("/sumarte?plan=miembro");
-    await page.getByRole("button", { name: "Become a member" }).click();
-    await expect(tarjeta(page, /Member of the network/).getByText("Your plan (simulated)")).toBeVisible();
+  test("elegir Friend guarda el plan, se lee 'Your plan (simulated)' y se puede dar de baja", async ({ page }) => {
+    await page.goto("/sumarte?plan=amigo");
+    await page.getByRole("button", { name: "Become a Friend" }).click();
+    await expect(tarjeta(page, /^Friend/).getByText("Your plan (simulated)")).toBeVisible();
     await page.reload();
-    await expect(tarjeta(page, /Member of the network/).getByText("Your plan (simulated)")).toBeVisible();
-    await expect(page.getByText("Your current plan:")).toContainText("Member");
-  });
-
-  test("el Plan Comunidad muestra el estado de las comunidades en inglés", async ({ page }) => {
-    await page.goto("/sumarte?plan=comunidad");
-    await page.getByRole("button", { name: "Add my community" }).click();
-    await expect(page.getByRole("group", { name: "Which community will you lead?" })).toBeVisible();
-    await expect(page.getByText("(Active)").first()).toBeVisible();
-    await page.getByRole("radio", { name: /Propose a new community/ }).check();
-    await expect(page.getByRole("button", { name: "Become leader of this community" })).toBeEnabled();
+    await expect(tarjeta(page, /^Friend/).getByText("Your plan (simulated)")).toBeVisible();
+    await expect(page.getByText("Your current plan:")).toContainText("Friend");
+    await tarjeta(page, /^Friend/).getByRole("button", { name: "Cancel my plan (simulated)" }).click();
+    await expect(page.getByText("Your current plan:")).toContainText("Explorer");
   });
 
   test("pesos: los montos y la nota del tipo de cambio van en inglés", async ({ page }) => {
@@ -173,14 +142,12 @@ test.describe("Sumarte en inglés con una cuenta Explorer", () => {
     await page.goto("/sumarte?plan=fundador");
     await expect(page.getByText(/Amounts in Argentine pesos \(ARS\)\./)).toBeVisible();
     await expect(page.getByText(/Sample exchange rate: 1 USD = 1,400 ARS\. This is not a real quote\./)).toBeVisible();
-    await expect(tarjeta(page, /Founder Pass/)).toContainText("ARS 2,100,000 · one-time payment");
+    await expect(tarjeta(page, /^Founder/)).toContainText("ARS 2,100,000 · one-time payment");
   });
 
-  test("pedir una invitación: formulario, error y confirmación en inglés", async ({ page }) => {
-    await conIdentidadVerificada(page);
+  test("Aliados: el pedido de contacto en inglés se guarda siempre en español", async ({ page }) => {
     await page.goto("/sumarte");
-    await page.getByRole("button", { name: "Request an invitation" }).click();
-    await expect(page.getByText("Invitation to the circle · Series program")).toBeVisible();
+    await page.getByRole("button", { name: "Let's talk" }).click();
     await page.getByRole("button", { name: "Send request (simulated)" }).click();
     await expect(page.getByText("Choose how you'd like us to contact you").last()).toBeVisible();
     await page.getByRole("radio", { name: "Email" }).check();
@@ -188,37 +155,23 @@ test.describe("Sumarte en inglés con una cuenta Explorer", () => {
     await expect(page.getByText("5 of 500 characters.")).toBeVisible();
     await page.getByRole("button", { name: "Send request (simulated)" }).click();
     await expect(page.getByText("Request received (simulated). It would be seen by: NetX team.")).toBeVisible();
-    await expect(page.getByText("Invitation requested (simulated)")).toBeVisible();
-    // En pantalla va en inglés, pero la bandeja lo guarda siempre en español.
+    await expect(page.getByText("Request sent (simulated)")).toBeVisible();
     const guardado = await page.evaluate(() =>
       Object.keys(window.localStorage)
         .filter((k) => k.includes("lh-contactos"))
         .map((k) => window.localStorage.getItem(k))
         .join(""),
     );
-    expect(guardado).toContain("Programa de series");
-  });
-
-  test("sin identidad verificada, el diálogo de verificación se abre en inglés", async ({ page }) => {
-    await page.goto("/sumarte");
-    await page.getByRole("button", { name: "Request an invitation" }).click();
-    const dialogo = page.getByRole("dialog", { name: /Verify my identity/ });
-    await expect(dialogo).toBeVisible();
-    expect(await dialogo.evaluate((el) => Boolean(el.closest('[lang="es"]')))).toBe(false);
-    await expect(dialogo).toContainText("To request an invitation to invest we first need to verify your identity.");
-    // El primer paso sin llenar: el error sale en inglés y el foco va al campo.
-    await dialogo.getByRole("button", { name: "Next" }).click();
-    await expect(dialogo.getByText("Error: Enter your full name.")).toBeVisible();
-    await expect(dialogo.getByLabel("Full name")).toBeFocused();
+    expect(guardado).toContain("Aliados");
   });
 });
 
-test.describe("Sumarte en español no cambia", () => {
-  test("el aviso de nivel, los montos y el pedido siguen en español", async ({ page }) => {
+test.describe("Sumarte en español no cambia de idioma", () => {
+  test("el aviso de nivel, los montos y los planes siguen en español", async ({ page }) => {
     await page.goto("/sumarte?plan=fundador");
     await expect(html(page)).toHaveAttribute("lang", "es");
     await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
-    await expect(tarjeta(page, /Pase Fundador/)).toContainText("USD 1.500 · pago único");
-    await expect(page.getByText("USD 46.000 de USD 75.000")).toBeVisible();
+    await expect(tarjeta(page, /^Fundador/)).toContainText("USD 1.500 · pago único");
+    await expect(tarjeta(page, /^Fundador/)).toContainText("Quedan 63 de 100 pases");
   });
 });

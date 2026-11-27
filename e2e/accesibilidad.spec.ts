@@ -412,7 +412,7 @@ test("celular 390 px: /sumarte no tiene desborde horizontal, con la sección Inv
 test("axe sin violaciones serias o críticas: /sumarte con el formulario de contacto abierto", async ({ page }) => {
   await conIdentidadVerificada(page);
   await page.goto("/sumarte");
-  await page.getByRole("button", { name: "Pedir invitación" }).click();
+  await page.getByRole("button", { name: "Hablemos" }).click();
   await expect(page.getByRole("button", { name: "Enviar pedido (simulado)" })).toBeVisible();
   // También con el error de canal a la vista.
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
@@ -424,12 +424,12 @@ test("axe sin violaciones serias o críticas: /sumarte con el formulario de cont
 
 test("axe sin violaciones serias o críticas: /admin con un pedido en la bandeja", async ({ page }) => {
   await page.goto("/sumarte");
-  await page.getByRole("button", { name: "Pedir una charla" }).click();
+  await page.getByRole("button", { name: "Hablemos" }).click();
   await page.getByRole("radio", { name: "Email" }).check();
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
-  await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
+  await expect(page.getByText("Pedido enviado (simulado)")).toBeVisible();
   await page.goto("/admin");
-  await expect(page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" })).toBeVisible();
+  await expect(page.getByRole("row").filter({ hasText: "Pedido de Aliados" })).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
@@ -437,12 +437,12 @@ test("axe sin violaciones serias o críticas: /admin con un pedido en la bandeja
 
 test("axe sin violaciones serias o críticas: /admin, /admin/personas y /admin/comunidades con una postulación y un pedido cargados", async ({ page }) => {
   await page.goto("/sumarte");
-  await page.getByRole("button", { name: "Pedir una charla" }).click();
+  await page.getByRole("button", { name: "Hablemos" }).click();
   await page.getByRole("radio", { name: "Email" }).check();
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
-  await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
+  await expect(page.getByText("Pedido enviado (simulado)")).toBeVisible();
   await page.goto("/admin");
-  await expect(page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" })).toBeVisible();
+  await expect(page.getByRole("row").filter({ hasText: "Pedido de Aliados" })).toBeVisible();
   expect(await graves(page)).toEqual([]);
   await page.goto("/admin/personas");
   await expect(page.getByRole("region", { name: "Personas y roles" })).toBeVisible();
@@ -479,10 +479,10 @@ test("axe sin violaciones serias o críticas: /admin con un pedido con origen", 
   await page.goto("/?utm_source=newsletter&utm_campaign=congreso-2027");
   await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-origen"))).not.toBeNull();
   await page.goto("/sumarte");
-  await page.getByRole("button", { name: "Pedir una charla" }).click();
+  await page.getByRole("button", { name: "Hablemos" }).click();
   await page.getByRole("radio", { name: "Email" }).check();
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
-  await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
+  await expect(page.getByText("Pedido enviado (simulado)")).toBeVisible();
   await page.goto("/admin");
   await expect(page.getByRole("row").filter({ hasText: "newsletter · sin dato · congreso-2027" })).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
@@ -803,7 +803,7 @@ test.describe("la ficha de un lote (persona propia)", () => {
 test.describe("pasos previos al login (consentimiento-alta)", () => {
   test.use({ rol: "ninguno", consentimiento: "ninguno" });
 
-  test("axe sin violaciones serias o críticas: Crear tu cuenta y Entrar, abiertos y con el error a la vista", async ({ page }) => {
+  test("axe sin violaciones serias o críticas: Crear tu cuenta, abierto y con el error a la vista", async ({ page }) => {
     await page.goto("/sumarte?plan=explorador");
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
     const alta = page.getByRole("dialog", { name: "Crear tu cuenta" });
@@ -813,13 +813,18 @@ test.describe("pasos previos al login (consentimiento-alta)", () => {
     await expect(alta.getByRole("alert")).toBeVisible();
     expect(await graves(page)).toEqual([]);
     await alta.getByRole("button", { name: "Cancelar" }).click();
+    // El diálogo "Entrar" ya no tiene casillas (casillas-una-sola-vez): su axe, con el formulario y en los dos temas, está en
+    // `login-neon-auth.spec.ts` (el diálogo solo existe con Neon Auth). Acá, la pantalla de consentimiento que sale después del login.
+  });
+});
 
-    await page.getByRole("banner").getByRole("button", { name: "Entrar" }).click();
-    const entrar = page.getByRole("dialog", { name: "Entrar" });
-    await expect(entrar).toBeVisible();
-    expect(await graves(page)).toEqual([]);
-    await entrar.getByRole("button", { name: "Aceptar y entrar" }).click();
-    await expect(entrar.getByRole("alert")).toBeVisible();
+test.describe("pantalla de consentimiento después del login (casillas-una-sola-vez)", () => {
+  // Sesión sembrada con un email propio y sin consentimiento: es la pantalla que ve quien entra por "Entrar" y nunca aceptó.
+  test.use({ rol: "persona", consentimiento: "ninguno", plan: "ninguno" });
+
+  test("axe sin violaciones serias o críticas con las casillas sin marcar", async ({ page }) => {
+    await page.goto("/participa");
+    await expect(page.getByRole("heading", { level: 1, name: "Antes de seguir: tu privacidad" })).toBeVisible();
     expect(await graves(page)).toEqual([]);
   });
 });

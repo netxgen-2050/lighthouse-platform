@@ -160,7 +160,7 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
   const comunes = useTextos("comunes");
   const { estado: estadoSesion, nivel, nivelListo } = useSesion();
   const conSesion = estadoSesion === "ok";
-  // Adherir es de Miembro en adelante; Explorador y sin cuenta ven "Sumate para adherir".
+  // Adherir pide cuenta (Explorador en adelante): sin cuenta se ve "Sumate para adherir".
   const puedeAdherir = conSesion && puedeCapacidad(nivel, "adherir");
   const { estado, cargado, falloAlmacen, adherir, aceptar, desactualizada } = useMembresia(m.id, conSesion);
   const esLighthouse = m.id === COMUNIDAD_LIGHTHOUSE;
@@ -274,7 +274,7 @@ export function LecturaManifiesto({ manifiesto: m, pactos }: { manifiesto: Manif
         estadoSesion === "cargando" || (conSesion && !nivelListo) ? null : (
           <div className="mt-4 grid gap-3 rounded-xl border border-faint bg-surface-2 p-4">
             <p className="text-sm">{tm.puedesLeer}</p>
-            <EntrarPara texto={tm.sumateAdherir} nivelMinimo="miembro" />
+            <EntrarPara texto={tm.sumateAdherir} />
           </div>
         )
       ) : !cargado ? null : estado === "no-miembro" || desactualizada ? (

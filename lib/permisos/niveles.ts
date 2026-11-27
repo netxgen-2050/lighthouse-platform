@@ -60,7 +60,8 @@ export const NIVEL_MINIMO: Record<Capacidad, Nivel> = {
   personal: "explorador",
   reportar: "sin-cuenta",
   participar: "miembro",
-  adherir: "miembro",
+  // La voz y el trabajo no se compran (sumarte-planes-v2): adherir y sumarse a un equipo de Participa piden cuenta, no un plan.
+  adherir: "explorador",
   "admin-tribu": "lider",
   "vista-netx": "explorador",
   admin: "superadmin",

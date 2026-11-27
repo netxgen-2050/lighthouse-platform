@@ -126,7 +126,7 @@ export function SumarmeEquipo({
       {e.tipo === "sin-capacidad" && (
         <div className="grid gap-2">
           <p className="text-sm">{tm.puedesLeer}</p>
-          <EntrarPara texto={tm.sumateAdherir} nivelMinimo="miembro" />
+          <EntrarPara texto={tm.sumateAdherir} />
         </div>
       )}
       {e.tipo === "sin-adhesion" && (

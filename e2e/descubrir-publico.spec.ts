@@ -39,7 +39,7 @@ test.describe("páginas públicas sin sesión", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
     await page.goto("/pactos");
     await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
-    await expect(page.getByText("Pactos se habilita con el plan Miembro.")).toBeVisible();
+    await expect(page.getByText("Pactos se habilita con el plan Amigo.")).toBeVisible();
     await page.goto("/tribus/valle/postular");
     await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
     await expect(page.getByText("se habilita al sumarte gratis como Explorador.")).toBeVisible();
@@ -94,7 +94,7 @@ test.describe("navegación sin sesión", () => {
     // Una página de Participar sigue pidiendo el plan Miembro por su dirección: lleva a Sumarte y vuelve al sumarse.
     await page.goto("/pactos");
     await expect(page).toHaveURL(/\/sumarte\?volver=%2Fpactos$/);
-    await expect(page.getByText("Pactos se habilita con el plan Miembro.")).toBeVisible();
+    await expect(page.getByText("Pactos se habilita con el plan Amigo.")).toBeVisible();
   });
 
   test("la barra superior muestra Sumarte y Entrar; Reportar aparece y Hifa no, sin cuenta", async ({ page }) => {
@@ -111,7 +111,6 @@ test.describe("navegación sin sesión", () => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     await page.goto("/tribus/valle");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
-    await aceptarPaso(page);
     await expect(page).toHaveURL(/\/sumarte\?volver=%2Ftribus%2Fvalle/);
     await abrirModoDePrueba(page);
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();

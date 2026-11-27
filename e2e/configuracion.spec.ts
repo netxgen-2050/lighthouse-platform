@@ -184,8 +184,8 @@ test("moneda ARS: /sumarte muestra los precios en pesos con la nota del tipo de 
   await expect(page.getByText("ARS 2.100.000").first()).toBeVisible();
   await expect(page.getByText(/Tipo de cambio de ejemplo: 1 USD = 1\.400 ARS/)).toBeVisible();
   await expect(page.getByText("USD 1.500")).toHaveCount(0);
-  await page.getByRole("radio", { name: "Miembro", exact: true }).check({ force: true });
-  await expect(page.getByRole("article", { name: /Miembro de la red/ })).toContainText("ARS 140.000/año");
+  // En compu (≥ 1024 px) los tres planes se ven a la vez: Amigo anual son USD 90 × 1.400.
+  await expect(page.getByRole("article", { name: /^Amigo/ })).toContainText("ARS 126.000/año");
 });
 
 test("moneda ARS: /pactos muestra el aporte registrado en pesos con la nota", async ({ page }) => {

@@ -151,6 +151,17 @@ export const TERMINOS = {
         "A non-transferable membership of the Lighthouse commons. It gives influence in the Common Fund, access and service credits. It gives no land, lots, priority or return, and it cannot be resold. The Pass money goes to the Common Fund, not to NetX. Under the hybrid model it is received by the land Foundation, which does not exist yet; who would receive it in the meantime is still undefined. To be verified with a lawyer.",
     },
   },
+  faroprepago: {
+    titulo: "FARO de prepago",
+    texto:
+      "Un crédito que se acredita al pagar un plan de Sumarte y se canjea por servicios de NetX que ya existen (eventos de comunidad, visitas, talleres y sesiones). Se quema al usarse, vence, no se devuelve en plata y no da voz, ni derechos sobre la tierra, ni prioridad, reserva o crédito sobre un lote. Las reglas son un borrador a definir. A verificar con abogado.",
+    borrador: true,
+    en: {
+      titulo: "Prepaid FARO",
+      texto:
+        "A credit granted when you pay for a Join plan and redeemed for NetX services that already exist (community events, visits, workshops and sessions). It is burned when used, it expires, it is not refunded in money and it gives no voice, no rights over the land, and no priority, reservation or credit toward a lot. The rules are a draft to be defined. To be verified with a lawyer.",
+    },
+  },
   guardian: {
     titulo: "El Fondo Común",
     texto:

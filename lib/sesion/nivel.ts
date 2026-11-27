@@ -82,7 +82,6 @@ export function leerPendiente(almacen: Pick<Storage, "getItem">, ahora: number =
         x.tipo === "invitacion" ||
         x.tipo === "charla" ||
         (x.tipo === "plan" && (x.plan === "explorador" || x.plan === "miembro")) ||
-        (x.tipo === "nivel" && (x.nivel === "semilla" || x.nivel === "brote" || x.nivel === "raiz")) ||
         (x.tipo === "tribu" && (x.tribuId === undefined || x.tribuId === null || typeof x.tribuId === "string"))
       );
     });

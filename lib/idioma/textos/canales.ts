@@ -1,10 +1,9 @@
 // Textos de Canales (`/canales`, que hoy lleva al Pasaporte): por qué se abre cada puerta, qué la abre y el refuerzo por
-// presencia. Los nombres de las puertas viven en `textos/pasaporte`; los de los planes salen del glosario y los del
-// nivel del pase de `textos/sumarte`. "Genesis" es un nombre propio y no se traduce.
+// presencia. Los nombres de las puertas viven en `textos/pasaporte`; los de los planes salen del glosario.
+// "Genesis" es un nombre propio y no se traduce.
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
 import { pasaporte } from "./pasaporte";
-import { sumarte } from "./sumarte";
 import { conVocabulario } from "../vocabulario";
 
 const G = GLOSARIO;
@@ -13,7 +12,7 @@ const es = {
   /** Nombres de las 10 puertas, los mismos que muestra el Pasaporte. */
   nombres: pasaporte.es.puertas.nombres,
   planes: { explorador: G.explorador.es, miembro: G.miembro.es },
-  pases: sumarte.es.niveles,
+  pases: { fundador: G.fundador.es },
   /** Por qué está abierta una puerta. */
   motivos: {
     plan: "por tu plan",
@@ -43,7 +42,7 @@ const es = {
 const en: Textos<typeof es> = {
   nombres: pasaporte.en.puertas.nombres,
   planes: { explorador: G.explorador.en, miembro: G.miembro.en },
-  pases: sumarte.en.niveles,
+  pases: { fundador: G.fundador.en },
   motivos: {
     plan: "because of your plan",
     pase: "because of your pass",

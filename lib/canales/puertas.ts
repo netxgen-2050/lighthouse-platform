@@ -3,7 +3,7 @@ import type { Idioma } from "@/lib/idioma/tipos";
 import type { ClaveTermino } from "@/lib/legal/terminos";
 import { puede } from "@/lib/permisos/calcular";
 import { COLUMNAS, TABLA } from "@/lib/permisos/tabla";
-import type { Grado, Persona, Puerta, Resultado } from "@/lib/permisos/tipos";
+import type { Grado, Pase, Persona, Puerta, Resultado } from "@/lib/permisos/tipos";
 import type { EstadoSumarte } from "@/lib/sumarte/estado";
 
 /** Una tribu a la que la persona fue aceptada (solo existe en el simulador). */
@@ -45,11 +45,17 @@ export function nombresDePases(idioma: Idioma = "es") {
   return textos("canales", idioma).pases;
 }
 
+/**
+ * La tabla de permisos conserva tres columnas de pase (Semilla, Brote, Raíz) que dan lo mismo. Sumarte ya no tiene niveles:
+ * el Fundador usa una sola de ellas.
+ */
+export const PASE_DE_PERMISOS: Pase = "brote";
+
 /** Persona armada con lo elegido en Sumarte: sin tribu, sin presencia, no residente. */
 export function personaDesdeSumarte(estado: Pick<EstadoSumarte, "plan" | "pase">): Persona {
   return {
     plan: estado.plan,
-    pase: estado.pase,
+    pase: estado.pase ? PASE_DE_PERMISOS : null,
     tribus: [],
     presenciaGenesis: false,
     residente: false,

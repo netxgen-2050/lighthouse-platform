@@ -170,12 +170,12 @@ function mesesConfirmados(declaradas: Record<string, { estado: string }>): boole
   return Object.values(declaradas).some((d) => d.estado === "confirmada");
 }
 
-/** Nivel del Pase activo guardado por /sumarte, o null. */
+/** Pase activo guardado por /sumarte ("fundador"), o null. Los niveles del modelo anterior (Semilla, Brote, Raíz) cuentan como Fundador. */
 export function paseActivo(crudo: string | null): string | null {
   if (!crudo) return null;
   try {
     const p = (JSON.parse(crudo) as Record<string, unknown>).pase;
-    return p === "semilla" || p === "brote" || p === "raiz" ? p : null;
+    return p === "semilla" || p === "brote" || p === "raiz" || p === "fundador" ? "fundador" : null;
   } catch {
     return null;
   }

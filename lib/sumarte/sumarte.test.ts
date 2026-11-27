@@ -1,43 +1,50 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { COHORT, FILAS, MEMBRESIA, miles, PASSES, PLAN_TRIBU } from "./datos";
+import { sumarte } from "@/lib/idioma/textos/sumarte";
+import { AMIGO, FARO_PREPAGO, FILAS, FUNDADOR, miles, pasesQueQuedan, repartoDelPago } from "./datos";
 import { INICIAL, leer, reducir } from "./estado";
 
-const mock = readFileSync(path.join(__dirname, "../../docs/referencia/netx-tribus-mockup-v6.html"), "utf8");
-
 describe("datos", () => {
-  it("coinciden con el mock-up", () => {
-    for (const p of PASSES) {
-      expect(mock).toContain(`{id:"${p.id}", name:"${p.nombre}", price:${p.precio}, credits:${p.creditos}}`);
-    }
-    expect(mock).toContain(`const COHORT = {sold:${COHORT.vendidos}, cap:${COHORT.cupo}, raised:${COHORT.recaudado}, min:${COHORT.minimo}};`);
-    expect(MEMBRESIA).toEqual({ mensual: 10, anual: 100 });
-    expect(PLAN_TRIBU).toEqual({ mensual: 60, anual: 600 });
+  it("los planes de ejemplo", () => {
+    expect(AMIGO).toEqual({ mensual: 9, anual: 90 });
+    expect(FUNDADOR.precio).toBe(1500);
+    expect(FUNDADOR.cupo).toBe(100);
   });
-  it("las filas que no cambiaron están en el mock-up; la 1 y la 7 se reescribieron sin Congreso ni Ronda 0", () => {
-    expect(FILAS).toHaveLength(8);
-    FILAS.forEach((f, i) => {
-      if (i === 0 || i === 6) return;
-      expect(mock, f.texto.es).toContain(`["${f.texto.es}",`);
-    });
-    expect(FILAS[0].texto.es).toBe("Mapa, tribus y eventos abiertos");
-    expect(FILAS[6].texto.es).toBe("Influencia en el Fondo Común (próximamente: conviction voting)");
-    expect(FILAS[6].incluye).toEqual([false, false, true]);
+  it("el precio anual es 10 veces el mensual (2 meses gratis)", () => {
+    expect(AMIGO.anual).toBe(AMIGO.mensual * 10);
   });
-  it("ninguna fila nombra el Congreso, la Ronda 0 ni el fideicomiso", () => {
+  it("el FARO de prepago está en borrador y no da voz", () => {
+    expect(FARO_PREPAGO.borrador).toBe(true);
+    expect(FARO_PREPAGO.daVoz).toBe(false);
+  });
+  it("cuántos pases quedan en la cohorte", () => {
+    expect(pasesQueQuedan(false)).toBe(FUNDADOR.cupo - FUNDADOR.vendidos);
+    expect(pasesQueQuedan(true)).toBe(FUNDADOR.cupo - FUNDADOR.vendidos - 1);
+  });
+  it("el reparto del pago suma lo que paga la persona", () => {
+    const m = repartoDelPago("amigo", "mensual");
+    expect(m.servicio + m.faro).toBe(AMIGO.mensual);
+    const a = repartoDelPago("amigo", "anual");
+    expect(a.servicio + a.faro).toBe(AMIGO.anual);
+    const f = repartoDelPago("fundador", "anual");
+    expect(f).toEqual({ servicio: FUNDADOR.precio - FARO_PREPAGO.fundadorDeUnaVez, faro: FARO_PREPAGO.fundadorDeUnaVez });
+  });
+  it("las filas tienen su inglés y ninguna nombra el Congreso, la Ronda 0 ni el fideicomiso", () => {
+    expect(FILAS.length).toBeGreaterThan(0);
     for (const f of FILAS) {
+      expect(f.texto.en?.trim(), f.texto.es).toBeTruthy();
       for (const texto of [f.texto.es, f.texto.en ?? ""]) {
         expect(texto).not.toMatch(/Congreso|Congress|Ronda 0|Round 0|fideicomiso|trust/i);
       }
     }
+    // Los beneficios de Aliados (los que se ven) salen de los textos: todos "próximamente" y con su inglés.
+    expect(sumarte.es.aliados.incluye.every((b) => b.pronto)).toBe(true);
+    expect(sumarte.en.aliados.incluye).toHaveLength(sumarte.es.aliados.incluye.length);
+    for (const b of sumarte.en.aliados.incluye) expect(b.texto.trim()).toBeTruthy();
   });
-  it("todas las filas tienen su inglés", () => {
-    for (const f of FILAS) expect(f.texto.en?.trim(), f.texto.es).toBeTruthy();
-  });
-  it("el precio anual es 10 veces el mensual (2 meses gratis)", () => {
-    expect(MEMBRESIA.anual).toBe(MEMBRESIA.mensual * 10);
-    expect(PLAN_TRIBU.anual).toBe(PLAN_TRIBU.mensual * 10);
+  it("la bitácora, las sesiones y el cupo de eventos figuran como próximamente", () => {
+    const pronto = FILAS.filter((f) => f.incluye[1] === "pronto").map((f) => f.texto.es);
+    expect(pronto.some((x) => /Bitácora/.test(x))).toBe(true);
+    expect(pronto.some((x) => /sesión/.test(x))).toBe(true);
   });
   it("formatea miles con punto", () => {
     expect(miles(46000)).toBe("46.000");
@@ -46,44 +53,86 @@ describe("datos", () => {
   });
 });
 
+describe("textos de Sumarte", () => {
+  const PROHIBIDAS = {
+    es: /inversi[oó]n|retorno|rendimiento|de por vida/i,
+    en: /investment|return on|\breturns?\b|yield|lifetime|for life/i,
+  };
+  // El texto de `invertir` y los avisos de nivel viven en otras secciones: acá se revisan los planes, el FARO y la bajada.
+  function textosDePlanes(idioma: "es" | "en"): string[] {
+    const t = sumarte[idioma];
+    return JSON.stringify({ pagina: t.pagina, caminos: t.caminos, selector: t.selector, planes: t.planes, faro: t.faro, aliados: t.aliados })
+      .split('"')
+      .filter((s) => s.length > 3);
+  }
+  for (const idioma of ["es", "en"] as const) {
+    it(`ninguna palabra de inversión, retorno, rendimiento ni "de por vida" en los planes (${idioma})`, () => {
+      for (const s of textosDePlanes(idioma)) expect(s).not.toMatch(PROHIBIDAS[idioma]);
+      for (const f of FILAS) expect(f.texto[idioma] ?? "").not.toMatch(PROHIBIDAS[idioma]);
+    });
+  }
+  it("la bajada dice que el pago es simulado, no que todo lo es", () => {
+    expect(sumarte.es.pagina.intro).toMatch(/pago es simulado/i);
+    expect(sumarte.es.pagina.intro).not.toMatch(/todo lo que elijas/i);
+  });
+  it("no queda ningún plan del modelo anterior", () => {
+    const todo = JSON.stringify([sumarte.es.selector, sumarte.es.planes, sumarte.es.faro, sumarte.es.caminos]);
+    expect(todo).not.toMatch(/Semilla|Brote|Ra[ií]z|Plan Tribu|Miembro de la red/);
+  });
+});
+
 describe("estado", () => {
-  it("arranca como Explorador, anual, Brote", () => {
-    expect(INICIAL).toMatchObject({ plan: "explorador", facturacion: "anual", nivelPase: "brote", pase: null });
+  it("arranca como Explorador, anual, sin Fundador", () => {
+    expect(INICIAL).toMatchObject({ plan: "explorador", facturacion: "anual", pase: null });
   });
-  it("cambia facturación y nivel", () => {
+  it("cambia la facturación", () => {
     expect(reducir(INICIAL, { tipo: "facturacion", facturacion: "mensual" }).facturacion).toBe("mensual");
-    expect(reducir(INICIAL, { tipo: "nivel", nivel: "raiz" }).nivelPase).toBe("raiz");
   });
-  it("activar el pase usa el nivel elegido y volver a Explorador lo deshace", () => {
-    const a = reducir(reducir(INICIAL, { tipo: "nivel", nivel: "semilla" }), { tipo: "pase" });
-    expect(a.pase).toBe("semilla");
+  it("activar el Fundador incluye Amigo y volver a Explorador (darse de baja) lo deshace", () => {
+    const a = reducir(INICIAL, { tipo: "pase" });
+    expect(a.pase).toBe("fundador");
     expect(a.plan).toBe("miembro");
     expect(reducir(a, { tipo: "plan", plan: "explorador" })).toMatchObject({ plan: "explorador", pase: null });
   });
-  it("invitación y charla", () => {
-    expect(reducir(INICIAL, { tipo: "invitacion" }).invitacion).toBe(true);
+  it("Amigo se da de baja y vuelve a Explorador", () => {
+    const amigo = reducir(INICIAL, { tipo: "plan", plan: "miembro" });
+    expect(amigo.plan).toBe("miembro");
+    expect(reducir(amigo, { tipo: "plan", plan: "explorador" }).plan).toBe("explorador");
+  });
+  it("pedido de Aliados", () => {
     expect(reducir(INICIAL, { tipo: "charla" }).charla).toBe(true);
-  });
-  it("con pase activo el nivel no cambia", () => {
-    const a = reducir(INICIAL, { tipo: "pase" });
-    expect(reducir(a, { tipo: "nivel", nivel: "raiz" })).toEqual(a);
-  });
-  it("el pedido de Plan Tribu se guarda y se lee", () => {
-    const t = reducir(INICIAL, { tipo: "tribu" });
-    expect(t.tribu).toBe(true);
-    expect(leer(JSON.stringify(t)).tribu).toBe(true);
-  });
-  it("el Plan Tribu guarda la tribu elegida y cambiar de plan la quita", () => {
-    const t = reducir(INICIAL, { tipo: "tribu", tribuId: "valle" });
-    expect(t).toMatchObject({ plan: "miembro", tribu: true, tribuId: "valle" });
-    expect(leer(JSON.stringify(t))).toMatchObject({ tribu: true, tribuId: "valle" });
-    expect(reducir(t, { tipo: "plan", plan: "miembro" })).toMatchObject({ tribu: false, tribuId: null });
-    expect(reducir(t, { tipo: "plan", plan: "explorador" })).toMatchObject({ plan: "explorador", tribu: false, tribuId: null });
   });
   it("leer tolera basura", () => {
     expect(leer(null)).toEqual(INICIAL);
     expect(leer("{no json")).toEqual(INICIAL);
     expect(leer(JSON.stringify({ pase: "oro", plan: 3 }))).toEqual(INICIAL);
-    expect(leer(JSON.stringify({ ...INICIAL, pase: "raiz", plan: "miembro" })).pase).toBe("raiz");
+  });
+});
+
+describe("migración del estado guardado", () => {
+  it("un pase Semilla, Brote o Raíz del modelo anterior pasa a Fundador", () => {
+    for (const pase of ["semilla", "brote", "raiz"]) {
+      const e = leer(JSON.stringify({ plan: "miembro", pase, nivelPase: pase, facturacion: "mensual" }));
+      expect(e).toMatchObject({ plan: "miembro", pase: "fundador", facturacion: "mensual" });
+      expect(e).not.toHaveProperty("nivelPase");
+    }
+  });
+  it("un pase sin plan guardado también cuenta como Amigo", () => {
+    expect(leer(JSON.stringify({ pase: "raiz" }))).toMatchObject({ plan: "miembro", pase: "fundador" });
+  });
+  it("el Plan Tribu (tribu: true) pasa a Aliado y conserva la tribu que ya tenía guardada", () => {
+    expect(leer(JSON.stringify({ plan: "miembro", tribu: true, tribuId: "valle" }))).toMatchObject({ plan: "miembro", tribu: true, tribuId: "valle" });
+    expect(leer(JSON.stringify({ tribu: true }))).toMatchObject({ plan: "miembro", tribu: true, tribuId: null });
+  });
+  it("una tribu guardada sin Plan Tribu no cuenta", () => {
+    expect(leer(JSON.stringify({ plan: "miembro", tribuId: "valle" }))).toMatchObject({ tribu: false, tribuId: null });
+  });
+  it("Miembro sin pase queda como Amigo y Explorador como Explorador", () => {
+    expect(leer(JSON.stringify({ plan: "miembro" })).plan).toBe("miembro");
+    expect(leer(JSON.stringify({ plan: "explorador" })).plan).toBe("explorador");
+  });
+  it("lo ya migrado se lee igual", () => {
+    const e = reducir(INICIAL, { tipo: "pase" });
+    expect(leer(JSON.stringify(e))).toEqual(e);
   });
 });

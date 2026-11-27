@@ -28,6 +28,19 @@ export async function aceptarPaso(page: Page, opciones: { novedades?: boolean } 
   await dialogo.getByRole("button", { name: /^Aceptar y (entrar|crear mi cuenta)$/ }).click();
 }
 
+/**
+ * Acepta la pantalla de consentimiento que sale después del login a quien no tiene consentimiento vigente (casillas-una-sola-vez):
+ * marca las dos casillas obligatorias y aprieta su botón. `novedades: true` marca también la casilla opcional (si se ofrece).
+ * `aceptarPaso` queda para "Crear tu cuenta", que sigue pidiendo las casillas antes del login.
+ */
+export async function aceptarPantalla(page: Page, opciones: { novedades?: boolean } = {}) {
+  await page.getByRole("heading", { name: "Antes de seguir: tu privacidad" }).waitFor();
+  await page.getByRole("checkbox", { name: /Leí y acepto la política de privacidad/ }).check();
+  await page.getByRole("checkbox", { name: /Acepto los términos de uso del prototipo/ }).check();
+  if (opciones.novedades) await page.getByRole("checkbox", { name: "Quiero recibir novedades por email" }).check();
+  await page.getByRole("button", { name: "Aceptar y continuar" }).click();
+}
+
 /** Deja el sello de identidad ya obtenido (solo la primera vez, para que recargar no pise lo que la pantalla guardó). */
 export async function conIdentidadVerificada(page: Page) {
   await page.addInitScript(() => {
