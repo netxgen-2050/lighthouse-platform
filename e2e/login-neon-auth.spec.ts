@@ -1,5 +1,4 @@
 import AxeBuilder from "@axe-core/playwright";
-import { aceptarPaso } from "./ayudas";
 import type { Route } from "@playwright/test";
 import { expect, test, VERSION_PRUEBA, type Page } from "./fixtura";
 
@@ -39,26 +38,19 @@ async function simularNeonAuth(page: Page, r: Respuestas) {
 async function abrirFormulario(page: Page) {
   await page.goto("/");
   await barra(page).getByRole("button", { name: "Entrar" }).click();
-  await aceptarPaso(page);
   await expect(campoEmail(page)).toBeVisible();
 }
 
-test.describe("el paso de consentimiento es la única puerta", () => {
-  test("desde la barra: cerrar el paso sin aceptar no manda ningún pedido a /api/auth/ ni muestra el formulario", async ({ page }) => {
-    const pedidos = espiarAuth(page);
+test.describe("Entrar abre el login directo; Crear tu cuenta sigue con las casillas antes", () => {
+  test("desde la barra: el diálogo Entrar muestra el formulario ya, sin casillas, y avisa que la primera vez se pide aceptar después", async ({ page }) => {
     await page.goto("/");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
     await expect(dialogo(page, "Entrar")).toBeVisible();
-    await expect(campoEmail(page)).toHaveCount(0);
-    // Con una sola casilla tampoco.
-    await page.getByRole("checkbox", { name: /Leí y acepto la política de privacidad/ }).check();
-    await dialogo(page, "Entrar").getByRole("button", { name: "Aceptar y entrar" }).click();
-    await expect(dialogo(page, "Entrar").getByRole("alert")).toBeVisible();
-    await expect(campoEmail(page)).toHaveCount(0);
+    await expect(campoEmail(page)).toBeVisible();
+    await expect(page.getByRole("checkbox", { name: /Leí y acepto la política de privacidad/ })).toHaveCount(0);
+    await expect(dialogo(page, "Entrar").getByText("Si es tu primera vez, después te pedimos aceptar la política y los términos.")).toBeVisible();
     await dialogo(page, "Entrar").getByRole("button", { name: "Cancelar" }).click();
     await expect(dialogo(page, "Entrar")).toBeHidden();
-    await expect(campoEmail(page)).toHaveCount(0);
-    expect(pedidos).toEqual([]);
   });
 
   test("desde Sumarte (Crear tu cuenta): lo mismo", async ({ page }) => {
@@ -72,10 +64,9 @@ test.describe("el paso de consentimiento es la única puerta", () => {
     expect(pedidos).toEqual([]);
   });
 
-  test("al aceptar aparece el formulario, en el mismo diálogo y con el foco en el email", async ({ page }) => {
+  test("el formulario aparece en el diálogo Entrar, con el foco en el email", async ({ page }) => {
     await page.goto("/");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
-    await aceptarPaso(page);
     await expect(dialogo(page, "Entrar")).toBeVisible();
     await expect(campoEmail(page)).toBeFocused();
     await expect(page.getByRole("button", { name: "Mandame el código" })).toBeVisible();
