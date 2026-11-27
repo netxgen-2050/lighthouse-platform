@@ -36,6 +36,9 @@ Hoy la política se acepta después de entrar, y mientras tanto las páginas pú
 - `consentimientos` se suma a la lista de libros de solo agregar de ADR-001.
 - Revisar: cuando se mande el primer email de novedades de verdad (lista de correo, enlace de baja en el email, doble opt-in), y cuando se responda R29.
 
+## 27-nov-2026 · Gus: las casillas se marcan una sola vez
+Las casillas se marcan una sola vez. "Entrar" abre el login directo. Si la cuenta no tiene consentimiento vigente, ve la pantalla de consentimiento después del login. "Crear tu cuenta" sigue con las casillas antes. Costo aceptado: el email de quien entra sin haber aceptado nunca llega al proveedor del login antes de las casillas; la plataforma no guarda nada suyo hasta que acepta. **[verificar]** con abogado antes de abrir fuera del equipo (R29). Reemplaza el "costo aceptado" de marcar casillas en cada login. El #88 (`entrar-por-email`) queda estacionado. Cambio: `casillas-una-sola-vez`.
+
 ## En palabras simples
 Para entrar a la plataforma, primero tenés que aceptar la política y los términos: se pide al crear la cuenta y también cada vez que apretás "Entrar", antes de que se abra la ventana del login, así tu email no viaja a ningún lado sin que hayas aceptado. Si por algún motivo quedaste con la sesión abierta sin una aceptación vigente (por ejemplo, tardaste mucho en poner el código o cambió la política), la plataforma te vuelve a pedir que aceptes y, mientras tanto, te trata como a un visitante sin cuenta. Cada aceptación queda anotada como un renglón en un libro que no se borra: qué versión, cuándo, desde dónde y en qué idioma. Si un día retirás el consentimiento, se agrega otro renglón que lo dice, en vez de borrar el anterior. Recibir novedades por email es aparte y opcional: no hace falta para tener cuenta y lo podés sacar desde Mis datos.
 
