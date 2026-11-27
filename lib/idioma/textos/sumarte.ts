@@ -1,7 +1,9 @@
-// Textos de Sumarte (`/sumarte`): encabezado, planes, niveles del pase, comparativa, comprar un lote, invertir, avisos de nivel,
-// formulario de pedido de contacto y panel "Entrar como…". Los nombres de planes salen del glosario (una sola fuente).
-// Los textos con peso legal ("No es una inversión…", "Esto no es una oferta") no están acá: viven en el catálogo
-// (`lib/legal/terminos.ts`). Los montos tampoco: salen de `lib/lotes/modelo.ts` y de `lib/financiamiento/fuentes.ts`.
+// Textos de Sumarte (`/sumarte`): encabezado, planes de la fase 1 (Explorador, Amigo, Fundador y Aliados), FARO de prepago en
+// borrador, comparativa, comprar un lote, invertir, avisos de nivel, formulario de pedido de contacto y panel "Entrar como…".
+// Los nombres de planes salen del glosario (una sola fuente). Los textos con peso legal viven en el catálogo
+// (`lib/legal/terminos.ts`). Los números (precios, cupo, reglas del FARO) tampoco están acá: salen de `lib/sumarte/datos.ts`,
+// de `lib/lotes/modelo.ts` y llegan como argumentos. Ningún texto de los planes dice "inversión", "retorno", "rendimiento" ni
+// "de por vida" (un test lo revisa).
 import { GLOSARIO } from "../glosario";
 import type { Textos } from "../tipos";
 import { conVocabulario } from "../vocabulario";
@@ -15,30 +17,29 @@ const es = {
     sobretitulo: G.sumarte.es,
     h1: "Elegí cómo sumarte",
     intro:
-      "Sumarte es la puerta de entrada: cómo te sumás define qué podés hacer. Explorar es gratis. La membresía te abre las salas y los pactos. El Pase Fundador sostiene el Fondo Común del Lighthouse y te da influencia y créditos. Comprar un lote e invertir son otros caminos: están más abajo. Valores de ejemplo, a re-ajustar. Nada se cobra de verdad: todo lo que elijas acá es simulado y queda solo en este navegador.",
+      "Sumarte es la puerta de entrada. Explorar es gratis y alcanza para adherir al manifiesto y sumarte a un equipo de Participa: la voz y el trabajo no se compran. Amigo y Fundador suman utilidades y FARO de prepago. Comprar un lote e invertir son otros caminos: están más abajo. Valores de ejemplo, a re-ajustar. El pago es simulado: no se cobra nada y lo que elijas queda solo en este navegador.",
   },
   /** Los tres caminos de arriba (ux-sumarte): cada uno lleva a la parte de la página que le corresponde. */
   caminos: {
     titulo: "¿Qué querés hacer?",
     vivir: { etiqueta: "Quiero vivir", titulo: "Comprar un lote", texto: "Lotes de ejemplo en Lighthouse VRN." },
     invertir: { etiqueta: "Quiero invertir", titulo: "Invertir", texto: "Otro camino, con otros documentos." },
-    cuidar: { etiqueta: "Quiero cuidar el bien común", titulo: "Elegir un plan", texto: "Cuatro planes, uno por vez." },
+    cuidar: { etiqueta: "Quiero cuidar el bien común", titulo: "Elegir un plan", texto: "Tres planes y una franja para organizaciones." },
   },
-  /** Selector de planes (ux-sumarte). */
+  /** Selector de planes (en el celular, un plan por vez). */
   selector: {
     grupo: "Plan",
     planes: "Planes",
-    explorador: "Explorador",
-    miembro: "Miembro",
-    fundador: "Fundador",
-    comunidad: "Comunidad",
+    explorador: G.explorador.es,
+    miembro: G.miembro.es,
+    fundador: G.fundador.es,
     queIncluye: "Qué incluye y qué no",
     paraQuien: {
       titulo: "Para quién es",
-      explorador: "Para quien recién llega y quiere conocer el territorio antes de comprometerse.",
-      miembro: "Para quien quiere participar en las salas y proponer pactos.",
-      fundador: "Para quien quiere entrar temprano al Lighthouse y apoyarlo desde el principio.",
-      comunidad: "Para quien lidera una tribu con personería y quiere organizarla acá.",
+      explorador: "Para quien recién conoce el proyecto.",
+      miembro: "Para quien sigue el proyecto y quiere estar cerca.",
+      fundador: "Para quien quiere apoyar desde el principio.",
+      aliados: "Empresas, ONG y universidades.",
     },
   },
   /** Cajón del modo de prueba, al final de la página. */
@@ -61,14 +62,14 @@ const es = {
       otra: "Esta página",
     },
     rutaSuperadmin: (pagina: string) => `${pagina} es solo para el super admin del prototipo.`,
-    rutaFundador: (pagina: string) => `${pagina} se habilita con el ${G.paseFundador.es}.`,
-    rutaLider: (pagina: string) => `${pagina} se habilita con el ${G.planTribu.es}.`,
+    rutaFundador: (pagina: string) => `${pagina} se habilita con el plan ${G.fundador.es}.`,
+    rutaLider: (pagina: string) => `${pagina} es para ${G.aliado.es}s, según el acuerdo.`,
     rutaMiembro: (pagina: string) => `${pagina} se habilita con el plan ${G.miembro.es}.`,
     rutaExplorador: (pagina: string) => `${pagina} se habilita al sumarte gratis como ${G.explorador.es}.`,
     accionExplorador: `Esta acción se habilita al sumarte gratis como ${G.explorador.es}.`,
     accionMiembro: `Esta acción se habilita con el plan ${G.miembro.es}.`,
-    accionFundador: `Esta acción se habilita con el ${G.paseFundador.es}.`,
-    accionLider: `Esta acción se habilita con el ${G.planTribu.es}.`,
+    accionFundador: `Esta acción se habilita con el plan ${G.fundador.es}.`,
+    accionLider: `Esta acción es para ${G.aliado.es}s, según el acuerdo.`,
     accionNinguna: "Esta acción no se habilita desde Sumarte.",
     /** Lo que se suma al aviso de nivel dentro de Sumarte. */
     elegiUnPlan: "Elegí un plan para sumarte",
@@ -93,84 +94,109 @@ const es = {
     actual: "Tu plan actual:",
     sinCuenta: "Todavía no te sumaste: elegí un plan.",
     tuPlan: "Tu plan",
-    paseFundador: (nivel: string) => `${G.paseFundador.es} ${nivel}`,
   },
   pesos: {
     montos: "Montos en pesos argentinos (ARS).",
     cambiarMoneda: "Cambiar la moneda",
   },
-  explorador: {
-    nombre: G.explorador.es,
-    precio: "Gratis",
+  /** Los planes. Cada beneficio con `pronto` todavía no existe y se marca "Próximamente" en texto. */
+  planes: {
+    destacado: "El más elegido",
+    pronto: "Próximamente",
+    ningunPlan: "Ningún plan da prioridad, reserva ni crédito sobre un lote, ni acceso a invertir.",
+    explorador: {
+      nombre: G.explorador.es,
+      precio: "Gratis",
+      incluye: [
+        { texto: "Mapa y lotes en vitrina", pronto: false },
+        { texto: "Bien común: leer números y propuestas", pronto: false },
+        { texto: "Participa: sumarte a un equipo", pronto: false },
+        { texto: "Adherir al manifiesto", pronto: false },
+        { texto: "Mi tierra, Hifa y novedades mensuales", pronto: false },
+      ],
+      volver: `Volver a ${G.explorador.es}`,
+      sumarme: "Sumarme gratis",
+    },
+    amigo: {
+      nombre: G.miembro.es,
+      incluye: [
+        { texto: `Todo lo de ${G.explorador.es}`, pronto: false },
+        { texto: "Bitácora de obra y masterplan", pronto: true },
+        { texto: "Una sesión al mes con el equipo", pronto: true },
+        { texto: "Cupo antes que nadie en visitas y eventos (nunca en lotes)", pronto: true },
+        { texto: "FARO de prepago por mes", pronto: false },
+      ],
+      hacerme: `Hacerme ${G.miembro.es}`,
+      incluidoEnFundador: `Incluido en tu plan ${G.fundador.es}`,
+      darmeDeBaja: "Darme de baja",
+    },
+    fundador: {
+      nombre: G.fundador.es,
+      pagoUnico: " · pago único",
+      /** Cuántos pases quedan, en texto. */
+      cohorte: (quedan: string, cupo: string) => `Quedan ${quedan} de ${cupo} pases`,
+      incluye: [
+        { texto: `Todo lo de ${G.miembro.es} mientras dure tu FARO`, pronto: false },
+        { texto: "FARO de prepago de una vez", pronto: false },
+        { texto: "Visita guiada al sitio", pronto: true },
+        { texto: "Tu nombre en el registro Génesis", pronto: false },
+      ],
+      quiero: `Quiero ser ${G.fundador.es}`,
+      activo: `${G.fundador.es} activo`,
+    },
+  },
+  /** Franja de Aliados (organizaciones): no se elige con un plan, abre el pedido de contacto. */
+  aliados: {
+    nombre: "Aliados",
+    etiqueta: "Para organizaciones",
+    sinPrecio: "Sin precio fijo: lo hablamos con cada organización.",
     incluye: [
-      "Mapa y páginas de tribus",
-      "Entrevista con el agente",
-      "Eventos abiertos",
-      "Hifa y tu espacio personal",
+      { texto: "Patrocinar un proyecto de regeneración", pronto: true },
+      { texto: "Talleres para equipos", pronto: true },
+      { texto: "Acceso a datos para investigación", pronto: true },
     ],
-    volver: `Volver a ${G.explorador.es}`,
-    sumarme: "Sumarme gratis",
+    hablemos: "Hablemos",
+    referencia: "Aliados",
+    pedido: "Pedido enviado",
   },
-  miembro: {
-    nombre: `${G.miembro.es} de la red`,
-    todoExplorador: `Todo lo de ${G.explorador.es}`,
-    salas: "Salas de tribu y foros",
-    pactosY: "Pactos y ",
-    voz: "Voz en tu tribu",
-    plata: "La cobra NetX: es un servicio.",
-    hacerme: "Hacerme miembro",
-  },
-  fundador: {
-    cohorte: "Cohorte Génesis · fecha a definir",
-    nivelDelPase: "Nivel del pase",
-    pagoUnico: " · pago único · de por vida",
-    financias: "Sostenés el Fondo Común",
-    financiasFin: " y entrás a la cohorte fundadora. La misma influencia en los tres niveles.",
-    plata: "Va al Fondo Común del bien común, no a NetX.",
-    todoMiembro: `Todo lo de ${G.miembro.es}, 1 año incluido`,
-    creditos: (monto: string) => `${monto} en créditos comunes y de estadía`,
-    creditosFin: ", se liberan en 3 años y vencen a los 12 meses de liberarse",
-    influencia: "Influencia en el Fondo Común",
-    influenciaFin: ": la distribución de grandes sumas se va a decidir con conviction voting (próximamente)",
-    canal: "Canal de fundadores",
-    registroGenesis: "Registro Genesis si venís a un evento de comunidad (a definir)",
-    medidorPases: "Pases de la cohorte",
-    medidorMinimo: "Mínimo para abrir el Fondo Común",
-    activo: (nivel: string) => `Pase ${nivel} activo`,
-    quiero: (nivel: string) => `Quiero el Pase ${nivel}`,
-  },
-  niveles: { semilla: "Semilla", brote: "Brote", raiz: "Raíz" },
-  tribu: {
-    nombre: G.planTribu.es,
-    incluye: [
-      "Página pública y convocatorias",
-      "Pactos, rondas de reconocimiento y Semillas",
-      "Salas y canales propios",
-      "Ritual de entrada configurable",
-    ],
-    plata: "Lo cobra NetX: un servicio que le factura a la tribu.",
-    alElegir:
-      "Al elegirlo sos líder de tu tribu: todo lo de Miembro y la administración de la tribu que elijas. Cobro simulado, sin aprobación todavía.",
-    liderDe: (tribu: string) => `Sos líder de ${tribu}`,
-    tribuNueva: "Tu tribu nueva está por proponerse",
-    cambiar: "Cambiar de tribu",
-    elegirBarrio: "Elegir un barrio vacante para proponerla",
-    cual: "¿Qué tribu vas a liderar?",
-    proponerNueva: "Proponer una tribu nueva",
-    serLider: "Ser líder de esta tribu",
-    sumarMiTribu: "Sumar mi tribu",
+  /** FARO de prepago (borrador): sus números llegan como argumentos desde `FARO_PREPAGO`. */
+  faro: {
+    titulo: "Cómo funciona el FARO de tu plan",
+    borrador: "Borrador · a definir",
+    aDefinir: "(a definir)",
+    intro: "Tu plan acredita FARO para canjear después por lo que ofrece: es la tercera puerta de FARO, «Prepagando servicios».",
+    reglas: {
+      precio: (precio: string, ad: string) => `Precio fijo: 1 FARO = ${precio}${ad} a precio de lista.`,
+      canje: "Se canjea solo por lo que existe: en la fase 1, eventos de comunidad, visitas, talleres y sesiones.",
+      quema: "Se quema al usarse y no se devuelve en plata.",
+      vence: (amigo: string, fundador: string, ad: string) =>
+        `Vence: el de ${G.miembro.es} a los ${amigo} meses${ad} de acreditarse, el de ${G.fundador.es} a los ${fundador} meses${ad}.`,
+      sinVoz:
+        "No da voz: la voz sale del FARO del lote, del trabajo en Participa y de adherir al manifiesto.",
+    },
+    acredita: {
+      amigo: (faro: string, ad: string) => `Cada mes se te acreditan ${faro} FARO${ad}.`,
+      fundador: (faro: string, ad: string) => `Se te acreditan ${faro} FARO de una vez${ad}.`,
+    },
+    reparto: {
+      amigo: (servicio: string, faro: string, ad: string) =>
+        `De tu cuota: ${servicio} por el servicio de NetX · ${faro} en FARO que se reserva para el bien común${ad}.`,
+      fundador: (servicio: string, faro: string, ad: string) =>
+        `De tu pago: ${servicio} por el servicio de NetX · ${faro} en FARO que se reserva para el bien común${ad}.`,
+    },
   },
   comparativa: {
     titulo: "Qué incluye cada plan",
     funcion: "Función",
     incluido: "Incluido",
     noIncluido: "No incluido",
+    proximamente: "Próximamente",
     verSellos: "Ver qué te abre cada sello de tu pasaporte",
   },
   /** Adhesión al manifiesto: va fuera de las tarjetas y no condiciona ningún plan. */
   adhesion: {
     antes:
-      "Para participar en las decisiones hace falta tener como mínimo el plan Miembro y adherir al manifiesto de Lighthouse VRN",
+      "Para participar en las decisiones hace falta una cuenta gratis y adherir al manifiesto de Lighthouse VRN",
     despues:
       ". Adherís y quedás adentro al instante: nadie tiene que aceptarte. Elegir un plan no te hace adherir.",
     enlace: "Leer el manifiesto",
@@ -182,38 +208,11 @@ const es = {
       `Lotes privados: primero 4 junto a Lighthouse VRN, fuera del 7A, y después el sector norte, con un loteo provisorio e ilustrativo. Desde ${precio} el lote, con opción de casa: precios de ejemplo, a confirmar. Es una simulación: no se cobra nada y no reserva ningún lote de verdad.`,
     enlace: "Ver los lotes",
   },
+  /** Tarjeta de destino: Invertir tiene su propio camino y no depende de ningún plan. */
   invertir: {
     titulo: "Invertir",
-    intro: "Invertir es distinto de sumarte: es otro camino, con otros documentos.",
-    tokenInversor:
-      "Token Inversor: una propuesta en discusión para financiar la infraestructura de un barrio. Todavía no se ofrece.",
-    proyectos: {
-      etiqueta: "Por invitación",
-      titulo: "En los proyectos de regeneración",
-      textoA: "Esta plata de inversión va a proyectos (las series",
-      textoB: "), no a la tierra. Las series todavía no existen: la idea es entrar con un SAFU",
-      textoC: ", que después se convierte en Unidades de la Serie Madre",
-      textoD: ".",
-      tierraA: "La tierra común queda en una Fundación",
-      tierraB: " que todavía no existe y que no podría venderla. Los lotes privados son otro camino: están en \"Comprar un lote\".",
-      enlace: "Ver cómo funciona en la Vista NetX",
-      referencia: "Programa de series",
-      invitacionPedida: "Invitación pedida",
-      pedirInvitacion: "Pedir invitación",
-    },
-    empresa: {
-      etiqueta: "Conversación privada",
-      titulo: "En NetX como empresa",
-      texto:
-        "Es otra inversión: en la compañía detrás de la plataforma, no en los proyectos. Lo hablamos uno a uno con el equipo.",
-      // `abierto` (TICKETS_SAFE) decide si el máximo es "o más".
-      tickets: (min: string, max: string, abierto: boolean) =>
-        `Tickets desde ${min} hasta ${max}${abierto ? " o más" : ""}: de ejemplo, a definir con Vagner.`,
-      enlace: "Ver cómo se financia NetX en la Vista NetX",
-      referencia: "Invertir en NetX",
-      charlaPedida: "Charla pedida",
-      pedirCharla: "Pedir una charla",
-    },
+    texto: "Es otro camino, con otros documentos y sus propios números. No depende de ningún plan: quien tiene cuenta ve lo mismo.",
+    enlace: "Ir a Invertir",
   },
   /** Formulario de pedido de contacto (también lo usa la consulta por un lote). */
   pedido: {
@@ -222,6 +221,7 @@ const es = {
       "consulta-lote-vrn": { etiqueta: "Consulta por un lote de Lighthouse VRN", destino: "Equipo NetX" },
       "invitacion-circulo": { etiqueta: "Invitación al círculo", destino: "Equipo NetX" },
       "charla-netx": { etiqueta: "Charla para invertir en NetX", destino: "Equipo NetX" },
+      aliados: { etiqueta: "Pedido de Aliados", destino: "Equipo NetX" },
     },
     canales: { email: "Email", telegram: "Telegram", whatsapp: "WhatsApp" },
     momentos: { manana: "Mañana", tarde: "Tarde", noche: "Noche" },
@@ -252,28 +252,27 @@ const en: Textos<typeof es> = {
     sobretitulo: G.sumarte.en,
     h1: "Choose how to join",
     intro:
-      "Joining is the way in: how you join defines what you can do. Exploring is free. Membership opens the rooms and the pacts. The Founder Pass supports the Lighthouse Common Fund and gives you influence and credits. Buying a lot and investing are different paths: they're further down. Sample values, to be re-tuned. Nothing is really charged: everything you choose here is simulated and stays only in this browser.",
+      "Joining is the way in. Exploring is free and is enough to sign on to the manifesto and join a Take part team: your voice and your work are not for sale. Friend and Founder add utilities and prepaid FARO. Buying a lot and investing are different paths: they're further down. Sample values, to be re-tuned. The payment is simulated: nothing is charged and what you choose stays only in this browser.",
   },
   caminos: {
     titulo: "What do you want to do?",
     vivir: { etiqueta: "I want to live", titulo: "Buy a lot", texto: "Sample lots at Lighthouse VRN." },
     invertir: { etiqueta: "I want to invest", titulo: "Invest", texto: "A different path, with different documents." },
-    cuidar: { etiqueta: "I want to look after the common good", titulo: "Choose a plan", texto: "Four plans, one at a time." },
+    cuidar: { etiqueta: "I want to look after the common good", titulo: "Choose a plan", texto: "Three plans and a band for organizations." },
   },
   selector: {
     grupo: "Plan",
     planes: "Plans",
-    explorador: "Explorer",
-    miembro: "Member",
-    fundador: "Founder",
-    comunidad: "Community",
+    explorador: G.explorador.en,
+    miembro: G.miembro.en,
+    fundador: G.fundador.en,
     queIncluye: "What's included and what's not",
     paraQuien: {
       titulo: "Who it's for",
-      explorador: "For people who are new and want to get to know the territory before committing.",
-      miembro: "For people who want to take part in the rooms and propose pacts.",
-      fundador: "For people who want to join the Lighthouse early and back it from the start.",
-      comunidad: "For people who lead an incorporated tribe and want to organize it here.",
+      explorador: "For people who are just getting to know the project.",
+      miembro: "For people who follow the project and want to stay close.",
+      fundador: "For people who want to back it from the start.",
+      aliados: "Companies, NGOs and universities.",
     },
   },
   modoPrueba: { titulo: "Test mode" },
@@ -294,14 +293,14 @@ const en: Textos<typeof es> = {
       otra: "This page",
     },
     rutaSuperadmin: (pagina: string) => `${pagina} is only for the prototype's super admin.`,
-    rutaFundador: (pagina: string) => `${pagina} is unlocked with the ${G.paseFundador.en}.`,
-    rutaLider: (pagina: string) => `${pagina} is unlocked with the ${G.planTribu.en}.`,
+    rutaFundador: (pagina: string) => `${pagina} is unlocked with the ${G.fundador.en} plan.`,
+    rutaLider: (pagina: string) => `${pagina} is for Allies, by agreement.`,
     rutaMiembro: (pagina: string) => `${pagina} is unlocked with the ${G.miembro.en} plan.`,
     rutaExplorador: (pagina: string) => `${pagina} is unlocked by joining for free as an ${G.explorador.en}.`,
     accionExplorador: `This action is unlocked by joining for free as an ${G.explorador.en}.`,
     accionMiembro: `This action is unlocked with the ${G.miembro.en} plan.`,
-    accionFundador: `This action is unlocked with the ${G.paseFundador.en}.`,
-    accionLider: `This action is unlocked with the ${G.planTribu.en}.`,
+    accionFundador: `This action is unlocked with the ${G.fundador.en} plan.`,
+    accionLider: "This action is for Allies, by agreement.",
     accionNinguna: "This action can't be unlocked from here.",
     elegiUnPlan: "Choose a plan to join",
     yVolvemos: " and we'll take you back to where you were",
@@ -324,83 +323,104 @@ const en: Textos<typeof es> = {
     actual: "Your current plan:",
     sinCuenta: "You haven't joined yet: choose a plan.",
     tuPlan: "Your plan",
-    paseFundador: (nivel: string) => `${G.paseFundador.en} ${nivel}`,
   },
   pesos: {
     montos: "Amounts in Argentine pesos (ARS).",
     cambiarMoneda: "Change currency",
   },
-  explorador: {
-    nombre: G.explorador.en,
-    precio: "Free",
+  planes: {
+    destacado: "Most chosen",
+    pronto: "Coming soon",
+    ningunPlan: "No plan gives priority, reservation or credit toward a lot, or access to investing.",
+    explorador: {
+      nombre: G.explorador.en,
+      precio: "Free",
+      incluye: [
+        { texto: "Map and lots on display", pronto: false },
+        { texto: "Common good: read the numbers and proposals", pronto: false },
+        { texto: "Take part: join a team", pronto: false },
+        { texto: "Sign on to the manifesto", pronto: false },
+        { texto: "My land, Hifa and monthly news", pronto: false },
+      ],
+      volver: `Back to ${G.explorador.en}`,
+      sumarme: "Join for free",
+    },
+    amigo: {
+      nombre: G.miembro.en,
+      incluye: [
+        { texto: `Everything in ${G.explorador.en}`, pronto: false },
+        { texto: "Construction log and masterplan", pronto: true },
+        { texto: "One session a month with the team", pronto: true },
+        { texto: "First access to visits and events (never to lots)", pronto: true },
+        { texto: "Prepaid FARO every month", pronto: false },
+      ],
+      hacerme: `Become a ${G.miembro.en}`,
+      incluidoEnFundador: `Included in your ${G.fundador.en} plan`,
+      darmeDeBaja: "Cancel my plan",
+    },
+    fundador: {
+      nombre: G.fundador.en,
+      pagoUnico: " · one-time payment",
+      cohorte: (quedan: string, cupo: string) => `${quedan} of ${cupo} passes left`,
+      incluye: [
+        { texto: `Everything in ${G.miembro.en} while your FARO lasts`, pronto: false },
+        { texto: "Prepaid FARO all at once", pronto: false },
+        { texto: "Guided visit to the site", pronto: true },
+        { texto: "Your name in the Genesis registry", pronto: false },
+      ],
+      quiero: `I want to be a ${G.fundador.en}`,
+      activo: `${G.fundador.en} active`,
+    },
+  },
+  aliados: {
+    nombre: "Allies",
+    etiqueta: "For organizations",
+    sinPrecio: "No fixed price: we talk it over with each organization.",
     incluye: [
-      "Map and tribe pages",
-      "Interview with the agent",
-      "Open events",
-      "Hifa and your personal space",
+      { texto: "Sponsor a regeneration project", pronto: true },
+      { texto: "Workshops for teams", pronto: true },
+      { texto: "Access to data for research", pronto: true },
     ],
-    volver: `Back to ${G.explorador.en}`,
-    sumarme: "Join for free",
+    hablemos: "Let's talk",
+    referencia: "Allies",
+    pedido: "Request sent",
   },
-  miembro: {
-    nombre: `${G.miembro.en} of the network`,
-    todoExplorador: `Everything in ${G.explorador.en}`,
-    salas: "Tribe rooms and forums",
-    pactosY: "Pacts and ",
-    voz: "A voice in your tribe",
-    plata: "NetX charges it: it's a service.",
-    hacerme: "Become a member",
-  },
-  fundador: {
-    cohorte: "Genesis Cohort · date to be defined",
-    nivelDelPase: "Pass level",
-    pagoUnico: " · one-time payment · lifetime",
-    financias: "You support the Common Fund",
-    financiasFin: " and join the founding cohort. The same influence at all three levels.",
-    plata: "It goes to the commons' Common Fund, not to NetX.",
-    todoMiembro: `Everything in ${G.miembro.en}, 1 year included`,
-    creditos: (monto: string) => `${monto} in common and stay credits`,
-    creditosFin: ", released over 3 years; they expire 12 months after release",
-    influencia: "Influence in the Common Fund",
-    influenciaFin: ": the distribution of large sums will be decided with conviction voting (coming soon)",
-    canal: "Founders channel",
-    registroGenesis: "Genesis registration if you attend a community event (to be defined)",
-    medidorPases: "Cohort passes",
-    medidorMinimo: "Minimum to open the Common Fund",
-    activo: (nivel: string) => `${nivel} Pass active`,
-    quiero: (nivel: string) => `I want the ${nivel} Pass`,
-  },
-  niveles: { semilla: "Seed", brote: "Sprout", raiz: "Root" },
-  tribu: {
-    nombre: G.planTribu.en,
-    incluye: [
-      "Public page and open calls",
-      "Pacts, recognition rounds and Semillas",
-      "Their own rooms and channels",
-      "Configurable entry ritual",
-    ],
-    plata: "NetX charges it: a service billed to the tribe.",
-    alElegir:
-      "By choosing it you become the leader of your tribe: everything in Member plus the administration of the tribe you pick. Simulated charge, no approval yet.",
-    liderDe: (tribu: string) => `You lead ${tribu}`,
-    tribuNueva: "Your new tribe is about to be proposed",
-    cambiar: "Change tribe",
-    elegirBarrio: "Pick a vacant neighborhood to propose it",
-    cual: "Which tribe will you lead?",
-    proponerNueva: "Propose a new tribe",
-    serLider: "Become leader of this tribe",
-    sumarMiTribu: "Add my tribe",
+  faro: {
+    titulo: "How the FARO of your plan works",
+    borrador: "Draft · to be defined",
+    aDefinir: "(to be defined)",
+    intro: "Your plan grants FARO to redeem later for what it offers: it is the third FARO door, \"Prepaying services\".",
+    reglas: {
+      precio: (precio: string, ad: string) => `Fixed price: 1 FARO = ${precio}${ad} at list price.`,
+      canje: "It is redeemed only for what exists: in phase 1, community events, visits, workshops and sessions.",
+      quema: "It is burned when used and is not refunded in money.",
+      vence: (amigo: string, fundador: string, ad: string) =>
+        `It expires: ${G.miembro.en}'s after ${amigo} months${ad} from being granted, ${G.fundador.en}'s after ${fundador} months${ad}.`,
+      sinVoz:
+        "It gives no voice: your voice comes from the lot's FARO, from the work in Take part and from signing on to the manifesto.",
+    },
+    acredita: {
+      amigo: (faro: string, ad: string) => `Every month you are granted ${faro} FARO${ad}.`,
+      fundador: (faro: string, ad: string) => `You are granted ${faro} FARO at once${ad}.`,
+    },
+    reparto: {
+      amigo: (servicio: string, faro: string, ad: string) =>
+        `Of your fee: ${servicio} for NetX's service · ${faro} in FARO set aside for the common good${ad}.`,
+      fundador: (servicio: string, faro: string, ad: string) =>
+        `Of your payment: ${servicio} for NetX's service · ${faro} in FARO set aside for the common good${ad}.`,
+    },
   },
   comparativa: {
     titulo: "What each plan includes",
     funcion: "Feature",
     incluido: "Included",
     noIncluido: "Not included",
+    proximamente: "Coming soon",
     verSellos: "See what each stamp in your passport opens",
   },
   adhesion: {
     antes:
-      "To take part in decisions you need at least the Member plan and to sign on to the Lighthouse VRN manifesto",
+      "To take part in decisions you need a free account and to sign on to the Lighthouse VRN manifesto",
     despues: ". You sign on and you're in right away: nobody has to accept you. Choosing a plan doesn't sign you on.",
     enlace: "Read the manifesto",
   },
@@ -412,35 +432,8 @@ const en: Textos<typeof es> = {
   },
   invertir: {
     titulo: "Invest",
-    intro: "Investing is not the same as joining: it's a different path, with different documents.",
-    tokenInversor:
-      "Investor Token: a proposal under discussion to fund a neighborhood's infrastructure. It is not offered yet.",
-    proyectos: {
-      etiqueta: "By invitation",
-      titulo: "In the regeneration projects",
-      textoA: "This investment money goes to projects (the series",
-      textoB: "), not to the land. The series don't exist yet: the idea is to come in with a SAFU",
-      textoC: ", which later converts into Units of the Mother Series",
-      textoD: ".",
-      tierraA: "The common land stays in a Foundation",
-      tierraB: " that doesn't exist yet and could not sell it. Private lots are a different path: see \"Buy a lot\".",
-      enlace: "See how it works in the NetX View (in Spanish)",
-      referencia: "Series program",
-      invitacionPedida: "Invitation requested",
-      pedirInvitacion: "Request an invitation",
-    },
-    empresa: {
-      etiqueta: "Private conversation",
-      titulo: "In NetX as a company",
-      texto:
-        "It's a different investment: in the company behind the platform, not in the projects. We talk it over one on one with the team.",
-      tickets: (min: string, max: string, abierto: boolean) =>
-        `Tickets from ${min} to ${max}${abierto ? " or more" : ""}: samples, to be defined with Vagner.`,
-      enlace: "See how NetX is funded in the NetX View (in Spanish)",
-      referencia: "Invest in NetX",
-      charlaPedida: "Talk requested",
-      pedirCharla: "Request a talk",
-    },
+    texto: "It's a different path, with different documents and its own numbers. It doesn't depend on any plan: anyone with an account sees the same.",
+    enlace: "Go to Invest",
   },
   pedido: {
     motivos: {
@@ -448,6 +441,7 @@ const en: Textos<typeof es> = {
       "consulta-lote-vrn": { etiqueta: "Inquiry about a Lighthouse VRN lot", destino: "NetX team" },
       "invitacion-circulo": { etiqueta: "Invitation to the circle", destino: "NetX team" },
       "charla-netx": { etiqueta: "Talk about investing in NetX", destino: "NetX team" },
+      aliados: { etiqueta: "Allies request", destino: "NetX team" },
     },
     canales: { email: "Email", telegram: "Telegram", whatsapp: "WhatsApp" },
     momentos: { manana: "Morning", tarde: "Afternoon", noche: "Evening" },

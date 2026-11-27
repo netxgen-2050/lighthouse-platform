@@ -4,9 +4,9 @@ import { useEffect, useRef } from "react";
 import { PLANES, type PlanVista } from "./planes";
 
 /**
- * Selector de planes (ux-sumarte, design §2): un `radiogroup` con cuatro opciones visibles como segmentos. Son radios nativos:
- * las flechas del teclado cambian de plan y la lectora anuncia "n de 4". En el celular se desliza de costado si no entra, con
- * el elegido siempre a la vista. Lo elegido se ve por la marca ✓, el peso y el relleno, no solo por el color.
+ * Selector de planes del celular (sumarte-planes-v2, design §3): un `radiogroup` con tres opciones visibles como segmentos.
+ * Son radios nativos: las flechas del teclado cambian de plan y la lectora anuncia "n de 3". Lo elegido se ve por la marca ✓,
+ * el peso y el relleno, no solo por el color.
  */
 export function SelectorPlanes({
   nombre,

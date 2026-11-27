@@ -250,11 +250,17 @@ test("sin adhesión al Lighthouse: el detalle muestra el aviso con el enlace al 
 test.describe("explorador", () => {
   test.use({ rol: "persona", plan: "explorador" });
 
-  test("sin la capacidad de adherir ve el mismo aviso del manifiesto", async ({ page }) => {
+  test("la voz y el trabajo no se compran: un Explorador, sin plan pago, pide sumarse al equipo", async ({ page }) => {
     await conAdhesionAlLighthouse(page);
     await page.goto("/participa?equipo=agua");
-    await expect(dialogo(page).getByText(/Podés leer el manifiesto sin cuenta/)).toBeVisible();
-    await expect(page.getByRole("button", { name: /Quiero sumarme/ })).toHaveCount(0);
+    const d = dialogo(page);
+    await expect(d.getByText(/Podés leer el manifiesto sin cuenta/)).toHaveCount(0);
+    await expect(d.getByText(/Sumate para adherir|Entrá para sumarte/)).toHaveCount(0);
+    const boton = d.getByRole("button", { name: "Quiero sumarme a Agua" });
+    await expect(boton).toBeVisible();
+    await boton.click();
+    await d.getByRole("button", { name: "Confirmar" }).click();
+    await expect(d.getByText("Pediste sumarte a Agua · aspirante")).toBeVisible();
   });
 });
 

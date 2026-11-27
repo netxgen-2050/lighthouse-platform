@@ -309,8 +309,8 @@ test.describe("datos de antes del login", () => {
     await aviso.getByRole("button", { name: "Importar a mi cuenta" }).click();
     await expect(aviso).toHaveCount(0);
     // Adherir es de Miembro: la persona nueva (Explorador) pasa a Miembro en Sumarte para ver el pedido importado.
-    await page.goto("/sumarte?plan=miembro");
-    await page.getByRole("button", { name: "Hacerme miembro" }).click();
+    await page.goto("/sumarte?plan=amigo");
+    await page.getByRole("button", { name: "Hacerme Amigo" }).click();
     await page.goto("/tribus/valle");
     await expect(page.getByText("Tu pedido llegó a Valle Solar.")).toBeVisible();
 

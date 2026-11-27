@@ -31,7 +31,7 @@ test("una persona nueva: Explorador/a obtenido con fecha y los demás con su bot
   await expect(sello(page, "explorador")).toContainText("Obtenido");
   await expect(sello(page, "explorador")).toContainText(/\d{1,2} de \w+ de 20\d\d/);
   await expect(sello(page, "miembro-red")).toContainText("Disponible");
-  await expect(sello(page, "miembro-red").getByRole("link", { name: "Hacerme Miembro en Sumarte" })).toHaveAttribute("href", "/sumarte");
+  await expect(sello(page, "miembro-red").getByRole("link", { name: "Hacerme Amigo en Sumarte" })).toHaveAttribute("href", "/sumarte");
   await expect(sello(page, "identidad")).toContainText("Disponible");
   await expect(sello(page, "identidad").getByRole("button", { name: "Verificar mi identidad" })).toHaveCount(0);
   await expect(sello(page, "identidad").getByRole("link", { name: "Ver la verificación" })).toHaveAttribute("href", "/pasaporte#identidad");
@@ -48,7 +48,7 @@ test("una persona nueva: Explorador/a obtenido con fecha y los demás con su bot
 
 test("cada sello dice qué abre: el Pase Fundador abre canal de fundadores, voz en el Fondo Común y créditos", async ({ page }) => {
   await page.goto("/sumarte?plan=fundador");
-  await page.getByRole("button", { name: "Quiero el Pase Brote" }).click();
+  await page.getByRole("button", { name: "Quiero ser Fundador" }).click();
   await page.goto("/pasaporte");
   const f = sello(page, "fundador");
   await expect(f).toContainText("Obtenido");
@@ -224,21 +224,6 @@ test("el diálogo se cierra con Escape y devuelve el foco al botón", async ({ p
   await page.keyboard.press("Escape");
   await expect(dialogo).toBeHidden();
   await expect(boton).toBeFocused();
-});
-
-test("KYC a pedido: Pedir invitación sin el sello abre la verificación; con el sello sigue", async ({ page }) => {
-  await page.goto("/sumarte");
-  await page.getByRole("button", { name: "Pedir invitación" }).click();
-  const dialogo = page.getByRole("dialog", { name: /Verificar mi identidad/ });
-  await expect(dialogo).toBeVisible();
-  await expect(dialogo).toContainText("pedir una invitación");
-  await llenarPasos(dialogo);
-  await dialogo.getByRole("button", { name: "Enviar verificación (simulado)" }).click();
-  await dialogo.getByRole("button", { name: "Simular: verificación aprobada" }).click();
-  await dialogo.getByRole("button", { name: "Listo" }).click();
-  // Con el sello, se sigue con lo que quería hacer: el formulario del pedido.
-  await expect(page.getByRole("button", { name: "Enviar pedido (simulado)" })).toBeVisible();
-  await expect(page.getByText("Invitación pedida (simulado)")).toHaveCount(0);
 });
 
 test("KYC a pedido en Pactos: al aprobarse la verificación el aporte se registra solo", async ({ page }) => {
