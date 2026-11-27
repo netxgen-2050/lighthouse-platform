@@ -9,7 +9,6 @@ import {
   descartarAceptacionPrevia,
   guardarAceptacionPrevia,
   intentarLogin,
-  puedeAbrirLogin,
   tomarAceptacionPrevia,
   type CanalConsentimiento,
   type ModoAlta,
@@ -20,7 +19,7 @@ import { COOKIE_PRUEBA } from "@/lib/sesion/cookies";
 import { calcularNivel, EVENTO_NIVEL, leerEstadoGuardado } from "@/lib/sesion/nivel";
 import { INICIAL, type EstadoSumarte } from "@/lib/sumarte/estado";
 import { copiarClavesAnteriores, limpiarPaso2 } from "@/lib/demo/importar";
-import { decidirConsulta, loginAAbrir } from "@/lib/sesion/consulta";
+import { accionAlEntrar, decidirConsulta, loginAAbrir } from "@/lib/sesion/consulta";
 import { loginElegido } from "@/lib/sesion/errores-login";
 import { ContextoSesion, type EstadoSesion, type IdentidadMinima, type SesionCliente, type ValorSesion } from "./contexto";
 import { PasoAlta } from "./paso-alta";
@@ -237,7 +236,7 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
     });
   }, [idSesion, consentimiento, registro, cabeceras]);
 
-  const [paso, setPaso] = useState<{ modo: ModoAlta; alAceptar?: () => void; continuar?: () => void } | null>(null);
+  const [paso, setPaso] = useState<{ modo: ModoAlta; alAceptar?: () => void } | null>(null);
   const focoAlAbrir = useRef<HTMLElement | null>(null);
 
   const entrarComo = useCallback((email: string) => {
@@ -250,9 +249,29 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
 
   const login = privy?.login;
   /**
-   * ÚNICA llamada al login (el formulario propio con Neon Auth; Privy; o, sin Privy, "Entrar como…" de Sumarte). Es privada:
-   * solo la usa el paso al aceptar, y solo abre con una aceptación previa vigente (design §1). Nada fuera de este archivo
-   * llama a `login` de Privy ni monta el formulario.
+   * Abre el login que corresponde al entorno, sin mirar ninguna aceptación (casillas-una-sola-vez): el formulario propio con
+   * Neon Auth (dentro del diálogo "Entrar"), Privy, o, sin Privy, "Entrar como…" de Sumarte.
+   */
+  const abrirLoginSinPaso = useCallback(() => {
+    const cual = loginAAbrir({ conNeonAuth, hayPrivy: Boolean(login) });
+    if (cual === "formulario") {
+      setPaso((p) => p ?? { modo: "entrar" });
+      return setFormularioAbierto(true);
+    }
+    if (cual === "privy") return login?.();
+    // Sin Privy no hay ventana de login: se lleva a Sumarte, que ofrece "Entrar como…" (modo de prueba). Desde Sumarte no
+    // navega: avisa y se queda (el panel ya está en la página).
+    if (ruta === "/sumarte") {
+      document.getElementById("entrar-como")?.scrollIntoView?.({ block: "center" });
+      document.getElementById("entrar-como")?.focus();
+      return;
+    }
+    router.push(`/sumarte?volver=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}#entrar-como`);
+  }, [conNeonAuth, login, ruta, router]);
+
+  /**
+   * Login del camino `alta` ("Crear tu cuenta"): solo abre con una aceptación previa vigente (design §1). Nada fuera de este
+   * archivo llama a `login` de Privy ni monta el formulario.
    */
   const abrirLogin = useCallback(() => {
     let almacen: Storage | null = null;
@@ -261,48 +280,45 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
     } catch {
       almacen = null;
     }
-    intentarLogin(almacen, new Date(), () => {
-      const cual = loginAAbrir({ conNeonAuth, hayPrivy: Boolean(login) });
-      if (cual === "formulario") return setFormularioAbierto(true);
-      if (cual === "privy") return login?.();
-      // Sin Privy no hay ventana de login: se lleva a Sumarte, que ofrece "Entrar como…" (modo de prueba). Desde Sumarte no
-      // navega: avisa y se queda (el panel ya está en la página).
-      if (ruta === "/sumarte") {
-        document.getElementById("entrar-como")?.scrollIntoView?.({ block: "center" });
-        document.getElementById("entrar-como")?.focus();
-        return;
-      }
-      router.push(`/sumarte?volver=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}#entrar-como`);
-    });
-  }, [conNeonAuth, login, ruta, router]);
+    intentarLogin(almacen, new Date(), abrirLoginSinPaso);
+  }, [abrirLoginSinPaso]);
 
-  const entrar = useCallback((opciones?: { modo?: ModoAlta; alAceptar?: () => void }) => {
-    focoAlAbrir.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    setPaso({ modo: opciones?.modo ?? "entrar", alAceptar: opciones?.alAceptar });
+  const descartarPrevia = useCallback(() => {
+    try {
+      descartarAceptacionPrevia(window.sessionStorage);
+    } catch {
+      // Sin almacenamiento de la pestaña no hay nada que borrar.
+    }
   }, []);
 
-  // Elegir un email del panel "Entrar como…": sin aceptación previa vigente, primero se pasa por el paso.
-  const entrarComoConPaso = useCallback(
-    (email: string) => {
-      let puede = false;
-      try {
-        puede = puedeAbrirLogin(window.sessionStorage, new Date());
-      } catch {
-        puede = false;
-      }
-      if (puede) return entrarComo(email);
+  const entrar = useCallback(
+    (opciones?: { modo?: ModoAlta; alAceptar?: () => void }) => {
       focoAlAbrir.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-      setPaso({ modo: "entrar", continuar: () => entrarComo(email) });
+      const modo = opciones?.modo ?? "entrar";
+      const accion = accionAlEntrar(modo);
+      // Una aceptación de las casillas que quedó en la pestaña (alguien marcó y canceló) no es de quien aprieta "Entrar".
+      if (accion.descartarAceptacionPrevia) descartarPrevia();
+      if (accion.destino === "casillas") {
+        setPaso({ modo, alAceptar: opciones?.alAceptar });
+        return;
+      }
+      // "Entrar" abre el login directo, sin casillas: si es la primera vez, la pantalla de consentimiento sale después.
+      abrirLoginSinPaso();
     },
-    [entrarComo],
+    [abrirLoginSinPaso, descartarPrevia],
   );
 
+  // "Entrar como…" (modo de prueba): entra directo con ese email, sin el paso de las casillas.
+  const entrarComoDirecto = entrarComo;
+
   const cancelarPaso = useCallback(() => {
+    // Cancelar no deja la aceptación guardada en la pestaña para la persona siguiente.
+    descartarPrevia();
     setPaso(null);
     setFormularioAbierto(false);
     const volver = focoAlAbrir.current;
     setTimeout(() => volver?.focus(), 0);
-  }, []);
+  }, [descartarPrevia]);
 
   const aceptarPaso = useCallback(
     (datos: { novedades: boolean }): boolean => {
@@ -316,8 +332,8 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
       if (!guardado) return false;
       paso.alAceptar?.();
       // Con el formulario propio el diálogo sigue abierto: las casillas dejan lugar al formulario.
-      if (!(conNeonAuth && !paso.continuar)) setPaso(null);
-      (paso.continuar ?? abrirLogin)();
+      if (!conNeonAuth) setPaso(null);
+      abrirLogin();
       return true;
     },
     [paso, abrirLogin, conNeonAuth],
@@ -395,7 +411,7 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
       billetera: privy?.billetera ?? null,
       loginDisponible: privy !== null || conNeonAuth,
       entrar,
-      entrarComo: entrarComoConPaso,
+      entrarComo: entrarComoDirecto,
       nivel,
       nivelListo,
       consentimiento,
@@ -411,7 +427,7 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
       privy,
       conNeonAuth,
       entrar,
-      entrarComoConPaso,
+      entrarComoDirecto,
       nivel,
       nivelListo,
       consentimiento,

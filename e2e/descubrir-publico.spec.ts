@@ -111,7 +111,6 @@ test.describe("navegación sin sesión", () => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     await page.goto("/tribus/valle");
     await barra(page).getByRole("button", { name: "Entrar" }).click();
-    await aceptarPaso(page);
     await expect(page).toHaveURL(/\/sumarte\?volver=%2Ftribus%2Fvalle/);
     await abrirModoDePrueba(page);
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();

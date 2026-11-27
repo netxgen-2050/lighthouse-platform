@@ -50,6 +50,7 @@ export const VERSIONES_POLITICA: readonly VersionPolitica[] = [
     fecha: "2026-11-25",
     cambios: [
       "Las reservas de lotes simulados ya no quedan solo en tu navegador: se guardan en la base de la plataforma para que un lote reservado se vea reservado para todos.",
+      "Las casillas se marcan una sola vez: si ya aceptaste esta versión, entrás directo.",
     ],
   },
 ];
@@ -154,7 +155,7 @@ export const FINALIDADES: readonly string[] = [
 ];
 
 export const BASE_LEGAL =
-  "Tu consentimiento, que das antes de entrar o de crear tu cuenta y podés retirar cuando quieras. Para los datos sensibles del Pasaporte te pedimos un consentimiento aparte, y las novedades por email son otro consentimiento opcional.";
+  "Tu consentimiento, que das al crear tu cuenta o la primera vez que entrás, y podés retirar cuando quieras. Para los datos sensibles del Pasaporte te pedimos un consentimiento aparte, y las novedades por email son otro consentimiento opcional.";
 
 export const CONSERVACION: readonly string[] = [
   "Mientras tengas cuenta. Si retirás tu consentimiento o pedís que borren tu cuenta, se borran.",
