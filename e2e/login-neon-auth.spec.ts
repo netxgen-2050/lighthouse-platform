@@ -79,8 +79,77 @@ test.describe("el paso de consentimiento es la única puerta", () => {
     await expect(dialogo(page, "Entrar")).toBeVisible();
     await expect(campoEmail(page)).toBeFocused();
     await expect(page.getByRole("button", { name: "Mandame el código" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Entrar con Google" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Continuar con Google" })).toBeVisible();
     await expect(page.getByRole("checkbox", { name: /Leí y acepto la política de privacidad/ })).toHaveCount(0);
+  });
+
+  test("Google va primero, fuera del formulario del email, y Shift+Tab desde el email llega a Google", async ({ page }) => {
+    await abrirFormulario(page);
+    const google = page.getByRole("dialog").getByRole("button", { name: "Continuar con Google", exact: true });
+    const enviar = page.getByRole("button", { name: "Mandame el código" });
+    const cajaGoogle = await google.boundingBox();
+    const cajaEmail = await campoEmail(page).boundingBox();
+    const cajaEnviar = await enviar.boundingBox();
+    expect(cajaGoogle!.y).toBeLessThan(cajaEmail!.y);
+    expect(cajaEmail!.y).toBeLessThan(cajaEnviar!.y);
+    await expect(page.getByRole("dialog").getByText("o", { exact: true })).toBeVisible();
+    await expect(page.getByRole("form", { name: "Entrar con un código por email" }).getByRole("button", { name: "Continuar con Google" })).toHaveCount(0);
+    await expect(campoEmail(page)).toBeFocused();
+    await page.keyboard.press("Shift+Tab");
+    await expect(google).toBeFocused();
+  });
+
+  test("el clic en Google pide signIn.social con provider google y la página como callbackURL", async ({ page }) => {
+    const cuerpos: unknown[] = [];
+    await page.route("**/api/auth/sign-in/social", async (ruta) => {
+      cuerpos.push(ruta.request().postDataJSON());
+      await ruta.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ url: null, redirect: false }) });
+    });
+    await abrirFormulario(page);
+    await page.getByRole("dialog").getByRole("button", { name: "Continuar con Google", exact: true }).click();
+    await expect.poll(() => cuerpos.length).toBe(1);
+    const cuerpo = cuerpos[0] as { provider: string; callbackURL: string };
+    expect(cuerpo.provider).toBe("google");
+    expect(cuerpo.callbackURL).toBe(new URL("/", page.url()).toString());
+  });
+
+  test("Google responde 500: mismo error general con role=alert", async ({ page }) => {
+    await page.route("**/api/auth/sign-in/social", (ruta) =>
+      ruta.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ message: "boom" }) }),
+    );
+    await abrirFormulario(page);
+    await page.getByRole("dialog").getByRole("button", { name: "Continuar con Google", exact: true }).click();
+    await expect(alerta(page)).toHaveText("No pudimos iniciar sesión. Probá de nuevo.");
+  });
+
+  test("con el pedido en curso, un segundo clic en Google no hace otro pedido", async ({ page }) => {
+    let pedidos = 0;
+    let liberar: () => void = () => {};
+    const espera = new Promise<void>((r) => (liberar = r));
+    await page.route("**/api/auth/sign-in/social", async (ruta) => {
+      pedidos += 1;
+      await espera;
+      await ruta.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ url: null, redirect: false }) });
+    });
+    await abrirFormulario(page);
+    const google = page.getByRole("dialog").getByRole("button", { name: "Continuar con Google", exact: true });
+    await google.dblclick();
+    await expect(google).toHaveAttribute("aria-disabled", "true");
+    await google.click({ force: true });
+    expect(pedidos).toBe(1);
+    liberar();
+    await expect(google).not.toHaveAttribute("aria-disabled", "true");
+    expect(pedidos).toBe(1);
+  });
+
+  test("Enter en el email pide el código y no abre Google", async ({ page }) => {
+    const pedidos = espiarAuth(page);
+    await simularNeonAuth(page, { pedirCodigo: { status: 200, cuerpo: { success: true } } });
+    await abrirFormulario(page);
+    await page.keyboard.type("ana@ejemplo.test");
+    await page.keyboard.press("Enter");
+    await expect(campoCodigo(page)).toBeVisible();
+    expect(pedidos.some((p) => p.includes("sign-in/social"))).toBe(false);
   });
 });
 
@@ -205,6 +274,17 @@ test.describe("el formulario", () => {
     await expect(alerta(page)).toContainText("email válido");
     expect(pedidos.length).toBe(antes);
   });
+
+  for (const tema of ["claro", "oscuro"] as const) {
+    test(`axe sin violaciones serias o críticas con el botón de Google, tema ${tema}`, async ({ page }) => {
+      await abrirFormulario(page);
+      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+      await expect(page.getByRole("button", { name: "Continuar con Google" })).toBeVisible();
+      const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+      const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+      expect(graves.map((v) => ({ id: v.id, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+    });
+  }
 
   test("axe sin violaciones serias o críticas con el formulario abierto (paso 1 y paso 2)", async ({ page }) => {
     await simularNeonAuth(page, { pedirCodigo: { status: 200, cuerpo: { success: true } } });

@@ -46,6 +46,10 @@
   --color-regen-5: #3c8c4b;
   /* Vidrio: el "surface" del tema al 80 % de opacidad, para paneles sobre foto. */
   --color-vidrio: #fffdf7cc;
+  /* Botón "Continuar con Google" (login-google-estandar): colores de las pautas de marca de Google, variante clara. */
+  --color-google-fondo: #ffffff;
+  --color-google-borde: #747775;
+  --color-google-texto: #1f1f1f;
   /*
    * Ilustración del mapa de Participa (participa-mapa-equipos): tema claro = mediodía. Son pocos tonos, derivados de la paleta de la app:
    * agua (azules verdosos), monte nativo (verdes y salvia), barda y meseta (ocres, arena, arcilla) y los acentos del fuego y del sol.
@@ -81,6 +85,8 @@
   --font-display: var(--font-fraunces), Georgia, serif;
   --font-sans: var(--font-inter-tight), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  /* Solo el botón de Google (pautas de marca de Google: Roboto Medium). */
+  --font-google: var(--font-roboto), Roboto, Arial, sans-serif;
 }
 
 /*
@@ -126,6 +132,10 @@
   --color-regen-4: #8cc46a;
   --color-regen-5: #6fc283;
   --color-vidrio: #17251dcc;
+  /* Botón de Google, variante oscura de las pautas de Google. */
+  --color-google-fondo: #131314;
+  --color-google-borde: #8e918f;
+  --color-google-texto: #e3e3e3;
   /* La ilustración del mapa de Participa de noche: noche de luna, mismo dibujo con otros valores. */
   --color-ilus-rio: #1f4252;
   --color-ilus-rio-hondo: #15303d;

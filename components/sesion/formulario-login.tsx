@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { estadoDeExcepcion, mensajeDeError } from "@/lib/sesion/errores-login";
+import { BotonGoogle } from "./boton-google";
 import { clienteNeonAuth } from "./neon-auth-cliente";
 
 const CAMPO =
@@ -136,6 +137,13 @@ export function FormularioLogin({ alEntrar, alCancelar }: Props) {
   return (
     <div data-testid="formulario-login">
       {paso === "email" ? (
+        <>
+        <BotonGoogle ocupado={ocupado} onClick={() => void conGoogle()} />
+        <div className="my-4 flex max-w-sm items-center gap-3 text-sm text-muted">
+          <span aria-hidden="true" className="h-px flex-1 bg-line" />
+          <p>o</p>
+          <span aria-hidden="true" className="h-px flex-1 bg-line" />
+        </div>
         <form noValidate onSubmit={pedirCodigo} aria-label="Entrar con un código por email">
           <label htmlFor={`${id}-email`} className="block text-sm font-medium">
             Tu email
@@ -156,13 +164,8 @@ export function FormularioLogin({ alEntrar, alCancelar }: Props) {
               Mandame el código
             </button>
           </div>
-          <div className="mt-4 border-t border-line pt-4">
-            <p className="text-sm text-muted">O entrá con tu cuenta de Google.</p>
-            <button type="button" className={`${BOTON_SECUNDARIO} mt-2`} aria-disabled={ocupado} onClick={() => void conGoogle()}>
-              Entrar con Google
-            </button>
-          </div>
         </form>
+        </>
       ) : (
         <form noValidate onSubmit={entrarConCodigo} aria-label="Escribir el código">
           <p className="text-sm">

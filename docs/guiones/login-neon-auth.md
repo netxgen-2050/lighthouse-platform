@@ -28,7 +28,7 @@ El código ya está: mientras `NEXT_PUBLIC_LH_LOGIN` no exista o valga `privy`, 
    4. Escribí el código y "Entrar": tenés que ver tu rol de siempre y **no** la pantalla de consentimiento. Si ya eras del equipo con Privy, tiene que ser la misma persona (mismo rol, mismos datos del navegador).
    5. Probá un código equivocado: "El código no es correcto o venció. Pedí uno nuevo."
    6. "Salir" y volver a entrar: el paso vuelve a pedir las casillas.
-   7. Repetí con "Entrar con Google". Anotá si volvés a la misma página con la sesión abierta.
+   7. Repetí con «Continuar con Google» (es el primer botón del formulario, arriba del campo de email). Anotá si volvés a la misma página con la sesión abierta.
    8. En las herramientas del navegador (Aplicación → Cookies) mirá la cookie de sesión `neon-auth` y anotá sus atributos (`HttpOnly`, `Secure`, `SameSite`). **Si no es `HttpOnly`, frená y avisá.**
 8. **Recién con todo eso**, `NEXT_PUBLIC_LH_LOGIN=neon-auth` también en **Production** (y un deploy nuevo). Las personas del equipo entran con su email; su cuenta de Neon Auth se vincula sola a su persona. Quien tenía la sesión de Privy abierta sigue con ella hasta que sale.
 9. **Volver atrás.** Poné `NEXT_PUBLIC_LH_LOGIN=privy` (o borrala) y un deploy nuevo. Las cuentas de Neon Auth ya creadas quedan guardadas y no molestan.
