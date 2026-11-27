@@ -30,9 +30,6 @@ export default async function ConsultaPage({ params }: { params: Promise<{ id: s
       <p className="mb-2 text-sm">
         <Link className="underline" href="/fogon/consultas">{textos("fogonConsultas", idioma).pagina.volverConsultas}</Link>
       </p>
-      <p className="mb-4 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-        {textos("marco", idioma).aviso}
-      </p>
       <ConsultaCliente id={id} />
     </div>
   );

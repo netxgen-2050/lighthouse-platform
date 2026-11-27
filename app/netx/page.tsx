@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BarrasReparto } from "@/components/barras-reparto";
 import { TerminoLegal } from "@/components/termino-legal";
+import { Aviso } from "@/components/ui/aviso";
 import { SUPUESTO_CONGRESO, VERSIONES, fechaCorta } from "@/lib/financiamiento/fuentes";
 import { HIBRIDO, PROCOMUN_EN_SIMPLE } from "@/lib/financiamiento/hibrido";
 import { PALANCAS, type IdPalanca } from "@/lib/financiamiento/palancas";
@@ -69,9 +70,9 @@ export default function ResumenPage() {
       <p className="text-sm font-medium text-muted">Vista NetX · para el equipo de NetXGen</p>
       <h1 className="text-3xl font-semibold">¿Cómo se financia NetX?</h1>
 
-      <p className="mt-3 mb-4 max-w-3xl rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+      <Aviso tono="legal" className="mt-3 mb-4 max-w-3xl">
         {TERMINOS.avisosimulador.texto}
-      </p>
+      </Aviso>
 
       <p className="mb-6 max-w-3xl text-lg">
         NetX es la empresa que diseña, gestiona y opera la plataforma, y cobra por su trabajo. La fase 1 suma la venta de

@@ -83,6 +83,18 @@ export const TERMINOS = {
         "Private offer: access by invitation and with no mass promotion of the instrument, within the limits set by the CNV (General Resolution 1016/2024, as amended by 1088/2025). Community content is public.",
     },
   },
+  // Para el camino "Quiero invertir" de Inicio (ux-inicio): aviso de que lo que se muestra no promete ganancias. Borrador.
+  sinretorno: {
+    titulo: "Sin promesa de retorno",
+    texto:
+      "Los números que ves son de ejemplo, para entender cómo funcionaría. No es una promesa ni una garantía de que vayas a recuperar lo que pongas, ni de que vayas a ganar. Nada se cobra de verdad en este prototipo.",
+    borrador: true,
+    en: {
+      titulo: "No promise of return",
+      texto:
+        "The numbers you see are samples, to show how it would work. They are not a promise or a guarantee that you will get back what you put in, or that you will earn anything. Nothing is actually charged in this prototype.",
+    },
+  },
   safuinvertir: {
     titulo: "SAFU",
     texto:

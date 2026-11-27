@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { aceptarPaso } from "./ayudas";
+import { abrirModoDePrueba, aceptarPaso } from "./ayudas";
 import { EMAILS, expect, test, type Page } from "./fixtura";
 
 // Sin el fixture de login: la persona no entró.
@@ -113,6 +113,7 @@ test.describe("navegación sin sesión", () => {
     await barra(page).getByRole("button", { name: "Entrar" }).click();
     await aceptarPaso(page);
     await expect(page).toHaveURL(/\/sumarte\?volver=%2Ftribus%2Fvalle/);
+    await abrirModoDePrueba(page);
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(barra(page).getByRole("button", { name: "Menú de la persona" })).toBeVisible();
@@ -131,8 +132,9 @@ test.describe("navegación sin sesión", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
     await aceptarPaso(page);
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
-    await expect(page).toHaveURL(/\/explorar\?.*sel=/);
+    await expect(page).toHaveURL(/\/explorar\/territorio\?.*sel=/);
     await expect(ficha.getByRole("heading", { level: 3, name: titulo })).toBeVisible();
     await expect(ficha.getByRole("button", { name: "Consultar por este lote", exact: true })).toBeVisible();
   });
@@ -148,6 +150,7 @@ test.describe("vincular el ticket del Congreso pide cuenta", () => {
     await expect(page.getByText("Esta acción se habilita al sumarte gratis como Explorador.")).toBeVisible();
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
     await aceptarPaso(page);
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await expect(page).toHaveURL(/\/congreso#ticket$/);
     await expect(page.getByLabel(/Código de tu ticket/)).toBeVisible();

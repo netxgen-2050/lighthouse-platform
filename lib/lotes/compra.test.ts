@@ -281,4 +281,23 @@ describe("estadoConCompras", () => {
     const vieja: CompraLote[] = [{ ...reservada()[0], loteId: vendido }];
     expect(estadoConCompras(vendido, vieja)).toBe("vendido");
   });
+
+  it("lo que reservó o pagó otra persona (estados de la base) se ve reservado o vendido", () => {
+    expect(estadoConCompras(disponible, [], { [disponible]: "reservado" })).toBe("reservado");
+    expect(estadoConCompras(disponible, [], { [disponible]: "vendido" })).toBe("vendido");
+    expect(estadoConCompras(otroDisponible, [], { [disponible]: "reservado" })).toBe("disponible");
+  });
+
+  it("lo propio manda sobre lo que dice la base", () => {
+    const base = { [disponible]: "reservado" } as const;
+    expect(estadoConCompras(disponible, reservada(), base)).toBe("reservado-por-vos");
+    const pagada = pagar(reservada(), disponible, ahora);
+    if (!pagada.ok) throw new Error("no pagó");
+    expect(estadoConCompras(disponible, pagada.compras, { [disponible]: "vendido" })).toBe("vendido-a-vos");
+  });
+
+  it("sin estados de la base (todavía no llegaron) quedan los de ejemplo", () => {
+    expect(estadoConCompras(disponible, [], undefined)).toBe("disponible");
+    expect(estadoConCompras(vendido, [], {})).toBe("vendido");
+  });
 });

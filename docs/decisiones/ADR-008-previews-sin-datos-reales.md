@@ -1,5 +1,12 @@
 # ADR-008 · Los previews nunca tienen datos reales: su rama de Neon sale de una rama `previews` sin datos reales y el modo de prueba solo acepta emails `.test`
 
+> **Estado al 25-nov-2026 · revisada por Gus.** Se quita el requisito de que la rama `previews` tenga **solo** personas `.test`. Motivo: probar el login real (Google y código por email, ADR-009) deja a la persona real en `previews`, y la guarda frenaba todos los builds hasta limpiar a mano (pasó dos veces el 25-nov). Desde ahora:
+> - **Se permiten personas reales en `previews`** (las del equipo que prueban el login). La guarda del build (`lib/db/guarda.ts`) solo pide que la base sea virgen o tenga **al menos una persona `.test`**: así sigue reconociendo la rama `previews` y frena si un `DATABASE_URL` de Preview apunta por error a producción (que nunca tiene personas `.test`).
+> - **Sigue igual:** los previews salen de `previews`, nunca de una copia de producción (B), y el modo de prueba solo acepta emails `.test` (C), así que nadie puede "entrar como" una persona real con la cabecera.
+> - **Aceptamos:** en `previews` puede haber emails reales del equipo. Antes de abrir la plataforma a gente de afuera (R14, R29), volver a mirarlo.
+> - Limpieza opcional (SQL Editor de Neon, rama `previews`): crear la tabla temporal `reales` con las personas sin `.test`, apagar el trigger `consentimientos_solo_agregar` solo dentro de esa transacción, borrar sus filas en `consentimientos`, `cambios_de_rol`, `cuentas` y `personas`, y volver a prender el trigger.
+
+
 - **Estado:** Aceptada (Gus eligió B + C el 2026-10-15; D descartada porque ADR-009 cambia el login a Neon Auth)
 - **Fecha:** 2026-10-15 (propuesta y aceptación)
 - **Cambio OpenSpec relacionado:** base-neon (rama `previews`, datos de ejemplo y regla `.test`); también login-neon-auth (Neon Auth en previews), consentimiento-en-la-base y fogon-cuadratico-en-la-base

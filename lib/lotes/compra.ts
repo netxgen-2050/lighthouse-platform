@@ -106,6 +106,37 @@ const copiarPlan = (p: PlanVisto): PlanVisto => ({
   ...(p.faroUltimaCuota !== undefined ? { faroUltimaCuota: p.faroUltimaCuota } : {}),
 });
 
+function copiarVio(vio: LoVisto): LoVisto {
+  return {
+    precio: vio.precio,
+    aporte: vio.aporte,
+    expensa: vio.expensa,
+    version: vio.version,
+    ...(vio.precioCasa !== undefined ? { precioCasa: vio.precioCasa } : {}),
+    ...(vio.fuente !== undefined ? { fuente: vio.fuente } : {}),
+    ...(vio.hibridoAceptado !== undefined ? { hibridoAceptado: vio.hibridoAceptado } : {}),
+    ...(vio.faro !== undefined ? { faro: vio.faro } : {}),
+    // Un plan mal formado no borra la compra: se descarta solo el plan y la pantalla dice "sin dato".
+    ...(esPlan(vio.plan) ? { plan: copiarPlan(vio.plan) } : {}),
+  };
+}
+
+/** Valida `LoVisto` (lo que llega del cliente o de la base): campos conocidos, números finitos o null. Algo mal formado da null. Descarta lo demás. */
+export function leerVio(x: unknown): LoVisto | null {
+  if (typeof x !== "object" || x === null || Array.isArray(x)) return null;
+  const v = x as Record<string, unknown>;
+  const ok =
+    esNumeroONull(v.precio) &&
+    esNumeroONull(v.aporte) &&
+    esNumeroONull(v.expensa) &&
+    typeof v.version === "string" &&
+    (v.precioCasa === undefined || esNumeroONull(v.precioCasa)) &&
+    (v.fuente === undefined || typeof v.fuente === "string") &&
+    (v.hibridoAceptado === undefined || typeof v.hibridoAceptado === "string") &&
+    (v.faro === undefined || esNumeroONull(v.faro));
+  return ok ? copiarVio(v as unknown as LoVisto) : null;
+}
+
 /** Lee lo guardado. Un JSON inválido, o algo que no es una lista, da una lista vacía. Solo se copian los campos conocidos. */
 export function leerCompras(texto: string | null): CompraLote[] {
   if (!texto) return [];
@@ -117,27 +148,7 @@ export function leerCompras(texto: string | null): CompraLote[] {
       if (vistos.has(c.loteId)) return [];
       vistos.add(c.loteId);
       const { loteId, opcion, paso, reservadoEl, pagadoEl, vio } = c;
-      return [
-        {
-          loteId,
-          opcion,
-          paso,
-          reservadoEl,
-          ...(pagadoEl ? { pagadoEl } : {}),
-          vio: {
-            precio: vio.precio,
-            aporte: vio.aporte,
-            expensa: vio.expensa,
-            version: vio.version,
-            ...(vio.precioCasa !== undefined ? { precioCasa: vio.precioCasa } : {}),
-            ...(vio.fuente !== undefined ? { fuente: vio.fuente } : {}),
-            ...(vio.hibridoAceptado !== undefined ? { hibridoAceptado: vio.hibridoAceptado } : {}),
-            ...(vio.faro !== undefined ? { faro: vio.faro } : {}),
-            // Un plan mal formado no borra la compra: se descarta solo el plan y la pantalla dice "sin dato".
-            ...(esPlan(vio.plan) ? { plan: copiarPlan(vio.plan) } : {}),
-          },
-        },
-      ];
+      return [{ loteId, opcion, paso, reservadoEl, ...(pagadoEl ? { pagadoEl } : {}), vio: copiarVio(vio) }];
     });
   } catch {
     return [];
@@ -179,12 +190,19 @@ export function pagar(compras: CompraLote[], loteId: string, ahora: Date): Resul
 /** Saca la reserva o el pago simulado de un lote. Un lote que no estaba queda igual. */
 export const deshacer = (compras: CompraLote[], loteId: string): CompraLote[] => compras.filter((c) => c.loteId !== loteId);
 
-/** El estado base del lote, con lo que la persona reservó o "pagó". Un id que no existe en el loteo se ignora. */
-export function estadoConCompras(loteId: string, compras: CompraLote[]): EstadoMostrado {
+/** Los lotes que la base dice que no están disponibles (`GET /api/lotes/estados`): sin ninguna identidad. */
+export type EstadosDeLaBase = Readonly<Record<string, "reservado" | "vendido">>;
+
+/**
+ * El estado base del lote, con lo que la persona reservó o "pagó" y, si se pasan, los estados de la base (lo que reservó o
+ * pagó otra persona se ve "reservado" o "vendido"). Lo propio manda sobre lo de la base. Un id que no existe en el loteo se ignora.
+ */
+export function estadoConCompras(loteId: string, compras: CompraLote[], estados?: EstadosDeLaBase): EstadoMostrado {
   const base = estadoDeLote(loteId);
   if (!existe(loteId)) return base;
   const c = compraDe(compras, loteId);
-  if (!c || base !== "disponible") return base;
+  if (!c) return base === "disponible" && estados && Object.hasOwn(estados, loteId) ? estados[loteId]! : base;
+  if (base !== "disponible") return base;
   if (c.paso !== "pagado") return "reservado-por-vos";
   // Con cuotas, el primer pago no deja el lote vendido: queda "en cuotas" (decisión de Gus, 23-nov). Sin plan, como antes.
   return c.vio.plan && c.vio.plan.cuotas > 0 ? "en-cuotas-tuyo" : "vendido-a-vos";

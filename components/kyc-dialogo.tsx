@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { EnEspanol } from "@/components/en-espanol";
 import { useSesion } from "@/components/sesion/contexto";
 import { TerminoLegal } from "@/components/termino-legal";
+import { Aviso } from "@/components/ui/aviso";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { registrarConsentimientoSensible } from "@/lib/privacidad/consentimiento";
 import {
@@ -198,9 +199,9 @@ export function KycDialogo({ abierto, kyc, alCerrar, alEnviar, alAprobar, motivo
           {comunes.cerrar}
         </button>
       </div>
-      <p className="mt-2 rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+      <Aviso tono="atencion" className="mt-2">
         {t.simulacion}
-      </p>
+      </Aviso>
       {motivo && <p className="mt-2 text-sm">{motivo}</p>}
 
       {enCurso && !sensibles && (

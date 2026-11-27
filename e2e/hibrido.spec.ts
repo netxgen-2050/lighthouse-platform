@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "./fixtura";
+import { expect, liberarLotes, test, type Page } from "./fixtura";
 import { formatearNumero } from "../lib/idioma/formatos";
 import { ESCENARIOS_COSTO, cobertura, coberturaDeEscenario, lotesDelSector } from "../lib/lotes/escenarios";
 import { porcentajeEn, usdEn } from "../lib/lotes/formato";
@@ -11,7 +11,8 @@ import { lotesDelGrupo } from "../lib/territorios/loteo";
 // nunca escritos a mano: si el loteo o el modelo cambian, estos tests no se rompen.
 const RUTA = "/lotes/hibrido";
 const LEI = "Leí lo que comparto y lo que me comprometo a pagar";
-const lote = lotesDelGrupo("norte").find((l) => estadoDeLote(l.id) === "disponible")!;
+// El 4.º lote disponible del norte es de este archivo (las reservas viven en el servidor: cada archivo usa lotes propios).
+const lote = lotesDelGrupo("norte").filter((l) => estadoDeLote(l.id) === "disponible")[3];
 
 test.beforeEach(async ({ page }) => {
   await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
@@ -281,6 +282,12 @@ test.describe("en inglés", () => {
 });
 
 test.describe("resumen en la ficha y aceptación al reservar", () => {
+  // Reservar escribe en el servidor: una persona propia y el lote libre antes de cada test.
+  test.use({ identidad: "propia" });
+  test.beforeEach(async ({ request }) => {
+    await liberarLotes(request, [lote.id]);
+  });
+
   test("la ficha muestra 'Lo que compartís y lo que pagás' en tres líneas, leídas del módulo", async ({ page }) => {
     await page.goto(`/lotes/${lote.id}`);
     const s = seccion(page, "Lo que compartís y lo que pagás");

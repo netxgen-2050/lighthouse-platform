@@ -20,9 +20,6 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           ← Inicio
         </Link>
       </p>
-      <p className="mb-4 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-        Prototipo interno · datos de ejemplo
-      </p>
       <p className="text-sm font-medium text-muted">Administración · solo super admin</p>
       <PestanasAdmin />
       <SoloSuperAdmin>{children}</SoloSuperAdmin>

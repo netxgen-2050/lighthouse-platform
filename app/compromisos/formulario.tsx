@@ -5,6 +5,7 @@ import { registrarEvento } from "@/lib/actividad/almacen";
 import { EVENTOS } from "@/lib/actividad/eventos";
 import { cargar, reducir } from "@/lib/compromisos/estado";
 import { TextoBilingue } from "@/components/texto-bilingue";
+import { Aviso } from "@/components/ui/aviso";
 import { describirCantidad, etiquetasDe } from "@/lib/compromisos/formato";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { textoEn } from "@/lib/idioma/tipos";
@@ -368,7 +369,7 @@ function Mercado({ propios }: { propios: Compromiso[] }) {
     <section aria-labelledby="titulo-mercado" className="grid gap-4">
       <h2 id="titulo-mercado" className="text-xl font-semibold">{m.titulo}</h2>
       <p className="rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm">{m.primerPaso}</p>
-      <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">{m.pronto}</p>
+      <Aviso tono="atencion">{m.pronto}</Aviso>
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="filtro-tipo" className="font-medium">{m.filtroTipo}</label>

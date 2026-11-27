@@ -1,14 +1,16 @@
 import { expect, test, type Page } from "./fixtura";
 import { tribusDeTerritorio } from "@/lib/territorios/datos";
+import { esperarHidratacion } from "./ayudas";
 
 // La portada no depende del plan: sin sembrar Sumarte, "lh-origen" es el único dato de la persona y los tests que miran
 // cuándo se lee (la importación de datos previos revisa los nombres en orden) no se adelantan por otra clave.
 test.use({ plan: "ninguno" });
 
+// Un camino por público (ux-inicio): quien vive, quien invierte y quien cuida el bien común.
 const CAMINOS = [
-  { titulo: "Ver los lotes", href: "/explorar#lotes" },
-  { titulo: "Explorar el territorio", href: "/explorar#territorio" },
-  { titulo: "Ver las comunidades", href: "/participa" },
+  { titulo: "¿Dónde viviría y cuánto cuesta?", href: "/explorar/territorio" },
+  { titulo: "¿Qué financio y cómo me devuelven?", href: "/invertir" },
+  { titulo: "¿Qué es de todos y quién decide?", href: "/participa" },
 ];
 
 test("la portada responde", async ({ page }) => {
@@ -19,9 +21,9 @@ test("la portada responde", async ({ page }) => {
 test("muestra los tres caminos en orden, con titular y botón", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Regenerar desde el agua");
-  const principal = page.getByRole("link", { name: "Ver los lotes", exact: true }).first();
+  const principal = page.getByRole("link", { name: "Explorar el territorio", exact: true }).first();
   await expect(principal).toBeVisible();
-  await expect(principal).toHaveAttribute("href", "/explorar#lotes");
+  await expect(principal).toHaveAttribute("href", "/explorar/territorio");
   await expect(page.getByRole("heading", { level: 2, name: "Por dónde empezar" })).toBeVisible();
   const seccion = page.getByRole("region", { name: "Por dónde empezar" });
   const titulos = await seccion.getByRole("heading", { level: 3 }).allTextContents();
@@ -43,7 +45,7 @@ for (const camino of CAMINOS) {
   });
 }
 
-test("las tarjetas se recorren con Tab y Enter en la segunda lleva al territorio", async ({ page }) => {
+test("las tarjetas se recorren con Tab y Enter en la segunda lleva a Invertir", async ({ page }) => {
   await page.goto("/");
   const seccion = page.getByRole("region", { name: "Por dónde empezar" });
   const enlaces = seccion.getByRole("link");
@@ -60,26 +62,32 @@ test("las tarjetas se recorren con Tab y Enter en la segunda lleva al territorio
     await expect(enlace).toHaveCSS("outline-style", "solid");
     await expect(enlace).toHaveCSS("outline-width", "2px");
     if (i < CAMINOS.length - 1) await page.keyboard.press("Tab");
+    // Entre el segundo y el tercero está el ⚖ "Sin promesa de retorno" del camino de invertir.
+    if (i === 1) await page.keyboard.press("Tab");
   }
+  await page.keyboard.press("Shift+Tab");
   await page.keyboard.press("Shift+Tab");
   await page.keyboard.press("Shift+Tab");
   await expect(enlaces.nth(0)).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(enlaces.nth(1)).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/explorar#territorio$/);
+  await expect(page).toHaveURL(/\/invertir$/);
 });
 
-test("'Ver los lotes' del héroe se alcanza con el teclado y lleva a /lotes", async ({ page }) => {
+test("'Explorar el territorio' del héroe se alcanza con el teclado y lleva a /explorar/territorio", async ({ page }) => {
+  await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
   await page.goto("/");
-  const principal = page.getByRole("link", { name: "Ver los lotes", exact: true }).first();
+  const principal = page.getByRole("link", { name: "Explorar el territorio", exact: true }).first();
   for (let i = 0; i < 40; i++) {
     await page.keyboard.press("Tab");
     if (await principal.evaluate((el) => el === document.activeElement)) break;
   }
   await expect(principal).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/explorar#lotes$/);
+  await expect(page).toHaveURL(/\/explorar\/territorio$/);
+  await expect(page.getByRole("heading", { level: 2, name: "Territorio" })).toBeVisible();
+  await expect(page.getByRole("complementary", { name: "Ficha del territorio" })).toBeVisible();
 });
 
 test("narrativa: promesa a 2030, Argentina con su ⚖ y los cinco capitales", async ({ page }) => {
@@ -129,7 +137,7 @@ test("en 390 px no hay scroll horizontal", async ({ page }) => {
 test("la cantidad de barrios sale de los datos", async ({ page }) => {
   await page.goto("/");
   const n = tribusDeTerritorio("lighthouse").length;
-  await expect(page.getByRole("link", { name: /Ver las comunidades/ }).last()).toContainText(
+  await expect(page.getByRole("link", { name: /¿Qué es de todos y quién decide\?/ })).toContainText(
     `${n} barrios`,
   );
 });
@@ -144,13 +152,13 @@ test("héroe con la propuesta, aviso de prototipo y sin otros nodos", async ({ p
 
 const leerOrigenGuardado = (page: Page) => page.evaluate(() => window.localStorage.getItem("lh-origen"));
 
-test("camino recomendado: /?camino=lotes marca solo esa tarjeta, sin cambiar el orden", async ({ page }) => {
+test("camino recomendado: /?camino=lotes marca solo el camino de quien quiere vivir, sin cambiar el orden", async ({ page }) => {
   await page.goto("/?camino=lotes");
   const seccion = page.getByRole("region", { name: "Por dónde empezar" });
   await expect(seccion.getByText("Recomendado para vos")).toHaveCount(1);
-  await expect(seccion.getByRole("link", { name: /Ver los lotes/ })).toContainText("Recomendado para vos");
-  await expect(seccion.getByRole("link", { name: /Ver las comunidades/ })).not.toContainText("Recomendado para vos");
-  await expect(seccion.getByRole("link", { name: /Explorar el territorio/ })).not.toContainText("Recomendado para vos");
+  await expect(seccion.getByRole("link", { name: /¿Dónde viviría/ })).toContainText("Recomendado para vos");
+  await expect(seccion.getByRole("link", { name: /¿Qué es de todos/ })).not.toContainText("Recomendado para vos");
+  await expect(seccion.getByRole("link", { name: /¿Qué financio/ })).not.toContainText("Recomendado para vos");
   const titulos = await seccion.getByRole("heading", { level: 3 }).allTextContents();
   expect(titulos).toEqual(CAMINOS.map((c) => c.titulo));
   expect(await leerOrigenGuardado(page)).toBeNull();
@@ -160,7 +168,8 @@ test("camino recomendado: el nombre accesible del enlace incluye la marca y reci
   await page.goto("/?camino=territorio");
   const enlace = page.getByRole("region", { name: "Por dónde empezar" }).getByRole("link", { name: /Recomendado para vos/ });
   await expect(enlace).toHaveCount(1);
-  await expect(enlace).toHaveAttribute("href", "/explorar#territorio");
+  await expect(enlace).toHaveAttribute("href", "/explorar/territorio");
+  await expect(enlace).toContainText("¿Dónde viviría y cuánto cuesta?");
   await enlace.focus();
   await expect(enlace).toBeFocused();
 });
@@ -211,34 +220,38 @@ test("un parámetro no permitido se descarta y los valores del origen se guardan
   expect(o.campana).toBe("Promo Feb 2027");
 });
 
-test("foto del valle a sangre con la leyenda, cifras con fuente en paneles de vidrio y botón de 44 px a 390 px", async ({ page }) => {
+test("foto del valle a sangre con la leyenda, cifras con fuente en una franja y botón de 44 px a 390 px", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   await expect(page.getByText("Imagen ilustrativa", { exact: true })).toBeVisible();
-  const boton = page.getByRole("link", { name: "Ver los lotes", exact: true }).first();
+  const boton = page.getByRole("link", { name: "Explorar el territorio", exact: true }).first();
   await expect(boton).toBeVisible();
   expect((await boton.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
-  const cifras = page.getByRole("region", { name: "Cifras del sitio" }).locator("li");
+  const franja = page.getByRole("region", { name: "Cifras del sitio" });
+  const caja = await franja.boundingBox();
+  expect(caja && Math.abs(caja.width - 390) <= 1).toBe(true);
+  const cifras = franja.locator("li");
   const n = await cifras.count();
   expect(n).toBeGreaterThan(0);
   for (let i = 0; i < n; i++) {
-    await expect(cifras.nth(i)).toHaveClass(/panel-vidrio/);
     await expect(cifras.nth(i)).toContainText("Fuente:");
   }
   const sobra = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(sobra).toBeLessThanOrEqual(0);
 });
 
-test("a 1280 px la foto ocupa el ancho del contenido, con el título y el botón encima y la leyenda", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 800 });
+test("a 1440 px la foto ocupa el ancho del contenido sin llenar la pantalla, con el título y el botón encima y la leyenda", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   const imagen = page.locator('img[src*="lighthouse-valle"]');
   await expect(imagen).toHaveAttribute("alt", "");
   const foto = await imagen.boundingBox();
   const main = await page.locator("main").boundingBox();
   expect(foto && main && Math.abs(foto.width - main.width) <= 1).toBe(true);
+  // Alto mínimo de 520 px y nunca la pantalla entera (900 px de alto acá).
+  expect(foto && foto.height >= 520 && foto.height < 900).toBe(true);
   const titulo = await page.getByRole("heading", { level: 1 }).boundingBox();
-  const boton = await page.getByRole("link", { name: "Ver los lotes", exact: true }).first().boundingBox();
+  const boton = await page.getByRole("link", { name: "Explorar el territorio", exact: true }).first().boundingBox();
   for (const caja of [titulo, boton]) {
     expect(caja && foto && caja.y >= foto.y && caja.y + caja.height <= foto.y + foto.height).toBe(true);
   }
@@ -247,9 +260,9 @@ test("a 1280 px la foto ocupa el ancho del contenido, con el título y el botón
   expect(sobra).toBeLessThanOrEqual(0);
 });
 
-test("con Tab el foco llega a Ver los lotes y a Elegí cómo sumarte, con anillo visible", async ({ page }) => {
+test("con Tab el foco llega a Explorar el territorio y a Elegí cómo sumarte, con anillo visible", async ({ page }) => {
   await page.goto("/");
-  for (const nombre of ["Ver los lotes", "Elegí cómo sumarte"]) {
+  for (const nombre of ["Explorar el territorio", "Elegí cómo sumarte"]) {
     const enlace = page.getByRole("main").getByRole("link", { name: nombre, exact: true }).first();
     for (let i = 0; i < 40; i++) {
       await page.keyboard.press("Tab");
@@ -265,5 +278,50 @@ test("la imagen de fondo es decorativa y se aclara que es ilustrativa", async ({
   const imagen = page.locator('img[src*="lighthouse-valle"]');
   await expect(imagen).toHaveAttribute("alt", "");
   await expect(page.getByText(/Imagen ilustrativa de la Zona A/)).toBeVisible();
+});
+
+test("el camino de invertir lleva su ⚖ de 'sin promesa de retorno' fuera del enlace", async ({ page }) => {
+  await page.goto("/");
+  const seccion = page.getByRole("region", { name: "Por dónde empezar" });
+  await expect(seccion.getByText("Sin promesa de retorno")).toBeVisible();
+  await expect(seccion.getByRole("button", { name: /Sin promesa de retorno/ })).toBeVisible();
+  await expect(seccion.getByRole("link").getByRole("button")).toHaveCount(0);
+});
+
+test("a 1440 px la fila de capitales no es una parada de Tab", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const fila = page.getByRole("region", { name: "Los cinco capitales de la regeneración" }).locator("ul");
+  await expect(fila).toBeVisible();
+  // El HTML del servidor nunca trae tabindex: se espera a que la página esté hidratada para que la medición ya haya corrido.
+  await esperarHidratacion(page);
+  await expect(fila).not.toHaveAttribute("tabindex", /.*/);
+});
+
+test("los dibujos de las franjas y los caminos son decorativos", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  const dibujos = page.locator("main svg");
+  expect(await dibujos.count()).toBeGreaterThanOrEqual(11);
+  await expect(page.locator('main svg:not([aria-hidden="true"])')).toHaveCount(0);
+});
+
+test("el aviso de Argentina va después de los capitales y antes de la nota de la imagen", async ({ page }) => {
+  await page.goto("/");
+  const capitales = await page.getByRole("region", { name: "Los cinco capitales de la regeneración" }).boundingBox();
+  const aviso = await page.getByRole("region", { name: "Argentina, un lugar seguro y abierto" }).boundingBox();
+  const nota = await page.getByText(/Imagen ilustrativa de la Zona A/).boundingBox();
+  expect(capitales && aviso && nota && capitales.y < aviso.y && aviso.y < nota.y).toBe(true);
+});
+
+test("en el celular los capitales van en una fila con scroll horizontal y el siguiente asoma", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const fila = page.getByRole("region", { name: "Los cinco capitales de la regeneración" }).locator("ul");
+  expect(await fila.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+  // Con scroll, la fila se alcanza con el teclado (tras hidratar).
+  await expect(fila).toHaveAttribute("tabindex", "0");
+  const segundo = await fila.locator("li").nth(1).boundingBox();
+  expect(segundo && segundo.x < 390).toBe(true);
 });
 

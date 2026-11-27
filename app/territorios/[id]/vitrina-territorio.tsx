@@ -8,11 +8,11 @@ import { textoEn } from "@/lib/idioma/tipos";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import type { territorio } from "@/lib/idioma/textos/territorio";
 import type { Textos } from "@/lib/idioma/tipos";
-import { listarBarrios, listarFincas, terrenoComun, textoSuperficieM2, tribuDeBarrio } from "@/lib/territorios/biopueblo";
+import { listarBarrios, listarFincas, terrenoComun, tribuDeBarrio } from "@/lib/territorios/biopueblo";
 import { MarcaLoteo } from "./vistas/lotes";
-import { TextoEstado } from "@/components/lotes/estado-del-lote";
-import { useCompras } from "@/components/lotes/usar-compras";
-import { estadoConCompras } from "@/lib/lotes/compra";
+import { AvisoEstadosLotes } from "@/components/lotes/estado-del-lote";
+import { useEstadosLotes } from "@/components/lotes/usar-estados-lotes";
+import { Boton } from "@/components/ui/boton";
 import { FASE_ACTUAL, FASES, type Fase } from "@/lib/territorios/fases";
 import { listarLotes, sectorNorte, zonasDelLoteo } from "@/lib/territorios/loteo";
 import { resumenDelLoteo, resumenDePrimeros } from "@/lib/territorios/loteo-textos";
@@ -136,7 +136,8 @@ function escribirUrl(vista: VistaId, fase: Fase, sel: string | null) {
 export function VitrinaTerritorio() {
   const idioma = useIdioma();
   const tx = useTextos("territorio");
-  const { compras } = useCompras();
+  const { fallo: falloEstados } = useEstadosLotes();
+  const tl = useTextos("explorar").territorioLotes;
   const [vista, setVista] = useState<VistaId>(VISTA_POR_DEFECTO);
   const [fase, setFase] = useState<Fase>(FASE_ACTUAL);
   const [fuente, setFuente] = useState<FuentePlanId>("ilustrativa");
@@ -199,8 +200,9 @@ export function VitrinaTerritorio() {
   const tribus = listarTribus(idioma);
 
   return (
-    <div className="mt-6 grid gap-6 md:grid-cols-3">
-      <section aria-labelledby="mapa-titulo" className="grid min-w-0 content-start gap-3 md:col-span-2">
+    // El mapa ocupa todo el ancho; la ficha pasa abajo y queda al costado solo desde 1280 px (spec ux-explorar, design §6).
+    <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <section aria-labelledby="mapa-titulo" className="grid min-w-0 content-start gap-3">
         <Titulo id="mapa-titulo" className="text-xl font-bold">
           {tx.mapaDe} <span translate="no">Macrolote 7</span>
         </Titulo>
@@ -249,25 +251,43 @@ export function VitrinaTerritorio() {
         <div className="isolate min-w-0">
           <MapaCliente seleccion={seleccion} alElegir={elegir} vista={vista} fase={fase} />
         </div>
-        <div role="group" aria-label={tx.leyenda.grupo} className="grid gap-3 text-sm">
-          {grupos(tx, vista, fase).map((g) => (
-            <div key={g.id} className="grid gap-1">
-              <p id={g.id} className="font-semibold">
-                {g.titulo}
-              </p>
-              {g.nota && <p className="text-muted">{g.nota}</p>}
-              <ul aria-labelledby={g.id} className="flex flex-wrap gap-x-5 gap-y-2">
-                {g.items.map((l) => (
-                  <li key={l.texto} className="flex items-center gap-2">
-                    <span aria-hidden="true" className={`mapa-leyenda ${l.clase}`} />
-                    {l.simbolo && <span aria-hidden="true">{l.simbolo} </span>}
-                    {l.texto}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
+        {/* Leyenda: una fila compacta de chips con ícono (lo de esta vista) y, desplegable, la completa (design §6). */}
+        <ul aria-label={tl.leyendaCompacta} className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+          {grupos(tx, vista, fase)
+            .slice(0, vista === "lotes" ? 2 : 1)
+            .flatMap((g) => g.items)
+            .map((l) => (
+              <li key={l.texto} className="flex items-center gap-2">
+                <span aria-hidden="true" className={`mapa-leyenda ${l.clase}`} />
+                {l.simbolo && <span aria-hidden="true">{l.simbolo} </span>}
+                {l.texto}
+              </li>
+            ))}
+        </ul>
+        <details className="text-sm">
+          <summary className="w-fit cursor-pointer rounded font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep">
+            {tl.leyendaCompleta}
+          </summary>
+          <div role="group" aria-label={tx.leyenda.grupo} className="mt-2 grid gap-3">
+            {grupos(tx, vista, fase).map((g) => (
+              <div key={g.id} className="grid gap-1">
+                <p id={g.id} className="font-semibold">
+                  {g.titulo}
+                </p>
+                {g.nota && <p className="text-muted">{g.nota}</p>}
+                <ul aria-labelledby={g.id} className="flex flex-wrap gap-x-5 gap-y-2">
+                  {g.items.map((l) => (
+                    <li key={l.texto} className="flex items-center gap-2">
+                      <span aria-hidden="true" className={`mapa-leyenda ${l.clase}`} />
+                      {l.simbolo && <span aria-hidden="true">{l.simbolo} </span>}
+                      {l.texto}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </details>
         {vista !== "lotes" && (
           <p className="text-sm text-muted">{vista === "ahora" ? tx.frente.lugarIlustrativo : tx.notaDistribucion}</p>
         )}
@@ -288,17 +308,13 @@ export function VitrinaTerritorio() {
                 {tx.loteo.listaTitulo}
               </Titulo>
               <MarcaLoteo />
+              <AvisoEstadosLotes fallo={falloEstados} />
               {resumenDePrimeros(idioma) && <p className="text-sm font-medium">{resumenDePrimeros(idioma)}</p>}
               <p className="text-sm">{resumenDelLoteo(idioma)}</p>
-              <ul aria-labelledby="lista-lotes-titulo" className="flex flex-wrap gap-2">
-                {listarLotes().map((l) => (
-                  <li key={l.id}>
-                    <button type="button" className={botonLista} aria-pressed={seleccion === l.id} onClick={() => elegir(l.id)}>
-                      {tx.loteo.lote(l.numero)} · {textoSuperficieM2(l.superficieM2, idioma)} · <TextoEstado estado={estadoConCompras(l.id, compras)} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              {/* La lista de los lotes vive en Explorar / Lotes: acá solo el enlace (spec ux-explorar). */}
+              <Boton href="/explorar/lotes" variante="secundario" tamano="s" className="w-fit">
+                {tl.ver(listarLotes().length)}
+              </Boton>
             </div>
           )}
           <ul className="flex flex-wrap gap-2">
@@ -346,7 +362,7 @@ export function VitrinaTerritorio() {
       <aside
         aria-label={tx.ficha.aria}
         aria-live="polite"
-        className="grid min-w-0 content-start gap-3 rounded-xl border border-faint bg-surface p-4 md:self-start"
+        className="grid min-w-0 content-start gap-3 rounded-xl border border-faint bg-surface p-4 xl:self-start"
       >
         <FichaLateral
           seleccion={seleccion}

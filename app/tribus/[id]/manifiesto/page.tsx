@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buscarManifiesto, buscarManifiestoBilingue, idsConManifiesto } from "@/lib/manifiestos/datos";
 import { idiomaDelPedido } from "@/lib/idioma/servidor";
-import { textos } from "@/lib/idioma/textos";
 import { nombreDelComun } from "@/lib/manifiestos/lighthouse-vrn";
 import { COMUNIDAD_LIGHTHOUSE } from "@/lib/membresia/estado";
 import { destinosDisponibles } from "@/lib/navegacion";
@@ -35,9 +34,6 @@ export default async function ManifiestoPage({ params }: Props) {
         <Link className="underline" href={`/tribus/${id}`}>
           ← <span translate="no">{esLighthouse ? nombreDelComun(idioma) : m.comunidad}</span>
         </Link>
-      </p>
-      <p className="mt-2 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-        {textos("marco", idioma).aviso}
       </p>
       <LecturaManifiesto manifiesto={m} pactos={destinosDisponibles().some((d) => d.href === "/pactos")} />
     </div>

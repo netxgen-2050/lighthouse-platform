@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AvisoEjemplo } from "@/components/aviso-ejemplo";
 import { SeccionBarrio } from "@/components/bien-comun/calculadora-barrio";
 import { DiagramaCarriles } from "@/components/bien-comun/diagrama-carriles";
+import { LECTURA } from "@/components/bien-comun/estilos";
 import { ListaCambios } from "@/components/bien-comun/lista-cambios";
 import { ListaPuertas } from "@/components/bien-comun/lista-puertas";
-import { SelloPropuesta } from "@/components/bien-comun/sello-propuesta";
-import { TARJETA, TD, TH, REGION } from "@/components/bien-comun/estilos";
 import { TablaDecisiones } from "@/components/bien-comun/tabla-decisiones";
+import { TablaFilas } from "@/components/bien-comun/tabla-filas";
 import { TarjetasPolitica } from "@/components/bien-comun/tarjetas-politica";
 import { TerminoLegal } from "@/components/termino-legal";
+import { Aviso } from "@/components/ui/aviso";
+import { ChipEstado } from "@/components/ui/chip-estado";
+import { IndicePagina, IndicePaginaMovil } from "@/components/ui/indice-pagina";
+import { Seccion } from "@/components/ui/seccion";
+import { SeccionPlegable } from "@/components/ui/seccion-plegable";
 import { ENTRADAS_DE_PARTIDA } from "@/lib/bien-comun/barrio";
 import { textoDeEstado } from "@/lib/bien-comun/estado-decision";
 import { enteroEn, faroEn } from "@/lib/bien-comun/formato";
@@ -36,6 +40,7 @@ import { porcentajeEn } from "@/lib/lotes/formato";
 import { parcelasPorUso } from "@/lib/territorios/loteo-textos";
 
 // La propuesta v0.1 del bien común y los tokens, como PROPUESTA EN DISCUSIÓN (spec bien-comun-propuesta). Se ve sin sesión.
+// Con índice, secciones con aire y lo largo plegado (spec ux-bien-comun).
 // Ningún número se escribe acá: salen de `lib/bien-comun/modelo.ts` (o de `lib/lotes/modelo.ts`). No se emite ni se cobra nada.
 export async function generateMetadata(): Promise<Metadata> {
   return { title: textos("biencomun", await idiomaDelPedido()).titulo };
@@ -49,7 +54,12 @@ export default async function BienComunPage() {
   const meses = enteroEn(POLITICA.transferencia.revisionMeses, idioma);
   // Las cantidades salen del módulo, nunca del diccionario.
   const cantidadDecisiones = enteroEn(DECISIONES.length, idioma);
+  const abiertas = DECISIONES.filter((d) => d.estado === "abierta").length;
+  const cantidadAbiertas = enteroEn(abiertas, idioma);
   const cantidadReglas = enteroEn(Object.keys(POLITICA).length, idioma);
+  const cantidadCambios = enteroEn(CAMBIOS_DESDE_V_ANTERIOR.ids.length, idioma);
+  const cantidadPrincipios = enteroEn(t.ostrom.filas.length, idioma);
+  const cantidadPreguntas = enteroEn(PREGUNTAS_ABOGADO.length, idioma);
 
   const nodoA = {
     tokenTierra: "tokenTierra",
@@ -100,209 +110,206 @@ export default async function BienComunPage() {
       recomendacion:
         d.id === "d3" ? t.decisiones.d3.recomendacion(meses) : (t.decisiones[d.id].recomendacion as string),
       termino: d.id === "d2" ? <TerminoLegal clave="primaobjetivo" idioma={idioma} /> : undefined,
-      estado: textoDeEstado(d, t.decisiones, idioma),
+      estado: d.estado === "abierta" ? ("abierta" as const) : ("decidida" as const),
+      detalleEstado: d.estado === "abierta" ? undefined : textoDeEstado(d, t.decisiones, idioma),
     };
   });
 
   const cambios = CAMBIOS_DESDE_V_ANTERIOR.ids.map((id) => ({ id, texto: t.cambios[id] }));
 
+  // El índice: los mismos títulos que los de las secciones, en el orden de la página.
+  const indice = [
+    { id: "h-frase", titulo: t.frase.titulo },
+    { id: "h-carriles", titulo: t.carriles.titulo },
+    { id: "h-puertas", titulo: t.puertas.titulo },
+    { id: "h-que-da", titulo: `${t.queDa.titulo} / ${t.queNoTiene.titulo}` },
+    { id: "h-politica", titulo: t.politica.titulo },
+    { id: "h-barrio", titulo: t.barrio.titulo },
+    { id: "h-decisiones", titulo: t.decisiones.titulo },
+    { id: "h-cambios", titulo: t.cambios.titulo },
+    { id: "h-ostrom", titulo: t.ostrom.titulo },
+    { id: "h-parcelas", titulo: t.parcelas.titulo },
+    { id: "h-nft", titulo: t.tokens.nft.titulo },
+    { id: "h-abogado", titulo: t.abogado.titulo },
+  ];
+
   return (
-    <div className="mx-auto max-w-4xl p-6 sm:p-10">
+    <div className="mx-auto max-w-6xl p-6 sm:p-10">
       <h1 className="text-3xl font-semibold">{t.titulo}</h1>
-      {/* El sello va primero, antes de cualquier número. No es fijo: no tapa el foco del teclado. */}
-      <div className="mt-3 grid gap-2">
-        <SelloPropuesta
-          etiqueta={t.sello.etiqueta}
-          texto={t.sello.texto(VERSION_PROPUESTA.version)}
-          fecha={t.sello.fecha(formatearFecha(VERSION_PROPUESTA.fecha, idioma, "largo"), VERSION_PROPUESTA.fuente)}
-          simulacion={t.sello.simulacion}
-          terminoSimulacion={<TerminoLegal clave="noesoferta" idioma={idioma} />}
-        />
-        <AvisoEjemplo />
-        <p className="w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-          {textos("marco", idioma).aviso}
+      {/* Un solo aviso, antes de cualquier número: el estado de la propuesta. No es fijo: no tapa el foco del teclado. */}
+      <Aviso tono="legal" className="mt-4 max-w-[68ch]" aria-label={t.sello.etiqueta}>
+        <p className="font-semibold">{t.sello.texto(VERSION_PROPUESTA.version)}</p>
+        <p className="mt-1">
+          {t.sello.fecha(formatearFecha(VERSION_PROPUESTA.fecha, idioma, "largo"), VERSION_PROPUESTA.fuente)}
         </p>
+        <p className="mt-1">
+          {t.sello.simulacion}
+          <TerminoLegal clave="noesoferta" idioma={idioma} />
+        </p>
+      </Aviso>
+
+      <div className="mt-4 lg:hidden">
+        <IndicePaginaMovil items={indice} etiqueta={t.indice.titulo} etiquetaCerrar={t.indice.cerrar} />
       </div>
 
-      <div className="mt-6 grid gap-6">
-        <section aria-labelledby="h-frase" className={TARJETA}>
-          <h2 id="h-frase" className="text-xl font-semibold">
-            {t.frase.titulo}
-            <TerminoLegal clave="tokenbiencomun" idioma={idioma} />
-          </h2>
-          <p className="max-w-3xl">{t.frase.texto}</p>
-          <p className="max-w-3xl font-medium">{t.frase.nadaAcordado}</p>
-          <p className="max-w-3xl text-sm text-muted">
-            {parte === null ? t.bajadaSinDato : t.bajada(porcentajeEn(parte, idioma, 1))}
-          </p>
-          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-            {(["fideicomisobarrio", "tokentierra", "tokeninversor", "tesorocomun"] as const).map((c) => (
-              <li key={c}>
-                {c === "fideicomisobarrio"
-                  ? t.nodos.fideicomiso
-                  : c === "tokentierra"
-                    ? t.nodos.tokenTierra
-                    : c === "tokeninversor"
-                      ? t.nodos.tokenInversor
-                      : t.nodos.tesoro}
-                <TerminoLegal clave={c} idioma={idioma} />
-              </li>
-            ))}
-          </ul>
-        </section>
+      <div className="lg:grid lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10">
+        <div className="hidden lg:block">
+          <div className="sticky top-24 mt-12">
+            <IndicePagina items={indice} etiqueta={t.indice.titulo} />
+          </div>
+        </div>
 
-        <DiagramaCarriles
-          titulo={t.carriles.titulo}
-          intro={t.carriles.intro}
-          carrilA={carrilA}
-          carrilB={carrilB}
-          puentesTitulo={t.puentes.titulo}
-          deEtiqueta={t.puentes.de}
-          aEtiqueta={t.puentes.a}
-          puentes={puentes}
-        />
-
-        <ListaPuertas titulo={t.puertas.titulo} intro={t.puertas.intro} puertas={puertas} />
-
-        <div className="grid gap-3 md:grid-cols-2">
-          <section aria-labelledby="h-que-da" className={TARJETA}>
-            <h2 id="h-que-da" className="text-xl font-semibold">
-              {t.queDa.titulo}
-            </h2>
-            <ul className="grid list-disc gap-1 pl-5 text-sm">
-              {QUE_DA.map((id) => (
-                <li key={id}>
-                  {t.queDa[id]}
-                  {id === "expensas" ? <TerminoLegal clave="expensas" idioma={idioma} /> : null}
+        <div className="min-w-0">
+          <Seccion id="h-frase" titulo={t.frase.titulo}>
+            <p className={LECTURA}>
+              {t.frase.texto}
+              <TerminoLegal clave="tokenbiencomun" idioma={idioma} />
+            </p>
+            <p className={`${LECTURA} font-medium`}>{t.frase.nadaAcordado}</p>
+            <p className={`${LECTURA} text-muted`}>
+              {parte === null ? t.bajadaSinDato : t.bajada(porcentajeEn(parte, idioma, 1))}
+            </p>
+            <ul className="flex flex-wrap gap-x-4 gap-y-1">
+              {(["fideicomisobarrio", "tokentierra", "tokeninversor", "tesorocomun"] as const).map((c) => (
+                <li key={c}>
+                  {c === "fideicomisobarrio"
+                    ? t.nodos.fideicomiso
+                    : c === "tokentierra"
+                      ? t.nodos.tokenTierra
+                      : c === "tokeninversor"
+                        ? t.nodos.tokenInversor
+                        : t.nodos.tesoro}
+                  <TerminoLegal clave={c} idioma={idioma} />
                 </li>
               ))}
             </ul>
-            <p className="text-sm text-muted">{t.queDa.nota}</p>
-          </section>
-          <section aria-labelledby="h-que-no" className={TARJETA}>
-            <h2 id="h-que-no" className="text-xl font-semibold">
-              {t.queNoTiene.titulo}
-            </h2>
-            <ul className="grid list-disc gap-1 pl-5 text-sm">
-              {QUE_NO_TIENE.map((id) => (
-                <li key={id}>{t.queNoTiene[id]}</li>
-              ))}
-            </ul>
-          </section>
-        </div>
+          </Seccion>
 
-        <TarjetasPolitica titulo={t.politica.titulo} intro={t.politica.intro(cantidadReglas)}deDondeEtiqueta={t.politica.deDonde} tarjetas={tarjetas} />
+          <Seccion id="h-carriles" titulo={t.carriles.titulo} bajada={t.carriles.intro}>
+            <DiagramaCarriles
+              carrilA={carrilA}
+              carrilB={carrilB}
+              puentesTitulo={t.puentes.titulo}
+              deEtiqueta={t.puentes.de}
+              aEtiqueta={t.puentes.a}
+              puentes={puentes}
+            />
+          </Seccion>
 
-        {/* Solo con sesión, hasta la revisión R14: sin sesión el componente muestra un aviso y ningún número del barrio. */}
-        <SeccionBarrio partida={ENTRADAS_DE_PARTIDA} />
+          <Seccion id="h-puertas" titulo={t.puertas.titulo} bajada={t.puertas.intro}>
+            <ListaPuertas puertas={puertas} />
+          </Seccion>
 
-        <TablaDecisiones
-          titulo={t.decisiones.titulo}
-          intro={t.decisiones.intro(cantidadDecisiones)}
-          caption={t.decisiones.caption(cantidadDecisiones)}
-          columnas={{ pregunta: t.decisiones.pregunta, recomendacion: t.decisiones.recomendacionTitulo, estado: t.decisiones.estado }}
-          filas={filas}
-        />
-
-        <ListaCambios
-          titulo={t.cambios.titulo}
-          intro={t.cambios.intro(formatearFecha(CAMBIOS_DESDE_V_ANTERIOR.fechaModeloAnterior, idioma, "largo"))}
-          items={cambios}
-        />
-
-        <section aria-labelledby="h-ostrom" className={TARJETA}>
-          <h2 id="h-ostrom" className="text-xl font-semibold">
-            {t.ostrom.titulo}
-          </h2>
-          <p className="max-w-3xl text-sm">{t.ostrom.intro}</p>
-          <div role="region" tabIndex={0} aria-label={t.ostrom.caption} className={REGION}>
-            <table className="w-full min-w-[34rem] text-sm">
-              <caption className="sr-only">{t.ostrom.caption}</caption>
-              <thead>
-                <tr className="border-b border-line">
-                  <th scope="col" className={TH}>
-                    {t.ostrom.principio}
-                  </th>
-                  <th scope="col" className={TH}>
-                    {t.ostrom.como}
-                  </th>
-                  <th scope="col" className={TH}>
-                    {t.ostrom.estado}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {t.ostrom.filas.map((f) => (
-                  <tr key={f.principio} className="border-t border-line">
-                    <th scope="row" className={`${TD} text-left font-medium`}>
-                      {f.principio}
-                    </th>
-                    <td className={TD}>{f.como}</td>
-                    <td className={TD}>
-                      <span className="w-fit rounded-full border border-dashed border-muted px-2 py-0.5 text-xs font-medium">
-                        {t.ostrom.idea}
-                      </span>
-                    </td>
-                  </tr>
+          <div className="grid md:grid-cols-2 md:gap-10">
+            <Seccion id="h-que-da" titulo={t.queDa.titulo}>
+              <ul className="grid list-disc gap-1 pl-5">
+                {QUE_DA.map((id) => (
+                  <li key={id}>
+                    {t.queDa[id]}
+                    {id === "expensas" ? <TerminoLegal clave="expensas" idioma={idioma} /> : null}
+                  </li>
                 ))}
-              </tbody>
-            </table>
+              </ul>
+              <p className="text-muted">{t.queDa.nota}</p>
+            </Seccion>
+            <Seccion id="h-que-no" titulo={t.queNoTiene.titulo}>
+              <ul className="grid list-disc gap-1 pl-5">
+                {QUE_NO_TIENE.map((id) => (
+                  <li key={id}>{t.queNoTiene[id]}</li>
+                ))}
+              </ul>
+            </Seccion>
           </div>
-        </section>
 
-        <section aria-labelledby="h-parcelas" className={TARJETA}>
-          <h2 id="h-parcelas" className="text-xl font-semibold">
-            {t.parcelas.titulo}
-          </h2>
-          <p className="max-w-3xl text-sm">{t.parcelas.texto}</p>
-          <h3 className="font-medium">{t.parcelas.delPlano}</h3>
-          <ul className="grid list-disc gap-1 pl-5 text-sm">
-            {usos.map((u) => (
-              <li key={u.uso}>
-                <strong>{u.codigos.join(", ")}</strong> · {u.uso}
-              </li>
-            ))}
-          </ul>
-          <p className="text-sm font-medium">{t.parcelas.aSumar}</p>
-          <ul className="grid list-disc gap-1 pl-5 text-sm">
-            {t.parcelas.aSumarItems.map((i) => (
-              <li key={i}>{i}</li>
-            ))}
-          </ul>
-        </section>
+          <div className="mt-8 sm:mt-12">
+            <SeccionPlegable id="h-politica" titulo={t.politica.titulo} resumen={t.resumenes.politica(cantidadReglas)}>
+              <p className={LECTURA}>{t.politica.intro(cantidadReglas)}</p>
+              <TarjetasPolitica deDondeEtiqueta={t.politica.deDonde} tarjetas={tarjetas} />
+            </SeccionPlegable>
+          </div>
 
-        <section aria-labelledby="h-nft" className={TARJETA}>
-          <h2 id="h-nft" className="text-xl font-semibold">
-            {t.tokens.nft.titulo}
-            <TerminoLegal clave="nftlote" idioma={idioma} />
-          </h2>
-          <p className="max-w-3xl text-sm">{t.tokens.nft.texto}</p>
-        </section>
+          {/* Solo con sesión, hasta la revisión R14: sin sesión el componente muestra un aviso y ningún número del barrio. */}
+          <SeccionBarrio partida={ENTRADAS_DE_PARTIDA} />
 
-        <section aria-labelledby="h-abogado" className={TARJETA}>
-          <h2 id="h-abogado" className="text-xl font-semibold">
-            {t.abogado.titulo}
-          </h2>
-          <p className="max-w-3xl text-sm">{t.abogado.intro}</p>
-          <ol className="grid list-decimal gap-1 pl-5 text-sm">
-            {PREGUNTAS_ABOGADO.map((q) => (
-              <li key={q.id} data-pregunta={q.id}>
-                {t.abogado.items[q.id]}
-                {q.termino ? <TerminoLegal clave={q.termino} idioma={idioma} /> : null}
-              </li>
-            ))}
-          </ol>
-        </section>
+          <div className="mt-8 sm:mt-12">
+            <SeccionPlegable id="h-decisiones" titulo={t.decisiones.titulo} resumen={t.resumenes.decisiones(cantidadAbiertas, abiertas)}>
+              <p className={LECTURA}>{t.decisiones.intro(cantidadDecisiones)}</p>
+              <TablaDecisiones
+                caption={t.decisiones.caption(cantidadDecisiones)}
+                columnas={{ pregunta: t.decisiones.pregunta, recomendacion: t.decisiones.recomendacionTitulo, estado: t.decisiones.estado }}
+                filas={filas}
+              />
+            </SeccionPlegable>
 
-        <p className="text-sm text-muted">
-          {t.version(VERSION_PROPUESTA.fuente, VERSION_PROPUESTA.version, formatearFecha(VERSION_PROPUESTA.fecha, idioma, "largo"))}{" "}
-          <Link
-            className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
-            href="/lotes/hibrido"
-          >
-            {t.volver}
-          </Link>
-        </p>
+            <SeccionPlegable id="h-cambios" titulo={t.cambios.titulo} resumen={t.resumenes.cambios(cantidadCambios)}>
+              <p className={LECTURA}>
+                {t.cambios.intro(formatearFecha(CAMBIOS_DESDE_V_ANTERIOR.fechaModeloAnterior, idioma, "largo"))}
+              </p>
+              <ListaCambios items={cambios} />
+            </SeccionPlegable>
+
+            <SeccionPlegable id="h-ostrom" titulo={t.ostrom.titulo} resumen={t.resumenes.ostrom(cantidadPrincipios)}>
+              <p className={LECTURA}>{t.ostrom.intro}</p>
+              <TablaFilas
+                caption={t.ostrom.caption}
+                columnas={{ nombre: t.ostrom.principio, detalle: t.ostrom.como, estado: t.ostrom.estado }}
+                filas={t.ostrom.filas.map((f) => ({
+                  id: f.principio,
+                  nombre: f.principio,
+                  detalle: f.como,
+                  estado: <ChipEstado estado="idea" />,
+                }))}
+              />
+            </SeccionPlegable>
+
+            <SeccionPlegable id="h-parcelas" titulo={t.parcelas.titulo} resumen={t.resumenes.parcelas}>
+              <p className={LECTURA}>{t.parcelas.texto}</p>
+              <h3 className="font-medium">{t.parcelas.delPlano}</h3>
+              <ul className="grid list-disc gap-1 pl-5">
+                {usos.map((u) => (
+                  <li key={u.uso}>
+                    <strong>{u.codigos.join(", ")}</strong> · {u.uso}
+                  </li>
+                ))}
+              </ul>
+              <p className="font-medium">{t.parcelas.aSumar}</p>
+              <ul className="grid list-disc gap-1 pl-5">
+                {t.parcelas.aSumarItems.map((i) => (
+                  <li key={i}>{i}</li>
+                ))}
+              </ul>
+            </SeccionPlegable>
+
+            <SeccionPlegable id="h-nft" titulo={t.tokens.nft.titulo} resumen={t.resumenes.nft}>
+              <p className={LECTURA}>
+                {t.tokens.nft.texto}
+                <TerminoLegal clave="nftlote" idioma={idioma} />
+              </p>
+            </SeccionPlegable>
+
+            <SeccionPlegable id="h-abogado" titulo={t.abogado.titulo} resumen={t.resumenes.abogado(cantidadPreguntas)}>
+              <p className={LECTURA}>{t.abogado.intro}</p>
+              <ol className={`grid ${LECTURA} list-decimal gap-2 pl-5`}>
+                {PREGUNTAS_ABOGADO.map((q) => (
+                  <li key={q.id} data-pregunta={q.id}>
+                    {t.abogado.items[q.id]}
+                    {q.termino ? <TerminoLegal clave={q.termino} idioma={idioma} /> : null}
+                  </li>
+                ))}
+              </ol>
+            </SeccionPlegable>
+          </div>
+
+          <p className="mt-8 text-muted">
+            {t.version(VERSION_PROPUESTA.fuente, VERSION_PROPUESTA.version, formatearFecha(VERSION_PROPUESTA.fecha, idioma, "largo"))}{" "}
+            <Link
+              className="underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep"
+              href="/lotes/hibrido"
+            >
+              {t.volver}
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

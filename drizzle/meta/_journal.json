@@ -15,6 +15,13 @@
       "when": 1792169127252,
       "tag": "0001_consentimientos_solo_agregar",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795642609323,
+      "tag": "0002_lotes_en_la_base",
+      "breakpoints": true
     }
   ]
 }

@@ -6,7 +6,7 @@ import { RailEnlaces } from "./rail-enlaces";
 
 // Server component: toma los destinos principales que existen y pasa íconos ya renderizados al cliente.
 // El rail es solo navegación (angosto, desde 768 px); NetX, la campanita y el avatar viven en la barra superior,
-// y en el celular los mismos destinos están en el botón "Menú" (components/menu-celular.tsx).
+// y en el celular los destinos están en la barra inferior (components/barra-inferior.tsx) y la hoja Más.
 export async function Rail() {
   const idioma = await idiomaDelPedido();
   const t = textos("marco", idioma);
@@ -18,7 +18,7 @@ export async function Rail() {
   }));
   const admin = destinosDeGrupo("interno").find((d) => d.clave === "admin");
   return (
-    <div className="sticky top-0 hidden h-dvh w-20 shrink-0 flex-col overflow-y-auto overscroll-contain bg-deep py-3 text-on-deep md:flex">
+    <div className="sticky top-0 hidden h-dvh w-20 shrink-0 flex-col overflow-y-auto overscroll-contain border-r border-line bg-surface py-3 text-muted md:flex">
       <nav aria-label={t.rail.navegacion}>
         <RailEnlaces items={items} />
         {admin && (

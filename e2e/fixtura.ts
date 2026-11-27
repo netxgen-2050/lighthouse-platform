@@ -187,6 +187,51 @@ export async function registrarConsentimientoDe(request: PeticionesApi, email: s
   if (!r.ok()) throw new Error(`No se pudo registrar el consentimiento de prueba (${r.status()}).`);
 }
 
+// --- Ayudas para los tests de lotes (las reservas viven en el servidor: `lotes-en-la-base`) -----------------------------
+
+/** Lo que la persona vio al reservar, para sembrar por la API (los números son de ejemplo). */
+export const VIO_PRUEBA = { precio: 100_000, aporte: 5_000, expensa: 200, version: "prueba" } as const;
+
+/**
+ * Libera lotes como el super admin de prueba: manda `deshacer` por la ruta normal (agrega una fila `deshace`; ninguna ruta
+ * toca el trigger del libro). Cada archivo de e2e la llama en su `beforeAll` con SUS lotes, para no heredar reservas de una
+ * corrida anterior contra el mismo preview. Sin nada vigente es un no-op.
+ */
+export async function liberarLotes(request: PeticionesApi, ids: string[]) {
+  await registrarConsentimientoDe(request, EMAILS.superadmin);
+  for (const loteId of ids) {
+    const r = await request.post("/api/lotes/reservas", { headers: { "x-lh-prueba": EMAILS.superadmin }, data: { accion: "deshacer", loteId } });
+    if (!r.ok()) throw new Error(`No se pudo liberar un lote de prueba (${r.status()}).`);
+  }
+}
+
+/** Siembra una reserva por la API, como esa persona (con consentimiento sembrado). `pagar: true` la deja pagada (simulado). */
+export async function reservarPorApi(
+  request: PeticionesApi,
+  email: string,
+  loteId: string,
+  opciones: { opcion?: string; pagar?: boolean; vio?: Record<string, unknown> } = {},
+) {
+  await registrarConsentimientoDe(request, email);
+  const headers = { "x-lh-prueba": email };
+  const r = await request.post("/api/lotes/reservas", {
+    headers,
+    data: { accion: "reservar", loteId, opcion: opciones.opcion ?? "solo-lote", vio: opciones.vio ?? VIO_PRUEBA },
+  });
+  if (!r.ok()) throw new Error(`No se pudo sembrar una reserva de prueba (${r.status()}).`);
+  if (opciones.pagar) {
+    const p = await request.post("/api/lotes/reservas", { headers, data: { accion: "pagar", loteId } });
+    if (!p.ok()) throw new Error(`No se pudo sembrar un pago de prueba (${p.status()}).`);
+  }
+}
+
+/** Las compras vigentes de esa persona, leídas de la API. */
+export async function comprasPorApi(request: PeticionesApi, email: string) {
+  const r = await request.get("/api/lotes/reservas", { headers: { "x-lh-prueba": email } });
+  if (!r.ok()) throw new Error(`No se pudieron leer las reservas de prueba (${r.status()}).`);
+  return ((await r.json()) as { compras: { loteId: string; paso: string }[] }).compras;
+}
+
 /**
  * Hace que el panel "Entrar como…" de Sumarte ofrezca ESE email (en lugar de los de `LH_PERSONAS`): así un test que necesita una
  * persona sin consentimiento previo entra con un email propio, que ningún otro test comparte en la base del servidor.

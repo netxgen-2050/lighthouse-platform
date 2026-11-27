@@ -23,7 +23,8 @@ import { formatearFecha, sinDato } from "@/lib/idioma/formatos";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import type { Idioma } from "@/lib/idioma/tipos";
 import { porcentajeEn } from "@/lib/lotes/formato";
-import { REGION, TARJETA, TD, TH } from "./estilos";
+import { Seccion } from "@/components/ui/seccion";
+import { REGION, TD, TH } from "./estilos";
 
 // "Los números del barrio" (spec bien-comun-numeros-barrio). Solo con sesión, hasta la revisión R14. Nada se guarda:
 // sin almacenamiento local ni parámetros en la dirección. El cálculo vive en `lib/bien-comun/barrio.ts`.
@@ -238,14 +239,11 @@ export function SeccionBarrio({ partida }: { partida: Entradas }) {
   const conSesion = estado === "ok";
 
   return (
-    <section aria-labelledby="h-barrio" className={TARJETA}>
-      <h2 id="h-barrio" className="text-xl font-semibold">
-        {conSesion ? t.titulo : t.sinSesion.titulo}
-      </h2>
+    <Seccion id="h-barrio" titulo={conSesion ? t.titulo : t.sinSesion.titulo}>
       {conSesion ? (
         <>
-          <p className="max-w-3xl text-sm">{t.intro}</p>
-          <p className="max-w-3xl text-sm font-medium">
+          <p className="max-w-[68ch]">{t.intro}</p>
+          <p className="max-w-[68ch] font-medium">
             {t.fuente(
               VERSION_SIM_BARRIO.archivo.replace(/^sim\//, ""),
               VERSION_SIM_BARRIO.version,
@@ -253,10 +251,10 @@ export function SeccionBarrio({ partida }: { partida: Entradas }) {
             )}
             <TerminoLegal clave="noesoferta" idioma={idioma} />
           </p>
-          <p className="max-w-3xl text-sm">{t.faltan}</p>
+          <p className="max-w-[68ch]">{t.faltan}</p>
           <CalculadoraBarrio t={t} idioma={idioma} partida={partida} />
           <h3 className="font-medium">{t.conclusionesTitulo}</h3>
-          <ul className="grid list-disc gap-1 pl-5 text-sm">
+          <ul className="grid max-w-[68ch] list-disc gap-1 pl-5">
             {t.conclusiones.map((c) => (
               <li key={c}>{c}</li>
             ))}
@@ -264,10 +262,10 @@ export function SeccionBarrio({ partida }: { partida: Entradas }) {
         </>
       ) : estado === "cargando" ? null : (
         <>
-          <p className="max-w-3xl text-sm">{t.sinSesion.texto}</p>
+          <p className="max-w-[68ch]">{t.sinSesion.texto}</p>
           <EntrarPara texto={t.sinSesion.entrar} />
         </>
       )}
-    </section>
+    </Seccion>
   );
 }

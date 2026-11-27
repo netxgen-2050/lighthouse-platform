@@ -167,7 +167,7 @@ test("finca 502 en la vista Lotes: consultar sí, reservar o comprar no", async 
 test("Ver en el mapa desde el detalle de un equipo", async ({ page }) => {
   await page.goto("/participa?equipo=agua");
   await page.getByRole("link", { name: /Ver en el mapa.*Agua y cuenca/ }).click();
-  await expect(page).toHaveURL(/\/explorar\?vista=ahora&sel=agua-cuenca/);
+  await expect(page).toHaveURL(/\/explorar\/territorio\?vista=ahora&sel=agua-cuenca/);
   await expect(ficha(page).getByRole("heading", { name: "Agua y cuenca" })).toBeVisible();
 });
 
@@ -198,7 +198,8 @@ test.describe("en inglés", () => {
     await expect(page.getByRole("group", { name: "Stage" })).toBeVisible();
     await expect(page.getByRole("radio", { name: /^Phase 0 · today/ })).toBeChecked();
     await expect(page.getByRole("complementary", { name: "Territory details" }).getByRole("heading", { name: "Where you can help" })).toBeVisible();
-    await expect(page.getByText("Work front (number, solid border)")).toBeVisible();
+    // Está en la leyenda compacta y en la completa: alcanza con la compacta, que se ve sin desplegar.
+    await expect(page.getByText("Work front (number, solid border)").first()).toBeVisible();
     await expect(page.locator('[aria-label^="Front 1: Water and watershed"]')).toHaveCount(1);
   });
 });

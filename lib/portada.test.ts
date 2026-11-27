@@ -7,13 +7,21 @@ import { tribusDeTerritorio } from "./territorios/datos";
 describe("portada", () => {
   it("devuelve los tres caminos en orden, con sus destinos", () => {
     expect(caminosDePortada().map((c) => [c.id, c.href])).toEqual([
-      ["lotes", "/explorar#lotes"],
-      ["territorio", "/explorar#territorio"],
-      ["tribus", "/participa"],
+      ["vivir", "/explorar/territorio"],
+      ["invertir", "/invertir"],
+      ["cuidar", "/participa"],
     ]);
   });
 
-  it("la cantidad de barrios de la tarjeta de tribus sale de los datos", () => {
+  it("los valores de ?camino= de campañas anteriores marcan un solo camino", () => {
+    const cuenta = (valor: "lotes" | "territorio" | "tribus") =>
+      caminosDePortada().filter((c) => c.recomendadoPara.includes(valor)).map((c) => c.id);
+    expect(cuenta("lotes")).toEqual(["vivir"]);
+    expect(cuenta("territorio")).toEqual(["vivir"]);
+    expect(cuenta("tribus")).toEqual(["cuidar"]);
+  });
+
+  it("la cantidad de barrios de la tarjeta del bien común sale de los datos", () => {
     const n = tribusDeTerritorio("lighthouse").length;
     expect(caminosDePortada()[2].descripcion).toContain(`${n} barrios`);
   });
@@ -32,8 +40,12 @@ describe("portada", () => {
 
   it("los caminos en inglés tienen los mismos destinos y textos en inglés", () => {
     const caminos = caminosDePortada("en");
-    expect(caminos.map((c) => c.href)).toEqual(["/explorar#lotes", "/explorar#territorio", "/participa"]);
-    expect(caminos.map((c) => c.titulo)).toEqual(["See the lots", "Explore the territory", "See the communities"]);
+    expect(caminos.map((c) => c.href)).toEqual(["/explorar/territorio", "/invertir", "/participa"]);
+    expect(caminos.map((c) => c.titulo)).toEqual([
+      "Where would I live and what does it cost?",
+      "What do I fund and how am I paid back?",
+      "What belongs to everyone and who decides?",
+    ]);
   });
 
   it("sin datos no muestra número ni 0", () => {

@@ -16,12 +16,12 @@ test.describe("portada en inglés", () => {
     await expect(html(page)).toHaveAttribute("lang", "en");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Regenerating from the water.");
     await expect(page.getByText("Internal prototype · sample data")).toBeVisible();
-    for (const camino of ["See the lots", "Explore the territory", "See the communities"]) {
+    for (const camino of ["Where would I live and what does it cost?", "What do I fund and how am I paid back?", "What belongs to everyone and who decides?"]) {
       await expect(page.getByRole("heading", { level: 3, name: camino })).toBeVisible();
     }
-    await expect(page.getByRole("link", { name: "See the lots", exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Explore the territory", exact: true }).first()).toHaveAttribute("href", "/explorar/territorio");
     await expect(page.getByRole("link", { name: "Choose how to join" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /See the communities/ })).toContainText(/\d+ neighborhoods and the communities forming them\./);
+    await expect(page.getByRole("link", { name: /What belongs to everyone/ })).toContainText(/\d+ neighborhoods and the communities forming them\./);
     expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
 
@@ -51,8 +51,18 @@ test.describe("Sumarte en inglés", () => {
     await expect(html(page)).toHaveAttribute("lang", "en");
     await expect(page.getByRole("heading", { level: 1, name: "Choose how to join" })).toBeVisible();
     await expect(page.getByText("Internal prototype · sample data")).toBeVisible();
-    for (const plan of ["Explorer", "Member of the network", "Founder Pass", "Community Plan"]) {
-      await expect(page.getByRole("heading", { level: 2, name: new RegExp(`^${plan}`) })).toBeVisible();
+    const selector = page.getByRole("radiogroup", { name: "Plan" });
+    for (const plan of ["Explorer", "Member", "Founder", "Community"]) {
+      await expect(selector.getByRole("radio", { name: plan, exact: true })).toBeAttached();
+    }
+    for (const [radio, titulo] of [
+      ["Explorer", /^Explorer/],
+      ["Community", /^Community Plan/],
+      ["Member", /^Member of the network/],
+      ["Founder", /^Founder Pass/],
+    ] as const) {
+      await selector.getByRole("radio", { name: radio, exact: true }).check({ force: true });
+      await expect(page.getByRole("heading", { level: 2, name: titulo })).toBeVisible();
     }
     const pase = tarjeta(page, /Founder Pass/);
     await expect(pase).toContainText("USD 1,500 · one-time payment");
@@ -70,41 +80,45 @@ test.describe("Sumarte en inglés", () => {
   });
 
   test("facturación mensual y anual", async ({ page }) => {
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=miembro");
     const miembro = tarjeta(page, /Member of the network/);
     await page.getByRole("button", { name: /^Monthly/ }).click();
     await expect(miembro).toContainText("USD 10/month");
     await page.getByRole("button", { name: /^Yearly/ }).click();
     await expect(miembro).toContainText("USD 100/year");
     await expect(miembro).toContainText("2 months free");
+    await page.getByRole("radio", { name: "Community", exact: true }).check({ force: true });
     await expect(tarjeta(page, /Community Plan/)).toContainText("2 months free");
   });
 
-  test("el contenido no deja español suelto", async ({ page }) => {
-    await page.goto("/sumarte");
-    await expect(page.getByRole("heading", { name: "Invest", exact: true })).toBeVisible();
-    expect(await textosEnEspanol(page, "main")).toEqual([]);
+  test("el contenido no deja español suelto, con cada plan", async ({ page }) => {
+    for (const plan of ["explorador", "miembro", "fundador", "comunidad"]) {
+      await page.goto(`/sumarte?plan=${plan}`);
+      await expect(page.getByRole("heading", { name: "Invest", exact: true })).toBeVisible();
+      expect(await textosEnEspanol(page, "main")).toEqual([]);
+    }
   });
 
   test("Semillas se escribe 'Semillas (seeds)' la primera vez y sin traducción automática", async ({ page }) => {
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=miembro");
     const miembro = tarjeta(page, /Member of the network/);
     await expect(miembro.locator('[translate="no"]', { hasText: "Semillas (seeds)" })).toBeVisible();
   });
 
   test("el ⚖ de 'Semillas' se ve en español con 'Only available in Spanish'; el del Pase ya está en inglés", async ({ page }) => {
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=miembro");
     await tarjeta(page, /Member of the network/)
       .getByRole("button", { name: "What it means legally (only in Spanish): Semillas" })
       .click();
     await expect(page.getByText("Only available in Spanish").first()).toBeVisible();
+    await page.getByRole("radio", { name: "Founder", exact: true }).check({ force: true });
     await expect(
       tarjeta(page, /Founder Pass/).getByRole("button", { name: "What it means legally: Founder Pass" }),
     ).toBeVisible();
   });
 
   test("la frase 'no es una inversión' se lee en inglés, sin la marca de solo en español", async ({ page }) => {
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=fundador");
     const pase = tarjeta(page, /Founder Pass/);
     await expect(
       pase.getByText("It is not an investment: it gives no land, lots, priority or return, and it cannot be resold."),
@@ -133,7 +147,7 @@ test.describe("Sumarte en inglés con una cuenta Explorer", () => {
   });
 
   test("elegir Member guarda el plan y se lee 'Your plan (simulated)'", async ({ page }) => {
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=miembro");
     await page.getByRole("button", { name: "Become a member" }).click();
     await expect(tarjeta(page, /Member of the network/).getByText("Your plan (simulated)")).toBeVisible();
     await page.reload();
@@ -142,7 +156,7 @@ test.describe("Sumarte en inglés con una cuenta Explorer", () => {
   });
 
   test("el Plan Comunidad muestra el estado de las comunidades en inglés", async ({ page }) => {
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=comunidad");
     await page.getByRole("button", { name: "Add my community" }).click();
     await expect(page.getByRole("group", { name: "Which community will you lead?" })).toBeVisible();
     await expect(page.getByText("(Active)").first()).toBeVisible();
@@ -156,7 +170,7 @@ test.describe("Sumarte en inglés con una cuenta Explorer", () => {
         window.localStorage.setItem("lh-configuracion", JSON.stringify({ moneda: "ARS" }));
       }
     });
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=fundador");
     await expect(page.getByText(/Amounts in Argentine pesos \(ARS\)\./)).toBeVisible();
     await expect(page.getByText(/Sample exchange rate: 1 USD = 1,400 ARS\. This is not a real quote\./)).toBeVisible();
     await expect(tarjeta(page, /Founder Pass/)).toContainText("ARS 2,100,000 · one-time payment");
@@ -201,7 +215,7 @@ test.describe("Sumarte en inglés con una cuenta Explorer", () => {
 
 test.describe("Sumarte en español no cambia", () => {
   test("el aviso de nivel, los montos y el pedido siguen en español", async ({ page }) => {
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=fundador");
     await expect(html(page)).toHaveAttribute("lang", "es");
     await expect(page.getByRole("heading", { level: 1, name: "Elegí cómo sumarte" })).toBeVisible();
     await expect(tarjeta(page, /Pase Fundador/)).toContainText("USD 1.500 · pago único");

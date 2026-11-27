@@ -83,7 +83,7 @@ import { buscarTribu } from "@/lib/tribus/datos";
 const BOTON =
   "w-fit rounded-lg px-4 py-1.5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep disabled:cursor-not-allowed disabled:opacity-60 aria-disabled:cursor-not-allowed aria-disabled:opacity-60";
 const BOTON_PRIMARIO = `${BOTON} bg-deep text-on-deep hover:bg-deep-2`;
-const AVISO = "rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink";
+const AVISO = "rounded-[var(--radius-m)] border border-line bg-warn-bg px-3 py-2 text-sm text-warn-ink";
 const PANEL_LATERAL = "grid content-start gap-3 rounded-xl bg-surface-2 p-4";
 const CAMPO = "rounded-lg border border-muted bg-surface px-3 py-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 

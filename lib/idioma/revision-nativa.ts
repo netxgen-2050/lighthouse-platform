@@ -35,7 +35,7 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "textos/explorar": {
     estado: "pendiente",
-    que: "Explorar (/explorar): título del héroe, barra de secciones y apertura de Territorio, Barrio Norte y Lotes",
+    que: "Explorar (/explorar/*): título del héroe, pestañas, título de cada página y apertura de Territorio, Barrio Norte y Lotes",
   },
   "textos/participa": {
     estado: "pendiente",
@@ -51,7 +51,7 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "textos/invertir": {
     estado: "pendiente",
-    que: "Invertir (/invertir): sellos, indicadores del barrio en financiamiento, curva de devolución y libro del barrio (solo con sesión)",
+    que: "Invertir (/invertir): aviso único, indicadores del barrio en financiamiento, curva de devolución y libro del barrio (solo con sesión)",
   },
   "textos/miTierra": {
     estado: "pendiente",

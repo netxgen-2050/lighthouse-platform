@@ -37,6 +37,7 @@ describe("catálogo legal", () => {
         "chacra",
         "circulo",
         "circuloinvertir",
+        "sinretorno",
         "circulotrabajo",
         "compromisominimo",
         "consejo",

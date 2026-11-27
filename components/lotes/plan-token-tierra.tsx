@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Aviso } from "@/components/ui/aviso";
 import type { FaroDelPlan, PlanDeLote } from "@/lib/bien-comun/modelo";
 
 // Tarjeta "Plan en cuotas · Token Tierra (simulado)" (spec lote-token-tierra). Recibe datos y textos por props: no calcula
@@ -136,10 +137,10 @@ export function PlanTokenTierra({
           </p>
         </>
       )}
-      <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+      <Aviso tono="legal">
         {t.aviso}
         {terminoOrdenanza}
-      </p>
+      </Aviso>
       <p className="text-sm">{enlace}</p>
     </section>
   );

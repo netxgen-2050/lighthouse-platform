@@ -11,51 +11,23 @@ async function abrir(page: Page) {
 }
 
 for (const ruta of ["/", "/tribus/valle", "/sumarte", "/netx"]) {
-  test(`el botón Reportar sigue pegado al borde derecho, a media altura, al final de ${ruta}`, async ({ page }) => {
+  test(`Reportar es un botón de texto de la barra superior y no flota, al final de ${ruta}`, async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto(ruta);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    const boton = page.getByRole("button", { name: NOMBRE_BOTON });
+    const boton = page.getByRole("banner").getByRole("button", { name: NOMBRE_BOTON });
     await expect(boton).toBeInViewport();
-    const caja = (await boton.boundingBox())!;
-    expect(Math.abs(caja.x + caja.width - 1280)).toBeLessThanOrEqual(1);
-    expect(Math.abs(caja.y + caja.height / 2 - 360)).toBeLessThanOrEqual(2);
-  });
-}
-
-for (const ancho of [1280, 390]) {
-  test(`${ancho} px: el botón Reportar es un círculo del tamaño del de Hifa, solo con el bicho y anillo punteado`, async ({ page }) => {
-    await page.setViewportSize({ width: ancho, height: 800 });
-    await page.goto("/");
-    const boton = page.getByRole("button", { name: NOMBRE_BOTON });
-    await expect(boton).toHaveText("");
+    await expect(boton).toContainText("Reportar");
     await expect(boton.locator("svg[aria-hidden='true']")).toHaveCount(1);
-    const estilo = await boton.evaluate((el) => {
-      const s = getComputedStyle(el);
-      return { borde: s.borderTopStyle, radio: parseFloat(s.borderTopLeftRadius) };
-    });
-    expect(estilo.borde).toBe("dashed");
-    expect(estilo.radio).toBeGreaterThan(30);
-    const interno = (await boton.locator("span").first().boundingBox())!;
-    const hifa = (await page.getByRole("button", { name: "Hablar con Hifa" }).boundingBox())!;
-    expect(Math.round(interno.width)).toBe(Math.round(hifa.width));
-    expect(Math.round(interno.height)).toBe(Math.round(hifa.height));
+    const caja = (await boton.boundingBox())!;
+    const barra = (await page.getByRole("banner").boundingBox())!;
+    expect(caja.y).toBeGreaterThanOrEqual(barra.y);
+    expect(caja.y + caja.height).toBeLessThanOrEqual(barra.y + barra.height);
+    // Sin anillo punteado ni botón redondo flotante.
+    expect(await boton.evaluate((el) => getComputedStyle(el).borderTopStyle)).not.toBe("dashed");
+    expect(await boton.evaluate((el) => getComputedStyle(el).position)).not.toBe("fixed");
   });
 }
-
-test("el tooltip Reportar aparece con el mouse y con el foco, y Escape lo oculta", async ({ page }) => {
-  await page.goto("/");
-  const boton = page.getByRole("button", { name: NOMBRE_BOTON });
-  await boton.hover();
-  await expect(page.getByRole("tooltip")).toHaveText("Reportar");
-  await page.mouse.move(5, 5);
-  await expect(page.getByRole("tooltip")).toHaveCount(0);
-  await boton.focus();
-  await expect(page.getByRole("tooltip")).toHaveText("Reportar");
-  await expect(boton).toHaveAccessibleName(NOMBRE_BOTON);
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("tooltip")).toHaveCount(0);
-});
 
 test("clic en Reportar y un solo Escape (sin mover el mouse) cierra el diálogo", async ({ page }) => {
   await page.goto("/");
@@ -67,7 +39,7 @@ test("clic en Reportar y un solo Escape (sin mover el mouse) cierra el diálogo"
   await expect(dialogo).toBeHidden();
 });
 
-test("768 x 900: el botón no tapa el rail", async ({ page }) => {
+test("768 x 900: Reportar está en la barra superior, a la derecha del rail", async ({ page }) => {
   await page.setViewportSize({ width: 768, height: 900 });
   await page.goto("/");
   const boton = page.getByRole("button", { name: NOMBRE_BOTON });
@@ -77,11 +49,19 @@ test("768 x 900: el botón no tapa el rail", async ({ page }) => {
   expect(b.x).toBeGreaterThanOrEqual(r.x + r.width);
 });
 
-test("celular 390 x 844: el botón se ve y no hay scroll horizontal", async ({ page }) => {
+test("celular 390 x 844: la barra superior no trae Reportar; está en la hoja Más y abre el mismo formulario", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  const boton = page.getByRole("button", { name: NOMBRE_BOTON });
-  await expect(boton).toBeInViewport();
+  await expect(page.getByRole("button", { name: NOMBRE_BOTON })).toBeHidden();
+  const mas = page.getByRole("button", { name: "Más", exact: true });
+  await mas.click();
+  await page.getByRole("dialog", { name: "Más" }).getByRole("button", { name: "Reportar un error" }).click();
+  const dialogo = page.getByRole("dialog", { name: "Reportar un problema o una idea" });
+  await expect(dialogo).toBeVisible();
+  await expect(dialogo.getByRole("radio").first()).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialogo).toBeHidden();
+  await expect(mas).toBeFocused();
   const desborde = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   expect(desborde).toBe(false);
 });

@@ -161,6 +161,7 @@ test.describe("territorio en inglés", () => {
     await expect(page.getByText("~990 ha, twelve neighborhoods and the communities forming them.")).toBeVisible();
     const region = page.getByRole("region", { name: "Map of Macrolote 7", exact: true });
     await expect(region).toBeVisible();
+    await page.getByText("See the full legend").click();
     const leyenda = region.getByRole("group", { name: "Map legend" });
     await expect(leyenda.getByText("Neighborhood with an active community", { exact: true })).toBeVisible();
     await expect(leyenda.getByRole("list", { name: "Places of interest" })).toBeVisible();
