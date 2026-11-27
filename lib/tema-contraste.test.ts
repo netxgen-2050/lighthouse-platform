@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, test } from "vitest";
-import { CLASE_FONDO_DEL_TEXTO } from "@/components/explorar/heroe-valle-clases";
+import { CLASE_DESVANECIDO_DEL_HEROE, CLASE_FONDO_DEL_TEXTO_DEL_HEROE } from "@/components/explorar/heroe-valle-clases";
 
 // Lee los tokens de app/globals.css y comprueba el contraste WCAG de los pares que la app usa juntos.
 // Agregá acá cada par nuevo de texto y fondo que empiece a usarse.
@@ -49,6 +49,13 @@ export function contraste(a: Rgba, b: Rgba): number {
   return (x + 0.05) / (y + 0.05);
 }
 
+test("el degradado del héroe va de bg al 0 % al mismo valor que el fondo del texto (92 %), sin salto", () => {
+  expect(CLASE_DESVANECIDO_DEL_HEROE).toContain("from-bg/0");
+  const fin = /to-bg\/(\d+)/.exec(CLASE_DESVANECIDO_DEL_HEROE)?.[1];
+  expect(fin).toBe("92");
+  expect(CLASE_FONDO_DEL_TEXTO_DEL_HEROE).toBe(`bg-bg/${fin}`);
+});
+
 const BLANCO: Rgba = [255, 255, 255, 1];
 const NEGRO: Rgba = [0, 0, 0, 1];
 
@@ -68,6 +75,10 @@ const PARES_TEXTO: [string, string][] = [
   ["danger", "bg"],
   ["danger", "surface"],
   ["ink", "gold"],
+  // ux-base: cinta de prototipo (bg sobre ink).
+  ["bg", "ink"],
+  // ux-base, rail sobre `surface`: reposo (muted/surface), hover (muted/surface-2), etiqueta activa (ink/surface) y píldora
+  // (on-deep/deep) ya están en la lista de arriba; no se repiten.
 ];
 
 const REGEN = ["regen-1", "regen-2", "regen-3", "regen-4", "regen-5"];
@@ -92,11 +103,11 @@ describe.each([
     expect(r, `ink sobre vidrio con ${_n} en el tema ${nombre}: ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
   });
 
-  // Héroe del valle (Inicio y Barrio Norte): el texto va sobre `bg` con la opacidad de CLASE_FONDO_DEL_TEXTO, y detrás puede
+  // Héroe del valle (Inicio y Barrio Norte): el texto va sobre `bg` con la opacidad de CLASE_FONDO_DEL_TEXTO_DEL_HEROE (todo el bloque de texto, sin importar su alto), y detrás puede
   // haber cualquier parte de la foto: se mide en el peor caso (toda blanca o toda negra). El título grande usa deep-2 (3:1).
   test.each([["blanco", BLANCO], ["negro", NEGRO]] as const)("texto del héroe del valle sobre la foto %s", (_n, base) => {
-    const m = /bg-bg\/(\d+)/.exec(CLASE_FONDO_DEL_TEXTO);
-    expect(m, "CLASE_FONDO_DEL_TEXTO tiene que traer bg-bg/NN").not.toBeNull();
+    const m = /bg-bg\/(\d+)/.exec(CLASE_FONDO_DEL_TEXTO_DEL_HEROE);
+    expect(m, "CLASE_FONDO_DEL_TEXTO_DEL_HEROE tiene que traer bg-bg/NN").not.toBeNull();
     const [r, g, b] = aRgba(t.bg);
     const fondo = mezclar([r, g, b, Number(m![1]) / 100], base);
     const ink = contraste(c("ink"), fondo);
@@ -137,6 +148,15 @@ test.each([
   for (const [token, valor] of Object.entries(antes)) {
     expect(actual[token]?.toLowerCase(), `token ${token}`).toBe(valor);
   }
+});
+
+test("la escala de diseño (radios, sombras, movimiento) está en los tokens", () => {
+  for (const t of ["--radius-s: 8px", "--radius-m: 14px", "--radius-l: 20px", "--sombra-1:", "--sombra-2:", "--sombra-3:", "--dur: 180ms", "--curva: cubic-bezier(0.2, 0.8, 0.2, 1)"]) {
+    expect(CSS, t).toContain(t);
+  }
+  // Movimiento reducido (preferencia de la app o del sistema): la duración pasa a 0.
+  expect(CSS).toMatch(/:root\[data-movimiento="reducido"\] \{\s*--dur: 0ms;/);
+  expect(CSS).toMatch(/prefers-reduced-motion: reduce\) \{\s*:root \{\s*--dur: 0ms;/);
 });
 
 test("faint claro es la única excepción: oscurecido de #8a8678 a #6f6b5d para llegar a AA", () => {

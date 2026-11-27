@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { expect, test, type Page } from "./fixtura";
+import { comprasPorApi, EMAILS, expect, liberarLotes, reservarPorApi, test, type Page } from "./fixtura";
 import { formatearNumero } from "../lib/idioma/formatos";
 import { ESTADOS_EJEMPLO, estadoDeLote } from "../lib/territorios/loteo-estados";
 import { listarLotes, lotesDelGrupo } from "../lib/territorios/loteo";
@@ -18,15 +18,21 @@ import {
 import { usd } from "../lib/series/formato";
 
 // Los valores que se esperan salen del loteo y del módulo del modelo, nunca escritos a mano.
-test.beforeEach(async ({ page }) => {
-  await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
-});
+// Las reservas viven en el servidor (`lotes-en-la-base`): cada test entra con una persona propia y este archivo usa lotes SOLO suyos
+// (los 2 primeros disponibles del norte y el 1.º de los primeros), que libera antes de cada test.
+test.use({ identidad: "propia" });
 
 const lotes = lotesDelGrupo("norte");
 const primero = lotesDelGrupo("primeros")[0];
 const disponibles = lotes.filter((l) => estadoDeLote(l.id) === "disponible");
 const lote = disponibles[0];
 const otro = disponibles[1];
+const EMAIL_SUPERADMIN = EMAILS.superadmin;
+
+test.beforeEach(async ({ page, request }) => {
+  await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+  await liberarLotes(request, [lote.id, otro.id, primero.id]);
+});
 const idVendido = Object.keys(ESTADOS_EJEMPLO).find((id) => ESTADOS_EJEMPLO[id] === "vendido")!;
 const idReservadoEjemplo = Object.keys(ESTADOS_EJEMPLO).find((id) => ESTADOS_EJEMPLO[id] === "reservado")!;
 const m2 = (l: { superficieM2?: number }) => `${formatearNumero(l.superficieM2!, "es")} m²`;
@@ -57,13 +63,13 @@ test.describe("sin sesión", () => {
   test("la lista se ve sin entrar (en Explorar) y el rail marca Explorar", async ({ page }) => {
     await page.goto("/lotes");
     // `/lotes` redirige a la sección Lotes de Explorar.
-    await expect(page).toHaveURL(/\/explorar#lotes$/);
-    await expect(page.locator("#lotes").getByRole("heading", { level: 2, name: "Lotes", exact: true })).toBeVisible();
+    await expect(page).toHaveURL(/\/explorar\/lotes$/);
+    await expect(page.getByRole("main").getByRole("heading", { level: 2, name: "Lotes", exact: true })).toBeVisible();
     await expect(page.getByText("Loteo provisorio, ilustrativo").first()).toBeVisible();
     await expect(page.getByRole("region", { name: "Estado administrativo · Lighthouse VRN" })).toContainText(
       "supuesto de trabajo, no otorgada",
     );
-    await expect(page.getByRole("region", { name: "Todos los lotes" }).getByRole("link")).toHaveCount(listarLotes().length);
+    await expect(page.locator("article[data-lote]").getByRole("link")).toHaveCount(listarLotes().length);
     await page.goto(`/lotes/${lote.id}`);
     await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Explorar", exact: true })).toHaveAttribute("aria-current", "page");
   });
@@ -223,24 +229,18 @@ test.describe("plan en cuotas · Token Tierra (simulado)", () => {
     await page.getByRole("button", { name: "Reservar (simulado)" }).click();
     await page.getByRole("button", { name: "Simular el primer pago (anticipo)" }).click();
     await page.getByRole("button", { name: "Confirmar el primer pago simulado" }).click();
-    await page.goto("/lotes");
-    await expect(page.getByRole("link", { name: new RegExp(`^Lote ${lote.numero} `) })).toContainText("En cuotas (simulado)");
+    await page.goto("/explorar/lotes");
+    await expect(page.locator(`article[data-lote="${lote.id}"]`)).toContainText("En cuotas (simulado)");
     await page.goto(`/territorios/lighthouse?sel=${lote.id}`);
     await expect(page.getByRole("complementary", { name: "Ficha del territorio" })).toContainText("En cuotas (simulado)");
   });
 
-  test("una compra con un plan mal formado se lee sin plan, con sin dato, y sin error", async ({ page }) => {
-    const compra = {
-      loteId: lote.id,
-      opcion: "solo-lote",
-      paso: "pagado",
-      reservadoEl: "2026-10-01T12:00:00.000Z",
-      pagadoEl: "2026-10-02T12:00:00.000Z",
+  test("una compra con un plan mal formado se lee sin plan, con sin dato, y sin error", async ({ page, request, emailActual }) => {
+    // El servidor descarta el plan mal formado al guardar: queda la compra, sin plan.
+    await reservarPorApi(request, emailActual, lote.id, {
+      pagar: true,
       vio: { precio: 20_000, aporte: 1_000, expensa: 100, version: "v0.0-vieja", plan: { cuotas: 7, anticipo: "x" } },
-    };
-    await page.addInitScript((c) => {
-      if (!window.localStorage.getItem("lh-lotes")) window.localStorage.setItem("lh-lotes", JSON.stringify([c]));
-    }, compra);
+    });
     await page.goto(`/lotes/${lote.id}`);
     const boleto = page.getByRole("region", { name: /Boleto de ejemplo/ });
     await expect(boleto).toContainText("Plan de pago: sin dato");
@@ -258,11 +258,12 @@ test.describe("plan en cuotas · Token Tierra (simulado)", () => {
   });
 });
 
-test("reservar, simular el pago y ver el boleto solo con teclado; recarga y deshacer", async ({ page }) => {
-  const pedidos: string[] = [];
+test("reservar, simular el pago y ver el boleto solo con teclado; recarga y deshacer", async ({ page, request, emailActual }) => {
+  // Lo único que sale al servidor son las acciones a /api/lotes/reservas, sin datos de pago ni de identidad.
+  const escrituras: { url: string; cuerpo: string }[] = [];
   await page.goto(`/lotes/${lote.id}`);
   page.on("request", (r) => {
-    if (r.method() !== "GET" || /compra|reserva|boleto|lh-lotes/i.test(r.url())) pedidos.push(`${r.method()} ${r.url()}`);
+    if (r.method() !== "GET") escrituras.push({ url: new URL(r.url()).pathname, cuerpo: r.postData() ?? "" });
   });
   // Ningún campo de pago ni de identidad: lo único que hay es la casilla de aceptación.
   const camposDeLaCompra = page.locator(
@@ -321,19 +322,24 @@ test("reservar, simular el pago y ver el boleto solo con teclado; recarga y desh
   const textoBoleto = (await boleto.innerText()).replace(/\s+/g, " ");
   expect(textoBoleto.indexOf("SIMULADO")).toBeLessThan(textoBoleto.indexOf("Comprador"));
 
-  expect(pedidos).toEqual([]);
+  expect(escrituras.length).toBeGreaterThan(0);
+  for (const e of escrituras) {
+    expect(e.url).toBe("/api/lotes/reservas");
+    expect(e.cuerpo).not.toMatch(/nombre|documento|domicilio|tarjeta|cbu/i);
+  }
 
+  // Recargar trae la compra del servidor, no del navegador: el navegador no guarda nada de lotes.
   await page.reload();
   await expect(page.getByRole("region", { name: /Boleto de ejemplo/ })).toBeVisible();
-  const guardado = await page.evaluate(() => window.localStorage.getItem("lh-lotes") ?? "");
-  expect(guardado).toContain(lote.id);
-  expect(guardado).not.toMatch(/nombre|documento|domicilio|tarjeta|cbu/i);
+  expect(await page.evaluate(() => Object.keys(window.localStorage).filter((k) => k.includes("lh-lotes")))).toEqual([]);
+  expect((await comprasPorApi(request, emailActual)).map((c) => c.loteId)).toEqual([lote.id]);
 
   await conTeclado(page, page.getByRole("button", { name: "Deshacer" }));
   await expect(page.getByRole("button", { name: "Reservar (simulado)" })).toBeVisible();
   await page.reload();
   await expect(page.getByRole("button", { name: "Reservar (simulado)" })).toBeVisible();
   await expect(page.getByText("Disponible").first()).toBeVisible();
+  expect(await comprasPorApi(request, emailActual)).toEqual([]);
 });
 
 test("con Casa familiar el boleto dice la opción, el precio de la casa y el total como estimación", async ({ page }) => {
@@ -354,7 +360,7 @@ test("con Casa familiar el boleto dice la opción, el precio de la casa y el tot
   await expect(boleto).toContainText("estimación de ejemplo");
 });
 
-test("lo reservado entra en la descarga de Mis datos y desaparece con Borrar todo", async ({ page }) => {
+test("lo reservado entra en la descarga de Mis datos, desde el servidor", async ({ page }) => {
   await page.goto(`/lotes/${lote.id}`);
   await marcarLeido(page);
   await page.getByRole("button", { name: "Reservar (simulado)" }).click();
@@ -365,31 +371,16 @@ test("lo reservado entra en la descarga de Mis datos y desaparece con Borrar tod
   await page.getByRole("button", { name: "Descargar mis datos" }).click();
   const texto = await readFile((await (await descarga).path())!, "utf8");
   const json = JSON.parse(texto);
-  expect(json.datos.lotes).toHaveLength(1);
-  expect(json.datos.lotes[0]).toMatchObject({ loteId: lote.id, paso: "reservado" });
-
-  await page.goto("/configuracion");
-  page.once("dialog", (d) => void d.accept());
-  await page.getByRole("button", { name: "Borrar todo lo guardado en este navegador" }).click();
-  await expect(page.getByRole("status").filter({ hasText: "se borró todo" })).toBeVisible();
-  await page.goto(`/lotes/${lote.id}`);
-  await expect(page.getByRole("button", { name: "Reservar (simulado)" })).toBeVisible();
-  await expect(page.getByText("Reservado (simulado, por vos)")).toHaveCount(0);
+  expect(json.datos.reservas).toHaveLength(1);
+  expect(json.datos.reservas[0]).toMatchObject({ loteId: lote.id, evento: "reserva", opcion: "solo-lote", liberadoPorElEquipo: false });
+  // El navegador ya no guarda reservas: no hay ninguna clave de lotes que exportar.
+  expect("lotes" in json.datos).toBe(false);
 });
 
-test("el boleto y el pago simulado muestran lo guardado al reservar, aunque el modelo sea otro", async ({ page }) => {
+test("el boleto y el pago simulado muestran lo guardado al reservar, aunque el modelo sea otro", async ({ page, request, emailActual }) => {
   // Valores que el modelo vigente nunca da: si la pantalla recalculara, se verían los de hoy.
   const visto = { precio: 111_111, aporte: 2_222, expensa: 333, version: "v0.0-vieja", fuente: "Fuente vieja del modelo", precioCasa: 44_444 };
-  const compra = {
-    loteId: lote.id,
-    opcion: "familiar",
-    paso: "reservado",
-    reservadoEl: "2026-10-01T12:00:00.000Z",
-    vio: visto,
-  };
-  await page.addInitScript((c) => {
-    if (!window.localStorage.getItem("lh-lotes")) window.localStorage.setItem("lh-lotes", JSON.stringify([c]));
-  }, compra);
+  await reservarPorApi(request, emailActual, lote.id, { opcion: "familiar", vio: visto });
   await page.goto(`/lotes/${lote.id}`);
   await conTeclado(page, page.getByRole("button", { name: "Simular el pago" }));
   await expect(page.getByText(`Precio elegido: ${usd(visto.precio)}`)).toBeVisible();
@@ -416,10 +407,8 @@ test("el boleto y el pago simulado muestran lo guardado al reservar, aunque el m
   await expect(boleto).not.toContainText(VERSION_MODELO_LOTES.fuente);
 });
 
-test("lo guardado que no se puede leer se trata como sin compras", async ({ page }) => {
-  await page.addInitScript(() => {
-    if (!window.localStorage.getItem("lh-lotes")) window.localStorage.setItem("lh-lotes", "{no es json");
-  });
+test("si el servidor no puede leer las reservas, se trata como sin compras", async ({ page }) => {
+  await page.route("**/api/lotes/reservas", (ruta) => (ruta.request().method() === "GET" ? ruta.fulfill({ status: 500, json: { ok: false } }) : ruta.continue()));
   await page.goto(`/lotes/${lote.id}`);
   await expect(page.getByRole("button", { name: "Reservar (simulado)" })).toBeVisible();
   await expect(page.getByText("Disponible").first()).toBeVisible();
@@ -445,31 +434,33 @@ test("lo reservado se ve en el mapa, en la lista y en la ficha, y el panel del m
 
   await page.goto(`/territorios/lighthouse?sel=${lote.id}`);
   await expect(ficha).toContainText("Reservado (simulado, por vos)");
-  await expect(page.getByRole("list", { name: "Lotes del sector norte" }).getByRole("button", { name: new RegExp(`^Lote ${lote.numero} `) })).toContainText(
-    "Reservado (simulado, por vos)",
-  );
-  await page.goto("/lotes");
-  await expect(page.getByRole("link", { name: new RegExp(`^Lote ${lote.numero} `) })).toContainText("Reservado (simulado, por vos)");
+  await page.goto("/explorar/lotes");
+  await expect(page.locator(`article[data-lote="${lote.id}"]`)).toContainText("Reservado (simulado, por vos)");
   // Otro lote no se mueve.
-  await expect(page.getByRole("link", { name: new RegExp(`^Lote ${otro.numero} `) })).toContainText("Disponible");
+  await expect(page.locator(`article[data-lote="${otro.id}"]`)).toContainText("Disponible");
 });
 
-test("hablar con alguien: el pedido llega a la bandeja como consulta por un lote de Lighthouse VRN y no reserva", async ({ page }) => {
-  await page.goto(`/lotes/${lote.id}`);
-  await page.getByRole("button", { name: "Hablar con alguien" }).click();
-  await expect(page.getByText(`Consulta por un lote de Lighthouse VRN · Lote ${lote.numero}`)).toBeVisible();
-  await page.getByRole("radio", { name: "Email" }).check();
-  await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
-  await expect(page.getByRole("status").filter({ hasText: "Equipo NetX" })).toBeVisible();
-  await expect(page.getByText("Disponible").first()).toBeVisible();
-  const guardado = await page.evaluate(() => window.localStorage.getItem("lh-lotes"));
-  expect(guardado).toBeNull();
+test.describe("hablar con alguien", () => {
+  // Entra el super admin fijo: la bandeja de /admin es suya (los pedidos siguen en el navegador hasta la noche 2 de `lotes-en-la-base`).
+  test.use({ identidad: "fija" });
 
-  await page.goto("/admin");
-  const fila = page.getByRole("row").filter({ hasText: `Lote ${lote.numero}` });
-  await expect(fila).toContainText("Consulta por un lote de Lighthouse VRN");
-  await expect(fila).toContainText("Equipo NetX");
-  await expect(fila).not.toContainText("BioPueblo");
+  test("hablar con alguien: el pedido llega a la bandeja como consulta por un lote de Lighthouse VRN y no reserva", async ({ page, request }) => {
+    await page.goto(`/lotes/${lote.id}`);
+    await page.getByRole("button", { name: "Hablar con alguien" }).click();
+    await expect(page.getByText(`Consulta por un lote de Lighthouse VRN · Lote ${lote.numero}`)).toBeVisible();
+    await page.getByRole("radio", { name: "Email" }).check();
+    await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Equipo NetX" })).toBeVisible();
+    await expect(page.getByText("Disponible").first()).toBeVisible();
+    // Pedir hablar no reserva nada.
+    expect(await comprasPorApi(request, EMAIL_SUPERADMIN)).toEqual([]);
+
+    await page.goto("/admin");
+    const fila = page.getByRole("row").filter({ hasText: `Lote ${lote.numero}` });
+    await expect(fila).toContainText("Consulta por un lote de Lighthouse VRN");
+    await expect(fila).toContainText("Equipo NetX");
+    await expect(fila).not.toContainText("BioPueblo");
+  });
 });
 
 test.describe("en inglés", () => {
@@ -527,9 +518,8 @@ test("/lotes y una ficha no se dejan indexar", async ({ page }) => {
 test.describe("los primeros 4 lotes", () => {
   test("/lotes los pone primero, con su propio estado administrativo", async ({ page }) => {
     await page.goto("/lotes");
-    const enlaces = page.getByRole("region", { name: "Todos los lotes" }).getByRole("link");
+    const enlaces = page.locator("article[data-lote]").getByRole("link");
     await expect(enlaces.first()).toContainText("Lote 535");
-    await expect(page.getByRole("heading", { level: 4, name: "Primeros 4 lotes" })).toBeVisible();
     const estado = page.getByRole("region", { name: "Estado administrativo · Primeros 4 lotes" });
     await expect(estado).toContainText("Titular: BioPueblo");
     await expect(estado).toContainText("Aprobación municipal: informada, sin documento a la vista");
@@ -540,7 +530,7 @@ test.describe("los primeros 4 lotes", () => {
     await page.goto(`/lotes/${primero.id}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lote 535");
     await expect(page.getByText(/fuera del polígono del 7A/)).toBeVisible();
-    await expect(page.getByRole("region", { name: "Lote 535" })).toContainText("Quién vende: sin dato");
+    await expect(page.getByText("Quién vende: sin dato")).toBeVisible();
     await expect(page.getByText(/supuesto de trabajo/)).toHaveCount(0);
     await marcarLeido(page);
     await conTeclado(page, page.getByRole("button", { name: "Reservar (simulado)" }));

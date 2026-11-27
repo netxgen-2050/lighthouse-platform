@@ -38,7 +38,8 @@ describe("página sin traducir con la plataforma en inglés", () => {
   it("muestra el aviso y envuelve el contenido en lang es", () => {
     const html = dibujar("en");
     expect(html).toContain("This page is only available in Spanish for now.");
-    expect(html).toContain('<p lang="en"');
+    expect(html).toContain('role="note"');
+    expect(html).toContain('lang="en"');
     expect(html).toContain('<div lang="es">');
   });
 

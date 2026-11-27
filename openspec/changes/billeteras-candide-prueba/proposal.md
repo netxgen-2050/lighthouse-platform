@@ -1,6 +1,6 @@
 # Proposal
 
-> **Decisiones de Gus, 25-nov-2026.** (1) **Base Sepolia** confirmada y Gus ya tiene cuenta en dashboard.candide.dev. (2) **Production:** ya no está bloqueada en el código; se prende cargando `LH_PRUEBA_CANDIDE=1` en Production, y eso lo decide Gus después de verla andar en dev (se le pregunta antes). (3) **Prioridades:** ADR-011 (Safe con passkey y Candide) es **imprescindible**: los pasos 1 a 4 tienen que andar. ADR-012 (constancias con EAS) es **deseable** por ahora: el paso 5 y el grupo 7 van al final y se pueden cortar. Los dos ADR siguen en "Propuesta" hasta el reporte.
+> **Decisiones de Gus, 25-nov-2026.** (1) **Base Sepolia** confirmada. **Cuenta de Candide: la del equipo NetXGen**, no la personal de Gus (que entra con su GitHub): el proyecto, las URL y la política se crean ahí. (2) **Production:** ya no está bloqueada en el código; se prende cargando `LH_PRUEBA_CANDIDE=1` en Production, y eso lo decide Gus después de verla andar en dev (se le pregunta antes). (3) **Prioridades:** ADR-011 (Safe con passkey y Candide) es **imprescindible**: los pasos 1 a 4 tienen que andar. ADR-012 (constancias con EAS) es **deseable** por ahora: el paso 5 y el grupo 7 van al final y se pueden cortar. Los dos ADR siguen en "Propuesta" hasta el reporte.
 
 > **Estado al 25-nov-2026.** Al día con `dev`. La prueba no depende del login: sirve igual con Privy que con Neon Auth. `abstractionkit` se fija en **2.1.0** (era 0.4.3), porque las versiones anteriores daban por inválida toda firma EIP-1271, que es lo que esta prueba mide. Detalle en `design.md`, estado al 25-nov.
 
@@ -46,5 +46,5 @@ Esta prueba recorre de punta a punta el camino "sin saber de cripto" de ADR-011 
 - Dependencias nuevas: `abstractionkit` (versión exacta, 2.1.0) y `viem` (versión exacta, solo para codificar llamadas y hashes EIP-712 si `abstractionkit` no alcanza).
 - Configuración: `.env.example` (variables nuevas, sin valores), `playwright.config.ts` (enciende la página en modo simulado para el e2e local).
 - Documentación: `docs/guiones/billeteras-candide-prueba.md`.
-- Externo: cuenta de Candide (Gus), clave de testnet y política de patrocinio. Sin plata real.
+- Externo: cuenta de Candide del equipo NetXGen (no la personal), clave de testnet y política de patrocinio. Sin plata real.
 - Revisión del agente arquitecto: obligatoria (integración externa, secretos y permisos).

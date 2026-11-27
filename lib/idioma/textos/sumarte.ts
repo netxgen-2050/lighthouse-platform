@@ -17,6 +17,32 @@ const es = {
     intro:
       "Sumarte es la puerta de entrada: cómo te sumás define qué podés hacer. Explorar es gratis. La membresía te abre las salas y los pactos. El Pase Fundador sostiene el Fondo Común del Lighthouse y te da influencia y créditos. Comprar un lote e invertir son otros caminos: están más abajo. Valores de ejemplo, a re-ajustar. Nada se cobra de verdad: todo lo que elijas acá es simulado y queda solo en este navegador.",
   },
+  /** Los tres caminos de arriba (ux-sumarte): cada uno lleva a la parte de la página que le corresponde. */
+  caminos: {
+    titulo: "¿Qué querés hacer?",
+    vivir: { etiqueta: "Quiero vivir", titulo: "Comprar un lote", texto: "Lotes de ejemplo en Lighthouse VRN." },
+    invertir: { etiqueta: "Quiero invertir", titulo: "Invertir", texto: "Otro camino, con otros documentos." },
+    cuidar: { etiqueta: "Quiero cuidar el bien común", titulo: "Elegir un plan", texto: "Cuatro planes, uno por vez." },
+  },
+  /** Selector de planes (ux-sumarte). */
+  selector: {
+    grupo: "Plan",
+    planes: "Planes",
+    explorador: "Explorador",
+    miembro: "Miembro",
+    fundador: "Fundador",
+    comunidad: "Comunidad",
+    queIncluye: "Qué incluye y qué no",
+    paraQuien: {
+      titulo: "Para quién es",
+      explorador: "Para quien recién llega y quiere conocer el territorio antes de comprometerse.",
+      miembro: "Para quien quiere participar en las salas y proponer pactos.",
+      fundador: "Para quien quiere entrar temprano al Lighthouse y apoyarlo desde el principio.",
+      comunidad: "Para quien lidera una tribu con personería y quiere organizarla acá.",
+    },
+  },
+  /** Cajón del modo de prueba, al final de la página. */
+  modoPrueba: { titulo: "Modo de prueba" },
   /** Avisos de qué plan habilita una página o una acción (`lib/permisos/niveles.ts`). */
   avisos: {
     rutas: {
@@ -76,7 +102,6 @@ const es = {
   explorador: {
     nombre: G.explorador.es,
     precio: "Gratis",
-    descripcion: "Conocé el territorio, las tribus y a la gente.",
     incluye: [
       "Mapa y páginas de tribus",
       "Entrevista con el agente",
@@ -88,7 +113,6 @@ const es = {
   },
   miembro: {
     nombre: `${G.miembro.es} de la red`,
-    descripcion: "Entrá a las salas, proponé pactos y empezá a sumar.",
     todoExplorador: `Todo lo de ${G.explorador.es}`,
     salas: "Salas de tribu y foros",
     pactosY: "Pactos y ",
@@ -118,7 +142,6 @@ const es = {
   niveles: { semilla: "Semilla", brote: "Brote", raiz: "Raíz" },
   tribu: {
     nombre: G.planTribu.es,
-    descripcion: "Para tribus con personería que quieren organizarse acá.",
     incluye: [
       "Página pública y convocatorias",
       "Pactos, rondas de reconocimiento y Semillas",
@@ -231,6 +254,29 @@ const en: Textos<typeof es> = {
     intro:
       "Joining is the way in: how you join defines what you can do. Exploring is free. Membership opens the rooms and the pacts. The Founder Pass supports the Lighthouse Common Fund and gives you influence and credits. Buying a lot and investing are different paths: they're further down. Sample values, to be re-tuned. Nothing is really charged: everything you choose here is simulated and stays only in this browser.",
   },
+  caminos: {
+    titulo: "What do you want to do?",
+    vivir: { etiqueta: "I want to live", titulo: "Buy a lot", texto: "Sample lots at Lighthouse VRN." },
+    invertir: { etiqueta: "I want to invest", titulo: "Invest", texto: "A different path, with different documents." },
+    cuidar: { etiqueta: "I want to look after the common good", titulo: "Choose a plan", texto: "Four plans, one at a time." },
+  },
+  selector: {
+    grupo: "Plan",
+    planes: "Plans",
+    explorador: "Explorer",
+    miembro: "Member",
+    fundador: "Founder",
+    comunidad: "Community",
+    queIncluye: "What's included and what's not",
+    paraQuien: {
+      titulo: "Who it's for",
+      explorador: "For people who are new and want to get to know the territory before committing.",
+      miembro: "For people who want to take part in the rooms and propose pacts.",
+      fundador: "For people who want to join the Lighthouse early and back it from the start.",
+      comunidad: "For people who lead an incorporated tribe and want to organize it here.",
+    },
+  },
+  modoPrueba: { titulo: "Test mode" },
   avisos: {
     rutas: {
       pactos: G.pactos.en,
@@ -287,7 +333,6 @@ const en: Textos<typeof es> = {
   explorador: {
     nombre: G.explorador.en,
     precio: "Free",
-    descripcion: "Get to know the territory, the tribes and the people.",
     incluye: [
       "Map and tribe pages",
       "Interview with the agent",
@@ -299,7 +344,6 @@ const en: Textos<typeof es> = {
   },
   miembro: {
     nombre: `${G.miembro.en} of the network`,
-    descripcion: "Enter the rooms, propose pacts and start contributing.",
     todoExplorador: `Everything in ${G.explorador.en}`,
     salas: "Tribe rooms and forums",
     pactosY: "Pacts and ",
@@ -329,7 +373,6 @@ const en: Textos<typeof es> = {
   niveles: { semilla: "Seed", brote: "Sprout", raiz: "Root" },
   tribu: {
     nombre: G.planTribu.en,
-    descripcion: "For incorporated tribes that want to organize here.",
     incluye: [
       "Public page and open calls",
       "Pacts, recognition rounds and Semillas",

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useSesion } from "@/components/sesion/contexto";
+import { Aviso } from "@/components/ui/aviso";
 import { CLAVES } from "@/lib/demo/claves";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { COMUNIDAD_LIGHTHOUSE, leer as leerMembresia, type Membresias } from "@/lib/membresia/estado";
@@ -49,7 +50,7 @@ function comunidadesDe(m: Membresias): Comunidad[] {
   const salida: Comunidad[] = [];
   for (const [id, estado] of Object.entries(m)) {
     if (id === COMUNIDAD_LIGHTHOUSE) {
-      salida.push({ id, nombre: "Lighthouse", href: "/explorar#territorio", estado });
+      salida.push({ id, nombre: "Lighthouse", href: "/explorar/territorio", estado });
     } else {
       const tribu = buscarTribu(id);
       salida.push({ id, nombre: tribu ? tribu.nombre : id, href: tribu ? `/tribus/${id}` : "/participa", estado });
@@ -159,7 +160,7 @@ export function PerfilCliente() {
     return rol ? textoDeRol(rol, idioma).nombre : c;
   });
   const aviso = (
-    <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">{t.aviso}</p>
+    <Aviso tono="atencion">{t.aviso}</Aviso>
   );
 
   // Función común (no componente): devuelve el aviso del campo, o nada si está bien.

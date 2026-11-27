@@ -56,9 +56,6 @@ export async function FichaComun() {
       {traducido && <p className="mt-1 text-sm font-medium text-muted">{comunes.traducidoDelOriginal}</p>}
       <div className="mt-3 grid gap-2">
         <AvisoEjemplo />
-        <p className="w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-          {textos("marco", idioma).aviso}
-        </p>
       </div>
 
       <section aria-labelledby="vrn-proposito" className={`${tarjeta} mt-6`}>

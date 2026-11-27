@@ -10,7 +10,9 @@ export type FilaLibro = { fecha: string; motivo: string; monto: string | null };
  * A 390 px el motivo se parte en líneas y, si aun así no entra, la tabla se desplaza dentro de su propio contenedor
  * (con nombre), nunca la página. El contenedor solo es enfocable (y parada de Tab) cuando de verdad desborda.
  */
-export function TablaLibro({ titulo, filas }: { titulo: string; filas: FilaLibro[] }) {
+export function TablaLibro({ titulo, filas, dosLineasEnCelular = false }: { titulo: string; filas: FilaLibro[]; dosLineasEnCelular?: boolean }) {
+  // Con `dosLineasEnCelular`, bajo `sm` la fecha y el monto pasan a una segunda línea del motivo y sus columnas se ocultan.
+  const col = dosLineasEnCelular ? "hidden sm:table-cell" : "";
   const t = useTextos("marco").ui;
   const comunes = useTextos("comunes");
   const contenedor = useRef<HTMLDivElement>(null);
@@ -39,13 +41,13 @@ export function TablaLibro({ titulo, filas }: { titulo: string; filas: FilaLibro
         </caption>
         <thead>
           <tr className="text-left text-muted">
-            <th scope="col" className="px-3 py-2 font-normal">
+            <th scope="col" className={`px-3 py-2 font-normal ${col}`}>
               {t.fecha}
             </th>
             <th scope="col" className="px-3 py-2 font-normal">
               {t.motivo}
             </th>
-            <th scope="col" className="px-3 py-2 text-right font-normal">
+            <th scope="col" className={`px-3 py-2 text-right font-normal ${col}`}>
               {t.monto}
             </th>
           </tr>
@@ -53,9 +55,17 @@ export function TablaLibro({ titulo, filas }: { titulo: string; filas: FilaLibro
         <tbody>
           {filas.map((f, i) => (
             <tr key={i} className="border-t border-line align-top">
-              <td className="whitespace-nowrap px-3 py-2 font-mono text-muted">{f.fecha}</td>
-              <td className="px-3 py-2 text-ink">{f.motivo}</td>
-              <td className="whitespace-nowrap px-3 py-2 text-right font-mono text-ink">
+              <td className={`whitespace-nowrap px-3 py-2 font-mono text-muted ${col}`}>{f.fecha}</td>
+              <td className="px-3 py-2 text-ink">
+                {f.motivo}
+                {dosLineasEnCelular && (
+                  <span className="mt-1 flex justify-between gap-3 font-mono text-muted sm:hidden">
+                    <span>{f.fecha}</span>
+                    <span className="text-ink">{f.monto ?? comunes.sinDato}</span>
+                  </span>
+                )}
+              </td>
+              <td className={`whitespace-nowrap px-3 py-2 text-right font-mono text-ink ${col}`}>
                 {f.monto ?? <span className="text-muted">{comunes.sinDato}</span>}
               </td>
             </tr>

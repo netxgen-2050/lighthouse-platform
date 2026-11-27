@@ -24,7 +24,11 @@ describe("CLAVES", () => {
     expect(CLAVES.fogon).toBe("lh-fogon");
     expect(CLAVES.gobernanza).toBe("lh-gobernanza");
     expect(CLAVES.equipos).toBe("lh-equipos");
-    expect(CLAVES.lotes).toBe("lh-lotes");
+  });
+
+  it("las reservas de lotes ya no son una clave del navegador (viven en el servidor)", () => {
+    expect(Object.values(NOMBRES_BASE)).not.toContain("lh-lotes");
+    expect(Object.values(NOMBRES_BASE)).not.toContain("lh-consultas-lotes");
   });
 });
 

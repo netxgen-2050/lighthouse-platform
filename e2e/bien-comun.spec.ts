@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "./fixtura";
+import { esperarHidratacion } from "./ayudas";
 import {
   ENTRADAS_DE_PARTIDA,
   alComunPorAnio,
@@ -28,6 +29,16 @@ const textoFueraDeCambios = (page: Page) =>
     return copia.textContent ?? "";
   });
 const plano = async (page: Page) => (await main(page).innerText()).replace(/\s+/g, " ");
+// Las secciones largas vienen plegadas (ux-bien-comun): para leer su contenido se despliegan todas.
+// Se espera la hidratación: si React vuelve a dibujar después, no pisa lo desplegado.
+const desplegarTodo = async (page: Page) => {
+  await esperarHidratacion(page);
+  await page.evaluate(() => document.querySelectorAll("details").forEach((d) => (d.open = true)));
+};
+const irYDesplegar = async (page: Page, ruta: string) => {
+  await page.goto(ruta);
+  await desplegarTodo(page);
+};
 
 test.describe("sin sesión", () => {
   test.use({ rol: "ninguno" });
@@ -87,7 +98,7 @@ test.describe("sin sesión", () => {
   });
 
   test("la política son seis tarjetas, y la transferencia dice los meses del módulo", async ({ page }) => {
-    await page.goto(RUTA);
+    await irYDesplegar(page, RUTA);
     const tarjetas = page.locator("[data-politica]");
     await expect(tarjetas).toHaveCount(Object.keys(POLITICA).length);
     await expect(tarjetas).toHaveCount(6);
@@ -97,15 +108,16 @@ test.describe("sin sesión", () => {
   });
 
   test("ocho decisiones, cada una con la recomendación de Gus y el estado abierta", async ({ page }) => {
-    await page.goto(RUTA);
+    await irYDesplegar(page, RUTA);
     const tabla = page.getByRole("table", { name: new RegExp(`${DECISIONES.length} decisiones`) });
     await expect(tabla.getByRole("row")).toHaveCount(DECISIONES.length + 1);
-    await expect(tabla.getByText("abierta", { exact: true })).toHaveCount(DECISIONES.length);
+    await expect(tabla.locator('[data-estado="abierta"]')).toHaveCount(DECISIONES.length);
+    await expect(tabla.getByText("Abierta", { exact: true })).toHaveCount(DECISIONES.length);
     await expect(tabla.getByRole("columnheader", { name: "Recomendación de Gus" })).toBeVisible();
   });
 
   test("qué cambió son cuatro líneas, y tramo y staking solo aparecen ahí", async ({ page }) => {
-    await page.goto(RUTA);
+    await irYDesplegar(page, RUTA);
     const cambios = page.getByRole("region", { name: "Qué cambió" });
     await expect(cambios.getByRole("listitem")).toHaveCount(CAMBIOS_DESDE_V_ANTERIOR.ids.length);
     await expect(cambios.getByRole("listitem")).toHaveCount(4);
@@ -115,7 +127,7 @@ test.describe("sin sesión", () => {
   });
 
   test("en inglés, tranche y staking tampoco aparecen fuera de 'What changed'", async ({ page }) => {
-    await page.goto(`${RUTA}?lang=en`);
+    await irYDesplegar(page, `${RUTA}?lang=en`);
     const cambios = page.getByRole("region", { name: "What changed" });
     await expect(cambios.getByRole("listitem")).toHaveCount(CAMBIOS_DESDE_V_ANTERIOR.ids.length);
     await expect(cambios).toContainText("tranches");
@@ -124,7 +136,7 @@ test.describe("sin sesión", () => {
   });
 
   test("en inglés, las tarjetas de la política (con su fuente) no tienen español suelto", async ({ page }) => {
-    await page.goto(`${RUTA}?lang=en`);
+    await irYDesplegar(page, `${RUTA}?lang=en`);
     const tarjetas = page.locator("[data-politica]");
     await expect(tarjetas).toHaveCount(Object.keys(POLITICA).length);
     for (const id of Object.keys(POLITICA) as (keyof typeof POLITICA)[]) {
@@ -137,18 +149,20 @@ test.describe("sin sesión", () => {
   });
 
   test("las parcelas comunes se leen del plano, no son tokens y no se venden; Ostrom marca cada principio como idea", async ({ page }) => {
-    await page.goto(RUTA);
+    await irYDesplegar(page, RUTA);
     const s = page.getByRole("region", { name: "Las parcelas comunes" });
     await expect(s).toContainText("no son tokens");
     await expect(s).toContainText("Ninguna parcela común se vende");
     await expect(s).toContainText("Cocinas comunitarias");
     const tabla = page.getByRole("table", { name: /principios de Ostrom/ });
     await expect(tabla.getByRole("row")).toHaveCount(9);
-    await expect(tabla.getByText("idea", { exact: true })).toHaveCount(8);
+    await expect(tabla.locator('[data-estado="idea"]')).toHaveCount(8);
+    await expect(tabla.getByText("Idea", { exact: true })).toHaveCount(8);
+    await expect(tabla.getByText("En discusión")).toHaveCount(0);
   });
 
   test("preguntas para el abogado, con su ⚖ en las palabras legales", async ({ page }) => {
-    await page.goto(RUTA);
+    await irYDesplegar(page, RUTA);
     await expect(page.getByRole("region", { name: "Preguntas para el abogado" }).getByRole("listitem")).toHaveCount(6);
     for (const nombre of ["Token Tierra", "Token Inversor", "Fideicomiso del barrio", "Tesoro del común"]) {
       await expect(page.getByRole("button", { name: `Qué significa legalmente: ${nombre}` })).toBeVisible();
@@ -159,7 +173,7 @@ test.describe("sin sesión", () => {
   });
 
   test("el NFT del lote tiene su propia sección, fuera de las parcelas comunes, y nombra la metadata", async ({ page }) => {
-    await page.goto(RUTA);
+    await irYDesplegar(page, RUTA);
     const parcelas = page.getByRole("region", { name: "Las parcelas comunes" });
     await expect(parcelas).not.toContainText("NFT");
     const nft = page.getByRole("region", { name: /NFT del lote/ });
@@ -169,7 +183,7 @@ test.describe("sin sesión", () => {
   });
 
   test("no promete nada ni usa palabras viejas: sin procomún, tribu ni Hadron", async ({ page }) => {
-    await page.goto(RUTA);
+    await irYDesplegar(page, RUTA);
     const texto = await main(page).innerText();
     expect(texto).not.toMatch(/procom[uú]n|tribu|Hadron/i);
     expect(texto).not.toMatch(/ganancia|valorizaci[oó]n/i);
@@ -187,17 +201,144 @@ test.describe("sin sesión", () => {
     expect(llegó).toBe(true);
   });
 
-  test("a 390 px no hay scroll horizontal", async ({ page }) => {
+  test("a 390 px no hay scroll horizontal, ni con todas las secciones desplegadas", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(RUTA);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+    await desplegarTodo(page);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  });
+
+  test("primera vista: lo central abierto y lo largo plegado con su resumen", async ({ page }) => {
+    await page.goto(RUTA);
+    for (const id of ["h-frase", "h-carriles", "h-puertas"]) {
+      await expect(page.locator(`#${id}`)).toBeVisible();
+      await expect(page.locator(`#${id}`).locator("xpath=ancestor::details")).toHaveCount(0);
+    }
+    for (const id of ["h-politica", "h-decisiones", "h-cambios", "h-ostrom", "h-parcelas", "h-nft", "h-abogado"]) {
+      const d = page.locator("details", { has: page.locator(`#${id}`) });
+      await expect(d).toHaveCount(1);
+      expect(await d.evaluate((el) => (el as HTMLDetailsElement).open)).toBe(false);
+      await expect(d.locator("summary")).toContainText(/\S+\s+\S+/);
+    }
+    await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+  });
+
+  test("compu: el índice sigue visible al hacer scroll y marca la sección que se lee", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(RUTA);
+    const indice = page.getByRole("navigation", { name: "En esta página" });
+    await expect(indice).toBeVisible();
+    await page.locator("#h-puertas").scrollIntoViewIfNeeded();
+    await page.evaluate(() => document.getElementById("h-puertas")?.scrollIntoView());
+    await expect(indice).toBeVisible();
+    await expect(indice.getByRole("link", { name: "Las tres puertas para tener FARO" })).toHaveAttribute("aria-current", "location");
+    await expect(indice.locator('[aria-current="location"]')).toHaveCount(1);
+  });
+
+  test("compu: elegir una sección plegada en el índice la despliega", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(RUTA);
+    await esperarHidratacion(page);
+    await page.getByRole("navigation", { name: "En esta página" }).getByRole("link", { name: "Preguntas para el abogado" }).click();
+    const d = page.locator("details", { has: page.locator("#h-abogado") });
+    await expect.poll(() => d.evaluate((el) => (el as HTMLDetailsElement).open)).toBe(true);
+    await expect(page.locator("#h-abogado")).toBeInViewport();
+    // Queda marcada la elegida, aunque al desplegarse cambie el alto y el título nunca llegue a la línea de lectura.
+    const indice = page.getByRole("navigation", { name: "En esta página" });
+    await expect(indice.getByRole("link", { name: "Preguntas para el abogado" })).toHaveAttribute("aria-current", "location");
+    await expect(indice.locator('[aria-current="location"]')).toHaveCount(1);
+    await indice.getByRole("link", { name: "NFT del lote" }).click();
+    await expect(page.locator("#h-nft")).toBeInViewport();
+    await expect(indice.getByRole("link", { name: "NFT del lote" })).toHaveAttribute("aria-current", "location");
+    await expect(indice.locator('[aria-current="location"]')).toHaveCount(1);
+    await page.waitForTimeout(800);
+    await expect(indice.getByRole("link", { name: "NFT del lote" })).toHaveAttribute("aria-current", "location");
+  });
+
+  test("compu: Tab no suelta la sección elegida, pero scrollear sí", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(RUTA);
+    await esperarHidratacion(page);
+    const indice = page.getByRole("navigation", { name: "En esta página" });
+    const nft = indice.getByRole("link", { name: "NFT del lote" });
+    await nft.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#h-nft")).toBeInViewport();
+    await page.waitForTimeout(1600);
+    await expect(nft).toHaveAttribute("aria-current", "location");
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Shift+Tab");
+    await page.waitForTimeout(300);
+    await expect(nft).toHaveAttribute("aria-current", "location");
+    // Scrollear con la rueda (o arrastrar la barra) vuelve a seguir lo que se lee.
+    await page.mouse.move(700, 450);
+    await page.mouse.wheel(0, -3000);
+    await expect(nft).not.toHaveAttribute("aria-current", "location");
+    await expect(indice.locator('[aria-current="location"]')).toHaveCount(1);
+  });
+
+  test("un ancla mal formada no rompe la página", async ({ page }) => {
+    await page.goto(`${RUTA}#%E0`);
+    await esperarHidratacion(page);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  });
+
+  test("celular: En esta página abre la hoja y un enlace lleva a su sección desplegada", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(RUTA);
+    await esperarHidratacion(page);
+    await expect(page.getByRole("navigation", { name: "En esta página" })).toHaveCount(0);
+    await page.getByRole("button", { name: "En esta página" }).click();
+    const hoja = page.getByRole("dialog");
+    await expect(hoja).toBeVisible();
+    await hoja.getByRole("link", { name: "Preguntas para el abogado" }).click();
+    await expect(hoja).toHaveCount(0);
+    const d = page.locator("details", { has: page.locator("#h-abogado") });
+    await expect.poll(() => d.evaluate((el) => (el as HTMLDetailsElement).open)).toBe(true);
+    await expect(page.locator("#h-abogado")).toBeInViewport();
+  });
+
+  test("una sola capa de cajas: ninguna caja con borde contiene a otra", async ({ page }) => {
+    await irYDesplegar(page, RUTA);
+    const anidadas = await page.evaluate(() => {
+      const conBorde = (el: Element) => {
+        const s = getComputedStyle(el);
+        return parseFloat(s.borderTopWidth) > 0 && s.borderTopStyle !== "none" && parseFloat(s.borderRadius) > 0;
+      };
+      return Array.from(document.querySelectorAll("main *"))
+        .filter((el) => conBorde(el) && !(el instanceof HTMLButtonElement) && !(el instanceof HTMLInputElement) && el.getClientRects().length > 0)
+        .filter((el) => {
+          let p = el.parentElement;
+          while (p && p.tagName !== "MAIN") {
+            if (conBorde(p) && !(p instanceof HTMLButtonElement) && !(p instanceof HTMLInputElement)) return true;
+            p = p.parentElement;
+          }
+          return false;
+        })
+        .map((el) => el.outerHTML.slice(0, 80));
+    });
+    expect(anidadas).toEqual([]);
+  });
+
+  test("el texto corrido mide al menos 16 px", async ({ page }) => {
+    await irYDesplegar(page, RUTA);
+    const chicos = await page.evaluate(() =>
+      Array.from(document.querySelectorAll("main p, main li, main td, main th"))
+        // Fuera: el aviso de estado y el índice (componentes de la interfaz de ux-base) y la calculadora del barrio (sin cambios).
+        .filter((el) => el.getClientRects().length > 0 && !el.closest('[role="note"], nav, [data-resultados], form, [aria-labelledby="h-barrio"]'))
+        .filter((el) => parseFloat(getComputedStyle(el).fontSize) < 16)
+        .map((el) => (el.textContent ?? "").slice(0, 50)),
+    );
+    expect(chicos).toEqual([]);
   });
 
   test("?lang=en se lee en inglés, con el sello antes de cualquier número y sin scroll horizontal a 390 px", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${RUTA}?lang=en`);
     await expect(page.getByRole("heading", { level: 1, name: "The commons of Lighthouse VRN" })).toBeVisible();
+    await desplegarTodo(page);
     const sello = "Proposal v0.1 · under discussion with the team · sample numbers · legal points to be verified with a lawyer";
     const texto = await plano(page);
     expect(texto).toContain(sello);
@@ -207,7 +348,9 @@ test.describe("sin sesión", () => {
     for (const suelto of [/Propuesta/, /bien común/i, /sin dato/i, /A verificar/, /abierta/, /¿|¡/]) {
       expect(texto, String(suelto)).not.toMatch(suelto);
     }
-    await expect(page.getByRole("table", { name: new RegExp(`${DECISIONES.length} decisions`) }).getByText("open", { exact: true })).toHaveCount(
+    // A 390 px las decisiones son una lista de filas de dos líneas, no una tabla.
+    await desplegarTodo(page);
+    await expect(page.getByRole("list", { name: new RegExp(`${DECISIONES.length} decisions`) }).getByText("Open", { exact: true })).toHaveCount(
       DECISIONES.length,
     );
     expect(texto).not.toMatch(/procom[uú]n|\btribe|\btribu|Hadron/i);

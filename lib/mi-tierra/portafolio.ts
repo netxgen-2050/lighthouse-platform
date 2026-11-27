@@ -41,6 +41,10 @@ export type FaroPortafolio =
 export type LotePortafolio = {
   loteId: string;
   numero: number;
+  /** Superficie del loteo (null: sin dato). */
+  superficieM2: number | null;
+  /** ISO del primer pago simulado; null si todavía no pagó. */
+  pagadoEl: string | null;
   estado: EstadoPortafolio;
   opcion: OpcionCompra;
   /** El precio que la persona vio (null: sin dato) y la versión del modelo con que lo vio. */
@@ -58,6 +62,8 @@ export type MovimientoLibro = {
   numero: number;
   /** El monto que vio la persona; null es "sin dato". */
   monto: number | null;
+  /** ¿Este movimiento acredita FARO? (un pago de un lote que trae FARO). Para el filtro de la actividad. */
+  acreditaFaro: boolean;
 };
 
 export type Portafolio = {
@@ -65,6 +71,11 @@ export type Portafolio = {
   libro: MovimientoLibro[];
   totales: {
     lotes: number;
+    /** USD pagados (simulados) y USD que suman los planes. null si algún plan no se puede saber. */
+    pagado: number | null;
+    totalPlanes: number | null;
+    /** Lotes con plan en cuotas (cuotas > 0) y, si es uno solo, sus cuotas pagadas y totales. */
+    cuotasDelUnico: { pagadas: number; total: number } | null;
     /** Lo pagado sobre el total de los planes (0 a 1). null si algún plan no se puede saber. */
     fraccionPagada: number | null;
     /** FARO acreditados (simulados). null si ningún lote pagado tiene el dato. */
@@ -78,6 +89,15 @@ export type Portafolio = {
 };
 
 const finito = (n: number | null | undefined): n is number => typeof n === "number" && Number.isFinite(n);
+
+/** FARO acumulado en el orden en que se acreditaron (un punto por pago con dato). La mini curva solo se dibuja con 2 o más. */
+export function curvaFaro(lotes: LotePortafolio[]): number[] {
+  const pagos = lotes
+    .flatMap((l) => (l.faro.tipo === "acreditado" && l.faro.acreditados !== null && l.pagadoEl ? [{ f: Date.parse(l.pagadoEl), n: l.faro.acreditados }] : []))
+    .sort((a, b) => a.f - b.f);
+  let suma = 0;
+  return pagos.map((p) => (suma += p.n));
+}
 
 /** El total del plan que la persona vio: anticipo + cuotas (la última puede ser distinta por el redondeo). null si falta algún valor. */
 function totalDelPlan(p: NonNullable<CompraLote["vio"]["plan"]>): number | null {
@@ -130,6 +150,8 @@ export function armarPortafolio(compras: CompraLote[], adhesion: Adhesion): Port
     return {
       loteId: c.loteId,
       numero: lote.numero,
+      superficieM2: finito(lote.superficieM2) ? lote.superficieM2 : null,
+      pagadoEl: c.paso === "pagado" && c.pagadoEl ? c.pagadoEl : null,
       estado: estadoDeLaTarjeta(c, compras),
       opcion: c.opcion,
       precioVisto: finito(c.vio.precio) ? c.vio.precio : null,
@@ -144,11 +166,12 @@ export function armarPortafolio(compras: CompraLote[], adhesion: Adhesion): Port
       const lote = loteos.get(c.loteId)!;
       const base = { loteId: c.loteId, numero: lote.numero };
       const monto = finito(c.vio.precio) ? c.vio.precio : null;
-      const filas: MovimientoLibro[] = [{ ...base, fecha: c.reservadoEl, tipo: "reserva", monto }];
+      const traeFaro = loteTraeFaro(lote.grupo);
+      const filas: MovimientoLibro[] = [{ ...base, fecha: c.reservadoEl, tipo: "reserva", monto, acreditaFaro: false }];
       if (c.paso === "pagado" && c.pagadoEl) {
         const p = c.vio.plan;
         const enCuotas = !!p && p.cuotas > 0;
-        filas.push({ ...base, fecha: c.pagadoEl, tipo: enCuotas ? "primer-pago" : "pago", monto: p ? p.anticipo : monto });
+        filas.push({ ...base, fecha: c.pagadoEl, tipo: enCuotas ? "primer-pago" : "pago", monto: p ? p.anticipo : monto, acreditaFaro: traeFaro });
       }
       return filas;
     })
@@ -160,24 +183,40 @@ export function armarPortafolio(compras: CompraLote[], adhesion: Adhesion): Port
     });
 
   // Lo pagado sobre lo que suman los planes (pesado por el monto de cada plan). Si algún lote no tiene plan o le falta un valor, sin dato.
-  // Los primeros 4 lotes no entran al plan: no cuentan ni suman ni restan.
-  const planes = lotes.map((l) => l.plan).filter((p) => p.tipo !== "no-entra");
-  const todosConPlan = planes.length > 0 && planes.every((p) => p.tipo === "cuotas" || p.tipo === "contado");
+  // Los primeros 4 lotes no tienen plan en cuotas, pero su monto se conoce (el precio que la persona vio): cuentan como un pago único.
+  const planes = lotes.map((l) => l.plan);
   let fraccionPagada: number | null = null;
-  if (todosConPlan) {
+  let pagadoTotal: number | null = null;
+  let totalPlanes: number | null = null;
+  if (lotes.length > 0) {
     let pagado = 0;
     let suma = 0;
     let completo = true;
-    for (const p of planes) {
-      if ((p.tipo !== "cuotas" && p.tipo !== "contado") || p.total === null || p.fraccionPagada === null) {
+    for (const l of lotes) {
+      const p = l.plan;
+      if (p.tipo === "no-entra") {
+        if (l.precioVisto === null) {
+          completo = false;
+          break;
+        }
+        pagado += l.pagadoEl ? l.precioVisto : 0;
+        suma += l.precioVisto;
+      } else if ((p.tipo !== "cuotas" && p.tipo !== "contado") || p.total === null || p.fraccionPagada === null) {
         completo = false;
         break;
+      } else {
+        pagado += p.total * p.fraccionPagada;
+        suma += p.total;
       }
-      pagado += p.total * p.fraccionPagada;
-      suma += p.total;
     }
     fraccionPagada = completo && suma > 0 ? pagado / suma : null;
+    if (completo && suma > 0) {
+      pagadoTotal = Math.round(pagado);
+      totalPlanes = Math.round(suma);
+    }
   }
+  const conCuotas = lotes.flatMap((l) => (l.plan.tipo === "cuotas" ? [l.plan] : []));
+  const cuotasDelUnico = conCuotas.length === 1 ? { pagadas: conCuotas[0].cuotasPagadas, total: conCuotas[0].cuotas } : null;
 
   const acreditados = lotes.flatMap((l) => (l.faro.tipo === "acreditado" && l.faro.acreditados !== null ? [l.faro.acreditados] : []));
   // Solo cuentan los pagos de lotes que entran al plan: los primeros 4 no traen FARO.
@@ -188,10 +227,13 @@ export function armarPortafolio(compras: CompraLote[], adhesion: Adhesion): Port
     libro,
     totales: {
       lotes: lotes.length,
+      pagado: pagadoTotal,
+      totalPlanes,
+      cuotasDelUnico,
       fraccionPagada,
       faroAcreditados: acreditados.length === 0 ? null : acreditados.reduce((a, b) => a + b, 0),
       hayPago,
-      entraAlPlan: planes.length > 0,
+      entraAlPlan: planes.some((p) => p.tipo !== "no-entra"),
     },
     voz: {
       adhirio: adhirioAlManifiestoVrn(adhesion.membresias, adhesion.versiones),

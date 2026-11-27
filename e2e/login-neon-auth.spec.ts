@@ -63,7 +63,7 @@ test.describe("el paso de consentimiento es la única puerta", () => {
 
   test("desde Sumarte (Crear tu cuenta): lo mismo", async ({ page }) => {
     const pedidos = espiarAuth(page);
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=explorador");
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
     await expect(dialogo(page, "Crear tu cuenta")).toBeVisible();
     await page.keyboard.press("Escape");

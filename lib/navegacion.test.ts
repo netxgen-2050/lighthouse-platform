@@ -62,7 +62,7 @@ test("en inglés los destinos dicen lo que fija el glosario", () => {
 });
 
 test("Explorar, Invertir y Mi tierra ya existen", () => {
-  for (const href of ["/explorar", "/invertir", "/mi-tierra"]) {
+  for (const href of ["/explorar/territorio", "/invertir", "/mi-tierra"]) {
     expect(DESTINOS.find((d) => d.href === href)?.existe, href).toBe(true);
   }
 });
@@ -83,6 +83,9 @@ test("destinoActivo: Inicio solo en la raíz, Explorar abarca sus secciones y la
   const clave = (ruta: string) => destinoActivo(ruta)?.clave;
   expect(clave("/")).toBe("inicio");
   expect(clave("/explorar")).toBe("explorar");
+  expect(clave("/explorar/territorio")).toBe("explorar");
+  expect(clave("/explorar/barrio-norte")).toBe("explorar");
+  expect(clave("/explorar/lotes")).toBe("explorar");
   expect(clave("/lotes/hibrido")).toBe("explorar");
   expect(clave("/lotes/x")).toBe("explorar");
   expect(clave("/lotes")).toBe("explorar");
@@ -159,4 +162,13 @@ test("las subrutas marcan su sección y Explorar solo la raíz por su propio hre
 test("el rail marca Congreso también en la versión en inglés", () => {
   expect(esActivo("/congreso", "/congreso/en")).toBe(true);
   expect(esActivo("/congreso", "/congreso")).toBe(true);
+});
+
+test("la barra inferior lleva cinco destinos y Más el resto del menú", async () => {
+  const { destinosDeLaBarra, destinosDeMas } = await import("./navegacion");
+  const nombres = (l: ReturnType<typeof destinosDeLaBarra>) => l.map((d) => etiquetaDeDestino(d, "es"));
+  expect(nombres(destinosDeLaBarra())).toEqual(["Inicio", "Explorar", "Participa", "Invertir", "Mi tierra"]);
+  expect(nombres(destinosDeMas())).toEqual(["Bien común", "Sumarte"]);
+  // Entre las dos listas están todos los del menú, sin repetir ninguno.
+  expect([...destinosDeLaBarra(), ...destinosDeMas()].map((d) => d.href).sort()).toEqual(destinosDelMenu().map((d) => d.href).sort());
 });

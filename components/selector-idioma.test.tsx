@@ -17,7 +17,7 @@ const dibujar = (idioma: "es" | "en") =>
     </ProveedorIdioma>,
   );
 
-describe("SelectorIdioma de la barra superior", () => {
+describe("SelectorIdioma (menú del avatar, hoja Más y Configuración)", () => {
   it("son dos enlaces con ?lang, lang, hreflang y nombre accesible", () => {
     const html = dibujar("es");
     expect(html.match(/<a /g)).toHaveLength(2);
@@ -33,11 +33,12 @@ describe("SelectorIdioma de la barra superior", () => {
     expect(html).toContain("EN · English");
   });
 
-  it("marca con aria-current solo el idioma actual, también con subrayado", () => {
+  it("marca con aria-current solo el idioma actual, también con negrita y tilde", () => {
     const en = dibujar("en");
     expect(en.match(/aria-current="true"/g)).toHaveLength(1);
     expect(en).toMatch(/href="\/tribus\?lang=en"[^>]*aria-current="true"|aria-current="true"[^>]*href="\/tribus\?lang=en"/);
-    expect(en).toContain("underline");
+    expect(en).toContain("font-bold");
+    expect(en).toContain("<svg");
     const es = dibujar("es");
     expect(es).toMatch(/href="\/tribus\?lang=es"[^>]*aria-current="true"|aria-current="true"[^>]*href="\/tribus\?lang=es"/);
     expect(es.match(/aria-current="true"/g)).toHaveLength(1);

@@ -35,6 +35,7 @@ const es = {
     reservadoPorVos: "Reservado (simulado, por vos)",
     vendidoAVos: "Vendido (simulado, a vos)",
     enCuotasTuyo: "En cuotas (simulado)",
+    sinRespuesta: "No pudimos traer el estado actual de los lotes.",
   },
   plan: {
     titulo: "Plan en cuotas · Token Tierra (simulado)",
@@ -144,7 +145,8 @@ const es = {
     anuncioPrimerPago: (n: number) => `Listo: primer pago simulado (anticipo) del lote ${n}. No se cobró nada.`,
     planElegido: (plan: string, anticipo: string) => `Plan elegido: ${plan} · se paga ahora: ${anticipo}`,
     anuncioDeshecho: (n: number) => `Deshiciste la simulación del lote ${n}: vuelve a estar disponible.`,
-    noSePudo: "No se pudo guardar en este navegador. Probá de nuevo.",
+    noSePudo: "No pudimos guardar tu reserva. Probá de nuevo.",
+    yaReservado: "Alguien reservó este lote hace un momento.",
     noSeCobro: "No se cobró nada: el pago es simulado.",
   },
   boleto: {
@@ -209,6 +211,7 @@ const en: Textos<typeof es> = {
     reservadoPorVos: "Reserved (simulated, by you)",
     vendidoAVos: "Sold (simulated, to you)",
     enCuotasTuyo: "In instalments (simulated)",
+    sinRespuesta: "We could not fetch the current state of the lots.",
   },
   plan: {
     titulo: "Instalment plan · Land Token (simulated)",
@@ -318,7 +321,8 @@ const en: Textos<typeof es> = {
     anuncioPrimerPago: (n: number) => `Done: simulated first payment (down payment) of lot ${n}. Nothing was charged.`,
     planElegido: (plan: string, anticipo: string) => `Chosen plan: ${plan} · paid now: ${anticipo}`,
     anuncioDeshecho: (n: number) => `You undid the simulation of lot ${n}: it is available again.`,
-    noSePudo: "It could not be saved in this browser. Try again.",
+    noSePudo: "We could not save your reservation. Try again.",
+    yaReservado: "Someone reserved this lot a moment ago.",
     noSeCobro: "Nothing was charged: the payment is simulated.",
   },
   boleto: {

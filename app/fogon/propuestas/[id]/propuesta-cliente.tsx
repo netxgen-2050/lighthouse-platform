@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { TerminoLegal } from "@/components/termino-legal";
+import { Aviso } from "@/components/ui/aviso";
 import { useSesion } from "@/components/sesion/contexto";
 import { DECISIONES_BASE } from "@/lib/fogon/datos";
 import { formatoPlata } from "@/lib/fogon/consultas/reglas";
@@ -31,7 +32,6 @@ export function PropuestaCliente({ id }: { id: string }) {
   const idioma = useIdioma();
   const t = useTextos("fogonPropuestas");
   const tf = useTextos("fogon");
-  const textosMarco = useTextos("marco");
   const { estado: estadoSesion, sesion, tribuLider } = useSesion();
   const p = useMemo(() => propuestaDe(id), [id]);
   const decision = useMemo(() => DECISIONES_BASE.find((d) => d.id === id), [id]);
@@ -72,12 +72,9 @@ export function PropuestaCliente({ id }: { id: string }) {
           {mostrarTitulo && <li aria-current="page">{textoEn(decision.titulo, idioma)}</li>}
         </ol>
       </nav>
-      <p className="mb-2 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-        {textosMarco.aviso}
-      </p>
-      <p className="mb-4 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+      <Aviso tono="atencion" className="mb-4 w-fit">
         {t.pagina.avisoProceso}
-      </p>
+      </Aviso>
     </>
   );
 

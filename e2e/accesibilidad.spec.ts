@@ -1,9 +1,9 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "./fixtura";
+import { expect, liberarLotes, reservarPorApi, test, type Page } from "./fixtura";
 import { listarTribus } from "@/lib/tribus/datos";
 import { lotesDelGrupo } from "@/lib/territorios/loteo";
 import { estadoDeLote } from "@/lib/territorios/loteo-estados";
-import { conAdhesionAlManifiesto, conIdentidadVerificada, relojDeLasConsultas } from "./ayudas";
+import { conAdhesionAlManifiesto, conIdentidadVerificada, esperarHidratacion, relojDeLasConsultas } from "./ayudas";
 
 const rutas = [
   "/",
@@ -28,11 +28,13 @@ const rutas = [
   ...listarTribus().map((t) => `/tribus/${t.id}`),
   "/tribus/lighthouse",
   "/tribus/lighthouse/manifiesto",
-  "/explorar",
-  "/explorar?vista=lotes",
-  "/explorar?vista=ahora",
-  "/explorar?vista=plan",
-  "/explorar?vista=vision",
+  "/explorar/territorio",
+  "/explorar/barrio-norte",
+  "/explorar/lotes",
+  "/explorar/territorio?vista=lotes",
+  "/explorar/territorio?vista=ahora",
+  "/explorar/territorio?vista=plan",
+  "/explorar/territorio?vista=vision",
   "/lotes/lote-1",
   "/lotes/hibrido",
   "/bien-comun",
@@ -52,81 +54,171 @@ test("axe sin violaciones serias o críticas: el menú de la persona abierto en 
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
 });
 
-// El menú del celular y la subnavegación de Explorar: cerrados y abiertos, en los dos idiomas y los dos temas.
+// ux-explorar: lista y mapa de lotes a 390 px, con la hoja en reposo y abierta, y la ficha del lote, en los dos temas.
+for (const tema of ["oscuro", "claro"] as const) {
+  test(`axe sin violaciones serias o críticas: /explorar/lotes a 390 px con la hoja en reposo y abierta, tema ${tema}`, async ({ page }) => {
+    await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/explorar/lotes");
+    await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+    const boton = page.getByRole("button", { name: "Ver lista" });
+    await expect(boton).toBeVisible();
+    const grave = async () => {
+      const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+      return r.violations
+        .filter((v) => v.impact === "serious" || v.impact === "critical")
+        .map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }));
+    };
+    expect(await grave(), "hoja en reposo").toEqual([]);
+    await boton.click();
+    await expect(page.getByRole("button", { name: "Ver mapa" })).toHaveAttribute("aria-expanded", "true");
+    expect(await grave(), "hoja abierta").toEqual([]);
+  });
+
+  test(`axe sin violaciones serias o críticas: la ficha de un lote a 390 px, tema ${tema}`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/lotes/lote-1");
+    await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+    await expect(page.getByRole("heading", { level: 1, name: "Lote 1" })).toBeVisible();
+    const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
+  });
+}
+
+// La barra inferior y la hoja Más del celular: con la hoja cerrada y abierta, con y sin sesión, en los dos idiomas y los dos temas.
 for (const idioma of ["es", "en"] as const) {
   for (const tema of ["oscuro", "claro"] as const) {
-    test(`axe sin violaciones serias o críticas: menú del celular cerrado y abierto, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
-      await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
-      await page.setViewportSize({ width: 390, height: 844 });
-      await page.goto("/explorar");
-      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
-      const boton = page.getByRole("button", { name: idioma === "es" ? "Menú" : "Menu", exact: true });
-      await expect(boton).toBeVisible();
-      expect(await graves(page), "menú cerrado").toEqual([]);
-      await boton.click();
-      await expect(page.locator("#menu-celular")).toBeVisible();
-      expect(await graves(page), "menú abierto").toEqual([]);
-    });
+    for (const [rol, abrirRol] of [["superadmin", "con sesión"], ["ninguno", "sin sesión"]] as const) {
+      test.describe(`hoja Más ${abrirRol}, ${idioma}, tema ${tema}`, () => {
+        test.use({ rol });
+
+        test("axe sin violaciones serias o críticas: cerrada y abierta", async ({ page, context, baseURL }) => {
+          await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+          await page.setViewportSize({ width: 390, height: 844 });
+          await page.goto("/explorar/territorio");
+          await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+          const boton = page.getByRole("button", { name: idioma === "es" ? "Más" : "More", exact: true });
+          await expect(boton).toBeVisible();
+          expect(await graves(page), "hoja cerrada").toEqual([]);
+          await boton.click();
+          await expect(page.getByRole("dialog", { name: idioma === "es" ? "Más" : "More" })).toBeVisible();
+          expect(await graves(page), "hoja abierta").toEqual([]);
+        });
+      });
+    }
   }
 }
 
 test("hay 48 rutas auditadas", () => {
-  expect(rutas).toHaveLength(46);
+  expect(rutas).toHaveLength(48);
 });
 
-// Invertir (rediseno-invertir), con sesión y con la tabla de la curva abierta: en los dos idiomas y los dos temas.
+// Invertir (ux-invertir), con sesión: cada pestaña, en los dos idiomas, los dos temas y a 390 y 1440 px.
+// En Curva se abre además la tabla; en Libro, "Ver todo el libro".
 for (const idioma of ["es", "en"] as const) {
   for (const tema of ["oscuro", "claro"] as const) {
-    test(`axe sin violaciones serias o críticas: /invertir con sesión, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
-      await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
-      await page.goto("/invertir");
-      await expect(page.locator('svg[data-curva="devolucion"]')).toBeVisible();
-      await page.locator("details summary").first().click();
-      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
-      expect(await graves(page)).toEqual([]);
-    });
+    for (const ancho of [390, 1440] as const) {
+      for (const ver of ["", "curva", "libro"] as const) {
+        test(`axe sin violaciones serias o críticas: /invertir con sesión, pestaña ${ver || "como"}, ${idioma}, tema ${tema}, ${ancho} px`, async ({ page, context, baseURL }) => {
+          await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+          await page.setViewportSize({ width: ancho, height: ancho < 600 ? 844 : 900 });
+          await page.goto(ver ? `/invertir?ver=${ver}` : "/invertir");
+          if (ver === "curva") {
+            await expect(page.locator('svg[data-curva="devolucion"]')).toBeVisible();
+            await page.locator("details summary").first().click();
+          } else if (ver === "libro") {
+            await expect(page.getByRole("table")).toBeVisible();
+            await page.locator("details summary").first().click();
+          } else {
+            await expect(page.locator('[data-dato="prima"]')).toBeVisible();
+          }
+          await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+          expect(await graves(page)).toEqual([]);
+        });
+      }
+    }
   }
 }
+
+// Invertir sin sesión (estado vacío): los dos idiomas y los dos temas, a 390 y 1440 px.
+test.describe("invertir sin sesión", () => {
+  test.use({ rol: "ninguno" });
+  for (const idioma of ["es", "en"] as const) {
+    for (const tema of ["oscuro", "claro"] as const) {
+      for (const ancho of [390, 1440] as const) {
+        test(`axe sin violaciones serias o críticas: /invertir sin sesión, ${idioma}, tema ${tema}, ${ancho} px`, async ({ page, context, baseURL }) => {
+          await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+          await page.setViewportSize({ width: ancho, height: ancho < 600 ? 844 : 900 });
+          await page.goto("/invertir");
+          await expect(page.locator("[data-estado-vacio]")).toBeVisible();
+          await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+          expect(await graves(page)).toEqual([]);
+        });
+      }
+    }
+  }
+});
 
 // Mi tierra (rediseno-mi-tierra), con una compra en cuotas: en los dos idiomas y los dos temas. Sin compras ya entra en `rutas`.
+const ANCHOS_MI_TIERRA = [390, 1440] as const;
 for (const idioma of ["es", "en"] as const) {
   for (const tema of ["oscuro", "claro"] as const) {
-    test(`axe sin violaciones serias o críticas: /mi-tierra con una compra en cuotas, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
-      await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
-      const idLote = lotesDelGrupo("norte").find((l) => estadoDeLote(l.id) === "disponible")!.id;
-      await page.addInitScript((loteId) => {
-        if (window.localStorage.getItem("lh-lotes")) return;
-        window.localStorage.setItem(
-          "lh-lotes",
-          JSON.stringify([
-            {
-              loteId,
-              opcion: "solo-lote",
-              paso: "pagado",
-              reservadoEl: "2026-11-20T12:00:00.000Z",
-              pagadoEl: "2026-11-21T12:00:00.000Z",
-              vio: {
-                precio: 1000,
-                aporte: null,
-                expensa: null,
-                version: "ejemplo",
-                faro: 100,
-                plan: { cuotas: 24, anticipo: 300, cuota: 30, ultimaCuota: 30, faroAnticipo: 30, faroPorCuota: 3, faroUltimaCuota: 3 },
-              },
-            },
-          ]),
-        );
-      }, idLote);
-      await page.goto("/mi-tierra");
-      await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible();
-      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
-      expect(await graves(page)).toEqual([]);
-    });
+    for (const ancho of ANCHOS_MI_TIERRA) {
+      test(`axe sin violaciones serias o críticas: /mi-tierra sin lotes (estado vacío), ${idioma}, tema ${tema}, ${ancho} px`, async ({ page, context, baseURL }) => {
+        await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+        await page.setViewportSize({ width: ancho, height: ancho < 600 ? 844 : 900 });
+        await page.goto("/mi-tierra");
+        await expect(page.getByRole("heading", { level: 2 }).first()).toBeVisible();
+        await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+        expect(await graves(page)).toEqual([]);
+      });
+    }
   }
 }
 
-// Inicio y Explorar (rediseno-explorar-valle, explorar-unificado): en los dos idiomas y los dos temas.
-for (const ruta of ["/", "/explorar"]) {
+// Las reservas viven en el servidor (`lotes-en-la-base`): estos tests entran con una persona propia y usan lotes SOLO de este archivo
+// (el 9.º y el 10.º disponibles del norte), que liberan antes de empezar.
+const DISPONIBLES_DEL_NORTE = lotesDelGrupo("norte").filter((l) => estadoDeLote(l.id) === "disponible");
+const LOTE_DE_MI_TIERRA = DISPONIBLES_DEL_NORTE[8].id;
+const LOTE_DE_LA_FICHA = DISPONIBLES_DEL_NORTE[9].id;
+
+test.describe("con una compra (persona propia)", () => {
+  test.use({ identidad: "propia" });
+
+  for (const idioma of ["es", "en"] as const) {
+    for (const tema of ["oscuro", "claro"] as const) {
+      for (const ancho of ANCHOS_MI_TIERRA) {
+        test(`axe sin violaciones serias o críticas: /mi-tierra con una compra en cuotas, ${idioma}, tema ${tema}, ${ancho} px`, async ({ page, context, baseURL, request, emailActual }) => {
+          await context.addCookies([{ name: "lh-idioma", value: idioma, url: baseURL! }]);
+          await page.setViewportSize({ width: ancho, height: ancho < 600 ? 844 : 900 });
+          await liberarLotes(request, [LOTE_DE_MI_TIERRA]);
+          await reservarPorApi(request, emailActual, LOTE_DE_MI_TIERRA, {
+            pagar: true,
+            vio: {
+              precio: 1000,
+              aporte: null,
+              expensa: null,
+              version: "ejemplo",
+              faro: 100,
+              plan: { cuotas: 24, anticipo: 300, cuota: 30, ultimaCuota: 30, faroAnticipo: 30, faroPorCuota: 3, faroUltimaCuota: 3 },
+            },
+          });
+          await page.goto("/mi-tierra");
+          await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible();
+          await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+          expect(await graves(page)).toEqual([]);
+          // Sin scroll horizontal de la página ni de la actividad.
+          expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+          await expect(page.locator('[data-desborda="true"]')).toHaveCount(0);
+        });
+      }
+    }
+  }
+});
+
+// Inicio y las tres páginas de Explorar (rediseno-explorar-valle, explorar-paginas): en los dos idiomas y los dos temas.
+for (const ruta of ["/", "/explorar/territorio", "/explorar/barrio-norte", "/explorar/lotes"]) {
   for (const idioma of ["es", "en"] as const) {
     for (const tema of ["oscuro", "claro"] as const) {
       test(`axe sin violaciones serias o críticas: ${ruta}, ${idioma}, tema ${tema}`, async ({ page, context, baseURL }) => {
@@ -141,10 +233,19 @@ for (const ruta of ["/", "/explorar"]) {
 }
 
 async function graves(page: Page) {
-  const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
-  return r.violations
-    .filter((v) => v.impact === "serious" || v.impact === "critical")
-    .map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }));
+  // Axe se mide con la página hidratada y sin transiciones de color en curso (los botones y la barra las usan).
+  await esperarHidratacion(page);
+  let ultimas: { id: string; impact: string | null | undefined; nodos: unknown[] }[] = [];
+  // Una violación real se repite en cada medición; una que viene de un cuadro intermedio de una transición, no.
+  for (let i = 0; i < 3; i++) {
+    await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined))));
+    const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    ultimas = r.violations
+      .filter((v) => v.impact === "serious" || v.impact === "critical")
+      .map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }));
+    if (ultimas.length === 0) return [];
+  }
+  return ultimas;
 }
 
 test("axe sin violaciones serias o críticas: una propuesta del Fogón (la bomba) con la tabla de permisos abierta", async ({ page }) => {
@@ -631,7 +732,7 @@ for (const ruta of rutas) {
 }
 
 // Lotes: la lista y una ficha en inglés, y la ficha con la compra simulada en cada paso (lote-ficha-y-compra).
-for (const ruta of ["/lotes?lang=en", "/lotes/lote-1?lang=en", "/lotes/hibrido?lang=en"]) {
+for (const ruta of ["/explorar/lotes?lang=en", "/lotes/lote-1?lang=en", "/lotes/hibrido?lang=en"]) {
   test(`axe sin violaciones serias o críticas: ${ruta}`, async ({ page }) => {
     await page.goto(ruta);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -652,35 +753,58 @@ for (const [ruta, campo] of [
   });
 }
 
-test("axe sin violaciones serias o críticas: la ficha de un lote en la reserva, el pago simulado y el boleto, en español y en inglés", async ({ page }) => {
-  for (const [ruta, reservar, pagar, confirmar, leido] of [
-    ["/lotes/lote-1", "Reservar (simulado)", "Simular el primer pago (anticipo)", "Confirmar el primer pago simulado", "Leí lo que comparto y lo que me comprometo a pagar"],
-    [
-      "/lotes/lote-1?lang=en",
-      "Reserve (simulated)",
-      "Simulate the first payment (down payment)",
-      "Confirm the simulated first payment",
-      "I read what I share and what I commit to pay",
-    ],
-  ] as const) {
-    await page.goto(ruta);
-    await page.getByLabel(leido).check();
-    await page.getByRole("button", { name: reservar }).click();
-    expect(await graves(page)).toEqual([]);
-    await page.getByRole("button", { name: pagar }).click();
-    expect(await graves(page)).toEqual([]);
-    await page.getByRole("button", { name: confirmar }).click();
-    await expect(page.getByRole("region", { name: /Boleto de ejemplo|Sample purchase agreement/ })).toBeVisible();
-    expect(await graves(page)).toEqual([]);
-    await page.evaluate(() => window.localStorage.removeItem("lh-lotes"));
+// /bien-comun con índice y secciones plegables (ux-bien-comun): cerradas y abiertas, claro y oscuro, a 390 y 1440 px.
+for (const ancho of [390, 1440] as const) {
+  for (const tema of ["claro", "oscuro"] as const) {
+    test(`axe sin violaciones serias o críticas: /bien-comun a ${ancho} px, tema ${tema}, secciones cerradas y abiertas`, async ({ page }) => {
+      await page.setViewportSize({ width: ancho, height: 900 });
+      await page.goto("/bien-comun");
+      await esperarHidratacion(page);
+      await page.evaluate((t) => document.documentElement.setAttribute("data-tema", t), tema);
+      await expect(page.getByLabel("Precio del lote (USD)")).toBeVisible();
+      expect(await graves(page), "cerradas").toEqual([]);
+      await page.evaluate(() => document.querySelectorAll("details").forEach((d) => (d.open = true)));
+      expect(await graves(page), "abiertas").toEqual([]);
+    });
   }
+}
+
+test.describe("la ficha de un lote (persona propia)", () => {
+  test.use({ identidad: "propia" });
+
+  test("axe sin violaciones serias o críticas: la ficha de un lote en la reserva, el pago simulado y el boleto, en español y en inglés", async ({ page, request }) => {
+    await liberarLotes(request, [LOTE_DE_LA_FICHA]);
+    for (const [ruta, reservar, pagar, confirmar, leido] of [
+      [`/lotes/${LOTE_DE_LA_FICHA}`, "Reservar (simulado)", "Simular el primer pago (anticipo)", "Confirmar el primer pago simulado", "Leí lo que comparto y lo que me comprometo a pagar"],
+      [
+        `/lotes/${LOTE_DE_LA_FICHA}?lang=en`,
+        "Reserve (simulated)",
+        "Simulate the first payment (down payment)",
+        "Confirm the simulated first payment",
+        "I read what I share and what I commit to pay",
+      ],
+    ] as const) {
+      await page.goto(ruta);
+      await page.getByLabel(leido).check();
+      await page.getByRole("button", { name: reservar }).click();
+      expect(await graves(page)).toEqual([]);
+      await page.getByRole("button", { name: pagar }).click();
+      expect(await graves(page)).toEqual([]);
+      await page.getByRole("button", { name: confirmar }).click();
+      await expect(page.getByRole("region", { name: /Boleto de ejemplo|Sample purchase agreement/ })).toBeVisible();
+      expect(await graves(page)).toEqual([]);
+      // Deshace la reserva (en el servidor) para repetir el recorrido en el otro idioma.
+      await page.getByRole("button", { name: /^(Deshacer|Undo)$/ }).click();
+      await expect(page.getByRole("button", { name: reservar })).toBeVisible();
+    }
+  });
 });
 
 test.describe("pasos previos al login (consentimiento-alta)", () => {
   test.use({ rol: "ninguno", consentimiento: "ninguno" });
 
   test("axe sin violaciones serias o críticas: Crear tu cuenta y Entrar, abiertos y con el error a la vista", async ({ page }) => {
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=explorador");
     await page.getByRole("button", { name: "Sumarme gratis" }).click();
     const alta = page.getByRole("dialog", { name: "Crear tu cuenta" });
     await expect(alta).toBeVisible();

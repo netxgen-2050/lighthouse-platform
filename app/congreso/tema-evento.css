@@ -1605,12 +1605,13 @@ html:has(.tema-evento) {
   .tema-evento .ev-ticket {
     padding: 20px;
   }
-  /* Abajo, a la derecha de la barra de NetX (4rem), sin tapar el botón de Hifa (queda por encima, z-index 40). */
+  /* Abajo, a la derecha de la barra de NetX (4rem), sin tapar el botón de Hifa (queda por encima, z-index 40).
+     Encima de la barra inferior del celular (ux-celular): --alto-barra-inferior vale 0 desde 768 px. */
   .tema-evento .ev-barra-compra {
     position: fixed;
     left: 4rem;
     right: 0;
-    bottom: 0;
+    bottom: var(--alto-barra-inferior, 0px);
     z-index: 35;
     display: flex;
     justify-content: space-between;
