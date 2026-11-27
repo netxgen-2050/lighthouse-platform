@@ -30,7 +30,7 @@ Hoy la política se acepta después de entrar, y mientras tanto las páginas pú
 
 ## Consecuencias
 - Ganamos: una regla de identidad simple de revisar ("¿esta ruta llama a `exigirConsentimiento`?") y una constancia que sobrevive al retiro y al borrado de la cuenta (que es anonimizar, ADR-001).
-- Ganamos: por el camino normal (Sumarte, "Entrar" o "Entrar como…"), **el email ya no llega a Privy antes de las casillas**: la plataforma no llama al login de Privy sin una aceptación previa vigente.
+- Ganamos: por "Crear tu cuenta" (Sumarte), **el email ya no llega al proveedor del login antes de las casillas**: la plataforma no abre el login de ese camino sin una aceptación previa vigente. Desde el 27-nov-2026 esto ya no vale para "Entrar" ni "Entrar como…" (ver la sección con esa fecha).
 - ~~Aceptamos: quien ya tiene cuenta marca las casillas cada vez que entra~~ Reemplazado el 27-nov-2026 (ver la sección con esa fecha): las casillas se marcan una sola vez; "Entrar" abre el login directo y las casillas de "Crear tu cuenta" siguen antes del login. No se registra otra fila si su consentimiento estaba vigente.
 - Aceptamos: en los casos de red de seguridad (una sesión que Privy restaura sola, una aceptación que venció antes de terminar el login, una versión nueva de la política), puede haber un usuario en Privy sin aceptación vigente registrada; si esa persona no acepta, el usuario queda en Privy. Borrarlo con su API de servidor queda pendiente (decisión de Gus, 15-oct-2026); se responde en R29 con Gabriel.
 - Aceptamos: la ventana de Privy es de Privy; lo que pase por fuera de la plataforma (su panel, otra app con el mismo `appId`) no lo controla este cambio.
