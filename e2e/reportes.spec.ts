@@ -202,7 +202,9 @@ test("el token no aparece en el HTML ni en el código que recibe el navegador", 
   });
   await page.goto("/");
   await abrir(page);
-  await page.waitForLoadState("networkidle");
+  // `load` y no `networkidle`: con el Inicio del rediseño la red no queda quieta a tiempo bajo carga (falla intermitente).
+  // Para `load` ya llegaron el HTML y todos los scripts de la página, que es lo que se revisa.
+  await page.waitForLoadState("load");
   // Se esperan todos los cuerpos antes de afirmar.
   const textos = await Promise.all(pendientes);
   expect(textos.length).toBeGreaterThan(0);

@@ -5,8 +5,9 @@ import { expect, test } from "vitest";
 const RAIZ = path.resolve(__dirname, "..");
 const PROHIBIDO = /#[0-9a-fA-F]{3,8}\b|\b(?:red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|zinc|neutral|stone)-\d/;
 
-// Excepciones: la hoja de tokens de NetX y la hoja del tema del Congreso (ADR-002), que tiene su propio test.
-const EXCEPCIONES = [path.join("app", "globals.css"), path.join("app", "congreso", "tema-evento.css")];
+// Excepciones: la hoja de tokens de NetX, la hoja del tema del Congreso (ADR-002), que tiene su propio test, y el logo "G" de
+// Google (login-google-estandar): es una marca que las pautas de Google piden sin modificar, no un color del tema.
+const EXCEPCIONES = [path.join("app", "globals.css"), path.join("app", "congreso", "tema-evento.css"), path.join("components", "sesion", "logo-google.tsx")];
 
 function archivos(dir: string): string[] {
   return readdirSync(dir).flatMap((n) => {
