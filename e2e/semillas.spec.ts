@@ -149,7 +149,7 @@ test("un ticket inválido no cuenta y el Pase se nombra como en /sumarte", async
   });
   await page.reload();
   await expect(page.getByText("Ticket registrado")).toHaveCount(0);
-  await expect(page.getByText("Pase Fundador Raíz activo")).toBeVisible();
+  await expect(page.getByText("Pase Fundador activo")).toBeVisible();
 });
 
 test("con un Pase activo, la frase 'un servicio que no suma semillas' lleva el ⚖ de Pase Fundador", async ({ page }) => {

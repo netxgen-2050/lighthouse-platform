@@ -10,7 +10,7 @@ Fuentes pendientes: 53
 
 | Fuente | Qué es | Textos en inglés |
 |---|---|---|
-| `glosario` | Glosario de términos de la plataforma (Pase Fundador, Fogón…); confirmado por Gus el 15-oct-2026, falta el nativo | 31 |
+| `glosario` | Glosario de términos de la plataforma (Pase Fundador, Fogón…); confirmado por Gus el 15-oct-2026, falta el nativo | 33 |
 | `lib/compromisos/mercado.ts` | Ofertas de ejemplo del Mercado con su inglés, traducidas del español (las que publica la persona no se traducen) | — |
 | `lib/congreso/evento-ejemplo.ts` | Página del Congreso en inglés (/congreso/en): datos de ejemplo del evento | — |
 | `lib/economia/terminos.ts` | Término económico 🌱 de Semillas en inglés (borrador, sin revisión) | — |
@@ -31,14 +31,14 @@ Fuentes pendientes: 53
 | `lib/manifiestos/lighthouse-vrn.ts` | Texto del manifiesto de Lighthouse VRN (propósito, 15 principios, 7 derechos de la tierra, compromisos, cómo se cambia) y nombre visible del común; traducidos del español, borrador a ratificar | — |
 | `lib/pactos/datos.ts` | Roles de ejemplo (nombre y descripción), pestañas y pasos de un pacto, con su inglés | — |
 | `lib/semillas/datos.ts` | Datos de ejemplo de la ronda de reconocimiento con su inglés (compañeros, criterios y reconocimiento recibido) | — |
-| `lib/sumarte/datos.ts` | Comparativa de planes de Sumarte (filas de ejemplo con su inglés) | — |
+| `lib/sumarte/datos.ts` | Comparativa de planes de Sumarte y beneficios de Aliados (filas de ejemplo con su inglés) | — |
 | `lib/territorios/textos.ts` | Textos del territorio con su inglés: terreno común, descripción y nombres descriptivos de los lugares, bienes comunes | — |
 | `lib/tribus/datos.ts` | Datos de ejemplo de las 12 tribus con su inglés (foco, qué tiene, qué busca, ritual, forma jurídica…) y la declaración de cada tribu, traducida del español | — |
 | `lib/tribus/necesidades.ts` | Necesidades de ejemplo de las tribus como tareas (título, qué es y habilidad extra) con su inglés | — |
 | `textos/bandeja` | Bandeja y notificaciones: textos de cada evento de la actividad, que se arman al mostrarlos en el idioma actual | 37 |
 | `textos/barrios` | Barrio Norte (/barrios/norte): lotes por estado, lo que va al bien común y el panel de la obra del barrio (solo con sesión) | 30 |
 | `textos/biencomun` | El bien común de Lighthouse VRN: propuesta v0.1 en discusión: sello, dos carriles y tres puentes, puertas de FARO, política, decisiones abiertas, qué cambió, preguntas para el abogado, principios de Ostrom, parcelas comunes, tarjeta de la ficha y línea del boleto | 206 |
-| `textos/canales` | Canales: por qué se abre cada puerta, qué la abre, refuerzo por presencia y nombres de planes y niveles del pase | 31 |
+| `textos/canales` | Canales: por qué se abre cada puerta, qué la abre, refuerzo por presencia y nombres de planes y niveles del pase | 29 |
 | `textos/compromisos` | Compromisos y Mercado: formulario, validaciones, tipos y medios de intercambio, filtros y avisos | 58 |
 | `textos/comunes` | Textos que se repiten en todas las zonas (cargando, cancelar, sin dato, notas de traducción…) | 16 |
 | `textos/configuracion` | Configuración: apariencia, avisos por tipo, Hifa, moneda, idioma y borrado de lo guardado en el navegador | 48 |
@@ -60,6 +60,6 @@ Fuentes pendientes: 53
 | `textos/portada` | Portada: promesa a 2030, Argentina, capitales, los tres caminos y la cantidad de barrios (más lib/portada-vrn.ts) | 35 |
 | `textos/recorrido` | Mi recorrido: próximo paso (cinco pasos), pestañas, línea de tiempo y tabla de la Bitácora | 45 |
 | `textos/semillas` | Semillas: libro por comunidad, detalle, meta de sembrador/a activo/a y ronda de reconocimiento ("Semillas" no se traduce) | 124 |
-| `textos/sumarte` | Sumarte: planes, niveles del pase (Seed, Sprout, Root, a confirmar), comprar un lote, invertir, avisos de nivel, formulario de pedido de contacto y panel Entrar como… | 179 |
+| `textos/sumarte` | Sumarte: planes Explorador, Amigo (Friend), Fundador (Founder) y Aliados (Allies, a confirmar), FARO de prepago en borrador, comprar un lote, invertir, avisos de nivel, formulario de pedido de contacto y panel Entrar como… | 161 |
 | `textos/territorio` | Territorio: vitrina, leyenda y controles del mapa, ficha lateral y marcadores | 147 |
 | `textos/tribus` | Tribus: listado, ficha, botones de membresía, interfaz del manifiesto y postulación de una comunidad (formulario, requisitos y errores) | 208 |

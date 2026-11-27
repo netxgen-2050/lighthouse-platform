@@ -59,11 +59,11 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "textos/sumarte": {
     estado: "pendiente",
-    que: "Sumarte: planes, niveles del pase (Seed, Sprout, Root, a confirmar), comprar un lote, invertir, avisos de nivel, formulario de pedido de contacto y panel Entrar como…",
+    que: "Sumarte: planes Explorador, Amigo (Friend), Fundador (Founder) y Aliados (Allies, a confirmar), FARO de prepago en borrador, comprar un lote, invertir, avisos de nivel, formulario de pedido de contacto y panel Entrar como…",
   },
   "lib/sumarte/datos.ts": {
     estado: "pendiente",
-    que: "Comparativa de planes de Sumarte (filas de ejemplo con su inglés)",
+    que: "Comparativa de planes de Sumarte y beneficios de Aliados (filas de ejemplo con su inglés)",
   },
   "textos/tribus": {
     estado: "pendiente",

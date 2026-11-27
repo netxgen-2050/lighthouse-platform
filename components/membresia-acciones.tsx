@@ -33,7 +33,7 @@ type Props = {
 export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
   const { estado: estadoSesion, nivel, nivelListo } = useSesion();
   const conSesion = estadoSesion === "ok";
-  // Adherir es de Miembro en adelante; Explorador y sin cuenta ven "Sumate para adherir".
+  // Adherir pide cuenta (Explorador en adelante); sin cuenta se ve "Sumate para adherir".
   const puedeAdherir = conSesion && puedeCapacidad(nivel, "adherir");
   const { estado, cargado, falloAlmacen, aceptar, desactualizada } = useMembresia(comunidad, conSesion);
   const idioma = useIdioma();
@@ -60,7 +60,7 @@ export function MembresiaAcciones({ comunidad, nombre, pactos, extra }: Props) {
           <Link className={SUAVE} href={manifiesto}>
             {t.leerManifiesto(esLighthouse)}
           </Link>
-          <EntrarPara texto={t.sumateAdherir} clase={DORADO} nivelMinimo="miembro" />
+          <EntrarPara texto={t.sumateAdherir} clase={DORADO} />
           {extra}
         </div>
         <p className="text-sm text-muted">{t.puedesLeer}</p>

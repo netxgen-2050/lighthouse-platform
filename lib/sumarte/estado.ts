@@ -1,36 +1,36 @@
 import type { NivelPase } from "./datos";
 
+// Nombres internos (sumarte-planes-v2, design §5): `miembro` es el plan Amigo y `lider` es Aliado. Cambian los nombres que
+// se ven, no los identificadores, para no romper las funciones en pausa ni lo guardado en el navegador.
 export type Plan = "explorador" | "miembro";
 export type Facturacion = "mensual" | "anual";
 
 export type EstadoSumarte = {
   plan: Plan;
   facturacion: Facturacion;
-  nivelPase: NivelPase;
-  /** Pase activo (simulado), o null. */
+  /** Fundador activo (simulado), o null. */
   pase: NivelPase | null;
   invitacion: boolean;
+  /** Pedido de contacto de Aliados enviado (simulado). */
   charla: boolean;
-  /** Plan Tribu elegido: la persona es líder de tribu (simulado). */
+  /** Aliado (antes Plan Tribu): ya no se elige en Sumarte; queda para lo guardado antes. */
   tribu: boolean;
-  /** Tribu que lidera, o null si propuso una tribu nueva (todavía no existe). */
+  /** Tribu que administra, o null. */
   tribuId: string | null;
 };
 
 export type Accion =
   | { tipo: "plan"; plan: Plan }
   | { tipo: "facturacion"; facturacion: Facturacion }
-  | { tipo: "nivel"; nivel: NivelPase }
   | { tipo: "pase" }
   | { tipo: "invitacion" }
   | { tipo: "charla" }
-  /** Plan Tribu; sin `tribuId` es una tribu nueva por proponer. */
+  /** Aliado; sin `tribuId` no hay tribu elegida. */
   | { tipo: "tribu"; tribuId?: string | null };
 
 export const INICIAL: EstadoSumarte = {
   plan: "explorador",
   facturacion: "anual",
-  nivelPase: "brote",
   pase: null,
   invitacion: false,
   charla: false,
@@ -38,26 +38,20 @@ export const INICIAL: EstadoSumarte = {
   tribuId: null,
 };
 
-const NIVELES: readonly string[] = ["semilla", "brote", "raiz"];
-
 export function reducir(e: EstadoSumarte, a: Accion): EstadoSumarte {
   switch (a.tipo) {
     case "plan":
-      // Volver a Explorador deshace también el pase; hacerse Miembro lo conserva. Cambiar de plan deja de ser líder de tribu.
+      // Volver a Explorador (darse de baja) deshace también el Fundador; hacerse Amigo lo conserva. Cambiar de plan deja de ser Aliado.
       return a.plan === "explorador"
         ? { ...e, plan: "explorador", pase: null, tribu: false, tribuId: null }
         : { ...e, plan: "miembro", tribu: false, tribuId: null };
     case "facturacion":
       return { ...e, facturacion: a.facturacion };
-    case "nivel":
-      // Con un pase activo el nivel no cambia: primero hay que deshacerlo.
-      return e.pase ? e : { ...e, nivelPase: a.nivel };
     case "tribu":
-      // El Plan Tribu incluye todo lo de Miembro.
       return { ...e, plan: "miembro", tribu: true, tribuId: a.tribuId ?? null };
     case "pase":
-      // El pase incluye la membresía (como en el mock-up); si ya lidera una tribu, lo sigue haciendo.
-      return { ...e, pase: e.nivelPase, plan: "miembro" };
+      // El Fundador incluye todo lo de Amigo.
+      return { ...e, pase: "fundador", plan: "miembro" };
     case "invitacion":
       return { ...e, invitacion: true };
     case "charla":
@@ -65,21 +59,27 @@ export function reducir(e: EstadoSumarte, a: Accion): EstadoSumarte {
   }
 }
 
-/** Lee lo guardado; cualquier cosa rara vuelve al estado inicial campo por campo. */
+/** Los pases del modelo anterior (Semilla, Brote, Raíz) y el nuevo: todos pasan a Fundador. */
+const PASES_GUARDADOS: readonly string[] = ["semilla", "brote", "raiz", "fundador"];
+
+/**
+ * Lee lo guardado; cualquier cosa rara vuelve al estado inicial campo por campo. Migra el estado del modelo anterior:
+ * un `pase` de nivel Semilla, Brote o Raíz pasa a `fundador`, y `tribu: true` pasa a Aliado sin tribu elegida.
+ */
 export function leer(crudo: string | null): EstadoSumarte {
   if (!crudo) return INICIAL;
   try {
     const o = JSON.parse(crudo) as Record<string, unknown>;
     const tribu = o.tribu === true;
+    const pase = typeof o.pase === "string" && PASES_GUARDADOS.includes(o.pase) ? "fundador" : null;
     return {
-      plan: o.plan === "miembro" || tribu ? "miembro" : "explorador",
+      plan: o.plan === "miembro" || tribu || pase ? "miembro" : "explorador",
       facturacion: o.facturacion === "mensual" ? "mensual" : "anual",
-      nivelPase: typeof o.nivelPase === "string" && NIVELES.includes(o.nivelPase) ? (o.nivelPase as NivelPase) : INICIAL.nivelPase,
-      pase: typeof o.pase === "string" && NIVELES.includes(o.pase) ? (o.pase as NivelPase) : null,
+      pase,
       invitacion: o.invitacion === true,
       charla: o.charla === true,
       tribu,
-      tribuId: tribu && typeof o.tribuId === "string" && o.tribuId !== "" ? o.tribuId : null,
+      tribuId: null,
     };
   } catch {
     return INICIAL;

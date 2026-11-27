@@ -12,8 +12,6 @@ import { LOCALES, conMayuscula, formatearFecha, formatearNumero, nombreDelMes } 
 import { textoHorasDelPacto } from "@/lib/pactos/texto-horas";
 import { buscarNecesidad } from "@/lib/tribus/necesidades";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
-import { textos } from "@/lib/idioma/textos";
-import type { Idioma } from "@/lib/idioma/tipos";
 import { COMUNIDAD_LIGHTHOUSE, comunidadesDondeEsMiembro, leerMembresiaDelNavegador } from "@/lib/membresia/estado";
 import { clave, estadoMedidor, faltantes, mensajeFaltante } from "@/lib/semillas/calculo";
 import { calcularFactorEvaluacion } from "@/lib/evaluacion/calculo";
@@ -49,7 +47,6 @@ import {
   type Ronda,
   type Rondas,
 } from "@/lib/semillas/estado";
-import { PASSES } from "@/lib/sumarte/datos";
 import { buscarTribu } from "@/lib/tribus/datos";
 
 // Todo queda solo en este navegador: no hay pedidos de red ni cobros.
@@ -128,7 +125,6 @@ export function SemillasCliente() {
   const hayComunidad = elegida !== "";
   const semillas = hayComunidad ? semillasDeComunidad(datos.pactos, elegida) : null;
   const tiempo = semillas?.tiempo ?? null;
-  const pase = datos.pase ? PASSES.find((p) => p.id === datos.pase) : undefined;
 
   return (
     <div className="grid gap-4">
@@ -248,7 +244,7 @@ export function SemillasCliente() {
                 </>
               )}
               {datos.pase && (
-                <p className="text-sm text-muted"><MarcaSemillas texto={t.detalle.paseActivo(nombreDelNivel(pase?.nombre, datos.pase, idioma))} />
+                <p className="text-sm text-muted"><MarcaSemillas texto={t.detalle.paseActivo} />
                   <TerminoLegal clave="pasefundador" idioma={idioma} />.
                 </p>
               )}
@@ -350,13 +346,6 @@ export function SemillasCliente() {
       )}
     </div>
   );
-}
-
-/** Nombre del nivel del pase: en español el de Sumarte (o el id guardado); en inglés el de `sumarte` (Seed, Sprout, Root). */
-function nombreDelNivel(nombreEs: string | undefined, id: string, idioma: Idioma): string {
-  if (idioma !== "en") return nombreEs ?? id;
-  const niveles: Record<string, string> = textos("sumarte", idioma).niveles;
-  return niveles[id] ?? id;
 }
 
 /** Meta de Semillas de tiempo para ser sembrador/a activo/a. Lo que se abre con cada paso vive en el pasaporte. */

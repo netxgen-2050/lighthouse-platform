@@ -110,10 +110,10 @@ const es = {
     tusSellos: "Tus sellos",
     explorador: { nombre: "Explorador/a", detalle: "Es tu punto de partida: ya podés recorrer el Lighthouse." },
     miembroRed: {
-      nombre: "Miembro de la red",
-      detalleSi: "Tenés el plan Miembro (simulado).",
-      detalleNo: "Se consigue con el plan Miembro en Sumarte. Es simulado: no se cobra nada.",
-      accion: "Hacerme Miembro en Sumarte",
+      nombre: `${G.miembro.es} de la red`,
+      detalleSi: `Tenés el plan ${G.miembro.es} (simulado).`,
+      detalleNo: `Se consigue con el plan ${G.miembro.es} en Sumarte. El pago es simulado: no se cobra nada.`,
+      accion: `Hacerme ${G.miembro.es} en Sumarte`,
     },
     comunidad: {
       nombre: (c: string) => `Miembro de ${c}`,
@@ -139,7 +139,7 @@ const es = {
     },
     fundador: {
       nombre: G.paseFundador.es,
-      detalleSi: (pase: string) => `Tenés el ${G.paseFundador.es} ${pase} (simulado).`,
+      detalleSi: `Tenés el ${G.paseFundador.es} (simulado).`,
       detalleNo: "Se consigue en Sumarte. Es simulado: no se cobra nada.",
       accion: `Ver el ${G.paseFundador.es}`,
     },
@@ -301,10 +301,10 @@ const en: Textos<typeof es> = {
     tusSellos: "Your stamps",
     explorador: { nombre: G.explorador.en, detalle: "This is your starting point: you can already look around the Lighthouse." },
     miembroRed: {
-      nombre: "Member of the network",
-      detalleSi: "You have the Member plan (simulated).",
-      detalleNo: "You get it with the Member plan in Join. It is simulated: nothing is charged.",
-      accion: "Become a Member in Join",
+      nombre: `${G.miembro.en} of the network`,
+      detalleSi: `You have the ${G.miembro.en} plan (simulated).`,
+      detalleNo: `You get it with the ${G.miembro.en} plan in Join. The payment is simulated: nothing is charged.`,
+      accion: `Become a ${G.miembro.en} in Join`,
     },
     comunidad: {
       nombre: (c: string) => `Member of ${c}`,
@@ -330,7 +330,7 @@ const en: Textos<typeof es> = {
     },
     fundador: {
       nombre: G.paseFundador.en,
-      detalleSi: (pase: string) => `You have the ${G.paseFundador.en} ${pase} (simulated).`,
+      detalleSi: `You have the ${G.paseFundador.en} (simulated).`,
       detalleNo: "You get it in Join. It is simulated: nothing is charged.",
       accion: `See the ${G.paseFundador.en}`,
     },

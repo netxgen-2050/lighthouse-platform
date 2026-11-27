@@ -1,4 +1,4 @@
-export type Motivo = "consulta-lote" | "consulta-lote-vrn" | "invitacion-circulo" | "charla-netx";
+export type Motivo = "consulta-lote" | "consulta-lote-vrn" | "invitacion-circulo" | "charla-netx" | "aliados";
 export type Canal = "email" | "telegram" | "whatsapp";
 export type Momento = "manana" | "tarde" | "noche";
 

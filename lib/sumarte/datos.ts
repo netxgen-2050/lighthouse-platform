@@ -1,68 +1,107 @@
-// Datos de V.sumarte, PASSES y COHORT de docs/referencia/netx-tribus-mockup-v6.html. Las filas 1 y 7 de la comparativa ya
-// no vienen del mock-up: se reescribieron para el diseño legal vigente (sumarte-diseno-b).
-// Valores de ejemplo, a re-ajustar: ningún flujo cobra de verdad.
+// Planes de Sumarte de la fase 1 (sumarte-planes-v2, Gus 27-nov-2026): Explorador, Amigo, Fundador y Aliados.
+// Todos los precios, cupos y reglas del FARO de prepago viven acá: la página no escribe ningún número a mano.
+// Valores de ejemplo, a validar con Vagner: ningún flujo cobra de verdad.
 import type { Bilingue } from "@/lib/idioma/tipos";
 
-export type NivelPase = "semilla" | "brote" | "raiz";
+/** Nivel del Fundador guardado en el estado. Los niveles Semilla/Brote/Raíz del modelo anterior ya no existen. */
+export type NivelPase = "fundador";
 
-export const PASSES: readonly { id: NivelPase; nombre: string; precio: number; creditos: number }[] = [
-  { id: "semilla", nombre: "Semilla", precio: 300, creditos: 90 },
-  { id: "brote", nombre: "Brote", precio: 1500, creditos: 450 },
-  { id: "raiz", nombre: "Raíz", precio: 5000, creditos: 1500 },
-];
+/** Precio del Amigo (USD): el anual es 10 veces el mensual ("2 meses gratis"). */
+export const AMIGO = { mensual: 9, anual: 90 } as const;
 
-export const COHORT = { vendidos: 142, cupo: 300, recaudado: 46000, minimo: 75000 };
+/** Precio único del Fundador (USD) y su cohorte limitada. `vendidos` es un valor de ejemplo. */
+export const FUNDADOR = { precio: 1500, cupo: 100, vendidos: 37 } as const;
 
-export const MEMBRESIA = { mensual: 10, anual: 100 };
+/**
+ * FARO de prepago (tercera puerta de FARO, "Prepagando servicios"). Borrador: Gus, 27-nov-2026, reglas como placeholders.
+ * Mientras `borrador` sea `true`, cada número de las reglas se muestra con "(a definir)".
+ */
+export const FARO_PREPAGO = {
+  borrador: true,
+  precioUsd: 1, // 1 FARO = USD 1 a precio de lista
+  amigoPorMes: 5,
+  fundadorDeUnaVez: 1200,
+  venceAmigoMeses: 12,
+  venceFundadorMeses: 36,
+  parteServicioAmigo: 0.45, // de la cuota: servicio de NetX; el resto se acredita como FARO para el bien común
+  daVoz: false,
+} as const;
 
-/** Cifras de ejemplo. El anual sigue la misma regla de "2 meses gratis" que Miembro: 10 × el mensual. */
-export const PLAN_TRIBU = { mensual: 60, anual: 600 };
+/** Cuántos pases quedan en la cohorte del Fundador (con el pase de la persona, si lo activó). */
+export function pasesQueQuedan(activo: boolean): number {
+  return Math.max(0, FUNDADOR.cupo - FUNDADOR.vendidos - (activo ? 1 : 0));
+}
 
-export type Fila = { texto: Bilingue; incluye: readonly [boolean, boolean, boolean] };
+/** Cómo se reparte lo que paga la persona: servicio de NetX y FARO que se reserva para el bien común (USD). */
+export function repartoDelPago(plan: "amigo" | "fundador", facturacion: "mensual" | "anual"): { servicio: number; faro: number } {
+  if (plan === "fundador") {
+    return { servicio: FUNDADOR.precio - FARO_PREPAGO.fundadorDeUnaVez, faro: FARO_PREPAGO.fundadorDeUnaVez };
+  }
+  const meses = facturacion === "anual" ? 12 : 1;
+  const faro = FARO_PREPAGO.amigoPorMes * meses;
+  return { servicio: (facturacion === "anual" ? AMIGO.anual : AMIGO.mensual) - faro, faro };
+}
 
-/** Columnas: Explorador, Miembro, Pase Fundador. El inglés está pendiente de revisión nativa. */
+/** Qué hace cada plan con una función: la incluye, no la incluye o todavía no existe ("próximamente"). */
+export type Estado = "si" | "no" | "pronto";
+
+export type Fila = { texto: Bilingue; incluye: readonly [Estado, Estado, Estado] };
+
+/** Columnas: Explorador, Amigo, Fundador. El inglés está pendiente de revisión nativa. */
 export const FILAS: readonly Fila[] = [
   {
-    texto: {
-      es: "Mapa, tribus y eventos abiertos",
-      en: "Map, tribes and open events",
-    },
-    incluye: [true, true, true],
+    texto: { es: "Mapa y lotes en vitrina", en: "Map and lots on display" },
+    incluye: ["si", "si", "si"],
   },
   {
-    texto: { es: "Entrevista con el agente y tribus sugeridas", en: "Interview with the agent and suggested tribes" },
-    incluye: [true, true, true],
-  },
-  {
-    texto: { es: "Salas de tribu y foros de la red", en: "Tribe rooms and network forums" },
-    incluye: [false, true, true],
-  },
-  {
-    texto: { es: "Proponer pactos y sumar Semillas", en: "Propose pacts and earn Semillas" },
-    incluye: [false, true, true],
+    texto: { es: "Bien común: leer números y propuestas", en: "Common good: read the numbers and proposals" },
+    incluye: ["si", "si", "si"],
   },
   {
     texto: {
-      es: "Voz en las decisiones de tu tribu (según su estatuto)",
-      en: "A voice in your tribe's decisions (according to its bylaws)",
+      es: "Participa: sumarte a un equipo y adherir al manifiesto",
+      en: "Participa: join a team and sign on to the manifesto",
     },
-    incluye: [false, true, true],
+    incluye: ["si", "si", "si"],
+  },
+  {
+    texto: { es: "Mi tierra, Hifa y novedades mensuales", en: "My land, Hifa and monthly news" },
+    incluye: ["si", "si", "si"],
+  },
+  {
+    texto: { es: "Bitácora de obra y masterplan", en: "Construction log and masterplan" },
+    incluye: ["no", "pronto", "pronto"],
+  },
+  {
+    texto: { es: "Una sesión al mes con el equipo", en: "One session a month with the team" },
+    incluye: ["no", "pronto", "pronto"],
   },
   {
     texto: {
-      es: "Canal de fundadores y encuentros con el Consejo",
-      en: "Founders channel and meetings with the Council",
+      es: "Cupo antes que nadie en visitas y eventos (nunca en lotes)",
+      en: "First access to visits and events (never to lots)",
     },
-    incluye: [false, false, true],
+    incluye: ["no", "pronto", "pronto"],
   },
   {
-    texto: {
-      es: "Influencia en el Fondo Común (próximamente: conviction voting)",
-      en: "Influence in the Common Fund (coming soon: conviction voting)",
-    },
-    incluye: [false, false, true],
+    texto: { es: "FARO de prepago, para canjear por servicios", en: "Prepaid FARO, to redeem for services" },
+    incluye: ["no", "si", "si"],
   },
-  { texto: { es: "Créditos comunes y de estadía", en: "Common and stay credits" }, incluye: [false, false, true] },
+  {
+    texto: { es: "Visita guiada al sitio", en: "Guided visit to the site" },
+    incluye: ["no", "no", "pronto"],
+  },
+  {
+    texto: { es: "Nombre en el registro Génesis", en: "Your name in the Genesis registry" },
+    incluye: ["no", "no", "si"],
+  },
+];
+
+/** Lo que ofrece Aliados (organizaciones): todo es "próximamente". */
+export const BENEFICIOS_ALIADOS: readonly Bilingue[] = [
+  { es: "Patrocinar un proyecto de regeneración", en: "Sponsor a regeneration project" },
+  { es: "Talleres para equipos", en: "Workshops for teams" },
+  { es: "Acceso a datos para investigación", en: "Access to data for research" },
 ];
 
 /** Número con punto de miles (es-AR), sin depender del locale del entorno. */

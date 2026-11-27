@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { INICIAL, reducir } from "@/lib/sumarte/estado";
+import { INICIAL, leer, reducir } from "@/lib/sumarte/estado";
 import {
   aplicarAcciones,
   calcularNivel,
@@ -27,12 +27,12 @@ describe("calcularNivel", () => {
   it("quien se registra entra como Explorador como mínimo", () => {
     expect(calcularNivel(INICIAL, persona).nivel).toBe("explorador");
   });
-  it("el plan Miembro es Miembro y el Pase Fundador (de cualquier nivel) es Fundador", () => {
+  it("el plan Amigo es el nivel interno miembro y el Fundador es fundador", () => {
     expect(calcularNivel(reducir(INICIAL, { tipo: "plan", plan: "miembro" }), persona).nivel).toBe("miembro");
-    for (const nivel of ["semilla", "brote", "raiz"] as const) {
-      const conPase = reducir(reducir(INICIAL, { tipo: "nivel", nivel }), { tipo: "pase" });
-      expect(calcularNivel(conPase, persona).nivel).toBe("fundador");
-    }
+    expect(calcularNivel(reducir(INICIAL, { tipo: "pase" }), persona).nivel).toBe("fundador");
+  });
+  it("un estado guardado con el Pase Brote del modelo anterior es Fundador", () => {
+    expect(calcularNivel(leer(JSON.stringify({ plan: "miembro", pase: "brote", nivelPase: "brote" })), persona).nivel).toBe("fundador");
   });
   it("deshacer el Pase (volver a Explorador) saca el nivel Fundador", () => {
     const conPase = reducir(INICIAL, { tipo: "pase" });
@@ -41,7 +41,7 @@ describe("calcularNivel", () => {
   it("con Pase y Plan Tribu el nivel es Líder, y conserva el Pase", () => {
     const e = reducir(reducir(INICIAL, { tipo: "pase" }), { tipo: "tribu", tribuId: "valle" });
     expect(calcularNivel(e, persona)).toEqual({ nivel: "lider", tribuLider: "valle" });
-    expect(e.pase).toBe("brote");
+    expect(e.pase).toBe("fundador");
   });
   it("el Plan Tribu hace líder de la tribu elegida", () => {
     expect(calcularNivel(reducir(INICIAL, { tipo: "tribu", tribuId: "valle" }), persona)).toEqual({ nivel: "lider", tribuLider: "valle" });
@@ -94,7 +94,7 @@ describe("pendiente", () => {
     expect(a.getItem(CLAVE_PENDIENTE_HORA)).toBeNull();
   });
   it("las acciones pendientes se aplican en orden", () => {
-    const e = aplicarAcciones(INICIAL, [{ tipo: "nivel", nivel: "raiz" }, { tipo: "pase" }]);
-    expect(e).toMatchObject({ plan: "miembro", pase: "raiz" });
+    const e = aplicarAcciones(INICIAL, [{ tipo: "facturacion", facturacion: "mensual" }, { tipo: "pase" }]);
+    expect(e).toMatchObject({ plan: "miembro", pase: "fundador", facturacion: "mensual" });
   });
 });
