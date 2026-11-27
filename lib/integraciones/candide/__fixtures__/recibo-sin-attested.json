@@ -1,0 +1,16 @@
+{
+  "_nota": "success true, pero sin el evento Attested de EAS entre los logs.",
+  "userOpHash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "sender": "0x1111111111111111111111111111111111111111",
+  "success": true,
+  "logs": [
+    {
+      "address": "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+      "topics": ["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f"],
+      "data": "0x"
+    }
+  ],
+  "receipt": {
+    "transactionHash": "0x2222222222222222222222222222222222222222222222222222222222222222"
+  }
+}

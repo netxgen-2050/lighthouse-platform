@@ -1,0 +1,10 @@
+{
+  "_nota": "Igual que recibo-incluido.json pero con success false: entró en un bloque y se revirtió.",
+  "userOpHash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "sender": "0x1111111111111111111111111111111111111111",
+  "success": false,
+  "logs": [],
+  "receipt": {
+    "transactionHash": "0x2222222222222222222222222222222222222222222222222222222222222222"
+  }
+}

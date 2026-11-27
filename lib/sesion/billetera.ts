@@ -1,6 +1,2 @@
-/** Dirección abreviada para mostrar: `0x1234…abcd`. Una dirección corta se deja entera. */
-export function abreviarDireccion(direccion: string): string {
-  const d = direccion.trim();
-  if (d.length <= 12) return d;
-  return `${d.slice(0, 6)}…${d.slice(-4)}`;
-}
+// La función vive en un módulo neutro (`lib/ui/direccion.ts`) para que también la use la prueba de billeteras sin importar lib/sesion.
+export { abreviarDireccion } from "@/lib/ui/direccion";
