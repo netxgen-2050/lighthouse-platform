@@ -201,7 +201,7 @@ export function ExploradorLotes({ encabezado, legal }: { encabezado: ReactNode; 
           </div>
         </Hoja>
         {/* Se descuentan los 8rem de la hoja en reposo para que la tarjeta flotante no quede tapada. */}
-        <div className="relative h-[calc(100dvh-var(--alto-fijo,4.5rem)-var(--alto-barra-inferior)-8rem)] min-h-80">
+        <div className="relative h-[calc(100dvh-var(--alto-fijo,4.5rem)-var(--alto-barra-inferior)-10rem)] min-h-80">
           {mapa}
           <div className="absolute right-3 top-3 z-10">
             <Boton variante="secundario" tamano="s" aria-expanded={hojaAbierta} onClick={() => setHojaAbierta((a) => !a)}>

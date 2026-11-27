@@ -316,6 +316,9 @@ test.describe("lista y mapa de lotes (ux-explorar)", () => {
     await expect(boton).toBeInViewport();
     const caja = (await boton.boundingBox())!;
     expect(caja.height).toBeGreaterThanOrEqual(44);
+    // Las pastillas terminan con margen antes del borde superior de la barra inferior (no pegadas al límite de la hoja).
+    const barra = (await page.getByRole("navigation", { name: "Principal" }).boundingBox())!;
+    expect(caja.y + caja.height).toBeLessThanOrEqual(barra.y - 8);
     await expect(page.getByRole("button", { name: "Ver lista" })).toHaveAttribute("aria-expanded", "false");
     await boton.click();
     await expect(boton).toHaveAttribute("aria-pressed", "true");

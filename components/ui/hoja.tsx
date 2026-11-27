@@ -180,7 +180,7 @@ function HojaPersistente({ titulo, children, etiquetaAsa = titulo, expandida: ex
       aria-labelledby={`${id}-titulo`}
       style={arrastre.dy !== 0 ? { transform: `translateY(${Math.max(arrastre.dy, -UMBRAL_CIERRE)}px)` } : undefined}
       className={`fixed inset-x-0 bottom-[var(--alto-barra-inferior)] z-30 flex flex-col rounded-t-[var(--radius-l)] border border-line bg-surface text-ink shadow-[var(--sombra-3)] transition-[max-height] duration-[var(--dur)] ${
-        expandida ? "max-h-[85dvh]" : cabecera ? "max-h-32" : "max-h-28"
+        expandida ? "max-h-[85dvh]" : cabecera ? "max-h-40" : "max-h-28"
       }`}
     >
       <div {...arrastre.manejadores} className="flex shrink-0 touch-none justify-center">
