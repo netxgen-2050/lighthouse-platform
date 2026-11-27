@@ -152,6 +152,13 @@ describe("ChipEstado", () => {
     expect(html(<ChipEstado estado="enCuotas" />, "en")).toContain("In instalments");
     expect(html(<ChipEstado estado="enCuotas" />)).toContain("En cuotas");
   });
+  test("idea dice Idea, con su ícono, y no En discusión", () => {
+    const h = html(<ChipEstado estado="idea" />);
+    expect(h).toContain("Idea");
+    expect(h).toContain("lucide-lightbulb");
+    expect(h).not.toContain("En discusión");
+    expect(html(<ChipEstado estado="idea" />, "en")).toContain("Draft idea");
+  });
   test("reservado y vendido se distinguen por texto", () => {
     expect(html(<ChipEstado estado="reservado" />)).toContain("Reservado");
     expect(html(<ChipEstado estado="vendido" />)).toContain("Vendido");

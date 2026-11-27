@@ -36,6 +36,8 @@ type Props = {
   /** Persistente controlada desde afuera (un botón "Ver lista" / "Ver mapa" hace lo mismo que arrastrar). Sin esto, ella decide. */
   expandida?: boolean;
   alExpandir?: (expandida: boolean) => void;
+  /** Persistente: contenido que queda a la vista y operable también en reposo (debajo del título). Con esto el reposo mide 8rem en vez de 7rem. */
+  cabecera?: ReactNode;
 };
 
 /**
@@ -160,7 +162,7 @@ function HojaModal({ alCerrar, titulo, etiquetaCerrar, children, devolverFoco }:
   );
 }
 
-function HojaPersistente({ titulo, children, etiquetaAsa = titulo, expandida: expandidaFuera, alExpandir }: Props) {
+function HojaPersistente({ titulo, children, etiquetaAsa = titulo, expandida: expandidaFuera, alExpandir, cabecera }: Props) {
   const id = useId();
   const [propia, setPropia] = useState(false);
   const expandida = expandidaFuera ?? propia;
@@ -178,7 +180,7 @@ function HojaPersistente({ titulo, children, etiquetaAsa = titulo, expandida: ex
       aria-labelledby={`${id}-titulo`}
       style={arrastre.dy !== 0 ? { transform: `translateY(${Math.max(arrastre.dy, -UMBRAL_CIERRE)}px)` } : undefined}
       className={`fixed inset-x-0 bottom-[var(--alto-barra-inferior)] z-30 flex flex-col rounded-t-[var(--radius-l)] border border-line bg-surface text-ink shadow-[var(--sombra-3)] transition-[max-height] duration-[var(--dur)] ${
-        expandida ? "max-h-[85dvh]" : "max-h-28"
+        expandida ? "max-h-[85dvh]" : cabecera ? "max-h-32" : "max-h-28"
       }`}
     >
       <div {...arrastre.manejadores} className="flex shrink-0 touch-none justify-center">
@@ -195,6 +197,7 @@ function HojaPersistente({ titulo, children, etiquetaAsa = titulo, expandida: ex
       <h2 id={`${id}-titulo`} className="shrink-0 px-4 pb-2 font-display text-lg font-semibold">
         {titulo}
       </h2>
+      {cabecera ? <div className="shrink-0 px-4 pb-2">{cabecera}</div> : null}
       {/* En reposo la hoja no hace scroll: su contenido está inerte y una región con scroll sin nada enfocable falla en axe. */}
       <div className={`min-h-0 flex-1 overscroll-contain px-4 pb-4 ${expandida ? "overflow-y-auto" : "overflow-hidden"}`}>{children}</div>
     </section>
