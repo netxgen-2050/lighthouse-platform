@@ -49,7 +49,8 @@ describe("EncabezadoMiTierra", () => {
     const p = armarPortafolio([compra(true)], SIN_ADHESION);
     const h = renderToStaticMarkup(<EncabezadoMiTierra portafolio={p} />);
     expect(h).toContain("data-numero-principal");
-    expect(h).toContain(`0 de ${PLAN_CUOTAS.dePartida} cuotas pagadas`);
+    expect(h).toContain(`Anticipo pagado · faltan ${PLAN_CUOTAS.dePartida} cuotas`);
+    expect(h).not.toContain("0 de ");
     expect(h).toContain('role="meter"');
     expect(h).not.toMatch(/APY|rendimiento|ganancia|retorno/i);
     for (const idioma of ["es", "en"] as const) {
@@ -63,6 +64,7 @@ describe("EncabezadoMiTierra", () => {
     expect(h).toContain("USD 0");
     expect(h).toContain("Todavía no pagaste ninguna cuota");
     expect(h).toContain("Hacer el primer pago (simulado)");
+    expect(h).not.toContain("Anticipo pagado");
   });
   test("lote de los primeros 4 pagado: el número principal muestra el monto, no sin dato", () => {
     const primero = lotesDelGrupo("primeros").find((l) => estadoDeLote(l.id) === "disponible")!;
@@ -71,6 +73,8 @@ describe("EncabezadoMiTierra", () => {
     const h = renderToStaticMarkup(<EncabezadoMiTierra portafolio={p} />);
     expect(p.totales.pagado).toBe(precioLote(primero.superficieM2));
     expect(h).not.toContain("sin dato");
+    expect(h).toContain("Pago único");
+    expect(h).not.toContain("cuota");
   });
   test("lote de los primeros 4 reservado: ofrece el primer pago y dice que no pagó nada", () => {
     const primero = lotesDelGrupo("primeros").find((l) => estadoDeLote(l.id) === "disponible")!;
