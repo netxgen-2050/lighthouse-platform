@@ -119,8 +119,10 @@ test.describe("crear la cuenta en Sumarte", () => {
     await abrirModoDePrueba(page);
     await page.getByRole("button", { name: email }).click();
     await expect(menuAvatar(page)).toBeVisible();
-    const { estado } = await consentimientoDe(request, email);
-    expect(estado).toMatchObject({ novedades: true, novedadesRegistro: { evento: "acepta", canal: "alta", version: VERSION_PRUEBA } });
+    // El avatar aparece apenas hay sesión; el servidor registra la aceptación un instante después.
+    await expect
+      .poll(async () => (await consentimientoDe(request, email)).estado)
+      .toMatchObject({ novedades: true, novedadesRegistro: { evento: "acepta", canal: "alta", version: VERSION_PRUEBA } });
   });
 
   test("Cancelar y Escape no guardan nada y el foco vuelve al botón", async ({ page }) => {
@@ -200,6 +202,23 @@ test.describe("entrar desde la barra superior", () => {
     await expect(titulo(page)).toBeVisible();
     await aceptarPantalla(page);
     await expect(menuAvatar(page)).toBeVisible();
+  });
+
+  test("una aceptación de Crear tu cuenta que quedó en la pestaña no vale para quien después aprieta Entrar", async ({ page, request }) => {
+    test.skip(CON_PRIVY, SIN_PRIVY);
+    const email = emailUnico("ajena");
+    await panelConEmail(page, email);
+    await page.goto("/sumarte?plan=explorador");
+    await page.getByRole("button", { name: "Sumarme gratis" }).click();
+    await aceptarPaso(page);
+    expect(await page.evaluate(() => window.sessionStorage.getItem("lh-consentimiento-previo"))).not.toBeNull();
+    // Otra persona, en la misma pestaña, antes de los 5 minutos: aprieta Entrar sin haber visto ninguna casilla.
+    await barra(page).getByRole("button", { name: "Entrar" }).click();
+    expect(await page.evaluate(() => window.sessionStorage.getItem("lh-consentimiento-previo"))).toBeNull();
+    await abrirModoDePrueba(page);
+    await page.getByRole("button", { name: email }).click();
+    await expect(titulo(page)).toBeVisible();
+    expect((await consentimientoDe(request, email)).filas).toEqual([]);
   });
 
   test("quien ya tiene consentimiento vigente entra sin ver casillas, y su constancia no cambia", async ({ page, request }) => {

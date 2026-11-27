@@ -23,6 +23,16 @@ export function decidirConsulta(datos: { prueba: string | null; privyListo: bool
   return { tipo: "sin-sesion" };
 }
 
+/**
+ * Qué hace `entrar()` (casillas-una-sola-vez): solo el modo `alta` ("Crear tu cuenta") pasa por las casillas antes del login;
+ * cualquier otro abre el login directo y descarta una aceptación previa que haya quedado en la pestaña (no es de esta persona).
+ */
+export function accionAlEntrar(modo: "alta" | "entrar" | undefined): { destino: "casillas" | "login-directo"; descartarAceptacionPrevia: boolean } {
+  return modo === "alta"
+    ? { destino: "casillas", descartarAceptacionPrevia: false }
+    : { destino: "login-directo", descartarAceptacionPrevia: true };
+}
+
 /** Qué se abre al aceptar el paso: con `neon-auth`, siempre el formulario propio (también después de salir de Privy). */
 export function loginAAbrir(datos: { conNeonAuth: boolean; hayPrivy: boolean }): "formulario" | "privy" | "entrar-como" {
   if (datos.conNeonAuth) return "formulario";

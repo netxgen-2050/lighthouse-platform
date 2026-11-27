@@ -19,7 +19,7 @@ import { COOKIE_PRUEBA } from "@/lib/sesion/cookies";
 import { calcularNivel, EVENTO_NIVEL, leerEstadoGuardado } from "@/lib/sesion/nivel";
 import { INICIAL, type EstadoSumarte } from "@/lib/sumarte/estado";
 import { copiarClavesAnteriores, limpiarPaso2 } from "@/lib/demo/importar";
-import { decidirConsulta, loginAAbrir } from "@/lib/sesion/consulta";
+import { accionAlEntrar, decidirConsulta, loginAAbrir } from "@/lib/sesion/consulta";
 import { loginElegido } from "@/lib/sesion/errores-login";
 import { ContextoSesion, type EstadoSesion, type IdentidadMinima, type SesionCliente, type ValorSesion } from "./contexto";
 import { PasoAlta } from "./paso-alta";
@@ -283,30 +283,42 @@ function Nucleo({ privy, children }: { privy: IdentidadMinima | null; children: 
     intentarLogin(almacen, new Date(), abrirLoginSinPaso);
   }, [abrirLoginSinPaso]);
 
+  const descartarPrevia = useCallback(() => {
+    try {
+      descartarAceptacionPrevia(window.sessionStorage);
+    } catch {
+      // Sin almacenamiento de la pestaña no hay nada que borrar.
+    }
+  }, []);
+
   const entrar = useCallback(
     (opciones?: { modo?: ModoAlta; alAceptar?: () => void }) => {
       focoAlAbrir.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       const modo = opciones?.modo ?? "entrar";
-      if (modo === "alta") {
+      const accion = accionAlEntrar(modo);
+      // Una aceptación de las casillas que quedó en la pestaña (alguien marcó y canceló) no es de quien aprieta "Entrar".
+      if (accion.descartarAceptacionPrevia) descartarPrevia();
+      if (accion.destino === "casillas") {
         setPaso({ modo, alAceptar: opciones?.alAceptar });
         return;
       }
       // "Entrar" abre el login directo, sin casillas: si es la primera vez, la pantalla de consentimiento sale después.
       abrirLoginSinPaso();
     },
-    [abrirLoginSinPaso],
+    [abrirLoginSinPaso, descartarPrevia],
   );
 
   // "Entrar como…" (modo de prueba): entra directo con ese email, sin el paso de las casillas.
   const entrarComoDirecto = entrarComo;
-  // Un paso abierto solo para el login directo (modo entrar) no guarda ninguna aceptación.
 
   const cancelarPaso = useCallback(() => {
+    // Cancelar no deja la aceptación guardada en la pestaña para la persona siguiente.
+    descartarPrevia();
     setPaso(null);
     setFormularioAbierto(false);
     const volver = focoAlAbrir.current;
     setTimeout(() => volver?.focus(), 0);
-  }, []);
+  }, [descartarPrevia]);
 
   const aceptarPaso = useCallback(
     (datos: { novedades: boolean }): boolean => {
