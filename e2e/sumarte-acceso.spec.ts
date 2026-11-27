@@ -141,6 +141,23 @@ test.describe("Explorador", () => {
     await expect(page).toHaveURL(/\/sumarte\?volver=%2Fsemillas$/);
   });
 
+  test("un nivel que no se alcanza eligiendo un plan (Aliado, super admin): el aviso no promete elegir ni volver y no preselecciona Amigo", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    for (const [url, aviso] of [
+      ["/sumarte?volver=%2Ftribus%2Fvalle&para=lider", "Esta acción es para Aliados, según el acuerdo."],
+      ["/sumarte?volver=%2Fadmin", "La administración es solo para el super admin del prototipo."],
+    ] as const) {
+      await page.goto(url);
+      const estado = page.getByRole("status").filter({ hasText: aviso });
+      await expect(estado).toBeVisible();
+      await expect(estado).not.toContainText("Elegí un plan");
+      await expect(estado).not.toContainText("volvemos a donde estabas");
+      const plan = page.getByRole("radiogroup", { name: "Plan" });
+      await expect(plan.getByRole("radio", { name: "Amigo", exact: true })).not.toBeChecked();
+      await expect(plan.getByRole("radio", { name: "Explorador", exact: true })).toBeChecked();
+    }
+  });
+
   test("axe sin violaciones serias o críticas en el rail", async ({ page }) => {
     await page.goto("/");
     await deshabilitados(page, PARTICIPAR);
