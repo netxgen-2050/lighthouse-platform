@@ -200,7 +200,7 @@ export function ExploradorLotes({ encabezado, legal }: { encabezado: ReactNode; 
             </div>
           </div>
         </Hoja>
-        {/* Se descuentan los 8rem de la hoja en reposo para que la tarjeta flotante no quede tapada. */}
+        {/* Se descuentan los 10rem de la hoja en reposo para que la tarjeta flotante no quede tapada. */}
         <div className="relative h-[calc(100dvh-var(--alto-fijo,4.5rem)-var(--alto-barra-inferior)-10rem)] min-h-80">
           {mapa}
           <div className="absolute right-3 top-3 z-10">
@@ -210,7 +210,7 @@ export function ExploradorLotes({ encabezado, legal }: { encabezado: ReactNode; 
           </div>
         </div>
         <LeyendaLotes />
-        {/* La hoja en reposo (8rem) tapa el pie, que solo reserva 4.5rem: esta marca hace que el pie (globals.css) reserve 8rem y se pueda ver y enfocar al llegar al final. */}
+        {/* La hoja en reposo (10rem) tapa el pie, que solo reserva 4.5rem: esta marca hace que el pie (globals.css) reserve 10rem y se pueda ver y enfocar al llegar al final. */}
         <div className="h-0" aria-hidden="true" data-espacio-hoja="" />
       </div>
     );

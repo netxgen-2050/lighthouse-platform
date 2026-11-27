@@ -36,7 +36,7 @@ type Props = {
   /** Persistente controlada desde afuera (un botón "Ver lista" / "Ver mapa" hace lo mismo que arrastrar). Sin esto, ella decide. */
   expandida?: boolean;
   alExpandir?: (expandida: boolean) => void;
-  /** Persistente: contenido que queda a la vista y operable también en reposo (debajo del título). Con esto el reposo mide 8rem en vez de 7rem. */
+  /** Persistente: contenido que queda a la vista y operable también en reposo (debajo del título). Con esto el reposo mide 10rem en vez de 7rem. */
   cabecera?: ReactNode;
 };
 
