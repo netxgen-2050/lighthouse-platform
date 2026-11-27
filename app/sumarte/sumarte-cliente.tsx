@@ -118,6 +118,8 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
   const volverAlLugar = volver && !volver.startsWith("/sumarte") ? volver : null;
   const faltaNivel = requerido !== null && requerido !== "sin-cuenta" && !alcanza(nivelCuenta, requerido);
   const aviso = !volverAlLugar || !faltaNivel ? null : para ? avisoDeNivel(requerido!, idioma) : avisoDeRuta(volverAlLugar, idioma);
+  // Aliado y super admin no se alcanzan eligiendo un plan: el aviso no promete elegir ni volver.
+  const sePuedeElegir = requerido !== "lider" && requerido !== "superadmin";
 
   // Plan que se ve: el elegido; si no hay, el que hace falta para lo que se quería abrir (si todavía no alcanza), si no el que
   // la persona ya tiene, y sin nada de eso Amigo. Hasta leer la cuenta no se muestra ninguno, para que la tarjeta no salte.
@@ -125,7 +127,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
     ? null
     : requerido === "fundador"
       ? "fundador"
-      : requerido === "miembro" || requerido === "lider"
+      : requerido === "miembro"
         ? "amigo"
         : requerido === "explorador"
           ? "explorador"
@@ -335,8 +337,14 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
     <div className="grid gap-6">
       {aviso && (
         <p role="status" className="rounded-lg border border-gold-ink bg-gold-soft px-4 py-3 text-sm font-medium">
-          {aviso} {t.avisos.elegiUnPlan}
-          {volverAlLugar ? t.avisos.yVolvemos : ""}.
+          {sePuedeElegir ? (
+            <>
+              {aviso} {t.avisos.elegiUnPlan}
+              {volverAlLugar ? t.avisos.yVolvemos : ""}.
+            </>
+          ) : (
+            aviso
+          )}
         </p>
       )}
       {falloAlmacen && (
@@ -411,12 +419,15 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
               {esAmigo ? (
                 <div className="flex flex-wrap items-center gap-2">
                   <p className={ETIQUETA_ACTUAL} role="status" tabIndex={-1} data-foco="plan-amigo">{tuPlanSimulado}</p>
-                  <button type="button" className={BOTON_SUAVE} onClick={() => dispatch({ tipo: "plan", plan: "explorador" }, "plan-explorador")}>
+                  {/* Tan visible como "Hacerme Amigo": mismo botón relleno. El foco vuelve a esta tarjeta (la de Explorador puede estar oculta en el celular). */}
+                  <button type="button" className={BOTON_PRIMARIO} onClick={() => dispatch({ tipo: "plan", plan: "explorador" }, "plan-amigo")}>
                     {t.planes.amigo.darmeDeBaja} {comunes.simulado}
                   </button>
                 </div>
+              ) : esFundador ? (
+                <p className={ETIQUETA_ACTUAL}>{t.planes.amigo.incluidoEnFundador}</p>
               ) : (
-                <button type="button" className={BOTON_PRIMARIO} onClick={() => dispatch({ tipo: "plan", plan: "miembro" }, "plan-amigo")}>
+                <button type="button" data-foco="plan-amigo" className={BOTON_PRIMARIO} onClick={() => dispatch({ tipo: "plan", plan: "miembro" }, "plan-amigo")}>
                   {t.planes.amigo.hacerme}
                 </button>
               )}

@@ -97,12 +97,7 @@ export const FILAS: readonly Fila[] = [
   },
 ];
 
-/** Lo que ofrece Aliados (organizaciones): todo es "próximamente". */
-export const BENEFICIOS_ALIADOS: readonly Bilingue[] = [
-  { es: "Patrocinar un proyecto de regeneración", en: "Sponsor a regeneration project" },
-  { es: "Talleres para equipos", en: "Workshops for teams" },
-  { es: "Acceso a datos para investigación", en: "Access to data for research" },
-];
+// Los beneficios de Aliados (todos "próximamente") viven solo en `lib/idioma/textos/sumarte.ts` (`aliados.incluye`).
 
 /** Número con punto de miles (es-AR), sin depender del locale del entorno. */
 export function miles(n: number): string {

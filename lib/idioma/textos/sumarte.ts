@@ -127,6 +127,7 @@ const es = {
         { texto: "FARO de prepago por mes", pronto: false },
       ],
       hacerme: `Hacerme ${G.miembro.es}`,
+      incluidoEnFundador: `Incluido en tu plan ${G.fundador.es}`,
       darmeDeBaja: "Darme de baja",
     },
     fundador: {
@@ -354,6 +355,7 @@ const en: Textos<typeof es> = {
         { texto: "Prepaid FARO every month", pronto: false },
       ],
       hacerme: `Become a ${G.miembro.en}`,
+      incluidoEnFundador: `Included in your ${G.fundador.en} plan`,
       darmeDeBaja: "Cancel my plan",
     },
     fundador: {

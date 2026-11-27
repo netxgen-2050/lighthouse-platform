@@ -63,7 +63,7 @@ export const REVISION_NATIVA: Record<string, Revision> = {
   },
   "lib/sumarte/datos.ts": {
     estado: "pendiente",
-    que: "Comparativa de planes de Sumarte y beneficios de Aliados (filas de ejemplo con su inglés)",
+    que: "Comparativa de planes de Sumarte (filas de ejemplo con su inglés)",
   },
   "textos/tribus": {
     estado: "pendiente",

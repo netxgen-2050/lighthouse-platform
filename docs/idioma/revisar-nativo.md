@@ -31,7 +31,7 @@ Fuentes pendientes: 53
 | `lib/manifiestos/lighthouse-vrn.ts` | Texto del manifiesto de Lighthouse VRN (propósito, 15 principios, 7 derechos de la tierra, compromisos, cómo se cambia) y nombre visible del común; traducidos del español, borrador a ratificar | — |
 | `lib/pactos/datos.ts` | Roles de ejemplo (nombre y descripción), pestañas y pasos de un pacto, con su inglés | — |
 | `lib/semillas/datos.ts` | Datos de ejemplo de la ronda de reconocimiento con su inglés (compañeros, criterios y reconocimiento recibido) | — |
-| `lib/sumarte/datos.ts` | Comparativa de planes de Sumarte y beneficios de Aliados (filas de ejemplo con su inglés) | — |
+| `lib/sumarte/datos.ts` | Comparativa de planes de Sumarte (filas de ejemplo con su inglés) | — |
 | `lib/territorios/textos.ts` | Textos del territorio con su inglés: terreno común, descripción y nombres descriptivos de los lugares, bienes comunes | — |
 | `lib/tribus/datos.ts` | Datos de ejemplo de las 12 tribus con su inglés (foco, qué tiene, qué busca, ritual, forma jurídica…) y la declaración de cada tribu, traducida del español | — |
 | `lib/tribus/necesidades.ts` | Necesidades de ejemplo de las tribus como tareas (título, qué es y habilidad extra) con su inglés | — |
@@ -60,6 +60,6 @@ Fuentes pendientes: 53
 | `textos/portada` | Portada: promesa a 2030, Argentina, capitales, los tres caminos y la cantidad de barrios (más lib/portada-vrn.ts) | 35 |
 | `textos/recorrido` | Mi recorrido: próximo paso (cinco pasos), pestañas, línea de tiempo y tabla de la Bitácora | 45 |
 | `textos/semillas` | Semillas: libro por comunidad, detalle, meta de sembrador/a activo/a y ronda de reconocimiento ("Semillas" no se traduce) | 124 |
-| `textos/sumarte` | Sumarte: planes Explorador, Amigo (Friend), Fundador (Founder) y Aliados (Allies, a confirmar), FARO de prepago en borrador, comprar un lote, invertir, avisos de nivel, formulario de pedido de contacto y panel Entrar como… | 161 |
+| `textos/sumarte` | Sumarte: planes Explorador, Amigo (Friend), Fundador (Founder) y Aliados (Allies, a confirmar), FARO de prepago en borrador, comprar un lote, invertir, avisos de nivel, formulario de pedido de contacto y panel Entrar como… | 162 |
 | `textos/territorio` | Territorio: vitrina, leyenda y controles del mapa, ficha lateral y marcadores | 147 |
 | `textos/tribus` | Tribus: listado, ficha, botones de membresía, interfaz del manifiesto y postulación de una comunidad (formulario, requisitos y errores) | 208 |

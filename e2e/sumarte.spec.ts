@@ -157,6 +157,20 @@ test.describe("Amigo con sesión", () => {
     await expect(page.getByText("Tu plan actual:")).toContainText("Explorador");
   });
 
+  test("a 390 px, tras darse de baja el foco queda en la tarjeta de Amigo, que sigue a la vista", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/sumarte?plan=amigo");
+    await amigo(page).getByRole("button", { name: "Darme de baja (simulado)" }).click();
+    await expect(amigo(page).getByRole("button", { name: "Hacerme Amigo" })).toBeFocused();
+  });
+
+  test("Fundador no ve 'Hacerme Amigo': su plan ya lo incluye", async ({ page }) => {
+    await page.goto("/sumarte");
+    await fundador(page).getByRole("button", { name: "Quiero ser Fundador" }).click();
+    await expect(amigo(page).getByRole("button", { name: "Hacerme Amigo" })).toHaveCount(0);
+    await expect(amigo(page)).toContainText("Incluido en tu plan Fundador");
+  });
+
   test("activar Fundador: no hace pedidos de red, sobrevive a la recarga, baja un pase de la cohorte y se deshace", async ({ page }) => {
     await page.goto("/sumarte");
     const pedidos: string[] = [];

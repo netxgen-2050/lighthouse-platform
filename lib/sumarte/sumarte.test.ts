@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { sumarte } from "@/lib/idioma/textos/sumarte";
-import { AMIGO, BENEFICIOS_ALIADOS, FARO_PREPAGO, FILAS, FUNDADOR, miles, pasesQueQuedan, repartoDelPago } from "./datos";
+import { AMIGO, FARO_PREPAGO, FILAS, FUNDADOR, miles, pasesQueQuedan, repartoDelPago } from "./datos";
 import { INICIAL, leer, reducir } from "./estado";
 
 describe("datos", () => {
@@ -36,7 +36,10 @@ describe("datos", () => {
         expect(texto).not.toMatch(/Congreso|Congress|Ronda 0|Round 0|fideicomiso|trust/i);
       }
     }
-    for (const b of BENEFICIOS_ALIADOS) expect(b.en?.trim()).toBeTruthy();
+    // Los beneficios de Aliados (los que se ven) salen de los textos: todos "próximamente" y con su inglés.
+    expect(sumarte.es.aliados.incluye.every((b) => b.pronto)).toBe(true);
+    expect(sumarte.en.aliados.incluye).toHaveLength(sumarte.es.aliados.incluye.length);
+    for (const b of sumarte.en.aliados.incluye) expect(b.texto.trim()).toBeTruthy();
   });
   it("la bitácora, las sesiones y el cupo de eventos figuran como próximamente", () => {
     const pronto = FILAS.filter((f) => f.incluye[1] === "pronto").map((f) => f.texto.es);
