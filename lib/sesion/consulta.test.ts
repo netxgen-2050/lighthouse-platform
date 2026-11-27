@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decidirConsulta, loginAAbrir } from "./consulta";
+import { accionAlEntrar, decidirConsulta, loginAAbrir } from "./consulta";
 
 describe("decidirConsulta (convivencia de Privy y Neon Auth)", () => {
   const base = { prueba: null, privyListo: true, tokenPrivy: null, conNeonAuth: true };
@@ -41,5 +41,15 @@ describe("loginAAbrir", () => {
   it("sin neon-auth: Privy si está, si no 'Entrar como…'", () => {
     expect(loginAAbrir({ conNeonAuth: false, hayPrivy: true })).toBe("privy");
     expect(loginAAbrir({ conNeonAuth: false, hayPrivy: false })).toBe("entrar-como");
+  });
+});
+
+describe("accionAlEntrar (casillas-una-sola-vez)", () => {
+  it("el modo alta muestra las casillas antes del login y no descarta nada", () => {
+    expect(accionAlEntrar("alta")).toEqual({ destino: "casillas", descartarAceptacionPrevia: false });
+  });
+  it("entrar, o sin modo, va directo al login y descarta una aceptación previa de la pestaña", () => {
+    expect(accionAlEntrar("entrar")).toEqual({ destino: "login-directo", descartarAceptacionPrevia: true });
+    expect(accionAlEntrar(undefined)).toEqual({ destino: "login-directo", descartarAceptacionPrevia: true });
   });
 });

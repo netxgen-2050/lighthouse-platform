@@ -325,7 +325,10 @@ describe("versiones de la política", () => {
   it("la vigente (lotes-en-la-base) informa su cambio: las reservas pasan a la base", () => {
     const vigente = VERSIONES_POLITICA[VERSIONES_POLITICA.length - 1]!;
     expect(vigente.version).toBe(VERSION_POLITICA);
-    expect(vigente.cambios).toEqual(["Las reservas de lotes simulados ya no quedan solo en tu navegador: se guardan en la base de la plataforma para que un lote reservado se vea reservado para todos."]);
+    expect(vigente.cambios).toEqual([
+      "Las reservas de lotes simulados ya no quedan solo en tu navegador: se guardan en la base de la plataforma para que un lote reservado se vea reservado para todos.",
+      "Las casillas se marcan una sola vez: si ya aceptaste esta versión, entrás directo.",
+    ]);
     expect(VERSIONES_POLITICA.find((v) => v.version === "2026-11-24-borrador")!.cambios).toEqual([
       "El login pasa a hacerse con Neon (Neon Auth); Privy se va a retirar.",
     ]);

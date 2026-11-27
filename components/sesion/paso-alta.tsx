@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { VERSION_POLITICA, type ModoAlta } from "@/lib/privacidad/consentimiento";
+import type { ModoAlta } from "@/lib/privacidad/consentimiento";
 import {
   BloqueConsentimiento,
   enfocarPrimeraSinMarcar,
@@ -10,13 +9,11 @@ import {
   TEXTO_ERROR_CASILLAS,
   type ValorConsentimiento,
 } from "./bloque-consentimiento";
-import { QueCambio, cambiosVigentes } from "./que-cambio";
 
 const BOTON =
   "w-fit rounded-lg px-4 py-1.5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 const BOTON_PRIMARIO = `${BOTON} bg-deep text-on-deep hover:bg-deep-2`;
 const BOTON_SECUNDARIO = `${BOTON} border border-faint hover:bg-surface-2`;
-const ENLACE = "underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
 type Props = {
   abierto: boolean;
@@ -30,9 +27,10 @@ type Props = {
 };
 
 /**
- * Paso previo a cualquier login: el bloque de consentimiento con las casillas sin marcar. Recién al aceptar se abre el login
- * (lo decide el proveedor de sesión). Dos modos con el mismo bloque y los mismos textos: "Crear tu cuenta" (Sumarte) y "Entrar"
- * (la barra superior y cualquier otro `entrar()`). Diálogo modal nativo: Escape cierra y el foco vuelve a quien lo abrió.
+ * Diálogo de entrada. Modo `alta` ("Crear tu cuenta", Sumarte): el bloque de consentimiento con las casillas sin marcar; recién
+ * al aceptar se abre el login (lo decide el proveedor de sesión). Modo `entrar` (casillas-una-sola-vez): sin casillas, muestra
+ * el formulario de login directo; si es la primera vez, la pantalla de consentimiento sale después del login. Diálogo modal
+ * nativo: Escape cierra y el foco vuelve a quien lo abrió.
  */
 export function PasoAlta({ abierto, modo, alAceptar, alCancelar, formulario }: Props) {
   const idBase = useId();
@@ -89,7 +87,11 @@ export function PasoAlta({ abierto, modo, alAceptar, alCancelar, formulario }: P
           <h2 id={`${idBase}-titulo`} ref={titulo} tabIndex={-1} className="text-2xl font-semibold focus:outline-none">
             {titulo_}
           </h2>
-          <p className="mt-3 mb-4 text-muted">Aceptaste la política y los términos. Ahora elegí cómo entrar.</p>
+          <p className="mt-3 mb-4 text-muted">
+            {enAlta
+              ? "Aceptaste la política y los términos. Ahora elegí cómo entrar."
+              : "Elegí cómo entrar. Si es tu primera vez, después te pedimos aceptar la política y los términos."}
+          </p>
           {formulario}
         </div>
       )}
@@ -104,20 +106,8 @@ export function PasoAlta({ abierto, modo, alAceptar, alCancelar, formulario }: P
           <h2 id={`${idBase}-titulo`} ref={titulo} tabIndex={-1} className="text-2xl font-semibold focus:outline-none">
             {titulo_}
           </h2>
-          {enAlta ? (
-            <p className="mt-3 text-muted">Antes de crear tu cuenta necesitamos tu consentimiento. Esto es lo principal, en palabras simples.</p>
-          ) : (
-            <p className="mt-3 text-muted">
-              Antes de entrar, aceptá la política y los términos. Te lo pedimos cada vez que entrás porque, hasta que entres, no sabemos quién sos.
-            </p>
-          )}
+          <p className="mt-3 text-muted">Antes de crear tu cuenta necesitamos tu consentimiento. Esto es lo principal, en palabras simples.</p>
           <p className="mt-2 text-sm font-medium text-warn-ink">Borrador: los textos legales los revisa un abogado antes de cualquier uso real.</p>
-          {!enAlta && cambiosVigentes().length > 0 && (
-            <>
-              <p className="mt-2 text-sm">Versión de la política: {VERSION_POLITICA}</p>
-              <QueCambio />
-            </>
-          )}
 
           <BloqueConsentimiento
             valor={valor}
@@ -130,24 +120,14 @@ export function PasoAlta({ abierto, modo, alAceptar, alCancelar, formulario }: P
 
           <div className="mt-3 flex flex-wrap gap-3">
             <button type="submit" className={BOTON_PRIMARIO}>
-              {enAlta ? "Aceptar y crear mi cuenta" : "Aceptar y entrar"}
+              Aceptar y crear mi cuenta
             </button>
             <button type="button" className={BOTON_SECUNDARIO} onClick={alCancelar}>
               Cancelar
             </button>
           </div>
           <p className="mt-3 text-sm text-muted">
-            {enAlta ? (
-              <>¿Ya tenés cuenta? Usá “Entrar” arriba.</>
-            ) : (
-              <>
-                ¿Todavía no tenés cuenta? Elegí un plan en{" "}
-                <Link className={ENLACE} href="/sumarte" onClick={alCancelar}>
-                  Sumarte
-                </Link>
-                .
-              </>
-            )}
+            ¿Ya tenés cuenta? Usá “Entrar” arriba.
           </p>
         </form>
       )}

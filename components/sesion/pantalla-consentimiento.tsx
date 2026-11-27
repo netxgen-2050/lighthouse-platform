@@ -21,9 +21,10 @@ const BOTON_PRIMARIO = `${BOTON} bg-deep text-on-deep hover:bg-deep-2`;
 const BOTON_SECUNDARIO = `${BOTON} border border-faint hover:bg-surface-2`;
 
 /**
- * Pantalla de consentimiento: red de seguridad cuando hay una sesión sin aceptación vigente registrada (la aceptación del paso
- * venció, Privy restauró una sesión, el login terminó en otra pestaña o cambió la versión de la política). Aparece en cualquier
- * página menos `/privacidad`. Sin aceptar las dos casillas la persona sigue anónima.
+ * Pantalla de consentimiento: el camino normal de la primera vez que alguien entra por "Entrar" (casillas-una-sola-vez), y
+ * también la red de seguridad cuando hay una sesión sin aceptación vigente registrada (la aceptación del paso venció, Privy
+ * restauró una sesión, el login terminó en otra pestaña, retiró el consentimiento o cambió la versión de la política). Aparece
+ * en cualquier página menos `/privacidad`. Sin aceptar las dos casillas la persona sigue anónima.
  */
 export function PantallaConsentimiento() {
   const { sesion, salir, cabeceras, detalleConsentimiento, falloAceptacionPrevia } = useSesion();

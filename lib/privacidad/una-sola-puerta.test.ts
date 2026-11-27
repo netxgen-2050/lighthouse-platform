@@ -16,7 +16,8 @@ function archivos(dir: string): string[] {
 const FUENTES = ["app", "components", "lib"].flatMap((d) => archivos(path.join(RAIZ, d)));
 const fuera = (f: string) => !PERMITIDOS.some((p) => f.endsWith(p));
 
-// Una sola puerta al login (consentimiento-alta, design §1): el login solo se abre desde el paso, al aceptar.
+// Una sola puerta al login (consentimiento-alta, design §1): el login solo se abre desde el proveedor de sesión. Desde
+// casillas-una-sola-vez "Entrar" no exige casillas antes; solo "Crear tu cuenta" las pide antes del login.
 test("el login de Privy solo aparece en privy-puente.tsx y proveedor-sesion.tsx", () => {
   const malos = FUENTES.filter(fuera).filter((f) => {
     const t = readFileSync(f, "utf8");
