@@ -81,6 +81,7 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
   const idioma = useIdioma();
   const t = useTextos("sumarte");
   const marco = useTextos("marco");
+  const biencomun = useTextos("biencomun");
   const comunes = useTextos("comunes");
   const { estado: estadoSesion, nivel: nivelCuenta, nivelListo, entrar } = useSesion();
   const conSesion = estadoSesion === "ok";
@@ -513,6 +514,9 @@ export function SumarteCliente({ volver, para }: { volver: string | null; para: 
         <section aria-labelledby="invertir" className={`${TARJETA} ${BORDE}`}>
           <h2 id="invertir" className="scroll-mt-[calc(var(--alto-fijo,0px)+1rem)] text-2xl font-semibold">{t.invertir.titulo}</h2>
           <p className="max-w-3xl text-sm">{t.invertir.texto}</p>
+          <Link className="w-fit text-sm underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/bien-comun">
+            {biencomun.enlace}
+          </Link>
           <Link className="w-fit rounded-lg border border-muted px-4 py-1.5 font-medium hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep" href="/invertir">
             {t.invertir.enlace}
           </Link>

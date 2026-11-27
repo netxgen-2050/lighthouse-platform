@@ -412,7 +412,7 @@ test("celular 390 px: /sumarte no tiene desborde horizontal, con la sección Inv
 test("axe sin violaciones serias o críticas: /sumarte con el formulario de contacto abierto", async ({ page }) => {
   await conIdentidadVerificada(page);
   await page.goto("/sumarte");
-  await page.getByRole("button", { name: "Pedir invitación" }).click();
+  await page.getByRole("button", { name: "Hablemos" }).click();
   await expect(page.getByRole("button", { name: "Enviar pedido (simulado)" })).toBeVisible();
   // También con el error de canal a la vista.
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
@@ -424,12 +424,12 @@ test("axe sin violaciones serias o críticas: /sumarte con el formulario de cont
 
 test("axe sin violaciones serias o críticas: /admin con un pedido en la bandeja", async ({ page }) => {
   await page.goto("/sumarte");
-  await page.getByRole("button", { name: "Pedir una charla" }).click();
+  await page.getByRole("button", { name: "Hablemos" }).click();
   await page.getByRole("radio", { name: "Email" }).check();
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
-  await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
+  await expect(page.getByText("Pedido enviado (simulado)")).toBeVisible();
   await page.goto("/admin");
-  await expect(page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" })).toBeVisible();
+  await expect(page.getByRole("row").filter({ hasText: "Pedido de Aliados" })).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
   const graves = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(graves.map((v) => ({ id: v.id, impact: v.impact, nodos: v.nodes.map((n) => n.target) }))).toEqual([]);
@@ -437,12 +437,12 @@ test("axe sin violaciones serias o críticas: /admin con un pedido en la bandeja
 
 test("axe sin violaciones serias o críticas: /admin, /admin/personas y /admin/comunidades con una postulación y un pedido cargados", async ({ page }) => {
   await page.goto("/sumarte");
-  await page.getByRole("button", { name: "Pedir una charla" }).click();
+  await page.getByRole("button", { name: "Hablemos" }).click();
   await page.getByRole("radio", { name: "Email" }).check();
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
-  await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
+  await expect(page.getByText("Pedido enviado (simulado)")).toBeVisible();
   await page.goto("/admin");
-  await expect(page.getByRole("row").filter({ hasText: "Charla para invertir en NetX" })).toBeVisible();
+  await expect(page.getByRole("row").filter({ hasText: "Pedido de Aliados" })).toBeVisible();
   expect(await graves(page)).toEqual([]);
   await page.goto("/admin/personas");
   await expect(page.getByRole("region", { name: "Personas y roles" })).toBeVisible();
@@ -479,10 +479,10 @@ test("axe sin violaciones serias o críticas: /admin con un pedido con origen", 
   await page.goto("/?utm_source=newsletter&utm_campaign=congreso-2027");
   await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-origen"))).not.toBeNull();
   await page.goto("/sumarte");
-  await page.getByRole("button", { name: "Pedir una charla" }).click();
+  await page.getByRole("button", { name: "Hablemos" }).click();
   await page.getByRole("radio", { name: "Email" }).check();
   await page.getByRole("button", { name: "Enviar pedido (simulado)" }).click();
-  await expect(page.getByText("Charla pedida (simulado)")).toBeVisible();
+  await expect(page.getByText("Pedido enviado (simulado)")).toBeVisible();
   await page.goto("/admin");
   await expect(page.getByRole("row").filter({ hasText: "newsletter · sin dato · congreso-2027" })).toBeVisible();
   const r = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();

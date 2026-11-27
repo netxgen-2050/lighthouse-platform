@@ -117,9 +117,12 @@ describe("migración del estado guardado", () => {
   it("un pase sin plan guardado también cuenta como Amigo", () => {
     expect(leer(JSON.stringify({ pase: "raiz" }))).toMatchObject({ plan: "miembro", pase: "fundador" });
   });
-  it("el Plan Tribu (tribu: true) pasa a Aliado sin tribu elegida", () => {
-    const e = leer(JSON.stringify({ plan: "miembro", tribu: true, tribuId: "valle" }));
-    expect(e).toMatchObject({ tribu: true, tribuId: null });
+  it("el Plan Tribu (tribu: true) pasa a Aliado y conserva la tribu que ya tenía guardada", () => {
+    expect(leer(JSON.stringify({ plan: "miembro", tribu: true, tribuId: "valle" }))).toMatchObject({ plan: "miembro", tribu: true, tribuId: "valle" });
+    expect(leer(JSON.stringify({ tribu: true }))).toMatchObject({ plan: "miembro", tribu: true, tribuId: null });
+  });
+  it("una tribu guardada sin Plan Tribu no cuenta", () => {
+    expect(leer(JSON.stringify({ plan: "miembro", tribuId: "valle" }))).toMatchObject({ tribu: false, tribuId: null });
   });
   it("Miembro sin pase queda como Amigo y Explorador como Explorador", () => {
     expect(leer(JSON.stringify({ plan: "miembro" })).plan).toBe("miembro");

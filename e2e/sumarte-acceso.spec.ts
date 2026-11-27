@@ -54,12 +54,12 @@ test.describe("sumarse desde Sumarte", () => {
     await deshabilitados(page, PARTICIPAR);
   });
 
-  test("volver después de sumarse: /pactos lleva a Sumarte con el aviso y, como Miembro, vuelve a /pactos", async ({ page }) => {
+  test("volver después de sumarse: /pactos lleva a Sumarte con el aviso y, como Amigo, vuelve a /pactos", async ({ page }) => {
     test.skip(CON_PRIVY, SIN_PRIVY);
     await page.goto("/pactos");
     await expect(page).toHaveURL(/\/sumarte\?volver=%2Fpactos$/);
-    await expect(page.getByText("Pactos se habilita con el plan Miembro.")).toBeVisible();
-    await page.getByRole("button", { name: "Hacerme miembro" }).click();
+    await expect(page.getByText("Pactos se habilita con el plan Amigo.")).toBeVisible();
+    await page.getByRole("button", { name: "Hacerme Amigo" }).click();
     await aceptarPaso(page);
     await abrirModoDePrueba(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
@@ -68,35 +68,20 @@ test.describe("sumarse desde Sumarte", () => {
     await habilitados(page, PARTICIPAR);
   });
 
-  test("el Plan Comunidad sin cuenta pide elegir la comunidad y, al entrar, deja como líder de esa comunidad", async ({ page }) => {
+  test("Aliados sin cuenta pide entrar: no se elige con un plan ni deja a nadie con un nivel nuevo", async ({ page }) => {
     test.skip(CON_PRIVY, SIN_PRIVY);
-    await page.goto("/sumarte?plan=comunidad");
-    await page.getByRole("button", { name: "Sumar mi comunidad" }).click();
-    await page.getByRole("radio", { name: /Valle Solar/ }).check();
-    await page.getByRole("button", { name: "Ser líder de esta comunidad" }).click();
+    await page.goto("/sumarte");
+    await page.getByRole("button", { name: "Hablemos" }).click();
     await aceptarPaso(page);
     await abrirModoDePrueba(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
-    await expect(page.getByText("Sos líder de Valle Solar (simulado)")).toBeVisible();
-    await page.goto("/tribus/valle");
-    await expect(page.getByRole("main").getByText("Admin de Valle Solar")).toBeVisible();
-  });
-
-  test("las opciones del Plan Comunidad son las comunidades activas o en formación y proponer una nueva", async ({ page }) => {
-    await page.goto("/sumarte?plan=comunidad");
-    await page.getByRole("button", { name: "Sumar mi comunidad" }).click();
-    const grupo = page.getByRole("group", { name: "¿Qué comunidad vas a liderar?" });
-    await expect(grupo.getByRole("radio", { name: /Valle Solar/ })).toBeVisible();
-    await expect(grupo.getByRole("radio", { name: /Barda Productiva/ })).toBeVisible();
-    await expect(grupo.getByRole("radio", { name: "Proponer una comunidad nueva" })).toBeVisible();
-    // Los barrios vacantes no se lideran: se proponen.
-    await expect(grupo.getByRole("radio", { name: /Barrio 3/ })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Ser líder de esta comunidad" })).toBeDisabled();
+    await expect(page.getByText("Tu plan actual:")).toContainText("Explorador");
+    await expect(page.getByRole("button", { name: "Hablemos" })).toBeVisible();
   });
 
   test("axe sin violaciones serias o críticas en Sumarte con el aviso", async ({ page }) => {
     await page.goto("/pactos");
-    await expect(page.getByText("Pactos se habilita con el plan Miembro.")).toBeVisible();
+    await expect(page.getByText("Pactos se habilita con el plan Amigo.")).toBeVisible();
     const r = await new AxeBuilder({ page }).analyze();
     expect(r.violations.filter((v) => v.impact === "serious" || v.impact === "critical")).toEqual([]);
   });
@@ -126,26 +111,28 @@ test.describe("Explorador", () => {
   test("abrir una página de Participar por dirección lleva a Sumarte con el aviso", async ({ page }) => {
     await page.goto("/semillas");
     await expect(page).toHaveURL(/\/sumarte\?volver=%2Fsemillas$/);
-    await expect(page.getByText("Semillas se habilita con el plan Miembro.")).toBeVisible();
+    await expect(page.getByText("Semillas se habilita con el plan Amigo.")).toBeVisible();
     await expect(page.getByText("Tu plan actual:")).toContainText("Explorador");
   });
 
-  test("adherir pide sumarse como Miembro", async ({ page }) => {
+  test("la voz no se compra: un Explorador adhiere sin que le pidan un plan pago", async ({ page }) => {
     await page.goto("/tribus/valle");
-    await expect(page.getByRole("link", { name: "Sumate para adherir" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Adherir al manifiesto de la comunidad" })).toHaveCount(0);
-    await page.getByRole("link", { name: "Sumate para adherir" }).click();
-    await expect(page).toHaveURL(/\/sumarte\?volver=%2Ftribus%2Fvalle&para=miembro$/);
-    await expect(page.getByText("Esta acción se habilita con el plan Miembro.")).toBeVisible();
-    // Al pasar a Miembro vuelve a la tribu.
-    await page.getByRole("button", { name: "Hacerme miembro" }).click();
-    await expect(page).toHaveURL(/\/tribus\/valle$/);
+    await expect(page.getByRole("link", { name: "Sumate para adherir" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Adherir al manifiesto de la comunidad" })).toBeVisible();
+    await page.goto("/tribus/lighthouse");
+    await expect(page.getByRole("link", { name: "Sumate para adherir" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Adherir al manifiesto de Lighthouse VRN" })).toBeVisible();
   });
 
-  test("subir a Miembro habilita Participar por la dirección de inmediato y bajar a Explorador lo vuelve a pedir", async ({ page }) => {
-    await page.goto("/sumarte?plan=miembro");
-    await page.getByRole("button", { name: "Hacerme miembro" }).click();
+  test("Invertir no depende de ningún plan: un Explorador abre /invertir", async ({ page }) => {
+    await page.goto("/invertir");
+    await expect(page).toHaveURL(/\/invertir$/);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  });
+
+  test("subir a Amigo habilita Participar por la dirección de inmediato y bajar a Explorador lo vuelve a pedir", async ({ page }) => {
+    await page.goto("/sumarte?plan=amigo");
+    await page.getByRole("button", { name: "Hacerme Amigo" }).click();
     await page.goto("/semillas");
     await expect(page).toHaveURL(/\/semillas$/);
     await page.goto("/sumarte?plan=explorador");
@@ -162,56 +149,34 @@ test.describe("Explorador", () => {
   });
 });
 
-test.describe("Miembro", () => {
+test.describe("Amigo", () => {
   test.use({ rol: "persona" });
 
-  test("Participar está habilitado y el Pase Fundador también habilita", async ({ page }) => {
+  test("Participar está habilitado y Fundador también habilita", async ({ page }) => {
     await page.goto("/");
     await habilitados(page, PARTICIPAR);
     await page.goto("/sumarte?plan=explorador");
     await page.getByRole("button", { name: "Volver a Explorador" }).click();
     await deshabilitados(page, PARTICIPAR);
-    await page.getByRole("radio", { name: "Fundador", exact: true }).check({ force: true });
-    await page.getByRole("button", { name: "Quiero el Pase Brote" }).click();
+    await page.getByRole("button", { name: "Quiero ser Fundador" }).click();
     await habilitados(page, PARTICIPAR);
   });
 });
 
-test.describe("Líder de comunidad", () => {
+test.describe("Aliado (estado guardado del Plan Tribu)", () => {
   test.use({ rol: "persona" });
 
-  test("elegir el Plan Comunidad y liderar Valle Solar suma la marca de admin y todo lo de Miembro", async ({ page }) => {
-    await page.goto("/sumarte?plan=comunidad");
-    await page.getByRole("button", { name: "Sumar mi comunidad" }).click();
-    await page.getByRole("radio", { name: /Valle Solar/ }).check();
-    await page.getByRole("button", { name: "Ser líder de esta comunidad" }).click();
-    await expect(page.getByText("Sos líder de Valle Solar (simulado)")).toBeFocused();
-    await expect(page.getByText("Tu plan actual:")).toContainText("Líder de comunidad");
+  test("un Plan Tribu guardado pasa a Aliado y deja de serlo al cambiar de plan", async ({ page }) => {
+    await page.goto("/sumarte");
+    await page.evaluate(() => window.localStorage.setItem("lh-sumarte", JSON.stringify({ plan: "miembro", tribu: true, tribuId: "valle" })));
+    await page.reload();
+    await expect(page.getByText("Tu plan actual:")).toContainText("Aliado");
     await habilitados(page, PARTICIPAR);
     await page.goto("/tribus/valle");
     await expect(page.getByRole("main").getByText("Admin de Valle Solar")).toBeVisible();
-    await page.goto("/tribus/semilla");
-    await expect(page.getByText("Admin de Valle Solar")).toHaveCount(0);
-  });
-
-  test("proponer una comunidad nueva lleva a la pestaña Visión de Participa", async ({ page }) => {
-    await page.goto("/sumarte?plan=comunidad");
-    await page.getByRole("button", { name: "Sumar mi comunidad" }).click();
-    await page.getByRole("radio", { name: "Proponer una comunidad nueva" }).check();
-    await page.getByRole("button", { name: "Ser líder de esta comunidad" }).click();
-    await expect(page).toHaveURL(/\/participa\?ver=vision#sec-vacantes$/);
-    await expect(page.getByRole("heading", { level: 1, name: "Participa" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Visión" })).toHaveAttribute("aria-current", "page");
-    await expect(page.getByRole("heading", { level: 2, name: "Lighthouse 2050" })).toBeVisible();
-  });
-
-  test("bajar a Miembro quita la marca de admin", async ({ page }) => {
-    await page.goto("/sumarte?plan=comunidad");
-    await page.getByRole("button", { name: "Sumar mi comunidad" }).click();
-    await page.getByRole("radio", { name: /Valle Solar/ }).check();
-    await page.getByRole("button", { name: "Ser líder de esta comunidad" }).click();
-    await page.getByRole("radio", { name: "Miembro", exact: true }).check({ force: true });
-    await page.getByRole("button", { name: "Hacerme miembro" }).click();
+    await page.goto("/sumarte");
+    await page.getByRole("button", { name: "Hacerme Amigo" }).click();
+    await expect(page.getByText("Tu plan actual:")).toContainText("Amigo");
     await page.goto("/tribus/valle");
     await expect(page.getByText("Admin de Valle Solar")).toHaveCount(0);
   });

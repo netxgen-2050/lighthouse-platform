@@ -64,7 +64,8 @@ const PASES_GUARDADOS: readonly string[] = ["semilla", "brote", "raiz", "fundado
 
 /**
  * Lee lo guardado; cualquier cosa rara vuelve al estado inicial campo por campo. Migra el estado del modelo anterior:
- * un `pase` de nivel Semilla, Brote o Raíz pasa a `fundador`, y `tribu: true` pasa a Aliado sin tribu elegida.
+ * un `pase` de nivel Semilla, Brote o Raíz pasa a `fundador`, y `tribu: true` (Plan Tribu) pasa a Aliado. Sumarte ya no ofrece
+ * elegir una tribu: la que ya estaba guardada se conserva solo para las funciones en pausa.
  */
 export function leer(crudo: string | null): EstadoSumarte {
   if (!crudo) return INICIAL;
@@ -79,7 +80,8 @@ export function leer(crudo: string | null): EstadoSumarte {
       invitacion: o.invitacion === true,
       charla: o.charla === true,
       tribu,
-      tribuId: null,
+      // La tribu que ya administraba se conserva: así lo guardado antes no pierde nada y las funciones en pausa siguen igual.
+      tribuId: tribu && typeof o.tribuId === "string" && o.tribuId !== "" ? o.tribuId : null,
     };
   } catch {
     return INICIAL;

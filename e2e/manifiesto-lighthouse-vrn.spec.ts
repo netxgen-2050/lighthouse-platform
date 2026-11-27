@@ -281,11 +281,12 @@ test.describe("Vista NetX y Sumarte", () => {
   test.describe("un Explorador", () => {
     test.use({ rol: "persona", plan: "explorador" });
 
-    test("que sigue el enlace desde /sumarte ve 'Sumate para adherir' en la ficha", async ({ page }) => {
+    test("que sigue el enlace desde /sumarte ve el botón para adherir, no 'Sumate para adherir' (la voz no se compra)", async ({ page }) => {
       await page.goto("/sumarte");
       await page.getByRole("link", { name: "Leer el manifiesto" }).click();
       await expect(page).toHaveURL(/\/tribus\/lighthouse$/);
-      await expect(page.getByRole("link", { name: "Sumate para adherir" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Adherir al manifiesto de Lighthouse VRN" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Sumate para adherir" })).toHaveCount(0);
     });
   });
 });

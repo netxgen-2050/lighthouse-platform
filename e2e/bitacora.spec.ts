@@ -8,12 +8,12 @@ const leerBitacora = (page: Page) =>
   page.evaluate(() => JSON.parse(window.localStorage.getItem("lh-bitacora") ?? "[]") as Record<string, unknown>[]);
 
 async function abrirPaseConTeclado(page: Page) {
-  const boton = page.getByRole("button", { name: "Qué significa legalmente: Pase Fundador" }).first();
+  const boton = page.getByRole("button", { name: "Qué significa legalmente: FARO de prepago" }).first();
   await boton.focus();
   // El foco programático no cuenta como teclado: Tab hacia atrás y adelante lo deja con :focus-visible.
   await page.keyboard.press("Shift+Tab");
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("tooltip").filter({ hasText: "Pase Fundador" })).toBeVisible();
+  await expect(page.getByRole("tooltip").filter({ hasText: "FARO de prepago" })).toBeVisible();
 }
 
 test("ver el territorio anota el estado del loteo", async ({ page }) => {
@@ -49,35 +49,35 @@ test("elegir la finca 502 anota la vista compacta, sin expediente ni titular", a
   }
 });
 
-test("abrir el ⚖ Pase Fundador con teclado anota el término", async ({ page }) => {
-  await page.goto("/sumarte?plan=fundador");
+test("abrir el ⚖ FARO de prepago con teclado anota el término", async ({ page }) => {
+  await page.goto("/sumarte?plan=amigo");
   await abrirPaseConTeclado(page);
-  await expect.poll(async () => (await leerBitacora(page)).filter((e) => e.clave === "pasefundador").length).toBe(1);
-  const [e] = (await leerBitacora(page)).filter((x) => x.clave === "pasefundador");
+  await expect.poll(async () => (await leerBitacora(page)).filter((e) => e.clave === "faroprepago").length).toBe(1);
+  const [e] = (await leerBitacora(page)).filter((x) => x.clave === "faroprepago");
   expect(e.tipo).toBe("termino-legal");
   expect(e.ruta).toBe("/sumarte");
   expect(e.huella).toMatch(/^[0-9a-f]{8}$/);
 });
 
 test("abrir el mismo ⚖ varias veces no repite la entrada", async ({ page }) => {
-  await page.goto("/sumarte?plan=fundador");
-  const boton = page.getByRole("button", { name: "Qué significa legalmente: Pase Fundador" }).first();
+  await page.goto("/sumarte?plan=amigo");
+  const boton = page.getByRole("button", { name: "Qué significa legalmente: FARO de prepago" }).first();
   for (let i = 0; i < 3; i++) {
     await boton.hover();
-    await expect(page.getByRole("tooltip").filter({ hasText: "Pase Fundador" })).toBeVisible();
+    await expect(page.getByRole("tooltip").filter({ hasText: "FARO de prepago" })).toBeVisible();
     await page.mouse.move(0, 0);
     await expect(page.getByRole("tooltip")).toHaveCount(0);
   }
-  expect((await leerBitacora(page)).filter((e) => e.clave === "pasefundador")).toHaveLength(1);
+  expect((await leerBitacora(page)).filter((e) => e.clave === "faroprepago")).toHaveLength(1);
 });
 
 test.describe("con pantalla táctil", () => {
   test.use({ hasTouch: true });
-  test("tocar el ⚖ Pase Fundador anota el término", async ({ page }) => {
-    await page.goto("/sumarte?plan=fundador");
-    await page.getByRole("button", { name: "Qué significa legalmente: Pase Fundador" }).first().tap();
-    await expect(page.getByRole("tooltip").filter({ hasText: "Pase Fundador" })).toBeVisible();
-    await expect.poll(async () => (await leerBitacora(page)).filter((e) => e.clave === "pasefundador").length).toBe(1);
+  test("tocar el ⚖ FARO de prepago anota el término", async ({ page }) => {
+    await page.goto("/sumarte?plan=amigo");
+    await page.getByRole("button", { name: "Qué significa legalmente: FARO de prepago" }).first().tap();
+    await expect(page.getByRole("tooltip").filter({ hasText: "FARO de prepago" })).toBeVisible();
+    await expect.poll(async () => (await leerBitacora(page)).filter((e) => e.clave === "faroprepago").length).toBe(1);
   });
 });
 

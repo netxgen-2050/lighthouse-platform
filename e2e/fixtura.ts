@@ -144,7 +144,7 @@ export const test = base.extend<Opciones & { emailActual: string }>({
             if (window.localStorage.getItem("lh-sumarte") === null) {
               window.localStorage.setItem(
                 "lh-sumarte",
-                JSON.stringify(planInicial === "fundador" ? { plan: "miembro", pase: "brote", nivelPase: "brote" } : { plan: planInicial }),
+                JSON.stringify(planInicial === "fundador" ? { plan: "miembro", pase: "fundador" } : { plan: planInicial }),
               );
             }
           } catch {
