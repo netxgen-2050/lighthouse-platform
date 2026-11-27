@@ -86,9 +86,6 @@ export function PasoAlta({ abierto, modo, alAceptar, alCancelar, formulario }: P
     >
       {abierto && formulario && (
         <div>
-          <p className="mb-4 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-            Prototipo interno · datos de ejemplo
-          </p>
           <h2 id={`${idBase}-titulo`} ref={titulo} tabIndex={-1} className="text-2xl font-semibold focus:outline-none">
             {titulo_}
           </h2>
@@ -104,9 +101,6 @@ export function PasoAlta({ abierto, modo, alAceptar, alCancelar, formulario }: P
             aceptar();
           }}
         >
-          <p className="mb-4 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-            Prototipo interno · datos de ejemplo
-          </p>
           <h2 id={`${idBase}-titulo`} ref={titulo} tabIndex={-1} className="text-2xl font-semibold focus:outline-none">
             {titulo_}
           </h2>

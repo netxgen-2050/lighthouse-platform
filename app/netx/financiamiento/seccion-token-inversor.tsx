@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SelloPropuesta } from "@/components/bien-comun/sello-propuesta";
 import { TerminoLegal } from "@/components/termino-legal";
+import { Aviso } from "@/components/ui/aviso";
 import { ENTRADAS_DE_PARTIDA, coberturaAFechaFija, cobrandoConLasCuotas, montoALevantar } from "@/lib/bien-comun/barrio";
 import { VERSION_PROPUESTA } from "@/lib/bien-comun/modelo";
 import { formatearFecha } from "@/lib/idioma/formatos";
@@ -32,9 +33,9 @@ export function SeccionTokenInversor() {
           fecha={t.sello.fecha(formatearFecha(VERSION_PROPUESTA.fecha, "es", "largo"), VERSION_PROPUESTA.fuente)}
           simulacion={t.sello.simulacion}
         />
-        <p className="w-fit max-w-3xl rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+        <Aviso tono="legal" className="w-fit max-w-3xl">
           {TERMINOS.avisosimulador.texto}
-        </p>
+        </Aviso>
       </div>
 
       <div className={`grid gap-3 ${CARTA}`}>

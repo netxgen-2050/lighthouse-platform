@@ -56,12 +56,12 @@ test("aviso de ejemplo y un solo main", async ({ page }) => {
   await expect(page.locator("main")).toHaveCount(1);
 });
 
-test("navegación: Territorio desde la barra de secciones de Explorar", async ({ page }) => {
+test("navegación: Territorio desde las pestañas de Explorar", async ({ page }) => {
   await page.goto("/lotes");
   const barra = page.getByRole("navigation", { name: "Secciones de Explorar" });
   await barra.getByRole("link", { name: "Territorio" }).click();
-  await expect(page).toHaveURL(/\/explorar#territorio$/);
-  await expect(barra.getByRole("link", { name: "Territorio" })).toHaveAttribute("aria-current", "location");
+  await expect(page).toHaveURL(/\/explorar\/territorio$/);
+  await expect(barra.getByRole("link", { name: "Territorio" })).toHaveAttribute("aria-current", "page");
   await expect(
     page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Explorar" }),
   ).toHaveAttribute("aria-current", "page");

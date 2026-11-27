@@ -7,7 +7,7 @@ test("/canales redirige a /pasaporte", async ({ page }) => {
 });
 
 test("el enlace de Sumarte lleva al pasaporte, donde el Pase Brote abre el canal de fundadores", async ({ page }) => {
-  await page.goto("/sumarte");
+  await page.goto("/sumarte?plan=fundador");
   await page.getByRole("button", { name: "Quiero el Pase Brote" }).click();
   await expect(page.getByText("Pase Brote activo (simulado)")).toBeVisible();
   await page.getByRole("link", { name: "Ver qué te abre cada sello de tu pasaporte" }).click();

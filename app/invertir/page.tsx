@@ -5,7 +5,7 @@ import { InvertirCliente } from "./invertir-cliente";
 
 // Invertir (spec invertir): el barrio en financiamiento, su curva de devolución y su libro. Es pública, pero sin sesión
 // muestra solo un aviso para entrar: los números se calculan en el navegador, solo con sesión (el HTML no los lleva).
-// Ningún cobro, oferta ni botón de invertir: todo es una simulación de ejemplo.
+// Ningún cobro, oferta ni botón de invertir: solo el pago es simulado y los números son de ejemplo.
 export async function generateMetadata(): Promise<Metadata> {
   return { title: textos("invertir", await idiomaDelPedido()).titulo };
 }

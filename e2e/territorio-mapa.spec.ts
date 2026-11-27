@@ -24,6 +24,8 @@ test("ver el macrolote: 12 barrios, común y aviso de distribución ilustrativa"
 
 test("leyenda con texto para cada estado", async ({ page }) => {
   await abrir(page);
+  // La leyenda completa va desplegable debajo de la compacta (ux-explorar).
+  await page.getByText("Ver la leyenda completa").click();
   const leyenda = region(page).getByRole("group", { name: "Leyenda del mapa" });
   for (const g of ["Lighthouse · Macrolote 7", "Chacras de Soluna · venta privada", "Lugares de interés"]) {
     await expect(leyenda.getByRole("list", { name: g })).toBeVisible();
@@ -43,6 +45,7 @@ test("leyenda con texto para cada estado", async ({ page }) => {
 
 test("colores distintos: ningún color de borde ni de relleno se repite entre grupos de la leyenda", async ({ page }) => {
   await abrir(page);
+  await page.getByText("Ver la leyenda completa").click();
   const leyenda = region(page).getByRole("group", { name: "Leyenda del mapa" });
   const grupos = ["Lighthouse · Macrolote 7", "Chacras de Soluna · venta privada", "Lugares de interés"];
   const colores: { borde: string; relleno: string }[][] = [];
@@ -88,7 +91,7 @@ test("elegir Valle Solar en el mapa y ir a la comunidad", async ({ page }) => {
   await expect(ficha(page).getByRole("heading", { name: "Valle Solar" })).toBeVisible();
   await expect(ficha(page).getByText("Estado: Activa")).toBeVisible();
   // Sigue en la misma página; la selección queda en ?sel= para no perderse al entrar.
-  await expect(page).toHaveURL(/\/explorar\?vista=vision&sel=barrio-6#territorio$/);
+  await expect(page).toHaveURL(/\/explorar\/territorio\?vista=vision&sel=barrio-6$/);
   await ficha(page).getByRole("link", { name: "Conocer la comunidad" }).click();
   await expect(page).toHaveURL(/\/tribus\/valle$/);
 });

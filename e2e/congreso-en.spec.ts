@@ -66,7 +66,7 @@ test("textos clave en inglés: precios, comunidades, territorio y modo de origen
   await expect(tribus.getByRole("link", { name: "Find my community (in Spanish)" })).toHaveAttribute("hreflang", "es");
   await expect(page.locator("#territorio").getByRole("link", { name: "Explore the map in NetX (in Spanish)" })).toHaveAttribute(
     "href",
-    "/explorar#territorio",
+    "/explorar/territorio",
   );
   await expect(page.getByRole("group", { name: "Countdown to the eclipse" })).toBeVisible();
   const boton = page.getByRole("button", { name: /What comes from UnityHub\?/ });

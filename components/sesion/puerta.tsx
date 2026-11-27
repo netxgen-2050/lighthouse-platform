@@ -188,15 +188,6 @@ function ConSesion({ children }: { children: ReactNode }) {
   );
 }
 
-function Aviso() {
-  const t = useTextos("marco");
-  return (
-    <p className="mb-4 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-      {t.aviso}
-    </p>
-  );
-}
-
 /** Lo que se ve cuando todavía no hay sesión utilizable: verificando, sin acceso (`LH_ACCESO=lista`) o con error. */
 function PantallaDeEntrada() {
   const { estado, emailIntento, salir } = useSesion();
@@ -206,7 +197,6 @@ function PantallaDeEntrada() {
   if (estado === "cargando" || estado === "ok" || estado === "sin-sesion") {
     return (
       <div className="mx-auto max-w-xl p-6 sm:p-10">
-        <Aviso />
         <p role="status" className="text-muted">
           {comunes.cargando}
         </p>
@@ -217,7 +207,6 @@ function PantallaDeEntrada() {
   if (estado === "sin-acceso") {
     return (
       <div className="mx-auto max-w-xl p-6 sm:p-10">
-        <Aviso />
         <h1 className="text-2xl font-semibold">{t.puerta.sinAccesoTitulo}</h1>
         <p className="mt-3">{t.puerta.sinAccesoTexto}</p>
         {emailIntento && <p className="mt-2 text-sm text-muted">{t.puerta.entraste(emailIntento)}</p>}
@@ -230,7 +219,6 @@ function PantallaDeEntrada() {
 
   return (
     <div className="mx-auto max-w-xl p-6 sm:p-10">
-      <Aviso />
       <h1 className="text-2xl font-semibold">{t.puerta.errorTitulo}</h1>
       <p className="mt-3">{t.puerta.errorTexto}</p>
       <button type="button" className={`${BOTON_SECUNDARIO} mt-4`} onClick={() => void salir()}>

@@ -4,6 +4,7 @@ import { AvisoEjemplo } from "@/components/aviso-ejemplo";
 import { MapaEquipos } from "@/components/participa/mapa-equipos";
 import type { EquipoVista, FrenteVista } from "@/components/participa/tipos";
 import { Vision2050 } from "@/components/participa/vision-2050";
+import { Pestanas } from "@/components/ui/pestanas";
 import { listarEquipos } from "@/lib/equipos/equipos";
 import type { Frente } from "@/lib/equipos/frentes";
 import { idCortoDeEquipo, posicionesDe } from "@/lib/equipos/posiciones";
@@ -28,7 +29,7 @@ function frenteVista(f: Frente, futuro: boolean): FrenteVista {
     faltan: f.faltan,
     paraCuando: f.paraCuando,
     lugar: f.lugar !== null,
-    hrefMapa: f.lugar ? `/explorar?vista=ahora${esDeHoy(f) ? "" : `&fase=${f.desde}`}&sel=${f.id}#territorio` : null,
+    hrefMapa: f.lugar ? `/explorar/territorio?vista=ahora${esDeHoy(f) ? "" : `&fase=${f.desde}`}&sel=${f.id}` : null,
     masAdelante: futuro ? f.desde : null,
   };
 }
@@ -44,8 +45,6 @@ function equiposVista(idioma: Idioma): EquipoVista[] {
   }));
 }
 
-const base = "px-1 pb-1 underline-offset-8 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
-const clase = (actual: boolean) => `${base} ${actual ? "font-bold underline decoration-4" : "text-muted hover:underline"}`;
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -64,9 +63,6 @@ export default async function ParticipaPage({ searchParams }: Props) {
       <h1 className="mt-1 text-3xl font-semibold sm:text-4xl">{t.titulo}</h1>
       <p className="mt-2 mb-4 max-w-3xl text-muted">{t.bajada}</p>
       <AvisoEjemplo />
-      <p className="mt-2 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-        {textos("marco", idioma).aviso}
-      </p>
 
       <section aria-labelledby="sec-comun" className="mt-8">
         <h2 id="sec-comun" className="sr-only">
@@ -85,14 +81,15 @@ export default async function ParticipaPage({ searchParams }: Props) {
         </Link>
       </section>
 
-      <nav aria-label={t.pestanas.aria} className="mt-6 flex flex-wrap gap-6 border-b border-faint">
-        <Link href="/participa" className={clase(!vision)} aria-current={!vision ? "page" : undefined}>
-          {t.pestanas.equipos}
-        </Link>
-        <Link href="/participa?ver=vision" className={clase(vision)} aria-current={vision ? "page" : undefined}>
-          {t.pestanas.vision}
-        </Link>
-      </nav>
+      <Pestanas
+        aria={t.pestanas.aria}
+        className="mt-6"
+        actual={vision ? "vision" : "equipos"}
+        items={[
+          { clave: "equipos", etiqueta: t.pestanas.equipos, href: "/participa" },
+          { clave: "vision", etiqueta: t.pestanas.vision, href: "/participa?ver=vision" },
+        ]}
+      />
 
       {vision ? (
         <Vision2050 idioma={idioma} />

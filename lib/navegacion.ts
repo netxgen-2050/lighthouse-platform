@@ -51,6 +51,8 @@ export type Destino = {
    * Pactos, Semillas y Fogón salen del menú con el rediseño de cinco destinos (23-nov-2026); no se borra nada.
    */
   oculto?: true;
+  /** Va en la barra inferior del celular (ux-celular). Los demás destinos del menú van en la hoja Más. */
+  barra?: true;
 };
 
 // Única lista de destinos, en el orden de los menús. Se muestran solo los que existen.
@@ -58,14 +60,15 @@ export type Destino = {
 // falla si `existe` no coincide con las páginas reales de app/.
 // Invertir, Mi tierra y Barrios aparecen solos cuando el cambio que crea su página pone `existe: true`.
 export const DESTINOS: readonly Destino[] = [
-  { href: "/", clave: "inicio", icono: House, grupo: "principal", existe: true },
+  { href: "/", clave: "inicio", icono: House, grupo: "principal", existe: true, barra: true },
   {
-    href: "/explorar",
+    href: "/explorar/territorio",
     clave: "explorar",
     icono: Telescope,
     grupo: "principal",
     existe: true,
     secciones: ["/explorar", "/territorios", "/barrios", "/lotes"],
+    barra: true,
   },
   // Participa (participa-mapa-equipos): los equipos sobre el mapa ilustrado. `/tribus` redirige acá y las fichas `/tribus/[id]` lo marcan.
   {
@@ -75,11 +78,12 @@ export const DESTINOS: readonly Destino[] = [
     grupo: "principal",
     existe: true,
     secciones: ["/participa", "/tribus"],
+    barra: true,
   },
   { href: "/bien-comun", clave: "biencomun", icono: Trees, grupo: "principal", existe: true },
-  { href: "/invertir", clave: "invertir", icono: TrendingUp, grupo: "principal", existe: true },
+  { href: "/invertir", clave: "invertir", icono: TrendingUp, grupo: "principal", existe: true, barra: true },
   { href: "/sumarte", clave: "sumarte", icono: Sprout, grupo: "principal", existe: true },
-  { href: "/mi-tierra", clave: "miTierra", icono: Mountain, grupo: "principal", existe: true },
+  { href: "/mi-tierra", clave: "miTierra", icono: Mountain, grupo: "principal", existe: true, barra: true },
   { href: "/pactos", clave: "pactos", icono: FileSignature, grupo: "pausa", existe: true, oculto: true },
   { href: "/semillas", clave: "semillas", icono: Leaf, grupo: "pausa", existe: true, oculto: true },
   { href: "/fogon", clave: "fogon", icono: Flame, grupo: "pausa", existe: true, oculto: true },
@@ -118,6 +122,16 @@ export function destinosDeGrupo(grupo: IdGrupo) {
  */
 export function destinosDelMenu() {
   return [...destinosDeGrupo("principal"), ...destinosDeGrupo("pausa")];
+}
+
+/** Los destinos de la barra inferior del celular, en el orden del menú. */
+export function destinosDeLaBarra() {
+  return destinosDelMenu().filter((d) => d.barra);
+}
+
+/** Los destinos del menú que no están en la barra: van en la hoja Más (un destino en pausa que vuelve aparece acá). */
+export function destinosDeMas() {
+  return destinosDelMenu().filter((d) => !d.barra);
 }
 
 /** El destino del menú marcado como actual en una ruta, o ninguno (en las páginas en pausa ocultas no hay ninguno). */

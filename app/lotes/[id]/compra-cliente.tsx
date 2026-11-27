@@ -7,15 +7,16 @@ import { useSesion } from "@/components/sesion/contexto";
 import { faroEn } from "@/lib/bien-comun/formato";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { ESTADOS_ADMINISTRATIVOS, accionesDeLote, type IdProyecto } from "@/lib/legal/estado-administrativo";
-import { deshacer, pagar, reservar, type CompraLote, type LoVisto } from "@/lib/lotes/compra";
+import type { ResultadoDeAccion } from "@/components/lotes/usar-compras";
+import { pagar, reservar, type CompraLote, type LoVisto } from "@/lib/lotes/compra";
 import { usdEn } from "@/lib/lotes/formato";
 import type { OpcionCompra } from "@/lib/lotes/modelo";
 import { formatearFecha, sinDato } from "@/lib/idioma/formatos";
 import { textoSuperficieM2 } from "@/lib/territorios/biopueblo";
-import { estadoDeLote } from "@/lib/territorios/loteo-estados";
 
 // Reservar, pago simulado y boleto de ejemplo (spec lotes-compra-simulada). Todo es simulado: no hay ningún campo de
-// pago ni identidad, y no se hace ningún pedido de red con estos datos. Lo único que se guarda va al navegador.
+// pago ni identidad. Las reservas y pagos simulados se guardan en el servidor, a nombre de la persona en sesión
+// (`lotes-en-la-base`): las acciones llegan por props desde `useCompras`, esperan al servidor y dicen si salió bien.
 
 const BOTON =
   "w-fit rounded-lg px-4 py-1.5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
@@ -35,19 +36,24 @@ type Props = {
   opcion: OpcionCompra;
   vio: LoVisto;
   compras: CompraLote[];
-  guardar: (nuevas: CompraLote[]) => Promise<boolean>;
+  /** Las acciones de `useCompras`: esperan al servidor y dicen si salió bien o por qué no. */
+  reservar: (loteId: string, opcion: OpcionCompra, vio: LoVisto) => Promise<ResultadoDeAccion>;
+  pagar: (loteId: string) => Promise<ResultadoDeAccion>;
+  deshacer: (loteId: string) => Promise<ResultadoDeAccion>;
+  /** ¿Está disponible para esta persona? Falso si es de ejemplo no disponible o si otra persona lo reservó o lo pagó. */
+  disponible: boolean;
   /** La compra de este lote, si la persona la tiene (y el estado de ejemplo todavía lo permite). */
   compra?: CompraLote;
 };
 
-export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM2, opcion, vio, compras, guardar, compra }: Props) {
+export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM2, opcion, vio, compras, reservar: reservarEnServidor, pagar: pagarEnServidor, deshacer: deshacerEnServidor, disponible, compra }: Props) {
   const idioma = useIdioma();
   const t = useTextos("lotes");
   const tl = useTextos("territorio").loteo;
   const { estado: estadoSesion } = useSesion();
   const [pagando, setPagando] = useState(false);
   const [anuncio, setAnuncio] = useState("");
-  const [falloGuardar, setFalloGuardar] = useState(false);
+  const [falloGuardar, setFalloGuardar] = useState<null | "error" | "ya-reservado">(null);
   // La casilla "Leí lo que comparto y lo que me comprometo a pagar": sin marcarla no se puede reservar.
   const [leido, setLeido] = useState(false);
   const idAyuda = useId();
@@ -77,24 +83,25 @@ export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM
   // Guardar es asíncrono (lib/lotes/reservas.ts). El foco se pide antes de guardar, porque guardar actualiza la lista y el cambio
   // de paso tiene que encontrar el pedido hecho. `despues` corre una vez guardado (o fallado): así la pantalla pasa de un paso
   // al siguiente de una sola vez, sin un paso intermedio que se lleve el foco.
-  async function aplicar(nuevas: CompraLote[], mensaje: string, moverFoco = true, despues?: () => void) {
+  // Si el servidor no confirma, la pantalla no cambia: queda el aviso y todo sigue como estaba (no se corre `despues`).
+  async function aplicar(accion: () => Promise<ResultadoDeAccion>, mensaje: string, moverFoco = true, despues?: () => void) {
     mover.current = moverFoco;
-    const guardado = await guardar(nuevas);
-    despues?.();
-    if (!guardado) {
+    const r = await accion();
+    if (!r.ok) {
       mover.current = false;
-      setFalloGuardar(true);
+      setFalloGuardar(r.motivo === "ya-reservado" ? "ya-reservado" : "error");
       return;
     }
-    setFalloGuardar(false);
+    despues?.();
+    setFalloGuardar(null);
     setAnuncio(mensaje);
   }
 
   function alReservar() {
     if (!leido) return;
-    const r = reservar(compras, loteId, opcion, vio, new Date());
-    if (!r.ok) return;
-    void aplicar(r.compras, t.compra.anuncioReservado(numero));
+    // La misma regla que el servidor, para no mandar lo que sabemos que no vale; el servidor decide igual.
+    if (!reservar(compras, loteId, opcion, vio, new Date()).ok) return;
+    void aplicar(() => reservarEnServidor(loteId, opcion, vio), t.compra.anuncioReservado(numero));
   }
 
   function alSimularPago() {
@@ -109,15 +116,14 @@ export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM
   }
 
   function alConfirmar() {
-    const r = pagar(compras, loteId, new Date());
-    if (!r.ok) return;
+    if (!pagar(compras, loteId, new Date()).ok) return;
     // Con cuotas no se dice que el lote está pagado: es el primer pago.
-    void aplicar(r.compras, enCuotas ? t.compra.anuncioPrimerPago(numero) : t.compra.anuncioPagado(numero), true, () => setPagando(false));
+    void aplicar(() => pagarEnServidor(loteId), enCuotas ? t.compra.anuncioPrimerPago(numero) : t.compra.anuncioPagado(numero), true, () => setPagando(false));
   }
 
   function alDeshacer() {
     // Un lote que vuelve a estar disponible pide aceptar de nuevo. Si no cambia la fase (ya estaba en "inicio"), no se pide mover el foco.
-    void aplicar(deshacer(compras, loteId), t.compra.anuncioDeshecho(numero), !!compra, () => {
+    void aplicar(() => deshacerEnServidor(loteId), t.compra.anuncioDeshecho(numero), !!compra, () => {
       setPagando(false);
       setLeido(false);
     });
@@ -131,10 +137,10 @@ export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM
       <p role="status" className="sr-only">
         {anuncio}
       </p>
-      {falloGuardar && (
+      {falloGuardar !== null && (
         <p role="alert" className="text-sm font-medium text-danger">
           <span aria-hidden="true">▲ </span>
-          {t.compra.noSePudo}
+          {falloGuardar === "ya-reservado" ? t.compra.yaReservado : t.compra.noSePudo}
         </p>
       )}
 
@@ -143,7 +149,7 @@ export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM
           <h3 ref={titulos.inicio} tabIndex={-1} className={TITULO}>
             {t.acciones.titulo}
           </h3>
-          {!ofreceReservar || estadoDeLote(loteId) !== "disponible" ? (
+          {!ofreceReservar || !disponible ? (
             <p className="text-sm">{t.acciones.noSeOfrece}</p>
           ) : estadoSesion === "ok" ? (
             <div className="grid gap-2">
@@ -232,7 +238,7 @@ export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM
             <TerminoLegal clave="boletoejemplo" idioma={idioma} />
           </h3>
           {/* La marca va antes de cualquier dato. */}
-          <p className="rounded-lg border border-dashed border-gold-ink bg-gold-soft px-3 py-2 text-sm font-bold break-words">
+          <p className="rounded-lg border border-gold-ink bg-gold-soft px-3 py-2 text-sm font-bold break-words">
             {t.boleto.marca}
           </p>
           <p className="text-sm">{t.compra.noSeCobro}</p>

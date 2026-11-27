@@ -40,7 +40,7 @@ describe("RailAdmin", () => {
     pendientes = 0;
     const html = dibujar();
     expect(html).toContain('aria-label="Admin"');
-    expect(html).not.toContain("rounded-full border border-on-deep-muted");
+    expect(html).not.toContain("rounded-full border border-line");
   });
   it("sin dato (null): lo dice, no es 0", () => {
     pendientes = null;

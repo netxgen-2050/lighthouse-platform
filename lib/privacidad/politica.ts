@@ -14,6 +14,9 @@
  * de entrar o de crear la cuenta, la cookie de idioma `lh-idioma` y las novedades por email opcionales. La spec nombraba la
  * versión `2026-10-15-borrador`, pero `main` ya estaba en `2026-11-03-borrador` (lotes): una versión vieja no puede subir nada.
  * `idioma-legal` traduce esta misma versión sin volver a subirla.
+ *
+ * 25-nov-2026 (cambio `lotes-en-la-base`): las reservas de lotes pasan a la base y la fila "Lotes (simulado)" deja de decir
+ * "solo en tu navegador". Sube a `2026-11-25-borrador`; Gus aprobó pedir la re-aceptación (todo uso hasta hoy fue de prueba).
  */
 export type VersionPolitica = { version: string; fecha: string; cambios: readonly string[] };
 
@@ -40,6 +43,14 @@ export const VERSIONES_POLITICA: readonly VersionPolitica[] = [
     version: "2026-11-24-borrador",
     fecha: "2026-11-24",
     cambios: ["El login pasa a hacerse con Neon (Neon Auth); Privy se va a retirar."],
+  },
+  {
+    // Cambio `lotes-en-la-base` (decisión de Gus del 25-nov: todo uso hasta hoy fue de prueba, así que pedir la re-aceptación no es problema).
+    version: "2026-11-25-borrador",
+    fecha: "2026-11-25",
+    cambios: [
+      "Las reservas de lotes simulados ya no quedan solo en tu navegador: se guardan en la base de la plataforma para que un lote reservado se vea reservado para todos.",
+    ],
   },
 ];
 
@@ -99,7 +110,8 @@ export const DATOS_POR_PANTALLA: readonly DatosDePantalla[] = [
     pantalla: "Lotes (simulado)",
     datos:
       "Qué lote reservaste o “pagaste” en la simulación, la opción que elegiste, las fechas y los valores que viste. Nunca datos de pago ni de identidad.",
-    donde: "Solo en tu navegador: no se envía a ningún lado.",
+    donde:
+      "En Neon, la base de la plataforma. Los demás ven que el lote está reservado, pero no quién lo reservó. Si retirás tu consentimiento, tus lotes se liberan y el registro de las reservas queda como historial.",
   },
   {
     pantalla: "Pasaporte y verificación de identidad (KYC)",

@@ -69,6 +69,15 @@
   --color-ilus-trazo: #3a3325;
   /* Cuánta luz propia emiten el faro, el fogón y las ventanas: nada de día, todo de noche. */
   --ilus-luz: 0;
+  /* Escala de diseño (ux-base): radios, elevación y movimiento. */
+  --radius-s: 8px;
+  --radius-m: 14px;
+  --radius-l: 20px;
+  --sombra-1: 0 1px 2px rgb(20 36 26 / 0.08);
+  --sombra-2: 0 4px 16px rgb(20 36 26 / 0.1);
+  --sombra-3: 0 12px 32px rgb(20 36 26 / 0.14);
+  --dur: 180ms;
+  --curva: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* inline: next/font define sus variables en el <body>, no en :root; sin inline quedarían inválidas. */
@@ -141,11 +150,15 @@
   --color-ilus-sol: #f7e9ab;
   --color-ilus-trazo: #080e0a;
   --ilus-luz: 1;
+  /* Sombras con negro al 40 % sobre fondo oscuro. */
+  --sombra-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --sombra-2: 0 4px 16px rgb(0 0 0 / 0.4);
+  --sombra-3: 0 12px 32px rgb(0 0 0 / 0.4);
 }
 
 /* La barra superior es fija: al saltar a un ancla o al enfocar con el teclado, el elemento no queda debajo de ella. */
 html {
-  scroll-padding-top: 4rem;
+  scroll-padding-top: 5.5rem;
 }
 
 /* Tamaño de texto: todo el diseño usa rem, así que cambiar la base escala la página entera. */
@@ -156,6 +169,68 @@ html {
 /* Hifa apagada: el script del <head> lo marca antes de hidratar, así el botón no parpadea. */
 :root[data-hifa="apagada"] [aria-controls="chat-hifa"] {
   display: none;
+}
+
+/* Con movimiento reducido del sistema, la duración de los componentes base es 0. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur: 0ms;
+  }
+}
+
+:root[data-movimiento="reducido"] {
+  --dur: 0ms;
+}
+
+/* Alto de la barra inferior del celular (ux-celular): 56 px más la zona segura. En compu no hay barra. */
+:root {
+  --alto-barra-inferior: calc(3.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 768px) {
+  :root {
+    --alto-barra-inferior: 0px;
+  }
+}
+
+/* Lotes en celular: la hoja en reposo (hasta 10rem, con las pastillas de estado y margen para que no se corten) queda fija sobre la barra inferior y taparía el pie; el pie reserva ese alto. */
+body:has([data-espacio-hoja]) footer {
+  padding-bottom: calc(var(--alto-barra-inferior) + 10rem);
+}
+
+/* La hoja sube desde abajo; con --dur en 0 (movimiento reducido) no hay animación. */
+@keyframes hoja-sube {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.hoja-sube {
+  animation: hoja-sube calc(var(--dur) * 1.5) var(--curva);
+}
+
+/* Brillo suave del esqueleto de carga; sin brillo con movimiento reducido. */
+@keyframes esqueleto-brillo {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.esqueleto {
+  animation: esqueleto-brillo 1.6s var(--curva) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto {
+    animation: none;
+  }
 }
 
 /* Reducir animaciones: sin transiciones ni movimientos. */

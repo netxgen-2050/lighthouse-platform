@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { aceptarPaso } from "./ayudas";
+import { abrirModoDePrueba, aceptarPaso } from "./ayudas";
 import { COOKIE_PRUEBA, EMAIL_FUERA_DE_LISTA, EMAILS, expect, test, type Page } from "./fixtura";
 
 const LEYO = "Leí el manifiesto con atención y entiendo que sumarme es comprometerme con un grupo de personas";
@@ -36,6 +36,10 @@ test.describe("sin sesión", () => {
     await expect(barra(page).getByRole("button", { name: "Entrar" })).toBeVisible();
     await expect(barra(page).getByRole("button", { name: "Menú de la persona" })).toHaveCount(0);
     await expect(barra(page).getByRole("link", { name: /NetX/ })).toHaveCount(0);
+    // El panel vive plegado en "Modo de prueba", al final de la página.
+    await expect(page.getByText("Modo de prueba", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeHidden();
+    await abrirModoDePrueba(page);
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
     for (const email of Object.values(EMAILS)) await expect(page.getByRole("button", { name: email })).toBeVisible();
     await expect(page.locator("main")).toHaveCount(1);
@@ -55,6 +59,7 @@ test.describe("sin sesión", () => {
 
   test("axe sin violaciones serias o críticas en Sumarte sin cuenta", async ({ page }) => {
     await page.goto("/pactos");
+    await abrirModoDePrueba(page);
     await expect(page.getByRole("heading", { name: "Entrar como…" })).toBeVisible();
     const r = await new AxeBuilder({ page }).analyze();
     expect(r.violations.filter((v) => v.impact === "serious" || v.impact === "critical")).toEqual([]);
@@ -62,6 +67,7 @@ test.describe("sin sesión", () => {
 
   test("entrar como una persona de la lista abre la app y recuerda la sesión al recargar", async ({ page }) => {
     await page.goto("/sumarte");
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await aceptarPaso(page);
     await expect(menuAvatar(page)).toBeVisible();
@@ -263,6 +269,7 @@ test.describe("salir y cambiar de cuenta", () => {
     // para que aparezca "Entrar como…".)
     await page.goto("/pactos");
     await salir(page);
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: EMAILS.superadmin }).click();
     await aceptarPaso(page);
     await expect(menuAvatar(page)).toBeVisible();
@@ -273,6 +280,7 @@ test.describe("salir y cambiar de cuenta", () => {
     // A vuelve a entrar y su pedido sigue ahí.
     await page.goto("/pactos");
     await salir(page);
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await aceptarPaso(page);
     await expect(menuAvatar(page)).toBeVisible();
@@ -293,6 +301,7 @@ test.describe("datos de antes del login", () => {
       }
     });
     await page.goto("/pactos");
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: EMAILS.persona }).click();
     await aceptarPaso(page);
     const aviso = page.getByRole("region", { name: "Encontramos datos de antes del login" });
@@ -300,7 +309,7 @@ test.describe("datos de antes del login", () => {
     await aviso.getByRole("button", { name: "Importar a mi cuenta" }).click();
     await expect(aviso).toHaveCount(0);
     // Adherir es de Miembro: la persona nueva (Explorador) pasa a Miembro en Sumarte para ver el pedido importado.
-    await page.goto("/sumarte");
+    await page.goto("/sumarte?plan=miembro");
     await page.getByRole("button", { name: "Hacerme miembro" }).click();
     await page.goto("/tribus/valle");
     await expect(page.getByText("Tu pedido llegó a Valle Solar.")).toBeVisible();
@@ -308,6 +317,7 @@ test.describe("datos de antes del login", () => {
     // La segunda cuenta ya no recibe la oferta.
     await page.goto("/pactos");
     await salir(page);
+    await abrirModoDePrueba(page);
     await page.getByRole("button", { name: EMAILS.superadmin }).click();
     await aceptarPaso(page);
     await expect(menuAvatar(page)).toBeVisible();

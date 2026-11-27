@@ -9,7 +9,6 @@ import { BarraAvance, tonoDeAvance } from "./barra-avance";
 import { ChipEstado, ESTADOS_CHIP } from "./chip-estado";
 import { Indicador } from "./indicador";
 import { PanelVidrio } from "./panel-vidrio";
-import { SelloPrototipo } from "./sello-prototipo";
 import { TablaLibro } from "./tabla-libro";
 
 const html = (nodo: ReactNode, idioma: Idioma = "es") =>
@@ -137,23 +136,6 @@ describe("TablaLibro", () => {
   });
 });
 
-describe("SelloPrototipo", () => {
-  test("general: solo el aviso", () => {
-    const h = html(<SelloPrototipo />);
-    expect(h).toContain("Prototipo interno · datos de ejemplo");
-    expect(h).not.toContain("aprobación municipal");
-  });
-  test("venta: suma venta simulada y aprobación pendiente", () => {
-    const h = html(<SelloPrototipo variante="venta" />);
-    expect(h).toContain("Prototipo interno · datos de ejemplo");
-    expect(h).toContain("venta simulada · aprobación municipal pendiente");
-    expect(h).not.toMatch(/otorgada|aprobada/);
-  });
-  test("en inglés", () => {
-    expect(html(<SelloPrototipo variante="venta" />, "en")).toContain("simulated sale · municipal approval pending");
-  });
-});
-
 describe("ChipEstado", () => {
   test("cada estado tiene texto e ícono propio", () => {
     const iconos = new Set<string>();
@@ -169,6 +151,13 @@ describe("ChipEstado", () => {
   test("en cuotas en inglés", () => {
     expect(html(<ChipEstado estado="enCuotas" />, "en")).toContain("In instalments");
     expect(html(<ChipEstado estado="enCuotas" />)).toContain("En cuotas");
+  });
+  test("idea dice Idea, con su ícono, y no En discusión", () => {
+    const h = html(<ChipEstado estado="idea" />);
+    expect(h).toContain("Idea");
+    expect(h).toContain("lucide-lightbulb");
+    expect(h).not.toContain("En discusión");
+    expect(html(<ChipEstado estado="idea" />, "en")).toContain("Draft idea");
   });
   test("reservado y vendido se distinguen por texto", () => {
     expect(html(<ChipEstado estado="reservado" />)).toContain("Reservado");
