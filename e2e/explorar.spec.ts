@@ -304,7 +304,33 @@ test.describe("lista y mapa de lotes (ux-explorar)", () => {
     expect(arriba).toBeLessThan(200);
   });
 
-  test("a 390 px, con la hoja en reposo, filtros y tarjetas no se recorren con Tab", async ({ page }) => {
+  test("a 390 px, sin abrir la hoja, el filtro Disponible se ve, se marca, va a la URL y el mapa atenúa el resto", async ({ page }) => {
+    await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/explorar/lotes");
+    const mapa = page.locator(".mapa-leaflet");
+    await expect(mapa).toBeVisible();
+    await expect(mapa).toHaveAttribute("data-atenuados", "0");
+    const total = await page.locator("article[data-lote]").count();
+    const boton = page.getByRole("button", { name: "Disponible", exact: true });
+    await expect(boton).toBeInViewport();
+    const caja = (await boton.boundingBox())!;
+    expect(caja.height).toBeGreaterThanOrEqual(44);
+    // Las pastillas terminan con margen antes del borde superior de la barra inferior (no pegadas al límite de la hoja).
+    const barra = (await page.getByRole("navigation", { name: "Principal" }).boundingBox())!;
+    expect(caja.y + caja.height).toBeLessThanOrEqual(barra.y - 8);
+    await expect(page.getByRole("button", { name: "Ver lista" })).toHaveAttribute("aria-expanded", "false");
+    await boton.click();
+    await expect(boton).toHaveAttribute("aria-pressed", "true");
+    await expect(page).toHaveURL(/estado=disponible/);
+    const disponibles = await page.locator("article[data-lote]").count();
+    expect(disponibles).toBeGreaterThan(0);
+    expect(disponibles).toBeLessThan(total);
+    await expect(mapa).toHaveAttribute("data-atenuados", String(total - disponibles));
+    await expect(page.getByRole("button", { name: "Ver lista" })).toHaveAttribute("aria-expanded", "false");
+  });
+
+  test("a 390 px, con la hoja en reposo, el orden y las tarjetas no se recorren con Tab", async ({ page }) => {
     await page.route("**://server.arcgisonline.com/**", (r) => r.abort());
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/explorar/lotes");

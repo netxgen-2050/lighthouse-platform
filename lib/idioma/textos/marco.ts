@@ -22,6 +22,7 @@ const es = {
     enCuotas: "En cuotas",
     vendido: "Vendido",
     enFinanciamiento: "En financiamiento",
+    idea: "Idea",
   },
   // Tabla tipo libro y barra de avance.
   ui: {
@@ -127,6 +128,7 @@ const en: Textos<typeof es> = {
     enCuotas: "In instalments",
     vendido: "Sold",
     enFinanciamiento: "Being financed",
+    idea: "Draft idea",
   },
   ui: {
     fecha: "Date",

@@ -109,15 +109,19 @@ export function ExploradorLotes({ encabezado, legal }: { encabezado: ReactNode; 
 
   const etiquetasEstado: Record<EstadoLote, string> = { disponible: tl.disponible, reservado: tl.reservado, vendido: tl.vendido };
 
-  const controles = (
+  const pastillas = (
+    <div role="group" aria-label={t.lista.filtroEstado} className="flex flex-wrap gap-2">
+      {ESTADOS_FILTRO.map((e) => (
+        <button key={e} type="button" aria-pressed={filtro.estados.includes(e)} onClick={() => alternarEstado(e)} className={PASTILLA}>
+          {etiquetasEstado[e]}
+        </button>
+      ))}
+    </div>
+  );
+
+  // En el celular las pastillas van sobre el mapa, fuera de la hoja; en la hoja queda solo el orden.
+  const orden = (
     <div className="grid gap-3">
-      <div role="group" aria-label={t.lista.filtroEstado} className="flex flex-wrap gap-2">
-        {ESTADOS_FILTRO.map((e) => (
-          <button key={e} type="button" aria-pressed={filtro.estados.includes(e)} onClick={() => alternarEstado(e)} className={PASTILLA}>
-            {etiquetasEstado[e]}
-          </button>
-        ))}
-      </div>
       <label className="flex flex-wrap items-center gap-2 text-sm">
         <span>{t.lista.orden}</span>
         <select
@@ -178,6 +182,8 @@ export function ExploradorLotes({ encabezado, legal }: { encabezado: ReactNode; 
         {legal}
         <Hoja
           persistente
+          // El filtro por estado va en la franja que la hoja deja ver en reposo (ux-correcciones): se ve y se usa sin abrirla.
+          cabecera={pastillas}
           abierta
           alCerrar={() => setHojaAbierta(false)}
           titulo={t.lista.resumen(todos.length, conteo.disponible)}
@@ -187,15 +193,15 @@ export function ExploradorLotes({ encabezado, legal }: { encabezado: ReactNode; 
           alExpandir={setHojaAbierta}
         >
           <div className="grid gap-4 pb-6">
-            {/* En reposo la hoja deja ver ~2rem: filtros y tarjetas no se recorren con Tab hasta que se abre. */}
+            {/* En reposo la hoja deja ver ~2rem: el orden y las tarjetas no se recorren con Tab hasta que se abre. */}
             <div className="grid gap-4" inert={!hojaAbierta}>
-              {controles}
+              {orden}
               {tarjetas}
             </div>
           </div>
         </Hoja>
-        {/* Se descuentan los 7rem de la hoja en reposo (max-h-28) para que la tarjeta flotante no quede tapada. */}
-        <div className="relative h-[calc(100dvh-var(--alto-fijo,4.5rem)-var(--alto-barra-inferior)-7rem)] min-h-80">
+        {/* Se descuentan los 10rem de la hoja en reposo para que la tarjeta flotante no quede tapada. */}
+        <div className="relative h-[calc(100dvh-var(--alto-fijo,4.5rem)-var(--alto-barra-inferior)-10rem)] min-h-80">
           {mapa}
           <div className="absolute right-3 top-3 z-10">
             <Boton variante="secundario" tamano="s" aria-expanded={hojaAbierta} onClick={() => setHojaAbierta((a) => !a)}>
@@ -204,7 +210,7 @@ export function ExploradorLotes({ encabezado, legal }: { encabezado: ReactNode; 
           </div>
         </div>
         <LeyendaLotes />
-        {/* La hoja en reposo (7rem) tapa el pie, que solo reserva 4.5rem: esta marca hace que el pie (globals.css) reserve 7rem y se pueda ver y enfocar al llegar al final. */}
+        {/* La hoja en reposo (10rem) tapa el pie, que solo reserva 4.5rem: esta marca hace que el pie (globals.css) reserve 10rem y se pueda ver y enfocar al llegar al final. */}
         <div className="h-0" aria-hidden="true" data-espacio-hoja="" />
       </div>
     );
@@ -215,7 +221,10 @@ export function ExploradorLotes({ encabezado, legal }: { encabezado: ReactNode; 
       <div className="grid min-w-0 content-start gap-4">
         {encabezado}
         {legal}
-        {controles}
+        <div className="grid gap-3">
+          {pastillas}
+          {orden}
+        </div>
         {tarjetas}
       </div>
       <div className="order-first grid content-start gap-2 lg:order-none">

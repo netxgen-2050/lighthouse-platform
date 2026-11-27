@@ -1,6 +1,6 @@
 "use client";
 
-import { Banknote, BadgeCheck, CalendarClock, Clock, DoorOpen, Handshake, MessagesSquare, Sprout, type LucideIcon } from "lucide-react";
+import { Banknote, BadgeCheck, CalendarClock, Clock, DoorOpen, Handshake, Lightbulb, MessagesSquare, Sprout, type LucideIcon } from "lucide-react";
 import { useTextos } from "@/lib/idioma/cliente";
 
 /** Lista cerrada de estados que puede mostrar el chip. */
@@ -13,6 +13,7 @@ export const ESTADOS_CHIP = [
   "enCuotas",
   "vendido",
   "enFinanciamiento",
+  "idea",
 ] as const;
 export type EstadoChip = (typeof ESTADOS_CHIP)[number];
 
@@ -26,6 +27,7 @@ const ICONO: Record<EstadoChip, LucideIcon> = {
   enCuotas: CalendarClock,
   vendido: Handshake,
   enFinanciamiento: Banknote,
+  idea: Lightbulb,
 };
 
 export function ChipEstado({ estado }: { estado: EstadoChip }) {

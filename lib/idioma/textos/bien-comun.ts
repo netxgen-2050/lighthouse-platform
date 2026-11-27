@@ -201,7 +201,6 @@ const es = {
     principio: "Principio",
     como: "Cómo lo tomaríamos",
     estado: "Estado",
-    idea: "idea",
     filas: [
       { principio: "Límites claros", como: "Es parte quien adhiere al manifiesto y quien tiene un lote." },
       { principio: "Reglas acordes al lugar", como: "El agua guía el diseño; el reglamento es igual para todos." },
@@ -524,7 +523,6 @@ const en: Textos<typeof es> = {
     principio: "Principle",
     como: "How we would take it",
     estado: "Status",
-    idea: "draft idea",
     filas: [
       { principio: "Clear boundaries", como: "A member is whoever adheres to the manifesto and whoever holds a lot." },
       { principio: "Rules that fit the place", como: "Water guides the design; the regulation is the same for everyone." },

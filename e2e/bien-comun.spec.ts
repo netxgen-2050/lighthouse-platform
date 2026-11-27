@@ -148,7 +148,7 @@ test.describe("sin sesión", () => {
     expect(texto).not.toMatch(/lámina|opción|Objeción|Regla |quema|suavizado|oferta atada|circulación|precio que defender/i);
   });
 
-  test("las parcelas comunes se leen del plano, no son tokens y no se venden; Ostrom marca cada principio en discusión", async ({ page }) => {
+  test("las parcelas comunes se leen del plano, no son tokens y no se venden; Ostrom marca cada principio como idea", async ({ page }) => {
     await irYDesplegar(page, RUTA);
     const s = page.getByRole("region", { name: "Las parcelas comunes" });
     await expect(s).toContainText("no son tokens");
@@ -156,7 +156,9 @@ test.describe("sin sesión", () => {
     await expect(s).toContainText("Cocinas comunitarias");
     const tabla = page.getByRole("table", { name: /principios de Ostrom/ });
     await expect(tabla.getByRole("row")).toHaveCount(9);
-    await expect(tabla.locator('[data-estado="enDiscusion"]')).toHaveCount(8);
+    await expect(tabla.locator('[data-estado="idea"]')).toHaveCount(8);
+    await expect(tabla.getByText("Idea", { exact: true })).toHaveCount(8);
+    await expect(tabla.getByText("En discusión")).toHaveCount(0);
   });
 
   test("preguntas para el abogado, con su ⚖ en las palabras legales", async ({ page }) => {
