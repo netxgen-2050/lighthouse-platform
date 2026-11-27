@@ -238,7 +238,7 @@ export function CompraSimulada({ loteId, numero, proyecto, traeFaro, superficieM
             <TerminoLegal clave="boletoejemplo" idioma={idioma} />
           </h3>
           {/* La marca va antes de cualquier dato. */}
-          <p className="rounded-lg border border-dashed border-gold-ink bg-gold-soft px-3 py-2 text-sm font-bold break-words">
+          <p className="rounded-lg border border-gold-ink bg-gold-soft px-3 py-2 text-sm font-bold break-words">
             {t.boleto.marca}
           </p>
           <p className="text-sm">{t.compra.noSeCobro}</p>

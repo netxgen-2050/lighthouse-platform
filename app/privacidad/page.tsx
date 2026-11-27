@@ -28,9 +28,6 @@ export default function PrivacidadPage() {
       <p className="mb-2 text-sm">
         <Link className="underline" href="/">← Inicio</Link>
       </p>
-      <p className="mb-4 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-        Prototipo interno · datos de ejemplo
-      </p>
       <h1 className="text-3xl font-semibold">Política de privacidad</h1>
       <p role="note" className="mt-3 rounded-lg border border-gold-ink bg-gold-soft px-4 py-3 text-sm font-medium">
         Borrador: este texto lo tiene que revisar un abogado antes de cualquier uso real. Versión {VERSION_POLITICA}.

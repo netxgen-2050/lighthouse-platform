@@ -6,7 +6,7 @@ import { conVocabulario } from "../vocabulario";
 const es = {
   titulo: "Barrio Norte",
   sobretitulo: "Lighthouse VRN · Explorar",
-  bajada: "Dónde vivirías, con quién y cuánto cuesta: primero el territorio, después los números. Todo es de ejemplo.",
+  bajada: "Dónde vivirías, con quién y cuánto cuesta: primero el territorio, después los números.",
   lotes: {
     titulo: "Los lotes del barrio",
     intro: "Cuántos lotes hay en cada estado, según el plano. Las compras simuladas que hacés en tu navegador no cambian estos totales.",
@@ -49,7 +49,7 @@ const es = {
 const en: Textos<typeof es> = {
   titulo: "Barrio Norte",
   sobretitulo: "Lighthouse VRN · Explore",
-  bajada: "Where you would live, with whom and how much it costs: the territory first, then the numbers. Everything is sample data.",
+  bajada: "Where you would live, with whom and how much it costs: the territory first, then the numbers.",
   lotes: {
     titulo: "The lots of the neighborhood",
     intro: "How many lots are in each state, according to the plan. Simulated purchases you make in your browser do not change these totals.",

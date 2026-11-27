@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AvisoEjemplo } from "@/components/aviso-ejemplo";
 import { idiomaDelPedido } from "@/lib/idioma/servidor";
 import { textos } from "@/lib/idioma/textos";
 import { listarLotes } from "@/lib/territorios/loteo";
@@ -46,10 +45,6 @@ export default async function LotePage({ params }: Props) {
       <div className="mt-2 grid gap-2">
         <MarcaLoteo />
         {lote.grupo === "primeros" && <p className="text-sm font-medium">{t.ficha.avisoPrimeros}</p>}
-        <AvisoEjemplo />
-        <p className="w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-          {textos("marco", idioma).aviso}
-        </p>
       </div>
       <FichaCliente id={lote.id} />
     </div>

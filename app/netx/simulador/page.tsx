@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { TerminoLegal } from "@/components/termino-legal";
+import { Aviso } from "@/components/ui/aviso";
 import { TERMINOS } from "@/lib/legal/terminos";
 import { SimuladorCliente } from "./simulador-cliente";
 
@@ -12,9 +13,9 @@ export default function SimuladorPage() {
       <p className="mb-2 text-sm">
         <Link className="underline" href="/netx">← Vista NetX</Link>
       </p>
-      <p className="mb-4 max-w-2xl rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+      <Aviso tono="legal" className="mb-4 max-w-2xl">
         {TERMINOS.avisosimulador.texto}
-      </p>
+      </Aviso>
       <p className="text-sm font-medium text-muted">Vista NetX</p>
       <h1 className="text-3xl font-semibold">Simulador de la tokenomics</h1>
       <p className="mt-2 text-muted">Modelo de NS_Tokenomics doc 28 (diseño B): el bien común en números.</p>

@@ -69,7 +69,7 @@ test.describe("sin sesión", () => {
     await expect(page.getByRole("region", { name: "Estado administrativo · Lighthouse VRN" })).toContainText(
       "supuesto de trabajo, no otorgada",
     );
-    await expect(page.getByRole("region", { name: "Todos los lotes" }).getByRole("link")).toHaveCount(listarLotes().length);
+    await expect(page.locator("article[data-lote]").getByRole("link")).toHaveCount(listarLotes().length);
     await page.goto(`/lotes/${lote.id}`);
     await expect(page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Explorar", exact: true })).toHaveAttribute("aria-current", "page");
   });
@@ -229,8 +229,8 @@ test.describe("plan en cuotas · Token Tierra (simulado)", () => {
     await page.getByRole("button", { name: "Reservar (simulado)" }).click();
     await page.getByRole("button", { name: "Simular el primer pago (anticipo)" }).click();
     await page.getByRole("button", { name: "Confirmar el primer pago simulado" }).click();
-    await page.goto("/lotes");
-    await expect(page.getByRole("link", { name: new RegExp(`^Lote ${lote.numero} `) })).toContainText("En cuotas (simulado)");
+    await page.goto("/explorar/lotes");
+    await expect(page.locator(`article[data-lote="${lote.id}"]`)).toContainText("En cuotas (simulado)");
     await page.goto(`/territorios/lighthouse?sel=${lote.id}`);
     await expect(page.getByRole("complementary", { name: "Ficha del territorio" })).toContainText("En cuotas (simulado)");
   });
@@ -434,13 +434,10 @@ test("lo reservado se ve en el mapa, en la lista y en la ficha, y el panel del m
 
   await page.goto(`/territorios/lighthouse?sel=${lote.id}`);
   await expect(ficha).toContainText("Reservado (simulado, por vos)");
-  await expect(page.getByRole("list", { name: "Lotes del sector norte" }).getByRole("button", { name: new RegExp(`^Lote ${lote.numero} `) })).toContainText(
-    "Reservado (simulado, por vos)",
-  );
-  await page.goto("/lotes");
-  await expect(page.getByRole("link", { name: new RegExp(`^Lote ${lote.numero} `) })).toContainText("Reservado (simulado, por vos)");
+  await page.goto("/explorar/lotes");
+  await expect(page.locator(`article[data-lote="${lote.id}"]`)).toContainText("Reservado (simulado, por vos)");
   // Otro lote no se mueve.
-  await expect(page.getByRole("link", { name: new RegExp(`^Lote ${otro.numero} `) })).toContainText("Disponible");
+  await expect(page.locator(`article[data-lote="${otro.id}"]`)).toContainText("Disponible");
 });
 
 test.describe("hablar con alguien", () => {
@@ -521,9 +518,8 @@ test("/lotes y una ficha no se dejan indexar", async ({ page }) => {
 test.describe("los primeros 4 lotes", () => {
   test("/lotes los pone primero, con su propio estado administrativo", async ({ page }) => {
     await page.goto("/lotes");
-    const enlaces = page.getByRole("region", { name: "Todos los lotes" }).getByRole("link");
+    const enlaces = page.locator("article[data-lote]").getByRole("link");
     await expect(enlaces.first()).toContainText("Lote 535");
-    await expect(page.getByRole("heading", { level: 4, name: "Primeros 4 lotes" })).toBeVisible();
     const estado = page.getByRole("region", { name: "Estado administrativo · Primeros 4 lotes" });
     await expect(estado).toContainText("Titular: BioPueblo");
     await expect(estado).toContainText("Aprobación municipal: informada, sin documento a la vista");
@@ -534,7 +530,7 @@ test.describe("los primeros 4 lotes", () => {
     await page.goto(`/lotes/${primero.id}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Lote 535");
     await expect(page.getByText(/fuera del polígono del 7A/)).toBeVisible();
-    await expect(page.getByRole("region", { name: "Lote 535" })).toContainText("Quién vende: sin dato");
+    await expect(page.getByText("Quién vende: sin dato")).toBeVisible();
     await expect(page.getByText(/supuesto de trabajo/)).toHaveCount(0);
     await marcarLeido(page);
     await conTeclado(page, page.getByRole("button", { name: "Reservar (simulado)" }));

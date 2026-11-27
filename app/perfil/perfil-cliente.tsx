@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useSesion } from "@/components/sesion/contexto";
+import { Aviso } from "@/components/ui/aviso";
 import { CLAVES } from "@/lib/demo/claves";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { COMUNIDAD_LIGHTHOUSE, leer as leerMembresia, type Membresias } from "@/lib/membresia/estado";
@@ -159,7 +160,7 @@ export function PerfilCliente() {
     return rol ? textoDeRol(rol, idioma).nombre : c;
   });
   const aviso = (
-    <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">{t.aviso}</p>
+    <Aviso tono="atencion">{t.aviso}</Aviso>
   );
 
   // Función común (no componente): devuelve el aviso del campo, o nada si está bien.

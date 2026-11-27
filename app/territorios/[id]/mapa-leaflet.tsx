@@ -44,9 +44,15 @@ type Props = {
   alElegir: (id: string) => void;
   vista: VistaId;
   fase: Fase;
+  /** Clases del contenedor (el alto). Sin esto, el alto de siempre. */
+  className?: string;
+  /** Nombre accesible del mapa; sin esto, el de siempre. */
+  etiqueta?: string;
+  /** Ids de lotes que se muestran con todo su color; el resto queda atenuado. Sin esto, todos (Explorar / Lotes). */
+  lotesVisibles?: ReadonlySet<string> | null;
 };
 
-export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props) {
+export default function MapaLeaflet({ seleccion, alElegir, vista, fase, className, etiqueta, lotesVisibles = null }: Props) {
   const idioma = useIdioma();
   const tx = useTextos("territorio");
   const contenedor = useRef<HTMLDivElement>(null);
@@ -89,7 +95,11 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props)
       sellos.current.get(ultima.current)?.classList.remove("mapa-sello-elegido");
     }
     ultima.current = id;
-    if (!id) return;
+    // El mapa es un canvas: estos atributos son lo único que ven los tests e2e del resaltado.
+    if (!id) {
+      contenedor.current?.removeAttribute("data-elegido");
+      return;
+    }
     sellos.current.get(id)?.classList.add("mapa-sello-elegido");
     const nueva = capas.current.get(id);
     const m = mapaRef.current;
@@ -101,6 +111,8 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props)
       // Frente: un punto, no un polígono.
       m.setView(puntos.current.get(id)!, Math.max(m.getZoom(), 15));
     }
+    // Va después del encuadre: el movimiento ya empezó (data-moviendo) cuando este atributo aparece.
+    contenedor.current?.setAttribute("data-elegido", id);
   }
 
   useEffect(() => {
@@ -114,6 +126,9 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props)
       const macro = macrolote7();
       const mapa = L.map(contenedor.current, { attributionControl: false });
       mapaRef.current = mapa;
+      // Señal para los tests e2e: mientras el mapa se mueve o hace zoom, el contenedor lleva data-moviendo.
+      mapa.on("movestart", () => contenedor.current?.setAttribute("data-moviendo", ""));
+      mapa.on("moveend", () => contenedor.current?.removeAttribute("data-moviendo"));
       destruir = () => {
         mapa.remove();
         mapaRef.current = null;
@@ -308,6 +323,7 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props)
       };
       aplicarVista.current();
       resaltar(seleccionActual.current);
+      aplicarFiltro();
     })();
 
     return () => {
@@ -330,14 +346,36 @@ export default function MapaLeaflet({ seleccion, alElegir, vista, fase }: Props)
     if (mapaRef.current) resaltar(seleccion);
   }, [seleccion]);
 
+  // Filtro de lotes: los que no entran quedan atenuados (el borde sigue diciendo su estado); el elegido se vuelve a resaltar.
+  const visiblesRef = useRef(lotesVisibles);
+  visiblesRef.current = lotesVisibles;
+  const aplicarFiltro = () => {
+    let atenuados = 0;
+    for (const [id, c] of capas.current) {
+      if (!id.startsWith("lote-")) continue;
+      const entra = !visiblesRef.current || visiblesRef.current.has(id);
+      if (!entra) atenuados++;
+      c.capa.setStyle(entra ? c.base : { ...c.base, fillOpacity: 0.04, opacity: 0.35 });
+    }
+    contenedor.current?.setAttribute("data-atenuados", String(atenuados));
+    if (ultima.current) {
+      const e = capas.current.get(ultima.current);
+      if (e) e.capa.setStyle(estiloElegido(e.base, ultima.current.startsWith("lote-")));
+    }
+  };
+  useEffect(() => {
+    aplicarFiltro();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lotesVisibles, vista, seleccion]);
+
   const faseTexto = fase === FASE_ACTUAL ? tx.mapa.faseHoy(fase) : String(fase);
 
   return (
     <div
       ref={contenedor}
       role="region"
-      aria-label={tx.mapa.aria(tx.vistas[vista].corto, faseTexto)}
-      className="mapa-leaflet h-[26rem] w-full rounded-xl border border-faint"
+      aria-label={etiqueta ?? tx.mapa.aria(tx.vistas[vista].corto, faseTexto)}
+      className={`mapa-leaflet w-full rounded-xl border border-faint ${className ?? "h-[26rem]"}`}
     />
   );
 }

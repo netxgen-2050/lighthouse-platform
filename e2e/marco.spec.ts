@@ -50,18 +50,23 @@ test("la barra superior está arriba a la derecha con NetX (interno), la campani
   const barra = page.getByRole("banner");
   await expect(barra).toBeVisible();
   const caja = (await barra.boundingBox())!;
-  expect(caja.y).toBe(0);
+  // La cinta de prototipo va arriba de la barra, las dos fijas (design §4).
+  const cinta = (await page.locator("[data-cinta-prototipo]").boundingBox())!;
+  expect(cinta.y).toBe(0);
+  expect(caja.y).toBeCloseTo(cinta.height, 1);
   const netx = barra.getByRole("link", { name: /NetX/ });
   await expect(netx).toHaveAttribute("href", "/netx");
   await expect(netx).toContainText("Interno");
   const campanita = barra.locator('a[href="/bandeja"]');
   const avatar = barra.getByRole("button", { name: "Menú de la persona" });
-  const idioma = barra.getByRole("group", { name: "Idioma · Language" });
-  const [a, b, i, c] = await Promise.all([netx.boundingBox(), campanita.boundingBox(), idioma.boundingBox(), avatar.boundingBox()]);
-  // De izquierda a derecha: NetX, campanita, selector de idioma, avatar; el avatar queda contra el borde derecho.
-  expect(a!.x).toBeLessThan(b!.x);
-  expect(b!.x).toBeLessThan(i!.x);
-  expect(i!.x).toBeLessThan(c!.x);
+  const reportar = barra.getByRole("button", { name: "Reportar un problema o una idea" });
+  // El idioma ya no es un control fijo de la barra: está en el menú del avatar.
+  await expect(barra.getByRole("group", { name: "Idioma · Language" })).toHaveCount(0);
+  const [a, r, b, c] = await Promise.all([netx.boundingBox(), reportar.boundingBox(), campanita.boundingBox(), avatar.boundingBox()]);
+  // De izquierda a derecha: NetX, Reportar, campanita, avatar; el avatar queda contra el borde derecho.
+  expect(a!.x).toBeLessThan(r!.x);
+  expect(r!.x).toBeLessThan(b!.x);
+  expect(b!.x).toBeLessThan(c!.x);
   expect(c!.x + c!.width).toBeGreaterThan(1280 - 40);
   await expect(page.locator("main")).toHaveCount(1);
 });
@@ -70,18 +75,23 @@ test("la barra superior queda fija al bajar la página", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 600 });
   await page.goto("/pactos");
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  const cinta = (await page.locator("[data-cinta-prototipo]").boundingBox())!;
+  expect(cinta.y).toBe(0);
   const caja = (await page.getByRole("banner").boundingBox())!;
-  expect(caja.y).toBe(0);
+  expect(caja.y).toBeCloseTo(cinta.height, 1);
 });
 
-test("celular 390 x 844: la barra superior muestra NetX, la campanita, el selector de idioma y el avatar sin desbordar", async ({ page }) => {
+test("celular 390 x 844: la barra superior muestra la marca, la campanita y el avatar, sin idioma ni Menú, y sin desbordar", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const ruta of ["/", "/configuracion", "/sumarte"]) {
     await page.goto(ruta);
     const barra = page.getByRole("banner");
-    await expect(barra.getByRole("link", { name: /NetX/ })).toBeVisible();
+    await expect(barra.getByRole("link", { name: "Lighthouse" })).toHaveAttribute("href", "/");
+    await expect(barra.getByRole("link", { name: /NetX/ })).toBeHidden();
+    await expect(barra.getByRole("button", { name: "Reportar un problema o una idea" })).toBeHidden();
     await expect(barra.locator('a[href="/bandeja"]')).toBeVisible();
-    await expect(barra.getByRole("group", { name: "Idioma · Language" })).toBeVisible();
+    await expect(barra.getByRole("group", { name: "Idioma · Language" })).toHaveCount(0);
+    await expect(barra.getByRole("button", { name: "Menú", exact: true })).toHaveCount(0);
     await expect(barra.getByRole("button", { name: "Menú de la persona" })).toBeVisible();
     const caja = (await barra.boundingBox())!;
     expect(caja.height).toBeLessThanOrEqual(56);
@@ -131,96 +141,162 @@ test("ningún enlace a los cinco módulos en pausa en el rail, el menú del celu
   for (const n of pausa) await expect(page.locator("#menu-persona").getByRole("link", { name: n })).toHaveCount(0);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await page.getByRole("button", { name: "Menú", exact: true }).click();
-  for (const n of pausa) await expect(page.locator("#menu-celular").getByRole("link", { name: n })).toHaveCount(0);
+  await page.getByRole("button", { name: "Más", exact: true }).click();
+  const hoja = page.getByRole("dialog", { name: "Más" });
+  await expect(hoja).toBeVisible();
+  for (const n of pausa) await expect(hoja.getByRole("link", { name: n })).toHaveCount(0);
 });
 
-test("celular 390 x 844: el rail se oculta y el botón Menú abre los destinos; elegir uno cierra el panel", async ({ page }) => {
+test("celular 390 x 844: la barra inferior trae los cinco destinos y Más; tocar Explorar lo marca como actual", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  const boton = page.getByRole("button", { name: "Menú", exact: true });
-  await expect(boton).toBeVisible();
-  await expect(boton).toHaveAttribute("aria-expanded", "false");
-  expect((await boton.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-  await boton.click();
-  await expect(boton).toHaveAttribute("aria-expanded", "true");
-  const panel = page.locator("#menu-celular");
-  await expect(panel.getByRole("link", { name: "Inicio" })).toHaveAttribute("aria-current", "page");
-  await expect(panel.getByRole("link", { name: "Bien común" })).toBeVisible();
-  await panel.getByRole("link", { name: "Sumarte" }).click();
-  await expect(page).toHaveURL(/\/sumarte$/);
-  await expect(page.locator("#menu-celular")).toHaveCount(0);
-  await expect(boton).toHaveAttribute("aria-expanded", "false");
+  const barra = page.getByRole("navigation", { name: "Principal" });
+  await expect(barra).toBeVisible();
+  await expect(barra.getByRole("link")).toHaveText(["Inicio", "Explorar", "Participa", "Invertir", "Mi tierra"]);
+  await expect(barra.getByRole("link", { name: "Inicio" })).toHaveAttribute("aria-current", "page");
+  const caja = (await barra.boundingBox())!;
+  expect(Math.abs(caja.y + caja.height - 844)).toBeLessThanOrEqual(1);
+  for (const e of await barra.getByRole("link").all()) expect((await e.boundingBox())!.height).toBeGreaterThanOrEqual(48);
+  const mas = barra.getByRole("button", { name: "Más", exact: true });
+  expect((await mas.boundingBox())!.height).toBeGreaterThanOrEqual(48);
+  await barra.getByRole("link", { name: "Explorar" }).click();
+  await expect(page).toHaveURL(/\/explorar\/territorio$/);
+  await expect(barra.getByRole("link", { name: "Explorar" })).toHaveAttribute("aria-current", "page");
+  await expect(barra.locator('[aria-current="page"]')).toHaveCount(1);
 });
 
-test("celular: elegir el destino donde ya estás también cierra el panel", async ({ page }) => {
+test("celular: la hoja Más trae Bien común y Sumarte; elegir uno la cierra", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  const boton = page.getByRole("button", { name: "Menú", exact: true });
-  for (const [ruta, destino] of [["/", "Inicio"], ["/sumarte", "Sumarte"]]) {
-    await page.goto(ruta);
-    await boton.click();
-    await expect(boton).toHaveAttribute("aria-expanded", "true");
-    await page.locator("#menu-celular").getByRole("link", { name: destino }).click();
-    await expect(page.locator("#menu-celular")).toHaveCount(0);
-    await expect(boton).toHaveAttribute("aria-expanded", "false");
-  }
+  await page.goto("/");
+  const mas = page.getByRole("button", { name: "Más", exact: true });
+  await expect(mas).toHaveAttribute("aria-expanded", "false");
+  await mas.click();
+  const hoja = page.getByRole("dialog", { name: "Más" });
+  await expect(hoja).toBeVisible();
+  await expect(hoja.getByRole("link", { name: "Bien común" })).toBeVisible();
+  await expect(hoja.getByRole("link", { name: "Perfil" })).toBeVisible();
+  await expect(hoja.getByRole("button", { name: "Reportar un error" })).toBeVisible();
+  await expect(hoja.getByRole("group", { name: "Idioma · Language" })).toBeVisible();
+  await expect(hoja.getByRole("link", { name: /^Admin/ })).toBeVisible();
+  await hoja.getByRole("link", { name: "Sumarte" }).click();
+  await expect(page).toHaveURL(/\/sumarte$/);
+  await expect(hoja).toHaveCount(0);
+});
+
+test("celular: elegir el destino donde ya estás también cierra la hoja", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/sumarte");
+  await page.getByRole("button", { name: "Más", exact: true }).click();
+  const hoja = page.getByRole("dialog", { name: "Más" });
+  await hoja.getByRole("link", { name: "Sumarte" }).click();
+  await expect(hoja).toHaveCount(0);
 });
 
 test.describe("sin sesión", () => {
   test.use({ rol: "ninguno" });
 
-  test("celular 390 px: la barra muestra Menú, el selector de idioma, Sumarte y Entrar sin desbordar", async ({ page }) => {
+  test("celular 390 px: la barra muestra la marca y Sumarte; Entrar, el idioma y Reportar están en Más", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
     const barra = page.getByRole("banner");
-    await expect(barra.getByRole("button", { name: "Menú", exact: true })).toBeVisible();
-    await expect(barra.getByRole("group", { name: "Idioma · Language" })).toBeVisible();
+    await expect(barra.getByRole("link", { name: "Lighthouse" })).toBeVisible();
     await expect(barra.getByRole("link", { name: "Sumarte" })).toBeVisible();
-    await expect(barra.getByRole("button", { name: "Entrar" })).toBeVisible();
+    await expect(barra.getByRole("button", { name: "Entrar" })).toBeHidden();
+    await expect(barra.getByRole("group", { name: "Idioma · Language" })).toHaveCount(0);
     const caja = (await barra.boundingBox())!;
     expect(caja.x + caja.width).toBeLessThanOrEqual(390);
     expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
-    // Los destinos del panel están habilitados sin sesión.
-    await barra.getByRole("button", { name: "Menú", exact: true }).click();
-    await expect(page.locator("#menu-celular").getByRole("link")).toHaveText(["Inicio", "Explorar", "Participa", "Bien común", "Invertir", "Sumarte", "Mi tierra"]);
+    await page.getByRole("button", { name: "Más", exact: true }).click();
+    const hoja = page.getByRole("dialog", { name: "Más" });
+    // Entrar arriba de todo, después Bien común y Sumarte, el idioma y Reportar un error.
+    await expect(hoja.getByRole("button").nth(1)).toHaveText("Entrar");
+    await expect(hoja.getByRole("link")).toHaveCount(4);
+    for (const n of ["Bien común", "Sumarte", "ES · Español", "EN · English"]) await expect(hoja.getByRole("link", { name: n })).toBeVisible();
+    await expect(hoja.getByRole("button", { name: "Reportar un error" })).toBeVisible();
+  });
+
+  test("computadora: sin sesión el idioma está en el menú ⋯ junto a Entrar", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    const barra = page.getByRole("banner");
+    await expect(barra.getByRole("group", { name: "Idioma · Language" })).toHaveCount(0);
+    await barra.getByRole("button", { name: "Más opciones" }).click();
+    await expect(barra.getByRole("group", { name: "Idioma · Language" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(barra.getByRole("group", { name: "Idioma · Language" })).toHaveCount(0);
   });
 });
 
-test("celular: Escape cierra el menú y el foco vuelve al botón; tocar el botón otra vez también lo cierra", async ({ page }) => {
+test("celular: Escape cierra la hoja Más, el foco vuelve a Más y el foco queda atrapado adentro", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  const boton = page.getByRole("button", { name: "Menú", exact: true });
+  const boton = page.getByRole("button", { name: "Más", exact: true });
   await boton.click();
-  await expect(page.locator("#menu-celular")).toBeVisible();
-  await page.keyboard.press("Tab");
-  await expect(page.locator("#menu-celular").getByRole("link", { name: "Inicio" })).toBeFocused();
+  const hoja = page.getByRole("dialog", { name: "Más" });
+  await expect(hoja).toBeVisible();
+  // El foco entra a la hoja y no sale de ella con Tab.
+  expect(await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]'))).toBe(true);
+  for (let i = 0; i < 30; i++) {
+    await page.keyboard.press("Tab");
+    expect(await page.evaluate(() => !!document.activeElement?.closest('[role="dialog"]'))).toBe(true);
+  }
   await page.keyboard.press("Escape");
-  await expect(page.locator("#menu-celular")).toHaveCount(0);
+  await expect(hoja).toHaveCount(0);
   await expect(boton).toBeFocused();
-  await boton.click();
-  await boton.click();
-  await expect(page.locator("#menu-celular")).toHaveCount(0);
 });
 
-test("celular en inglés: el botón dice Menu y el panel Explore, Commons, Join", async ({ page, context, baseURL }) => {
+test("celular: la hoja Más se cierra al deslizar hacia abajo más de 80 px, y no con menos", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Más", exact: true }).click();
+  const hoja = page.getByRole("dialog", { name: "Más" });
+  // La hoja sube con una animación: se mide cuando ya llegó.
+  await hoja.evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
+  const caja = (await hoja.boundingBox())!;
+  const x = caja.x + caja.width / 2;
+  const y = caja.y + 10;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x, y + 40, { steps: 4 });
+  await page.mouse.up();
+  await expect(hoja).toBeVisible();
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x, y + 120, { steps: 6 });
+  await page.mouse.up();
+  await expect(hoja).toHaveCount(0);
+});
+
+test("celular en inglés: la barra dice Home, Explore, Take part, Invest y More", async ({ page, context, baseURL }) => {
   await context.addCookies([{ name: "lh-idioma", value: "en", url: baseURL! }]);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await page.getByRole("button", { name: "Menu", exact: true }).click();
-  const panel = page.locator("#menu-celular");
-  for (const n of ["Home", "Explore", "Commons", "Join"]) await expect(panel.getByRole("link", { name: n })).toBeVisible();
+  const barra = page.getByRole("navigation", { name: "Main" });
+  for (const n of ["Home", "Explore", "Take part", "Invest", "My land"]) await expect(barra.getByRole("link", { name: n })).toBeVisible();
+  await barra.getByRole("button", { name: "More", exact: true }).click();
+  const hoja = page.getByRole("dialog", { name: "More" });
+  for (const n of ["Commons", "Join"]) await expect(hoja.getByRole("link", { name: n })).toBeVisible();
 });
 
-test("computadora 1280 px: no hay botón Menú y el rail está a la izquierda; 768 px ya muestra el rail", async ({ page }) => {
+test("computadora 1280 px: no hay barra inferior ni botón Más y el rail está a la izquierda; 768 px ya muestra el rail", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/");
-  await expect(page.getByRole("button", { name: "Menú", exact: true })).toBeHidden();
+  await expect(page.getByRole("button", { name: "Más", exact: true })).toBeHidden();
+  await expect(page.getByRole("navigation", { name: "Principal" })).toHaveCount(1);
   const rail = (await page.getByRole("navigation", { name: "Principal" }).boundingBox())!;
   expect(rail.x).toBe(0);
   expect(rail.width).toBeLessThanOrEqual(88);
   await page.setViewportSize({ width: 768, height: 900 });
   await expect(page.getByRole("navigation", { name: "Principal" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Menú", exact: true })).toBeHidden();
+  await expect(page.getByRole("button", { name: "Más", exact: true })).toBeHidden();
+});
+
+test("el avatar trae el selector de idioma y cambiar a English pasa el marco a inglés", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Menú de la persona" }).click();
+  await page.locator("#menu-persona").getByRole("group", { name: "Idioma · Language" }).getByRole("link", { name: "EN · English" }).click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
 });
 
 test("menú de la persona: se abre con Enter, trae Perfil, Pasaporte, Mi recorrido y Configuración, y Escape lo cierra", async ({ page }) => {
@@ -286,29 +362,45 @@ test("el rail está a la izquierda en computadora", async ({ page }) => {
   expect(caja!.width).toBeLessThanOrEqual(88);
 });
 
-test("celular 390 x 844: sin rail, sin scroll horizontal en ninguna página del menú ni en las pausadas", async ({ page }) => {
+test("celular 390 x 844: sin rail (solo la barra inferior), sin scroll horizontal en ninguna página del menú ni en las pausadas", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const ruta of ["/", "/tribus", "/tribus/valle", "/bien-comun", "/sumarte", "/perfil", "/congreso"]) {
     await page.goto(ruta);
-    await expect(page.getByRole("navigation", { name: "Principal" })).toHaveCount(0);
+    const nav = page.getByRole("navigation", { name: "Principal" });
+    await expect(nav).toHaveCount(1);
+    expect((await nav.boundingBox())!.x).toBe(0);
+    expect((await nav.boundingBox())!.width).toBe(390);
     const desborde = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     expect(desborde, `scroll horizontal en ${ruta}`).toBe(false);
   }
 });
 
-test("Tab en 390 px: Saltar al contenido, el botón Menú y después NetX", async ({ page }) => {
+test("Tab en 390 px: Saltar al contenido, la marca, la campanita y el avatar; la barra inferior viene después del contenido", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   await expect(page.getByRole("button", { name: "Menú de la persona" })).toBeVisible();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Saltar al contenido" })).toBeFocused();
+  // La campanita llega cuando termina de leerse el consentimiento: se espera antes de seguir con Tab.
+  await expect(page.locator('a[href="/bandeja"]')).toBeVisible();
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("button", { name: "Menú", exact: true })).toBeFocused();
+  await expect(page.getByRole("banner").getByRole("link", { name: "Lighthouse" })).toBeFocused();
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("banner").getByRole("link", { name: /NetX/ })).toBeFocused();
+  await expect(page.locator('a[href="/bandeja"]')).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("button", { name: "Menú de la persona" })).toBeFocused();
+  // Orden de tabulación: la barra inferior queda después de todo el contenido (y del pie), no antes.
+  const barra = page.getByRole("navigation", { name: "Principal" });
+  const posiciones = await page.evaluate(() => {
+    const barra = document.querySelector('nav[aria-label="Principal"].fixed');
+    const main = document.querySelector("main");
+    return !!barra && !!main && !!(main.compareDocumentPosition(barra) & Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  expect(posiciones).toBe(true);
+  await expect(barra).toBeVisible();
 });
 
-test("Tab: primero Saltar al contenido y después Inicio en el rail; justo después del rail van NetX, la campanita, el selector de idioma y el avatar",async ({ page }) => {
+test("Tab: primero Saltar al contenido y después Inicio en el rail; justo después del rail van NetX, Reportar, la campanita y el avatar",async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/");
   // La barra superior aparece cuando termina de verificarse la sesión: se espera antes de recorrer con Tab.
@@ -328,13 +420,9 @@ test("Tab: primero Saltar al contenido y después Inicio en el rail; justo despu
   await page.keyboard.press("Tab");
   await expect(page.getByRole("banner").getByRole("link", { name: /NetX/ })).toBeFocused();
   await page.keyboard.press("Tab");
+  await expect(page.getByRole("button", { name: "Reportar un problema o una idea" })).toBeFocused();
+  await page.keyboard.press("Tab");
   await expect(page.locator('a[href="/bandeja"]')).toBeFocused();
-  // Después de la campanita va el selector de idioma (ES, EN) y recién después el avatar.
-  const selector = page.getByRole("group", { name: "Idioma · Language" });
-  await page.keyboard.press("Tab");
-  await expect(selector.getByRole("link", { name: "ES · Español" })).toBeFocused();
-  await page.keyboard.press("Tab");
-  await expect(selector.getByRole("link", { name: "EN · English" })).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("button", { name: "Menú de la persona" })).toBeFocused();
 });
@@ -354,6 +442,11 @@ test("menú de la persona: se cierra cuando el foco sale del menú con Tab", asy
     await expect(menu.getByRole("link", { name: nombre })).toBeFocused();
     await expect(menu).toBeVisible();
   }
+  // Después de los enlaces va el idioma (ES, EN) y recién después Salir.
+  await page.keyboard.press("Tab");
+  await expect(menu.getByRole("link", { name: "ES · Español" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(menu.getByRole("link", { name: "EN · English" })).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(menu.getByRole("button", { name: "Salir" })).toBeFocused();
   // Recién cuando el foco sale después de Salir (lo último del menú), se cierra.
@@ -378,7 +471,8 @@ test("las fuentes del mock-up se aplican (texto y títulos)", async ({ page }) =
   const familia = (selector: string) =>
     page.locator(selector).first().evaluate((el) => getComputedStyle(el).fontFamily);
   expect(await familia("h1")).toContain("Fraunces");
-  expect(await familia("main p")).toContain("Inter Tight");
+  // El primer `p` es el sobretítulo (mono): se mide un párrafo de contenido.
+  expect(await familia("main p:not([class*='font-mono'])")).toContain("Inter Tight");
 });
 
 test("la tabla tipo libro no genera scroll horizontal de la página a 390 x 844", async ({ page }) => {
@@ -409,6 +503,20 @@ for (const ruta of ["/", "/tribus", "/tribus/grano"]) {
   });
 }
 
+test("pie pegado abajo en una página corta (celular, /invertir sin sesión)", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/invertir");
+  const pie = page.getByRole("contentinfo");
+  await expect(pie).toBeVisible();
+  const medidas = await page.evaluate(() => ({
+    alto: document.documentElement.scrollHeight,
+    pantalla: window.innerHeight,
+    pieAbajo: document.querySelector("footer")!.getBoundingClientRect().bottom + window.scrollY,
+  }));
+  expect(medidas.alto).toBeGreaterThanOrEqual(medidas.pantalla);
+  expect(medidas.alto - medidas.pieAbajo).toBeLessThanOrEqual(8);
+});
+
 test("el HTML del servidor ya trae un año en el pie (sin JS)", async ({ request }) => {
   const html = await (await request.get("/")).text();
   expect(html).toMatch(/©(?:<!-- -->)? ?(?:<!-- -->)?\d{4}/);
@@ -417,7 +525,7 @@ test("el HTML del servidor ya trae un año en el pie (sin JS)", async ({ request
 test("portada con titular y botón a /participa", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Regenerar desde el agua\.\s*Una promesa a 2030\./);
-  await page.getByRole("link", { name: "Ver las comunidades" }).click();
+  await page.getByRole("link", { name: /¿Qué es de todos y quién decide\?/ }).click();
   await expect(page).toHaveURL(/\/participa$/);
 });
 

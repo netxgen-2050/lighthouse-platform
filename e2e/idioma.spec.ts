@@ -1,11 +1,53 @@
 import { RUTAS_TRADUCIDAS } from "@/lib/idioma/rutas";
 import { expect, test, type Page } from "./fixtura";
 import { textosEnEspanol } from "./ayudas-idioma";
+import { esperarHidratacion } from "./ayudas";
 
 const html = (page: Page) => page.locator("html");
 const barra = (page: Page) => page.getByRole("banner");
 const selector = (page: Page) => barra(page).getByRole("group", { name: "Idioma · Language" });
-const cookieIdioma = async (page: Page) => (await page.context().cookies()).find((c) => c.name === "lh-idioma")?.value;
+
+/**
+ * El selector ya no es un control fijo de la barra superior (ux-celular): vive en el menú del avatar (con sesión) o en el
+ * menú "Más opciones" (sin sesión). Abre el que corresponda, si no está abierto, y devuelve el selector.
+ */
+async function abrirSelector(page: Page) {
+  const avatar = barra(page).getByRole("button", { name: "Menú de la persona" });
+  const opciones = barra(page).getByRole("button", { name: /^(Más opciones|More options)$/ });
+  const grupo = selector(page);
+  await esperarHidratacion(page);
+  if (await grupo.isVisible()) return grupo;
+  // Con sesión hay avatar, sin sesión "Más opciones": se espera al que llegue y se hace clic en ese.
+  // Se reintenta entero: un clic antes de que termine de hidratar o de leerse la sesión no deja el menú abierto.
+  await expect(async () => {
+    if (!(await grupo.isVisible())) await avatar.or(opciones).click({ timeout: 10_000 });
+    await expect(grupo).toBeVisible({ timeout: 2000 });
+  }).toPass();
+  return grupo;
+}
+
+/**
+ * Elige un idioma con clic en su enlace y espera a que la página cambie. Si el enlace se vuelve a dibujar justo al hacer
+ * clic (la sesión llega y el menú se redibuja), reabre el menú y repite.
+ */
+async function elegirIdioma(page: Page, enlace: "EN · English" | "ES · Español", lang: "en" | "es") {
+  await expect(async () => {
+    await abrirSelector(page);
+    await selector(page).getByRole("link", { name: enlace }).click({ timeout: 3000 });
+    await expect(html(page)).toHaveAttribute("lang", lang, { timeout: 3000 });
+  }).toPass();
+}
+
+/** Abre la hoja Más del celular; se reintenta porque un toque antes de hidratar no la abre. */
+async function abrirMas(page: Page, navegacion: string, nombre: string) {
+  const hoja = page.getByRole("dialog", { name: nombre });
+  await esperarHidratacion(page);
+  await expect(async () => {
+    if (!(await hoja.isVisible())) await page.getByRole("navigation", { name: navegacion }).getByRole("button", { name: nombre, exact: true }).click({ timeout: 10_000 });
+    await expect(hoja).toBeVisible({ timeout: 2000 });
+  }).toPass();
+}
+const cookieIdioma =async (page: Page) => (await page.context().cookies()).find((c) => c.name === "lh-idioma")?.value;
 
 // ===== (a) Elegir el idioma sin cuenta =====
 
@@ -15,6 +57,7 @@ test.describe("sin cuenta", () => {
   test("(a) EN en la barra pone el marco en inglés sin cambiar la dirección, y sigue al recargar", async ({ page }) => {
     await page.goto("/participa");
     await expect(html(page)).toHaveAttribute("lang", "es");
+    await abrirSelector(page);
     await selector(page).getByRole("link", { name: "EN · English" }).click();
     await expect(page).toHaveURL(/\/participa$/);
     await expect(html(page)).toHaveAttribute("lang", "en");
@@ -26,11 +69,13 @@ test.describe("sin cuenta", () => {
     expect(await cookieIdioma(page)).toBe("en");
     await page.reload();
     await expect(html(page)).toHaveAttribute("lang", "en");
+    await abrirSelector(page);
     await expect(selector(page).getByRole("link", { name: "EN · English" })).toHaveAttribute("aria-current", "true");
   });
 
   test("(a) con teclado: Tab hasta EN y Enter", async ({ page }) => {
     await page.goto("/tribus");
+    await abrirSelector(page);
     await selector(page).getByRole("link", { name: "EN · English" }).focus();
     await page.keyboard.press("Enter");
     await expect(html(page)).toHaveAttribute("lang", "en");
@@ -39,9 +84,11 @@ test.describe("sin cuenta", () => {
   });
 
   test("(a) el selector es un enlace con ?lang y funciona en otra pestaña", async ({ page }) => {
-    await page.goto("/tribus");
-    await expect(selector(page).getByRole("link", { name: "EN · English" })).toHaveAttribute("href", "/tribus?lang=en");
-    await expect(selector(page).getByRole("link", { name: "ES · Español" })).toHaveAttribute("href", "/tribus?lang=es");
+    // /participa y no /tribus: /tribus redirige a /participa y la dirección del enlace dependería de esa carrera.
+    await page.goto("/participa");
+    await abrirSelector(page);
+    await expect(selector(page).getByRole("link", { name: "EN · English" })).toHaveAttribute("href", "/participa?lang=en");
+    await expect(selector(page).getByRole("link", { name: "ES · Español" })).toHaveAttribute("href", "/participa?lang=es");
   });
 
   test("(b) ?lang=en con UTM y ancla termina sin el parámetro y en inglés", async ({ page }) => {
@@ -70,8 +117,7 @@ test.describe("sin cuenta", () => {
     await page.goto("/privacidad?lang=en");
     const aviso = page.getByText("This page is only available in Spanish for now.");
     await expect(aviso).toBeVisible();
-    await expect(aviso).toHaveAttribute("lang", "en");
-    await expect(page.locator('main [lang="es"]').first()).toBeVisible();
+    await expect(aviso).toHaveAttribute("lang", "en");    await expect(page.locator('main [lang="es"]').first()).toBeVisible();
     await expect(page.locator('main [lang="es"] h1')).toHaveCount(1);
     expect(await textosEnEspanol(page, "main")).toEqual([]);
   });
@@ -86,6 +132,7 @@ test.describe("sin cuenta", () => {
 
   test("(a) el enlace del selector sigue la query cambiada sin navegar, al acercar el puntero y al enfocar", async ({ page }) => {
     await page.goto("/tribus");
+    await abrirSelector(page);
     const en = selector(page).getByRole("link", { name: "EN · English" });
     // Se reintenta entero: un replaceState anterior a la hidratación lo pisa el router de Next al arrancar.
     await expect(async () => {
@@ -100,9 +147,12 @@ test.describe("sin cuenta", () => {
     // Una query con lang propio no lo duplica.
     await page.evaluate(() => window.history.replaceState(null, "", "/tribus?lang=fr&sel=x"));
     // El puntero ya estaba dentro: se saca y se vuelve a meter para que dispare la entrada.
-    await page.mouse.move(0, 400);
-    await selector(page).hover();
-    await expect(en).toHaveAttribute("href", "/tribus?sel=x&lang=en");
+    await expect(async () => {
+      await page.evaluate(() => window.history.replaceState(null, "", "/tribus?lang=fr&sel=x"));
+      await page.mouse.move(0, 400);
+      await selector(page).hover();
+      await expect(en).toHaveAttribute("href", "/tribus?sel=x&lang=en", { timeout: 500 });
+    }).toPass();
   });
 
   test("(d) una página traducida no lleva el aviso", async ({ page }) => {
@@ -111,13 +161,33 @@ test.describe("sin cuenta", () => {
     await expect(page.getByText("This page is only available in Spanish for now.")).toHaveCount(0);
   });
 
-  test("(h) 390 px en inglés: sin desborde y la barra muestra Join, Sign in y el selector", async ({ page }) => {
+  test("(h) cambiar a inglés en el celular: Más, English, y sigue en inglés al recargar", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/participa");
+    await expect(html(page)).toHaveAttribute("lang", "es");
+    await abrirMas(page, "Principal", "Más");
+    await page.getByRole("dialog", { name: "Más" }).getByRole("link", { name: "EN · English" }).click();
+    await expect(html(page)).toHaveAttribute("lang", "en");
+    expect(await cookieIdioma(page)).toBe("en");
+    await page.reload();
+    await expect(html(page)).toHaveAttribute("lang", "en");
+    await abrirMas(page, "Main", "More");
+    await expect(page.getByRole("dialog", { name: "More" }).getByRole("link", { name: "EN · English" })).toHaveAttribute("aria-current", "true");
+  });
+
+  test("(h) 390 px en inglés: sin desborde, la barra muestra Join y la hoja More trae Sign in y el selector", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     for (const ruta of ["/", "/tribus", "/sumarte"]) {
       await page.goto(`${ruta}?lang=en`);
-      await expect(selector(page)).toBeVisible();
       await expect(barra(page).getByRole("link", { name: "Join" })).toBeVisible();
-      await expect(barra(page).getByRole("button", { name: "Sign in" })).toBeVisible();
+      await abrirMas(page, "Main", "More");
+      const hoja = page.getByRole("dialog", { name: "More" });
+      await expect(hoja.getByRole("group", { name: "Idioma · Language" })).toBeVisible();
+      await expect(hoja.getByRole("button", { name: "Sign in" })).toBeVisible();
+      await expect(async () => {
+        if (await hoja.isVisible()) await page.keyboard.press("Escape");
+        await expect(hoja).toHaveCount(0, { timeout: 1500 });
+      }).toPass();
       const caja = (await barra(page).boundingBox())!;
       expect(caja.height).toBeLessThanOrEqual(56);
       expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), `desborde en ${ruta}`).toBe(false);
@@ -171,9 +241,12 @@ test.describe("el Congreso", () => {
     await page.goto("/congreso?utm_source=x#tribus");
     // El enlace toma la query de la dirección al hidratar: con ella lista, el clic ya lo maneja el script (sin hidratar,
     // el enlace sigue su href y pierde query y ancla, como sin JavaScript).
+    await abrirSelector(page);
     await expect(selector(page).getByRole("link", { name: "EN · English" })).toHaveAttribute("href", /utm_source=x/);
+    // La barra pegada del Congreso no tapa el menú de la barra superior: el clic llega.
     await selector(page).getByRole("link", { name: "EN · English" }).click();
     await expect(page).toHaveURL(/\/congreso\/en\?utm_source=x#tribus$/);
+    await abrirSelector(page);
     await expect(selector(page).getByRole("link", { name: "ES · Español" })).toHaveAttribute("href", /utm_source=x/);
     await selector(page).getByRole("link", { name: "ES · Español" }).click();
     await expect(page).toHaveURL(/\/congreso\?utm_source=x#tribus$/);
@@ -232,6 +305,7 @@ test("(f) Configuración → English pone el marco en inglés y el selector marc
   await page.goto("/configuracion");
   await page.getByRole("radio", { name: "English" }).check();
   await expect(html(page)).toHaveAttribute("lang", "en");
+  await abrirSelector(page);
   await expect(selector(page).getByRole("link", { name: "EN · English" })).toHaveAttribute("aria-current", "true");
 });
 
@@ -264,8 +338,7 @@ test("(g) lo elegido en el navegador gana y se guarda en la persona", async ({ p
 
 test("(g) elegir el idioma con sesión lo guarda en las preferencias de la persona", async ({ page }) => {
   await page.goto("/tribus");
-  await selector(page).getByRole("link", { name: "EN · English" }).click();
-  await expect(html(page)).toHaveAttribute("lang", "en");
+  await elegirIdioma(page, "EN · English", "en");
   await expect.poll(() => page.evaluate(() => window.localStorage.getItem("lh-configuracion"))).toContain('"idiomaElegido":"en"');
 });
 

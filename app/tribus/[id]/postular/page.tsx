@@ -43,9 +43,6 @@ export default async function PostularPage({ params }: Props) {
         {p.introAntes}<strong>{t.foco}</strong>{p.introConHogares}{t.hogares}{p.introFin}
       </p>
       <AvisoEjemplo />
-      <p className="mt-2 w-fit rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-        {textos("marco", idioma).aviso}
-      </p>
       <section aria-labelledby="t-requisitos" className="mt-6 grid gap-2 rounded-xl border border-gold-ink bg-gold-soft p-4">
         <h2 id="t-requisitos" className="text-lg font-semibold">
           {p.requisitos} <span className="text-sm font-normal">{tx.ejemplo}</span>

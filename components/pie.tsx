@@ -17,7 +17,9 @@ export function Pie({ anioRespaldo }: { anioRespaldo: number }) {
   );
   const t = useTextos("marco");
   return (
-    <footer className="border-t border-line bg-surface-2 text-sm text-muted">
+    // El pb deja lugar al botón fijo de Hifa y, en el celular, a la barra inferior (ux-celular); queda dentro del pie, así su
+    // borde inferior es el final del documento.
+    <footer className="border-t border-line bg-surface-2 pb-[calc(var(--alto-barra-inferior)+4.5rem)] text-sm text-muted md:pb-16">
       <div className="mx-auto flex max-w-5xl flex-wrap justify-between gap-2 px-6 py-4 sm:px-10">
         <p>{t.pie.prototipo}</p>
         <p className="flex flex-wrap gap-x-4">

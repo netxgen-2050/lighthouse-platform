@@ -6,22 +6,28 @@ import { TerminoLegal } from "@/components/termino-legal";
 import { EntrarPara } from "@/components/sesion/entrar-para";
 import { useSesion } from "@/components/sesion/contexto";
 import { useCompras } from "@/components/lotes/usar-compras";
+import { Megaphone, MapPin, Sprout } from "lucide-react";
+import { Actividad } from "@/components/mi-tierra/actividad";
+import { DibujoLote } from "@/components/mi-tierra/dibujo-lote";
+import { EncabezadoMiTierra } from "@/components/mi-tierra/encabezado";
+import { FilaPosicion } from "@/components/mi-tierra/fila-posicion";
+import { MiniCurva } from "@/components/mi-tierra/mini-curva";
+import { VistaPreviaMiTierra } from "@/components/mi-tierra/vista-previa";
 import { BarraAvance } from "@/components/ui/barra-avance";
+import { Boton } from "@/components/ui/boton";
 import { ChipEstado } from "@/components/ui/chip-estado";
-import { Indicador } from "@/components/ui/indicador";
-import { SelloPrototipo } from "@/components/ui/sello-prototipo";
-import { TablaLibro } from "@/components/ui/tabla-libro";
+import { EstadoVacio } from "@/components/ui/estado-vacio";
 import { enteroEn, faroEn } from "@/lib/bien-comun/formato";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
-import { formatearFecha } from "@/lib/idioma/formatos";
-import { porcentajeEn, usdEn } from "@/lib/lotes/formato";
-import { armarPortafolio, type FaroPortafolio, type LotePortafolio } from "@/lib/mi-tierra/portafolio";
+import { usdEn } from "@/lib/lotes/formato";
+import { armarPortafolio, curvaFaro, type FaroPortafolio, type LotePortafolio, type Portafolio } from "@/lib/mi-tierra/portafolio";
 import { leerAdhesionDelNavegador, SIN_ADHESION, type Adhesion } from "@/lib/membresia/versiones";
 
 const TARJETA = "grid content-start gap-3 rounded-xl border border-line bg-surface p-4";
 const SUBBLOQUE = "grid content-start gap-2 rounded-lg border border-line bg-surface-2 p-3";
-const ENLACE =
-  "w-fit rounded-full border border-line bg-surface px-5 py-3 font-medium text-ink hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
+// La lista de lotes. Con la spec `explorar-unificado` (en dev) la ruta es `/explorar/lotes`; en esta base todavía no existe
+// (ver el PR): se apunta al ancla que sí existe y se cambia en un solo lugar cuando la ruta llegue.
+const RUTA_LOTES = "/explorar/lotes";
 const SUBRAYADO = "underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 
 // Mi tierra (spec mi-tierra): el portafolio de la persona, todo simulado. Lee las reservas SOLO por `useCompras`
@@ -54,56 +60,67 @@ export function MiTierraCliente() {
 
   if (portafolio.lotes.length === 0) {
     return (
-      <section aria-labelledby="mt-sin-compras" className={TARJETA}>
-        <h2 id="mt-sin-compras" className="text-xl font-bold">
-          {t.sinCompras.titulo}
-        </h2>
-        <p className="max-w-3xl">{t.sinCompras.texto}</p>
-        <Link href="/explorar/lotes" className={ENLACE}>
-          {t.sinCompras.ver}
-        </Link>
+      <div className="grid gap-6">
+        <section aria-label={t.sinCompras.titulo} className={TARJETA}>
+          <EstadoVacio
+            nivel={2}
+            titulo={t.sinCompras.titulo}
+            texto={t.sinCompras.texto}
+            dibujo={<DibujoLote />}
+            accion={<Boton href={RUTA_LOTES}>{t.sinCompras.ver}</Boton>}
+            vistaPrevia={<VistaPreviaMiTierra />}
+            etiquetaVistaPrevia={t.sinCompras.vistaPrevia}
+          />
+        </section>
         <Voz adhesion={portafolio.voz} />
-      </section>
+      </div>
     );
   }
 
   const { totales } = portafolio;
-  const filas = portafolio.libro.map((m) => ({
-    fecha: formatearFecha(m.fecha, idioma, "corto"),
-    motivo: m.tipo === "reserva" ? t.actividad.reserva(m.numero) : m.tipo === "primer-pago" ? t.actividad.primerPago(m.numero) : t.actividad.pago(m.numero),
-    monto: m.monto === null ? null : usdEn(m.monto, idioma),
-  }));
+  const curva = curvaFaro(portafolio.lotes);
+  const p = t.posiciones;
+  const vozValor = portafolio.voz.adhirio ? p.vozAdhirio : portafolio.voz.desactualizada ? p.vozDesactualizada : p.vozSinAdhesion;
 
   return (
     <div className="grid gap-6">
-      <SelloPrototipo variante="venta" />
+      <EncabezadoMiTierra portafolio={portafolio} />
 
-      <section aria-labelledby="mt-vistazo" className="grid gap-3">
-        <h2 id="mt-vistazo" className="sr-only">
-          {t.indicadores.titulo}
+      <section id="mt-posiciones" aria-labelledby="mt-posiciones-t" className="grid scroll-mt-20 gap-2">
+        <h2 id="mt-posiciones-t" className="text-xl font-bold">
+          {p.titulo}
         </h2>
-        <div className={`${TARJETA} sm:grid-cols-3`}>
-          <Indicador etiqueta={t.indicadores.lotes} valor={enteroEn(totales.lotes, idioma)} mono />
+        <ul className="m-0 grid list-none divide-y divide-line border-y border-line p-0">
+          {portafolio.lotes.map((l) => {
+            const valor =
+              l.plan.tipo === "cuotas"
+                ? p.cuotas(enteroEn(l.plan.cuotasPagadas, idioma), enteroEn(l.plan.cuotas, idioma))
+                : l.plan.tipo === "contado"
+                  ? p.contado
+                  : l.plan.tipo === "no-entra"
+                    ? p.fueraDelPlan
+                    : comunes.sinDato;
+            const detalle = [l.superficieM2 === null ? comunes.sinDato : p.m2(enteroEn(l.superficieM2, idioma)), p.estados[l.estado === "vendido" ? "vendido" : l.estado]].join(" · ");
+            return (
+              <li key={l.loteId}>
+                <FilaPosicion icono={<MapPin size={16} />} nombre={p.lote(l.numero)} detalle={detalle} valor={valor} href={`/lotes/${l.loteId}`} />
+              </li>
+            );
+          })}
           {totales.entraAlPlan && (
-            <>
-              <Indicador
-                etiqueta={t.indicadores.fraccion}
-                valor={totales.fraccionPagada === null ? null : porcentajeEn(totales.fraccionPagada, idioma)}
-                mono
-              />
-              <Indicador
-                etiqueta={t.indicadores.faro}
-                valor={totales.faroAcreditados !== null ? faroEn(totales.faroAcreditados, idioma) : totales.hayPago ? null : t.indicadores.faltaPrimerPago}
-                mono
-              />
-            </>
+            <li>
+              <FilaFaro totales={totales} curva={curva} />
+            </li>
           )}
-        </div>
+          <li>
+            <FilaPosicion icono={<Megaphone size={16} />} nombre={t.voz.titulo} detalle={p.vozDetalle} valor={vozValor} href="/tribus/lighthouse/manifiesto" />
+          </li>
+        </ul>
       </section>
 
-      <section aria-labelledby="mt-lotes" className="grid gap-3">
+      <section id="mt-detalle" aria-labelledby="mt-lotes" className="grid gap-3">
         <h2 id="mt-lotes" className="text-xl font-bold">
-          {t.lote.titulo}
+          {p.detalleTitulo}
         </h2>
         <ul className="grid gap-4 lg:grid-cols-2">
           {portafolio.lotes.map((l) => (
@@ -116,15 +133,24 @@ export function MiTierraCliente() {
 
       <Voz adhesion={portafolio.voz} />
 
-      <section aria-labelledby="mt-actividad" className="grid gap-3">
-        <h2 id="mt-actividad" className="text-xl font-bold">
+      <section id="mt-actividad" aria-labelledby="mt-actividad-t" className="grid scroll-mt-20 gap-3">
+        <h2 id="mt-actividad-t" className="text-xl font-bold">
           {t.actividad.titulo}
         </h2>
-        <TablaLibro titulo={t.actividad.titulo} filas={filas} />
-        <p className="text-sm text-muted">{t.actividad.nota}</p>
+        <Actividad libro={portafolio.libro} />
       </section>
     </div>
   );
+}
+
+/** La fila de FARO de las posiciones: sin primer pago o sin dato del FARO, dice "sin dato" con su explicación, nunca 0. */
+export function FilaFaro({ totales, curva }: { totales: Portafolio["totales"]; curva: number[] }) {
+  const idioma = useIdioma();
+  const t = useTextos("miTierra");
+  const comunes = useTextos("comunes");
+  const valor = totales.faroAcreditados !== null ? faroEn(totales.faroAcreditados, idioma) : comunes.sinDato;
+  const detalle = totales.hayPago ? t.posiciones.faroDetalle : t.faro.sinPago;
+  return <FilaPosicion icono={<Sprout size={16} />} nombre="FARO" detalle={detalle} valor={valor} extra={<MiniCurva puntos={curva} titulo={t.posiciones.curva} />} />;
 }
 
 function TarjetaLote({ l }: { l: LotePortafolio }) {

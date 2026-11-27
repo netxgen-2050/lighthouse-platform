@@ -1,12 +1,10 @@
 "use client";
 
+import { Aviso } from "@/components/ui/aviso";
 import { useTextos } from "@/lib/idioma/cliente";
 
+/** "Comunidades, personas y cifras de ejemplo": solo donde hay comunidades o personas de ejemplo (ux-base, design §4). */
 export function AvisoEjemplo() {
   const comunes = useTextos("comunes");
-  return (
-    <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
-      {comunes.avisoEjemplo}
-    </p>
-  );
+  return <Aviso tono="info">{comunes.avisoEjemplo}</Aviso>;
 }

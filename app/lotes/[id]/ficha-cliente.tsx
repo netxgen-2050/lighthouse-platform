@@ -3,11 +3,16 @@
 import Link from "next/link";
 import { useId, useState } from "react";
 import { EstadoAdministrativo } from "@/components/estado-administrativo";
+import { EstadosAdministrativos } from "@/components/estados-administrativos";
 import { PedidoContacto } from "@/components/pedido-contacto";
 import { useSesion } from "@/components/sesion/contexto";
 import { EntrarPara } from "@/components/sesion/entrar-para";
 import { TerminoLegal } from "@/components/termino-legal";
+import { Aviso } from "@/components/ui/aviso";
 import { AvisoEstadosLotes, TextoEstado } from "@/components/lotes/estado-del-lote";
+import { PlanoLote } from "@/components/explorar/plano-lote";
+import { Desplegable } from "@/components/ui/desplegable";
+import { Indicador } from "@/components/ui/indicador";
 import { useCompras } from "@/components/lotes/usar-compras";
 import { useEstadosLotes } from "@/components/lotes/usar-estados-lotes";
 import { faroEn } from "@/lib/bien-comun/formato";
@@ -17,7 +22,7 @@ import type { Pedido } from "@/lib/contactos/tipos";
 import { sinDato as textoSinDato } from "@/lib/idioma/formatos";
 import { useIdioma, useTextos } from "@/lib/idioma/cliente";
 import { ESTADOS_ADMINISTRATIVOS, proyectoDeGrupo, type IdProyecto } from "@/lib/legal/estado-administrativo";
-import { compraDe, estadoConCompras } from "@/lib/lotes/compra";
+import { compraDe, estadoConCompras, type EstadoMostrado } from "@/lib/lotes/compra";
 import { VERSION_HIBRIDO, lineasDelResumen } from "@/lib/lotes/hibrido";
 import {
   MODELO_LOTES,
@@ -39,9 +44,25 @@ import { PlanTokenTierra } from "@/components/lotes/plan-token-tierra";
 import { CompraSimulada } from "./compra-cliente";
 
 const TARJETA = "grid content-start gap-3 rounded-xl border border-faint bg-surface p-4";
+const CAJA_DESPLEGABLE = "rounded-xl border border-faint bg-surface p-4";
 const BOTON =
   "w-fit rounded-lg bg-deep px-4 py-1.5 font-medium text-on-deep hover:bg-deep-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep";
 const MARCA = "w-fit rounded-full border border-dashed border-muted px-2 py-0.5 text-xs font-medium";
+
+/** El estado del lote en una palabra, para el indicador de la fila de datos. */
+function textoDeEstado(
+  t: { disponible: string; reservado: string; vendido: string; reservadoPorVos: string; vendidoAVos: string; enCuotasTuyo: string },
+  e: EstadoMostrado,
+): string {
+  return {
+    disponible: t.disponible,
+    reservado: t.reservado,
+    vendido: t.vendido,
+    "reservado-por-vos": t.reservadoPorVos,
+    "vendido-a-vos": t.vendidoAVos,
+    "en-cuotas-tuyo": t.enCuotasTuyo,
+  }[e];
+}
 
 /** "Hablar con alguien": el mismo pedido de contacto de la plataforma, registrado como consulta por un lote de Lighthouse VRN. */
 function HablarConAlguien({ numero, proyecto }: { numero: number; proyecto: IdProyecto }) {
@@ -95,6 +116,7 @@ export function FichaCliente({ id }: { id: string }) {
   const tb = useTextos("biencomun");
   const { compras, reservar, pagar, deshacer } = useCompras();
   const { estados, fallo: falloEstados } = useEstadosLotes();
+  const te = useTextos("explorar");
   const [elegida, setElegida] = useState<OpcionCompra>("solo-lote");
   const [cuotasElegidas, setCuotasElegidas] = useState<number>(PLAN_CUOTAS.dePartida);
   const grupo = useId();
@@ -153,19 +175,25 @@ export function FichaCliente({ id }: { id: string }) {
 
   return (
     <div className="mt-4 grid gap-4">
-      <ImagenLote lote={lote} />
-      <section aria-label={tl.lote(lote.numero)} className={TARJETA}>
-        <p className="text-sm">
-          <strong>{t.ficha.superficie}</strong> {textoSuperficieM2(lote.superficieM2, idioma)}
-        </p>
-        <p className="text-sm font-medium">
-          {t.ficha.estado} <TextoEstado estado={estado} />
-        </p>
-        <AvisoEstadosLotes fallo={falloEstados} />
-        <p className="text-sm">
-          <strong>{t.ficha.quienVende}</strong> {sd}
-        </p>
+      <div className="flex flex-wrap items-center gap-4">
+        <PlanoLote anillo={lote.anillo} tam={144} />
+        <div className="min-w-0 flex-1">
+          <ImagenLote lote={lote} />
+        </div>
+      </div>
+      {/* Fila de datos clave: superficie, estado, precio de ejemplo y plan en cuotas (o "sin dato"). */}
+      <section aria-label={te.ficha.indicadores} className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <Indicador etiqueta={te.ficha.superficie} valor={lote.superficieM2 === undefined ? null : textoSuperficieM2(lote.superficieM2, idioma)} mono />
+        <Indicador etiqueta={te.ficha.estado} valor={textoDeEstado(t.estado, estado)} />
+        <Indicador etiqueta={te.ficha.precio} valor={precioDelLote === null ? null : usdEn(precioDelLote, idioma)} mono />
+        <Indicador etiqueta={te.ficha.cuotas} valor={traeFaro ? te.ficha.cuotasSi : null} />
       </section>
+      <AvisoEstadosLotes fallo={falloEstados} />
+      <p className="text-sm">
+        <strong>{t.ficha.quienVende}</strong> {sd}
+      </p>
+      {/* El estado administrativo del proyecto va antes de la acción principal. */}
+      <EstadosAdministrativos proyectos={[proyecto]} idioma={idioma} />
 
       {traeFaro && (
       <section aria-labelledby="ficha-nft" className={TARJETA}>
@@ -274,10 +302,7 @@ export function FichaCliente({ id }: { id: string }) {
         />
       )}
 
-      <section aria-labelledby="ficha-costos" className={TARJETA}>
-        <h2 id="ficha-costos" className="text-lg font-semibold">
-          {t.costos.titulo}
-        </h2>
+      <Desplegable id="ficha-costos" titulo={t.costos.titulo} className={CAJA_DESPLEGABLE}>
         <table className="w-full table-fixed text-sm">
           <caption className="sr-only">{t.costos.titulo}</caption>
           <thead>
@@ -333,14 +358,14 @@ export function FichaCliente({ id }: { id: string }) {
         </table>
         <p className="text-sm">{t.costos.aporteSobre}</p>
         <p className="text-sm">{t.costos.aporteAparte}</p>
-        <p className="rounded-lg border border-dashed border-faint bg-warn-bg px-3 py-2 text-sm text-warn-ink">
+        <Aviso tono="legal">
           <strong>{t.costos.provisoriaTitulo}</strong> {t.costos.provisoria}
           <TerminoLegal clave="retribucionraiz" idioma={idioma} />
-        </p>
+        </Aviso>
         <p className="text-sm text-muted">
           {t.costos.version(VERSION_MODELO_LOTES.fuente, VERSION_MODELO_LOTES.version, VERSION_MODELO_LOTES.fecha)}
         </p>
-      </section>
+      </Desplegable>
 
       <section aria-labelledby="ficha-derechos" className={TARJETA}>
         <h2 id="ficha-derechos" className="text-lg font-semibold">
@@ -362,12 +387,7 @@ export function FichaCliente({ id }: { id: string }) {
         <p className="text-sm font-medium">{t.derechos.queNoDa}</p>
       </section>
 
-      <EstadoAdministrativo proyecto={proyecto} idioma={idioma} />
-
-      <section aria-labelledby="ficha-resumen" className={TARJETA}>
-        <h2 id="ficha-resumen" className="text-lg font-semibold">
-          {t.resumen.titulo}
-        </h2>
+      <Desplegable id="ficha-resumen" titulo={t.resumen.titulo} className={CAJA_DESPLEGABLE}>
         <ul className="list-disc pl-5 text-sm">
           {lineasDelResumen(idioma, { aporte: usdEn(aporte, idioma), expensa: usdEn(MODELO_LOTES.expensaAnual, idioma) }).map(
             (l) => (
@@ -380,9 +400,13 @@ export function FichaCliente({ id }: { id: string }) {
             {t.resumen.ver}
           </Link>
         </p>
-      </section>
+      </Desplegable>
 
-      <section aria-labelledby="ficha-acciones" className={TARJETA}>
+      {/* Acción principal: en el celular queda fija abajo, encima de la barra inferior (con tope de alto y scroll propio). */}
+      <section
+        aria-labelledby="ficha-acciones"
+        className={`${TARJETA} sticky bottom-[var(--alto-barra-inferior)] z-20 max-h-[45dvh] overflow-y-auto shadow-[var(--sombra-2)] md:static md:max-h-none md:overflow-visible md:shadow-none`}
+      >
         <h2 id="ficha-acciones" className="sr-only">
           {t.acciones.titulo}
         </h2>

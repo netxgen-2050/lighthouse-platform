@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { usePendientes } from "@/lib/admin/usar-pendientes";
 import { useTextos } from "@/lib/idioma/cliente";
 import { esActivo } from "@/lib/ruta-activa";
-import { CLASE_ITEM, CLASE_PASTILLA } from "./rail-enlaces";
+import { CLASE_ITEM, CLASE_PASTILLA, claseEtiqueta, claseIcono } from "./rail-enlaces";
 import { useSesion } from "./sesion/contexto";
 
 /**
@@ -29,19 +29,15 @@ export function RailAdmin({ href, etiqueta, titulo, icono }: { href: string; eti
         ? `${etiqueta}, ${pendientes} ${t.rail.pendientes}`
         : etiqueta;
   return (
-    <div className="mt-2 border-t border-deep-2 pt-2">
-      <p id="rail-grupo-interno" className="mb-1 hidden text-center text-[0.625rem] font-bold uppercase tracking-wide text-on-deep-muted sm:block">
+    <div className="mt-2 border-t border-line pt-2">
+      <p id="rail-grupo-interno" className="mb-1 hidden text-center text-[0.625rem] font-bold uppercase tracking-wide text-muted sm:block">
         {titulo}
       </p>
       <ul aria-labelledby="rail-grupo-interno" className="flex flex-col items-stretch gap-1">
         <li>
           <Link href={href} aria-current={activo ? "page" : undefined} aria-label={nombre} className={CLASE_ITEM}>
-            <span
-              className={`flex h-7 w-11 items-center justify-center rounded-full sm:w-12 ${activo ? "bg-on-deep text-deep" : "hover:bg-deep-2"}`}
-            >
-              {icono}
-            </span>
-            <span className={`break-words ${activo ? "font-bold underline underline-offset-2" : ""}`}>{etiqueta}</span>
+            <span className={claseIcono(activo)}>{icono}</span>
+            <span className={claseEtiqueta(activo)}>{etiqueta}</span>
             {visible && <span className={CLASE_PASTILLA}>{visible}</span>}
           </Link>
         </li>

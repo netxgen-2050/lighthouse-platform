@@ -16,7 +16,7 @@ export function SelloPropuesta({ etiqueta, texto, fecha, simulacion, terminoSimu
     <div
       role="group"
       aria-label={etiqueta}
-      className="grid w-fit max-w-3xl gap-1 rounded-lg border-2 border-dashed border-muted bg-warn-bg px-3 py-2 text-warn-ink"
+      className="grid w-fit max-w-3xl gap-1 rounded-[var(--radius-m)] border-2 border-muted bg-warn-bg px-3 py-2 text-warn-ink"
     >
       <p className="font-semibold">{texto}</p>
       <p className="text-sm">{fecha}</p>

@@ -29,7 +29,7 @@ export default async function ExplorarBarrioNortePage() {
   const vista = vistaBarrioNorte();
 
   return (
-    <section aria-labelledby="explorar-barrio" className="grid content-start gap-4">
+    <section aria-labelledby="explorar-barrio" className="mx-auto grid w-full max-w-5xl content-start gap-4">
       <h2 id="explorar-barrio" className="text-2xl font-bold">
         {t.barrio.titulo}
       </h2>
@@ -40,17 +40,20 @@ export default async function ExplorarBarrioNortePage() {
           {tb.lotes.titulo}
         </h3>
         <p className="max-w-3xl text-sm">{tb.lotes.intro}</p>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {ESTADOS_BARRIO.map((estado) => {
-            const cantidad = vista.lotesPorEstado[estado];
-            return (
-              <PanelVidrio como="li" key={estado} className="grid content-start gap-2">
-                <ChipEstado estado={estado} />
-                <Indicador etiqueta={tb.lotes.etiqueta} valor={cantidad === null ? null : enteroEn(cantidad, idioma)} mono />
-              </PanelVidrio>
-            );
-          })}
-        </ul>
+        {/* Las cifras por estado van en un solo panel, sin cajas dentro de cajas (ux-base). */}
+        <PanelVidrio como="div">
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {ESTADOS_BARRIO.map((estado) => {
+              const cantidad = vista.lotesPorEstado[estado];
+              return (
+                <li key={estado} className="grid content-start gap-2">
+                  <ChipEstado estado={estado} />
+                  <Indicador etiqueta={tb.lotes.etiqueta} valor={cantidad === null ? null : enteroEn(cantidad, idioma)} mono />
+                </li>
+              );
+            })}
+          </ul>
+        </PanelVidrio>
         <p className="text-sm text-muted">{tb.lotes.enCuotasNota}</p>
         <Link href={RUTA_SECCION.lotes} className={ENLACE}>
           {tb.lotes.ver}

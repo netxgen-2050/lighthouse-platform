@@ -9,7 +9,6 @@ import { BarraAvance, tonoDeAvance } from "./barra-avance";
 import { ChipEstado, ESTADOS_CHIP } from "./chip-estado";
 import { Indicador } from "./indicador";
 import { PanelVidrio } from "./panel-vidrio";
-import { SelloPrototipo } from "./sello-prototipo";
 import { TablaLibro } from "./tabla-libro";
 
 const html = (nodo: ReactNode, idioma: Idioma = "es") =>
@@ -134,23 +133,6 @@ describe("TablaLibro", () => {
     expect(h).toContain("overflow-x-auto");
     expect(h).not.toContain("tabindex");
     expect(h).toContain('data-desborda="false"');
-  });
-});
-
-describe("SelloPrototipo", () => {
-  test("general: solo el aviso", () => {
-    const h = html(<SelloPrototipo />);
-    expect(h).toContain("Prototipo interno · datos de ejemplo");
-    expect(h).not.toContain("aprobación municipal");
-  });
-  test("venta: suma venta simulada y aprobación pendiente", () => {
-    const h = html(<SelloPrototipo variante="venta" />);
-    expect(h).toContain("Prototipo interno · datos de ejemplo");
-    expect(h).toContain("venta simulada · aprobación municipal pendiente");
-    expect(h).not.toMatch(/otorgada|aprobada/);
-  });
-  test("en inglés", () => {
-    expect(html(<SelloPrototipo variante="venta" />, "en")).toContain("simulated sale · municipal approval pending");
   });
 });
 
