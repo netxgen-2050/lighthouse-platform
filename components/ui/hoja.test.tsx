@@ -67,6 +67,16 @@ describe("hoja persistente controlada desde afuera", () => {
     expect(dibujar(undefined)).toContain("max-h-28");
   });
 
+  it("con cabecera, el reposo deja margen sobre lo que no se achica (160 px)", () => {
+    const html = renderToStaticMarkup(
+      <Hoja abierta persistente alCerrar={() => {}} titulo="Lotes" etiquetaCerrar="Cerrar" etiquetaAsa="Asa" cabecera={<p>pastillas</p>}>
+        <p>lista</p>
+      </Hoja>,
+    );
+    expect(html).toContain("max-h-40");
+    expect(html).not.toContain("max-h-32");
+  });
+
   it("siguienteExpansion acepta un valor o una función del actual", () => {
     expect(siguienteExpansion(false, true)).toBe(true);
     expect(siguienteExpansion(true, false)).toBe(false);

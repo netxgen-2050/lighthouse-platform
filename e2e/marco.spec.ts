@@ -215,6 +215,19 @@ test.describe("sin sesión", () => {
     await expect(hoja.getByRole("button", { name: "Reportar un error" })).toBeVisible();
   });
 
+  test("celular 390 x 844: en una página corta (/invertir) el pie queda pegado al final de la pantalla", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/invertir");
+    const pie = page.getByRole("contentinfo");
+    await expect(pie).toBeVisible();
+    const medidas = await page.evaluate(() => {
+      const f = document.querySelector("footer")!.getBoundingClientRect();
+      return { finPie: f.bottom + window.scrollY, altoDoc: document.documentElement.scrollHeight, pantalla: window.innerHeight };
+    });
+    expect(medidas.altoDoc).toBeGreaterThanOrEqual(medidas.pantalla);
+    expect(medidas.altoDoc - medidas.finPie).toBeLessThanOrEqual(8);
+  });
+
   test("computadora: sin sesión el idioma está en el menú ⋯ junto a Entrar", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/");

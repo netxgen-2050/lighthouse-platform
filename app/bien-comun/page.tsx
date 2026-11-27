@@ -257,7 +257,7 @@ export default async function BienComunPage() {
                   id: f.principio,
                   nombre: f.principio,
                   detalle: f.como,
-                  estado: <ChipEstado estado="enDiscusion" />,
+                  estado: <ChipEstado estado="idea" />,
                 }))}
               />
             </SeccionPlegable>

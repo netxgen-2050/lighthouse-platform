@@ -183,9 +183,9 @@ html {
   }
 }
 
-/* Lotes en celular: la hoja en reposo (7rem) queda fija sobre la barra inferior y taparía el pie; el pie reserva ese alto. */
+/* Lotes en celular: la hoja en reposo (hasta 10rem, con las pastillas de estado y margen para que no se corten) queda fija sobre la barra inferior y taparía el pie; el pie reserva ese alto. */
 body:has([data-espacio-hoja]) footer {
-  padding-bottom: calc(var(--alto-barra-inferior) + 7rem);
+  padding-bottom: calc(var(--alto-barra-inferior) + 10rem);
 }
 
 /* La hoja sube desde abajo; con --dur en 0 (movimiento reducido) no hay animación. */

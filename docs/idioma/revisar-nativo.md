@@ -37,7 +37,7 @@ Fuentes pendientes: 53
 | `lib/tribus/necesidades.ts` | Necesidades de ejemplo de las tribus como tareas (título, qué es y habilidad extra) con su inglés | — |
 | `textos/bandeja` | Bandeja y notificaciones: textos de cada evento de la actividad, que se arman al mostrarlos en el idioma actual | 37 |
 | `textos/barrios` | Barrio Norte (/barrios/norte): lotes por estado, lo que va al bien común y el panel de la obra del barrio (solo con sesión) | 30 |
-| `textos/biencomun` | El bien común de Lighthouse VRN: propuesta v0.1 en discusión: sello, dos carriles y tres puentes, puertas de FARO, política, decisiones abiertas, qué cambió, preguntas para el abogado, principios de Ostrom, parcelas comunes, tarjeta de la ficha y línea del boleto | 207 |
+| `textos/biencomun` | El bien común de Lighthouse VRN: propuesta v0.1 en discusión: sello, dos carriles y tres puentes, puertas de FARO, política, decisiones abiertas, qué cambió, preguntas para el abogado, principios de Ostrom, parcelas comunes, tarjeta de la ficha y línea del boleto | 206 |
 | `textos/canales` | Canales: por qué se abre cada puerta, qué la abre, refuerzo por presencia y nombres de planes y niveles del pase | 31 |
 | `textos/compromisos` | Compromisos y Mercado: formulario, validaciones, tipos y medios de intercambio, filtros y avisos | 58 |
 | `textos/comunes` | Textos que se repiten en todas las zonas (cargando, cancelar, sin dato, notas de traducción…) | 16 |
@@ -51,7 +51,7 @@ Fuentes pendientes: 53
 | `textos/invertir` | Invertir (/invertir): aviso único, indicadores del barrio en financiamiento, curva de devolución y libro del barrio (solo con sesión) | 53 |
 | `textos/lotes` | Lotes de Lighthouse VRN: lista, ficha, precio de ejemplo, con casa, costos, derechos y deberes, reserva y pago simulados y boleto de ejemplo | 138 |
 | `textos/manifiestoVrn` | Manifiesto de Lighthouse VRN: ficha del común, tarjeta de Tribus, lectura completa, principios propios de las tribus, aviso de adhesión y bloque de la Vista NetX | 49 |
-| `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 80 |
+| `textos/marco` | Marco de la plataforma: rail, barra superior, menú de la persona, campanita, pie, 404 y pantallas de la puerta | 81 |
 | `textos/miTierra` | Mi tierra (/mi-tierra): tu lote, plan en cuotas, FARO acreditados (simulado), tu voz y actividad | 96 |
 | `textos/pactos` | Pactos: pactos de tiempo y de plata, cambios, historial, avisos y anuncios | 286 |
 | `textos/participa` | Participa (/participa): mapa ilustrado de equipos, lista, detalle del equipo con sus posiciones abiertas y pestaña Visión | 42 |
